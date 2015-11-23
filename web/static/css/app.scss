@@ -1,3 +1,4 @@
 @import 'foundation';
 
-@include foundation-flex-grid;
+// TODO foundation-flex-grid wasn’t working?
+@include foundation-grid;
