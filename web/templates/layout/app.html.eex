@@ -8,6 +8,7 @@
     <meta name="author" content="">
 
     <title>Clandestine Rendezvous</title>
+    <link href='https://fonts.googleapis.com/css?family=Titillium+Web:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
   </head>
 
