@@ -18,9 +18,15 @@ defmodule Cr2016site.Mixfile do
   # Type `mix help compile.app` for more information.
   def application do
     [mod: {Cr2016site, []},
-     applications: [:phoenix, :phoenix_html, :cowboy, :logger,
-                    :phoenix_ecto, :postgrex]]
+     applications: app_list(Mix.env)]
   end
+
+  def app_list do
+    [:phoenix, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex]
+  end
+
+  def app_list(:test), do: [:hound | app_list]
+  def app_list(_),     do: app_list
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "web", "test/support"]
@@ -36,7 +42,8 @@ defmodule Cr2016site.Mixfile do
      {:phoenix_html, "~> 2.1"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:cowboy, "~> 1.0"},
-     {:mix_test_watch, "~> 0.2", only: :dev}]
+     {:mix_test_watch, "~> 0.2", only: :dev},
+     {:hound, "~> 0.7.6", only: :test}]
   end
 
   # Aliases are shortcut or tasks specific to the current project.
