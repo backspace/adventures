@@ -10,7 +10,7 @@ defmodule Cr2016site do
       # Start the endpoint when the application starts
       supervisor(Cr2016site.Endpoint, []),
       # Start the Ecto repository
-      worker(Cr2016site.Repo, []),
+      supervisor(Cr2016site.Repo, []),
       # Here you could define other workers and supervisors as children
       # worker(Cr2016site.Worker, [arg1, arg2, arg3]),
     ]

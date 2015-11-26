@@ -10,7 +10,7 @@
   "idna": {:hex, :idna, "1.0.2"},
   "mimerl": {:hex, :mimerl, "1.0.0"},
   "mix_test_watch": {:hex, :mix_test_watch, "0.2.4"},
-  "phoenix": {:hex, :phoenix, "1.0.3"},
+  "phoenix": {:git, "https://github.com/phoenixframework/phoenix.git", "c51fcf506228c3081cc50ac4a35a8bd0b64d68e5", []},
   "phoenix_ecto": {:hex, :phoenix_ecto, "1.2.0"},
   "phoenix_html": {:hex, :phoenix_html, "2.2.0"},
   "phoenix_live_reload": {:hex, :phoenix_live_reload, "1.0.1"},
