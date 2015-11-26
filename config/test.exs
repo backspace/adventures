@@ -18,4 +18,4 @@ config :cr2016site, Cr2016site.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
-config :hound, driver: "chrome_driver"
+config :hound, driver: "phantomjs"
