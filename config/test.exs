@@ -19,3 +19,13 @@ config :cr2016site, Cr2016site.Repo,
   pool: Ecto.Adapters.SQL.Sandbox
 
 config :hound, driver: "phantomjs"
+
+defmodule Blacksmith.Config do
+  def save(map) do
+    Cr2016site.Repo.insert(map)
+  end
+
+  def save_all(list) do
+    Enum.map(list, &Cr2016site.Repo.insert/1)
+  end
+end

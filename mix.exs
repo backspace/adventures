@@ -25,7 +25,7 @@ defmodule Cr2016site.Mixfile do
     [:phoenix, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex]
   end
 
-  def app_list(:test), do: [:hound | app_list]
+  def app_list(:test), do: [:blacksmith | [:hound | app_list]]
   def app_list(_),     do: app_list
 
   # Specifies which paths to compile per environment.
@@ -43,7 +43,8 @@ defmodule Cr2016site.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:cowboy, "~> 1.0"},
      {:mix_test_watch, "~> 0.2", only: :dev},
-     {:hound, "~> 0.7.6", only: :test}]
+     {:hound, "~> 0.7.6", only: :test},
+     {:blacksmith, github: "batate/blacksmith"}]
   end
 
   # Aliases are shortcut or tasks specific to the current project.
