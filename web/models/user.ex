@@ -22,5 +22,6 @@ defmodule Cr2016site.User do
     model
     |> cast(params, @required_fields, @optional_fields)
     |> unique_constraint(:email)
+    |> validate_format(:email, ~r/@/)
   end
 end
