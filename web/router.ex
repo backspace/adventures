@@ -16,7 +16,8 @@ defmodule Cr2016site.Router do
   scope "/", Cr2016site do
     pipe_through :browser # Use the default browser stack
 
-    resources "/registrations", RegistrationController, only: [:new, :create]
+    get    "/register", RegistrationController, :new
+    post   "/register", RegistrationController, :create
 
     get "/", PageController, :index
   end
