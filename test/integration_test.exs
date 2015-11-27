@@ -23,6 +23,10 @@ defmodule Cr2016site.IntegrationTest do
     click({:class, "btn"})
     assert visible_text({:css, ".alert-info"}) == "Unable to create account"
 
+    fill_field({:id, "email"}, "franklin.w.dixon@example.com")
+    click({:class, "btn"})
+    assert visible_text({:css, ".alert-info"}) == "Unable to create account"
+
     fill_field({:id, "email"}, "samuel.delaney@example.com")
     fill_field({:id, "password"}, "nestofspiders")
     click({:class, "btn"})
