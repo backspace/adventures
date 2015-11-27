@@ -44,7 +44,8 @@ defmodule Cr2016site.Mixfile do
      {:cowboy, "~> 1.0"},
      {:mix_test_watch, "~> 0.2", only: :dev},
      {:hound, "~> 0.7.6", only: :test},
-     {:blacksmith, github: "batate/blacksmith"}]
+     {:blacksmith, github: "batate/blacksmith"},
+     {:comeonin, "~> 1.0"}]
   end
 
   # Aliases are shortcut or tasks specific to the current project.

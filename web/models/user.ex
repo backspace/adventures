@@ -4,11 +4,12 @@ defmodule Cr2016site.User do
   schema "users" do
     field :email, :string
     field :crypted_password, :string
+    field :password, :string, virtual: true
 
     timestamps
   end
 
-  @required_fields ~w(email crypted_password)
+  @required_fields ~w(email password)
   @optional_fields ~w()
 
   @doc """

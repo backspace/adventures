@@ -13,11 +13,14 @@
   </head>
 
   <body>
-      <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
-      <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+    <div class='row'>
+      <div class='small-12 columns'><%= link "Register", to: registration_path(@conn, :new) %></div>
+    </div>
 
-      <%= render @view_module, @view_template, assigns %>
-    </div> <!-- /container -->
+    <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
+    <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+
+    <%= render @view_module, @view_template, assigns %>
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
   </body>
 </html>

@@ -15,4 +15,15 @@ defmodule Cr2016site.IntegrationTest do
 
     assert page_source =~ "francine.pascal@example.com"
   end
+
+  test "registering" do
+    navigate_to "/"
+    click({:link_text, "Register"})
+
+    fill_field({:id, "email"}, "samuel.delaney@example.com")
+    fill_field({:id, "password"}, "nestofspiders")
+    click({:class, "btn"})
+
+    assert page_source =~ "samuel.delaney@example.com"
+  end
 end
