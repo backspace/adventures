@@ -19,6 +19,9 @@ defmodule Cr2016site.Router do
     get    "/register", RegistrationController, :new
     post   "/register", RegistrationController, :create
 
+    get    "/login", SessionController, :new
+    post   "/login", SessionController, :create
+
     get "/", PageController, :index
   end
 

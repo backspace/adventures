@@ -14,7 +14,10 @@
 
   <body>
     <div class='row'>
-      <div class='small-12 columns'><%= link "Register", to: registration_path(@conn, :new) %></div>
+      <div class='small-12 columns'>
+        <%= link "Register", to: registration_path(@conn, :new) %>
+        <%= link "Log in",    to: session_path(@conn, :new) %>
+      </div>
     </div>
 
     <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>

@@ -36,4 +36,23 @@ defmodule Cr2016site.IntegrationTest do
     assert visible_text({:css, ".alert-info"}) == "Your account was created"
     assert page_source =~ "samuel.delaney@example.com"
   end
+
+  test "logging in" do
+    # FIXME save a user with automatic encryption of password?
+    Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+
+    navigate_to "/"
+    click({:link_text, "Log in"})
+
+    fill_field({:id, "email"}, "octavia.butler@example.com")
+    fill_field({:id, "password"}, "Parable of the Talents")
+    click({:class, "btn"})
+
+    assert visible_text({:css, ".alert-info"}) == "Wrong email or password"
+
+    fill_field({:id, "password"}, "Xenogenesis")
+    click({:class, "btn"})
+
+    assert visible_text({:css, ".alert-info"}) == "Logged in"
+  end
 end
