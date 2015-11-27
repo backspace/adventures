@@ -25,7 +25,7 @@ defmodule Cr2016site.Mixfile do
     [:phoenix, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex]
   end
 
-  def app_list(:test), do: [:blacksmith | [:hound | app_list]]
+  def app_list(:test), do: [:blacksmith, :hound] ++ app_list
   def app_list(_),     do: app_list
 
   # Specifies which paths to compile per environment.
