@@ -22,6 +22,8 @@ defmodule Cr2016site.IntegrationTest do
 
     click({:class, "btn"})
     assert visible_text({:css, ".alert-info"}) == "Unable to create account"
+    assert visible_text({:css, ".errors .email"}) == "Email has invalid format"
+    assert visible_text({:css, ".errors .password"}) == "Password should be at least 5 characters"
 
     fill_field({:id, "email"}, "franklin.w.dixon@example.com")
     click({:class, "btn"})
