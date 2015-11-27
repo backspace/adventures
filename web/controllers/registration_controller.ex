@@ -13,6 +13,7 @@ defmodule Cr2016site.RegistrationController do
     case Cr2016site.Registration.create(changeset, Cr2016site.Repo) do
       {:ok, changeset} ->
         conn
+        |> put_flash(:info, "Your account was created")
         |> redirect(to: "/")
     end
   end

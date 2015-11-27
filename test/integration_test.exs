@@ -24,6 +24,7 @@ defmodule Cr2016site.IntegrationTest do
     fill_field({:id, "password"}, "nestofspiders")
     click({:class, "btn"})
 
+    assert visible_text({:css, ".alert-info"}) == "Your account was created"
     assert page_source =~ "samuel.delaney@example.com"
   end
 end
