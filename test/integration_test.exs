@@ -54,5 +54,6 @@ defmodule Cr2016site.IntegrationTest do
     click({:class, "btn"})
 
     assert visible_text({:css, ".alert-info"}) == "Logged in"
+    assert visible_text({:css, "nav form a"}) == "Log out octavia.butler@example.com"
   end
 end

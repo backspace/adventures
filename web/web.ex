@@ -48,6 +48,8 @@ defmodule Cr2016site.Web do
       use Phoenix.HTML
 
       import Cr2016site.Router.Helpers
+
+      import Cr2016site.Session, only: [current_user: 1, logged_in?: 1]
     end
   end
 

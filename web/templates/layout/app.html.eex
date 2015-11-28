@@ -15,8 +15,13 @@
   <body>
     <div class='row'>
       <div class='small-12 columns'>
-        <%= link "Register", to: registration_path(@conn, :new) %>
-        <%= link "Log in",    to: session_path(@conn, :new) %>
+        <nav>
+          <%= if logged_in?(@conn) do %>
+            <%= link "Log out #{current_user(@conn).email}", to: session_path(@conn, :delete), method: :delete %>
+          <% end %>
+          <%= link "Register", to: registration_path(@conn, :new) %>
+          <%= link "Log in",    to: session_path(@conn, :new) %>
+        </nav>
       </div>
     </div>
 
