@@ -17,10 +17,11 @@
       <div class='small-12 columns'>
         <nav>
           <%= if logged_in?(@conn) do %>
-            <%= link "Log out #{current_user(@conn).email}", to: session_path(@conn, :delete), method: :delete %>
+            <%= link "Log out #{current_user(@conn).email}", to: session_path(@conn, :delete), method: :delete, class: "logout" %>
+          <% else %>
+            <%= link "Register", to: registration_path(@conn, :new), class: "register" %>
+            <%= link "Log in", to: session_path(@conn, :new), class: "login" %>
           <% end %>
-          <%= link "Register", to: registration_path(@conn, :new) %>
-          <%= link "Log in",    to: session_path(@conn, :new) %>
         </nav>
       </div>
     </div>
