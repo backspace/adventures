@@ -20,6 +20,8 @@ config :cr2016site, Cr2016site.Repo,
 
 config :hound, driver: "phantomjs"
 
+config :comeonin, :bcrypt_log_rounds, 4
+
 defmodule Blacksmith.Config do
   def save(map) do
     Cr2016site.Repo.insert(map)
