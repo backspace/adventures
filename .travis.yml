@@ -5,4 +5,7 @@ before_install:
   # FIXME Creates an expected file excluded by .gitignore
   - "echo 'use Mix.Config\n\nconfig :cr2016site, nothing: 0' > config/dev.secret.exs"
 before_script:
-  - "phantomjs -w &"
+  - mkdir travis-phantomjs
+  - wget https://s3.amazonaws.com/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2 -O $PWD/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2
+  - tar -xvf $PWD/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2 -C $PWD/travis-phantomjs
+  - "$PWD/travis-phantomjs/phantomjs -w &"
