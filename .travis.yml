@@ -5,4 +5,4 @@ before_install:
   # FIXME Creates an expected file excluded by .gitignore
   - "echo 'use Mix.Config\n\nconfig :cr2016site, nothing: 0' > config/dev.secret.exs"
 before_script:
-  - "phantomjs -w &"
+  - "phantomjs -w --webdriver-loglevel=ERROR &"
