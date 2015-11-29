@@ -63,8 +63,8 @@ defmodule Cr2016site.IntegrationTest do
 
     click({:css, "a.logout"})
 
-    assert visible_text({:css, ".alert-info"}) == "Logged out"
     assert visible_text({:css, "a.login"}) == "Log in"
     assert visible_text({:css, "a.register"}) == "Register"
+    assert visible_text({:css, ".alert-info"}) == "Logged out"
   end
 end
