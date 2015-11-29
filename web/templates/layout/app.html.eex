@@ -15,13 +15,17 @@
   <body>
     <div class='row'>
       <div class='small-12 columns'>
-        <nav>
-          <%= if logged_in?(@conn) do %>
-            <%= link "Log out #{current_user(@conn).email}", to: session_path(@conn, :delete), method: :delete, class: "logout" %>
-          <% else %>
-            <%= link "Register", to: registration_path(@conn, :new), class: "register" %>
-            <%= link "Log in", to: session_path(@conn, :new), class: "login" %>
-          <% end %>
+        <nav class='top-bar'>
+          <div class='top-bar-left'>
+            <ul class='dropdown menu'>
+              <%= if logged_in?(@conn) do %>
+                <li><%= link "Log out #{current_user(@conn).email}", to: session_path(@conn, :delete), method: :delete, class: "logout" %></li>
+              <% else %>
+                <li><%= link "Register", to: registration_path(@conn, :new), class: "register" %></li>
+                <li><%= link "Log in", to: session_path(@conn, :new), class: "login" %></li>
+              <% end %>
+            </ul>
+          </div>
         </nav>
       </div>
     </div>

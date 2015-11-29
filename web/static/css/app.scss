@@ -5,6 +5,4 @@ $body-font-family: 'Titillium Web', sans-serif;
 @include foundation-global-styles;
 
 // TODO foundation-flex-grid wasn’t working?
-@include foundation-forms;
-@include foundation-grid;
-@include foundation-typography;
+@include foundation-everything;
