@@ -4,7 +4,7 @@ defmodule Cr2016site.Mailer do
                       mode: Application.get_env(:cr2016site, :mailgun_mode),
                       test_file_path: Application.get_env(:cr2016site, :mailgun_test_file_path)
 
-  @from "b@rendezvous.chromatin.ca"
+  @from "mailgun@mg.chromatin.ca"
 
   def send_welcome_email(email) do
     send_email to: email,
