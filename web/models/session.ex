@@ -22,4 +22,6 @@ defmodule Cr2016site.Session do
   end
 
   def logged_in?(conn), do: !!current_user(conn)
+
+  def admin?(conn), do: current_user(conn) && current_user(conn).admin
 end

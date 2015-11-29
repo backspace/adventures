@@ -49,7 +49,7 @@ defmodule Cr2016site.Web do
 
       import Cr2016site.Router.Helpers
 
-      import Cr2016site.Session, only: [current_user: 1, logged_in?: 1]
+      import Cr2016site.Session, only: [current_user: 1, logged_in?: 1, admin?: 1]
     end
   end
 

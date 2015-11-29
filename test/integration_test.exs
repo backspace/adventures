@@ -8,15 +8,6 @@ defmodule Cr2016site.IntegrationTest do
   # Start a Hound session
   hound_session
 
-  test "GET /" do
-    Forge.saved_user email: "francine.pascal@example.com"
-
-    navigate_to "/"
-    assert page_source =~ "Clandestine Rendezvous"
-
-    assert page_source =~ "francine.pascal@example.com"
-  end
-
   test "registering" do
     navigate_to "/"
     click({:link_text, "Register"})
@@ -35,7 +26,6 @@ defmodule Cr2016site.IntegrationTest do
     click({:class, "btn"})
 
     assert visible_text({:css, ".alert-info"}) == "Your account was created"
-    assert page_source =~ "samuel.delaney@example.com"
 
     sent_email = Cr2016site.MailgunHelper.sent_email
     assert sent_email["to"] == "samuel.delaney@example.com"
@@ -66,5 +56,22 @@ defmodule Cr2016site.IntegrationTest do
     assert visible_text({:css, "a.login"}) == "Log in"
     assert visible_text({:css, "a.register"}) == "Register"
     assert visible_text({:css, ".alert-info"}) == "Logged out"
+  end
+
+  test "logging in as an admin" do
+    Forge.saved_user email: "francine.pascal@example.com"
+    Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis"), admin: true
+
+    navigate_to "/"
+
+    assert !(page_source =~ "francine.pascal@example.com")
+
+    click({:link_text, "Log in"})
+
+    fill_field({:id, "email"}, "octavia.butler@example.com")
+    fill_field({:id, "password"}, "Xenogenesis")
+    click({:class, "btn"})
+
+    assert page_source =~ "francine.pascal@example.com"
   end
 end
