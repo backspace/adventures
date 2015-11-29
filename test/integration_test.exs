@@ -66,14 +66,13 @@ defmodule Cr2016site.IntegrationTest do
 
     navigate_to "/"
 
-    assert !(page_source =~ "francine.pascal@example.com")
-
     click({:link_text, "Log in"})
 
     fill_field({:id, "email"}, "octavia.butler@example.com")
     fill_field({:id, "password"}, "Xenogenesis")
     click({:class, "btn"})
 
+    click({:css, "a.users"})
     assert page_source =~ "francine.pascal@example.com"
   end
 end

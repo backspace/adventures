@@ -7,10 +7,3 @@
     <p>Clandestine Rendezvous is an adventure taking place in downtown Toronto’s PATH <em>during the day</em> on Friday, February 5, 2016. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.</p>
   </div>
 </div>
-<%= if admin?(@conn) do %>
-  <ul>
-    <%= for user <- @users do %>
-      <li><%= user.email %></li>
-    <% end %>
-  </ul>
-<% end %>

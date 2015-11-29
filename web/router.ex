@@ -23,6 +23,8 @@ defmodule Cr2016site.Router do
     post   "/login",  SessionController, :create
     delete "/logout", SessionController, :delete
 
+    resources "/users", UserController, only: [:index]
+
     get "/", PageController, :index
   end
 
