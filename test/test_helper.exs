@@ -14,3 +14,22 @@ defmodule Forge do
     email: Sequence.next(:email, &"jh#{&1}@example.com")
   }
 end
+
+defmodule Cr2016site.MailgunHelper do
+  use ExUnit.CaseTemplate
+
+  setup do
+    File.rm Application.get_env(:cr2016site, :mailgun_test_file_path)
+
+    on_exit fn ->
+      File.rm Application.get_env(:cr2016site, :mailgun_test_file_path)
+    end
+
+    :ok
+  end
+
+  def sent_email do
+    mail_text = File.read! Application.get_env(:cr2016site, :mailgun_test_file_path)
+    Poison.Parser.parse! mail_text
+  end
+end

@@ -31,3 +31,5 @@ defmodule Blacksmith.Config do
     Enum.map(list, &Cr2016site.Repo.insert/1)
   end
 end
+
+config :cr2016site, mailgun_mode: :test, mailgun_test_file_path: "test/mailgun.json"

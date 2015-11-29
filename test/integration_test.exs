@@ -1,5 +1,6 @@
 defmodule Cr2016site.IntegrationTest do
   use Cr2016site.ConnCase
+  use Cr2016site.MailgunHelper
 
   # Import Hound helpers
   use Hound.Helpers
@@ -35,6 +36,10 @@ defmodule Cr2016site.IntegrationTest do
 
     assert visible_text({:css, ".alert-info"}) == "Your account was created"
     assert page_source =~ "samuel.delaney@example.com"
+
+    sent_email = Cr2016site.MailgunHelper.sent_email
+    assert sent_email["to"] == "samuel.delaney@example.com"
+    assert sent_email["subject"] == "Welcome!"
   end
 
   test "logging in" do

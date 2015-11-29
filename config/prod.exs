@@ -24,6 +24,9 @@ config :cr2016site, Cr2016site.Repo,
   url: System.get_env("DATABASE_URL"),
   pool_size: 20
 
+config :cr2016site,
+  mailgun_key: System.get_env("MAILGUN_KEY")
+
 # Do not print debug messages in production
 config :logger, level: :info
 
