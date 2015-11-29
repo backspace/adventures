@@ -1,5 +1,8 @@
 language: elixir
 elixir:
   - 1.1.1
+before_install:
+  # Creates an expected file excluded by .gitignore
+  - "touch config/dev.secret.exs"
 before_script:
   - "phantomjs -w &"
