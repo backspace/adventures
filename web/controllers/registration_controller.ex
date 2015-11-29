@@ -14,6 +14,7 @@ defmodule Cr2016site.RegistrationController do
       {:ok, user} ->
         Cr2016site.Mailer.send_welcome_email(user.email)
         conn
+        |> put_session(:current_user, user.id)
         |> put_flash(:info, "Your account was created")
         |> redirect(to: "/")
       {:error, changeset} ->

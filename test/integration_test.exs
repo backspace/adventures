@@ -30,6 +30,8 @@ defmodule Cr2016site.IntegrationTest do
     sent_email = Cr2016site.MailgunHelper.sent_email
     assert sent_email["to"] == "samuel.delaney@example.com"
     assert sent_email["subject"] == "Welcome!"
+
+    assert visible_text({:css, "a.logout"}) == "Log out samuel.delaney@example.com"
   end
 
   test "logging in" do
