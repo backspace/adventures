@@ -35,5 +35,22 @@
 
     <%= render @view_module, @view_template, assigns %>
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
+    <script>
+      // FIXME having to manually include this for DELETE links to work on Travis
+
+      var elements = document.querySelectorAll('[data-submit^=parent]');
+      var len = elements.length;
+
+      for (var i = 0; i < len; ++i) {
+        elements[i].addEventListener('click', function (event) {
+          var message = this.getAttribute("data-confirm");
+          if (message === null || confirm(message)) {
+            this.parentNode.submit();
+          };
+          event.preventDefault();
+          return false;
+        }, false);
+      }
+    </script>
   </body>
 </html>
