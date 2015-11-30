@@ -17,8 +17,7 @@ defmodule Cr2016site.Session do
   end
 
   def current_user(conn) do
-    id = Plug.Conn.get_session(conn, :current_user)
-    if id, do: Cr2016site.Repo.get(User, id)
+    conn.assigns[:current_user_object]
   end
 
   def logged_in?(conn), do: !!current_user(conn)

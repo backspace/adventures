@@ -7,6 +7,7 @@ defmodule Cr2016site.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug Cr2016site.Plugs.CurrentUser
   end
 
   pipeline :api do
