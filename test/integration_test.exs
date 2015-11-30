@@ -2,6 +2,9 @@ defmodule Cr2016site.IntegrationTest do
   use Cr2016site.ConnCase
   use Cr2016site.MailgunHelper
 
+  alias Cr2016site.RegisterPage
+  alias Cr2016site.Nav
+
   # Import Hound helpers
   use Hound.Helpers
 
@@ -13,19 +16,19 @@ defmodule Cr2016site.IntegrationTest do
     click({:link_text, "Register"})
 
     click({:class, "btn"})
-    assert visible_text({:css, ".alert-info"}) == "Unable to create account"
-    assert visible_text({:css, ".errors .email"}) == "Email has invalid format"
-    assert visible_text({:css, ".errors .password"}) == "Password should be at least 5 characters"
+    assert Nav.alert_text == "Unable to create account"
+    assert RegisterPage.email_error == "Email has invalid format"
+    assert RegisterPage.password_error == "Password should be at least 5 characters"
 
-    fill_field({:id, "email"}, "franklin.w.dixon@example.com")
-    click({:class, "btn"})
-    assert visible_text({:css, ".alert-info"}) == "Unable to create account"
+    RegisterPage.fill_email "franklin.w.dixon@example.com"
+    RegisterPage.submit
+    assert Nav.alert_text == "Unable to create account"
 
-    fill_field({:id, "email"}, "samuel.delaney@example.com")
-    fill_field({:id, "password"}, "nestofspiders")
-    click({:class, "btn"})
+    RegisterPage.fill_email "samuel.delaney@example.com"
+    RegisterPage.fill_password "nestofspiders"
+    RegisterPage.submit
 
-    assert visible_text({:css, ".alert-info"}) == "Your account was created"
+    assert Nav.alert_text == "Your account was created"
 
     sent_email = Cr2016site.MailgunHelper.sent_email
     assert sent_email["to"] == "samuel.delaney@example.com"
@@ -82,5 +85,37 @@ defmodule Cr2016site.IntegrationTest do
     navigate_to "/users"
 
     refute page_source =~ "francine.pascal@example.com"
+  end
+end
+
+defmodule Cr2016site.Nav do
+  use Hound.Helpers
+
+  def alert_text do
+    visible_text({:css, ".alert-info"})
+  end
+end
+
+defmodule Cr2016site.RegisterPage do
+  use Hound.Helpers
+
+  def fill_email(email) do
+    fill_field({:id, "email"}, email)
+  end
+
+  def email_error do
+    visible_text({:css, ".errors .email"})
+  end
+
+  def fill_password(password) do
+    fill_field({:id, "password"}, password)
+  end
+
+  def password_error do
+    visible_text({:css, ".errors .password"})
+  end
+
+  def submit do
+    click({:class, "btn"})
   end
 end
