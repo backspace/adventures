@@ -75,4 +75,12 @@ defmodule Cr2016site.IntegrationTest do
     click({:css, "a.users"})
     assert page_source =~ "francine.pascal@example.com"
   end
+
+  test "non-admins cannot access the user list" do
+    Forge.saved_user email: "francine.pascal@example.com"
+
+    navigate_to "/users"
+
+    refute page_source =~ "francine.pascal@example.com"
+  end
 end
