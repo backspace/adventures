@@ -83,6 +83,8 @@ defmodule Cr2016site.IntegrationTest do
   test "non-admins cannot access the user list" do
     Forge.saved_user email: "francine.pascal@example.com"
 
+    assert Nav.users_link.absent?
+
     navigate_to "/users"
 
     refute page_source =~ "francine.pascal@example.com"
@@ -111,8 +113,7 @@ defmodule Cr2016site.Nav do
   end
 
   def users_link do
-    # This is me being lazy
-    %{:click => click({:css, "a.users"})}
+    Cr2016site.Nav.UsersLink
   end
 
   defmodule LogoutLink do
@@ -149,6 +150,20 @@ defmodule Cr2016site.Nav do
 
     def present? do
       apply(Hound.Helpers.Page, :find_element, Tuple.to_list(@selector))
+    end
+  end
+
+  defmodule UsersLink do
+    @selector {:css, "a.users"}
+
+    def click do
+      click @selector
+    end
+
+    def absent? do
+      # FIXME pending a new matcher
+      # https://github.com/HashNuke/hound/issues/56
+      apply(Hound.Helpers.Page, :find_all_elements, Tuple.to_list(@selector)) == []
     end
   end
 end
