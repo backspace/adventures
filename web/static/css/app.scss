@@ -16,15 +16,24 @@ $body-font-family: 'Titillium Web', sans-serif;
 
 .zoom-container {
   overflow: hidden;
+  position: relative;
 
-  img {
+  img, &::after {
     transform: scale(1.2);
     transition: all 1s linear;
     transition-delay: 0.5s;
   }
 
+  &::after {
+    position: absolute;
+    right: 10%;
+    top: 20%;
+    font-size: 2px;
+    content: 'hello';
+  }
+
   &:hover {
-    img {
+    img, &::after {
       transform: scale(6) translate(-10%, 20%);
       transition: all 10s cubic-bezier(1.000, 0.060, 1.000, -0.555);
     }
