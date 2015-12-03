@@ -13,3 +13,20 @@ $body-font-family: 'Titillium Web', sans-serif;
   padding: 0.7rem 1rem;
   line-height: 1;
 }
+
+.zoom-container {
+  overflow: hidden;
+
+  img {
+    transform: scale(1.2);
+    transition: all 1s linear;
+    transition-delay: 0.5s;
+  }
+
+  &:hover {
+    img {
+      transform: scale(6) translate(-10%, 20%);
+      transition: all 10s cubic-bezier(1.000, 0.060, 1.000, -0.555);
+    }
+  }
+}

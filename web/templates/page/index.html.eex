@@ -1,6 +1,10 @@
 <div class='row'>
-  <div class='small-6 columns'>photos</div>
-  <div class='small-6 columns'>
+  <div class='small-3 columns'>
+    <div class='zoom-container'>
+      <img src='/images/placeholder.png'>
+    </div>
+  </div>
+  <div class='small-9 columns'>
     <h1>Clandestine Rendezvous</h1>
     <h4>You are a member of a secret society with a mission of the utmost importance.</h4>
     <h4>You will have encounters with other members around the PATH where you will obtain information to get closer to fulfilling your mission.</h4>
