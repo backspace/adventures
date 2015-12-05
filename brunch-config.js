@@ -57,7 +57,7 @@ exports.config = {
     },
     sass: {
       options: {
-        includePaths: ['node_modules/foundation-sites/scss']
+        includePaths: ['node_modules/foundation-sites/scss', 'node_modules/sass-cubic-bezier-bounding-box/scss']
       }
     }
   },

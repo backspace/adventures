@@ -2,6 +2,8 @@ $body-font-family: 'Titillium Web', sans-serif;
 
 @import 'foundation';
 
+@import 'cbbb';
+
 @include foundation-global-styles;
 
 // TODO foundation-flex-grid wasn’t working?
@@ -14,12 +16,22 @@ $body-font-family: 'Titillium Web', sans-serif;
   line-height: 1;
 }
 
+
+$easing-control-points: 1.000, 0.060, 1.000, -0.555;
+
+$final-scale: 10;
+
+$min-max-y: -cbbb-min-max-y-from-control-list($easing-control-points);
+$min-y: nth($min-max-y, 1);
+
+$initial-scale: 1 - ($final-scale - 1)*$min-y;
+
 .zoom-container {
   overflow: hidden;
   position: relative;
 
   img, &::after {
-    transform: scale(1.2);
+    transform: scale($initial-scale);
     transition: all 1s linear;
     transition-delay: 0.5s;
   }
@@ -28,14 +40,14 @@ $body-font-family: 'Titillium Web', sans-serif;
     position: absolute;
     right: 10%;
     top: 20%;
-    font-size: 2px;
+    font-size: 1px;
     content: 'hello';
   }
 
   &:hover {
     img, &::after {
-      transform: scale(6) translate(-10%, 20%);
-      transition: all 10s cubic-bezier(1.000, 0.060, 1.000, -0.555);
+      transform: scale($final-scale);
+      transition: all 10s cubic-bezier($easing-control-points);
     }
   }
 }
