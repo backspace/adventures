@@ -2,9 +2,9 @@ defmodule Cr2016site.IntegrationTest do
   use Cr2016site.ConnCase
   use Cr2016site.MailgunHelper
 
-  alias Cr2016site.RegisterPage
-  alias Cr2016site.LoginPage
-  alias Cr2016site.Nav
+  alias Cr2016site.Pages.Register
+  alias Cr2016site.Pages.Login
+  alias Cr2016site.Pages.Nav
 
   # Import Hound helpers
   use Hound.Helpers
@@ -16,18 +16,18 @@ defmodule Cr2016site.IntegrationTest do
     navigate_to "/"
     Nav.register_link.click
 
-    RegisterPage.submit
+    Register.submit
     assert Nav.alert_text == "Unable to create account"
-    assert RegisterPage.email_error == "Email has invalid format"
-    assert RegisterPage.password_error == "Password should be at least 5 characters"
+    assert Register.email_error == "Email has invalid format"
+    assert Register.password_error == "Password should be at least 5 characters"
 
-    RegisterPage.fill_email "franklin.w.dixon@example.com"
-    RegisterPage.submit
+    Register.fill_email "franklin.w.dixon@example.com"
+    Register.submit
     assert Nav.alert_text == "Unable to create account"
 
-    RegisterPage.fill_email "samuel.delaney@example.com"
-    RegisterPage.fill_password "nestofspiders"
-    RegisterPage.submit
+    Register.fill_email "samuel.delaney@example.com"
+    Register.fill_password "nestofspiders"
+    Register.submit
 
     assert Nav.alert_text == "Your account was created"
 
@@ -45,14 +45,14 @@ defmodule Cr2016site.IntegrationTest do
     navigate_to "/"
     Nav.login_link.click
 
-    LoginPage.fill_email "octavia.butler@example.com"
-    LoginPage.fill_password "Parable of the Talents"
-    LoginPage.submit
+    Login.fill_email "octavia.butler@example.com"
+    Login.fill_password "Parable of the Talents"
+    Login.submit
 
     assert Nav.alert_text == "Wrong email or password"
 
-    LoginPage.fill_password "Xenogenesis"
-    LoginPage.submit
+    Login.fill_password "Xenogenesis"
+    Login.submit
 
     assert Nav.alert_text == "Logged in"
     assert Nav.logout_link.text == "Log out octavia.butler@example.com"
@@ -72,9 +72,9 @@ defmodule Cr2016site.IntegrationTest do
 
     Nav.login_link.click
 
-    LoginPage.fill_email "octavia.butler@example.com"
-    LoginPage.fill_password "Xenogenesis"
-    LoginPage.submit
+    Login.fill_email "octavia.butler@example.com"
+    Login.fill_password "Xenogenesis"
+    Login.submit
 
     Nav.users_link.click
     assert page_source =~ "francine.pascal@example.com"
@@ -88,122 +88,5 @@ defmodule Cr2016site.IntegrationTest do
     navigate_to "/users"
 
     refute page_source =~ "francine.pascal@example.com"
-  end
-end
-
-defmodule Cr2016site.Nav do
-  use Hound.Helpers
-
-  def alert_text do
-    visible_text({:css, ".alert-info"})
-  end
-
-  def register_link do
-    Cr2016site.Nav.RegisterLink
-  end
-
-  def login_link do
-    Cr2016site.Nav.LoginLink
-  end
-
-  # FIXME there is surely a better way to do this?
-  # macros/DSL to create page objects?
-  def logout_link do
-    Cr2016site.Nav.LogoutLink
-  end
-
-  def users_link do
-    Cr2016site.Nav.UsersLink
-  end
-
-  defmodule LogoutLink do
-    @selector {:css, "a.logout"}
-
-    def text do
-      visible_text(@selector)
-    end
-
-    def click do
-      click(@selector)
-    end
-  end
-
-  defmodule LoginLink do
-    @selector {:css, "a.login"}
-
-    def click do
-      click @selector
-    end
-
-    def present? do
-      # Is this reasonable?
-      apply(Hound.Helpers.Page, :find_element, Tuple.to_list(@selector))
-    end
-  end
-
-  defmodule RegisterLink do
-    @selector {:css, "a.register"}
-
-    def click do
-      click @selector
-    end
-
-    def present? do
-      apply(Hound.Helpers.Page, :find_element, Tuple.to_list(@selector))
-    end
-  end
-
-  defmodule UsersLink do
-    @selector {:css, "a.users"}
-
-    def click do
-      click @selector
-    end
-
-    def absent? do
-      # FIXME pending a new matcher
-      # https://github.com/HashNuke/hound/issues/56
-      apply(Hound.Helpers.Page, :find_all_elements, Tuple.to_list(@selector)) == []
-    end
-  end
-end
-
-defmodule Cr2016site.RegisterPage do
-  use Hound.Helpers
-
-  def fill_email(email) do
-    fill_field({:id, "email"}, email)
-  end
-
-  def email_error do
-    visible_text({:css, ".errors .email"})
-  end
-
-  def fill_password(password) do
-    fill_field({:id, "password"}, password)
-  end
-
-  def password_error do
-    visible_text({:css, ".errors .password"})
-  end
-
-  def submit do
-    click({:class, "btn"})
-  end
-end
-
-defmodule Cr2016site.LoginPage do
-  use Hound.Helpers
-
-  def fill_email(email) do
-    fill_field({:id, "email"}, email)
-  end
-
-  def fill_password(password) do
-    fill_field({:id, "password"}, password)
-  end
-
-  def submit do
-    click({:class, "btn"})
   end
 end
