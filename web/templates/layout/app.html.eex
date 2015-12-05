@@ -20,6 +20,7 @@
             <ul class='dropdown menu'>
               <%= if logged_in?(@conn) do %>
                 <li><%= link "Log out #{current_user(@conn).email}", to: session_path(@conn, :delete), method: :delete, class: "logout" %></li>
+                <li><%= link "Edit details", to: user_path(@conn, :edit), class: "details" %></li>
                 <%= if admin?(@conn) do %>
                   <li><%= link "Users", to: user_path(@conn, :index), class: "users" %></li>
                 <% end %>

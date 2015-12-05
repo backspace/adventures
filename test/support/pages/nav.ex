@@ -23,6 +23,10 @@ defmodule Cr2016site.Pages.Nav do
     Cr2016site.Pages.Nav.UsersLink
   end
 
+  def edit_details do
+    click {:css, "a.details"}
+  end
+
   defmodule LogoutLink do
     @selector {:css, "a.logout"}
 

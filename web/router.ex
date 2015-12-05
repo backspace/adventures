@@ -25,6 +25,7 @@ defmodule Cr2016site.Router do
     delete "/logout", SessionController, :delete
 
     resources "/users", UserController, only: [:index]
+    get  "/details", UserController, :edit
 
     get "/", PageController, :index
   end
