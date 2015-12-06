@@ -27,6 +27,8 @@ defmodule Cr2016site.TeamFinder do
     invalids = String.split(current_user.team_emails || "")
     |> Enum.reject(fn(string) -> Regex.match?(~r/^\s*([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\s*$/i, string) end)
 
-    %{proposers: proposers, mutuals: mutuals, proposals_by_mutuals: proposals_by_mutuals, invalids: invalids}
+    proposees = users_from_email_list(current_user.team_emails || "", users) -- users_with_current
+
+    %{proposers: proposers, mutuals: mutuals, proposals_by_mutuals: proposals_by_mutuals, invalids: invalids, proposees: proposees}
   end
 end

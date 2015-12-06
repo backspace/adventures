@@ -21,6 +21,11 @@ defmodule Cr2016site.Pages.Details do
     |> Enum.map(&(email_and_text_row(&1)))
   end
 
+  def proposees do
+    find_all_elements(:css, ".proposees tr")
+    |> Enum.map(&(email_and_text_row(&1)))
+  end
+
   def fill_team_emails(team_emails) do
     fill_field({:id, "team_emails"}, team_emails)
   end

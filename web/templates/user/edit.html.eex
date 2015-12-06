@@ -38,6 +38,14 @@
           </tr>
         <% end %>
       </tbody>
+      <tbody class='proposees'>
+        <%= for user <- @relationships.proposees do %>
+          <tr>
+            <td class='email'><%= user.email %></td>
+            <td class='text'>This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer.</td>
+          </tr>
+        <% end %>
+      </tbody>
       <tbody class='invalids'>
         <%= for invalid <- @relationships.invalids do %>
           <tr>

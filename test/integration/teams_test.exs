@@ -19,6 +19,8 @@ defmodule Cr2016site.Integration.Teams do
 
     Forge.saved_user email: "sadik@example.com", team_emails: "takver@example.com"
 
+    Forge.saved_user email: "sabul@example.com"
+
     Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
 
     navigate_to "/"
@@ -26,7 +28,7 @@ defmodule Cr2016site.Integration.Teams do
     Login.login_as "takver@example.com", "Anarres"
 
     Nav.edit_details
-    Details.fill_team_emails "shevek@example.com bedap@example.com nooo"
+    Details.fill_team_emails "shevek@example.com bedap@example.com sabul@example.com nooo"
     Details.submit
 
     assert Nav.alert_text == "Your details were saved"
@@ -52,5 +54,9 @@ defmodule Cr2016site.Integration.Teams do
     [invalid] = Details.invalids
     assert invalid.email == "nooo"
     assert invalid.text == "This doesn’t seem like a valid email address!"
+
+    [proposee] = Details.proposees
+    assert proposee.email == "sabul@example.com"
+    assert proposee.text == "This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer."
   end
 end
