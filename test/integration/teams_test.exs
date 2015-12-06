@@ -13,7 +13,9 @@ defmodule Cr2016site.Integration.Teams do
 
   test "teams are negotiable" do
     Forge.saved_user email: "shevek@example.com", team_emails: "takver@example.com"
-    Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+    Forge.saved_user email: "sadik@example.com", team_emails: "takver@example.com"
+
+    Forge.saved_user email: "takver@example.com", team_emails: "shevek@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
 
     navigate_to "/"
 
@@ -25,6 +27,7 @@ defmodule Cr2016site.Integration.Teams do
 
     Nav.edit_details
 
-    assert Details.proposers == "shevek@example.com"
+    assert Details.mutuals == "shevek@example.com"
+    assert Details.proposers == "sadik@example.com"
   end
 end

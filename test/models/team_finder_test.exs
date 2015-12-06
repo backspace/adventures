@@ -3,14 +3,19 @@ defmodule Cr2016site.TeamFinderTest do
 
   alias Cr2016site.TeamFinder
 
-  test "finds users proposing teaming up" do
-    current = %{email: "A"}
+  test "finds mutuals and users proposing teaming up" do
+    current = %{email: "A", team_emails: "B"}
 
-    has = %{team_emails: "A"}
-    has_not = %{team_emails: "C"}
+    mutual = %{email: "B", team_emails: "A"}
+    proposer = %{email: "C", team_emails: "A"}
 
-    users = [has, has_not]
+    has_not = %{email: "X", team_emails: "Y"}
 
-    assert TeamFinder.relationships(current, users).proposers == [has]
+    users = [mutual, proposer, has_not]
+
+    relationships = TeamFinder.relationships(current, users)
+
+    assert relationships.proposers == [proposer]
+    assert relationships.mutuals == [mutual]
   end
 end

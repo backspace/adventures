@@ -6,5 +6,11 @@
         <li><%= user.email %></li>
       <% end %>
     </ul>
+    <h2>Mutuals</h2>
+    <ul class='mutuals'>
+      <%= for user <- @relationships.mutuals do %>
+        <li><%= user.email %></li>
+      <% end %>
+    </ul>
   </div>
 </div>
