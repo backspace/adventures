@@ -16,4 +16,12 @@ defmodule Cr2016site.UserView do
       "conflict"
     end
   end
+
+  def symbol_for_attribute(u1, u2, attribute) do
+    if Map.get(u1, attribute) == Map.get(u2, attribute) do
+      "✓"
+    else
+      "✘"
+    end
+  end
 end

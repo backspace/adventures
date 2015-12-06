@@ -44,13 +44,13 @@ defmodule Cr2016site.Integration.Teams do
 
     assert shevek.email == "shevek@example.com"
     assert shevek.symbol == "✓"
-    assert shevek.proposed_team_name.value == "Sequency"
+    assert shevek.proposed_team_name.value == "✘ Sequency"
     assert shevek.proposed_team_name.conflict?
     refute shevek.proposed_team_name.agreement?
 
     assert bedap.email == "bedap@example.com"
     assert bedap.symbol == "✓"
-    assert bedap.proposed_team_name.value == "Simultaneity"
+    assert bedap.proposed_team_name.value == "✓ Simultaneity"
     refute bedap.proposed_team_name.conflict?
     assert bedap.proposed_team_name.agreement?
 
