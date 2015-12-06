@@ -7,11 +7,13 @@
       <% end %>
     </ul>
     <h2>Mutuals</h2>
-    <ul class='mutuals'>
+    <table class='mutuals'>
       <%= for user <- @relationships.mutuals do %>
-        <li><%= user.email %></li>
+        <tr>
+          <td class='email'><%= user.email %></td>
+        </tr>
       <% end %>
-    </ul>
+    </table>
     <h2>Proposals by Mutuals</h2>
     <ul class='proposals-by-mutuals'>
       <%= for {proposal, mutuals} <- @relationships.proposals_by_mutuals do %>

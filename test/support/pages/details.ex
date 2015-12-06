@@ -6,8 +6,8 @@ defmodule Cr2016site.Pages.Details do
   end
 
   def mutuals do
-    find_all_elements(:css, ".mutuals li")
-    |> Enum.map(fn(e) -> visible_text(e) end)
+    find_all_elements(:css, ".mutuals tr")
+    |> Enum.map(&(%{email: visible_text(find_within_element(&1, :css, ".email"))}))
   end
 
   def proposals_by_mutuals do
