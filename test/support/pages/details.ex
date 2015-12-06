@@ -12,6 +12,7 @@ defmodule Cr2016site.Pages.Details do
       proposed_team_name_element = find_within_element(row, :css, ".proposed-team-name")
       %{
         email: visible_text(find_within_element(row, :css, ".email")),
+        symbol: visible_text(find_within_element(row, :css, ".symbol")),
         proposed_team_name: %{
           value: visible_text(proposed_team_name_element),
           conflict?: String.contains?(attribute_value(proposed_team_name_element, "class"), "conflict"),
@@ -49,6 +50,10 @@ defmodule Cr2016site.Pages.Details do
   end
 
   defp email_and_text_row(row) do
-    %{email: visible_text(find_within_element(row, :css, ".email")), text: visible_text(find_within_element(row, :css, ".text"))}
+    %{
+      email: visible_text(find_within_element(row, :css, ".email")),
+      symbol: visible_text(find_within_element(row, :css, ".symbol")),
+      text: visible_text(find_within_element(row, :css, ".text"))
+    }
   end
 end

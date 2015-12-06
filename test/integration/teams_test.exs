@@ -43,37 +43,45 @@ defmodule Cr2016site.Integration.Teams do
     [shevek, bedap] = Details.mutuals
 
     assert shevek.email == "shevek@example.com"
+    assert shevek.symbol == "✓"
     assert shevek.proposed_team_name.value == "Sequency"
     assert shevek.proposed_team_name.conflict?
     refute shevek.proposed_team_name.agreement?
 
     assert bedap.email == "bedap@example.com"
+    assert bedap.symbol == "✓"
     assert bedap.proposed_team_name.value == "Simultaneity"
     refute bedap.proposed_team_name.conflict?
     assert bedap.proposed_team_name.agreement?
 
     [sadik] = Details.proposers
     assert sadik.email == "sadik@example.com"
+    assert sadik.symbol == "?"
     assert sadik.text == "This person has you listed in their team. Add their address to your team emails list if you agree."
 
     [rulag, tuio] = Details.proposals_by_mutuals
 
     assert rulag.email == "rulag@example.com"
+    assert rulag.symbol == "?"
     assert rulag.text == "shevek@example.com has this address in their team emails list. Add it if you agree."
 
     assert tuio.email == "tuio@example.com"
+    assert rulag.symbol == "?"
     assert tuio.text == "shevek@example.com and bedap@example.com have this address in their team emails lists. Add it if you agree."
 
     [invalid] = Details.invalids
     assert invalid.email == "nooo"
+    assert invalid.symbol == "✘"
     assert invalid.text == "This doesn’t seem like a valid email address!"
 
     [sabul, laia] = Details.proposees
 
     assert sabul.email == "sabul@example.com"
+    assert sabul.symbol == "✘"
     assert sabul.text == "This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer."
 
     assert laia.email == "laia@example.com"
+    assert sabul.symbol == "✘"
     assert laia.text == "This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer."
   end
 end
