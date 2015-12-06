@@ -6,6 +6,10 @@
         <%= textarea f, :team_emails, id: "team_emails", class: "form-control" %>
       </div>
       <div class="form-group">
+        <label>Proposed team name</label>
+        <%= textarea f, :proposed_team_name, id: "proposed_team_name", class: "form-control" %>
+      </div>
+      <div class="form-group">
         <%= submit "Save Details", class: "btn btn-primary" %>
       </div>
     <% end %>
@@ -18,7 +22,7 @@
         <%= for user <- @relationships.mutuals do %>
           <tr>
             <td class='email'><%= user.email %></td>
-            <td>Mutual, harmonisation to come</td>
+            <td class='proposed-team-name <%= class_for_attribute(@user, user, :proposed_team_name) %>'><%= user.proposed_team_name %></td>
           </tr>
         <% end %>
       </tbody>

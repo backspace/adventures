@@ -12,8 +12,14 @@ defmodule Cr2016site.Integration.Teams do
   hound_session
 
   test "teams are negotiable" do
-    Forge.saved_user email: "shevek@example.com", team_emails: "takver@example.com bedap@example.com tuio@example.com rulag@example.com"
-    Forge.saved_user email: "bedap@example.com", team_emails: "takver@example.com shevek@example.com tuio@example.com"
+    Forge.saved_user email: "shevek@example.com",
+                     team_emails: "takver@example.com bedap@example.com tuio@example.com rulag@example.com",
+                     proposed_team_name: "Sequency"
+
+    Forge.saved_user email: "bedap@example.com",
+                     team_emails: "takver@example.com shevek@example.com tuio@example.com",
+                     proposed_team_name: "Simultaneity"
+
     Forge.saved_user email: "tuio@example.com", team_emails: "shevek@example.com"
     Forge.saved_user email: "rulag@example.com", team_emails: "shevek@example.com"
 
@@ -29,6 +35,7 @@ defmodule Cr2016site.Integration.Teams do
 
     Nav.edit_details
     Details.fill_team_emails "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"
+    Details.fill_proposed_team_name "Simultaneity"
     Details.submit
 
     assert Nav.alert_text == "Your details were saved"
@@ -36,8 +43,14 @@ defmodule Cr2016site.Integration.Teams do
     [shevek, bedap] = Details.mutuals
 
     assert shevek.email == "shevek@example.com"
+    assert shevek.proposed_team_name.value == "Sequency"
+    assert shevek.proposed_team_name.conflict?
+    refute shevek.proposed_team_name.agreement?
 
     assert bedap.email == "bedap@example.com"
+    assert bedap.proposed_team_name.value == "Simultaneity"
+    refute bedap.proposed_team_name.conflict?
+    assert bedap.proposed_team_name.agreement?
 
     [sadik] = Details.proposers
     assert sadik.email == "sadik@example.com"

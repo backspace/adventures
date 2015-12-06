@@ -9,12 +9,13 @@ defmodule Cr2016site.User do
     field :admin, :boolean
 
     field :team_emails, :string
+    field :proposed_team_name, :string
 
     timestamps
   end
 
   @required_fields ~w(email password)
-  @optional_fields ~w(team_emails)
+  @optional_fields ~w(team_emails proposed_team_name)
 
   @doc """
   Creates a changeset based on the `model` and `params`.

@@ -8,4 +8,12 @@ defmodule Cr2016site.UserView do
       "#{Crutches.Format.List.as_sentence(Enum.map(mutuals, &(&1.email)))} have this address in their team emails lists."
     end
   end
+
+  def class_for_attribute(u1, u2, attribute) do
+    if Map.get(u1, attribute) == Map.get(u2, attribute) do
+      "agreement"
+    else
+      "conflict"
+    end
+  end
 end

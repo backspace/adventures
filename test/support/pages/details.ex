@@ -8,7 +8,17 @@ defmodule Cr2016site.Pages.Details do
 
   def mutuals do
     find_all_elements(:css, ".mutuals tr")
-    |> Enum.map(&(%{email: visible_text(find_within_element(&1, :css, ".email"))}))
+    |> Enum.map(fn(row) ->
+      proposed_team_name_element = find_within_element(row, :css, ".proposed-team-name")
+      %{
+        email: visible_text(find_within_element(row, :css, ".email")),
+        proposed_team_name: %{
+          value: visible_text(proposed_team_name_element),
+          conflict?: String.contains?(attribute_value(proposed_team_name_element, "class"), "conflict"),
+          agreement?: String.contains?(attribute_value(proposed_team_name_element, "class"), "agreement")
+        }
+      }
+    end)
   end
 
   def proposals_by_mutuals do
@@ -28,6 +38,10 @@ defmodule Cr2016site.Pages.Details do
 
   def fill_team_emails(team_emails) do
     fill_field({:id, "team_emails"}, team_emails)
+  end
+
+  def fill_proposed_team_name(proposed_team_name) do
+    fill_field({:id, "proposed_team_name"}, proposed_team_name)
   end
 
   def submit do
