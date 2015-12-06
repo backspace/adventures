@@ -12,7 +12,9 @@ defmodule Cr2016site.Integration.Teams do
   hound_session
 
   test "teams are negotiable" do
-    Forge.saved_user email: "shevek@example.com", team_emails: "takver@example.com"
+    Forge.saved_user email: "shevek@example.com", team_emails: "takver@example.com tuio@example.com"
+    Forge.saved_user email: "tuio@example.com", team_emails: "shevek@example.com"
+
     Forge.saved_user email: "sadik@example.com", team_emails: "takver@example.com"
 
     Forge.saved_user email: "takver@example.com", team_emails: "shevek@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
@@ -29,5 +31,6 @@ defmodule Cr2016site.Integration.Teams do
 
     assert Details.mutuals == "shevek@example.com"
     assert Details.proposers == "sadik@example.com"
+    assert Details.proposals_by_mutuals == "tuio@example.com: 1"
   end
 end

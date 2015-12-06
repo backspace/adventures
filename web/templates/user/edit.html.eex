@@ -12,5 +12,11 @@
         <li><%= user.email %></li>
       <% end %>
     </ul>
+    <h2>Proposals by Mutuals</h2>
+    <ul class='proposals-by-mutuals'>
+      <%= for {user, count} <- @relationships.proposals_by_mutuals do %>
+        <li><%= user.email %>: <%= count %></li>
+      <% end %>
+    </ul>
   </div>
 </div>

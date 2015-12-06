@@ -8,4 +8,8 @@ defmodule Cr2016site.Pages.Details do
   def mutuals do
     visible_text {:css, ".mutuals"}
   end
+
+  def proposals_by_mutuals do
+    visible_text {:css, ".proposals-by-mutuals"}
+  end
 end
