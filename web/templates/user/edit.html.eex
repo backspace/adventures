@@ -13,31 +13,31 @@
 </div>
 <div class='row'>
   <div class='small-12 columns'>
-    <h2>Proposers</h2>
-    <table class='proposers'>
-      <%= for user <- @relationships.proposers do %>
-        <tr>
-          <td class='email'><%= user.email %></td>
-          <td class='text'>This person has you listed in their team. Add their address to your team emails list if you agree.</td>
-        </tr>
-      <% end %>
-    </table>
-    <h2>Mutuals</h2>
-    <table class='mutuals'>
-      <%= for user <- @relationships.mutuals do %>
-        <tr>
-          <td class='email'><%= user.email %></td>
-        </tr>
-      <% end %>
-    </table>
-    <h2>Proposals by Mutuals</h2>
-    <table class='proposals-by-mutuals'>
-      <%= for {proposal, mutuals} <- @relationships.proposals_by_mutuals do %>
-        <tr>
-          <td class='email'><%= proposal.email %></td>
-          <td class='text'><%= proposal_by_mutual_sentence(mutuals) %> Add it if you agree.</td>
-        </tr>
-      <% end %>
+    <table>
+      <tbody class='mutuals'>
+        <%= for user <- @relationships.mutuals do %>
+          <tr>
+            <td class='email'><%= user.email %></td>
+            <td>Mutual, harmonisation to come</td>
+          </tr>
+        <% end %>
+      </tbody>
+      <tbody class='proposers'>
+        <%= for user <- @relationships.proposers do %>
+          <tr>
+            <td class='email'><%= user.email %></td>
+            <td class='text'>This person has you listed in their team. Add their address to your team emails list if you agree.</td>
+          </tr>
+        <% end %>
+      </tbody>
+      <tbody class='proposals-by-mutuals'>
+        <%= for {proposal, mutuals} <- @relationships.proposals_by_mutuals do %>
+          <tr>
+            <td class='email'><%= proposal.email %></td>
+            <td class='text'><%= proposal_by_mutual_sentence(mutuals) %> Add it if you agree.</td>
+          </tr>
+        <% end %>
+      </tbody>
     </table>
   </div>
 </div>
