@@ -37,11 +37,11 @@ defmodule Cr2016site.Pages.Details do
   end
 
   def fill_team_emails(team_emails) do
-    fill_field({:id, "team_emails"}, team_emails)
+    fill_field({:id, "team-emails"}, team_emails)
   end
 
   def fill_proposed_team_name(proposed_team_name) do
-    fill_field({:id, "proposed_team_name"}, proposed_team_name)
+    fill_field({:id, "proposed-team-name"}, proposed_team_name)
   end
 
   def submit do
