@@ -2,7 +2,8 @@ defmodule Cr2016site.Pages.Details do
   use Hound.Helpers
 
   def proposers do
-    visible_text {:css, ".proposers"}
+    find_all_elements(:css, ".proposers tr")
+    |> Enum.map(&(%{email: visible_text(find_within_element(&1, :css, ".email"))}))
   end
 
   def mutuals do
@@ -11,8 +12,8 @@ defmodule Cr2016site.Pages.Details do
   end
 
   def proposals_by_mutuals do
-    find_all_elements(:css, ".proposals-by-mutuals li")
-    |> Enum.map(&(visible_text(&1)))
+    find_all_elements(:css, ".proposals-by-mutuals tr")
+    |> Enum.map(&(%{email: visible_text(find_within_element(&1, :css, ".email")), text: visible_text(find_within_element(&1, :css, ".text"))}))
   end
 
   def fill_team_emails(team_emails) do

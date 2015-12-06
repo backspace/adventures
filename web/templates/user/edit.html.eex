@@ -14,11 +14,13 @@
 <div class='row'>
   <div class='small-12 columns'>
     <h2>Proposers</h2>
-    <ul class='proposers'>
+    <table class='proposers'>
       <%= for user <- @relationships.proposers do %>
-        <li><%= user.email %></li>
+        <tr>
+          <td class='email'><%= user.email %></td>
+        </tr>
       <% end %>
-    </ul>
+    </table>
     <h2>Mutuals</h2>
     <table class='mutuals'>
       <%= for user <- @relationships.mutuals do %>
@@ -28,10 +30,13 @@
       <% end %>
     </table>
     <h2>Proposals by Mutuals</h2>
-    <ul class='proposals-by-mutuals'>
+    <table class='proposals-by-mutuals'>
       <%= for {proposal, mutuals} <- @relationships.proposals_by_mutuals do %>
-        <li><%= proposal.email %>: <%= proposal_by_mutual_sentence(mutuals) %> Add it if you agree.</li>
+        <tr>
+          <td class='email'><%= proposal.email %></td>
+          <td class='text'><%= proposal_by_mutual_sentence(mutuals) %> Add it if you agree.</td>
+        </tr>
       <% end %>
-    </ul>
+    </table>
   </div>
 </div>
