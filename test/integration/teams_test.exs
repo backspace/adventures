@@ -26,7 +26,7 @@ defmodule Cr2016site.Integration.Teams do
     Login.login_as "takver@example.com", "Anarres"
 
     Nav.edit_details
-    Details.fill_team_emails "shevek@example.com bedap@example.com"
+    Details.fill_team_emails "shevek@example.com bedap@example.com nooo"
     Details.submit
 
     assert Nav.alert_text == "Your details were saved"
@@ -48,5 +48,9 @@ defmodule Cr2016site.Integration.Teams do
 
     assert tuio.email == "tuio@example.com"
     assert tuio.text == "shevek@example.com and bedap@example.com have this address in their team emails lists. Add it if you agree."
+
+    [invalid] = Details.invalids
+    assert invalid.email == "nooo"
+    assert invalid.text == "This doesn’t seem like a valid email address!"
   end
 end
