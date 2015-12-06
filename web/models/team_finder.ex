@@ -24,10 +24,12 @@ defmodule Cr2016site.TeamFinder do
       merged
     end)
 
-    invalids = String.split(current_user.team_emails || "")
-    |> Enum.reject(fn(string) -> Regex.match?(~r/^\s*([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\s*$/i, string) end)
+    emails = String.split(current_user.team_emails || "")
 
-    proposees = users_from_email_list(current_user.team_emails || "", users) -- users_with_current
+    invalids = Enum.reject(emails, fn(string) -> Regex.match?(~r/^\s*([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\s*$/i, string) end)
+
+    proposees = ((emails -- invalids) -- Enum.map(users_with_current, &(&1.email)))
+    |> Enum.map(&(%{email: &1}))
 
     %{proposers: proposers, mutuals: mutuals, proposals_by_mutuals: proposals_by_mutuals, invalids: invalids, proposees: proposees}
   end

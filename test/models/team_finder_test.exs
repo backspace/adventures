@@ -4,7 +4,7 @@ defmodule Cr2016site.TeamFinderTest do
   alias Cr2016site.TeamFinder
 
   test "finds mutuals and users proposing teaming up" do
-    current = %{email: "A@e.co", team_emails: "M1@e.co M2@e.co P@e.co XX YY"}
+    current = %{email: "A@e.co", team_emails: "M1@e.co M2@e.co P@e.co Z@e.co XX YY"}
 
     mutual_one = %{email: "M1@e.co", team_emails: "A@e.co M3@e.co M4@e.co"}
     mutual_two = %{email: "M2@e.co", team_emails: "A@e.co M3@e.co"}
@@ -24,7 +24,7 @@ defmodule Cr2016site.TeamFinderTest do
     assert relationships.proposers == [proposer]
     assert relationships.mutuals == [mutual_one, mutual_two]
     assert relationships.proposals_by_mutuals == Enum.into([{mutual_proposal_one, [mutual_one, mutual_two]}, {mutual_proposal_two, [mutual_one]}], %{})
-    assert relationships.proposees == [proposee]
+    assert relationships.proposees == [%{email: proposee.email}, %{email: "Z@e.co"}]
     assert relationships.invalids == ["XX", "YY"]
   end
 
