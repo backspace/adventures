@@ -47,7 +47,8 @@ defmodule Cr2016site.Mixfile do
      {:blacksmith, github: "batate/blacksmith"},
      {:comeonin, "~> 1.0"},
      {:mailgun, "~> 0.1.1"},
-     {:poison, "~> 1.5"}]
+     {:poison, "~> 1.5"},
+     {:crutches, "~> 1.0.0"}]
   end
 
   # Aliases are shortcut or tasks specific to the current project.
