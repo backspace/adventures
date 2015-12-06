@@ -16,10 +16,10 @@ defmodule Cr2016site.TeamFinder do
       user_proposals = users_from_email_list(user.team_emails, users)
       not_mutuals = (user_proposals -- mutuals) -- [current_user]
 
-      counts_for_this_user = Enum.map(not_mutuals, fn(not_mutual) -> {not_mutual, 1} end)
+      proposers_for_this_mutual = Enum.map(not_mutuals, fn(not_mutual) -> {not_mutual, [user]} end)
       |> Enum.into(%{})
 
-      merged = Map.merge(counts_for_this_user, acc, fn(_key, c1, c2) -> c1 + c2 end)
+      merged = Map.merge(proposers_for_this_mutual, acc, fn(_key, c1, c2) -> c2 ++ c1 end)
 
       merged
     end)

@@ -14,8 +14,8 @@
     </ul>
     <h2>Proposals by Mutuals</h2>
     <ul class='proposals-by-mutuals'>
-      <%= for {user, count} <- @relationships.proposals_by_mutuals do %>
-        <li><%= user.email %>: <%= count %></li>
+      <%= for {proposal, mutuals} <- @relationships.proposals_by_mutuals do %>
+        <li><%= proposal.email %>: <%= hd(mutuals).email %> has this address in their team emails list. Add it if you agree.</li>
       <% end %>
     </ul>
   </div>

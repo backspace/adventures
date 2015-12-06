@@ -21,7 +21,7 @@ defmodule Cr2016site.TeamFinderTest do
 
     assert relationships.proposers == [proposer]
     assert relationships.mutuals == [mutual_one, mutual_two]
-    assert relationships.proposals_by_mutuals == Enum.into([{mutual_proposal_one, 2}, {mutual_proposal_two, 1}], %{})
+    assert relationships.proposals_by_mutuals == Enum.into([{mutual_proposal_one, [mutual_one, mutual_two]}, {mutual_proposal_two, [mutual_one]}], %{})
   end
 
   test "finds users from emails" do
