@@ -12,4 +12,12 @@ defmodule Cr2016site.Pages.Login do
   def submit do
     click({:class, "btn"})
   end
+
+  def login_as(email, password) do
+    Cr2016site.Pages.Nav.login_link.click
+
+    fill_email email
+    fill_password password
+    submit
+  end
 end

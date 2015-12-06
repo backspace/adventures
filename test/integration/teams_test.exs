@@ -23,11 +23,7 @@ defmodule Cr2016site.Integration.Teams do
 
     navigate_to "/"
 
-    Nav.login_link.click
-
-    Login.fill_email "takver@example.com"
-    Login.fill_password "Anarres"
-    Login.submit
+    Login.login_as "takver@example.com", "Anarres"
 
     Nav.edit_details
 
