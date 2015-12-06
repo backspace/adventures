@@ -19,13 +19,17 @@ defmodule Cr2016site.Integration.Teams do
 
     Forge.saved_user email: "sadik@example.com", team_emails: "takver@example.com"
 
-    Forge.saved_user email: "takver@example.com", team_emails: "shevek@example.com bedap@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+    Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
 
     navigate_to "/"
 
     Login.login_as "takver@example.com", "Anarres"
 
     Nav.edit_details
+    Details.fill_team_emails "shevek@example.com bedap@example.com"
+    Details.submit
+
+    assert Nav.alert_text == "Your details were saved"
 
     [shevek, bedap] = Details.mutuals
 

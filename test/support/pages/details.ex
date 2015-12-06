@@ -14,4 +14,12 @@ defmodule Cr2016site.Pages.Details do
     find_all_elements(:css, ".proposals-by-mutuals li")
     |> Enum.map(&(visible_text(&1)))
   end
+
+  def fill_team_emails(team_emails) do
+    fill_field({:id, "team_emails"}, team_emails)
+  end
+
+  def submit do
+    click({:class, "btn"})
+  end
 end

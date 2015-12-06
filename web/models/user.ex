@@ -29,4 +29,9 @@ defmodule Cr2016site.User do
     |> validate_format(:email, ~r/@/)
     |> validate_length(:password, min: 5)
   end
+
+  def details_changeset(model, params \\ :empty) do
+    model
+    |> cast(params, [], @optional_fields)
+  end
 end

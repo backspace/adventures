@@ -1,5 +1,18 @@
 <div class='row'>
   <div class='small-12 columns'>
+    <%= form_for @changeset, user_path(@conn, :update), fn f -> %>
+      <div class="form-group">
+        <label>Team emails</label>
+        <%= textarea f, :team_emails, id: "team_emails", class: "form-control" %>
+      </div>
+      <div class="form-group">
+        <%= submit "Save Details", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+<div class='row'>
+  <div class='small-12 columns'>
     <h2>Proposers</h2>
     <ul class='proposers'>
       <%= for user <- @relationships.proposers do %>
