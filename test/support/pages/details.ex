@@ -3,7 +3,7 @@ defmodule Cr2016site.Pages.Details do
 
   def proposers do
     find_all_elements(:css, ".proposers tr")
-    |> Enum.map(&(%{email: visible_text(find_within_element(&1, :css, ".email"))}))
+    |> Enum.map(&(email_and_text_row(&1)))
   end
 
   def mutuals do
@@ -13,7 +13,7 @@ defmodule Cr2016site.Pages.Details do
 
   def proposals_by_mutuals do
     find_all_elements(:css, ".proposals-by-mutuals tr")
-    |> Enum.map(&(%{email: visible_text(find_within_element(&1, :css, ".email")), text: visible_text(find_within_element(&1, :css, ".text"))}))
+    |> Enum.map(&(email_and_text_row(&1)))
   end
 
   def fill_team_emails(team_emails) do
@@ -22,5 +22,9 @@ defmodule Cr2016site.Pages.Details do
 
   def submit do
     click({:class, "btn"})
+  end
+
+  defp email_and_text_row(row) do
+    %{email: visible_text(find_within_element(row, :css, ".email")), text: visible_text(find_within_element(row, :css, ".text"))}
   end
 end

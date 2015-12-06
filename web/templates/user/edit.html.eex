@@ -18,6 +18,7 @@
       <%= for user <- @relationships.proposers do %>
         <tr>
           <td class='email'><%= user.email %></td>
+          <td class='text'>This person has you listed in their team. Add their address to your team emails list if you agree.</td>
         </tr>
       <% end %>
     </table>

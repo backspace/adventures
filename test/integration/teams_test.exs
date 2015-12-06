@@ -37,7 +37,9 @@ defmodule Cr2016site.Integration.Teams do
 
     assert bedap.email == "bedap@example.com"
 
-    assert hd(Details.proposers).email == "sadik@example.com"
+    [sadik] = Details.proposers
+    assert sadik.email == "sadik@example.com"
+    assert sadik.text == "This person has you listed in their team. Add their address to your team emails list if you agree."
 
     [rulag, tuio] = Details.proposals_by_mutuals
 
