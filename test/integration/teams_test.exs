@@ -29,7 +29,7 @@ defmodule Cr2016site.Integration.Teams do
 
     Nav.edit_details
 
-    assert Details.mutuals == "shevek@example.com"
+    assert Details.mutuals == ["shevek@example.com"]
     assert Details.proposers == "sadik@example.com"
     assert Details.proposals_by_mutuals == "tuio@example.com: shevek@example.com has this address in their team emails list. Add it if you agree."
   end
