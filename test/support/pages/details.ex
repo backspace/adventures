@@ -11,6 +11,7 @@ defmodule Cr2016site.Pages.Details do
   end
 
   def proposals_by_mutuals do
-    visible_text {:css, ".proposals-by-mutuals"}
+    find_all_elements(:css, ".proposals-by-mutuals li")
+    |> Enum.map(&(visible_text(&1)))
   end
 end
