@@ -1,7 +1,10 @@
 <div class='row'>
   <div class='small-12 columns'>
+    <h2>Proposers</h2>
     <ul class='proposers'>
-      <li>shevek@example.com</li>
+      <%= for user <- @relationships.proposers do %>
+        <li><%= user.email %></li>
+      <% end %>
     </ul>
   </div>
 </div>

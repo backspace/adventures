@@ -12,7 +12,7 @@ defmodule Cr2016site.Integration.Teams do
   hound_session
 
   test "teams are negotiable" do
-    Forge.saved_user email: "shevek@example.com"
+    Forge.saved_user email: "shevek@example.com", team_emails: "takver@example.com"
     Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
 
     navigate_to "/"

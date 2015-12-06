@@ -9,6 +9,9 @@ defmodule Cr2016site.UserController do
   end
 
   def edit(conn, _) do
-    render conn, "edit.html"
+    users = Repo.all(Cr2016site.User)
+    current_user = conn.assigns[:current_user_object]
+
+    render conn, "edit.html", user: current_user, relationships: Cr2016site.TeamFinder.relationships(current_user, users)
   end
 end
