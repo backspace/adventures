@@ -83,5 +83,11 @@ defmodule Cr2016site.Integration.Teams do
     assert laia.email == "laia@example.com"
     assert sabul.symbol == "✘"
     assert laia.text == "This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer."
+
+
+    sadik.add.()
+    Details.submit
+
+    assert length(Details.mutuals) == 3
   end
 end

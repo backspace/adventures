@@ -53,7 +53,8 @@ defmodule Cr2016site.Pages.Details do
     %{
       email: visible_text(find_within_element(row, :css, ".email")),
       symbol: visible_text(find_within_element(row, :css, ".symbol")),
-      text: visible_text(find_within_element(row, :css, ".text"))
+      text: visible_text(find_within_element(row, :css, ".text")),
+      add: fn -> click(find_within_element(row, :css, "a")) end
     }
   end
 end

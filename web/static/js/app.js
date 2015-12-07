@@ -19,3 +19,16 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 // paths "./socket" or full ones "web/static/js/socket".
 
 // import socket from "./socket"
+
+$(() => {
+  $("*[data-action=add-email]").click(function() {
+    const email = $(this).closest("tr").children(".email").text();
+
+    const teamEmails = $("#team-emails");
+    const currentValue = teamEmails.val();
+
+    if (currentValue.indexOf(email) == -1) {
+      teamEmails.val(`${currentValue} ${email}`);
+    }
+  });
+});

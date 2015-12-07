@@ -39,7 +39,7 @@
           <tr>
             <td class='email'><%= user.email %></td>
             <td class='symbol'>?</td>
-            <td class='text'>This person has you listed in their team. Add their address to your team emails list if you agree.</td>
+            <td class='text'>This person has you listed in their team. <a data-action='add-email'>Add their address to your team emails list</a> if you agree.</td>
           </tr>
         <% end %>
       </tbody>
@@ -48,7 +48,7 @@
           <tr>
             <td class='email'><%= proposal.email %></td>
             <td class='symbol'>?</td>
-            <td class='text'><%= proposal_by_mutual_sentence(mutuals) %> Add it if you agree.</td>
+            <td class='text'><%= proposal_by_mutual_sentence(mutuals) %> <a data-action='add-email'>Add it</a> if you agree.</td>
           </tr>
         <% end %>
       </tbody>
