@@ -72,9 +72,7 @@ defmodule Cr2016site.Pages.Nav do
     end
 
     def absent? do
-      # FIXME pending a new matcher
-      # https://github.com/HashNuke/hound/issues/56
-      apply(Hound.Helpers.Page, :find_all_elements, Tuple.to_list(@selector)) == []
+      !apply(Hound.Matchers, :element?, Tuple.to_list(@selector))
     end
   end
 end

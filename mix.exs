@@ -43,7 +43,7 @@ defmodule Cr2016site.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:cowboy, "~> 1.0"},
      {:mix_test_watch, "~> 0.2", only: :dev},
-     {:hound, "~> 0.7.6", only: :test},
+     {:hound, github: "HashNuke/hound", only: :test},
      {:blacksmith, github: "batate/blacksmith"},
      {:comeonin, "~> 1.0"},
      {:mailgun, "~> 0.1.1"},

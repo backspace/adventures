@@ -15,8 +15,8 @@ defmodule Cr2016site.Pages.Details do
         symbol: visible_text(find_within_element(row, :css, ".symbol")),
         proposed_team_name: %{
           value: visible_text(proposed_team_name_element),
-          conflict?: String.contains?(attribute_value(proposed_team_name_element, "class"), "conflict"),
-          agreement?: String.contains?(attribute_value(proposed_team_name_element, "class"), "agreement")
+          conflict?: has_class?(proposed_team_name_element, "conflict"),
+          agreement?: has_class?(proposed_team_name_element, "agreement")
         }
       }
     end)
