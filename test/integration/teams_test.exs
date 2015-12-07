@@ -86,7 +86,9 @@ defmodule Cr2016site.Integration.Teams do
 
 
     sadik.add.()
+    IO.puts attribute_value({:id, "team-emails"}, "value")
     Details.submit
+    take_screenshot
 
     assert length(Details.mutuals) == 3
   end
