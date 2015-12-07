@@ -86,6 +86,7 @@ defmodule Cr2016site.Integration.Teams do
 
 
     sadik.add.()
+    :timer.sleep(1000)
     IO.puts attribute_value({:id, "team-emails"}, "value")
     Details.submit
     take_screenshot
