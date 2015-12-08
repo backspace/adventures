@@ -18,6 +18,7 @@
         <nav class='top-bar'>
           <div class='top-bar-left'>
             <ul class='dropdown menu'>
+              <li><%= link "Home", to: page_path(@conn, :index), class: "home" %></li>
               <%= if logged_in?(@conn) do %>
                 <li><%= link "Log out #{current_user(@conn).email}", to: session_path(@conn, :delete), method: :delete, class: "logout" %></li>
                 <li><%= link "Edit details", to: user_path(@conn, :edit), class: "details" %></li>
