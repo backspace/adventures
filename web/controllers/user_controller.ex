@@ -24,7 +24,7 @@ defmodule Cr2016site.UserController do
     changeset = User.details_changeset(current_user, user_params)
 
     case Repo.update(changeset) do
-      {:ok, user} ->
+      {:ok, _} ->
         conn
         |> put_flash(:info, "Your details were saved")
         |> redirect(to: user_path(conn, :edit))
