@@ -57,7 +57,7 @@ $initial-scale: 1 - ($final-scale - 1)*$min-y;
 
   &:hover {
     img, .secret {
-      transform: scale($final-scale);
+      transform: scale($final-scale) translate(-15%, 15%);
       transition: all 10s cubic-bezier($easing-control-points);
     }
   }
