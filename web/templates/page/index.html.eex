@@ -2,6 +2,7 @@
   <div class='small-3 columns'>
     <div class='zoom-container'>
       <img src='/images/desert.jpg'>
+      <div class='secret'><div class='text'>hello i am here</div></div>
     </div>
   </div>
   <div class='small-9 columns'>

@@ -33,22 +33,30 @@ $initial-scale: 1 - ($final-scale - 1)*$min-y;
   overflow: hidden;
   position: relative;
 
-  img, &::after {
+  img, .secret {
     transform: scale($initial-scale);
     transition: all 1s linear;
     transition-delay: 0.5s;
   }
 
-  &::after {
+  .secret {
     position: absolute;
-    right: 10%;
-    top: 20%;
-    font-size: 1px;
-    content: 'hello';
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    .text {
+      position: absolute;
+      top: 33%;
+      right: 33%;
+
+      font-size: 1px;
+    }
   }
 
   &:hover {
-    img, &::after {
+    img, .secret {
       transform: scale($final-scale);
       transition: all 10s cubic-bezier($easing-control-points);
     }
