@@ -10,5 +10,34 @@
     <h4>You are a member of a secret society with a mission of the utmost importance.</h4>
     <h4>You will have encounters with other members around the PATH where you will obtain information to get closer to fulfilling your mission.</h4>
     <p>Clandestine Rendezvous is an adventure taking place in downtown Toronto’s PATH <em>during the day</em> on Friday, February 5, 2016. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.</p>
+
+    <h2>Questions/comments/concerns/worries</h2>
+
+    <%= form_for @conn, page_path(@conn, :questions), [as: :question], fn f -> %>
+      <div class='form-group'>
+        <%= label f, :name %>
+        <%= text_input f, :name, class: "form-control" %>
+      </div>
+
+      <div class='form-group'>
+        <%= label f, :email %>
+        <%= text_input f, :email, class: "form-control" %>
+      </div>
+
+      <div class='form-group'>
+        <%= label f, :subject %>
+        <%= text_input f, :subject, class: "form-control" %>
+      </div>
+
+      <div class='form-group'>
+        <%= label f, :question %>
+        <%= textarea f, :question, class: "form-control" %>
+      </div>
+
+      <div class="form-group">
+        <%= submit "Submit", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+
   </div>
 </div>

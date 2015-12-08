@@ -13,4 +13,11 @@ defmodule Cr2016site.Mailer do
                html: "Is it <strong>true</strong> that you are welcome?",
                text: "Yes?"
   end
+
+  def send_question(attributes) do
+    send_email to: "b@events.chromatin.ca",
+               from: attributes["email"],
+               subject: "Question from #{attributes["name"]}: #{attributes["subject"]}",
+               text: attributes["question"]
+  end
 end
