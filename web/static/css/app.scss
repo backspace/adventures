@@ -16,6 +16,9 @@ $body-font-family: 'Titillium Web', sans-serif;
   line-height: 1;
 }
 
+.menu a.active {
+  font-weight: bold;
+}
 
 $easing-control-points: 1.000, 0.060, 1.000, -0.555;
 

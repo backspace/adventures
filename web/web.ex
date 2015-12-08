@@ -50,6 +50,26 @@ defmodule Cr2016site.Web do
       import Cr2016site.Router.Helpers
 
       import Cr2016site.Session, only: [current_user: 1, logged_in?: 1, admin?: 1]
+
+      # Taken from http://stackoverflow.com/a/31577025/760389
+      def active_class(conn, path) do
+        current_path = Path.join(["/" | conn.path_info])
+        if path == current_path do
+          "active"
+        else
+          nil
+        end
+      end
+
+      def active_link(text, conn, path, opts) do
+        class = [opts[:class], active_class(conn, path)]
+          |> Enum.filter(& &1)
+          |> Enum.join(" ")
+        opts = opts
+         |> Keyword.put(:class, class)
+         |> Keyword.put(:to, path)
+        link text, opts
+      end
     end
   end
 

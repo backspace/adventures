@@ -18,16 +18,16 @@
         <nav class='top-bar'>
           <div class='top-bar-left'>
             <ul class='dropdown menu'>
-              <li><%= link "Home", to: page_path(@conn, :index), class: "home" %></li>
+              <li><%= active_link "Home", @conn,page_path(@conn, :index), class: "home" %></li>
               <%= if logged_in?(@conn) do %>
                 <li><%= link "Log out #{current_user(@conn).email}", to: session_path(@conn, :delete), method: :delete, class: "logout" %></li>
-                <li><%= link "Edit details", to: user_path(@conn, :edit), class: "details" %></li>
+                <li><%= active_link "Edit details", @conn, user_path(@conn, :edit), class: "details" %></li>
                 <%= if admin?(@conn) do %>
-                  <li><%= link "Users", to: user_path(@conn, :index), class: "users" %></li>
+                  <li><%= active_link "Users", @conn, user_path(@conn, :index), class: "users" %></li>
                 <% end %>
               <% else %>
-                <li><%= link "Register", to: registration_path(@conn, :new), class: "register" %></li>
-                <li><%= link "Log in", to: session_path(@conn, :new), class: "login" %></li>
+                <li><%= active_link "Register", @conn, registration_path(@conn, :new), class: "register" %></li>
+                <li><%= active_link "Log in", @conn, session_path(@conn, :new), class: "login" %></li>
               <% end %>
             </ul>
           </div>
