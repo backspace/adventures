@@ -34,7 +34,7 @@ $initial-scale: 1 - ($final-scale - 1)*$min-y;
   position: relative;
 
   img, .secret {
-    transform: scale($initial-scale);
+    transform: scale($initial-scale) translate(percentage(-0.15*$min-y), percentage(0.15*$min-y));
     transition: all 1s linear;
     transition-delay: 0.5s;
   }
@@ -48,8 +48,8 @@ $initial-scale: 1 - ($final-scale - 1)*$min-y;
 
     .text {
       position: absolute;
-      top: 33%;
-      right: 33%;
+      top: 36%;
+      right: 36%;
 
       font-size: 1px;
     }
