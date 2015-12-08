@@ -13,6 +13,8 @@ defmodule Cr2016site.Integration.Registrations do
   hound_session
 
   test "registering" do
+    set_window_size current_window_handle, 720, 450
+
     navigate_to "/"
     Nav.register_link.click
 
@@ -41,6 +43,8 @@ defmodule Cr2016site.Integration.Registrations do
   test "logging in" do
     # FIXME save a user with automatic encryption of password?
     Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+
+    set_window_size current_window_handle, 720, 450
 
     navigate_to "/"
     Nav.login_link.click
