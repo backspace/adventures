@@ -14,11 +14,13 @@ defmodule Cr2016site.Integration.Teams do
   test "teams are negotiable" do
     Forge.saved_user email: "shevek@example.com",
                      team_emails: "takver@example.com bedap@example.com tuio@example.com rulag@example.com",
-                     proposed_team_name: "Sequency"
+                     proposed_team_name: "Sequency",
+                     risk_aversion: 1
 
     Forge.saved_user email: "bedap@example.com",
                      team_emails: "takver@example.com shevek@example.com tuio@example.com",
-                     proposed_team_name: "Simultaneity"
+                     proposed_team_name: "Simultaneity",
+                     risk_aversion: 3
 
     Forge.saved_user email: "tuio@example.com", team_emails: "shevek@example.com"
     Forge.saved_user email: "rulag@example.com", team_emails: "shevek@example.com"
@@ -36,6 +38,7 @@ defmodule Cr2016site.Integration.Teams do
     Nav.edit_details
     Details.fill_team_emails "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"
     Details.fill_proposed_team_name "Simultaneity"
+    Details.choose_risk_aversion "Don’t hold back"
     Details.submit
 
     assert Nav.alert_text == "Your details were saved"
@@ -47,12 +50,16 @@ defmodule Cr2016site.Integration.Teams do
     assert shevek.proposed_team_name.value == "✘ Sequency"
     assert shevek.proposed_team_name.conflict?
     refute shevek.proposed_team_name.agreement?
+    assert shevek.risk_aversion.value == "✘ Go easy on me"
+    assert shevek.risk_aversion.conflict?
 
     assert bedap.email == "bedap@example.com"
     assert bedap.symbol == "✓"
     assert bedap.proposed_team_name.value == "✓ Simultaneity"
     refute bedap.proposed_team_name.conflict?
     assert bedap.proposed_team_name.agreement?
+    assert bedap.risk_aversion.value == "✓ Don’t hold back"
+    assert bedap.risk_aversion.agreement?
 
     [sadik] = Details.proposers
     assert sadik.email == "sadik@example.com"

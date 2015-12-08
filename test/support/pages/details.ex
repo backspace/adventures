@@ -10,6 +10,7 @@ defmodule Cr2016site.Pages.Details do
     find_all_elements(:css, ".mutuals tr")
     |> Enum.map(fn(row) ->
       proposed_team_name_element = find_within_element(row, :css, ".proposed-team-name")
+      risk_aversion_element = find_within_element(row, :css, ".risk-aversion")
       %{
         email: visible_text(find_within_element(row, :css, ".email")),
         symbol: visible_text(find_within_element(row, :css, ".symbol")),
@@ -17,6 +18,11 @@ defmodule Cr2016site.Pages.Details do
           value: visible_text(proposed_team_name_element),
           conflict?: has_class?(proposed_team_name_element, "conflict"),
           agreement?: has_class?(proposed_team_name_element, "agreement")
+        },
+        risk_aversion: %{
+          value: visible_text(risk_aversion_element),
+          conflict?: has_class?(risk_aversion_element, "conflict"),
+          agreement?: has_class?(risk_aversion_element, "agreement")
         }
       }
     end)
@@ -43,6 +49,11 @@ defmodule Cr2016site.Pages.Details do
 
   def fill_proposed_team_name(proposed_team_name) do
     fill_field({:id, "proposed-team-name"}, proposed_team_name)
+  end
+
+  def choose_risk_aversion(level_string) do
+    level_integer = Cr2016site.UserView.risk_aversion_string_into_integer[level_string]
+    click({:css, "input.level-#{level_integer}"})
   end
 
   def submit do
