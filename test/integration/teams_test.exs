@@ -1,5 +1,6 @@
 defmodule Cr2016site.Integration.Teams do
   use Cr2016site.ConnCase
+  use Cr2016site.MailgunHelper
 
   alias Cr2016site.Pages.Login
   alias Cr2016site.Pages.Nav
@@ -45,6 +46,12 @@ defmodule Cr2016site.Integration.Teams do
     assert Nav.info_text == "Your details were saved"
 
     assert Details.accessibility_text == "Some accessibility information"
+
+    sent_email = Cr2016site.MailgunHelper.sent_email
+    assert sent_email["to"] == "b@rendezvous.chromatin.ca"
+    assert sent_email["from"] == "b@rendezvous.chromatin.ca"
+    assert sent_email["subject"] == "takver@example.com details changed: accessibility, proposed_team_name, risk_aversion, team_emails"
+    assert sent_email["text"] == "%{accessibility: \"Some accessibility information\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\"}"
 
     [shevek, bedap] = Details.mutuals
 

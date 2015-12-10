@@ -25,6 +25,7 @@ defmodule Cr2016site.UserController do
 
     case Repo.update(changeset) do
       {:ok, _} ->
+        Cr2016site.Mailer.send_user_changes(current_user, changeset.changes)
         conn
         |> put_flash(:info, "Your details were saved")
         |> redirect(to: user_path(conn, :edit))

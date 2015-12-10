@@ -20,4 +20,11 @@ defmodule Cr2016site.Mailer do
                subject: "Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}",
                text: attributes["question"]
   end
+
+  def send_user_changes(user, changes) do
+    send_email to: @from,
+               from: @from,
+               subject: "#{user.email} details changed: #{Enum.join(Map.keys(changes), ", ")}",
+               text: inspect(changes)
+  end
 end
