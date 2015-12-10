@@ -56,6 +56,14 @@ defmodule Cr2016site.Pages.Details do
     click({:css, "input.level-#{level_integer}"})
   end
 
+  def fill_accessibility(accessibility) do
+    fill_field({:id, "user_accessibility"}, accessibility)
+  end
+
+  def accessibility_text do
+    attribute_value({:id, "user_accessibility"}, "value")
+  end
+
   def submit do
     click({:class, "btn"})
   end
