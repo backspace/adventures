@@ -22,8 +22,8 @@ defmodule Cr2016site.Integration.Questions do
 
     sent_email = Cr2016site.MailgunHelper.sent_email
     assert sent_email["to"] == "b@events.chromatin.ca"
-    assert sent_email["from"] == "lucy@example.com"
-    assert sent_email["subject"] == "Question from Lucy Parsons: A Word to Tramps"
+    assert sent_email["from"] == "b@rendezvous.chromatin.ca"
+    assert sent_email["subject"] == "Question from Lucy Parsons <lucy@example.com>: A Word to Tramps"
     assert sent_email["text"] == "Can you not see that it is the industrial system and not the \"boss\" which must be changed?"
   end
 end

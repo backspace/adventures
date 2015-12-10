@@ -4,7 +4,7 @@ defmodule Cr2016site.Mailer do
                       mode: Application.get_env(:cr2016site, :mailgun_mode),
                       test_file_path: Application.get_env(:cr2016site, :mailgun_test_file_path)
 
-  @from "mailgun@mg.chromatin.ca"
+  @from "b@rendezvous.chromatin.ca"
 
   def send_welcome_email(email) do
     send_email to: email,
@@ -16,8 +16,8 @@ defmodule Cr2016site.Mailer do
 
   def send_question(attributes) do
     send_email to: "b@events.chromatin.ca",
-               from: attributes["email"],
-               subject: "Question from #{attributes["name"]}: #{attributes["subject"]}",
+               from: @from,
+               subject: "Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}",
                text: attributes["question"]
   end
 end
