@@ -39,8 +39,21 @@
       </div>
     </div>
 
-    <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
-    <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
+    <%= if get_flash(@conn, :info) do %>
+      <div class='row'>
+        <div class='small-12 columns'>
+          <p class="alert-info success callout" role="alert"><%= get_flash(@conn, :info) %></p>
+        </div>
+      </div>
+    <% end %>
+
+    <%= if get_flash(@conn, :error) do %>
+      <div class='row'>
+        <div class='small-12 columns'>
+          <p class="alert alert-danger callout" role="alert"><%= get_flash(@conn, :error) %></p>
+        </div>
+      </div>
+    <% end %>
 
     <%= render @view_module, @view_template, assigns %>
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
