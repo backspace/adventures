@@ -5,6 +5,7 @@ defmodule Cr2016site.Integration.Registrations do
   alias Cr2016site.Pages.Register
   alias Cr2016site.Pages.Login
   alias Cr2016site.Pages.Nav
+  alias Cr2016site.Pages.Details
 
   # Import Hound helpers
   use Hound.Helpers
@@ -38,6 +39,8 @@ defmodule Cr2016site.Integration.Registrations do
     assert sent_email["subject"] == "Welcome!"
 
     assert Nav.logout_link.text == "Log out samuel.delaney@example.com"
+
+    assert Details.active?
   end
 
   test "logging in" do
@@ -60,6 +63,8 @@ defmodule Cr2016site.Integration.Registrations do
 
     assert Nav.alert_text == "Logged in"
     assert Nav.logout_link.text == "Log out octavia.butler@example.com"
+
+    assert Details.active?
 
     Nav.logout_link.click
 

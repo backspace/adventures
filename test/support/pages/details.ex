@@ -64,6 +64,11 @@ defmodule Cr2016site.Pages.Details do
     attribute_value({:id, "user_accessibility"}, "value")
   end
 
+  def active? do
+    # FIXME is there no current_url or the like?
+    element? :id, "user_accessibility"
+  end
+
   def submit do
     click({:class, "btn"})
   end

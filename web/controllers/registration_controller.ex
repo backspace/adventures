@@ -16,7 +16,7 @@ defmodule Cr2016site.RegistrationController do
         conn
         |> put_session(:current_user, user.id)
         |> put_flash(:info, "Your account was created")
-        |> redirect(to: "/")
+        |> redirect(to: user_path(conn, :edit))
       {:error, changeset} ->
         conn
         |> put_flash(:info, "Unable to create account")
