@@ -11,6 +11,22 @@
     <h4>You will have encounters with other members around the PATH where you will obtain information to get closer to fulfilling your mission.</h4>
     <p>Clandestine Rendezvous is an adventure taking place in downtown Toronto’s PATH <em>during the day</em> on Friday, February 5, 2016. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.</p>
 
+    <h2><i class='fa fa-sun-o'></i> During the day?!</h2>
+    <p>Yes, the event is taking place during a Friday afternoon to take full advantage of spaces that are only accessible at such times. If you work maybe you can book a day off? Skip school?</p>
+    <p>It will start some time in the early afternoon, around 14:00, and last about 2.5 hours.</p>
+
+    <h2><i class='fa fa-user-secret'></i> Who?</h2>
+    <p>Anyone is invited to attend. You should have a sense of adventure and stealth and be able to pass as a person entitled to visit downtown buildings, lest your mission be compromised. You can go alone or with a partner.</p>
+
+    <h2><i class='fa fa-dollar'></i> Cost</h2>
+    <p>A $5 donation is requested to cover printing costs and labour. If that’s too much, any amount (including 0) is welcome.</p>
+
+    <h2>Accessibility</h2>
+    <p>Do you have accessibility needs we should know about? Please tell us <%= link "when you register", to: registration_path(@conn, :new) %> and we will work with you to ensure you can participate.</p>
+
+    <h2><i class='fa fa-pencil'></i> Registration</h2>
+    <p>You <em>must</em> register to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until XXXX.</p>
+
     <h2><i class='fa fa-question-circle'></i> Questions</h2>
 
     <%= form_for @conn, page_path(@conn, :questions), [as: :question], fn f -> %>
