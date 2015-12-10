@@ -29,6 +29,8 @@
 
     <h4><i class='fa fa-question-circle'></i> Questions</h4>
 
+    <p><strong>This is not the registration form, that’s <%= link "here", to: registration_path(@conn, :new) %>.</strong></p>
+
     <%= form_for @conn, page_path(@conn, :questions), [as: :question], fn f -> %>
       <div class='form-group'>
         <%= label f, :name %>
