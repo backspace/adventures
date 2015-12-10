@@ -1,8 +1,12 @@
 defmodule Cr2016site.Pages.Nav do
   use Hound.Helpers
 
-  def alert_text do
+  def info_text do
     visible_text({:css, ".alert-info"})
+  end
+
+  def error_text do
+    visible_text({:css, ".alert-danger"})
   end
 
   def register_link do

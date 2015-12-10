@@ -42,7 +42,7 @@ defmodule Cr2016site.Integration.Teams do
     Details.fill_accessibility "Some accessibility information"
     Details.submit
 
-    assert Nav.alert_text == "Your details were saved"
+    assert Nav.info_text == "Your details were saved"
 
     assert Details.accessibility_text == "Some accessibility information"
 

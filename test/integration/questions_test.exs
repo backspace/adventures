@@ -18,7 +18,7 @@ defmodule Cr2016site.Integration.Questions do
     Home.fill_question "Can you not see that it is the industrial system and not the \"boss\" which must be changed?"
     Home.submit_question
 
-    assert Nav.alert_text == "Your question has been submitted."
+    assert Nav.info_text == "Your question has been submitted."
 
     sent_email = Cr2016site.MailgunHelper.sent_email
     assert sent_email["to"] == "b@events.chromatin.ca"

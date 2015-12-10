@@ -20,19 +20,19 @@ defmodule Cr2016site.Integration.Registrations do
     Nav.register_link.click
 
     Register.submit
-    assert Nav.alert_text == "Unable to create account"
+    assert Nav.error_text == "Unable to create account"
     assert Register.email_error == "Email has invalid format"
     assert Register.password_error == "Password should be at least 5 characters"
 
     Register.fill_email "franklin.w.dixon@example.com"
     Register.submit
-    assert Nav.alert_text == "Unable to create account"
+    assert Nav.error_text == "Unable to create account"
 
     Register.fill_email "samuel.delaney@example.com"
     Register.fill_password "nestofspiders"
     Register.submit
 
-    assert Nav.alert_text == "Your account was created"
+    assert Nav.info_text == "Your account was created"
 
     sent_email = Cr2016site.MailgunHelper.sent_email
     assert sent_email["to"] == "samuel.delaney@example.com"
@@ -56,19 +56,19 @@ defmodule Cr2016site.Integration.Registrations do
     Login.fill_password "Parable of the Talents"
     Login.submit
 
-    assert Nav.alert_text == "Wrong email or password"
+    assert Nav.error_text == "Wrong email or password"
 
     Login.fill_password "Xenogenesis"
     Login.submit
 
-    assert Nav.alert_text == "Logged in"
+    assert Nav.info_text == "Logged in"
     assert Nav.logout_link.text == "Log out octavia.butler@example.com"
 
     assert Details.active?
 
     Nav.logout_link.click
 
-    assert Nav.alert_text == "Logged out"
+    assert Nav.info_text == "Logged out"
     assert Nav.login_link.present?
     assert Nav.register_link.present?
   end

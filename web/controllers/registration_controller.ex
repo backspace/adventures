@@ -19,7 +19,7 @@ defmodule Cr2016site.RegistrationController do
         |> redirect(to: user_path(conn, :edit))
       {:error, changeset} ->
         conn
-        |> put_flash(:info, "Unable to create account")
+        |> put_flash(:error, "Unable to create account")
         |> render("new.html", changeset: changeset)
     end
   end

@@ -14,7 +14,7 @@ defmodule Cr2016site.SessionController do
         |> redirect(to: user_path(conn, :edit))
       :error ->
         conn
-        |> put_flash(:info, "Wrong email or password")
+        |> put_flash(:error, "Wrong email or password")
         |> render("new.html")
     end
   end
