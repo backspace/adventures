@@ -1,30 +1,34 @@
-<%= form_for @changeset, registration_path(@conn, :create), fn f -> %>
-  <%= if f.errors != [] do %>
-    <div class="alert alert-danger">
-      <p>Oops, something went wrong! Please check the errors below:</p>
-      <ul class='errors'>
-        <%= for {attr, message} <- f.errors do %>
-          <li class='<%= attr %>'><%= humanize(attr) %> <%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+<div class='row'>
+  <div class='small-12 columns'>
+    <h2>Register</h2>
 
-  <div class='row'>
-    <div class='small-6 columns'>
-      <label>Email
-        <%= email_input f, :email, id: "email", class: "form-control" %>
-      </label>
-    </div>
+    <%= form_for @changeset, registration_path(@conn, :create), fn f -> %>
+      <%= if f.errors != [] do %>
+        <div class="alert alert-danger">
+          <p>Oops, something went wrong! Please check the errors below:</p>
+          <ul class='errors'>
+            <%= for {attr, message} <- f.errors do %>
+              <li class='<%= attr %>'><%= humanize(attr) %> <%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class='row'>
+        <div class='small-6 columns'>
+          <label>Email
+            <%= email_input f, :email, id: "email", class: "form-control" %>
+          </label>
+        </div>
+      </div>
+      <div class='row'>
+        <div class='small-6 columns'>
+          <label>Password
+            <%= password_input f, :password, id: "password", class: "form-control" %>
+          </label>
+        </div>
+      </div>
+        <%= submit "Signup", class: "btn btn-primary small-3 columns" %>
+    <% end %>
   </div>
-  <div class='row'>
-    <div class='small-6 columns'>
-      <label>Password
-        <%= password_input f, :password, id: "password", class: "form-control" %>
-      </label>
-    </div>
-  </div>
-  <div class='row'>
-    <%= submit "Signup", class: "btn btn-primary small-3 columns" %>
-  </div>
-<% end %>
+</div>
