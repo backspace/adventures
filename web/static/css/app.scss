@@ -67,21 +67,3 @@ $initial-scale: 1 - ($final-scale - 1)*$min-y;
 .conflict {
   background-color: lighten(#C03000, 50%)
 }
-
-.fa {
-  display: inline-block;
-  background-size: contain;
-  background-repeat: no-repeat;
-}
-
-h2 .fa {
-  height: 2.5rem;
-  width: 2.5rem;
-  transform: translateY(0.12*2.5rem);
-}
-
-h4 .fa {
-  height: 1.5625rem;
-  width: 1.5625rem;
-  transform: translateY(0.12*1.5625rem);
-}
