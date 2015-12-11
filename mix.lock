@@ -12,7 +12,7 @@
   "hound": {:git, "https://github.com/HashNuke/hound.git", "16421ca3ebbec9aaced57255b2b77afd790a5433", []},
   "httpoison": {:hex, :httpoison, "0.8.0"},
   "idna": {:hex, :idna, "1.0.2"},
-  "mailgun": {:hex, :mailgun, "0.1.2"},
+  "mailgun": {:git, "https://github.com/backspace/mailgun.git", "a235565fe05e7ccc553ed017885cfa78dafd20a1", [branch: "multi-email-test"]},
   "mimerl": {:hex, :mimerl, "1.0.2"},
   "mix_test_watch": {:hex, :mix_test_watch, "0.2.4"},
   "phoenix": {:git, "https://github.com/phoenixframework/phoenix.git", "c51fcf506228c3081cc50ac4a35a8bd0b64d68e5", []},

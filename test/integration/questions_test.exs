@@ -20,7 +20,7 @@ defmodule Cr2016site.Integration.Questions do
 
     assert Nav.info_text == "Your question has been submitted."
 
-    sent_email = Cr2016site.MailgunHelper.sent_email
+    [sent_email] = Cr2016site.MailgunHelper.sent_email
     assert sent_email["to"] == "b@events.chromatin.ca"
     assert sent_email["from"] == "b@events.chromatin.ca"
     assert sent_email["subject"] == "Question from Lucy Parsons <lucy@example.com>: A Word to Tramps"

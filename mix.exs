@@ -46,7 +46,7 @@ defmodule Cr2016site.Mixfile do
      {:hound, github: "HashNuke/hound", only: :test},
      {:blacksmith, github: "batate/blacksmith"},
      {:comeonin, "~> 1.0"},
-     {:mailgun, "~> 0.1.1"},
+     {:mailgun, github: "backspace/mailgun", branch: "multi-email-test"},
      {:poison, "~> 1.5"},
      {:crutches, "~> 1.0.0"}]
   end
