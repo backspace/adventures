@@ -34,6 +34,12 @@ defmodule Cr2016site.Integration.Registrations do
 
     assert Nav.info_text == "Your account was created"
 
+    # FIXME the Mailgun library can only test one email!
+    # sent_email = Cr2016site.MailgunHelper.sent_email
+    # assert sent_email["to"] == "b@events.chromatin.ca"
+    # assert sent_email["from"] == "b@events.chromatin.ca"
+    # assert sent_email["subject"] == "samuel.delaney@example.com registered"
+
     sent_email = Cr2016site.MailgunHelper.sent_email
     assert sent_email["to"] == "samuel.delaney@example.com"
     assert sent_email["subject"] == "Welcome!"

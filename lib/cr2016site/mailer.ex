@@ -27,4 +27,8 @@ defmodule Cr2016site.Mailer do
                subject: "#{user.email} details changed: #{Enum.join(Map.keys(changes), ", ")}",
                text: inspect(changes)
   end
+
+  def send_registration(user) do
+    send_email to: @from, from: @from, subject: "#{user.email} registered", text: "Yes"
+  end
 end

@@ -12,6 +12,7 @@ defmodule Cr2016site.RegistrationController do
 
     case Cr2016site.Registration.create(changeset, Cr2016site.Repo) do
       {:ok, user} ->
+        Cr2016site.Mailer.send_registration(user)
         Cr2016site.Mailer.send_welcome_email(user.email)
         conn
         |> put_session(:current_user, user.id)
