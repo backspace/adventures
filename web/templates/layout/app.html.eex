@@ -28,6 +28,7 @@
                 <li><%= active_link "Edit details", @conn, user_path(@conn, :edit), class: "details" %></li>
                 <%= if admin?(@conn) do %>
                   <li><%= active_link "Users", @conn, user_path(@conn, :index), class: "users" %></li>
+                  <li><%= active_link "Messages", @conn, message_path(@conn, :index), class: "messages" %></li>
                 <% end %>
               <% else %>
                 <li><%= active_link "Register", @conn, registration_path(@conn, :new), class: "register" %></li>

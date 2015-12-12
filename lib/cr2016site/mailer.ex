@@ -31,4 +31,8 @@ defmodule Cr2016site.Mailer do
   def send_registration(user) do
     send_email to: @from, from: @from, subject: "#{user.email} registered", text: "Yes"
   end
+
+  def send_message(message, user) do
+    send_email to: user.email, from: @from, subject: "[rendezvous] #{message.subject}", text: message.content
+  end
 end

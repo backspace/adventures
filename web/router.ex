@@ -28,6 +28,9 @@ defmodule Cr2016site.Router do
     get "/details", UserController, :edit
     put "/details", UserController, :update
 
+    resources "/messages", MessageController
+    post "/messages/:id/send", MessageController, :deliver
+
     post "/questions", PageController, :questions
     get "/", PageController, :index
   end
