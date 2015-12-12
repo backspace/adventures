@@ -3,6 +3,7 @@ defmodule Cr2016site.MessageController do
 
   alias Cr2016site.Message
 
+  plug Cr2016site.Plugs.Admin
   plug :scrub_params, "message" when action in [:create, :update]
 
   def index(conn, _params) do
