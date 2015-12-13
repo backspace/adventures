@@ -107,4 +107,14 @@ defmodule Cr2016site.Integration.Teams do
     # FIXME restore this test that breaks on Travis… Javascript problem?
     # assert length(Details.mutuals) == 3
   end
+
+  test "the table is hidden when empty" do
+    Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+
+    navigate_to "/"
+
+    Login.login_as "takver@example.com", "Anarres"
+
+    refute Hound.Matchers.element? :css, "table"
+  end
 end

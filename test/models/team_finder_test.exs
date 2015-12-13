@@ -26,6 +26,18 @@ defmodule Cr2016site.TeamFinderTest do
     assert relationships.proposals_by_mutuals == Enum.into([{mutual_proposal_one, [mutual_one, mutual_two]}, {mutual_proposal_two, [mutual_one]}], %{})
     assert relationships.proposees == [%{email: proposee.email}, %{email: "Z@e.co"}]
     assert relationships.invalids == ["XX", "YY"]
+    refute relationships.empty?
+  end
+
+  test "no overlap means relationships are empty" do
+    current = %{email: "A@e.co", team_emails: ""}
+    other = %{email: "X@e.co", team_emails: "Y@e.co"}
+
+    users = [current, other]
+
+    relationships = TeamFinder.relationships(current, users)
+
+    assert relationships.empty?
   end
 
   test "finds users from emails" do
