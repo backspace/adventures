@@ -12,7 +12,9 @@ defmodule Cr2016site.Plugs.Admin do
     if user && user.admin do
       conn
     else
-      conn |> Phoenix.Controller.redirect(to: not_logged_in_url) |> halt
+      conn
+      |> Phoenix.Controller.put_flash(:error, "Who are you?")
+      |> Phoenix.Controller.redirect(to: not_logged_in_url) |> halt
     end
   end
 

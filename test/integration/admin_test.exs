@@ -27,7 +27,7 @@ defmodule Cr2016site.Integration.Admin do
     assert page_source =~ "francine.pascal@example.com"
   end
 
-  test "non-admins cannot access the user list" do
+  test "non-admins cannot access the user list or messages" do
     Forge.saved_user email: "francine.pascal@example.com"
 
     assert Nav.users_link.absent?
@@ -35,5 +35,8 @@ defmodule Cr2016site.Integration.Admin do
     navigate_to "/users"
 
     refute page_source =~ "francine.pascal@example.com"
+
+    navigate_to "/messages"
+    assert Nav.error_text == "Who are you?"
   end
 end
