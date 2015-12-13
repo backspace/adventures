@@ -1,8 +1,12 @@
-<h2>Edit message</h2>
+<div class='row'>
+  <div class='small-12 columns'>
+    <h2>Edit message</h2>
 
-<%= render "form.html", changeset: @changeset,
-                        action: message_path(@conn, :update, @message) %>
+    <%= render "form.html", changeset: @changeset,
+                            action: message_path(@conn, :update, @message) %>
 
-<%= button("Send", to: message_path(@conn, :deliver, @message), class: "btn send") %>
+    <%= button("Send", to: message_path(@conn, :deliver, @message), class: "btn send") %>
 
-<%= link "Back", to: message_path(@conn, :index) %>
+    <%= link "Back", to: message_path(@conn, :index) %>
+  </div>
+</div>

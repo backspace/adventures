@@ -1,31 +1,35 @@
-<h2>Listing messages</h2>
+<div class='row'>
+  <div class='small-12 columns'>
+    <h2>Listing messages</h2>
 
-<table class="table">
-  <thead>
-    <tr>
-      <th>Subject</th>
-      <th>Content</th>
-      <th>Ready</th>
-      <th>Postmarked at</th>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Content</th>
+          <th>Ready</th>
+          <th>Postmarked at</th>
 
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-<%= for message <- @messages do %>
-    <tr>
-      <td><%= message.subject %></td>
-      <td><%= message.content %></td>
-      <td><%= message.ready %></td>
-      <td><%= message.postmarked_at %></td>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+    <%= for message <- @messages do %>
+        <tr>
+          <td><%= message.subject %></td>
+          <td><%= message.content %></td>
+          <td><%= message.ready %></td>
+          <td><%= message.postmarked_at %></td>
 
-      <td class="text-right">
-        <%= link "Edit", to: message_path(@conn, :edit, message), class: "btn btn-default btn-xs" %>
-        <%= link "Delete", to: message_path(@conn, :delete, message), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
-      </td>
-    </tr>
-<% end %>
-  </tbody>
-</table>
+          <td class="text-right">
+            <%= link "Edit", to: message_path(@conn, :edit, message), class: "btn btn-default btn-xs" %>
+            <%= link "Delete", to: message_path(@conn, :delete, message), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
+          </td>
+        </tr>
+    <% end %>
+      </tbody>
+    </table>
 
-<%= link "New message", to: message_path(@conn, :new), class: "new-message" %>
+    <%= link "New message", to: message_path(@conn, :new), class: "new-message" %>
+  </div>
+</div>
