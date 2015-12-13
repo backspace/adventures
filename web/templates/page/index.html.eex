@@ -13,8 +13,15 @@
         <% leftY = 100 %>
         <% width = 180 %>
         <% height = 85 %>
+        <defs>
+          <clipPath id="iris-container">
+            <path d="M<%= leftX %>,<%= leftY %>q<%= width/2 %>,<%= height %>,<%= width %>,0 q<%= -width/2 %>,<%= -height %>,<%= -width %>,0 Z" stroke="black" style="fill: black; stroke-width: 15px;"/>
+          </clipPath>
+        </defs>
         <path d="M<%= leftX %>,<%= leftY %>q<%= width/2 %>,<%= height %>,<%= width %>,0 q<%= -width/2 %>,<%= -height %>,<%= -width %>,0 Z" stroke="black" style="fill: none; stroke-width: 15px;"/>
-        <circle id="iris" cx="<%= leftX + width/2 %>" cy="<%= leftY %>" r="<%= height/2 %>" style="fill: black" />
+        <g clip-path="url(#iris-container)">
+          <circle id="iris" cx="<%= leftX + width/2 %>" cy="<%= leftY %>" r="<%= height/2 %>" style="fill: black" />
+        </g>
       </svg>
     </p>
 
