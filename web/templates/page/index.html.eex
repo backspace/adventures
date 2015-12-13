@@ -9,9 +9,12 @@
     <h2>Clandestine Rendezvous</h2>
     <p>
       <svg version="1.1" width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+        <% leftX = 10 %>
+        <% leftY = 100 %>
         <% width = 180 %>
         <% height = 85 %>
-        <path d="M10,100q<%= width/2 %>,<%= height %>,<%= width %>,0 q<%= -width/2 %>,<%= -height %>,<%= -width %>,0 Z" stroke="black" style="fill: none; stroke-width: 15px;"/>
+        <path d="M<%= leftX %>,<%= leftY %>q<%= width/2 %>,<%= height %>,<%= width %>,0 q<%= -width/2 %>,<%= -height %>,<%= -width %>,0 Z" stroke="black" style="fill: none; stroke-width: 15px;"/>
+        <circle cx="<%= leftX + width/2 %>" cy="<%= leftY %>" r="<%= height/2 %>" style="fill: black" />
       </svg>
     </p>
 
