@@ -71,3 +71,7 @@ $initial-scale: 1 - ($final-scale - 1)*$min-y;
 .fa {
   transform: translateY(12%);
 }
+
+#iris {
+  transition: all 300ms ease-out;
+}
