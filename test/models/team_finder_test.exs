@@ -40,6 +40,14 @@ defmodule Cr2016site.TeamFinderTest do
     assert relationships.empty?
   end
 
+  test "the relationships being only mutuals is flagged" do
+    current = %{email: "A@e.co", team_emails: "X@e.co"}
+    mutual = %{email: "X@e.co", team_emails: "A@e.co"}
+
+    relationships = TeamFinder.relationships(current, [current, mutual])
+    assert relationships.only_mutuals?
+  end
+
   test "finds users from emails" do
     user_a = %{email: "A"}
     user_b = %{email: "B"}

@@ -32,7 +32,16 @@ defmodule Cr2016site.TeamFinder do
     |> Enum.map(&(%{email: &1}))
 
     empty = Enum.all?([proposers, mutuals, proposals_by_mutuals, invalids, proposees], fn(collection) -> Enum.empty?(collection) end)
+    only_mutuals = Enum.all?([proposers, proposals_by_mutuals, invalids, proposees], fn(collection) -> Enum.empty?(collection) end)
 
-    %{proposers: proposers, mutuals: mutuals, proposals_by_mutuals: proposals_by_mutuals, invalids: invalids, proposees: proposees, empty?: empty}
+    %{
+      proposers: proposers,
+      mutuals: mutuals,
+      proposals_by_mutuals: proposals_by_mutuals,
+      invalids: invalids,
+      proposees: proposees,
+      empty?: empty,
+      only_mutuals?: only_mutuals
+    }
   end
 end
