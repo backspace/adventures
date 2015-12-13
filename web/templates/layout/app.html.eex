@@ -13,50 +13,53 @@
   </head>
 
   <body>
-    <div class='row'>
-      <div class='small-12 columns'>
-        <nav class='top-bar'>
-          <div class='top-bar-left'>
-            <ul class='dropdown menu'>
-              <li><%= active_link "Home", @conn,page_path(@conn, :index), class: "home" %></li>
-              <%= if logged_in?(@conn) do %>
-                <li>
-                  <%= link to: session_path(@conn, :delete), method: :delete, class: "logout" do %>
-                    Log out <span class="show-for-medium"><%= current_user(@conn).email %></span>
-                  <%= end %>
-                </li>
-                <li><%= active_link "Edit details", @conn, user_path(@conn, :edit), class: "details" %></li>
-                <%= if admin?(@conn) do %>
-                  <li><%= active_link "Users", @conn, user_path(@conn, :index), class: "users" %></li>
-                  <li><%= active_link "Messages", @conn, message_path(@conn, :index), class: "messages" %></li>
+    <div class='everything'>
+      <div class='row'>
+        <div class='small-12 columns'>
+          <nav class='top-bar'>
+            <div class='top-bar-left'>
+              <ul class='dropdown menu'>
+                <li><%= active_link "Home", @conn,page_path(@conn, :index), class: "home" %></li>
+                <%= if logged_in?(@conn) do %>
+                  <li>
+                    <%= link to: session_path(@conn, :delete), method: :delete, class: "logout" do %>
+                      Log out <span class="show-for-medium"><%= current_user(@conn).email %></span>
+                    <%= end %>
+                  </li>
+                  <li><%= active_link "Edit details", @conn, user_path(@conn, :edit), class: "details" %></li>
+                  <%= if admin?(@conn) do %>
+                    <li><%= active_link "Users", @conn, user_path(@conn, :index), class: "users" %></li>
+                    <li><%= active_link "Messages", @conn, message_path(@conn, :index), class: "messages" %></li>
+                  <% end %>
+                <% else %>
+                  <li><%= active_link "Register", @conn, registration_path(@conn, :new), class: "register" %></li>
+                  <li><%= active_link "Log in", @conn, session_path(@conn, :new), class: "login" %></li>
                 <% end %>
-              <% else %>
-                <li><%= active_link "Register", @conn, registration_path(@conn, :new), class: "register" %></li>
-                <li><%= active_link "Log in", @conn, session_path(@conn, :new), class: "login" %></li>
-              <% end %>
-            </ul>
-          </div>
-        </nav>
+              </ul>
+            </div>
+          </nav>
+        </div>
       </div>
+
+      <%= if get_flash(@conn, :info) do %>
+        <div class='row'>
+          <div class='small-12 columns'>
+            <p class="alert-info success callout" role="alert"><%= get_flash(@conn, :info) %></p>
+          </div>
+        </div>
+      <% end %>
+
+      <%= if get_flash(@conn, :error) do %>
+        <div class='row'>
+          <div class='small-12 columns'>
+            <p class="alert alert-danger callout" role="alert"><%= get_flash(@conn, :error) %></p>
+          </div>
+        </div>
+      <% end %>
+
+      <%= render @view_module, @view_template, assigns %>
     </div>
 
-    <%= if get_flash(@conn, :info) do %>
-      <div class='row'>
-        <div class='small-12 columns'>
-          <p class="alert-info success callout" role="alert"><%= get_flash(@conn, :info) %></p>
-        </div>
-      </div>
-    <% end %>
-
-    <%= if get_flash(@conn, :error) do %>
-      <div class='row'>
-        <div class='small-12 columns'>
-          <p class="alert alert-danger callout" role="alert"><%= get_flash(@conn, :error) %></p>
-        </div>
-      </div>
-    <% end %>
-
-    <%= render @view_module, @view_template, assigns %>
     <script src="<%= static_path(@conn, "/js/app.js") %>"></script>
     <script>
       // FIXME having to manually include this for DELETE links to work on Travis
