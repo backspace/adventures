@@ -35,10 +35,17 @@ $(() => {
   const r = parseFloat($(".iris").attr("r"));
   const maximumDeviation = r*0.5;
 
-  $(".iris").each(function() {
-    const {top, left} = $(this).position();
-    $(this).data("top", top).data("left", left);
-  });
+
+  const setPositions = function() {
+    $(".iris").each(function() {
+      const {top, left} = $(this).position();
+      $(this).data("top", top).data("left", left);
+    });
+  };
+
+  setPositions();
+
+  $(window).resize(setPositions);
 
   $(window).mousemove((e) => {
     $(".iris").each(function() {
