@@ -36,7 +36,6 @@ defmodule Cr2016site.Integration.Teams do
 
     Login.login_as "takver@example.com", "Anarres"
 
-    Nav.edit_details
     Details.fill_team_emails "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"
     Details.fill_proposed_team_name "Simultaneity"
     Details.choose_risk_aversion "Don’t hold back"
