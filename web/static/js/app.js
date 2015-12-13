@@ -31,4 +31,8 @@ $(() => {
       teamEmails.val(`${currentValue} ${email}`);
     }
   });
+
+  $(window).mousemove((e) => {
+    $("#iris").css("transform", `translate(${e.pageX}px, ${e.pageY}px)`);
+  });
 });
