@@ -10,7 +10,7 @@ defmodule Cr2016site.Integration.Messages do
   hound_session
 
   test "a message is sent to all registrants" do
-    Forge.saved_user email: "admin@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("admin"), admin: true
+    Forge.saved_admin email: "admin@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("admin")
     Forge.saved_user email: "user@example.com"
 
     navigate_to "/"

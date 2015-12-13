@@ -13,7 +13,7 @@ defmodule Cr2016site.Integration.Admin do
 
   test "logging in as an admin" do
     Forge.saved_user email: "francine.pascal@example.com"
-    Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis"), admin: true
+    Forge.saved_admin email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
 
     navigate_to "/"
 

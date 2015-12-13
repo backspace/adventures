@@ -13,6 +13,8 @@ defmodule Forge do
   register :user, %Cr2016site.User{
     email: Sequence.next(:email, &"jh#{&1}@example.com")
   }
+
+  register :admin, [prototype: :user], admin: true
 end
 
 defmodule Cr2016site.MailgunHelper do
