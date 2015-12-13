@@ -32,7 +32,10 @@ $(() => {
     }
   });
 
+  const {top, left} = $("#iris").position();
+  const r = parseFloat($("#iris").attr("r"));
+
   $(window).mousemove((e) => {
-    $("#iris").css("transform", `translate(${e.pageX}px, ${e.pageY}px)`);
+    $("#iris").css("transform", `translate(${e.pageX - left - r}px, ${e.pageY - top - r}px)`);
   });
 });
