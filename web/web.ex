@@ -51,10 +51,10 @@ defmodule Cr2016site.Web do
 
       import Cr2016site.Session, only: [current_user: 1, logged_in?: 1, admin?: 1]
 
-      # Taken from http://stackoverflow.com/a/31577025/760389
+      # Adapter from http://stackoverflow.com/a/31577025/760389
       def active_class(conn, path) do
         current_path = Path.join(["/" | conn.path_info])
-        if path == current_path do
+        if (String.starts_with?(current_path, path) && path != "/") || current_path == path do
           "active"
         else
           nil
