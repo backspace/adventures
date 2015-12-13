@@ -29,7 +29,7 @@
     <p>Do you have accessibility needs we should know about? Please tell us <%= link "when you register", to: registration_path(@conn, :new) %> and we will work with you to ensure you can participate.</p>
 
     <h4><i class='fa fa-pencil'></i> Registration</h4>
-    <p>You <em>must</em> register to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until XXXX.</p>
+    <p>You <em>must</em> <%= link "register", to: registration_path(@conn, :new) %> to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until XXXX.</p>
 
     <h4><i class='fa fa-question-circle'></i> Questions</h4>
 
