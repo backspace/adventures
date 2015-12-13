@@ -72,6 +72,14 @@ $initial-scale: 1 - ($final-scale - 1)*$min-y;
   transform: translateY(12%);
 }
 
-#iris {
+.iris {
   transition: all 300ms ease-out;
+}
+
+.svg-background-experiment {
+  position: absolute;
+  z-index: -5;
+  top: 0;
+  left: 0;
+  opacity: 0.1;
 }
