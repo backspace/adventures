@@ -18,6 +18,33 @@
         <%= render "eye.html" %>
         <%= render "eye.html" %>
         <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
+        <%= render "eye.html" %>
       </div>
     </p>
 
