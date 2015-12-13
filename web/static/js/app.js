@@ -34,8 +34,9 @@ $(() => {
 
   const {top, left} = $("#iris").position();
   const r = parseFloat($("#iris").attr("r"));
+  const maximumDeviation = r*0.5;
 
   $(window).mousemove((e) => {
-    $("#iris").css("transform", `translate(${e.pageX - left - r}px, ${e.pageY - top - r}px)`);
+    $("#iris").css("transform", `translate(${Math.min(Math.max(e.pageX - left - r, -maximumDeviation), maximumDeviation)}px, ${Math.min(Math.max(e.pageY - top - r, -maximumDeviation), maximumDeviation)}px)`);
   });
 });
