@@ -7,6 +7,13 @@
   </div>
   <div class='small-8 columns'>
     <h2>Clandestine Rendezvous</h2>
+    <p>
+      <svg version="1.1" width="300" height="200" xmlns="http://www.w3.org/2000/svg">
+        <% width = 180 %>
+        <% height = 85 %>
+        <path d="M10,100q<%= width/2 %>,<%= height %>,<%= width %>,0 q<%= -width/2 %>,<%= -height %>,<%= -width %>,0 Z" stroke="black" style="fill: none; stroke-width: 15px;"/>
+      </svg>
+    </p>
 
     <div class='callout'>
       <p>You are a member of a secret society with a mission of the utmost importance.</p>
