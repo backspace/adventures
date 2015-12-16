@@ -15,6 +15,10 @@ defmodule Forge do
   }
 
   register :admin, [prototype: :user], admin: true
+
+  register :message, %Cr2016site.Message{
+    ready: true
+  }
 end
 
 defmodule Cr2016site.MailgunHelper do

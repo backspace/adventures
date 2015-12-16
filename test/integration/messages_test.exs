@@ -3,6 +3,7 @@ defmodule Cr2016site.Integration.Messages do
   use Cr2016site.MailgunHelper
 
   alias Cr2016site.Pages.Login
+  alias Cr2016site.Pages.Register
   alias Cr2016site.Pages.Messages
   alias Cr2016site.Pages.Nav
 
@@ -35,4 +36,31 @@ defmodule Cr2016site.Integration.Messages do
     assert email["subject"] == "[rendezvous] A Subject!"
   end
 
+  test "the backlog of existing messages is sent to a new registrant after the welcome" do
+    Forge.saved_message subject: "Subject one", content: "Content one"
+    Forge.saved_message subject: "Subject two", content: "Content two"
+
+    navigate_to "/"
+    Nav.register_link.click
+
+    Register.fill_email "registerer@example.com"
+    Register.fill_password "abcdefghi"
+    Register.submit
+
+    [_admin, _welcome, backlog_email] = Cr2016site.MailgunHelper.sent_email
+
+    assert backlog_email["to"] == "registerer@example.com"
+    assert backlog_email["from"] == "b@events.chromatin.ca"
+
+    assert backlog_email["subject"] == "[rendezvous] Messages sent before you registered"
+
+    text = backlog_email["text"]
+    assert String.contains?(text, "These messages were sent before you registered.")
+
+    assert String.contains?(text, "Subject: Subject one")
+    assert String.contains?(text, "Content one")
+
+    assert String.contains?(text, "Subject: Subject two")
+    assert String.contains?(text, "Content two")
+  end
 end

@@ -35,4 +35,14 @@ defmodule Cr2016site.Mailer do
   def send_message(message, user) do
     send_email to: user.email, from: @from, subject: "[rendezvous] #{message.subject}", text: message.content
   end
+
+  def send_backlog(messages, user) do
+    message_bodies = Enum.map(messages, fn(message) ->
+      "Subject: #{message.subject}\n\n#{message.content}"
+    end)
+
+    body = "These messages were sent before you registered.\n\n#{message_bodies}"
+
+    send_email to: user.email, from: @from, subject: "[rendezvous] Messages sent before you registered", text: body
+  end
 end

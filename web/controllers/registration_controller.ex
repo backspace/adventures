@@ -12,8 +12,15 @@ defmodule Cr2016site.RegistrationController do
 
     case Cr2016site.Registration.create(changeset, Cr2016site.Repo) do
       {:ok, user} ->
+        messages = Repo.all(Cr2016site.Message)
+
         Cr2016site.Mailer.send_registration(user)
         Cr2016site.Mailer.send_welcome_email(user.email)
+
+        unless Enum.empty? messages do
+          Cr2016site.Mailer.send_backlog(messages, user)
+        end
+
         conn
         |> put_session(:current_user, user.id)
         |> put_flash(:info, "Your account was created")
