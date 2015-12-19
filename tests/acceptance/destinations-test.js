@@ -10,7 +10,7 @@ moduleForAcceptance('Acceptance | destinations', {
       Ember.run(() => {
         const fixture = store.createRecord('destination');
         fixture.set('description', 'Ina-Karekh');
-        return resolve(fixture.save());
+        return resolve(fixture.save);
       });
     });
   }
