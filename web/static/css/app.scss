@@ -91,14 +91,3 @@ $initial-scale: 1 - ($final-scale - 1)*$min-y;
   left: 0;
   opacity: 0.1;
 }
-
-$canvas-width: 200px;
-$canvas-height: 200px;
-
-canvas {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-left: -$canvas-width/2;
-  margin-top: -$canvas-height/2;
-}

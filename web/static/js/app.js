@@ -181,7 +181,7 @@ function init() {
 
   renderer.setSize(200, 200);
 
-  $("body").prepend(renderer.domElement);
+  $("h2").after(renderer.domElement);
 }
 
 function animate() {
