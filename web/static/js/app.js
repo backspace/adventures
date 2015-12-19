@@ -55,3 +55,171 @@ $(() => {
     })
   });
 });
+
+
+var camera, scene, renderer, mesh;
+var group;
+
+
+var pageX, pageY;
+
+init();
+animate();
+
+function init() {
+
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(50, 1, 1, 10000);
+  camera.position.z = 200;
+  scene.add(camera);
+
+  var outlineColour = 0x333333;
+
+  var lineMaterial = new THREE.LineBasicMaterial({
+    color: outlineColour,
+    linewidth: 5
+  });
+
+  var fillMaterial = new THREE.MeshBasicMaterial({
+    color: outlineColour,
+    side: THREE.DoubleSide
+  });
+
+  var outlineMaterial = new THREE.MeshBasicMaterial({
+    color: outlineColour,
+    side: THREE.BackSide
+  });
+
+
+  var shape = new THREE.Geometry();
+  shape.vertices.push(new THREE.Vector3(-25, 0, 100));
+  shape.vertices.push(new THREE.Vector3(-25, -50, 100));
+  shape.vertices.push(new THREE.Vector3(-50, -75, 100));
+
+  var line = new THREE.Line(shape, lineMaterial);
+  scene.add(line);
+
+  var curve = new THREE.EllipseCurve(0, 0, // ax, aY
+    5, 5, // xRadius, yRadius
+    0, 2 * Math.PI, // aStartAngle, aEndAngle
+    false, // aClockwise
+    0 // aRotation
+  );
+
+  var path = new THREE.Path(curve.getPoints(50));
+  var geometry = path.createPointsGeometry(50);
+  var anchor = new THREE.Line(geometry, fillMaterial);
+  // anchor.position = shape.vertices[2].clone();
+  // anchor.position.z = 0;
+  // anchor.position.y -= 2.5;
+  // anchor.position.x -= 2.5;
+  scene.add(anchor);
+
+
+  var light = new THREE.DirectionalLight(0xffffff);
+  light.position.set(0.5, 0.5, 1);
+
+  var pointLight = new THREE.PointLight(0xff3300);
+  pointLight.position.set(0, 0, 100);
+  scene.add(pointLight);
+
+  var ambientLight = new THREE.AmbientLight(0xffffff);
+  scene.add(ambientLight);
+
+  group = new THREE.Object3D();
+
+
+  var shader = THREE.ShaderToon['toon1'];
+
+  var u = THREE.UniformsUtils.clone(shader.uniforms);
+
+  var vs = shader.vertexShader;
+  var fs = shader.fragmentShader;
+
+  var toonMaterial1 = new THREE.ShaderMaterial({
+    uniforms: u,
+    vertexShader: vs,
+    fragmentShader: fs
+  });
+
+  toonMaterial1.uniforms.uDirLightPos.value = light.position;
+  toonMaterial1.uniforms.uDirLightColor.value = light.color;
+
+  toonMaterial1.uniforms.uAmbientLightColor.value = ambientLight.color;
+
+  var cylinderHeight = 120;
+  var cylinderWidth = 40;
+  var lensProportion = 0.4;
+
+  var cylinderGeometry = new THREE.CylinderGeometry(cylinderWidth, cylinderWidth, cylinderHeight, 50, 1);
+  var cylinderMesh = new THREE.Mesh(cylinderGeometry, toonMaterial1);
+  group.add(cylinderMesh);
+
+  var cylinderOutlineMesh = new THREE.Mesh(cylinderGeometry, outlineMaterial);
+  cylinderOutlineMesh.scale.multiplyScalar(1.05);
+  group.add(cylinderOutlineMesh);
+
+  var capGeometry = new THREE.CylinderGeometry(cylinderWidth, cylinderWidth, 1, 50, 1);
+  var capMesh = new THREE.Mesh(capGeometry, outlineMaterial);
+  capMesh.scale.multiplyScalar(1.05);
+  group.add(capMesh);
+
+  capMesh.position.y = cylinderHeight/2;
+
+  var lensGeometry = new THREE.CylinderGeometry(cylinderWidth * lensProportion, cylinderWidth * lensProportion, 1, 50, 1);
+  var lensMesh = new THREE.Mesh(lensGeometry, fillMaterial);
+  lensMesh.position.y = cylinderHeight/2;
+  group.add(lensMesh);
+
+  scene.add(group);
+
+  group.rotation.x = Math.PI/2;
+  group.rotation.y = 0;
+
+  renderer = new THREE.WebGLRenderer();
+
+  renderer.setSize(200, 200);
+
+  $("body").prepend(renderer.domElement);
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  render();
+}
+
+function render() {
+  var deltaProportion = 0.05;
+
+	var width = window.innerWidth;
+  var height = window.innerHeight;
+
+  var x = pageX || width/2;
+  var zRotation =  -(Math.PI*(x/width) - Math.PI/2);
+
+  var zDelta = (zRotation - group.rotation.z)*deltaProportion;
+
+  group.rotation.z = group.rotation.z + zDelta;
+
+  var y = pageY || height/2;
+  var xRotation = Math.PI*(y/height);
+
+  var xDelta = (xRotation - group.rotation.x)*deltaProportion;
+
+  group.rotation.x = group.rotation.x + xDelta;
+
+  if (Math.abs(group.rotation.z - zRotation) > 0.001 || Math.abs(group.rotation.x - xRotation) > 0.001) {
+    //requestAnimationFrame(animate);
+  }
+
+  renderer.render(scene, camera);
+}
+
+$(() => {
+	$(window).mousemove((e) => {
+  	pageX = e.pageX;
+    pageY = e.pageY;
+    //requestAnimationFrame(animate);
+  })
+})
