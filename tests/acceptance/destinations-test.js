@@ -17,7 +17,7 @@ moduleForAcceptance('Acceptance | destinations', {
 });
 
 test('existing destinations are listed', (assert) => {
-  visit('/');
+  visit('/destinations');
 
   andThen(() => {
     assert.equal(find('.destination .description').text(), 'Ina-Karekh');
