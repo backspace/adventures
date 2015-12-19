@@ -19,7 +19,8 @@ module.exports = function(environment) {
     },
 
     emberPouch: {
-      localDb: 'adventure-gathering'
+      localDb: 'adventure-gathering',
+      options: {}
     }
   };
 
@@ -41,6 +42,8 @@ module.exports = function(environment) {
     ENV.APP.LOG_VIEW_LOOKUPS = false;
 
     ENV.APP.rootElement = '#ember-testing';
+
+    ENV.emberPouch.options = {adapter: 'memory'};
   }
 
   if (environment === 'production') {
