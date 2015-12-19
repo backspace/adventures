@@ -22,9 +22,15 @@ moduleForAcceptance('Acceptance | destinations', {
 
     return new Ember.RSVP.Promise((resolve) => {
       Ember.run(() => {
-        const fixture = store.createRecord('destination');
-        fixture.set('description', 'Ina-Karekh');
-        return resolve(fixture.save);
+        const fixtureOne = store.createRecord('destination');
+        const fixtureTwo = store.createRecord('destination');
+
+        fixtureOne.set('description', 'Ina-Karekh');
+        fixtureTwo.set('description', 'Hona-Karekh');
+
+        Ember.RSVP.all([fixtureOne.save, fixtureTwo.save]).then(() => {
+          resolve();
+        });
       });
     });
   }
@@ -35,5 +41,6 @@ test('existing destinations are listed', (assert) => {
 
   andThen(() => {
     assert.equal(page.destinations(1).description(), 'Ina-Karekh');
+    assert.equal(page.destinations(2).description(), 'Hona-Karekh');
   });
 });
