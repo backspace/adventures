@@ -2,7 +2,7 @@
   "name": "Gathering",
   "icons": [
     {
-      "src": "launcher-icon-3x.png",
+      "src": "/launcher-icon-3x.png",
       "sizes": "144x144",
       "type": "image/png",
       "density": 3.0
