@@ -1,12 +1,35 @@
 <div class='row'>
   <div class='small-12 columns'>
-    {{textarea value=model.description class='description'}}
-    {{textarea value=model.accessibility class='accessibility'}}
+    <label>
+      Description
+      {{textarea value=model.description class='description' rows=4}}
+    </label>
 
-    {{input value=model.awesomeness type='number' class='awesomeness'}}
-    {{input value=model.risk type='number' class='risk'}}
-
-    <button {{action 'save' model}} class='save'>Save</button>
-    <button {{action 'cancel' model}} class='cancel'>Cancel</button>
+    <label>
+      Accessibility
+      {{textarea value=model.accessibility class='accessibility'}}
+    </label>
+  </div>
+</div>
+<div class='row'>
+  <div class='small-6 columns'>
+    <label>
+      Awesomeness
+      {{input value=model.awesomeness type='number' class='awesomeness'}}
+    </label>
+  </div>
+  <div class='small-6 columns'>
+    <label>
+      Risk
+      {{input value=model.risk type='number' class='risk'}}
+    </label>
+  </div>
+</div>
+<div class='row'>
+  <div class='small-6 columns'>
+    <button {{action 'save' model}} class='save success button' type='button'>Save</button>
+  </div>
+  <div class='small-6 columns'>
+    <button {{action 'cancel' model}} class='cancel alert button' type='button'>Cancel</button>
   </div>
 </div>
