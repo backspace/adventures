@@ -4,16 +4,26 @@ import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-ac
 
 import PageObject from '../page-object';
 
-const { collection, text } = PageObject;
+const { clickable, collection, fillable, text, value } = PageObject;
 
 const page = PageObject.create({
   destinations: collection({
     itemScope: '.destination',
 
     item: {
-      description: text('.description')
+      description: text('.description'),
+
+      edit: clickable('.edit')
     }
-  })
+  }),
+
+  descriptionField: {
+    scope: 'textarea.description',
+    value: value(),
+    fill: fillable()
+  },
+
+  save: clickable('.save')
 });
 
 moduleForAcceptance('Acceptance | destinations', {
@@ -42,5 +52,22 @@ test('existing destinations are listed', (assert) => {
   andThen(() => {
     assert.equal(page.destinations(1).description(), 'Ina-Karekh');
     assert.equal(page.destinations(2).description(), 'Hona-Karekh');
+  });
+});
+
+test('a destination can be edited', (assert) => {
+  visit('/destinations');
+
+  page.destinations(1).edit();
+
+  andThen(() => {
+    assert.equal(page.descriptionField().value(), 'Ina-Karekh');
+  });
+
+  page.descriptionField().fill('Kisua');
+  page.save();
+
+  andThen(() => {
+    assert.equal(page.destinations(1).description(), 'Kisua');
   });
 });

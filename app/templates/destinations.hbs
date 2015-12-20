@@ -1,5 +1,5 @@
 <ul>
 {{#each model as |destination|}}
-  <li class='destination'><div class='description'>{{destination.description}}</div></li>
+  <li class='destination'><span class='description'>{{destination.description}}</span> {{link-to 'Edit' 'destination' destination class='edit'}}</li>
 {{/each}}
 </ul>
