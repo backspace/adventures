@@ -12,6 +12,8 @@ const page = PageObject.create({
 
     item: {
       description: text('.description'),
+      awesomeness: text('.awesomeness'),
+      risk: text('.risk'),
 
       edit: clickable('.edit')
     }
@@ -31,6 +33,18 @@ const page = PageObject.create({
     fill: fillable()
   },
 
+  awesomenessField: {
+    scope: 'input.awesomeness',
+    value: value(),
+    fill: fillable()
+  },
+
+  riskField: {
+    scope: 'input.risk',
+    value: value(),
+    fill: fillable()
+  },
+
   save: clickable('.save'),
   cancel: clickable('.cancel')
 });
@@ -46,7 +60,9 @@ moduleForAcceptance('Acceptance | destinations', {
 
         fixtureOne.setProperties({
           description: 'Ina-Karekh',
-          accessibility: 'You might need help'
+          accessibility: 'You might need help',
+          awesomeness: 9,
+          risk: 6
         });
 
         fixtureTwo.set('description', 'Hona-Karekh');
@@ -88,14 +104,21 @@ test('a destination can be edited and edits can be cancelled', (assert) => {
   andThen(() => {
     assert.equal(page.descriptionField().value(), 'Ina-Karekh');
     assert.equal(page.accessibilityField().value(), 'You might need help');
+    assert.equal(page.awesomenessField().value(), '9');
+    assert.equal(page.riskField().value(), '6');
   });
 
   page.descriptionField().fill('Kisua');
   page.accessibilityField().fill('You must cross the Empty Thousand!');
+  page.awesomenessField().fill(10);
+  page.riskField().fill(5);
   page.save();
 
   andThen(() => {
-    assert.equal(page.destinations(1).description(), 'Kisua');
+    const destination = page.destinations(1);
+    assert.equal(destination.description(), 'Kisua');
+    assert.equal(destination.awesomeness(), '10');
+    assert.equal(destination.risk(), '5');
   });
 
   page.destinations(1).edit();

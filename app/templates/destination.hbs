@@ -1,5 +1,8 @@
 {{textarea value=model.description class='description'}}
 {{textarea value=model.accessibility class='accessibility'}}
 
+{{input value=model.awesomeness type='number' class='awesomeness'}}
+{{input value=model.risk type='number' class='risk'}}
+
 <button {{action 'save' model}} class='save'>Save</button>
 <button {{action 'cancel' model}} class='cancel'>Cancel</button>

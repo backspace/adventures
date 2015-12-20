@@ -1,7 +1,22 @@
-<ul>
-  {{#each model as |destination|}}
-    <li class='destination'><span class='description'>{{destination.description}}</span> {{link-to 'Edit' 'destination' destination class='edit'}}</li>
-  {{/each}}
-</ul>
+<table>
+  <thead>
+    <tr>
+      <th>Description</th>
+      <th>A</th>
+      <th>R</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each model as |destination|}}
+      <tr class='destination'>
+        <td class='description'>{{destination.description}}</td>
+        <td class='awesomeness'>{{destination.awesomeness}}</td>
+        <td class='risk'>{{destination.risk}}</td>
+        <td>{{link-to 'Edit' 'destination' destination class='edit'}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
 
 {{link-to 'New' 'destinations.new' class='new'}}
