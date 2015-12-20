@@ -52,7 +52,7 @@ module.exports = function(environment) {
 
     ENV.APP.rootElement = '#ember-testing';
 
-    ENV.emberPouch.options = {adapter: 'memory'};
+    //ENV.emberPouch.options = {adapter: 'memory'};
   }
 
   if (environment === 'production') {
