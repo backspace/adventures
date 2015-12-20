@@ -23,7 +23,8 @@ export default Ember.Controller.extend({
         });
       }).catch(error => {
         Ember.run(() => {
-          this.set('error', JSON.stringify(error));
+          console.log('error with sync:', error);
+          this.set('error', error);
         });
       });
 
