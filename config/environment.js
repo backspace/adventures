@@ -28,7 +28,7 @@ module.exports = function(environment) {
       appcacheFile: "/manifest.appcache",
       excludePaths: ['index.html', 'someother.html'],
       includePaths: ['/'],
-      network: ['api/'],
+      network: ['*'],
       showCreateDate: true
     }
   };
