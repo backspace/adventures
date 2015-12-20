@@ -17,6 +17,8 @@ const page = PageObject.create({
     }
   }),
 
+  new: clickable('.new'),
+
   descriptionField: {
     scope: 'textarea.description',
     value: value(),
@@ -53,6 +55,18 @@ test('existing destinations are listed', (assert) => {
   andThen(() => {
     assert.equal(page.destinations(1).description(), 'Ina-Karekh');
     assert.equal(page.destinations(2).description(), 'Hona-Karekh');
+  });
+});
+
+test('a destination can be created', (assert) => {
+  visit('/destinations');
+
+  page.new();
+  page.descriptionField().fill('Bromarte');
+  page.save();
+
+  andThen(() => {
+    assert.equal(page.destinations(3).description(), 'Bromarte');
   });
 });
 
