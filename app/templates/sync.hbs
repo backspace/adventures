@@ -1,5 +1,11 @@
 {{input value=destination class='destination'}}
 
+<ul class='databases'>
+  {{#each databases as |database|}}
+    <li class='database'>{{database}}</li>
+  {{/each}}
+</ul>
+
 <button {{action 'sync'}} class='sync'>Sync</button>
 
 {{#if result}}

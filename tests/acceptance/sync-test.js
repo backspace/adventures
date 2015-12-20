@@ -5,13 +5,21 @@ import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-ac
 
 import PageObject from '../page-object';
 
-const { clickable, fillable, text } = PageObject;
+const { clickable, collection, fillable, text } = PageObject;
 
 const page = PageObject.create({
   visit: clickable('a.sync'),
 
   enterDestination: fillable('input.destination'),
   sync: clickable('button.sync'),
+
+  databases: collection({
+    itemScope: '.databases .database',
+
+    item: {
+      name: text()
+    }
+  }),
 
   push: {
     scope: 'tr.push',
@@ -69,5 +77,24 @@ test('can sync with another database', function(assert) {
 
       done();
     });
+  });
+});
+
+test('databases synced to are remembered', (assert) => {
+  visit('/');
+  page.visit();
+
+  page.enterDestination('sync1').sync();
+
+  andThen(() => {
+    assert.equal(page.databases().count(), 1);
+  });
+
+  page.enterDestination('sync2').sync();
+
+  andThen(() => {
+    assert.equal(page.databases().count(), 2);
+    assert.equal(page.databases(1).name(), 'sync1');
+    assert.equal(page.databases(2).name(), 'sync2');
   });
 });
