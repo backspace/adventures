@@ -21,6 +21,15 @@ module.exports = function(environment) {
     emberPouch: {
       localDb: 'adventure-gathering',
       options: {}
+    },
+
+    manifest: {
+      enabled: true,
+      appcacheFile: "/manifest.appcache",
+      excludePaths: ['index.html', 'someother.html'],
+      includePaths: ['/'],
+      network: ['api/'],
+      showCreateDate: true
     }
   };
 
