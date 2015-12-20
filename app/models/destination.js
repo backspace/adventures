@@ -10,5 +10,8 @@ export default Model.extend({
   accessibility: attr('string'),
 
   awesomeness: attr('number'),
-  risk: attr('number')
+  risk: attr('number'),
+
+  createdAt: attr('createDate'),
+  updatedAt: attr('updateDate')
 });

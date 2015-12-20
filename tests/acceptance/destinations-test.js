@@ -84,7 +84,7 @@ test('existing destinations are listed', (assert) => {
   });
 });
 
-test('a destination can be created', (assert) => {
+test('a destination can be created and will appear at the top of the list', (assert) => {
   visit('/destinations');
 
   page.new();
@@ -92,7 +92,7 @@ test('a destination can be created', (assert) => {
   page.save();
 
   andThen(() => {
-    assert.equal(page.destinations(3).description(), 'Bromarte');
+    assert.equal(page.destinations(1).description(), 'Bromarte');
   });
 });
 
