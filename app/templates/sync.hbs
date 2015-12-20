@@ -1,39 +1,43 @@
-{{input value=destination class='destination'}}
+<div class='row'>
+  <div class='small-12 columns'>
+    {{input value=destination class='destination'}}
 
-<ul class='databases'>
-  {{#each databases as |database|}}
-    <li class='database'><a href='#' {{action 'setDestination' database}}>{{database}}</a></li>
-  {{/each}}
-</ul>
+    <ul class='databases'>
+      {{#each databases as |database|}}
+        <li class='database'><a href='#' {{action 'setDestination' database}}>{{database}}</a></li>
+      {{/each}}
+    </ul>
 
-<button {{action 'sync'}} class='sync'>Sync</button>
+    <button {{action 'sync'}} class='sync'>Sync</button>
 
-{{#if result}}
-  <table>
-    <thead>
-      <th></th>
-      <th>read</th>
-      <th>written</th>
-      <th>write failures</th>
-      <th>errors</th>
-    </thead>
-    <tbody>
-      <tr class='push'>
-        <td>push</td>
-        <td class='read'>{{result.push.docs_read}}</td>
-        <td class='written'>{{result.push.docs_written}}</td>
-        <td class='write-failures'>{{result.push.doc_write_failures}}</td>
-        <td class='errors'>{{result.push.errors}}</td>
-      </tr>
-      <tr class='pull'>
-        <td>pull</td>
-        <td class='read'>{{result.pull.docs_read}}</td>
-        <td class='written'>{{result.pull.docs_written}}</td>
-        <td class='write-failures'>{{result.pull.doc_write_failures}}</td>
-        <td class='errors'>{{result.pull.errors}}</td>
-      </tr>
-    </tbody>
-  </table>
-{{else if error}}
-  Error: <code>{{error}}</code>
-{{/if}}
+    {{#if result}}
+      <table>
+        <thead>
+          <th></th>
+          <th>read</th>
+          <th>written</th>
+          <th>write failures</th>
+          <th>errors</th>
+        </thead>
+        <tbody>
+          <tr class='push'>
+            <td>push</td>
+            <td class='read'>{{result.push.docs_read}}</td>
+            <td class='written'>{{result.push.docs_written}}</td>
+            <td class='write-failures'>{{result.push.doc_write_failures}}</td>
+            <td class='errors'>{{result.push.errors}}</td>
+          </tr>
+          <tr class='pull'>
+            <td>pull</td>
+            <td class='read'>{{result.pull.docs_read}}</td>
+            <td class='written'>{{result.pull.docs_written}}</td>
+            <td class='write-failures'>{{result.pull.doc_write_failures}}</td>
+            <td class='errors'>{{result.pull.errors}}</td>
+          </tr>
+        </tbody>
+      </table>
+    {{else if error}}
+      Error: <code>{{error}}</code>
+    {{/if}}
+  </div>
+</div>

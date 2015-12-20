@@ -1,22 +1,26 @@
-<table>
-  <thead>
-    <tr>
-      <th>Description</th>
-      <th>A</th>
-      <th>R</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each destinations as |destination|}}
-      <tr class='destination'>
-        <td class='description'>{{destination.description}}</td>
-        <td class='awesomeness'>{{destination.awesomeness}}</td>
-        <td class='risk'>{{destination.risk}}</td>
-        <td>{{link-to 'Edit' 'destination' destination class='edit'}}</td>
-      </tr>
-    {{/each}}
-  </tbody>
-</table>
+<div class='row'>
+  <div class='small-12 columns'>
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>A</th>
+          <th>R</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each destinations as |destination|}}
+          <tr class='destination'>
+            <td class='description'>{{destination.description}}</td>
+            <td class='awesomeness'>{{destination.awesomeness}}</td>
+            <td class='risk'>{{destination.risk}}</td>
+            <td>{{link-to 'Edit' 'destination' destination class='edit'}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
 
-{{link-to 'New' 'destinations.new' class='new'}}
+    {{link-to 'New' 'destinations.new' class='new'}}
+  </div>
+</div>
