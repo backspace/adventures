@@ -11,6 +11,8 @@ Router.map(function() {
   });
 
   this.route('destination', {path: '/destinations/:destination_id'});
+
+  this.route('sync');
 });
 
 export default Router;
