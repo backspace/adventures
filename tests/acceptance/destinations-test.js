@@ -25,6 +25,12 @@ const page = PageObject.create({
     fill: fillable()
   },
 
+  accessibilityField: {
+    scope: 'textarea.accessibility',
+    value: value(),
+    fill: fillable()
+  },
+
   save: clickable('.save'),
   cancel: clickable('.cancel')
 });
@@ -38,7 +44,11 @@ moduleForAcceptance('Acceptance | destinations', {
         const fixtureOne = store.createRecord('destination');
         const fixtureTwo = store.createRecord('destination');
 
-        fixtureOne.set('description', 'Ina-Karekh');
+        fixtureOne.setProperties({
+          description: 'Ina-Karekh',
+          accessibility: 'You might need help'
+        });
+
         fixtureTwo.set('description', 'Hona-Karekh');
 
         Ember.RSVP.all([fixtureOne.save, fixtureTwo.save]).then(() => {
@@ -77,9 +87,11 @@ test('a destination can be edited and edits can be cancelled', (assert) => {
 
   andThen(() => {
     assert.equal(page.descriptionField().value(), 'Ina-Karekh');
+    assert.equal(page.accessibilityField().value(), 'You might need help');
   });
 
   page.descriptionField().fill('Kisua');
+  page.accessibilityField().fill('You must cross the Empty Thousand!');
   page.save();
 
   andThen(() => {
@@ -87,6 +99,11 @@ test('a destination can be edited and edits can be cancelled', (assert) => {
   });
 
   page.destinations(1).edit();
+
+  andThen(() => {
+    assert.equal(page.accessibilityField().value(), 'You must cross the Empty Thousand!');
+  });
+
   page.descriptionField().fill('Banbarra');
   page.cancel();
 
