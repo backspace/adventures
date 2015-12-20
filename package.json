@@ -33,6 +33,7 @@
     "ember-cli-deploy-manifest": "0.1.0",
     "ember-cli-deploy-revision-data": "0.1.0",
     "ember-cli-deploy-s3": "0.2.0",
+    "ember-cli-favicon": "0.0.4",
     "ember-cli-foundation-6-sass": "acoustep/ember-cli-foundation-6-sass",
     "ember-cli-htmlbars": "^1.0.1",
     "ember-cli-htmlbars-inline-precompile": "^0.3.1",
