@@ -2,7 +2,7 @@
 
 <ul class='databases'>
   {{#each databases as |database|}}
-    <li class='database'>{{database}}</li>
+    <li class='database'><a href='#' {{action 'setDestination' database}}>{{database}}</a></li>
   {{/each}}
 </ul>
 

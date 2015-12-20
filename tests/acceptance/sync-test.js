@@ -5,19 +5,21 @@ import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-ac
 
 import PageObject from '../page-object';
 
-const { clickable, collection, fillable, text } = PageObject;
+const { clickable, collection, fillable, text, value } = PageObject;
 
 const page = PageObject.create({
   visit: clickable('a.sync'),
 
   enterDestination: fillable('input.destination'),
+  destinationValue: value('input.destination'),
   sync: clickable('button.sync'),
 
   databases: collection({
     itemScope: '.databases .database',
 
     item: {
-      name: text()
+      name: text(),
+      click: clickable('a')
     }
   }),
 
@@ -54,7 +56,8 @@ moduleForAcceptance('Acceptance | sync', {
   }
 });
 
-test('can sync with another database', function(assert) {
+// I had these as separate tests but localStorage was bleeding through… ugh
+test('can sync with another database, syncs are remembered and can be returned to', function(assert) {
   const done = assert.async();
 
   visit('/');
@@ -75,26 +78,23 @@ test('can sync with another database', function(assert) {
       //assert.equal(page.pull().written(), '0');
       assert.equal(page.pull().writeFailures(), '0');
 
-      done();
+      assert.equal(page.databases().count(), 1);
+
+      page.enterDestination('other-sync').sync();
+
+      andThen(() => {
+        assert.equal(page.databases().count(), 2);
+        assert.equal(page.databases(1).name(), 'sync-db');
+        assert.equal(page.databases(2).name(), 'other-sync');
+      });
+
+      page.databases(1).click();
+
+      andThen(() => {
+        assert.equal(page.destinationValue(), 'sync-db');
+
+        done();
+      });
     });
-  });
-});
-
-test('databases synced to are remembered', (assert) => {
-  visit('/');
-  page.visit();
-
-  page.enterDestination('sync1').sync();
-
-  andThen(() => {
-    assert.equal(page.databases().count(), 1);
-  });
-
-  page.enterDestination('sync2').sync();
-
-  andThen(() => {
-    assert.equal(page.databases().count(), 2);
-    assert.equal(page.databases(1).name(), 'sync1');
-    assert.equal(page.databases(2).name(), 'sync2');
   });
 });

@@ -28,6 +28,10 @@ export default Ember.Controller.extend({
       });
 
       this.set('syncPromise', syncPromise);
+    },
+
+    setDestination(destination) {
+      this.set('destination', destination);
     }
   }
 });
