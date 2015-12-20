@@ -23,7 +23,8 @@ const page = PageObject.create({
     fill: fillable()
   },
 
-  save: clickable('.save')
+  save: clickable('.save'),
+  cancel: clickable('.cancel')
 });
 
 moduleForAcceptance('Acceptance | destinations', {
@@ -55,7 +56,7 @@ test('existing destinations are listed', (assert) => {
   });
 });
 
-test('a destination can be edited', (assert) => {
+test('a destination can be edited and edits can be cancelled', (assert) => {
   visit('/destinations');
 
   page.destinations(1).edit();
@@ -66,6 +67,14 @@ test('a destination can be edited', (assert) => {
 
   page.descriptionField().fill('Kisua');
   page.save();
+
+  andThen(() => {
+    assert.equal(page.destinations(1).description(), 'Kisua');
+  });
+
+  page.destinations(1).edit();
+  page.descriptionField().fill('Banbarra');
+  page.cancel();
 
   andThen(() => {
     assert.equal(page.destinations(1).description(), 'Kisua');

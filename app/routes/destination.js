@@ -6,6 +6,11 @@ export default Ember.Route.extend({
       model.save().then(() => {
         this.transitionTo('destinations');
       });
+    },
+
+    cancel(model) {
+      model.rollbackAttributes();
+      this.transitionTo('destinations');
     }
   }
 });
