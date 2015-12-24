@@ -48,8 +48,11 @@
         return $('body').bind('mouseup touchend', (function(_this) {
           return function(event) {
             $(document.body).removeClass('draglessness');
-            started = false;
-            return event.preventDefault();
+
+            if (started) {
+              started = false;
+              event.preventDefault();
+            }
           };
         })(this));
       });
