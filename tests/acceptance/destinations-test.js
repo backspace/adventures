@@ -45,6 +45,12 @@ const page = PageObject.create({
     fill: fillable()
   },
 
+  answerField: {
+    scope: 'input.answer',
+    value: value(),
+    fill: fillable()
+  },
+
   save: clickable('.save'),
   cancel: clickable('.cancel')
 });
@@ -62,7 +68,8 @@ moduleForAcceptance('Acceptance | destinations', {
           description: 'Ina-Karekh',
           accessibility: 'You might need help',
           awesomeness: 9,
-          risk: 6
+          risk: 6,
+          answer: 'ABC123'
         });
 
         fixtureTwo.set('description', 'Hona-Karekh');
@@ -106,12 +113,14 @@ test('a destination can be edited and edits can be cancelled', (assert) => {
     assert.equal(page.accessibilityField().value(), 'You might need help');
     assert.equal(page.awesomenessField().value(), '9');
     assert.equal(page.riskField().value(), '6');
+    assert.equal(page.answerField().value(), 'ABC123');
   });
 
   page.descriptionField().fill('Kisua');
   page.accessibilityField().fill('You must cross the Empty Thousand!');
   page.awesomenessField().fill(10);
   page.riskField().fill(5);
+  page.answerField().fill('DEF456');
   page.save();
 
   andThen(() => {
@@ -125,6 +134,7 @@ test('a destination can be edited and edits can be cancelled', (assert) => {
 
   andThen(() => {
     assert.equal(page.accessibilityField().value(), 'You must cross the Empty Thousand!');
+    assert.equal(page.answerField().value(), 'DEF456');
   });
 
   page.descriptionField().fill('Banbarra');

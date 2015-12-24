@@ -9,6 +9,8 @@ export default Model.extend({
   description: attr('string'),
   accessibility: attr('string'),
 
+  answer: attr('string'),
+
   awesomeness: attr('number'),
   risk: attr('number'),
 
