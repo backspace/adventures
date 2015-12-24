@@ -7,6 +7,7 @@ const {
 
 export default Model.extend({
   name: attr('string'),
+  notes: attr('string'),
 
   createdAt: attr('createDate'),
   updatedAt: attr('updateDate')

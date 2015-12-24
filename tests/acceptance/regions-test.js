@@ -27,6 +27,11 @@ const page = PageObject.create({
     fill: fillable()
   },
 
+  notesField: {
+    scope: 'textarea.notes',
+    value: value()
+  },
+
   save: clickable('.save'),
   cancel: clickable('.cancel')
 });
@@ -40,7 +45,10 @@ moduleForAcceptance('Acceptance | regions', {
         const fixtureOne = store.createRecord('region');
         const fixtureTwo = store.createRecord('region');
 
-        fixtureOne.set('name', 'Gujaareh');
+        fixtureOne.setProperties({
+          name: 'Gujaareh',
+          notes: 'City of Dreams'
+        });
         fixtureTwo.set('name', 'Kisua');
 
         Ember.RSVP.all([fixtureOne.save, fixtureTwo.save]).then(() => {
@@ -80,6 +88,7 @@ test('a region can be edited and edits can be cancelled', (assert) => {
 
   andThen(() => {
     assert.equal(page.nameField().value(), 'Gujaareh');
+    assert.equal(page.notesField().value(), 'City of Dreams');
   });
 
   page.nameField().fill('Occupied Gujaareh');
