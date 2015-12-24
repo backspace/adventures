@@ -4,7 +4,7 @@ import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-ac
 
 import PageObject from '../page-object';
 
-const { collection, text, visitable } = PageObject;
+const { clickable, collection, fillable, text, value, visitable } = PageObject;
 
 const page = PageObject.create({
   visit: visitable('/regions'),
@@ -13,9 +13,22 @@ const page = PageObject.create({
     itemScope: '.region',
 
     item: {
-      name: text('.name')
+      name: text('.name'),
+
+      edit: clickable('.edit')
     }
-  })
+  }),
+
+  new: clickable('.new'),
+
+  nameField: {
+    scope: 'input.name',
+    value: value(),
+    fill: fillable()
+  },
+
+  save: clickable('.save'),
+  cancel: clickable('.cancel')
 });
 
 moduleForAcceptance('Acceptance | regions', {
@@ -45,5 +58,43 @@ test('existing regions are listed', function(assert) {
     assert.equal(page.regions().count(), 2, 'expected two regions to be listed');
     assert.equal(page.regions(1).name(), 'Gujaareh');
     assert.equal(page.regions(2).name(), 'Kisua');
+  });
+});
+
+test('a region can be created and will appear at the top of the list', (assert) => {
+  page.visit();
+
+  page.new();
+  page.nameField().fill('Jellevy');
+  page.save();
+
+  andThen(() => {
+    assert.equal(page.regions(1).name(), 'Jellevy');
+  });
+});
+
+test('a region can be edited and edits can be cancelled', (assert) => {
+  page.visit();
+
+  page.regions(1).edit();
+
+  andThen(() => {
+    assert.equal(page.nameField().value(), 'Gujaareh');
+  });
+
+  page.nameField().fill('Occupied Gujaareh');
+  page.save();
+
+  andThen(() => {
+    const region = page.regions(1);
+    assert.equal(region.name(), 'Occupied Gujaareh');
+  });
+
+  page.regions(1).edit();
+  page.nameField().fill('Gujaareh Protectorate');
+  page.cancel();
+
+  andThen(() => {
+    assert.equal(page.regions(1).name(), 'Occupied Gujaareh');
   });
 });

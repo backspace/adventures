@@ -12,7 +12,11 @@ Router.map(function() {
 
   this.route('destination', {path: '/destinations/:destination_id'});
 
-  this.route('regions');
+  this.route('regions', function() {
+    this.route('new');
+  });
+
+  this.route('region', {path: '/regions/:region_id'});
 
   this.route('sync');
 });

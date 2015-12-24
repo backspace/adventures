@@ -1,0 +1,22 @@
+<div class='row'>
+  <div class='small-12 columns'>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each regions as |region|}}
+          <tr class='region'>
+            <td class='name'>{{region.name}}</td>
+            <td>{{link-to 'Edit' 'region' region class='edit'}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+
+    {{link-to 'New' 'regions.new' class='new'}}
+  </div>
+</div>

@@ -1,0 +1,16 @@
+<div class='row'>
+  <div class='small-12 columns'>
+    <label>
+      Name
+      {{input value=model.name class='name'}}
+    </label>
+  </div>
+</div>
+<div class='row'>
+  <div class='small-6 columns'>
+    <button {{action 'save' model}} class='save success button' type='button'>Save</button>
+  </div>
+  <div class='small-6 columns'>
+    <button {{action 'cancel' model}} class='cancel alert button' type='button'>Cancel</button>
+  </div>
+</div>
