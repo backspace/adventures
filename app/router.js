@@ -12,6 +12,8 @@ Router.map(function() {
 
   this.route('destination', {path: '/destinations/:destination_id'});
 
+  this.route('regions');
+
   this.route('sync');
 });
 
