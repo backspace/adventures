@@ -25,5 +25,7 @@ module.exports = function(defaults) {
   var path = require('path');
   app.import({test: path.join(app.bowerDirectory, 'pouchdb/dist/pouchdb.memory.js')});
 
+  app.import('vendor/jquery.draggableNumber.js');
+
   return app.toTree();
 };

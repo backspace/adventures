@@ -20,13 +20,17 @@
   <div class='small-6 columns'>
     <label>
       Awesomeness
-      {{input value=model.awesomeness type='number' class='awesomeness'}}
+      {{#draggable-number}}
+        {{input value=model.awesomeness type='number' class='awesomeness' min=0 max=10 step=0.25}}
+      {{/draggable-number}}
     </label>
   </div>
   <div class='small-6 columns'>
     <label>
       Risk
-      {{input value=model.risk type='number' class='risk'}}
+      {{#draggable-number}}
+        {{input value=model.risk type='number' class='risk' min=0 max=10 step=0.25}}
+      {{/draggable-number}}
     </label>
   </div>
 </div>
