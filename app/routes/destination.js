@@ -26,6 +26,13 @@ export default Ember.Route.extend({
     cancel(model) {
       model.rollbackAttributes();
       this.transitionTo('destinations');
+    },
+
+    delete(model) {
+      model.deleteRecord();
+      model.save().then(() => {
+        this.transitionTo('destinations');
+      });
     }
   }
 });

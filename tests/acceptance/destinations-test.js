@@ -60,7 +60,8 @@ const page = PageObject.create({
   },
 
   save: clickable('.save'),
-  cancel: clickable('.cancel')
+  cancel: clickable('.cancel'),
+  delete: clickable('.delete')
 });
 
 moduleForAcceptance('Acceptance | destinations', {
@@ -186,5 +187,16 @@ test('a new destination defaults to the same region as the previously-created on
 
   andThen(() => {
     assert.equal(page.regionField().value(), this.regionTwo.id);
+  });
+});
+
+test('a destination can be deleted', (assert) => {
+  page.visit();
+
+  page.destinations(1).edit();
+  page.delete();
+
+  andThen(() => {
+    assert.equal(page.destinations().count(), 1);
   });
 });
