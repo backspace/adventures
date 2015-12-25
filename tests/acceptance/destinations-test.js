@@ -4,7 +4,7 @@ import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-ac
 
 import PageObject from '../page-object';
 
-const { clickable, collection, fillable, text, value } = PageObject;
+const { clickable, collection, fillable, selectable, text, value } = PageObject;
 
 const page = PageObject.create({
   destinations: collection({
@@ -51,6 +51,12 @@ const page = PageObject.create({
     fill: fillable()
   },
 
+  regionField: {
+    scope: 'select.region',
+    value: value(),
+    select: selectable()
+  },
+
   save: clickable('.save'),
   cancel: clickable('.cancel')
 });
@@ -61,20 +67,30 @@ moduleForAcceptance('Acceptance | destinations', {
 
     return new Ember.RSVP.Promise((resolve) => {
       Ember.run(() => {
-        const fixtureOne = store.createRecord('destination');
-        const fixtureTwo = store.createRecord('destination');
+        const regionOne = store.createRecord('region');
+        const regionTwo = store.createRecord('region');
 
-        fixtureOne.setProperties({
-          description: 'Ina-Karekh',
-          accessibility: 'You might need help',
-          awesomeness: 9,
-          risk: 6,
-          answer: 'ABC123'
-        });
+        regionOne.set('name', 'There');
+        regionTwo.set('name', 'Here');
 
-        fixtureTwo.set('description', 'Hona-Karekh');
+        Ember.RSVP.all([regionOne.save, regionTwo.save]).then(() => {
+          const fixtureOne = store.createRecord('destination');
+          const fixtureTwo = store.createRecord('destination');
 
-        Ember.RSVP.all([fixtureOne.save, fixtureTwo.save]).then(() => {
+          fixtureOne.setProperties({
+            description: 'Ina-Karekh',
+            accessibility: 'You might need help',
+            awesomeness: 9,
+            risk: 6,
+            answer: 'ABC123',
+
+            region: regionOne
+          });
+
+          fixtureTwo.set('description', 'Hona-Karekh');
+
+          return Ember.RSVP.all([fixtureOne.save, fixtureTwo.save]);
+        }).then(() => {
           resolve();
         });
       });
@@ -103,7 +119,7 @@ test('a destination can be created and will appear at the top of the list', (ass
   });
 });
 
-test('a destination can be edited and edits can be cancelled', (assert) => {
+test('a destination can be edited and edits can be cancelled', function(assert) {
   visit('/destinations');
 
   page.destinations(1).edit();
@@ -114,6 +130,7 @@ test('a destination can be edited and edits can be cancelled', (assert) => {
     assert.equal(page.awesomenessField().value(), '9');
     assert.equal(page.riskField().value(), '6');
     assert.equal(page.answerField().value(), 'ABC123');
+    assert.equal(page.regionField().value(), 'Here');
   });
 
   page.descriptionField().fill('Kisua');

@@ -5,5 +5,6 @@ export default DestinationRoute.extend({
     return this.store.createRecord('destination');
   },
 
-  templateName: 'destination'
+  templateName: 'destination',
+  controllerName: 'destination'
 });

@@ -2,7 +2,8 @@ import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
 const {
-  attr
+  attr,
+  belongsTo
 } = DS;
 
 export default Model.extend({
@@ -13,6 +14,8 @@ export default Model.extend({
 
   awesomeness: attr('number'),
   risk: attr('number'),
+
+  region: belongsTo('region'),
 
   createdAt: attr('createDate'),
   updatedAt: attr('updateDate')

@@ -50,7 +50,8 @@
     "ember-export-application-global": "^1.0.4",
     "ember-local-storage": "0.1.1",
     "ember-pouch": "nolanlawson/ember-pouch#10c8b4a",
-    "ember-resolver": "^2.0.3"
+    "ember-resolver": "^2.0.3",
+    "ember-truth-helpers": "1.2.0"
   },
   "dependencies": {
     "broccoli-merge-trees": "^1.1.0"
