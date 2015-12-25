@@ -22,6 +22,7 @@
     "broccoli-asset-rev": "^2.2.0",
     "broccoli-manifest": "0.0.7",
     "ember-ajax": "0.7.1",
+    "ember-browserify": "^1.1.4",
     "ember-cli": "2.2.0-beta.1",
     "ember-cli-app-version": "^1.0.0",
     "ember-cli-babel": "^5.1.5",
@@ -51,7 +52,8 @@
     "ember-local-storage": "0.1.1",
     "ember-pouch": "nolanlawson/ember-pouch#10c8b4a",
     "ember-resolver": "^2.0.3",
-    "ember-truth-helpers": "1.2.0"
+    "ember-truth-helpers": "1.2.0",
+    "json-stringify-safe": "^5.0.1"
   },
   "dependencies": {
     "broccoli-merge-trees": "^1.1.0"

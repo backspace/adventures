@@ -5,6 +5,8 @@ import Databases from 'adventure-gathering/models/databases';
 
 import config from 'adventure-gathering/config/environment';
 
+import stringify from 'npm:json-stringify-safe';
+
 export default Ember.Controller.extend({
   databases: Databases.create(),
 
@@ -24,7 +26,7 @@ export default Ember.Controller.extend({
       }).catch(error => {
         Ember.run(() => {
           console.log('error with sync:');
-          console.log(error);
+          console.log(stringify(error));
           this.set('error', error);
         });
       });
