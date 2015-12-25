@@ -33,7 +33,8 @@ const page = PageObject.create({
   },
 
   save: clickable('.save'),
-  cancel: clickable('.cancel')
+  cancel: clickable('.cancel'),
+  delete: clickable('.delete')
 });
 
 moduleForAcceptance('Acceptance | regions', {
@@ -105,5 +106,15 @@ test('a region can be edited and edits can be cancelled', (assert) => {
 
   andThen(() => {
     assert.equal(page.regions(1).name(), 'Occupied Gujaareh');
+  });
+});
+
+test('a region can be deleted', (assert) => {
+  page.visit();
+  page.regions(1).edit();
+  page.delete();
+
+  andThen(() => {
+    assert.equal(page.regions().count(), 1);
   });
 });
