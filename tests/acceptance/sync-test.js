@@ -95,6 +95,28 @@ test('can sync with another database, syncs are remembered and can be returned t
 
         done();
       });
+    }).catch((error) => {
+      assert.ok(false, 'expected no errors syncing');
+
+      // FIXME had to add this because PhantomJS was timing out during this test;
+      // the test PouchDB was full and producing errors. Should figure out how
+      // to destroy the database next time this happens.
+      // Taken from http://stackoverflow.com/a/11616993/760389
+      const cache = [];
+      const errorString = JSON.stringify(error, function(key, value) {
+        if (typeof value === 'object' && value !== null) {
+          if (cache.indexOf(value) !== -1) {
+            // Circular reference found, discard key
+            return;
+          }
+          // Store value in our collection
+          cache.push(value);
+        }
+        return value;
+      });
+      console.log(errorString);
+
+      done();
     });
   });
 });
