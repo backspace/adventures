@@ -21,7 +21,9 @@ export default Ember.Controller.extend({
 
       syncPromise.then(result => {
         Ember.run(() => {
-          this.set('result', result);
+          if (!this.isDestroyed) {
+            this.set('result', result);
+          }
         });
       }).catch(error => {
         Ember.run(() => {
