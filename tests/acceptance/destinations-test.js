@@ -4,9 +4,11 @@ import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-ac
 
 import PageObject from '../page-object';
 
-const { clickable, collection, fillable, selectable, text, value } = PageObject;
+const { clickable, collection, fillable, selectable, text, value, visitable } = PageObject;
 
 const page = PageObject.create({
+  visit: visitable('/destinations'),
+
   destinations: collection({
     itemScope: '.destination',
 
@@ -73,7 +75,10 @@ moduleForAcceptance('Acceptance | destinations', {
         regionOne.set('name', 'There');
         regionTwo.set('name', 'Here');
 
-        Ember.RSVP.all([regionOne.save, regionTwo.save]).then(() => {
+        this.regionOne = regionOne;
+        this.regionTwo = regionTwo;
+
+        Ember.RSVP.all([regionOne.save(), regionTwo.save()]).then(() => {
           const fixtureOne = store.createRecord('destination');
           const fixtureTwo = store.createRecord('destination');
 
@@ -130,7 +135,8 @@ test('a destination can be edited and edits can be cancelled', function(assert) 
     assert.equal(page.awesomenessField().value(), '9');
     assert.equal(page.riskField().value(), '6');
     assert.equal(page.answerField().value(), 'ABC123');
-    assert.equal(page.regionField().value(), 'Here');
+    // FIXME how can I check the displayed text rather than field value?
+    assert.equal(page.regionField().value(), this.regionOne.id);
   });
 
   page.descriptionField().fill('Kisua');
@@ -159,5 +165,26 @@ test('a destination can be edited and edits can be cancelled', function(assert) 
 
   andThen(() => {
     assert.equal(page.destinations(1).description(), 'Kisua');
+  });
+});
+
+test('a new destination defaults to the same region as the previously-created one', function(assert) {
+  page.visit();
+  page.new();
+  page.descriptionField().fill('The Hetawa');
+
+  andThen(() => {
+    assert.equal(page.regionField().value(), this.regionOne.id);
+
+    // FIXME how can I select by displayed name instead of ID?
+    page.regionField().select(this.regionTwo.id);
+  });
+
+  page.save();
+
+  page.new();
+
+  andThen(() => {
+    assert.equal(page.regionField().value(), this.regionTwo.id);
   });
 });

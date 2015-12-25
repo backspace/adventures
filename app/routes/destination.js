@@ -1,6 +1,8 @@
 import Ember from 'ember';
 
 export default Ember.Route.extend({
+  lastRegion: Ember.inject.service(),
+
   beforeModel() {
     return this.store.findAll('region').then(regions => this.set('regions', regions));
   },
@@ -13,6 +15,10 @@ export default Ember.Route.extend({
   actions: {
     save(model) {
       model.save().then(() => {
+        return model.get('region');
+      }).then(region => {
+        this.get('lastRegion').set('lastRegion', region);
+
         this.transitionTo('destinations');
       });
     },
