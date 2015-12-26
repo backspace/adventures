@@ -1,5 +1,8 @@
-<div class='row card'>
-  <div class='small-12 columns'>
+<div class='row title'>
+  <div class='small-4 columns'>
+    <img src='/images/logo.png' class='logo'>
+  </div>
+  <div class='small-8 columns'>
     <h2 class='moving-highlight'>Clandestine Rendezvous</h2>
   </div>
 </div>

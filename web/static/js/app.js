@@ -206,9 +206,11 @@ function init() {
 
   renderer = new THREE.WebGLRenderer();
 
-  renderer.setSize(200, 200);
+  const toReplace = $('img.logo');
+  renderer.setSize(toReplace.width(), toReplace.height());
 
-  $("h2").after(renderer.domElement);
+  // FIXME only replace when possible
+  toReplace.replaceWith(renderer.domElement);
 }
 
 function animate() {
