@@ -1,5 +1,9 @@
-$body-font-family: 'Titillium Web', sans-serif;
-$global-width: 720px;
+$header-font-family: 'Codystar';
+$header-font-weight: bold;
+
+$body-font-family: 'Oswald', sans-serif;
+$body-font-color: white;
+$global-width: 480px;
 
 @import 'foundation';
 
@@ -10,12 +14,39 @@ $global-width: 720px;
 // TODO foundation-flex-grid wasn’t working?
 @include foundation-everything;
 
+$background-one: #111;
+$background-two: lighten($background-one, 1%);
+
+$highlight: lighten($background-one, 10%);
+
 body {
-  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect x='0' y='0' width='100' height='100' style='fill: #969696' /><path d='M0,0 L50,50 L50,0 L100,0 L50,50 L100,100 L50,100 L50,50 L0,100 Z' style='fill: #999' /></svg>");
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect x='0' y='0' width='100' height='100' style='fill: #{$background-one}' /><path d='M0,0 L50,50 L50,0 L100,0 L50,50 L100,100 L50,100 L50,50 L0,100 Z' style='fill: #{$background-two}' /></svg>");
+  background-attachment: fixed;
 }
 
 .everything .row {
-  background: white;
+  background: $highlight;
+}
+
+.top-bar, .top-bar ul {
+  background: transparent;
+}
+
+.row.card {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+
+  h4 {
+    margin-top: $paragraph-margin-bottom;
+  }
+
+  &.eye {
+    background: transparent;
+
+    p {
+      text-align: center;
+    }
+  }
 }
 
 // Copied from Foundation to style logout link

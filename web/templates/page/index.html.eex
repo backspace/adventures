@@ -1,77 +1,58 @@
-<div class='row'>
-  <div class='small-4 columns'>
-    <div class='zoom-container'>
-      <img src='/images/desert.jpg'>
-      <div class='secret'><div class='text'>hello i am here</div></div>
-    </div>
-  </div>
-  <div class='small-8 columns'>
+<div class='row card'>
+  <div class='small-12 columns'>
     <h2>Clandestine Rendezvous</h2>
-    <p>
-      <%= render "eye.html" %>
-      <div class='svg-background-experiment'>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-        <%= render "eye.html" %>
-      </div>
-    </p>
+  </div>
+</div>
 
-    <div class='callout'>
-      <p>You are a member of a secret society with a mission of the utmost importance.</p>
-      <p>You will have encounters with other members around the PATH where you will obtain information to get closer to fulfilling your mission.</p>
-    </div>
+<div class='row card'>
+  <div class='small-12 columns'>
+    <p>You are a member of a secret society with a mission of the utmost importance.</p>
+    <p>You will have encounters with other members around the PATH where you will obtain information to get closer to fulfilling your mission.</p>
+  </div>
+</div>
 
+<div class='row card'>
+  <div class='small-12 columns'>
     <p>Clandestine Rendezvous is an adventure taking place in downtown Toronto’s PATH <em>during the day</em> on Friday, February 5, 2016. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.</p>
+  </div>
+</div>
 
-    <h4><i class='fa fa-sun-o'></i> During the day?!</h4>
+<div class='row card'>
+  <div class='small-12 columns'>
+    <h4><i class='fa fa-white fa-sun-o'></i> During the day?!</h4>
     <p>Yes, the event is taking place during a Friday afternoon to take full advantage of spaces that are only accessible at such times. If you work maybe you can book a day off? Skip school?</p>
     <p>It will start some time in the early afternoon, around 14:00, and last about 2.5 hours.</p>
+  </div>
+</div>
 
-    <h4><i class='fa fa-user-secret'></i> Who?</h4>
+<div class='row card'>
+  <div class='small-12 columns'>
+    <h4><i class='fa fa-white fa-user-secret'></i> Who?</h4>
     <p>Anyone is invited to attend. You should have a sense of adventure and stealth and be willing to attempt to pass as a person entitled to visit downtown buildings, lest your mission be compromised. You can go alone or with a partner.</p>
+  </div>
+</div>
 
-    <h4><i class='fa fa-dollar'></i> Cost</h4>
+<div class='row card'>
+  <div class='small-12 columns'>
+    <h4><i class='fa fa-white fa-dollar'></i> Cost</h4>
     <p>A $5 donation is requested to cover printing costs and labour. If that’s too much, any amount (including 0) is welcome.</p>
-
-    <h4><i class='fa fa-universal-access'></i> Accessibility</h4>
+  </div>
+</div>
+<div class='row card'>
+  <div class='small-12 columns'>
+    <h4><i class='fa fa-white fa-universal-access'></i> Accessibility</h4>
     <p>Do you have accessibility needs we should know about? Please tell us <%= link "when you register", to: registration_path(@conn, :new) %> and we will work with you to ensure you can participate.</p>
-
-    <h4><i class='fa fa-pencil'></i> Registration</h4>
+  </div>
+</div>
+<div class='row card'>
+  <div class='small-12 columns'>
+    <h4><i class='fa fa-white fa-pencil'></i> Registration</h4>
     <p>You <em>must</em> <%= link "register", to: registration_path(@conn, :new) %> to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until XXXX.</p>
-
-    <h4><i class='fa fa-question-circle'></i> Questions</h4>
+  </div>
+</div>
+<div class='row card'>
+  <div class='small-12 columns'>
+    <h4><i class='fa fa-white fa-question-circle'></i> Questions</h4>
 
     <p><strong>This is not the registration form, that’s <%= link "here", to: registration_path(@conn, :new) %>.</strong></p>
 
@@ -100,6 +81,22 @@
         <%= submit "Submit", class: "btn btn-primary" %>
       </div>
     <% end %>
+  </div>
+</div>
 
+<div class='row card eye'>
+  <div class='small-12 columns'>
+    <p>
+      <%= render "eye.html" %>
+    </p>
+  </div>
+</div>
+
+<div class='row card'>
+  <div class='small-12 columns'>
+    <div class='zoom-container'>
+      <img src='/images/desert.jpg'>
+      <div class='secret'><div class='text'>hello i am here</div></div>
+    </div>
   </div>
 </div>
