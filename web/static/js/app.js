@@ -204,7 +204,7 @@ function init() {
   group.rotation.x = Math.PI/2;
   group.rotation.y = 0;
 
-  renderer = new THREE.WebGLRenderer();
+  renderer = new THREE.WebGLRenderer({alpha: true});
 
   const toReplace = $('img.logo');
   renderer.setSize(toReplace.width(), toReplace.height());
