@@ -59,6 +59,10 @@ body {
     margin-top: $paragraph-margin-bottom;
   }
 
+  .columns > p:first-child {
+    margin-top: $paragraph-margin-bottom;
+  }
+
   &.eye {
     background: transparent;
 
