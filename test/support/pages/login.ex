@@ -10,7 +10,7 @@ defmodule Cr2016site.Pages.Login do
   end
 
   def submit do
-    click({:class, "btn"})
+    click({:class, "button"})
   end
 
   def login_as(email, password) do

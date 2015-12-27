@@ -18,6 +18,6 @@ defmodule Cr2016site.Pages.Register do
   end
 
   def submit do
-    click({:class, "btn"})
+    click({:class, "button"})
   end
 end
