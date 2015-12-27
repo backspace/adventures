@@ -249,6 +249,12 @@ $(() => {
 	$(window).mousemove((e) => {
   	pageX = e.pageX;
     pageY = e.pageY;
+
+    const canvas = $(renderer.domElement);
+    const canvasOffset = canvas.offset();
+
+    pageX += canvasOffset.left + canvas.width()/2;
+    pageY += canvasOffset.top - canvas.height()/2;
     //requestAnimationFrame(animate);
   })
 })
