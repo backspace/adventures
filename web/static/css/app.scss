@@ -175,8 +175,16 @@ $initial-scale: 1 - ($final-scale - 1)*$min-y;
   }
 }
 
+table, thead {
+  color: black;
+}
+
+thead, tbody {
+  border: 0;
+}
+
 .conflict {
-  background-color: lighten(#C03000, 50%)
+  background-color: $warning-color;
 }
 
 .fa {

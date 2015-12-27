@@ -1,4 +1,4 @@
-<div class='row'>
+<div class='row card'>
   <div class='small-12 columns'>
     <%= form_for @changeset, user_path(@conn, :update), fn f -> %>
       <div class="form-group">
@@ -31,7 +31,7 @@
   </div>
 </div>
 <%= unless @relationships.empty? do %>
-  <div class='row'>
+  <div class='row card'>
     <div class='small-12 columns'>
       <table>
         <%= unless Enum.empty?(@relationships.mutuals) do %>
