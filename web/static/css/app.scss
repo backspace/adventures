@@ -202,3 +202,15 @@ thead, tbody {
   left: 0;
   opacity: 0.1;
 }
+
+.form-group {
+  margin-bottom: 1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.button {
+  margin-bottom: 0;
+}
