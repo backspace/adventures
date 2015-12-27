@@ -65,7 +65,7 @@ body {
 
 $nav-height: 6rem;
 
-body {
+.everything {
   padding-top: $nav-height;
 }
 
@@ -73,12 +73,11 @@ body {
   margin-top: 3rem;
   margin-bottom: 3rem;
 
-  h4 {
-    margin-top: $paragraph-margin-bottom;
-  }
+  padding-top: $paragraph-margin-bottom;
+  padding-bottom: $paragraph-margin-bottom;
 
-  .columns > p:first-child {
-    margin-top: $paragraph-margin-bottom;
+  p:last-child {
+    margin-bottom: 0;
   }
 
   &.eye {
@@ -88,16 +87,30 @@ body {
       text-align: center;
     }
   }
+}
 
-  &.nav {
-    left: 50%;
-    width: $global-width;
-    margin-left: -$global-width/2;
-    position: fixed;
-    margin-top: -$nav-height;
+.row.flash {
+  margin-bottom: 3rem;
 
-    z-index: 10;
+  .columns {
+    padding: 0;
   }
+
+  .callout {
+    margin-bottom: 0;
+  }
+}
+
+.row.nav {
+  left: 50%;
+  width: $global-width;
+  margin-left: -$global-width/2;
+  position: fixed;
+  padding: 0;
+
+  z-index: 10;
+
+  background: $highlight;
 }
 
 .row.title {
