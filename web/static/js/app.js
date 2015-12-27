@@ -227,12 +227,12 @@ function init() {
 }
 
 function animate() {
-  requestAnimationFrame(animate);
+  //requestAnimationFrame(animate);
   render();
 }
 
 function render() {
-  var deltaProportion = 0.05;
+  var deltaProportion = 0.005;
 
 	var width = window.innerWidth;
   var height = window.innerHeight;
@@ -242,6 +242,7 @@ function render() {
 
   var zDelta = (zRotation - group.rotation.z)*deltaProportion;
 
+  const lastZ = group.rotation.z;
   group.rotation.z = Math.max(Math.min(group.rotation.z + zDelta, Math.PI/2), -Math.PI/2);
 
   var y = pageY || height/2;
@@ -249,10 +250,11 @@ function render() {
 
   var xDelta = (xRotation - group.rotation.x)*deltaProportion;
 
+  const lastX = group.rotation.x;
   group.rotation.x = Math.max(Math.min(Math.PI, group.rotation.x + xDelta), 0);
 
-  if (Math.abs(group.rotation.z - zRotation) > 0.001 || Math.abs(group.rotation.x - xRotation) > 0.001) {
-    //requestAnimationFrame(animate);
+  if (Math.abs(group.rotation.z - lastZ) > 0.0001 || Math.abs(group.rotation.x - lastX) > 0.0001) {
+    requestAnimationFrame(animate);
   }
 
   renderer.render(scene, camera);
@@ -274,6 +276,6 @@ $(() => {
 
     pageX += windowWidth/2 - canvasCentreX;
     pageY += windowHeight/2 - canvasCentreY;
-    //requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
   })
 })
