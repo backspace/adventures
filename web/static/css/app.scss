@@ -5,6 +5,11 @@ $body-font-color: white;
 $global-width: 480px;
 
 $primary-color: fuchsia;
+$success-color: lime;
+$alert-color: $primary-color;
+$warning-color: yellow;
+
+$callout-background-fade: 10%;
 
 $background-one: #111;
 $background-two: lighten($background-one, 1%);
