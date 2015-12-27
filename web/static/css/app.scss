@@ -90,6 +90,8 @@ body {
     margin-left: -$global-width/2;
     position: fixed;
     margin-top: -$nav-height;
+
+    z-index: 10;
   }
 }
 
