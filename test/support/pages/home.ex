@@ -18,6 +18,6 @@ defmodule Cr2016site.Pages.Home do
   end
 
   def submit_question do
-    click({:class, "btn"})
+    click({:class, "button"})
   end
 end

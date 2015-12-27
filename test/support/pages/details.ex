@@ -70,7 +70,7 @@ defmodule Cr2016site.Pages.Details do
   end
 
   def submit do
-    click({:class, "btn"})
+    click({:class, "button"})
   end
 
   defp email_and_text_row(row) do
