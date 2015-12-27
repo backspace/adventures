@@ -6,6 +6,17 @@ $global-width: 480px;
 
 $primary-color: fuchsia;
 
+$background-one: #111;
+$background-two: lighten($background-one, 1%);
+
+$highlight: lighten($background-one, 10%);
+
+$form-label-color: white;
+$helptext-color: white;
+$helptext-font-style: normal;
+$input-color: $highlight;
+$button-color: $highlight;
+
 /* Blackout Sunrise */
 @font-face {
     font-family: 'Blackout Sunrise';
@@ -29,11 +40,6 @@ $primary-color: fuchsia;
 
 // TODO foundation-flex-grid wasn’t working?
 @include foundation-everything;
-
-$background-one: #111;
-$background-two: lighten($background-one, 1%);
-
-$highlight: lighten($background-one, 10%);
 
 body {
   background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect x='0' y='0' width='100' height='100' style='fill: #{$background-one}' /><path d='M0,0 L50,50 L50,0 L100,0 L50,50 L100,100 L50,100 L50,50 L0,100 Z' style='fill: #{$background-two}' /></svg>");
