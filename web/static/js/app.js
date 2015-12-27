@@ -253,8 +253,14 @@ $(() => {
     const canvas = $(renderer.domElement);
     const canvasOffset = canvas.offset();
 
-    pageX += canvasOffset.left + canvas.width()/2;
-    pageY += canvasOffset.top - canvas.height()/2;
+    const canvasCentreX = canvasOffset.left + canvas.width()/2;
+    const canvasCentreY = canvasOffset.top + canvas.height()/2;
+
+  	const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    pageX += windowWidth/2 - canvasCentreX;
+    pageY += windowHeight/2 - canvasCentreY;
     //requestAnimationFrame(animate);
   })
 })
