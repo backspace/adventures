@@ -242,14 +242,14 @@ function render() {
 
   var zDelta = (zRotation - group.rotation.z)*deltaProportion;
 
-  group.rotation.z = group.rotation.z + zDelta;
+  group.rotation.z = Math.max(Math.min(group.rotation.z + zDelta, Math.PI/2), -Math.PI/2);
 
   var y = pageY || height/2;
   var xRotation = Math.PI*(y/height);
 
   var xDelta = (xRotation - group.rotation.x)*deltaProportion;
 
-  group.rotation.x = group.rotation.x + xDelta;
+  group.rotation.x = Math.max(Math.min(Math.PI, group.rotation.x + xDelta), 0);
 
   if (Math.abs(group.rotation.z - zRotation) > 0.001 || Math.abs(group.rotation.x - xRotation) > 0.001) {
     //requestAnimationFrame(animate);
