@@ -125,7 +125,7 @@ function init() {
   shape.vertices.push(new THREE.Vector3(-50, -75, 100));
 
   var line = new THREE.Line(shape, lineMaterial);
-  scene.add(line);
+  //scene.add(line);
 
   var curve = new THREE.EllipseCurve(0, 0, // ax, aY
     5, 5, // xRadius, yRadius
@@ -141,7 +141,7 @@ function init() {
   // anchor.position.z = 0;
   // anchor.position.y -= 2.5;
   // anchor.position.x -= 2.5;
-  scene.add(anchor);
+  //scene.add(anchor);
 
 
   var light = new THREE.DirectionalLight(0xffffff);
