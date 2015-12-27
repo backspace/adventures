@@ -58,6 +58,12 @@ body {
   background: transparent;
 }
 
+$nav-height: 6rem;
+
+body {
+  padding-top: $nav-height;
+}
+
 .row.card {
   margin-top: 3rem;
   margin-bottom: 3rem;
@@ -76,6 +82,14 @@ body {
     p {
       text-align: center;
     }
+  }
+
+  &.nav {
+    left: 50%;
+    width: $global-width;
+    margin-left: -$global-width/2;
+    position: fixed;
+    margin-top: -$nav-height;
   }
 }
 
