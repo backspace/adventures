@@ -10,6 +10,8 @@ import stringify from 'npm:json-stringify-safe';
 export default Ember.Controller.extend({
   databases: Databases.create(),
 
+  isSyncing: false,
+
   actions: {
     sync() {
       this.get('databases').addObject(this.get('destination'));
@@ -19,10 +21,13 @@ export default Ember.Controller.extend({
 
       const syncPromise = sourceDb.sync(destinationDb);
 
+      this.set('isSyncing', true);
+
       syncPromise.then(result => {
         Ember.run(() => {
           if (!this.isDestroyed) {
             this.set('result', result);
+            this.set('isSyncing', false);
           }
         });
       }).catch(error => {
@@ -30,6 +35,7 @@ export default Ember.Controller.extend({
           console.log('error with sync:');
           console.log(stringify(error));
           this.set('error', error);
+          this.set('isSyncing', false);
         });
       });
 
