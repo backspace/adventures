@@ -4,3 +4,9 @@
 td {
   vertical-align: top;
 }
+
+body.draglessness {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
