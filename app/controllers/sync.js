@@ -22,6 +22,7 @@ export default Ember.Controller.extend({
       const syncPromise = sourceDb.sync(destinationDb);
 
       this.set('isSyncing', true);
+      this.set('result', undefined);
 
       syncPromise.then(result => {
         Ember.run(() => {
