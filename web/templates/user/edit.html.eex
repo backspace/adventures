@@ -103,3 +103,8 @@
     </div>
   </div>
 <% end %>
+<div class='row card'>
+  <div class='small-12 columns'>
+    <%= link "Change your password", to: registration_path(@conn, :edit), class: "account" %>
+  </div>
+</div>

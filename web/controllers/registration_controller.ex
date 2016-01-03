@@ -31,4 +31,36 @@ defmodule Cr2016site.RegistrationController do
         |> render("new.html", changeset: changeset)
     end
   end
+
+  def edit(conn, _) do
+    current_user = conn.assigns[:current_user_object]
+    changeset = User.account_changeset(current_user)
+
+    render conn, "edit.html", user: current_user, changeset: changeset
+  end
+
+  def update(conn, %{"user" => user_params}) do
+    current_user = conn.assigns[:current_user_object]
+    changeset = User.account_changeset(current_user, user_params)
+
+    session_params = %{"email" => current_user.email, "password" => user_params["current_password"]}
+
+    case Cr2016site.Session.login(session_params, Cr2016site.Repo) do
+      {:ok, _} ->
+        case Cr2016site.Registration.update(changeset, Cr2016site.Repo) do
+          {:ok, _} ->
+            conn
+            |> put_flash(:info, "Your password has been changed")
+            |> redirect(to: user_path(conn, :edit))
+          :error ->
+            conn
+            |> put_flash(:error, "Unable to change password")
+            |> redirect(to: registration_path(conn, :edit))
+        end
+      :error ->
+        conn
+        |> put_flash(:error, "Please enter your current password")
+        |> render "edit.html", changeset: changeset
+    end
+  end
 end

@@ -6,6 +6,10 @@ defmodule Cr2016site.User do
     field :crypted_password, :string
     field :password, :string, virtual: true
 
+    field :new_password, :string, virtual: true
+    field :new_password_confirmation, :string, virtual: true
+    field :current_password, :string, virtual: true
+
     field :admin, :boolean
 
     field :team_emails, :string
@@ -37,5 +41,12 @@ defmodule Cr2016site.User do
   def details_changeset(model, params \\ :empty) do
     model
     |> cast(params, [], @optional_fields)
+  end
+
+  def account_changeset(model, params \\ :empty) do
+    model
+    |> cast(params, [], ~w(current_password new_password new_password_confirmation))
+    # FIXME duplicated from changeset
+    |> validate_length(:password, min: 5)
   end
 end
