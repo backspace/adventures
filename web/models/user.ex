@@ -45,8 +45,9 @@ defmodule Cr2016site.User do
 
   def account_changeset(model, params \\ :empty) do
     model
-    |> cast(params, [], ~w(current_password new_password new_password_confirmation))
+    |> cast(params, ~w(current_password new_password new_password_confirmation), [])
     # FIXME duplicated from changeset
-    |> validate_length(:password, min: 5)
+    |> validate_length(:new_password, min: 5)
+    |> validate_confirmation(:new_password)
   end
 end

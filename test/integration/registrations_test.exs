@@ -96,6 +96,13 @@ defmodule Cr2016site.Integration.Registrations do
     assert Nav.error_text == "Please enter your current password"
 
     Account.fill_current_password "Xenogenesis"
+    Account.fill_new_password "abcde"
+    Account.fill_new_password_confirmation "vwxyz"
+    Account.submit
+
+    assert Nav.error_text == "New passwords must match"
+
+    Account.fill_current_password "Xenogenesis"
     Account.fill_new_password "Lilith’s Brood"
     Account.fill_new_password_confirmation "Lilith’s Brood"
     Account.submit

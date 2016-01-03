@@ -52,10 +52,10 @@ defmodule Cr2016site.RegistrationController do
             conn
             |> put_flash(:info, "Your password has been changed")
             |> redirect(to: user_path(conn, :edit))
-          :error ->
+          {:error, changeset} ->
             conn
-            |> put_flash(:error, "Unable to change password")
-            |> redirect(to: registration_path(conn, :edit))
+            |> put_flash(:error, "New passwords must match")
+            |> render "edit.html", changeset: changeset
         end
       :error ->
         conn
