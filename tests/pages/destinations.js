@@ -17,7 +17,7 @@ export default PageObject.create({
     }
   }),
 
-  new: clickable('.new'),
+  new: clickable('.destinations.new'),
 
   descriptionField: {
     scope: 'textarea.description',

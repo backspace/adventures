@@ -15,7 +15,7 @@ export default PageObject.create({
     }
   }),
 
-  new: clickable('.new'),
+  new: clickable('.regions.new'),
 
   nameField: {
     scope: 'input.name',
