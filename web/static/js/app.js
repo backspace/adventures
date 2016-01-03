@@ -103,6 +103,9 @@ var group;
 
 var pageX, pageY;
 
+let canvasX, canvasY;
+let maxRotationDistance;
+
 init();
 animate();
 
@@ -224,10 +227,21 @@ function init() {
 
   // FIXME only replace when possible
   toReplace.replaceWith(renderer.domElement);
+
+
+  const canvas = $(renderer.domElement);
+  const canvasOffset = canvas.offset();
+
+  canvasX = canvasOffset.left + canvas.width()/2;
+  canvasY = canvasOffset.top + canvas.height()/2;
+
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
+
+  maxRotationDistance = Math.min(windowWidth - canvasX, windowHeight - canvasY);
 }
 
 function animate() {
-  //requestAnimationFrame(animate);
   render();
 }
 
@@ -238,20 +252,22 @@ function render() {
   var height = window.innerHeight;
 
   var x = pageX || width/2;
-  var zRotation =  -(Math.PI*(x/width) - Math.PI/2);
+  var y = pageY || height/2;
 
+  const xProportion = Math.max(Math.min(x/maxRotationDistance, 1), -1);
+  const yProportion = Math.max(Math.min(y/maxRotationDistance, 1), -1);
+
+  var zRotation =  -(Math.PI/2*xProportion - Math.PI/2) - Math.PI/2;
   var zDelta = (zRotation - group.rotation.z)*deltaProportion;
 
   const lastZ = group.rotation.z;
-  group.rotation.z = Math.max(Math.min(group.rotation.z + zDelta, Math.PI/2), -Math.PI/2);
+  group.rotation.z += zDelta;
 
-  var y = pageY || height/2;
-  var xRotation = Math.PI*(y/height);
-
+  var xRotation = Math.PI/2*yProportion + Math.PI/2;
   var xDelta = (xRotation - group.rotation.x)*deltaProportion;
 
   const lastX = group.rotation.x;
-  group.rotation.x = Math.max(Math.min(Math.PI, group.rotation.x + xDelta), 0);
+  group.rotation.x += xDelta;
 
   if (Math.abs(group.rotation.z - lastZ) > 0.0001 || Math.abs(group.rotation.x - lastX) > 0.0001) {
     requestAnimationFrame(animate);
@@ -271,11 +287,11 @@ $(() => {
     const canvasCentreX = canvasOffset.left + canvas.width()/2;
     const canvasCentreY = canvasOffset.top + canvas.height()/2;
 
-  	const windowWidth = window.innerWidth;
+    const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
-    pageX += windowWidth/2 - canvasCentreX;
-    pageY += windowHeight/2 - canvasCentreY;
+    pageX -= canvasX;
+    pageY -= canvasY;
     requestAnimationFrame(animate);
   })
 })
