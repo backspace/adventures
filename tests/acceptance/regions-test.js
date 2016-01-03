@@ -3,6 +3,7 @@ import { test } from 'qunit';
 import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-acceptance';
 
 import page from '../pages/regions';
+import destinationsPage from '../pages/destinations';
 
 moduleForAcceptance('Acceptance | regions', {
   beforeEach() {
@@ -37,7 +38,7 @@ test('existing regions are listed', function(assert) {
   });
 });
 
-test('a region can be created and will appear at the top of the list', (assert) => {
+test('a region can be created, will appear at the top of the list, and be the default for a new destination', (assert) => {
   page.visit();
 
   page.new();
@@ -46,6 +47,15 @@ test('a region can be created and will appear at the top of the list', (assert) 
 
   andThen(() => {
     assert.equal(page.regions(1).name(), 'Jellevy');
+  });
+
+  destinationsPage.visit();
+  destinationsPage.new();
+
+  andThen(() => {
+    // FIXME this is an unpleasant way to find the label of the selected value
+    const id = destinationsPage.regionField().value();
+    assert.equal(find(`option[value='${id}']`)[0].innerHTML, 'Jellevy');
   });
 });
 
