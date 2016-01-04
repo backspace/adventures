@@ -20,7 +20,7 @@ moduleForAcceptance('Acceptance | regions', {
         });
         fixtureTwo.set('name', 'Kisua');
 
-        Ember.RSVP.all([fixtureOne.save, fixtureTwo.save]).then(() => {
+        Ember.RSVP.all([fixtureTwo.save(), fixtureOne.save()]).then(() => {
           resolve();
         });
       });
@@ -83,6 +83,27 @@ test('a region can be edited and edits can be cancelled', (assert) => {
 
   andThen(() => {
     assert.equal(page.regions(1).name(), 'Occupied Gujaareh');
+  });
+});
+
+test('an edited region is the default for a new destination', (assert) => {
+  page.visit();
+
+  page.new();
+  page.nameField().fill('Jellevy');
+  page.save();
+
+  page.regions(3).edit();
+  page.nameField().fill('Kisua Protectorate');
+  page.save();
+
+  destinationsPage.visit();
+  destinationsPage.new();
+
+  andThen(() => {
+    // FIXME see above
+    const id = destinationsPage.regionField().value();
+    assert.equal(find(`option[value='${id}']`)[0].innerHTML, 'Kisua Protectorate');
   });
 });
 
