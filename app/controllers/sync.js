@@ -12,6 +12,8 @@ export default Ember.Controller.extend({
 
   isSyncing: false,
 
+  version: config.APP.version,
+
   actions: {
     sync() {
       this.get('databases').addObject(this.get('destination'));
