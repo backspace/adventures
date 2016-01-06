@@ -22,10 +22,7 @@
 
 <div class='row card'>
   <div class='small-12 columns'>
-    <div class='zoom-container'>
-      <img src='/images/painting.jpg'>
-      <div class='secret'><div class='text'>you found a secret</div></div>
-    </div>
+    <img src='/images/painting.jpg'>
   </div>
 </div>
 
@@ -108,7 +105,7 @@
   <div class='small-12 columns'>
     <div class='zoom-container'>
       <img src='/images/bathroom.jpg'>
-      <div class='secret'><div class='text'>but what does it mean</div></div>
+      <div class='secret'><div class='text'>you found a secret</div></div>
     </div>
   </div>
 </div>
