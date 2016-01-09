@@ -18,8 +18,9 @@ defmodule Cr2016site.Web do
 
   def model do
     quote do
-      use Ecto.Model
+      use Ecto.Schema
 
+      import Ecto
       import Ecto.Changeset
       import Ecto.Query, only: [from: 1, from: 2]
     end
@@ -30,7 +31,7 @@ defmodule Cr2016site.Web do
       use Phoenix.Controller
 
       alias Cr2016site.Repo
-      import Ecto.Model
+      import Ecto
       import Ecto.Query, only: [from: 1, from: 2]
 
       import Cr2016site.Router.Helpers
@@ -48,6 +49,8 @@ defmodule Cr2016site.Web do
       use Phoenix.HTML
 
       import Cr2016site.Router.Helpers
+      import Cr2016site.ErrorHelpers
+      import Cr2016site.Gettext
 
       import Cr2016site.Session, only: [current_user: 1, logged_in?: 1, admin?: 1]
 
@@ -84,7 +87,7 @@ defmodule Cr2016site.Web do
       use Phoenix.Channel
 
       alias Cr2016site.Repo
-      import Ecto.Model
+      import Ecto
       import Ecto.Query, only: [from: 1, from: 2]
     end
   end

@@ -6,7 +6,7 @@ defmodule Cr2016site.Mixfile do
      version: "0.0.1",
      elixir: "~> 1.0",
      elixirc_paths: elixirc_paths(Mix.env),
-     compilers: [:phoenix] ++ Mix.compilers,
+     compilers: [:phoenix, :gettext] ++ Mix.compilers,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      aliases: aliases,
@@ -22,7 +22,7 @@ defmodule Cr2016site.Mixfile do
   end
 
   def app_list do
-    [:phoenix, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex]
+    [:phoenix, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex, :gettext]
   end
 
   def app_list(:test), do: [:blacksmith, :hound] ++ app_list
@@ -36,10 +36,11 @@ defmodule Cr2016site.Mixfile do
   #
   # Type `mix help deps` for examples and options.
   defp deps do
-    [{:phoenix, github: "phoenixframework/phoenix", override: true},
-     {:phoenix_ecto, "~> 1.1"},
+    [{:phoenix, "~> 1.1"},
+     {:phoenix_ecto, "~> 2.0"},
      {:postgrex, ">= 0.0.0"},
-     {:phoenix_html, "~> 2.1"},
+     {:phoenix_html, "~> 2.3"},
+     {:gettext, "~> 0.9"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:cowboy, "~> 1.0"},
      {:mix_test_watch, "~> 0.2", only: :dev},
