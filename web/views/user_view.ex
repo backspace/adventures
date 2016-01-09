@@ -37,5 +37,6 @@ defmodule Cr2016site.UserView do
     risk_aversion_integer_to_string
     |> Map.to_list
     |> Enum.map(fn {key, value} -> {value, key} end)
+    |> Enum.into(%{})
   end
 end
