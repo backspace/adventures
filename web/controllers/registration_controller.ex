@@ -55,12 +55,12 @@ defmodule Cr2016site.RegistrationController do
           {:error, changeset} ->
             conn
             |> put_flash(:error, "New passwords must match")
-            |> render "edit.html", changeset: changeset
+            |> render("edit.html", changeset: changeset)
         end
       :error ->
         conn
         |> put_flash(:error, "Please enter your current password")
-        |> render "edit.html", changeset: changeset
+        |> render("edit.html", changeset: changeset)
     end
   end
 end

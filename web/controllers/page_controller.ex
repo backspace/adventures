@@ -9,6 +9,6 @@ defmodule Cr2016site.PageController do
     Cr2016site.Mailer.send_question(question_params)
     conn
     |> put_flash(:info, "Your question has been submitted.")
-    |> redirect to: "/"
+    |> redirect(to: "/")
   end
 end
