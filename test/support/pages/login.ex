@@ -20,4 +20,8 @@ defmodule Cr2016site.Pages.Login do
     fill_password password
     submit
   end
+
+  def click_forgot_password do
+    click({:css, "a.forgot"})
+  end
 end

@@ -50,4 +50,9 @@ defmodule Cr2016site.User do
     |> validate_length(:new_password, min: 5)
     |> validate_confirmation(:new_password)
   end
+
+  def reset_changeset(model, params \\ :empty) do
+    model
+    |> cast(params, ~w(email), [])
+  end
 end

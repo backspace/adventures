@@ -38,4 +38,8 @@ defmodule Cr2016site.MailgunHelper do
     mail_text = File.read! Application.get_env(:cr2016site, :mailgun_test_file_path)
     Poison.Parser.parse! mail_text
   end
+
+  def emails_sent? do
+    File.exists? Application.get_env(:cr2016site, :mailgun_test_file_path)
+  end
 end

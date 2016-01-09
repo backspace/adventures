@@ -7,6 +7,7 @@ defmodule Cr2016site.Integration.Registrations do
   alias Cr2016site.Pages.Nav
   alias Cr2016site.Pages.Details
   alias Cr2016site.Pages.Account
+  alias Cr2016site.Pages.ForgotPassword
 
   # Import Hound helpers
   use Hound.Helpers
@@ -124,5 +125,34 @@ defmodule Cr2016site.Integration.Registrations do
     Login.submit
 
     assert Nav.info_text == "Logged in"
+  end
+
+  test "forgot password" do
+    Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+
+    navigate_to "/"
+
+    Nav.login_link.click
+    Login.click_forgot_password
+
+    ForgotPassword.fill_email "noone"
+    ForgotPassword.submit
+
+    assert Nav.info_text == "Check your email for a password reset link"
+    refute Cr2016site.MailgunHelper.emails_sent?
+
+    Nav.login_link.click
+    Login.click_forgot_password
+
+    ForgotPassword.fill_email "octavia.butler@example.com"
+    ForgotPassword.submit
+
+    assert Nav.info_text == "Check your email for a password reset link"
+
+    [forgot_password_email] = Cr2016site.MailgunHelper.sent_email
+
+    assert forgot_password_email["to"] == "octavia.butler@example.com"
+    assert forgot_password_email["from"] == "b@events.chromatin.ca"
+    assert forgot_password_email["subject"] == "[rendezvous] Password reset"
   end
 end

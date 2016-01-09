@@ -45,4 +45,11 @@ defmodule Cr2016site.Mailer do
 
     send_email to: user.email, from: @from, subject: "[rendezvous] Messages sent before you registered", text: body
   end
+
+  def send_password_reset(user) do
+    send_email to: user.email,
+               from: @from,
+               subject: "[rendezvous] Password reset",
+               html: "Here is a password reset link"
+  end
 end

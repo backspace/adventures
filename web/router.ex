@@ -31,6 +31,9 @@ defmodule Cr2016site.Router do
     get "/account", RegistrationController, :edit
     put "/account", RegistrationController, :update
 
+    get "/reset", ResetController, :new
+    post "/reset", ResetController, :create
+
     resources "/messages", MessageController
     post "/messages/:id/send", MessageController, :deliver
 
