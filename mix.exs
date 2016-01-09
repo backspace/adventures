@@ -48,7 +48,8 @@ defmodule Cr2016site.Mixfile do
      {:comeonin, "~> 1.0"},
      {:mailgun, github: "backspace/mailgun", branch: "multi-email-test"},
      {:poison, "~> 1.5"},
-     {:crutches, "~> 1.0.0"}]
+     {:crutches, "~> 1.0.0"},
+     {:floki, "~> 0.7"}]
   end
 
   # Aliases are shortcut or tasks specific to the current project.
