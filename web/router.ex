@@ -33,6 +33,8 @@ defmodule Cr2016site.Router do
 
     get "/reset", ResetController, :new
     post "/reset", ResetController, :create
+    get "/reset/:token", ResetController, :edit
+    put "/reset/:token", ResetController, :update
 
     resources "/messages", MessageController
     post "/messages/:id/send", MessageController, :deliver

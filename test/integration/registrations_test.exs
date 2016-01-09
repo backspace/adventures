@@ -154,5 +154,6 @@ defmodule Cr2016site.Integration.Registrations do
     assert forgot_password_email["to"] == "octavia.butler@example.com"
     assert forgot_password_email["from"] == "b@events.chromatin.ca"
     assert forgot_password_email["subject"] == "[rendezvous] Password reset"
+    assert String.contains?(forgot_password_email["html"], "http://rendezvous.chromatin.ca/resets/$2b")
   end
 end

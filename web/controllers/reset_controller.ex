@@ -12,7 +12,7 @@ defmodule Cr2016site.ResetController do
     user = Repo.get_by(Cr2016site.User, email: user_params["email"])
 
     case Cr2016site.Reset.create(user, Repo) do
-      {:ok, _} ->
+      {:ok, user} ->
         Cr2016site.Mailer.send_password_reset(user)
       {:error, _} ->
         # nothing
