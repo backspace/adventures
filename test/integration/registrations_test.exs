@@ -48,7 +48,7 @@ defmodule Cr2016site.Integration.Registrations do
     assert admin_email["subject"] == "samuel.delaney@example.com registered"
 
     assert welcome_email["to"] == "samuel.delaney@example.com"
-    assert welcome_email["subject"] == "Welcome!"
+    assert welcome_email["subject"] == "[rendezvous] Welcome!"
 
     assert Nav.logout_link.text == "Log out samuel.delaney@example.com"
 

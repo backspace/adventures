@@ -12,7 +12,7 @@ defmodule Cr2016site.Mailer do
   def send_welcome_email(email) do
     send_email to: email,
                from: @from,
-               subject: "Welcome!",
+               subject: "[rendezvous] Welcome!",
                html: welcome_html,
                text: "Yes?"
   end
