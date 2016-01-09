@@ -14,13 +14,14 @@ defmodule Cr2016site.ResetController do
     case Cr2016site.Reset.create(user, Repo) do
       {:ok, user} ->
         Cr2016site.Mailer.send_password_reset(user)
+        conn
+        |> put_flash(:info, "Check your email for a password reset link")
+        |> redirect(to: page_path(conn, :index))
       {:error, _} ->
-        # nothing
+        conn
+        |> put_flash(:error, "No registration with that email address found")
+        |> render "new.html", changeset: User.reset_changeset(%User{})
     end
-
-    conn
-    |> put_flash(:info, "Check your email for a password reset link")
-    |> redirect(to: page_path(conn, :index))
   end
 
   def edit(conn, %{"token" => token}) do

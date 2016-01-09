@@ -145,11 +145,8 @@ defmodule Cr2016site.Integration.Registrations do
     ForgotPassword.fill_email "noone"
     ForgotPassword.submit
 
-    assert Nav.info_text == "Check your email for a password reset link"
+    assert Nav.error_text == "No registration with that email address found"
     refute Cr2016site.MailgunHelper.emails_sent?
-
-    Nav.login_link.click
-    Login.click_forgot_password
 
     ForgotPassword.fill_email "octavia.butler@example.com"
     ForgotPassword.submit
