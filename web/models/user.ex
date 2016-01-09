@@ -5,6 +5,7 @@ defmodule Cr2016site.User do
     field :email, :string
     field :crypted_password, :string
     field :password, :string, virtual: true
+    field :recovery_hash, :string
 
     field :new_password, :string, virtual: true
     field :new_password_confirmation, :string, virtual: true
@@ -51,8 +52,10 @@ defmodule Cr2016site.User do
     |> validate_confirmation(:new_password)
   end
 
-  def reset_changeset(model, params \\ :empty) do
-    model
-    |> cast(params, ~w(email), [])
+  def reset_changeset(model) do
+    if model do
+      model
+      |> cast(%{}, [], ~w(recovery_hash))
+    end
   end
 end

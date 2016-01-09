@@ -1,6 +1,7 @@
 defmodule Cr2016site.ResetController do
   use Cr2016site.Web, :controller
   alias Cr2016site.User
+  alias Cr2016site.Repo
 
   def new(conn, _params) do
     changeset = User.reset_changeset(%User{})
@@ -8,12 +9,13 @@ defmodule Cr2016site.ResetController do
   end
 
   def create(conn, %{"user" => user_params}) do
-    changeset = User.reset_changeset(%User{}, user_params)
+    user = Repo.get_by(Cr2016site.User, email: user_params["email"])
 
-    user = Cr2016site.Repo.get_by(User, email: changeset.changes.email)
-
-    if user do
-      Cr2016site.Mailer.send_password_reset(user)
+    case Cr2016site.Reset.create(user, Repo) do
+      {:ok, _} ->
+        Cr2016site.Mailer.send_password_reset(user)
+      {:error, _} ->
+        # nothing
     end
 
     conn
