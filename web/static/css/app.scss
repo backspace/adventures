@@ -51,6 +51,19 @@ body {
   background-attachment: fixed;
 }
 
+h2 {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.row.title + .row.card {
+  margin-top: 0;
+}
+
+canvas {
+  margin-top: -15px;
+}
+
 .moving-highlight {
   text-shadow: 0 0 15px $primary-color;
 }
@@ -115,6 +128,8 @@ $nav-height: 6rem;
 
 .row.title {
   background: transparent;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 .moving-highlight {
@@ -164,7 +179,7 @@ $initial-scale: 1 - ($final-scale - 1)*$min-y;
       right: 36%;
 
       font-size: 1px;
-  
+
       cursor: pointer;
     }
   }
