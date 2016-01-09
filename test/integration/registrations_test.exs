@@ -190,5 +190,8 @@ defmodule Cr2016site.Integration.Registrations do
 
     Login.login_as "octavia.butler@example.com", "anewpassword"
     assert Nav.logout_link.text == "Log out octavia.butler@example.com"
+
+    navigate_to reset_path
+    assert Nav.error_text == "Unknown password reset token"
   end
 end

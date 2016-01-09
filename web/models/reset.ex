@@ -15,6 +15,7 @@ defmodule Cr2016site.Reset do
   def update(changeset, repo) do
     changeset
     |> put_change(:crypted_password, Cr2016site.Registration.hashed_password(changeset.params["new_password"]))
+    |> put_change(:recovery_hash, nil)
     |> repo.update()
   end
 end
