@@ -20,7 +20,7 @@ defmodule Cr2016site.ResetController do
       {:error, _} ->
         conn
         |> put_flash(:error, "No registration with that email address found")
-        |> render "new.html", changeset: User.reset_changeset(%User{})
+        |> render("new.html", changeset: User.reset_changeset(%User{}))
     end
   end
 
@@ -49,7 +49,7 @@ defmodule Cr2016site.ResetController do
       {:error, changeset} ->
         conn
         |> put_flash(:error, "New passwords must match")
-        |> render "edit.html", changeset: changeset, token: user_params["recovery_hash"]
+        |> render("edit.html", changeset: changeset, token: user_params["recovery_hash"])
     end
   end
 end
