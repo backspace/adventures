@@ -21,7 +21,10 @@ exports.config = {
       // }
     },
     stylesheets: {
-      joinTo: "css/app.css"
+      joinTo: {
+        "css/app.css": ['**/*.css', 'web/static/css/app.scss'],
+        "css/email.css": ['**/*.css', 'web/static/css/email.scss']
+      }
     },
     templates: {
       joinTo: "js/app.js"

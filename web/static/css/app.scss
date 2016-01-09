@@ -2,7 +2,7 @@ $header-font-family: 'Blackout Sunrise';
 
 $body-font-family: 'Oswald', sans-serif;
 $body-font-color: white;
-$global-width: 480px;
+$global-width: 480px !default;
 
 $primary-color: fuchsia;
 $success-color: lime;

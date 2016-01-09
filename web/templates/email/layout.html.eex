@@ -9,7 +9,7 @@
 
     <title>Clandestine Rendezvous</title>
     <link href='https://fonts.googleapis.com/css?family=Oswald:300,400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="<%= static_url(Cr2016site.Endpoint, "/css/app.css") %>">
+    <link rel="stylesheet" href="<%= static_url(Cr2016site.Endpoint, "/css/email.css") %>">
   </head>
 
   <body>
