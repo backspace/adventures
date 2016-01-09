@@ -128,6 +128,8 @@ defmodule Cr2016site.Integration.Registrations do
   end
 
   test "forgot password" do
+    set_window_size current_window_handle, 720, 450
+
     Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
 
     navigate_to "/"
@@ -155,9 +157,31 @@ defmodule Cr2016site.Integration.Registrations do
     assert forgot_password_email["from"] == "b@events.chromatin.ca"
     assert forgot_password_email["subject"] == "[rendezvous] Password reset"
 
-    [link] = Floki.find(forgot_password_email["html"], "a")
+    [url] = Floki.find(forgot_password_email["html"], "a")
     |> Floki.attribute("href")
 
-    assert String.starts_with?(link, "http://rendezvous.chromatin.ca/resets/$2b")
+    path = URI.parse(url).path
+
+    assert String.starts_with?(path, "/reset/%242b")
+
+    navigate_to path
+
+    Account.fill_new_password "anewpassword"
+    Account.fill_new_password_confirmation "awrongpassword"
+    Account.submit
+
+    assert Nav.error_text == "New passwords must match"
+
+    Account.fill_new_password "anewpassword"
+    Account.fill_new_password_confirmation "anewpassword"
+    Account.submit
+
+    assert Nav.info_text == "Your password has been changed"
+    assert Nav.logout_link.text == "Log out octavia.butler@example.com"
+
+    Nav.logout_link.click
+
+    Login.login_as "octavia.butler@example.com", "anewpassword"
+    assert Nav.logout_link.text == "Log out octavia.butler@example.com"
   end
 end

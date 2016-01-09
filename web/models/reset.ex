@@ -11,4 +11,10 @@ defmodule Cr2016site.Reset do
       {:error, :user_not_found}
     end
   end
+
+  def update(changeset, repo) do
+    changeset
+    |> put_change(:crypted_password, Cr2016site.Registration.hashed_password(changeset.params["new_password"]))
+    |> repo.update()
+  end
 end

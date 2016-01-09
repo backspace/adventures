@@ -50,6 +50,6 @@ defmodule Cr2016site.Mailer do
     send_email to: user.email,
                from: @from,
                subject: "[rendezvous] Password reset",
-               html: "Here is a <a href='http://rendezvous.chromatin.ca/resets/#{user.recovery_hash}'>password reset link"
+               html: "Here is a <a href='http://rendezvous.chromatin.ca/reset/#{URI.encode_www_form(user.recovery_hash)}'>password reset link"
   end
 end

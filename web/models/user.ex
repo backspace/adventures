@@ -58,4 +58,11 @@ defmodule Cr2016site.User do
       |> cast(%{}, [], ~w(recovery_hash))
     end
   end
+
+  def perform_reset_changeset(model, params \\ :empty) do
+    model
+    |> cast(params, ~w(recovery_hash new_password new_password_confirmation), [])
+    |> validate_length(:new_password, min: 5)
+    |> validate_confirmation(:new_password)
+  end
 end
