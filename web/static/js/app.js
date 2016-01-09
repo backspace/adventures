@@ -21,6 +21,10 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 // import socket from "./socket"
 
 $(() => {
+  $('.secret .text').click(function() {
+    $('.secret-image-container').attr('src', '/images/feature.gif');
+  });
+
   $("*[data-action=add-email]").click(function() {
     const email = $(this).closest("tr").children(".email").text();
 

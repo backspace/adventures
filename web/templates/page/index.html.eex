@@ -104,7 +104,7 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <div class='zoom-container'>
-      <img src='/images/bathroom.jpg'>
+      <img class='secret-image-container' src='/images/bathroom.jpg'>
       <div class='secret'><div class='text'>you found a secret</div></div>
     </div>
   </div>
