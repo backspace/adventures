@@ -4,6 +4,9 @@ defmodule Cr2016site.Mailer do
                       mode: Application.get_env(:cr2016site, :mailgun_mode),
                       test_file_path: Application.get_env(:cr2016site, :mailgun_test_file_path)
 
+  alias Cr2016site.Router
+  alias Cr2016site.Endpoint
+
   @from "b@events.chromatin.ca"
 
   def send_welcome_email(email) do
@@ -50,6 +53,6 @@ defmodule Cr2016site.Mailer do
     send_email to: user.email,
                from: @from,
                subject: "[rendezvous] Password reset",
-               html: "Here is a <a href='http://rendezvous.chromatin.ca/reset/#{URI.encode_www_form(user.recovery_hash)}'>password reset link"
+               html: "Here is a <a href='#{Router.Helpers.reset_path(Endpoint, :edit, user.recovery_hash)}'>password reset link"
   end
 end
