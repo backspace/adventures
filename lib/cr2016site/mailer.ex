@@ -13,7 +13,7 @@ defmodule Cr2016site.Mailer do
     send_email to: email,
                from: @from,
                subject: "Welcome!",
-               html: "Is it <strong>true</strong> that you are welcome?",
+               html: welcome_html,
                text: "Yes?"
   end
 
@@ -54,5 +54,9 @@ defmodule Cr2016site.Mailer do
                from: @from,
                subject: "[rendezvous] Password reset",
                html: "Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link"
+  end
+
+  defp welcome_html do
+    Phoenix.View.render_to_string(Cr2016site.EmailView, "welcome.html", %{layout: {Cr2016site.EmailView, "layout.html"}})
   end
 end
