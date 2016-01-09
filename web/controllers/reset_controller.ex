@@ -24,10 +24,15 @@ defmodule Cr2016site.ResetController do
   end
 
   def edit(conn, %{"token" => token}) do
-    # FIXME handle incorrect token
-    user = Repo.get_by(Cr2016site.User, recovery_hash: token) || %User{}
-    changeset = User.perform_reset_changeset(user, %{"recovery_hash" => token})
-    render conn, changeset: changeset, token: token
+    case Repo.get_by(Cr2016site.User, recovery_hash: token) do
+      nil ->
+        conn
+        |> put_flash(:error, "Unknown password reset token")
+        |> redirect(to: page_path(conn, :index))
+      user ->
+        changeset = User.perform_reset_changeset(user, %{"recovery_hash" => token})
+        render conn, changeset: changeset, token: token
+    end
   end
 
   def update(conn, %{"user" => user_params}) do

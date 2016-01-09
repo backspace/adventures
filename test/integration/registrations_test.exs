@@ -164,11 +164,14 @@ defmodule Cr2016site.Integration.Registrations do
     [url] = Floki.find(forgot_password_email["html"], "a")
     |> Floki.attribute("href")
 
-    path = URI.parse(url).path
+    reset_path = URI.parse(url).path
 
-    assert String.starts_with?(path, "/reset/%242b")
+    assert String.starts_with?(reset_path, "/reset/%242b")
 
-    navigate_to path
+    navigate_to "/reset/fake"
+    assert Nav.error_text == "Unknown password reset token"
+
+    navigate_to reset_path
 
     Account.fill_new_password "anewpassword"
     Account.fill_new_password_confirmation "awrongpassword"
