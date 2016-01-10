@@ -15,13 +15,8 @@
   <body>
     <div class='everything'>
       <div class='row title'>
-        <div class='small-4 columns'>
-          <div class='logo-container'>
-            <img src='<%= static_url(Cr2016site.Endpoint, "/images/eye-transparent.png") %>' class='logo' alt='The Eye Watches'>
-          </div>
-        </div>
-        <div class='small-8 columns'>
-          <h2 class='moving-highlight'>Clandestine</h2><h2 class='moving-highlight'>Rendezvous</h2>
+        <div class='small-12 columns'>
+          <h2 class='moving-highlight'>Clandestine Rendezvous</h2>
         </div>
       </div>
 
