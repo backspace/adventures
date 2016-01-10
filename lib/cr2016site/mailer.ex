@@ -36,7 +36,7 @@ defmodule Cr2016site.Mailer do
   end
 
   def send_message(message, user) do
-    send_email to: user.email, from: @from, subject: "[rendezvous] #{message.subject}", text: message.content
+    send_email to: user.email, from: @from, subject: "[rendezvous] #{message.subject}", text: message.content, html: message_html(message)
   end
 
   def send_backlog(messages, user) do
@@ -58,5 +58,9 @@ defmodule Cr2016site.Mailer do
 
   defp welcome_html do
     Phoenix.View.render_to_string(Cr2016site.EmailView, "welcome.html", %{layout: {Cr2016site.EmailView, "layout.html"}})
+  end
+
+  defp message_html(message) do
+    Phoenix.View.render_to_string(Cr2016site.MessageView, "preview.html", %{message: message, layout: {Cr2016site.EmailView, "layout.html"}})
   end
 end
