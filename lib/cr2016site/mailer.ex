@@ -14,7 +14,7 @@ defmodule Cr2016site.Mailer do
                from: @from,
                subject: "[rendezvous] Welcome!",
                html: welcome_html,
-               text: "Yes?"
+               text: welcome_text
   end
 
   def send_question(attributes) do
@@ -58,6 +58,11 @@ defmodule Cr2016site.Mailer do
 
   defp welcome_html do
     Phoenix.View.render_to_string(Cr2016site.EmailView, "welcome.html", %{layout: {Cr2016site.EmailView, "layout.html"}})
+  end
+
+  defp welcome_text do
+    File.write("/tmp/email.html", Phoenix.View.render_to_string(Cr2016site.EmailView, "welcome.html", %{}))
+    Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016site.Endpoint.url]).out
   end
 
   defp message_html(message) do
