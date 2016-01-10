@@ -17,7 +17,7 @@
       <div class='row title'>
         <div class='small-4 columns'>
           <div class='logo-container'>
-            <img src='<%= static_url(Cr2016site.Endpoint, "/images/eye-transparent.png") %>' class='logo'>
+            <img src='<%= static_url(Cr2016site.Endpoint, "/images/eye-transparent.png") %>' class='logo' alt='The Eye Watches'>
           </div>
         </div>
         <div class='small-8 columns'>
