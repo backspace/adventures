@@ -16,7 +16,7 @@
     <div class='everything'>
       <div class='row title'>
         <div class='small-4 columns'>
-          Logo
+          <img src='<%= static_url(Cr2016site.Endpoint, "/images/eye-transparent.png") %>' class='logo'>
         </div>
         <div class='small-8 columns'>
           <h2>Clandestine Rendezvous</h2>
