@@ -71,4 +71,12 @@ defmodule Cr2016site.MessageController do
     |> put_flash(:info, "Message was sent")
     |> redirect(to: message_path(conn, :index))
   end
+
+  def preview(conn, %{"id" => id}) do
+    message = Repo.get!(Message, id)
+
+    conn
+    |> put_layout({Cr2016site.EmailView, "layout.html"})
+    |> render("preview.html", message: message)
+  end
 end

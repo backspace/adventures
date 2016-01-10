@@ -7,6 +7,8 @@
 
     <%= button("Send", to: message_path(@conn, :deliver, @message), class: "btn send") %>
 
+    <%= link "Preview", to: message_path(@conn, :preview, @message) %>
+
     <%= link "Back", to: message_path(@conn, :index) %>
   </div>
 </div>

@@ -38,6 +38,7 @@ defmodule Cr2016site.Router do
 
     resources "/messages", MessageController
     post "/messages/:id/send", MessageController, :deliver
+    get "/messages/:id/preview", MessageController, :preview
 
     post "/questions", PageController, :questions
     get "/", PageController, :index
