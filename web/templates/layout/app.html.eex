@@ -9,7 +9,7 @@
 
     <meta name='twitter:card' content='summary'>
 
-    <meta property='og:title' content='Clandestine Rendezvous: Toronto, February 12'>
+    <meta property='og:title' content='Clandestine Rendezvous: Toronto, <%= short_date %>'>
     <meta property='og:type' content='website'>
     <meta property='og:url' content='http://crtoronto.herokuapp.com'>
     <meta property='og:image' content='http://crtoronto.herokuapp.com/images/eye.png'>

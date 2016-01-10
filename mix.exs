@@ -22,7 +22,7 @@ defmodule Cr2016site.Mixfile do
   end
 
   def app_list do
-    [:phoenix, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex, :gettext]
+    [:phoenix, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex, :gettext, :tzdata]
   end
 
   def app_list(:test), do: [:blacksmith, :hound] ++ app_list
@@ -50,7 +50,8 @@ defmodule Cr2016site.Mixfile do
      {:mailgun, github: "backspace/mailgun", branch: "multi-email-test"},
      {:poison, "~> 1.5"},
      {:crutches, "~> 1.0.0"},
-     {:floki, "~> 0.7"}]
+     {:floki, "~> 0.7"},
+     {:timex, "~> 1.0.0"}]
   end
 
   # Aliases are shortcut or tasks specific to the current project.
