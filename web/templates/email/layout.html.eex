@@ -16,10 +16,12 @@
     <div class='everything'>
       <div class='row title'>
         <div class='small-4 columns'>
-          <img src='<%= static_url(Cr2016site.Endpoint, "/images/eye-transparent.png") %>' class='logo'>
+          <div class='logo-container'>
+            <img src='<%= static_url(Cr2016site.Endpoint, "/images/eye-transparent.png") %>' class='logo'>
+          </div>
         </div>
         <div class='small-8 columns'>
-          <h2>Clandestine Rendezvous</h2>
+          <h2 class='moving-highlight'>Clandestine</h2><h2 class='moving-highlight'>Rendezvous</h2>
         </div>
       </div>
 
