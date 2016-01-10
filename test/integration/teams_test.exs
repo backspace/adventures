@@ -117,4 +117,11 @@ defmodule Cr2016site.Integration.Teams do
 
     refute Hound.Matchers.element? :css, "table"
   end
+
+  test "visiting the details page redirects to login when there is no session" do
+    navigate_to "/details"
+
+    assert Nav.info_text == "Please log in to edit your details"
+    Login.fill_email "anemail"
+  end
 end

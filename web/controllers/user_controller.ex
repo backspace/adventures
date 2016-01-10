@@ -4,6 +4,7 @@ defmodule Cr2016site.UserController do
   alias Cr2016site.User
 
   plug Cr2016site.Plugs.Admin when action in [:index]
+  plug Cr2016site.Plugs.LoginRequired when action in [:edit, :update]
 
   def index(conn, _params) do
     users = Repo.all(User)
