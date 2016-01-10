@@ -19,6 +19,8 @@ defmodule Forge do
   register :message, %Cr2016site.Message{
     ready: true
   }
+
+  register :not_ready_message, [prototype: :message], ready: false
 end
 
 defmodule Cr2016site.MailgunHelper do

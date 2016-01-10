@@ -12,7 +12,11 @@ defmodule Cr2016site.RegistrationController do
 
     case Cr2016site.Registration.create(changeset, Cr2016site.Repo) do
       {:ok, user} ->
-        messages = Repo.all(Cr2016site.Message)
+        messages = Cr2016site.Repo.all(
+          from m in Cr2016site.Message,
+            where: m.ready == true,
+          select: m
+        )
 
         Cr2016site.Mailer.send_registration(user)
         Cr2016site.Mailer.send_welcome_email(user.email)

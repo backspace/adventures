@@ -39,6 +39,7 @@ defmodule Cr2016site.Integration.Messages do
   test "the backlog of existing messages is sent to a new registrant after the welcome" do
     Forge.saved_message subject: "Subject one", content: "Content one"
     Forge.saved_message subject: "Subject two", content: "Content two"
+    Forge.saved_not_ready_message subject: "Not ready", content: "Not ready"
 
     navigate_to "/"
     Nav.register_link.click
@@ -62,5 +63,7 @@ defmodule Cr2016site.Integration.Messages do
 
     assert String.contains?(text, "Subject: Subject two")
     assert String.contains?(text, "Content two")
+
+    refute String.contains?(text, "Not ready")
   end
 end
