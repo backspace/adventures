@@ -21,11 +21,7 @@ defmodule Cr2016site.Message do
   with no validation performed.
   """
   def changeset(model, params \\ :empty) do
-    File.write("/tmp/email.html", Phoenix.View.render_to_string(Cr2016site.EmailView, "welcome.html", %{layout: {Cr2016site.EmailView, "layout.html"}}))
-    inline_result = Porcelain.exec("ruby", ["lib/cr2016site/inline-email.rb", Cr2016site.Endpoint.url])
-
     model
     |> cast(params, @required_fields, @optional_fields)
-    |> put_change(:rendered_content, inline_result.out)
   end
 end
