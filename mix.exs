@@ -22,7 +22,7 @@ defmodule Cr2016site.Mixfile do
   end
 
   def app_list do
-    [:phoenix, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex, :gettext, :tzdata]
+    [:phoenix, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex, :gettext, :tzdata, :porcelain]
   end
 
   def app_list(:test), do: [:blacksmith, :hound] ++ app_list
@@ -51,7 +51,8 @@ defmodule Cr2016site.Mixfile do
      {:poison, "~> 1.5"},
      {:crutches, "~> 1.0.0"},
      {:floki, "~> 0.7"},
-     {:timex, "~> 1.0.0"}]
+     {:timex, "~> 1.0.0"},
+     {:porcelain, "~> 2.0"}]
   end
 
   # Aliases are shortcut or tasks specific to the current project.

@@ -61,6 +61,6 @@ defmodule Cr2016site.Mailer do
   end
 
   defp message_html(message) do
-    Phoenix.View.render_to_string(Cr2016site.MessageView, "preview.html", %{message: message, layout: {Cr2016site.EmailView, "layout.html"}})
+    message.rendered_content
   end
 end
