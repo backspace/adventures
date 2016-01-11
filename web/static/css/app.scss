@@ -1,8 +1,10 @@
+@import 'util/_unit';
+
 $header-font-family: 'Blackout Sunrise';
 
 $body-font-family: 'Oswald', sans-serif;
 $body-font-color: white;
-$global-width: 480px !default;
+$global-width: rem-calc(480) !default;
 
 $primary-color: fuchsia;
 $success-color: lime;
@@ -56,7 +58,7 @@ h2 {
   line-height: 1;
 
   @include breakpoint(small down) {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 }
 
