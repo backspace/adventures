@@ -48,6 +48,11 @@ $button-color: $highlight;
 // TODO foundation-flex-grid wasn’t working?
 @include foundation-everything;
 
+canvas {
+  transform: scale(0.5) translate(-50%, -50%);
+  margin-bottom: -100%;
+}
+
 body {
   background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect x='0' y='0' width='100' height='100' style='fill: #{$background-one}' /><path d='M0,0 L50,50 L50,0 L100,0 L50,50 L100,100 L50,100 L50,50 L0,100 Z' style='fill: #{$background-two}' /></svg>");
   background-attachment: fixed;

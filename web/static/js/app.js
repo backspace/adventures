@@ -227,7 +227,7 @@ function init() {
   renderer = new THREE.WebGLRenderer({alpha: true});
 
   const toReplace = $('img.logo');
-  renderer.setSize(toReplace.width(), toReplace.height());
+  renderer.setSize(toReplace.width()*2, toReplace.height()*2);
 
   // FIXME only replace when possible
   toReplace.replaceWith(renderer.domElement);
