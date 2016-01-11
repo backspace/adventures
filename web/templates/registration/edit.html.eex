@@ -23,7 +23,7 @@
             </label>
           </div>
           <div class='form-group'>
-            <%= submit "Signup", class: "button primary small-3 columns" %>
+            <%= submit "Change password", class: "button primary small-3 columns" %>
           </div>
         </div>
       </div>
