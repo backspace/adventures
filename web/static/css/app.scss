@@ -130,6 +130,12 @@ $nav-height: 6rem;
   z-index: 10;
 
   background: $highlight;
+
+  @include breakpoint($global-width down) {
+    margin-left: 0;
+    width: 100%;
+    left: 0;
+  }
 }
 
 .row.title {
