@@ -13,7 +13,7 @@
             </label>
           </div>
           <div class='form-group'>
-            <%= submit "Reset password", class: "button primary small-3 columns" %>
+            <%= submit "Reset password", class: "button primary" %>
           </div>
         </div>
       </div>
