@@ -57,7 +57,7 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <h4 class='moving-highlight'><i class='fa fa-white fa-pencil'></i> Registration</h4>
-    <p>You <em>must</em> <%= link "register", to: registration_path(@conn, :new) %> to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until XXXX.</p>
+    <p>You <em>must</em> <%= link "register", to: registration_path(@conn, :new) %> to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until the day before.</p>
   </div>
 </div>
 <div class='row card'>
