@@ -24,6 +24,16 @@
         <%= textarea f, :accessibility, class: "form-control", "aria-describedby": "accessibility-help" %>
         <p class='help-text' id='accessibility-help'>Do you have any accessibility needs we should know about when scheduling your appointments? We will communicate further with you if clarifications are needed.</p>
       </div>
+      <div class='form-group'>
+        <%= label f, :source %>
+        <%= textarea f, :source, class: "form-control", "aria-describedby": "source-help" %>
+        <p class='help-text' id='source-help'>How did you hear about us, supersecretly?</p>
+      </div>
+      <div class='form-group'>
+        <%= label f, :comments %>
+        <%= textarea f, :comments, class: "form-control", "aria-describedby": "comments-help" %>
+        <p class='help-text' id='comments-help'>Questions, concerns, problems, worries?</p>
+      </div>
       <div class="form-group">
         <%= submit "Save Details", class: "button" %>
       </div>

@@ -40,17 +40,23 @@ defmodule Cr2016site.Integration.Teams do
     Details.fill_proposed_team_name "Simultaneity"
     Details.choose_risk_aversion "Don’t hold back"
     Details.fill_accessibility "Some accessibility information"
+
+    Details.comments.fill "Some comments"
+    Details.source.fill "A source"
+
     Details.submit
 
     assert Nav.info_text == "Your details were saved"
 
     assert Details.accessibility_text == "Some accessibility information"
+    assert Details.comments.value == "Some comments"
+    assert Details.source.value == "A source"
 
     [sent_email] = Cr2016site.MailgunHelper.sent_email
     assert sent_email["to"] == "b@events.chromatin.ca"
     assert sent_email["from"] == "b@events.chromatin.ca"
-    assert sent_email["subject"] == "takver@example.com details changed: accessibility, proposed_team_name, risk_aversion, team_emails"
-    assert sent_email["text"] == "%{accessibility: \"Some accessibility information\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\"}"
+    assert sent_email["subject"] == "takver@example.com details changed: accessibility, comments, proposed_team_name, risk_aversion, source, team_emails"
+    assert sent_email["text"] == "%{accessibility: \"Some accessibility information\", comments: \"Some comments\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\"}"
 
     [shevek, bedap] = Details.mutuals
 

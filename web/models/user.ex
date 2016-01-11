@@ -19,11 +19,14 @@ defmodule Cr2016site.User do
     field :risk_aversion, :integer
     field :accessibility, :string
 
+    field :comments, :string
+    field :source, :string
+
     timestamps
   end
 
   @required_fields ~w(email password)
-  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility)
+  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source)
 
   @doc """
   Creates a changeset based on the `model` and `params`.

@@ -68,6 +68,39 @@ defmodule Cr2016site.Pages.Details do
     attribute_value({:id, "user_accessibility"}, "value")
   end
 
+  def comments do
+    Cr2016site.Pages.Details.Comments
+  end
+
+  defmodule Comments do
+    @selector {:id, "user_comments"}
+
+    def fill(comments) do
+      fill_field(@selector, comments)
+    end
+
+    def value do
+      attribute_value(@selector, "value")
+    end
+  end
+
+  def source do
+    Cr2016site.Pages.Details.Source
+  end
+
+  # FIXME this is just begging for DRYing!
+  defmodule Source do
+    @selector {:id, "user_source"}
+
+    def fill(source) do
+      fill_field(@selector, source)
+    end
+
+    def value do
+      attribute_value(@selector, "value")
+    end
+  end
+
   def active? do
     # FIXME is there no current_url or the like?
     element? :id, "user_accessibility"
