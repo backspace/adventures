@@ -2,6 +2,9 @@ language: elixir
 elixir:
   - 1.1.1
 before_install:
+  - "rvm install ruby-2.1.8"
+  - "rvm use 2.1.8"
+  - "bundle install"
   # FIXME Creates an expected file excluded by .gitignore
   - "echo 'use Mix.Config\n\nconfig :cr2016site, nothing: 0' > config/dev.secret.exs"
 before_script:
