@@ -9,7 +9,8 @@ defmodule Cr2016site.Endpoint do
   # when deploying your static files in production.
   plug Plug.Static,
     at: "/", from: :cr2016site, gzip: false,
-    only: ~w(css fonts images js favicon.ico robots.txt)
+    only: ~w(css fonts images js favicon.ico robots.txt),
+    headers: %{"Access-Control-Allow-Origin" => "*", "X-Jorts" => "Jants"}
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
