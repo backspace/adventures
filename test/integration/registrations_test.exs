@@ -58,8 +58,7 @@ defmodule Cr2016site.Integration.Registrations do
   end
 
   test "logging in" do
-    # FIXME save a user with automatic encryption of password?
-    Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+    Forge.saved_octavia
 
     set_window_to_show_account
 
@@ -88,7 +87,7 @@ defmodule Cr2016site.Integration.Registrations do
   end
 
   test "changing password" do
-    Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+    Forge.saved_octavia
 
     set_window_to_show_account
 
@@ -137,7 +136,7 @@ defmodule Cr2016site.Integration.Registrations do
   test "forgot password" do
     set_window_to_show_account
 
-    Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+    Forge.saved_octavia
 
     navigate_to "/"
 
@@ -196,7 +195,7 @@ defmodule Cr2016site.Integration.Registrations do
   end
 
   test "delete account" do
-    Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+    Forge.saved_octavia
 
     set_window_to_show_account
 

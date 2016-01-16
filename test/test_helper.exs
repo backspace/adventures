@@ -16,6 +16,10 @@ defmodule Forge do
 
   register :admin, [prototype: :user], admin: true
 
+  register :octavia, [prototype: :user],
+    email: "octavia.butler@example.com",
+    crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+
   register :message, %Cr2016site.Message{
     ready: true
   }
