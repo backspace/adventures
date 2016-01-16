@@ -4,6 +4,7 @@ defmodule Cr2016site.Integration.Admin do
 
   alias Cr2016site.Pages.Login
   alias Cr2016site.Pages.Nav
+  alias Cr2016site.Pages.Users
 
   # Import Hound helpers
   use Hound.Helpers
@@ -12,8 +13,8 @@ defmodule Cr2016site.Integration.Admin do
   hound_session
 
   test "logging in as an admin" do
-    Forge.saved_user email: "francine.pascal@example.com"
-    Forge.saved_admin email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+    {_, user} = Forge.saved_user email: "francine.pascal@example.com", accessibility: "Some accessibility text"
+    {_, admin} = Forge.saved_octavia admin: true, proposed_team_name: "Admins"
 
     navigate_to "/"
 
@@ -24,7 +25,12 @@ defmodule Cr2016site.Integration.Admin do
     Login.submit
 
     Nav.users_link.click
-    assert page_source =~ "francine.pascal@example.com"
+
+    assert Users.email(user.id) == "francine.pascal@example.com"
+    assert Users.accessibility(user.id) == "Some accessibility text"
+
+    assert Users.email(admin.id) == admin.email
+    assert Users.proposed_team_name(admin.id) == "Admins"
   end
 
   test "non-admins cannot access the user list or messages" do

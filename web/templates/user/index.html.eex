@@ -1,5 +1,26 @@
-<ul>
-  <%= for user <- @users do %>
-    <li><%= user.email %></li>
-  <% end %>
-</ul>
+<table>
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Risk</th>
+      <th>Accessibility</th>
+      <th>Proposed team name</th>
+      <th>Team emails</th>
+      <th>Source</th>
+      <th>Comments</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= for user <- @users do %>
+      <tr id='user-<%= user.id %>'>
+        <td class='email'><%= user.email %></td>
+        <td class='risk-aversion'><%= user.risk_aversion %></td>
+        <td class='accessibility'><%= user.accessibility %></td>
+        <td class='proposed-team-name'><%= user.proposed_team_name %></td>
+        <td class='team-emails'><%= user.team_emails %></td>
+        <td class='source'><%= user.source %></td>
+        <td class='comments'><%= user.comments %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
