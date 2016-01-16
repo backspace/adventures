@@ -31,6 +31,9 @@ defmodule Cr2016site.Router do
     get "/account", RegistrationController, :edit
     put "/account", RegistrationController, :update
 
+    get "/delete", RegistrationController, :maybe_delete
+    put "/delete", RegistrationController, :delete
+
     get "/reset", ResetController, :new
     post "/reset", ResetController, :create
     get "/reset/:token", ResetController, :edit

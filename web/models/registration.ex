@@ -13,6 +13,11 @@ defmodule Cr2016site.Registration do
     |> repo.update()
   end
 
+  def delete(changeset, repo) do
+    changeset
+    |> repo.delete
+  end
+
   # FIXME this was private but now shared with Reset!
   def hashed_password(password) do
     Comeonin.Bcrypt.hashpwsalt(password)

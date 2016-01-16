@@ -31,6 +31,13 @@ defmodule Cr2016site.Mailer do
                text: inspect(changes)
   end
 
+  def send_user_deletion(user) do
+    send_email to: @from,
+               from: @from,
+               subject: "#{user.email} deleted their account",
+               text: inspect(user)
+  end
+
   def send_registration(user) do
     send_email to: @from, from: @from, subject: "#{user.email} registered", text: "Yes"
   end

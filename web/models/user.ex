@@ -55,6 +55,11 @@ defmodule Cr2016site.User do
     |> validate_confirmation(:new_password)
   end
 
+  def deletion_changeset(model, params \\ :empty) do
+    model
+    |> cast(params, ~w(current_password), [])
+  end
+
   def reset_changeset(model) do
     if model do
       model

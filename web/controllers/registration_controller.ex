@@ -67,4 +67,39 @@ defmodule Cr2016site.RegistrationController do
         |> render("edit.html", changeset: changeset)
     end
   end
+
+  # FIXME 😳
+  def maybe_delete(conn, _) do
+    current_user = conn.assigns[:current_user_object]
+    changeset = User.deletion_changeset(current_user)
+
+    render conn, "maybe_delete.html", user: current_user, changeset: changeset
+  end
+
+  def delete(conn, %{"user" => user_params}) do
+    current_user = conn.assigns[:current_user_object]
+    changeset = User.deletion_changeset(current_user, user_params)
+
+    session_params = %{"email" => current_user.email, "password" => user_params["current_password"]}
+
+    case Cr2016site.Session.login(session_params, Cr2016site.Repo) do
+      {:ok, _} ->
+        case Cr2016site.Registration.delete(changeset, Cr2016site.Repo) do
+          {:ok, _} ->
+            Cr2016site.Mailer.send_user_deletion(current_user)
+
+            conn
+            |> put_flash(:info, "Your account has been deleted 😧")
+            |> redirect(to: page_path(conn, :index))
+          {:error, changeset} ->
+            conn
+            |> put_flash(:error, "Something went wrong!")
+            |> render("maybe_delete.html", changeset: changeset)
+        end
+      :error ->
+        conn
+        |> put_flash(:error, "Your password did not match")
+        |> render("maybe_delete.html", changeset: changeset)
+    end
+  end
 end

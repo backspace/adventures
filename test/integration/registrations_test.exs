@@ -194,4 +194,32 @@ defmodule Cr2016site.Integration.Registrations do
     navigate_to reset_path
     assert Nav.error_text == "Unknown password reset token"
   end
+
+  test "delete account" do
+    Forge.saved_user email: "octavia.butler@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+
+    set_window_to_show_account
+
+    navigate_to "/"
+    Login.login_as "octavia.butler@example.com", "Xenogenesis"
+
+    Nav.edit_details
+    Details.delete_account
+
+    Account.fill_current_password "wrongpassword"
+    Account.submit
+
+    assert Nav.error_text == "Your password did not match"
+
+    Account.fill_current_password "Xenogenesis"
+    Account.submit
+
+    assert Nav.info_text == "Your account has been deleted 😧"
+
+    [admin_email] = Cr2016site.MailgunHelper.sent_email
+
+    assert admin_email["to"] == "b@events.chromatin.ca"
+    assert admin_email["from"] == "b@events.chromatin.ca"
+    assert admin_email["subject"] == "octavia.butler@example.com deleted their account"
+  end
 end

@@ -118,3 +118,8 @@
     <%= link "Change your password", to: registration_path(@conn, :edit), class: "account" %>
   </div>
 </div>
+<div class='row card'>
+  <div class='small-12 columns'>
+    <%= link "Delete your account", to: registration_path(@conn, :maybe_delete), class: "delete" %>
+  </div>
+</div>

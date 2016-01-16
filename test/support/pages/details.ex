@@ -5,6 +5,10 @@ defmodule Cr2016site.Pages.Details do
     click({:css, "a.account"})
   end
 
+  def delete_account do
+    click({:css, "a.delete"})
+  end
+
   def proposers do
     find_all_elements(:css, ".proposers tr")
     |> Enum.map(&(email_and_text_row(&1)))
