@@ -25,7 +25,8 @@ config :cr2016site, Cr2016site.Repo,
   pool_size: 20
 
 config :cr2016site,
-  mailgun_key: System.get_env("MAILGUN_KEY")
+  mailgun_key: System.get_env("MAILGUN_KEY"),
+  google_analytics: true
 
 # Do not print debug messages in production
 config :logger, level: :info
