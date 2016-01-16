@@ -64,8 +64,7 @@ defmodule Cr2016site.Mailer do
   end
 
   defp welcome_html do
-    File.write("/tmp/email.html", Phoenix.View.render_to_string(Cr2016site.EmailView, "welcome.html", %{layout: {Cr2016site.EmailView, "layout.html"}}))
-    Porcelain.exec("ruby", ["lib/cr2016site/inline-email.rb", Cr2016site.Endpoint.url]).out
+    Phoenix.View.render_to_string(Cr2016site.EmailView, "welcome.html", %{layout: {Cr2016site.EmailView, "layout.html"}})
   end
 
   defp welcome_text do
