@@ -14,8 +14,8 @@
   <tbody>
 <%= for team <- @teams do %>
     <tr>
-      <td><%= team.name %></td>
-      <td><%= team.risk_aversion %></td>
+      <td class='name'><%= team.name %></td>
+      <td class='risk-aversion'><%= team.risk_aversion %></td>
       <td><%= team.notes %></td>
       <td><%= team.user_ids %></td>
 

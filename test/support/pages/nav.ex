@@ -27,6 +27,10 @@ defmodule Cr2016site.Pages.Nav do
     Cr2016site.Pages.Nav.UsersLink
   end
 
+  def teams_link do
+    Cr2016site.Pages.Nav.TeamsLink
+  end
+
   def edit_details do
     click {:css, "a.details"}
   end
@@ -81,6 +85,14 @@ defmodule Cr2016site.Pages.Nav do
 
     def absent? do
       !apply(Hound.Matchers, :element?, Tuple.to_list(@selector))
+    end
+  end
+
+  defmodule TeamsLink do
+    @selector {:css, "a.teams"}
+
+    def click do
+      click @selector
     end
   end
 end

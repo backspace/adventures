@@ -16,9 +16,19 @@ defmodule Cr2016site.TeamController do
   end
 
   def build(conn, %{"user_id" => base_user_id}) do
-    conn
-    |> put_flash(:info, "Team built successfully")
-    |> redirect(to: user_path(conn, :index))
+    base_user = Repo.get!(Cr2016site.User, base_user_id)
+    changeset = Team.changeset(%Team{}, %{"name" => base_user.proposed_team_name, "risk_aversion" => base_user.risk_aversion})
+
+    case Repo.insert(changeset) do
+      {:ok, _team} ->
+        conn
+        |> put_flash(:info, "Team built successfully")
+        |> redirect(to: user_path(conn, :index))
+      {:error, changeset} ->
+        conn
+        |> put_flash(:error, "An error occurred building that team!")
+        |> redirect(to: user_path(conn, :index))
+    end
   end
 
   def create(conn, %{"team" => team_params}) do
