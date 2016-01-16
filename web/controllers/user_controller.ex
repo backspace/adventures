@@ -7,7 +7,11 @@ defmodule Cr2016site.UserController do
   plug Cr2016site.Plugs.LoginRequired when action in [:edit, :update]
 
   def index(conn, _params) do
+    teams = Repo.all(Cr2016site.Team)
+
     users = Repo.all(User)
+    |> Enum.map(fn(u) -> Map.put(u, :teamed, Enum.any?(teams, fn(t) -> Enum.member?(t.user_ids, u.id) end)) end)
+
     render conn, "index.html", users: users
   end
 

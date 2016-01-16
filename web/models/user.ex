@@ -13,6 +13,8 @@ defmodule Cr2016site.User do
 
     field :admin, :boolean
 
+    field :teamed, :boolean, virtual: true
+
     field :team_emails, :string
     field :proposed_team_name, :string
 

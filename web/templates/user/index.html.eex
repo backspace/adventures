@@ -21,7 +21,7 @@
         <td class='team-emails'><%= user.team_emails %></td>
         <td class='source'><%= user.source %></td>
         <td class='comments'><%= user.comments %></td>
-        <td class='teamed'>✘</td>
+        <td class='teamed'><%= if user.teamed do %>✓<% else %>✘<% end %></td>
         <td><%= link "Build", to: team_path(@conn, :build, user_id: user.id), method: :post, class: "build" %></td>
       </tr>
     <% end %>

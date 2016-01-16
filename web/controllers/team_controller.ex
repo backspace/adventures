@@ -1,6 +1,7 @@
 defmodule Cr2016site.TeamController do
   use Cr2016site.Web, :controller
 
+  alias Cr2016site.User
   alias Cr2016site.Team
 
   plug :scrub_params, "team" when action in [:create, :update]
@@ -16,15 +17,23 @@ defmodule Cr2016site.TeamController do
   end
 
   def build(conn, %{"user_id" => base_user_id}) do
-    base_user = Repo.get!(Cr2016site.User, base_user_id)
-    changeset = Team.changeset(%Team{}, %{"name" => base_user.proposed_team_name, "risk_aversion" => base_user.risk_aversion})
+    base_user = Repo.get!(User, base_user_id)
+    users = Repo.all(User)
+
+    relationships = Cr2016site.TeamFinder.relationships(base_user, users)
+
+    changeset = Team.changeset(%Team{}, %{
+      "name" => base_user.proposed_team_name,
+      "risk_aversion" => base_user.risk_aversion,
+      "user_ids" => [base_user.id] ++ Enum.map(relationships.mutuals, fn(u) -> u.id end)
+    })
 
     case Repo.insert(changeset) do
       {:ok, _team} ->
         conn
         |> put_flash(:info, "Team built successfully")
         |> redirect(to: user_path(conn, :index))
-      {:error, changeset} ->
+      {:error, _changeset} ->
         conn
         |> put_flash(:error, "An error occurred building that team!")
         |> redirect(to: user_path(conn, :index))
