@@ -197,8 +197,6 @@ defmodule Cr2016site.Integration.Registrations do
   test "delete account" do
     Forge.saved_octavia
 
-    set_window_to_show_account
-
     navigate_to "/"
     Login.login_as "octavia.butler@example.com", "Xenogenesis"
 
