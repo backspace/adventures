@@ -1,0 +1,28 @@
+<h2>Show team</h2>
+
+<ul>
+
+  <li>
+    <strong>Name:</strong>
+    <%= @team.name %>
+  </li>
+
+  <li>
+    <strong>Risk aversion:</strong>
+    <%= @team.risk_aversion %>
+  </li>
+
+  <li>
+    <strong>Notes:</strong>
+    <%= @team.notes %>
+  </li>
+
+  <li>
+    <strong>User ids:</strong>
+    <%= @team.user_ids %>
+  </li>
+
+</ul>
+
+<%= link "Edit", to: team_path(@conn, :edit, @team) %>
+<%= link "Back", to: team_path(@conn, :index) %>
