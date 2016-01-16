@@ -24,6 +24,7 @@ defmodule Cr2016site.Router do
     post   "/login",  SessionController, :create
     delete "/logout", SessionController, :delete
 
+    post "/teams/build", TeamController, :build
     resources "/teams", TeamController
 
     resources "/users", UserController, only: [:index]

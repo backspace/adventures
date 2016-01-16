@@ -8,6 +8,7 @@
       <th>Team emails</th>
       <th>Source</th>
       <th>Comments</th>
+      <th>Teamed</th>
     </tr>
   </thead>
   <tbody>
@@ -20,6 +21,8 @@
         <td class='team-emails'><%= user.team_emails %></td>
         <td class='source'><%= user.source %></td>
         <td class='comments'><%= user.comments %></td>
+        <td class='teamed'>✘</td>
+        <td><%= link "Build", to: team_path(@conn, :build, user_id: user.id), method: :post, class: "build" %></td>
       </tr>
     <% end %>
   </tbody>

@@ -16,4 +16,12 @@ defmodule Cr2016site.Pages.Users do
   def proposed_team_name(id) do
     visible_text({:css, "#{user_container(id)} .proposed-team-name"})
   end
+
+  def teamed(id) do
+    visible_text({:css, "#{user_container(id)} .teamed"}) == "✓"
+  end
+
+  def build_team_from(id) do
+    click {:css, "#{user_container(id)} a"}
+  end
 end

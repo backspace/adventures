@@ -33,6 +33,33 @@ defmodule Cr2016site.Integration.Admin do
     assert Users.proposed_team_name(admin.id) == "Admins"
   end
 
+  test "admin can build teams" do
+    {_, a} = Forge.saved_user email: "a@example.com", proposed_team_name: "Team A", team_emails: "b@example.com", risk_aversion: 3
+    {_, b} = Forge.saved_user email: "b@example.com", proposed_team_name: "Team B", team_emails: "a@example.com", risk_aversion: 1
+    {_, c} = Forge.saved_user email: "c@example.com", team_emails: "a@example.com b@example.com"
+
+    Forge.saved_octavia admin: true
+
+    navigate_to "/"
+    Login.login_as "octavia.butler@example.com", "Xenogenesis"
+
+    Nav.users_link.click
+
+    refute Users.teamed(a.id)
+    refute Users.teamed(b.id)
+    refute Users.teamed(c.id)
+
+    Users.build_team_from(a.id)
+
+    assert Nav.info_text == "Team built successfully"
+
+    #assert Users.teamed(a.id)
+    #assert Users.teamed(b.id)
+    #refute Users.teamed(c.id)
+
+    # and more
+  end
+
   test "non-admins cannot access the user list or messages" do
     Forge.saved_user email: "francine.pascal@example.com"
 

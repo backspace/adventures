@@ -15,6 +15,12 @@ defmodule Cr2016site.TeamController do
     render(conn, "new.html", changeset: changeset)
   end
 
+  def build(conn, %{"user_id" => base_user_id}) do
+    conn
+    |> put_flash(:info, "Team built successfully")
+    |> redirect(to: user_path(conn, :index))
+  end
+
   def create(conn, %{"team" => team_params}) do
     changeset = Team.changeset(%Team{}, team_params)
 
