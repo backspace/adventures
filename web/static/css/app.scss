@@ -54,7 +54,9 @@ canvas {
 }
 
 body {
-  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect x='0' y='0' width='100' height='100' style='fill: #{$background-one}' /><path d='M0,0 L50,50 L50,0 L100,0 L50,50 L100,100 L50,100 L50,50 L0,100 Z' style='fill: #{$background-two}' /></svg>");
+  // background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect x='0' y='0' width='100' height='100' style='fill: #{$background-one}' /><path d='M0,0 L50,50 L50,0 L100,0 L50,50 L100,100 L50,100 L50,50 L0,100 Z' style='fill: #{$background-two}' /></svg>");
+  // FIXME allow dynamic computation of this base64?
+  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMDAnIGhlaWdodD0nMTAwJz48cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgc3R5bGU9J2ZpbGw6ICMxMTEnIC8+PHBhdGggZD0nTTAsMCBMNTAsNTAgTDUwLDAgTDEwMCwwIEw1MCw1MCBMMTAwLDEwMCBMNTAsMTAwIEw1MCw1MCBMMCwxMDAgWicgc3R5bGU9J2ZpbGw6ICMxNDE0MTQnIC8+PC9zdmc+");
   background-attachment: fixed;
 }
 
