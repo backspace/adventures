@@ -17,8 +17,21 @@ export default Ember.Component.extend({
     return {left: this.get('region.x')};
   }),
 
+  dragStart() {
+    const offset = this.$().offset();
+    const height = this.$().height();
+
+    // Not adding the height causes the region to be off by its height?!
+    this.set('originalPosition', {x: offset.left, y: height + offset.top});
+  },
+
   dragEnd({originalEvent: {pageX, pageY}}) {
-    this.set('region.x', pageX);
-    this.set('region.y', pageY);
+    const originalPosition = this.get('originalPosition');
+
+    const x = this.get('region.x');
+    const y = this.get('region.y');
+
+    this.set('region.x', x + (pageX - originalPosition.x));
+    this.set('region.y', y + (pageY - originalPosition.y));
   }
 });

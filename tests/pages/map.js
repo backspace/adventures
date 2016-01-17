@@ -2,13 +2,15 @@ import PageObject from '../page-object';
 
 const { collection, customHelper, text } = PageObject;
 
-const top = customHelper(selector => parseInt($(selector).css('top')));
-const left = customHelper(selector => parseInt($(selector).css('left')));
+const x = customHelper(selector => parseInt($(selector).css('top')));
+const y = customHelper(selector => parseInt($(selector).css('left')));
 
-const dragTo = customHelper(selector => {
+const dragBy = customHelper(selector => {
   return ((x, y) => {
-    triggerEvent(selector, 'dragstart');
-    triggerEvent(selector, 'dragend', {originalEvent: {pageX: x, pageY: y}});
+    const position = $(selector).position();
+
+    triggerEvent(selector, 'dragstart', {originalEvent: {pageX: position.left, pageY: position.top}});
+    triggerEvent(selector, 'dragend', {originalEvent: {pageX: position.left + x, pageY: position.top + y}});
   });
 });
 
@@ -18,10 +20,10 @@ export default PageObject.create({
 
     item: {
       name: text('.name'),
-      top: top(),
-      left: left(),
+      x: x(),
+      y: y(),
 
-      dragTo: dragTo()
+      dragBy: dragBy()
     }
   })
 });
