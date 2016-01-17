@@ -49,7 +49,7 @@
     "ember-disable-proxy-controllers": "^1.0.1",
     "ember-export-application-global": "^1.0.4",
     "ember-local-storage": "0.1.1",
-    "ember-pouch": "nolanlawson/ember-pouch#10c8b4a",
+    "ember-pouch": "^3.1.0",
     "ember-resolver": "^2.0.3",
     "ember-truth-helpers": "1.2.0",
     "json-stringify-safe": "^5.0.1"
