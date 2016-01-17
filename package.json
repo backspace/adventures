@@ -45,6 +45,7 @@
     "ember-cli-sri": "^2.0.0",
     "ember-cli-test-model-waiter": "0.1.1",
     "ember-cli-uglify": "^1.2.0",
+    "ember-computed-style": "0.1.2",
     "ember-data": "^2.3.0",
     "ember-disable-proxy-controllers": "^1.0.1",
     "ember-export-application-global": "^1.0.4",

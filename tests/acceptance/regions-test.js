@@ -17,9 +17,15 @@ moduleForAcceptance('Acceptance | regions', {
 
         fixtureOne.setProperties({
           name: 'Gujaareh',
-          notes: 'City of Dreams'
+          notes: 'City of Dreams',
+          x: 50,
+          y: 10
         });
-        fixtureTwo.set('name', 'Kisua');
+        fixtureTwo.setProperties({
+          'name': 'Kisua',
+          x: 100,
+          y: 1000
+        });
 
         Ember.RSVP.all([fixtureTwo.save(), fixtureOne.save()]).then(() => {
           resolve();
@@ -124,7 +130,12 @@ test('the regions can be arranged on a map', (assert) => {
 
   andThen(() => {
     assert.equal(mapPage.regions(1).name(), 'Gujaareh');
+    assert.equal(mapPage.regions(1).top(), 10);
+    assert.equal(mapPage.regions(1).left(), 50);
+
     assert.equal(mapPage.regions(2).name(), 'Kisua');
+    assert.equal(mapPage.regions(2).top(), 1000);
+    assert.equal(mapPage.regions(2).left(), 100);
   });
 
   // Arranging to come

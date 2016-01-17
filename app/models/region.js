@@ -12,6 +12,9 @@ export default Model.extend({
 
   destinations: hasMany('destination'),
 
+  x: attr('number'),
+  y: attr('number'),
+
   createdAt: attr('createDate'),
   updatedAt: attr('updateDate')
 });

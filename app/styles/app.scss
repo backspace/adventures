@@ -28,6 +28,8 @@ body.draglessness {
 $region-length: 4rem;
 
 .map .region {
+  position: absolute;
+
   width: $region-length;
   height: $region-length;
 
