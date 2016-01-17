@@ -27,17 +27,21 @@ body.draglessness {
 
 $region-length: 4rem;
 
-.map .region {
-  position: absolute;
+.map {
+  position: relative;
 
-  width: $region-length;
-  height: $region-length;
+  .region {
+    position: absolute;
 
-  border: 1px solid black;
+    width: $region-length;
+    height: $region-length;
 
-  overflow: hidden;
+    border: 1px solid black;
 
-  .name {
-    text-overflow: ellipsis;
+    overflow: hidden;
+
+    .name {
+      text-overflow: ellipsis;
+    }
   }
 }

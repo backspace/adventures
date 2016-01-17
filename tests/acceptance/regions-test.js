@@ -138,5 +138,10 @@ test('the regions can be arranged on a map', (assert) => {
     assert.equal(mapPage.regions(2).left(), 100);
   });
 
-  // Arranging to come
+  mapPage.regions(1).dragTo(60, 100);
+
+  andThen(() => {
+    assert.equal(mapPage.regions(1).top(), 100);
+    assert.equal(mapPage.regions(1).left(), 60);
+  });
 });
