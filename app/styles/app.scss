@@ -24,3 +24,18 @@ body.draglessness {
     padding-left: 0.35rem;
   }
 }
+
+$region-length: 4rem;
+
+.map .region {
+  width: $region-length;
+  height: $region-length;
+
+  border: 1px solid black;
+
+  overflow: hidden;
+
+  .name {
+    text-overflow: ellipsis;
+  }
+}

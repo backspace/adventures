@@ -14,6 +14,7 @@ Router.map(function() {
 
   this.route('regions', function() {
     this.route('new');
+    this.route('map');
   });
 
   this.route('region', {path: '/regions/:region_id'});

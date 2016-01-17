@@ -4,6 +4,7 @@ import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-ac
 
 import page from '../pages/regions';
 import destinationsPage from '../pages/destinations';
+import mapPage from '../pages/map';
 
 moduleForAcceptance('Acceptance | regions', {
   beforeEach() {
@@ -115,4 +116,16 @@ test('a region can be deleted', (assert) => {
   andThen(() => {
     assert.equal(page.regions().count(), 1);
   });
+});
+
+test('the regions can be arranged on a map', (assert) => {
+  page.visit();
+  page.visitMap();
+
+  andThen(() => {
+    assert.equal(mapPage.regions(1).name(), 'Gujaareh');
+    assert.equal(mapPage.regions(2).name(), 'Kisua');
+  });
+
+  // Arranging to come
 });

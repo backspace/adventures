@@ -4,6 +4,7 @@ const { clickable, collection, fillable, text, value, visitable } = PageObject;
 
 export default PageObject.create({
   visit: visitable('/regions'),
+  visitMap: clickable('a.map'),
 
   regions: collection({
     itemScope: '.region',
