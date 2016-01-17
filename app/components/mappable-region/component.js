@@ -33,5 +33,7 @@ export default Ember.Component.extend({
 
     this.set('region.x', x + (pageX - originalPosition.x));
     this.set('region.y', y + (pageY - originalPosition.y));
+
+    this.get('region').save();
   }
 });
