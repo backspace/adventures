@@ -1,6 +1,6 @@
 import PageObject from '../page-object';
 
-const { collection, customHelper, text } = PageObject;
+const { attribute, collection, customHelper, text } = PageObject;
 
 const x = customHelper(selector => parseInt($(selector).css('top')));
 const y = customHelper(selector => parseInt($(selector).css('left')));
@@ -15,6 +15,8 @@ const dragBy = customHelper(selector => {
 });
 
 export default PageObject.create({
+  imageSrc: attribute('src', 'img'),
+
   regions: collection({
     itemScope: '.region',
 
