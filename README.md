@@ -3,6 +3,9 @@
 This is a PouchDB-backed offline data-gathering application to organise a
 live-action puzzle-solving adventure game.
 
+For expediency, it’s currently coupled to a particular adventure, but eventually
+I’d like to generalise it while sharing components. Engines?
+
 ## Prerequisites
 
 You will need the following things properly installed on your computer.
