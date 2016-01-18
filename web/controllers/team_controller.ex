@@ -34,6 +34,7 @@ defmodule Cr2016site.TeamController do
         id: team.id,
         attributes: %{
           name: team.name,
+          riskAversion: team.risk_aversion,
           notes: team.notes,
           users: team_emails
         }

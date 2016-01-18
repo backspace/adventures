@@ -69,7 +69,7 @@ defmodule Cr2016site.Integration.Admin do
     {_, a} = Forge.saved_user email: "a@example.com"
     {_, b} = Forge.saved_user email: "b@example.com"
 
-    {_, team} = Forge.saved_team name: "A team", notes: "Some notes", user_ids: [a.id, b.id]
+    {_, team} = Forge.saved_team name: "A team", risk_aversion: 2, notes: "Some notes", user_ids: [a.id, b.id]
 
     Forge.saved_octavia admin: true
 
@@ -85,7 +85,8 @@ defmodule Cr2016site.Integration.Admin do
       "attributes" => %{
         "name" => "A team",
         "notes" => "Some notes",
-        "users" => "a@example.com, b@example.com"
+        "users" => "a@example.com, b@example.com",
+        "riskAversion" => 2
       }
     }]}
   end
