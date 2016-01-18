@@ -150,6 +150,24 @@ test('the regions can be arranged on a map', (assert) => {
   });
 });
 
+moduleForAcceptance('Acceptance | regions with no map');
+
+test('a new map can be uploaded', (assert) => {
+  page.visit();
+  page.visitMap();
+
+  andThen(() => {
+    assert.ok(mapPage.imageSrc() === '', 'expected no img src');
+
+    // This has to happen inside andThen to change the file input
+    mapPage.setMap('R0lGODlhDwAPAKECAAAAzMzM/////wAAACwAAAAADwAPAAACIISPeQHsrZ5ModrLlN48CXF8m2iQ3YmmKqVlRtW4MLwWACH+H09wdGltaXplZCBieSBVbGVhZCBTbWFydFNhdmVyIQAAOw==');
+  });
+
+  andThen(() => {
+    assert.ok(mapPage.imageSrc().indexOf('blob') > -1, 'expected new img src to have a blob URL');
+  });
+});
+
 moduleForAcceptance('Acceptance | regions with existing map', {
   beforeEach() {
     const db = this.application.__container__.lookup('adapter:application').get('db');
@@ -173,7 +191,6 @@ test('an existing map is displayed and can be updated', (assert) => {
     existingSrc = mapPage.imageSrc();
     assert.ok(existingSrc.indexOf('blob') > -1, 'expected img src to have a blob URL');
 
-    // This has to happen inside andThen to change the file input
     mapPage.setMap('R0lGODlhDwAPAKECAAAAzMzM/////wAAACwAAAAADwAPAAACIISPeQHsrZ5ModrLlN48CXF8m2iQ3YmmKqVlRtW4MLwWACH+H09wdGltaXplZCBieSBVbGVhZCBTbWFydFNhdmVyIQAAOw==');
   });
 

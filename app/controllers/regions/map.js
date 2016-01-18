@@ -11,6 +11,8 @@ export default Ember.Controller.extend({
 
       db.get('map').then(map => {
         return db.putAttachment('map', 'map.png', map._rev, file, file.type);
+      }).catch(() => {
+        return db.putAttachment('map', 'map.png', file, file.type);
       });
     }
   }
