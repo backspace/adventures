@@ -2,6 +2,7 @@
   <div class='small-12 columns'>
     <div class='map'>
       <img src='{{mapSrc}}'>
+      <input type='file' onchange={{action 'saveMap'}}>
       {{#each model as |region|}}
         {{mappable-region region=region}}
       {{/each}}

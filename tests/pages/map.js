@@ -14,6 +14,13 @@ const dragBy = customHelper(selector => {
   });
 });
 
+const setMap = customHelper(selector => {
+  return ((base64) => {
+    const blob = new window.Blob([base64], {type: 'image/gif'});
+    triggerEvent(selector, 'change', {target: {files: [blob]}});
+  });
+});
+
 export default PageObject.create({
   imageSrc: attribute('src', 'img'),
 
@@ -27,5 +34,7 @@ export default PageObject.create({
 
       dragBy: dragBy()
     }
-  })
+  }),
+
+  setMap: setMap('input')
 });
