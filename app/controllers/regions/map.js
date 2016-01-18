@@ -10,9 +10,9 @@ export default Ember.Controller.extend({
       const db = this.container.lookup('adapter:application').get('db');
 
       db.get('map').then(map => {
-        return db.putAttachment('map', 'map.png', map._rev, file, file.type);
+        return db.putAttachment('map', 'image', map._rev, file, file.type);
       }).catch(() => {
-        return db.putAttachment('map', 'map.png', file, file.type);
+        return db.putAttachment('map', 'image', file, file.type);
       });
     }
   }

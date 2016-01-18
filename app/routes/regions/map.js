@@ -4,7 +4,7 @@ export default Ember.Route.extend({
   model() {
     const db = this.container.lookup('adapter:application').get('db');
 
-    return db.getAttachment('map', 'map.png').then(attachment => {
+    return db.getAttachment('map', 'image').then(attachment => {
       return attachment;
     }).catch(() => {
       return null;
