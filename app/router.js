@@ -19,6 +19,8 @@ Router.map(function() {
 
   this.route('region', {path: '/regions/:region_id'});
 
+  this.route('teams');
+
   this.route('sync');
 });
 
