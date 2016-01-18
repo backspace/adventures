@@ -132,12 +132,12 @@ test('the regions can be arranged on a map', (assert) => {
 
   andThen(() => {
     assert.equal(mapPage.regions(1).name(), 'Gujaareh');
-    assert.equal(mapPage.regions(1).x(), 10);
-    assert.equal(mapPage.regions(1).y(), 50);
+    assert.equal(mapPage.regions(1).y(), 10);
+    assert.equal(mapPage.regions(1).x(), 50);
 
     assert.equal(mapPage.regions(2).name(), 'Kisua');
-    assert.equal(mapPage.regions(2).x(), 1000);
-    assert.equal(mapPage.regions(2).y(), 0);
+    assert.equal(mapPage.regions(2).y(), 1000);
+    assert.equal(mapPage.regions(2).x(), 0);
 
     // This needs to be inside andThen to get offset?!
     mapPage.regions(1).dragBy(90, 10);

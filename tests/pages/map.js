@@ -2,8 +2,8 @@ import PageObject from '../page-object';
 
 const { attribute, collection, customHelper, text } = PageObject;
 
-const x = customHelper(selector => parseInt($(selector).css('top')));
-const y = customHelper(selector => parseInt($(selector).css('left')));
+const x = customHelper(selector => parseInt($(selector).css('left')));
+const y = customHelper(selector => parseInt($(selector).css('top')));
 
 const dragBy = customHelper(selector => {
   return ((x, y) => {
