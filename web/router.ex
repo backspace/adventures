@@ -12,6 +12,8 @@ defmodule Cr2016site.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
+    plug Cr2016site.Plugs.CurrentUser
   end
 
   scope "/", Cr2016site do
@@ -50,8 +52,9 @@ defmodule Cr2016site.Router do
     get "/", PageController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", Cr2016site do
-  #   pipe_through :api
-  # end
+  scope "/api", Cr2016site do
+    pipe_through :api
+
+    get "/teams", TeamController, :index_json
+  end
 end

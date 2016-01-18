@@ -13,6 +13,34 @@ defmodule Cr2016site.TeamController do
     render(conn, "index.html", teams: teams)
   end
 
+  # FIXME surely there’s a better way
+  def index_json(conn, _params) do
+    users = Repo.all(User)
+    teams = Repo.all(Team)
+    json conn, %{data: Enum.map(teams, fn(team) ->
+      team_emails = Enum.map(team.user_ids, fn(user_id) ->
+        user = Enum.find(users, fn(u) -> u.id == user_id end)
+
+        if user do
+          user.email
+        else
+          "unknown user #{user_id}"
+        end
+      end)
+      |> Enum.join(", ")
+
+      %{
+        type: "teams",
+        id: team.id,
+        attributes: %{
+          name: team.name,
+          notes: team.notes,
+          users: team_emails
+        }
+      }
+    end)}
+  end
+
   def new(conn, _params) do
     changeset = Team.changeset(%Team{})
     render(conn, "new.html", changeset: changeset)

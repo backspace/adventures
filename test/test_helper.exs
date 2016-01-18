@@ -20,6 +20,8 @@ defmodule Forge do
     email: "octavia.butler@example.com",
     crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
 
+  register :team, %Cr2016site.Team{}
+
   register :message, %Cr2016site.Message{
     ready: true
   }

@@ -65,6 +65,31 @@ defmodule Cr2016site.Integration.Admin do
     # assert Teams.risk_aversion(1) == "3"
   end
 
+  test "admin can view team JSON" do
+    {_, a} = Forge.saved_user email: "a@example.com"
+    {_, b} = Forge.saved_user email: "b@example.com"
+
+    {_, team} = Forge.saved_team name: "A team", notes: "Some notes", user_ids: [a.id, b.id]
+
+    Forge.saved_octavia admin: true
+
+    navigate_to "/"
+    Login.login_as "octavia.butler@example.com", "Xenogenesis"
+
+    navigate_to "/api/teams"
+    json = Floki.find(page_source, "pre") |> Floki.text |> Poison.Parser.parse!
+
+    assert json == %{"data" => [%{
+      "type" => "teams",
+      "id" => team.id,
+      "attributes" => %{
+        "name" => "A team",
+        "notes" => "Some notes",
+        "users" => "a@example.com, b@example.com"
+      }
+    }]}
+  end
+
   test "non-admins cannot access the user list or messages" do
     Forge.saved_user email: "francine.pascal@example.com"
 
