@@ -10,11 +10,11 @@ export default Ember.Component.extend({
   draggable: true,
 
   top: Ember.computed('region.y', function() {
-    return {top: this.get('region.y')};
+    return {top: Math.max(this.get('region.y'), 0)};
   }),
 
   left: Ember.computed('region.x', function() {
-    return {left: this.get('region.x')};
+    return {left: Math.max(this.get('region.x'), 0)};
   }),
 
   dragStart() {

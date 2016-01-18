@@ -24,7 +24,7 @@ moduleForAcceptance('Acceptance | regions', {
         });
         fixtureTwo.setProperties({
           'name': 'Kisua',
-          x: 100,
+          x: -100,
           y: 1000
         });
 
@@ -137,7 +137,7 @@ test('the regions can be arranged on a map', (assert) => {
 
     assert.equal(mapPage.regions(2).name(), 'Kisua');
     assert.equal(mapPage.regions(2).x(), 1000);
-    assert.equal(mapPage.regions(2).y(), 100);
+    assert.equal(mapPage.regions(2).y(), 0);
 
     // This needs to be inside andThen to get offset?!
     mapPage.regions(1).dragBy(90, 10);
