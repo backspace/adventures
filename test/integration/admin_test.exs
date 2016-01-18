@@ -76,5 +76,8 @@ defmodule Cr2016site.Integration.Admin do
 
     navigate_to "/messages"
     assert Nav.error_text == "Who are you?"
+
+    navigate_to "/teams"
+    assert Nav.error_text == "Who are you?"
   end
 end

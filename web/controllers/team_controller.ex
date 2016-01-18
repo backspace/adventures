@@ -4,6 +4,8 @@ defmodule Cr2016site.TeamController do
   alias Cr2016site.User
   alias Cr2016site.Team
 
+  plug Cr2016site.Plugs.Admin
+
   plug :scrub_params, "team" when action in [:create, :update]
 
   def index(conn, _params) do
