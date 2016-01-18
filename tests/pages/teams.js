@@ -1,6 +1,6 @@
 import PageObject from '../page-object';
 
-const { collection, text, visitable } = PageObject;
+const { clickable, collection, fillable, text, visitable } = PageObject;
 
 export default PageObject.create({
   visit: visitable('/teams'),
@@ -12,5 +12,8 @@ export default PageObject.create({
       name: text('.name'),
       riskAversion: text('.risk-aversion')
     }
-  })
+  }),
+
+  enterJSON: fillable('textarea'),
+  save: clickable('.save')
 });
