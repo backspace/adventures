@@ -13,6 +13,8 @@ export default PageObject.create({
       awesomeness: text('.awesomeness'),
       risk: text('.risk'),
 
+      region: text('.region'),
+
       edit: clickable('.edit')
     }
   }),
