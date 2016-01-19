@@ -65,7 +65,10 @@ defmodule Cr2016site.MessageController do
     message = Repo.get!(Message, id)
     users = Repo.all(Cr2016site.User)
 
-    Enum.each(users, fn(user) -> Cr2016site.Mailer.send_message(message, user) end)
+    Enum.each(users, fn(user) ->
+      relationships = Cr2016site.TeamFinder.relationships(user, users)
+      Cr2016site.Mailer.send_message(message, user, relationships)
+    end)
 
     conn
     |> put_flash(:info, "Message was sent")

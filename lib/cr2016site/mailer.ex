@@ -42,8 +42,8 @@ defmodule Cr2016site.Mailer do
     send_email to: @from, from: @from, subject: "#{user.email} registered", text: "Yes"
   end
 
-  def send_message(message, user) do
-    send_email to: user.email, from: @from, subject: "[rendezvous] #{message.subject}", text: message.content, html: message_html(message)
+  def send_message(message, user, relationships) do
+    send_email to: user.email, from: @from, subject: "[rendezvous] #{message.subject}", text: message_text(message, user, relationships), html: message_html(message, user, relationships)
   end
 
   def send_backlog(messages, user) do
@@ -72,7 +72,23 @@ defmodule Cr2016site.Mailer do
     Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016site.Endpoint.url]).out
   end
 
-  defp message_html(message) do
-    Phoenix.View.render_to_string(Cr2016site.MessageView, "preview.html", %{message: message, layout: {Cr2016site.EmailView, "layout.html"}})
+  defp message_html(message, user, relationships) do
+    Phoenix.View.render_to_string(Cr2016site.MessageView, "preview.html", %{
+      message: message,
+      user: user,
+      relationships: relationships,
+      layout: {Cr2016site.EmailView, "layout.html"}
+    })
+  end
+
+  defp message_text(message, user, relationships) do
+    html = Phoenix.View.render_to_string(Cr2016site.MessageView, "preview.html", %{
+      message: message,
+      user: user,
+      relationships: relationships
+    })
+
+    File.write("/tmp/email.html", html)
+    Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016site.Endpoint.url]).out
   end
 end
