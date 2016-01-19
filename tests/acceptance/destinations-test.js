@@ -33,7 +33,10 @@ moduleForAcceptance('Acceptance | destinations', {
             region: regionOne
           });
 
-          fixtureTwo.set('description', 'Hona-Karekh');
+          fixtureTwo.setProperties({
+            description: 'Hona-Karekh',
+            region: regionTwo
+          });
 
           return Ember.RSVP.all([fixtureOne.save, fixtureTwo.save]);
         }).then(() => {
@@ -44,13 +47,28 @@ moduleForAcceptance('Acceptance | destinations', {
   }
 });
 
-test('existing destinations are listed', (assert) => {
+test('existing destinations are listed and can be sorted by region', (assert) => {
   visit('/destinations');
 
   andThen(() => {
     assert.equal(page.destinations(1).description(), 'Ina-Karekh');
     assert.equal(page.destinations(1).region(), 'There');
 
+    assert.equal(page.destinations(2).description(), 'Hona-Karekh');
+    assert.equal(page.destinations(2).region(), 'Here');
+  });
+
+  page.headerRegion().click();
+
+  andThen(() => {
+    assert.equal(page.destinations(1).description(), 'Hona-Karekh');
+    assert.equal(page.destinations(2).description(), 'Ina-Karekh');
+  });
+
+  page.headerRegion().click();
+
+  andThen(() => {
+    assert.equal(page.destinations(1).description(), 'Ina-Karekh');
     assert.equal(page.destinations(2).description(), 'Hona-Karekh');
   });
 });

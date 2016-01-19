@@ -5,6 +5,11 @@ const { clickable, collection, fillable, selectable, text, value, visitable } = 
 export default PageObject.create({
   visit: visitable('/destinations'),
 
+  headerRegion: {
+    scope: 'th.region',
+    click: clickable()
+  },
+
   destinations: collection({
     itemScope: '.destination',
 
