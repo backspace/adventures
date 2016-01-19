@@ -20,6 +20,12 @@ export default PageObject.create({
 
       region: text('.region'),
 
+      status: {
+        scope: '.status',
+        value: text(),
+        click: clickable()
+      },
+
       edit: clickable('.edit')
     }
   }),
