@@ -29,14 +29,14 @@ moduleForAcceptance('Acceptance | destinations', {
             awesomeness: 9,
             risk: 6,
             answer: 'ABC123',
-            status: false,
+            status: 'unavailable',
 
             region: regionOne
           });
 
           fixtureTwo.setProperties({
             description: 'Hona-Karekh',
-            status: true,
+            status: 'available',
             region: regionTwo
           });
 
@@ -78,9 +78,20 @@ test('existing destinations are listed and can be sorted by region', (assert) =>
 test('destination status is displayed and can be toggled from the list', (assert) => {
   visit('/destinations');
 
+  // Sort by region, otherwise destinations will jump around
+  page.headerRegion().click();
+
+  andThen(() => {
+    assert.equal(page.destinations(1).status().value(), '✓');
+    assert.equal(page.destinations(2).status().value(), '✘');
+  });
+
+  page.destinations(1).status().click();
+  page.destinations(2).status().click();
+
   andThen(() => {
     assert.equal(page.destinations(1).status().value(), '✘');
-    assert.equal(page.destinations(2).status().value(), '✓');
+    assert.equal(page.destinations(2).status().value(), '?');
   });
 });
 

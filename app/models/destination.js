@@ -15,7 +15,7 @@ export default Model.extend({
   awesomeness: attr('number'),
   risk: attr('number'),
 
-  status: attr('boolean'),
+  status: attr('string'),
 
   region: belongsTo('region'),
 
