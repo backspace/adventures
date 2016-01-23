@@ -17,7 +17,17 @@ moduleForAcceptance('Acceptance | scheduler', {
 
         const eatonCentre = store.createRecord('region', {name: 'Eaton Centre'});
 
-        Ember.RSVP.all([portagePlace.save(), eatonCentre.save()]).then(() => {
+        const superfans = store.createRecord('team', {
+          name: 'Leave It to Beaver superfans',
+          users: 'june@example.com, eddie@example.com'
+        });
+
+        const mayors = store.createRecord('team', {
+          name: 'Mayors',
+          users: 'susan@winnipeg.ca, glen@winnipeg.ca'
+        });
+
+        Ember.RSVP.all([portagePlace.save(), eatonCentre.save(), superfans.save(), mayors.save()]).then(() => {
           const edmontonCourt = store.createRecord('destination', {
             region: portagePlace,
             description: 'Edmonton Court',
@@ -58,5 +68,15 @@ test('available destinations are grouped by region', (assert) => {
 
     assert.equal(destination.description(), 'Edmonton Court');
     assert.equal(destination.qualities(), 'A3 R2');
+  });
+});
+
+test('teams are listed', (assert) => {
+  page.visit();
+
+  andThen(() => {
+    const superfans = page.teams(1);
+    assert.equal(superfans.name(), 'Leave It to Beaver superfans');
+    assert.equal(superfans.users(), 'june@example.com, eddie@example.com');
   });
 });

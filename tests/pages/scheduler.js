@@ -21,5 +21,14 @@ export default PageObject.create({
         }
       })
     }
+  }),
+
+  teams: collection({
+    itemScope: '.team',
+
+    item: {
+      name: text('.name'),
+      users: attribute('title')
+    }
   })
 });

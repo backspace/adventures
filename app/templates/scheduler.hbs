@@ -1,5 +1,5 @@
 <ul class='regions'>
-  {{#each model as |destinations region|}}
+  {{#each model.regionToDestinations as |destinations region|}}
     {{#if destinations}}
       <li class='region' title={{region.notes}}>
         <div class='name'>{{region.name}}</div>
@@ -13,5 +13,13 @@
         </ul>
       </li>
     {{/if}}
+  {{/each}}
+</ul>
+
+<ul class='teams'>
+  {{#each model.teams as |team|}}
+    <li class='team' title={{team.users}}>
+      <div class='name'>{{team.name}}</div>
+    </li>
   {{/each}}
 </ul>

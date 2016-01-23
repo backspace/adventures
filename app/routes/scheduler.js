@@ -19,6 +19,11 @@ export default Ember.Route.extend({
 
         return map;
       }, new Ember.Map());
+    }).then(regionToDestinations => {
+      return Ember.RSVP.hash({
+        regionToDestinations,
+        teams: this.store.findAll('team')
+      });
     });
   }
 });
