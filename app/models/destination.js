@@ -1,3 +1,4 @@
+import Ember from 'ember';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
@@ -16,6 +17,8 @@ export default Model.extend({
   risk: attr('number'),
 
   status: attr('string'),
+
+  isAvailable: Ember.computed.equal('status', 'available'),
 
   region: belongsTo('region'),
 

@@ -21,6 +21,8 @@ Router.map(function() {
 
   this.route('teams');
 
+  this.route('scheduler');
+
   this.route('sync');
 });
 

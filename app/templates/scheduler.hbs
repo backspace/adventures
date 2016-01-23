@@ -1,0 +1,15 @@
+<ul class='regions'>
+  {{#each model as |destinations region|}}
+    <li class='region' title={{region.notes}}>
+      <div class='name'>{{region.name}}</div>
+
+      <ul class='destinations'>
+        {{#each destinations as |destination|}}
+          <li class='destination' title='A{{destination.awesomeness}} R{{destination.risk}}'>
+            <div class='description'>{{destination.description}}</div>
+          </li>
+        {{/each}}
+      </ul>
+    </li>
+  {{/each}}
+</ul>
