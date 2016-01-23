@@ -1,25 +1,27 @@
-<ul class='regions'>
-  {{#each model.regionToDestinations as |destinations region|}}
-    {{#if destinations}}
-      <li class='region' title={{region.notes}}>
-        <div class='name'>{{region.name}}</div>
+<div id='scheduler'>
+  <ul class='regions'>
+    {{#each model.regionToDestinations as |destinations region|}}
+      {{#if destinations}}
+        <li class='region' title={{region.notes}}>
+          <div class='name'>{{region.name}}</div>
 
-        <ul class='destinations'>
-          {{#each destinations as |destination|}}
-            <li class='destination' title='A{{destination.awesomeness}} R{{destination.risk}}'>
-              <div class='description'>{{destination.description}}</div>
-            </li>
-          {{/each}}
-        </ul>
+          <ul class='destinations'>
+            {{#each destinations as |destination|}}
+              <li class='destination' title='A{{destination.awesomeness}} R{{destination.risk}}'>
+                <div class='description'>{{destination.description}}</div>
+              </li>
+            {{/each}}
+          </ul>
+        </li>
+      {{/if}}
+    {{/each}}
+  </ul>
+
+  <ul class='teams'>
+    {{#each model.teams as |team|}}
+      <li class='team' title={{team.users}}>
+        <div class='name'>{{team.name}}</div>
       </li>
-    {{/if}}
-  {{/each}}
-</ul>
-
-<ul class='teams'>
-  {{#each model.teams as |team|}}
-    <li class='team' title={{team.users}}>
-      <div class='name'>{{team.name}}</div>
-    </li>
-  {{/each}}
-</ul>
+    {{/each}}
+  </ul>
+</div>

@@ -45,3 +45,56 @@ $region-length: 4rem;
     }
   }
 }
+
+$column-width: 6rem;
+
+#scheduler {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: white;
+
+  font-family: Silkscreen;
+  font-size: 8px;
+
+  .teams, .regions {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    width: $column-width;
+
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+
+    li {
+      border: 1px solid black;
+      border-top: 0;
+
+      padding: 2px 4px;
+    }
+  }
+
+  .teams {
+    right: $column-width;
+
+    li {
+      border-right: 0;
+    }
+  }
+
+  .regions {
+    > li {
+      background: black;
+      color: white;
+
+      font-weight: bold;
+    }
+  }
+}
