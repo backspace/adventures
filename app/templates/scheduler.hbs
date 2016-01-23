@@ -1,15 +1,17 @@
 <ul class='regions'>
   {{#each model as |destinations region|}}
-    <li class='region' title={{region.notes}}>
-      <div class='name'>{{region.name}}</div>
+    {{#if destinations}}
+      <li class='region' title={{region.notes}}>
+        <div class='name'>{{region.name}}</div>
 
-      <ul class='destinations'>
-        {{#each destinations as |destination|}}
-          <li class='destination' title='A{{destination.awesomeness}} R{{destination.risk}}'>
-            <div class='description'>{{destination.description}}</div>
-          </li>
-        {{/each}}
-      </ul>
-    </li>
+        <ul class='destinations'>
+          {{#each destinations as |destination|}}
+            <li class='destination' title='A{{destination.awesomeness}} R{{destination.risk}}'>
+              <div class='description'>{{destination.description}}</div>
+            </li>
+          {{/each}}
+        </ul>
+      </li>
+    {{/if}}
   {{/each}}
 </ul>

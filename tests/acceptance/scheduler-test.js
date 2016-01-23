@@ -47,7 +47,7 @@ test('available destinations are grouped by region', (assert) => {
   page.visit();
 
   andThen(() => {
-    //assert.equal(page.regions().count(), 1, 'only regions with available destinations should be listed');
+    assert.equal(page.regions().count(), 1, 'only regions with available destinations should be listed');
     const region = page.regions(1);
 
     assert.equal(region.name(), 'Portage Place');
