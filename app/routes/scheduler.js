@@ -18,7 +18,7 @@ export default Ember.Route.extend({
         }
 
         return map;
-      }, new Map());
+      }, new Ember.Map());
     });
   }
 });
