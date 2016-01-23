@@ -10,6 +10,7 @@ export default PageObject.create({
 
     item: {
       name: text('.name'),
+      users: text('.users'),
       riskAversion: text('.risk-aversion')
     }
   }),

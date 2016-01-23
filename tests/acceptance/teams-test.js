@@ -56,6 +56,7 @@ test('teams can be overwritten with JSON input', (assert) => {
           "id": 100,
           "attributes": {
             "name": "jorts",
+            "users": "jorts@example.com, jants@example.com",
             "riskAversion": 2
           }
         },
@@ -77,6 +78,7 @@ test('teams can be overwritten with JSON input', (assert) => {
     assert.equal(page.teams().count(), 2, 'expected two teams to be listed');
 
     assert.equal(page.teams(1).name(), 'jorts');
+    assert.equal(page.teams(1).users(), 'jorts@example.com, jants@example.com');
     assert.equal(page.teams(1).riskAversion(), '2');
 
     assert.equal(page.teams(2).name(), 'jants');

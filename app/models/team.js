@@ -5,6 +5,7 @@ const { attr } = DS;
 
 export default Model.extend({
   name: attr('string'),
+  users: attr('string'),
   riskAversion: attr('number'),
 
   createdAt: attr('createDate'),

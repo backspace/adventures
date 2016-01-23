@@ -7,12 +7,14 @@
       <thead>
         <tr>
           <th>Name</th>
+          <th>Users</th>
         </tr>
       </thead>
       <tbody>
         {{#each model as |team|}}
           <tr class='team'>
             <td class='name'>{{team.name}}</td>
+            <td class='users'>{{team.users}}</td>
             <td class='risk-aversion'>{{team.riskAversion}}</td>
           </tr>
         {{/each}}
