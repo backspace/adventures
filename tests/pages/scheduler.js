@@ -17,7 +17,8 @@ export default PageObject.create({
 
         item: {
           description: text('.description'),
-          qualities: attribute('title')
+          qualities: attribute('title'),
+          accessibility: text('.accessibility')
         }
       })
     }

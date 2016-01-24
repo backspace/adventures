@@ -115,6 +115,10 @@ $column-width: 6rem;
         border-width: 0 0 1px 0;
         color: black;
         font-weight: normal;
+
+        .accessibility {
+          border-top: 1px solid #bbb;
+        }
       }
     }
   }
