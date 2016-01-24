@@ -20,12 +20,14 @@ moduleForAcceptance('Acceptance | scheduler', {
 
       const superfans = store.createRecord('team', {
         name: 'Leave It to Beaver superfans',
-        users: 'june@example.com, eddie@example.com'
+        users: 'june@example.com, eddie@example.com',
+        riskAversion: 3,
       });
 
       const mayors = store.createRecord('team', {
         name: 'Mayors',
-        users: 'susan@winnipeg.ca, glen@winnipeg.ca'
+        users: 'susan@winnipeg.ca, glen@winnipeg.ca',
+        riskAversion: 1
       });
 
       Ember.RSVP.all([portagePlace.save(), eatonCentre.save(), superfans.save(), mayors.save()]).then(() => {
@@ -103,6 +105,7 @@ test('teams are listed', (assert) => {
   andThen(() => {
     const superfans = page.teams(1);
     assert.equal(superfans.name(), 'Leave It to Beaver superfans');
+    assert.equal(superfans.riskAversion(), '3');
     assert.equal(superfans.users(), 'june@example.com, eddie@example.com');
   });
 });

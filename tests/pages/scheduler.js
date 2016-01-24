@@ -29,7 +29,8 @@ export default PageObject.create({
 
     item: {
       name: text('.name'),
-      users: attribute('title')
+      users: attribute('title'),
+      riskAversion: attribute('data-risk-aversion')
     }
   })
 });

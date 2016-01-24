@@ -90,6 +90,18 @@ $column-width: 6rem;
 
     li {
       border-right: 0;
+
+      &[data-risk-aversion='1'] {
+        border-right: 3px solid green;
+      }
+
+      &[data-risk-aversion='2'] {
+        border-right: 3px solid darkorange;
+      }
+
+      &[data-risk-aversion='3'] {
+        border-right: 3px solid red;
+      }
     }
   }
 
