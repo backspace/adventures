@@ -19,6 +19,8 @@ export default Ember.Route.extend({
       }).then(region => {
         this.get('lastRegion').set('lastRegion', region);
 
+        return region.save();
+      }).then(() => {
         this.transitionTo('destinations');
       });
     },

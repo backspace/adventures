@@ -3,6 +3,7 @@ import { test } from 'qunit';
 import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-acceptance';
 
 import page from '../pages/scheduler';
+import destinationsPage from '../pages/destinations';
 
 moduleForAcceptance('Acceptance | scheduler', {
   beforeEach(assert) {
@@ -69,6 +70,29 @@ test('available destinations are grouped by region', (assert) => {
 
     assert.equal(destination.description(), 'Edmonton Court');
     assert.equal(destination.qualities(), 'A3 R2');
+  });
+});
+
+// This test ensures that a region’s destinations are serialised
+test('a newly created and available destination will show under its region', (assert) => {
+  destinationsPage.visit();
+  destinationsPage.new();
+  destinationsPage.descriptionField().fill('Fountain');
+
+  andThen(() => {
+    const portagePlaceOption = find('option:contains(Portage Place)');
+    destinationsPage.regionField().select(portagePlaceOption.val());
+  });
+
+  destinationsPage.save();
+
+  destinationsPage.destinations(1).status().click();
+
+  page.visit();
+
+  andThen(() => {
+    const region = page.regions(1);
+    assert.equal(region.destinations().count(), 2);
   });
 });
 
