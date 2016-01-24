@@ -1,15 +1,17 @@
 <div id='scheduler'>
   <ul class='regions'>
-    {{#each model.regionToDestinations as |destinations region|}}
-      {{#if destinations}}
+    {{#each model.regions as |region|}}
+      {{#if region.destinations}}
         <li class='region' title={{region.notes}}>
           <div class='name'>{{region.name}}</div>
 
           <ul class='destinations'>
-            {{#each destinations as |destination|}}
-              <li class='destination' title='A{{destination.awesomeness}} R{{destination.risk}}'>
-                <div class='description'>{{destination.description}}</div>
-              </li>
+            {{#each region.destinations as |destination|}}
+              {{#if destination.isAvailable}}
+                <li class='destination' title='A{{destination.awesomeness}} R{{destination.risk}}'>
+                  <div class='description'>{{destination.description}}</div>
+                </li>
+              {{/if}}
             {{/each}}
           </ul>
         </li>
