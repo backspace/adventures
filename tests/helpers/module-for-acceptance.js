@@ -7,13 +7,17 @@ import config from 'adventure-gathering/config/environment';
 
 export default function(name, options = {}) {
   module(name, {
-    beforeEach() {
-      return new PouchDB(config.emberPouch.localDb).destroy().then(() => {
+    beforeEach(assert) {
+      const done = assert.async();
+
+      new PouchDB(config.emberPouch.localDb).destroy().then(() => {
         this.application = startApp();
 
         if (options.beforeEach) {
           options.beforeEach.apply(this, arguments);
         }
+
+        done();
       });
     },
 
