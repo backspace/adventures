@@ -40,7 +40,9 @@ moduleForAcceptance('Acceptance | destinations', {
           region: regionTwo
         });
 
-        return Ember.RSVP.all([fixtureOne.save, fixtureTwo.save]);
+        return Ember.RSVP.all([fixtureTwo.save(), fixtureOne.save()]);
+      }).then(() => {
+        return Ember.RSVP.all([regionOne.save(), regionTwo.save()]);
       }).then(() => {
         done();
       });
