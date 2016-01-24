@@ -5,27 +5,26 @@ import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-ac
 import page from '../pages/teams';
 
 moduleForAcceptance('Acceptance | teams', {
-  beforeEach() {
+  beforeEach(assert) {
     const store = this.application.__container__.lookup('service:store');
+    const done = assert.async();
 
-    return new Ember.RSVP.Promise((resolve) => {
-      Ember.run(() => {
-        const teamOne = store.createRecord('team');
-        const teamTwo = store.createRecord('team');
+    Ember.run(() => {
+      const teamOne = store.createRecord('team');
+      const teamTwo = store.createRecord('team');
 
-        teamOne.setProperties({
-          name: 'Team 1',
-          riskAversion: 3
-        });
+      teamOne.setProperties({
+        name: 'Team 1',
+        riskAversion: 3
+      });
 
-        teamTwo.setProperties({
-          name: 'Team 2',
-          riskAversion: 1
-        });
+      teamTwo.setProperties({
+        name: 'Team 2',
+        riskAversion: 1
+      });
 
-        Ember.RSVP.all([teamOne.save(), teamTwo.save()]).then(() => {
-          resolve();
-        });
+      Ember.RSVP.all([teamOne.save(), teamTwo.save()]).then(() => {
+        done();
       });
     });
   }

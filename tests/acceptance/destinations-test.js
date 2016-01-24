@@ -5,45 +5,44 @@ import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-ac
 import page from '../pages/destinations';
 
 moduleForAcceptance('Acceptance | destinations', {
-  beforeEach() {
+  beforeEach(assert) {
     const store = this.application.__container__.lookup('service:store');
+    const done = assert.async();
 
-    return new Ember.RSVP.Promise((resolve) => {
-      Ember.run(() => {
-        const regionOne = store.createRecord('region');
-        const regionTwo = store.createRecord('region');
+    Ember.run(() => {
+      const regionOne = store.createRecord('region');
+      const regionTwo = store.createRecord('region');
 
-        regionOne.set('name', 'There');
-        regionTwo.set('name', 'Here');
+      regionOne.set('name', 'There');
+      regionTwo.set('name', 'Here');
 
-        this.regionOne = regionOne;
-        this.regionTwo = regionTwo;
+      this.regionOne = regionOne;
+      this.regionTwo = regionTwo;
 
-        Ember.RSVP.all([regionOne.save(), regionTwo.save()]).then(() => {
-          const fixtureOne = store.createRecord('destination');
-          const fixtureTwo = store.createRecord('destination');
+      Ember.RSVP.all([regionOne.save(), regionTwo.save()]).then(() => {
+        const fixtureOne = store.createRecord('destination');
+        const fixtureTwo = store.createRecord('destination');
 
-          fixtureOne.setProperties({
-            description: 'Ina-Karekh',
-            accessibility: 'You might need help',
-            awesomeness: 9,
-            risk: 6,
-            answer: 'ABC123',
-            status: 'unavailable',
+        fixtureOne.setProperties({
+          description: 'Ina-Karekh',
+          accessibility: 'You might need help',
+          awesomeness: 9,
+          risk: 6,
+          answer: 'ABC123',
+          status: 'unavailable',
 
-            region: regionOne
-          });
-
-          fixtureTwo.setProperties({
-            description: 'Hona-Karekh',
-            status: 'available',
-            region: regionTwo
-          });
-
-          return Ember.RSVP.all([fixtureOne.save, fixtureTwo.save]);
-        }).then(() => {
-          resolve();
+          region: regionOne
         });
+
+        fixtureTwo.setProperties({
+          description: 'Hona-Karekh',
+          status: 'available',
+          region: regionTwo
+        });
+
+        return Ember.RSVP.all([fixtureOne.save, fixtureTwo.save]);
+      }).then(() => {
+        done();
       });
     });
   }

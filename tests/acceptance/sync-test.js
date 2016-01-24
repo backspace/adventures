@@ -8,18 +8,17 @@ import stringify from 'npm:json-stringify-safe';
 import page from '../pages/sync';
 
 moduleForAcceptance('Acceptance | sync', {
-  beforeEach() {
+  beforeEach(assert) {
     const store = this.application.__container__.lookup('service:store');
+    const done = assert.async();
 
-    return new Ember.RSVP.Promise((resolve) => {
-      Ember.run(() => {
-        const fixture = store.createRecord('destination');
+    Ember.run(() => {
+      const fixture = store.createRecord('destination');
 
-        fixture.set('description', 'Ina-Karekh');
+      fixture.set('description', 'Ina-Karekh');
 
-        fixture.save().then(() => {
-          resolve();
-        });
+      fixture.save().then(() => {
+        done();
       });
     });
   }
