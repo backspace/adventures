@@ -34,7 +34,8 @@ defmodule Cr2016site.Endpoint do
   plug Plug.Session,
     store: :cookie,
     key: "_cr2016site_key",
-    signing_salt: "dBMzbbb9"
+    signing_salt: "dBMzbbb9",
+    max_age: 60*60*24*365
 
   plug Cr2016site.Router
 end
