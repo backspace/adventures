@@ -10,9 +10,10 @@ defmodule Cr2016site.Integration.Messages do
   use Hound.Helpers
   hound_session
 
-  test "a message is sent to all registrants" do
+  test "a message is sent to all registrants with their team information summarised" do
     Forge.saved_admin email: "admin@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("admin")
-    Forge.saved_user email: "user@example.com"
+    Forge.saved_user email: "user@example.com", team_emails: "teammate@example.com", proposed_team_name: "Jorts"
+    Forge.saved_user email: "teammate@example.com", team_emails: "user@example.com", proposed_team_name: "Jants"
 
     navigate_to "/"
 
@@ -30,10 +31,13 @@ defmodule Cr2016site.Integration.Messages do
 
     assert Nav.info_text == "Message was sent"
 
-    [_, email] = Cr2016site.MailgunHelper.sent_email
+    [_, email, _] = Cr2016site.MailgunHelper.sent_email
     assert email["to"] == "user@example.com"
     assert email["from"] == "b@events.chromatin.ca"
     assert email["subject"] == "[rendezvous] A Subject!"
+
+    text = email["text"]
+    assert String.contains?(text, "Jants")
   end
 
   test "the backlog of existing messages is sent to a new registrant after the welcome" do
