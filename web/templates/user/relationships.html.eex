@@ -1,8 +1,8 @@
-<%= unless @relationships.empty? do %>
+<%= if !@relationships.empty? || assigns[:email] do %>
   <div class='row card'>
     <div class='small-12 columns'>
       <table>
-        <%= unless Enum.empty?(@relationships.mutuals) do %>
+        <%= if !Enum.empty?(@relationships.mutuals) || assigns[:email] do %>
           <thead>
             <tr>
               <th>Email</th>
@@ -12,6 +12,14 @@
             </tr>
           </thead>
           <tbody class='mutuals'>
+            <%= if assigns[:email] do %>
+              <tr>
+                <td class='email'><%= @user.email %></td>
+                <td class='symbol'></td>
+                <td class='risk-aversion'><%= risk_aversion_integer_to_string[@user.risk_aversion] %></td>
+                <td class='proposed-team-name'><%= @user.proposed_team_name %></td>
+              </tr>
+            <% end %>
             <%= for user <- @relationships.mutuals do %>
               <tr>
                 <td class='email'><%= user.email %></td>

@@ -4,5 +4,5 @@
   </div>
 </div>
 <%= if assigns[:relationships] do %>
-  <%= render Cr2016site.UserView, "relationships.html", user: @user, relationships: @relationships %>
+  <%= render Cr2016site.UserView, "relationships.html", user: @user, relationships: @relationships, email: true %>
 <% end %>

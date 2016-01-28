@@ -37,6 +37,7 @@ defmodule Cr2016site.Integration.Messages do
     assert email["subject"] == "[rendezvous] A Subject!"
 
     text = email["text"]
+    assert String.contains?(text, "Jorts")
     assert String.contains?(text, "Jants")
   end
 
