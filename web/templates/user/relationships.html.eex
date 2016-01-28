@@ -1,9 +1,6 @@
 <%= if !@relationships.empty? || assigns[:email] do %>
   <div class='row card'>
     <div class='small-12 columns'>
-      <%= if assigns[:email] do %>
-        Your information is summarised below.
-      <% end %>
       <table>
         <%= if !Enum.empty?(@relationships.mutuals) || assigns[:email] do %>
           <thead>

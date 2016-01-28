@@ -14,6 +14,7 @@ defmodule Cr2016site.Integration.Messages do
     Forge.saved_admin email: "admin@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("admin")
     Forge.saved_user email: "user@example.com", team_emails: "teammate@example.com", proposed_team_name: "Jorts"
     Forge.saved_user email: "teammate@example.com", team_emails: "user@example.com", proposed_team_name: "Jants"
+    Forge.saved_user email: "empty@example.com"
 
     navigate_to "/"
 
@@ -31,7 +32,7 @@ defmodule Cr2016site.Integration.Messages do
 
     assert Nav.info_text == "Message was sent"
 
-    [_, email, _] = Cr2016site.MailgunHelper.sent_email
+    [_, email, _, %{"text" => empty_email_text}] = Cr2016site.MailgunHelper.sent_email
     assert email["to"] == "user@example.com"
     assert email["from"] == "b@events.chromatin.ca"
     assert email["subject"] == "[rendezvous] A Subject!"
@@ -39,6 +40,8 @@ defmodule Cr2016site.Integration.Messages do
     text = email["text"]
     assert String.contains?(text, "Jorts")
     assert String.contains?(text, "Jants")
+
+    assert String.contains?(empty_email_text, "You haven’t filled in any details!")
   end
 
   test "the backlog of existing messages is sent to a new registrant after the welcome" do
