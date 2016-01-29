@@ -3,16 +3,17 @@
     <p><%= @message.content %></p>
   </div>
 </div>
-<div class='row card'>
-  <div class='small-12 columns'>
-    <%= if assigns[:email] do %>
+<%= if assigns[:user] do %>
+  <div class='row card'>
+    <div class='small-12 columns'>
       Your information is summarised below.
-    <% end %>
-    <%= if Cr2016site.UserView.is_empty?(@user) do %>
-      You haven’t filled in any details! Visit the <%= link "site", to: user_url(Cr2016site.Endpoint, :edit) %> to let us know your details.
-    <% end %>
+
+      <%= if Cr2016site.UserView.is_empty?(@user) do %>
+        You haven’t filled in any details! Visit the <%= link "site", to: user_url(Cr2016site.Endpoint, :edit) %> to let us know your details.
+      <% end %>
+    </div>
   </div>
-</div>
+<% end %>
 <%= if assigns[:relationships] do %>
   <%= render Cr2016site.UserView, "relationships.html", user: @user, relationships: @relationships, email: true %>
 <% end %>
