@@ -1,6 +1,6 @@
 <div class='row card'>
   <div class='small-12 columns'>
-    <p><%= @message.content %></p>
+    <p><%= raw @message.content %></p>
   </div>
 </div>
 <%= if assigns[:user] do %>
