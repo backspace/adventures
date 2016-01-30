@@ -152,4 +152,13 @@ test('a new meeting can be scheduled', (assert) => {
     assert.equal(page.meeting().teamOne(), 'Mayors');
     assert.equal(page.meeting().teamTwo(), 'Leave It to Beaver superfans');
   });
+
+  page.meeting().save();
+
+  andThen(() => {
+    assert.equal(page.teams(1).count(), '••');
+    assert.equal(page.teams(2).count(), '••');
+
+    assert.equal(page.regions(1).destinations(2).meetingCountBorderWidth(), '2px');
+  });
 });

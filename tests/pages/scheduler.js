@@ -65,6 +65,8 @@ export default PageObject.create({
 
     destination: selectText('.destination'),
     teamOne: selectText('.team:eq(0)'),
-    teamTwo: selectText('.team:eq(1)')
+    teamTwo: selectText('.team:eq(1)'),
+
+    save: clickable('button')
   }
 });
