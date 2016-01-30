@@ -119,11 +119,15 @@ test('teams are listed', (assert) => {
   });
 });
 
-test('an existing meeting is shown in the teams', (assert) => {
+test('an existing meeting is shown in the teams and destination', (assert) => {
   page.visit();
 
   andThen(() => {
     assert.equal(page.teams(1).count(), '•');
     assert.equal(page.teams(2).count(), '•');
+
+    // FIXME the border is currently 2*meetingCount because the style property
+    // was somehow overwritten?
+    assert.equal(page.regions(1).destinations(1).meetingCountBorderWidth(), '2px');
   });
 });

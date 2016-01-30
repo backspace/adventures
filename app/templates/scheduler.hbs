@@ -8,13 +8,7 @@
           <ul class='destinations'>
             {{#each region.destinations as |destination|}}
               {{#if destination.isAvailable}}
-                <li class='destination' title='A{{destination.awesomeness}} R{{destination.risk}}'>
-                  <div class='description'>{{destination.description}}</div>
-
-                  {{#if destination.accessibility}}
-                    <div class='accessibility'>{{destination.accessibility}}</div>
-                  {{/if}}
-                </li>
+                {{scheduler-destination destination=destination}}
               {{/if}}
             {{/each}}
           </ul>

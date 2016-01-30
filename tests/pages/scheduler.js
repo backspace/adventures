@@ -11,6 +11,12 @@ const propertyColourName = customHelper((selectorAndProperty) => {
   return colour.toName();
 });
 
+const propertyValue = customHelper((selectorAndProperty) => {
+  const split = selectorAndProperty.split(/\s/);
+  const property = split.pop();
+  return $(split.join(' ')).css(property);
+});
+
 export default PageObject.create({
   visit: visitable('/scheduler'),
 
@@ -27,7 +33,8 @@ export default PageObject.create({
         item: {
           description: text('.description'),
           qualities: attribute('title'),
-          accessibility: text('.accessibility')
+          accessibility: text('.accessibility'),
+          meetingCountBorderWidth: propertyValue('border-top-width')
         }
       })
     }
