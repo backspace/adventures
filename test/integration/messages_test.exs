@@ -66,10 +66,10 @@ defmodule Cr2016site.Integration.Messages do
     text = backlog_email["text"]
     assert String.contains?(text, "These messages were sent before you registered.")
 
-    assert String.contains?(text, "Subject: Subject one")
+    assert String.contains?(text, "Subject one")
     assert String.contains?(text, "Content one")
 
-    assert String.contains?(text, "Subject: Subject two")
+    assert String.contains?(text, "Subject two")
     assert String.contains?(text, "Content two")
 
     refute String.contains?(text, "Not ready")

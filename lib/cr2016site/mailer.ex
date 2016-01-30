@@ -47,13 +47,12 @@ defmodule Cr2016site.Mailer do
   end
 
   def send_backlog(messages, user) do
-    message_bodies = Enum.map(messages, fn(message) ->
-      "Subject: #{message.subject}\n\n#{message.content}"
-    end)
+    subject = case length(messages) do
+      1 -> "Message sent before you registered"
+      _ -> "Messages sent before you registered"
+    end
 
-    body = "These messages were sent before you registered.\n\n#{message_bodies}"
-
-    send_email to: user.email, from: @from, subject: "[rendezvous] Messages sent before you registered", text: body
+    send_email to: user.email, from: @from, subject: "[rendezvous] #{subject}", text: backlog_text(messages), html: backlog_html(messages)
   end
 
   def send_password_reset(user) do
@@ -87,6 +86,23 @@ defmodule Cr2016site.Mailer do
       user: user,
       relationships: relationships
     })
+
+    File.write("/tmp/email.html", html)
+    Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016site.Endpoint.url]).out
+  end
+
+  defp backlog_html(messages) do
+    Phoenix.View.render_to_string(Cr2016site.MessageView, "backlog.html", %{
+      messages: messages,
+      layout: {Cr2016site.EmailView, "layout.html"}
+    })
+  end
+
+  defp backlog_text(messages) do
+    html = Phoenix.View.render_to_string(Cr2016site.MessageView, "backlog.html", %{
+      messages: messages
+    })
+
 
     File.write("/tmp/email.html", html)
     Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016site.Endpoint.url]).out
