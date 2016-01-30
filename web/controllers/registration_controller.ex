@@ -15,7 +15,8 @@ defmodule Cr2016site.RegistrationController do
         messages = Cr2016site.Repo.all(
           from m in Cr2016site.Message,
             where: m.ready == true,
-          select: m
+          select: m,
+          order_by: :postmarked_at
         )
 
         Cr2016site.Mailer.send_registration(user)

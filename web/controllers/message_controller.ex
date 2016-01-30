@@ -7,7 +7,7 @@ defmodule Cr2016site.MessageController do
   plug :scrub_params, "message" when action in [:create, :update]
 
   def index(conn, _params) do
-    messages = Repo.all(Message)
+    messages = Repo.all(Message |> Ecto.Query.order_by(:postmarked_at))
     render(conn, "index.html", messages: messages)
   end
 
