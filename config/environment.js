@@ -30,7 +30,9 @@ module.exports = function(environment) {
       includePaths: ['/'],
       network: ['*'],
       showCreateDate: true
-    }
+    },
+
+    firstRendezvousTime: '2016-02-12 13:45'
   };
 
   if (environment === 'development') {

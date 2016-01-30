@@ -1,7 +1,11 @@
 import Ember from 'ember';
 
+import config from 'adventure-gathering/config/environment';
+
 import PDFDocument from 'npm:pdfkit';
 import blobStream from 'npm:blob-stream';
+
+import moment from 'moment';
 
 export default Ember.Component.extend({
   rendering: true,
@@ -58,7 +62,7 @@ export default Ember.Component.extend({
 
             doc.text(' ');
             doc.font(bold);
-            doc.text(`@X + ${index} meet:`);
+            doc.text(`@${this._getRendezvousTimeForIndex(index)} meet:`);
 
             doc.font(regular);
             const otherTeams = meetingGroup.teams.rejectBy('id', team.id);
@@ -81,5 +85,15 @@ export default Ember.Component.extend({
       this.$('iframe').attr('src', stream.toBlobURL('application/pdf'));
       this.set('rendering', false);
     });
+  },
+
+  _firstRendezvousTime() {
+    return moment(config.firstRendezvousTime);
+  },
+
+  _getRendezvousTimeForIndex(index) {
+    const rendezvousInterval = 30;
+
+    return this._firstRendezvousTime().add(rendezvousInterval*index, 'minutes').format('h:mm a');
   }
 });
