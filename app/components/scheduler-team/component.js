@@ -4,5 +4,11 @@ export default Ember.Component.extend({
   count: Ember.computed('team.meetings.length', function() {
     const length = this.get('team.meetings.length');
     return Array(length + 1).join('•');
-  })
+  }),
+
+  actions: {
+    select() {
+      this.attrs.select(this.get('team'));
+    }
+  }
 });

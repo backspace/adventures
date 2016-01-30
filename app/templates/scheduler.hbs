@@ -19,7 +19,7 @@
 
   <ul class='teams'>
     {{#each model.teams as |team|}}
-      {{scheduler-team team=team}}
+      {{scheduler-team team=team select=(action 'selectTeam')}}
     {{/each}}
   </ul>
 
@@ -32,6 +32,13 @@
       {{/each}}
     </select>
 
+    {{#each meeting.teams as |meetingTeam|}}
+      <select class='team'>
+        {{#each model.teams as |team|}}
+          <option value={{team.id}} selected={{eq meetingTeam.id team.id}}>{{team.name}}</option>
+        {{/each}}
+      </select>
+    {{/each}}
   </div>
 
   {{link-to '⌂' 'index' class='home'}}

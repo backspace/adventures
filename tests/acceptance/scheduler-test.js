@@ -144,8 +144,12 @@ test('a new meeting can be scheduled', (assert) => {
   page.visit();
 
   page.regions(1).destinations(2).click();
+  page.teams(2).click();
+  page.teams(1).click();
 
   andThen(() => {
     assert.equal(page.meeting().destination(), 'Prairie Theatre Exchange');
+    assert.equal(page.meeting().teamOne(), 'Mayors');
+    assert.equal(page.meeting().teamTwo(), 'Leave It to Beaver superfans');
   });
 });

@@ -54,13 +54,17 @@ export default PageObject.create({
       name: text('.name'),
       users: attribute('title'),
       count: text('.count'),
-      riskAversionColour: propertyColourName('border-right-color')
+      riskAversionColour: propertyColourName('border-right-color'),
+
+      click: clickable()
     }
   }),
 
   meeting: {
     scope: '.meeting-form',
 
-    destination: selectText('.destination')
+    destination: selectText('.destination'),
+    teamOne: selectText('.team:eq(0)'),
+    teamTwo: selectText('.team:eq(1)')
   }
 });
