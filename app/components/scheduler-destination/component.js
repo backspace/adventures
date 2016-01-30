@@ -6,5 +6,11 @@ export default Ember.Component.extend({
 
   border: Ember.computed('destination.meetings.length', function() {
     return {'border-top-width': this.get('destination.meetings.length')*2};
-  })
+  }),
+
+  actions: {
+    select() {
+      this.attrs.select(this.get('destination'));
+    }
+  }
 });

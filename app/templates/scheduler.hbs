@@ -8,7 +8,7 @@
           <ul class='destinations'>
             {{#each region.destinations as |destination|}}
               {{#if destination.isAvailable}}
-                {{scheduler-destination destination=destination}}
+                {{scheduler-destination destination=destination select=(action 'selectDestination')}}
               {{/if}}
             {{/each}}
           </ul>
@@ -22,6 +22,17 @@
       {{scheduler-team team=team}}
     {{/each}}
   </ul>
+
+  <div class='meeting-form'>
+    <select class='destination'>
+      {{#each model.destinations as |destination|}}
+        {{#if destination.isAvailable}}
+          <option value={{destination.id}} selected={{eq meeting.destination.id destination.id}}>{{destination.description}}</option>
+        {{/if}}
+      {{/each}}
+    </select>
+
+  </div>
 
   {{link-to '⌂' 'index' class='home'}}
 </div>

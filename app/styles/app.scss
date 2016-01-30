@@ -138,6 +138,13 @@ $column-width: 6rem;
     }
   }
 
+  .meeting-form {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: $column-width*2;
+  }
+
   a.home {
     padding: 4px;
     font-size: 16px;

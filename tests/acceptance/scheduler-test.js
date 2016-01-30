@@ -30,7 +30,7 @@ moduleForAcceptance('Acceptance | scheduler', {
         riskAversion: 1
       });
 
-      let edmontonCourt, globeCinemas, squeakyFloor;
+      let edmontonCourt, prairieTheatreExchange, globeCinemas, squeakyFloor;
 
       Ember.RSVP.all([portagePlace.save(), eatonCentre.save(), superfans.save(), mayors.save()]).then(() => {
         edmontonCourt = store.createRecord('destination', {
@@ -42,14 +42,22 @@ moduleForAcceptance('Acceptance | scheduler', {
           status: 'available'
         });
 
-        globeCinemas = store.createRecord('destination', {region: portagePlace});
+        prairieTheatreExchange = store.createRecord('destination', {
+          description: 'Prairie Theatre Exchange',
+          region: portagePlace,
+          status: 'available'
+        });
+
+        globeCinemas = store.createRecord('destination', {
+          region: portagePlace,
+        });
 
         squeakyFloor = store.createRecord('destination', {
           region: eatonCentre,
           status: 'unavailable'
         });
 
-        return Ember.RSVP.all([edmontonCourt.save(), globeCinemas.save(), squeakyFloor.save()]);
+        return Ember.RSVP.all([edmontonCourt.save(), prairieTheatreExchange.save(), globeCinemas.save(), squeakyFloor.save()]);
       }).then(() => {
         return Ember.RSVP.all([portagePlace.save(), eatonCentre.save()]);
       }).then(() => {
@@ -76,7 +84,7 @@ test('available destinations are grouped by region', (assert) => {
     assert.equal(region.name(), 'Portage Place');
     assert.equal(region.notes(), 'Downtown revitalisation!');
 
-    assert.equal(region.destinations().count(), 1);
+    assert.equal(region.destinations().count(), 2);
     const destination = region.destinations(1);
 
     assert.equal(destination.description(), 'Edmonton Court');
@@ -104,7 +112,7 @@ test('a newly created and available destination will show under its region', (as
 
   andThen(() => {
     const region = page.regions(1);
-    assert.equal(region.destinations().count(), 2);
+    assert.equal(region.destinations().count(), 3);
   });
 });
 
@@ -129,5 +137,15 @@ test('an existing meeting is shown in the teams and destination', (assert) => {
     // FIXME the border is currently 2*meetingCount because the style property
     // was somehow overwritten?
     assert.equal(page.regions(1).destinations(1).meetingCountBorderWidth(), '2px');
+  });
+});
+
+test('a new meeting can be scheduled', (assert) => {
+  page.visit();
+
+  page.regions(1).destinations(2).click();
+
+  andThen(() => {
+    assert.equal(page.meeting().destination(), 'Prairie Theatre Exchange');
   });
 });
