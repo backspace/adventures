@@ -38,36 +38,43 @@ export default Ember.Component.extend({
     const doc = new PDFDocument({layout: 'landscape'});
     const stream = doc.pipe(blobStream());
 
-    this.getTeamMeetings().then(teamToMeetings => {
-      this.get('teams').forEach(team => {
-        teamToMeetings[team.id].forEach((meetingGroup, index) => {
-          doc.fontSize(18);
-          const rendezvousLetter = String.fromCharCode(65 + index);
-          doc.text(`Rendezvous ${rendezvousLetter}`);
+    Ember.RSVP.all([fetch('/fonts/blackout.ttf'), fetch('/fonts/Oswald-Bold.ttf'), fetch('/fonts/Oswald-Regular.ttf')]).then(responses => {
+      return Ember.RSVP.all(responses.map(response => response.arrayBuffer()));
+    }).then(([header, bold, regular]) => {
+      this.getTeamMeetings().then(teamToMeetings => {
+        this.get('teams').forEach(team => {
+          teamToMeetings[team.id].forEach((meetingGroup, index) => {
+            doc.font(header);
+            doc.fontSize(18);
+            const rendezvousLetter = String.fromCharCode(65 + index);
+            doc.text(`Rendezvous ${rendezvousLetter}`);
 
+            doc.font(regular);
+            doc.fontSize(12);
+            doc.text(team.get('name'));
 
-          doc.fontSize(12);
-          doc.text(team.get('name'));
+            doc.text(' ');
+            doc.text(meetingGroup.region.get('name'));
 
-          doc.text(' ');
-          doc.text(meetingGroup.region.get('name'));
+            doc.text(' ');
+            doc.font(bold);
+            doc.text(`@X + ${index} meet:`);
 
-          doc.text(' ');
-          doc.text(`@X + ${index} meet:`);
+            doc.font(regular);
+            const otherTeams = meetingGroup.teams.rejectBy('id', team.id);
+            doc.text(otherTeams.mapBy('name'));
 
-          const otherTeams = meetingGroup.teams.rejectBy('id', team.id);
-          doc.text(otherTeams.mapBy('name'));
+            doc.text(' ');
+            doc.text(meetingGroup.destination.get('description'));
 
-          doc.text(' ');
-          doc.text(meetingGroup.destination.get('description'));
-
-          doc.text(' ');
-          doc.text(' ');
+            doc.text(' ');
+            doc.text(' ');
+          });
+          doc.addPage();
         });
-        doc.addPage();
-      });
 
-      doc.end();
+        doc.end();
+      });
     });
 
     stream.on('finish', () => {
