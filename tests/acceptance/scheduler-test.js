@@ -30,8 +30,10 @@ moduleForAcceptance('Acceptance | scheduler', {
         riskAversion: 1
       });
 
+      let edmontonCourt, globeCinemas, squeakyFloor;
+
       Ember.RSVP.all([portagePlace.save(), eatonCentre.save(), superfans.save(), mayors.save()]).then(() => {
-        const edmontonCourt = store.createRecord('destination', {
+        edmontonCourt = store.createRecord('destination', {
           region: portagePlace,
           description: 'Edmonton Court',
           accessibility: 'Steps down to centre',
@@ -40,9 +42,9 @@ moduleForAcceptance('Acceptance | scheduler', {
           status: 'available'
         });
 
-        const globeCinemas = store.createRecord('destination', {region: portagePlace});
+        globeCinemas = store.createRecord('destination', {region: portagePlace});
 
-        const squeakyFloor = store.createRecord('destination', {
+        squeakyFloor = store.createRecord('destination', {
           region: eatonCentre,
           status: 'unavailable'
         });
@@ -50,6 +52,13 @@ moduleForAcceptance('Acceptance | scheduler', {
         return Ember.RSVP.all([edmontonCourt.save(), globeCinemas.save(), squeakyFloor.save()]);
       }).then(() => {
         return Ember.RSVP.all([portagePlace.save(), eatonCentre.save()]);
+      }).then(() => {
+        return store.createRecord('meeting', {
+          destination: edmontonCourt,
+          teams: [superfans, mayors]
+        }).save();
+      }).then(() => {
+        return Ember.RSVP.all([edmontonCourt.save(), superfans.save(), mayors.save()]);
       }).then(() => {
         done();
       });
@@ -107,5 +116,14 @@ test('teams are listed', (assert) => {
     assert.equal(superfans.name(), 'Leave It to Beaver superfans');
     assert.equal(superfans.riskAversion(), '3');
     assert.equal(superfans.users(), 'june@example.com, eddie@example.com');
+  });
+});
+
+test('an existing meeting is shown in the teams', (assert) => {
+  page.visit();
+
+  andThen(() => {
+    assert.equal(page.teams(1).count(), '•');
+    assert.equal(page.teams(2).count(), '•');
   });
 });

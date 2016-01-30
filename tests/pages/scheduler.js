@@ -30,6 +30,7 @@ export default PageObject.create({
     item: {
       name: text('.name'),
       users: attribute('title'),
+      count: text('.count'),
       riskAversion: attribute('data-risk-aversion')
     }
   })

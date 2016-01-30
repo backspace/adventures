@@ -1,14 +1,15 @@
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
-const { attr, hasMany } = DS;
+const {
+  attr,
+  belongsTo,
+  hasMany
+} = DS;
 
 export default Model.extend({
-  name: attr('string'),
-  users: attr('string'),
-  riskAversion: attr('number'),
-
-  meetings: hasMany('meeting'),
+  destination: belongsTo('destination'),
+  teams: hasMany('team'),
 
   createdAt: attr('createDate'),
   updatedAt: attr('updateDate')

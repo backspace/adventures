@@ -4,7 +4,8 @@ import DS from 'ember-data';
 
 const {
   attr,
-  belongsTo
+  belongsTo,
+  hasMany
 } = DS;
 
 export default Model.extend({
@@ -21,6 +22,8 @@ export default Model.extend({
   isAvailable: Ember.computed.equal('status', 'available'),
 
   region: belongsTo('region'),
+
+  meetings: hasMany('meeting'),
 
   createdAt: attr('createDate'),
   updatedAt: attr('updateDate')

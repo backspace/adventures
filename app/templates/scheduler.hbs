@@ -25,9 +25,7 @@
 
   <ul class='teams'>
     {{#each model.teams as |team|}}
-      <li class='team' title={{team.users}} data-risk-aversion={{team.riskAversion}}>
-        <div class='name'>{{team.name}}</div>
-      </li>
+      {{scheduler-team team=team}}
     {{/each}}
   </ul>
 
