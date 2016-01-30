@@ -1,6 +1,15 @@
 import PageObject from '../page-object';
 
-const { attribute, collection, text, visitable } = PageObject;
+const { attribute, collection, customHelper, text, visitable } = PageObject;
+
+const propertyColourName = customHelper((selectorAndProperty) => {
+  const [selector, property] = selectorAndProperty.split(/\s/);
+  const propertyColour = $(selector).css(property);
+
+  /* globals tinycolor */
+  const colour = tinycolor(propertyColour);
+  return colour.toName();
+});
 
 export default PageObject.create({
   visit: visitable('/scheduler'),
@@ -31,7 +40,7 @@ export default PageObject.create({
       name: text('.name'),
       users: attribute('title'),
       count: text('.count'),
-      riskAversion: attribute('data-risk-aversion')
+      riskAversionColour: propertyColourName('border-right-color')
     }
   })
 });

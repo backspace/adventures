@@ -114,7 +114,7 @@ test('teams are listed', (assert) => {
   andThen(() => {
     const superfans = page.teams(1);
     assert.equal(superfans.name(), 'Leave It to Beaver superfans');
-    assert.equal(superfans.riskAversion(), '3');
+    assert.equal(superfans.riskAversionColour(), 'red');
     assert.equal(superfans.users(), 'june@example.com, eddie@example.com');
   });
 });

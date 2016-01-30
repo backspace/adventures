@@ -27,5 +27,9 @@ module.exports = function(defaults) {
 
   app.import('vendor/jquery.draggableNumber.js');
 
+  // Test-specific packages cannot be imported with ember-browserify
+  // https://github.com/ef4/ember-browserify/issues/14
+  app.import({test: path.join(app.bowerDirectory, 'tinycolor/tinycolor.js')});
+
   return app.toTree();
 };
