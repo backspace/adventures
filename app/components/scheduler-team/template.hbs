@@ -1,3 +1,10 @@
 <li class='team {{if isSelected 'selected'}}' title={{team.users}} data-risk-aversion={{team.riskAversion}} onclick={{action 'select'}}>
   <span class='name'>{{team.name}}</span> <span class='count'>{{count}}</span>
+  {{#if showMeetings}}
+    <ul>
+      {{#each team.meetings as |meeting index|}}
+        <li class=meeting>{{index}}</li>
+      {{/each}}
+    </ul>
+  {{/if}}
 </li>

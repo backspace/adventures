@@ -170,13 +170,14 @@ test('an existing meeting is shown in the teams and destination', (assert) => {
   });
 });
 
-test('hovering over a team shows its destinations ordered on the map', (assert) => {
+test('hovering over a team shows its destinations ordered on the map and its meetings', (assert) => {
   page.visit();
 
   page.teams(1).hover();
 
   andThen(() => {
     assert.equal(page.map().regions(1).meetingIndex(), '1');
+    assert.equal(page.teams(1).meetings().count(), 1);
   });
 });
 

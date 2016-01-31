@@ -19,10 +19,12 @@ export default Ember.Component.extend({
   }),
 
   mouseEnter() {
+    this.set('showMeetings', true);
     this.attrs.enter(this.get('team'));
   },
 
   mouseLeave() {
+    this.set('showMeetings', false);
     this.attrs.leave();
   },
 
