@@ -107,19 +107,19 @@ test('regions with available destinations are displayed on the map and highlight
   andThen(() => {
     assert.equal(region.x(), 50);
     assert.equal(region.y(), 60);
-    assert.notOk(region.isHighlighted());
+    assert.notOk(region.isHighlighted(), 'expected region not to be highlighted');
   });
 
   page.regions(1).hover();
 
   andThen(() => {
-    assert.ok(region.isHighlighted());
+    assert.ok(region.isHighlighted(), 'expected region to be highlighted');
   });
 
   page.regions(1).exit();
 
   andThen(() => {
-    assert.notOk(region.isHighlighted());
+    assert.notOk(region.isHighlighted(), 'expected region not to be highlighted');
   });
 });
 
