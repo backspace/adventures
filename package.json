@@ -63,7 +63,6 @@
     "pdfkit": "^0.7.2"
   },
   "dependencies": {
-    "broccoli-merge-trees": "^1.1.0",
-    "ember-resolver": "^2.0.3"
+    "broccoli-merge-trees": "^1.1.0"
   }
 }
