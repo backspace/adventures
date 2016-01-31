@@ -19,7 +19,9 @@ export default Ember.Component.extend({
   }),
 
   dragStart() {
-    if (!this.get('draggable')) return;
+    if (!this.get('draggable')) {
+      return;
+    }
 
     const offset = this.$().offset();
     const height = this.$().height();
@@ -29,7 +31,9 @@ export default Ember.Component.extend({
   },
 
   dragEnd({originalEvent: {pageX, pageY}}) {
-    if (!this.get('draggable')) return;
+    if (!this.get('draggable')) {
+      return;
+    }
 
     const originalPosition = this.get('originalPosition');
 
