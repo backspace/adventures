@@ -48,7 +48,7 @@ export default PageObject.create({
   visit: visitable('/scheduler'),
 
   regions: collection({
-    itemScope: '.region',
+    itemScope: 'li.region',
 
     item: {
       name: text('.name'),
