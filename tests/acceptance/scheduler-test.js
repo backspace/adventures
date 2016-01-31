@@ -170,6 +170,16 @@ test('an existing meeting is shown in the teams and destination', (assert) => {
   });
 });
 
+test('hovering over a team shows its destinations ordered on the map', (assert) => {
+  page.visit();
+
+  page.teams(1).hover();
+
+  andThen(() => {
+    assert.equal(page.map().regions(1).meetingIndex(), '1');
+  });
+});
+
 test('a new meeting can be scheduled', (assert) => {
   page.visit();
 

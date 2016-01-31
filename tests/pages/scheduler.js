@@ -88,7 +88,8 @@ export default PageObject.create({
 
       isSelected: hasClass('selected'),
 
-      click: clickable()
+      click: clickable(),
+      hover: hoverable()
     }
   }),
 
@@ -101,6 +102,8 @@ export default PageObject.create({
       item: {
         x: x(),
         y: y(),
+
+        meetingIndex: text('.meeting-index'),
 
         isHighlighted: hasClass('highlighted')
       }

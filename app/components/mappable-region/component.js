@@ -18,6 +18,24 @@ export default Ember.Component.extend({
     return {left: Math.max(this.get('region.x'), 0)};
   }),
 
+  meetingIndex: Ember.computed('region.id', 'highlightedTeam.id', function() {
+    const regionId = this.get('region.id');
+    const highlightedTeam = this.get('highlightedTeam');
+
+    if (highlightedTeam) {
+      const meetingRegionIds = highlightedTeam.hasMany('meetings').value().map(meeting => meeting.belongsTo('destination').value()).map(destination => destination.belongsTo('region').value()).mapBy('id');
+      const index = meetingRegionIds.indexOf(regionId);
+
+      if (index > -1) {
+        return index + 1;
+      } else {
+        return undefined;
+      }
+    } else {
+      return undefined;
+    }
+  }),
+
   dragStart() {
     if (!this.get('draggable')) {
       return;

@@ -40,6 +40,14 @@ export default Ember.Controller.extend({
 
     mouseLeaveRegion() {
       this.set('highlightedRegion', undefined);
+    },
+
+    mouseEnterTeam(team) {
+      this.set('highlightedTeam', team);
+    },
+
+    mouseLeaveTeam() {
+      this.set('highlightedTeam', undefined);
     }
   }
 });

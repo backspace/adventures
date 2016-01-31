@@ -18,6 +18,14 @@ export default Ember.Component.extend({
     return teamIds.indexOf(this.get('team.id')) > -1;
   }),
 
+  mouseEnter() {
+    this.attrs.enter(this.get('team'));
+  },
+
+  mouseLeave() {
+    this.attrs.leave();
+  },
+
   actions: {
     select() {
       this.attrs.select(this.get('team'));

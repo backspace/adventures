@@ -50,6 +50,13 @@ $region-length: 4rem;
       font-size: 33%;
     }
 
+    .meeting-index {
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      font-size: 500%;
+    }
+
     &.highlighted {
       background: lightgray;
     }
