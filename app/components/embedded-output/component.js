@@ -17,10 +17,13 @@ export default Ember.Component.extend({
     Ember.RSVP.all([fetch('/fonts/blackout.ttf'), fetch('/fonts/Oswald-Bold.ttf'), fetch('/fonts/Oswald-Regular.ttf')]).then(responses => {
       return Ember.RSVP.all(responses.map(response => response.arrayBuffer()));
     }).then(([header, bold, regular]) => {
-      const teamIdToMeetingObjects = this.get('teamIdToMeetingObjects');
-
       this.get('teams').forEach(team => {
-        teamIdToMeetingObjects[team.id].forEach((meetingGroup, index) => {
+        team.hasMany('meetings').value().forEach((meeting, index) => {
+          const destination = meeting.belongsTo('destination').value();
+          const region = destination.belongsTo('region').value();
+
+          const teams = meeting.hasMany('teams').value();
+
           doc.font(header);
           doc.fontSize(18);
           const rendezvousLetter = String.fromCharCode(65 + index);
@@ -31,18 +34,18 @@ export default Ember.Component.extend({
           doc.text(team.get('name'));
 
           doc.text(' ');
-          doc.text(meetingGroup.region.get('name'));
+          doc.text(region.get('name'));
 
           doc.text(' ');
           doc.font(bold);
           doc.text(`@${this._getRendezvousTimeForIndex(index)} meet:`);
 
           doc.font(regular);
-          const otherTeams = meetingGroup.teams.rejectBy('id', team.id);
+          const otherTeams = teams.rejectBy('id', team.id);
           doc.text(otherTeams.mapBy('name'));
 
           doc.text(' ');
-          doc.text(meetingGroup.destination.get('description'));
+          doc.text(destination.get('description'));
 
           doc.text(' ');
           doc.text(' ');
