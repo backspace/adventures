@@ -90,6 +90,10 @@ test('available destinations are grouped by region', (assert) => {
     assert.equal(destination.description(), 'Edmonton Court');
     assert.equal(destination.qualities(), 'A3 R2');
     assert.equal(destination.accessibility(), 'Steps down to centre');
+
+    // getComputedStyle is returning 0.298039 despite the style attribute value of 0.3!
+    assert.ok(Math.abs(destination.awesomenessBorderOpacity() - 0.3) < 0.01);
+    assert.equal(destination.riskBorderOpacity(), 0.2);
   });
 });
 

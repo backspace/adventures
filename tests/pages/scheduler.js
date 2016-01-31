@@ -11,6 +11,17 @@ const propertyColourName = customHelper((selectorAndProperty) => {
   return colour.toName();
 });
 
+const propertyColourOpacity = customHelper((selectorAndProperty) => {
+  const split = selectorAndProperty.split(/\s/);
+  const property = split.pop();
+
+  const propertyColour = $(split.join(' ')).css(property);
+
+  /* globals tinycolor */
+  const colour = tinycolor(propertyColour);
+  return colour.getAlpha();
+});
+
 const propertyValue = customHelper((selectorAndProperty) => {
   const split = selectorAndProperty.split(/\s/);
   const property = split.pop();
@@ -39,7 +50,10 @@ export default PageObject.create({
           description: text('.description'),
           qualities: attribute('title'),
           accessibility: text('.accessibility'),
+
           meetingCountBorderWidth: propertyValue('border-top-width'),
+          awesomenessBorderOpacity: propertyColourOpacity('border-left-color'),
+          riskBorderOpacity: propertyColourOpacity('border-right-color'),
 
           isSelected: hasClass('selected'),
 
