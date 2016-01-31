@@ -2,6 +2,9 @@ import PageObject from '../page-object';
 
 const { attribute, clickable, collection, customHelper, hasClass, text, visitable } = PageObject;
 
+const x = customHelper(selector => parseInt($(selector).css('left')));
+const y = customHelper(selector => parseInt($(selector).css('top')));
+
 const propertyColourName = customHelper((selectorAndProperty) => {
   const [selector, property] = selectorAndProperty.split(/\s/);
   const propertyColour = $(selector).css(property);
@@ -77,6 +80,19 @@ export default PageObject.create({
       click: clickable()
     }
   }),
+
+  map: {
+    scope: '.map',
+
+    regions: collection({
+      itemScope: '.region',
+
+      item: {
+        x: x(),
+        y: y()
+      }
+    })
+  },
 
   meeting: {
     scope: '.meeting-form',

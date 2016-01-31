@@ -13,7 +13,9 @@ moduleForAcceptance('Acceptance | scheduler', {
     Ember.run(() => {
       const portagePlace = store.createRecord('region', {
         name: 'Portage Place',
-        notes: 'Downtown revitalisation!'
+        notes: 'Downtown revitalisation!',
+        x: 50,
+        y: 60
       });
 
       const eatonCentre = store.createRecord('region', {name: 'Eaton Centre'});
@@ -94,6 +96,17 @@ test('available destinations are grouped by region', (assert) => {
     // getComputedStyle is returning 0.298039 despite the style attribute value of 0.3!
     assert.ok(Math.abs(destination.awesomenessBorderOpacity() - 0.3) < 0.01);
     assert.equal(destination.riskBorderOpacity(), 0.2);
+  });
+});
+
+test('regions with available destinations are displayed on the map', (assert) => {
+  page.visit();
+
+  andThen(() => {
+    const region = page.map().regions(1);
+
+    assert.equal(region.x(), 50);
+    assert.equal(region.y(), 60);
   });
 });
 
