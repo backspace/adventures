@@ -1,6 +1,6 @@
 import PageObject from '../page-object';
 
-const { clickable, collection, fillable, selectable, text, value, visitable } = PageObject;
+const { clickable, collection, fillable, hasClass, selectable, text, value, visitable } = PageObject;
 
 export default PageObject.create({
   visit: visitable('/destinations'),
@@ -17,6 +17,8 @@ export default PageObject.create({
       description: text('.description'),
       awesomeness: text('.awesomeness'),
       risk: text('.risk'),
+
+      isIncomplete: hasClass('incomplete'),
 
       region: text('.region'),
 

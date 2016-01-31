@@ -56,9 +56,11 @@ test('existing destinations are listed and can be sorted by region', (assert) =>
   andThen(() => {
     assert.equal(page.destinations(1).description(), 'Ina-Karekh');
     assert.equal(page.destinations(1).region(), 'There');
+    assert.notOk(page.destinations(1).isIncomplete());
 
     assert.equal(page.destinations(2).description(), 'Hona-Karekh');
     assert.equal(page.destinations(2).region(), 'Here');
+    assert.ok(page.destinations(2).isIncomplete());
   });
 
   page.headerRegion().click();

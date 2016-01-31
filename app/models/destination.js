@@ -17,6 +17,17 @@ export default Model.extend({
   awesomeness: attr('number'),
   risk: attr('number'),
 
+  isComplete: Ember.computed('description', 'answer', 'awesomeness', 'risk', function() {
+    const {description, answer, awesomeness, risk} = this.getProperties('description', 'answer', 'awesomeness', 'risk');
+
+    return !Ember.isEmpty(description) &&
+      !Ember.isEmpty(answer) &&
+      awesomeness > 0 &&
+      !Ember.isEmpty(risk);
+  }),
+
+  isIncomplete: Ember.computed.not('isComplete'),
+
   status: attr('string'),
 
   isAvailable: Ember.computed.equal('status', 'available'),
