@@ -3,7 +3,7 @@
     <img src={{model.map}}>
     {{#each model.regions as |region|}}
       {{#if region.destinations}}
-        <div class='region {{if (eq highlightedRegion region) 'highlighted'}}' style='left: {{region.x}}px; top: {{region.y}}px'></div>
+        {{mappable-region region=region draggable=false isHighlighted=(eq highlightedRegion region)}}
       {{/if}}
     {{/each}}
   </div>

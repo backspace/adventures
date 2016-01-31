@@ -3,6 +3,7 @@ import computedStyle from 'ember-computed-style';
 
 export default Ember.Component.extend({
   classNames: ['region'],
+  classNameBindings: ['isHighlighted:highlighted'],
 
   style: computedStyle('top', 'left'),
   attributeBindings: ['style', 'draggable'],
