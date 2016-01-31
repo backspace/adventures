@@ -13,7 +13,7 @@ export default Ember.Controller.extend({
       if (this.get('defaultSort')) {
         this.set('sorting', ['updatedAt:desc']);
       } else {
-        this.set('sorting', ['region.name:asc', 'updatedAt:desc']);
+        this.set('sorting', ['region.name:asc', 'createdAt:desc']);
       }
     }
   }
