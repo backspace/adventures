@@ -64,11 +64,13 @@ export default PageObject.create({
     scope: '.meeting-form',
 
     destination: selectText('.destination'),
-    teamOne: selectText('.team:eq(0)'),
-    teamTwo: selectText('.team:eq(1)'),
 
     teams: collection({
-      itemScope: '.team'
+      itemScope: '.team',
+
+      item: {
+        value: selectText()
+      }
     }),
 
     save: clickable('button.save'),

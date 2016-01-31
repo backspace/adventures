@@ -149,8 +149,8 @@ test('a new meeting can be scheduled', (assert) => {
 
   andThen(() => {
     assert.equal(page.meeting().destination(), 'Prairie Theatre Exchange');
-    assert.equal(page.meeting().teamOne(), 'Mayors');
-    assert.equal(page.meeting().teamTwo(), 'Leave It to Beaver superfans');
+    assert.equal(page.meeting().teams(1).value(), 'Mayors');
+    assert.equal(page.meeting().teams(2).value(), 'Leave It to Beaver superfans');
   });
 
   page.meeting().save();
