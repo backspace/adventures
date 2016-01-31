@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
   model() {
-    const db = this.container.lookup('adapter:application').get('db');
+    const db = Ember.getOwner(this).lookup('adapter:application').get('db');
 
     return db.getAttachment('map', 'image').then(attachment => {
       return attachment;

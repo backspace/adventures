@@ -18,7 +18,7 @@ export default Ember.Controller.extend({
     sync() {
       this.get('databases').addObject(this.get('destination'));
 
-      const sourceDb = this.container.lookup('adapter:application').get('db');
+      const sourceDb = Ember.getOwner(this).lookup('adapter:application').get('db');
       const destinationDb = new PouchDB(this.get('destination'), config.emberPouch.options);
 
       const syncPromise = sourceDb.sync(destinationDb);

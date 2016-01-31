@@ -7,7 +7,7 @@ export default Ember.Controller.extend({
 
       this.set('mapSrc', URL.createObjectURL(file));
 
-      const db = this.container.lookup('adapter:application').get('db');
+      const db = Ember.getOwner(this).lookup('adapter:application').get('db');
 
       db.get('map').then(map => {
         return db.putAttachment('map', 'image', map._rev, file, file.type);
