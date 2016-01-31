@@ -40,7 +40,8 @@
       </select>
     {{/each}}
 
-    <button onclick={{action 'saveMeeting'}}>Save</button>
+    <button class=save onclick={{action 'saveMeeting'}}>Save</button>
+    <button class=reset onclick={{action 'resetMeeting'}}>Reset</button>
   </div>
 
   {{link-to '⌂' 'index' class='home'}}

@@ -67,6 +67,11 @@ export default PageObject.create({
     teamOne: selectText('.team:eq(0)'),
     teamTwo: selectText('.team:eq(1)'),
 
-    save: clickable('button')
+    teams: collection({
+      itemScope: '.team'
+    }),
+
+    save: clickable('button.save'),
+    reset: clickable('button.reset')
   }
 });

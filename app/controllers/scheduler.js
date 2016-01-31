@@ -26,6 +26,12 @@ export default Ember.Controller.extend({
       }).then(([destination, teams]) => {
         return Ember.RSVP.all([destination.save(), ...teams.map(team => team.save())]);
       });
+    },
+
+    resetMeeting() {
+      this.get('meeting').rollbackAttributes();
+
+      this.set('meeting', this.store.createRecord('meeting'));
     }
   }
 });

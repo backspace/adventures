@@ -162,3 +162,16 @@ test('a new meeting can be scheduled', (assert) => {
     assert.equal(page.regions(1).destinations(2).meetingCountBorderWidth(), '2px');
   });
 });
+
+test('a partially-complete meeting can be cleared', (assert) => {
+  page.visit();
+
+  page.teams(2).click();
+  page.teams(1).click();
+
+  page.meeting().reset();
+
+  andThen(() => {
+    assert.equal(page.meeting().teams().count(), 0);
+  });
+});
