@@ -151,6 +151,12 @@ test('a new meeting can be scheduled', (assert) => {
     assert.equal(page.meeting().destination(), 'Prairie Theatre Exchange');
     assert.equal(page.meeting().teams(1).value(), 'Mayors');
     assert.equal(page.meeting().teams(2).value(), 'Leave It to Beaver superfans');
+
+    assert.ok(page.regions(1).destinations(2).isSelected());
+    assert.notOk(page.regions(1).destinations(1).isSelected());
+
+    // assert.ok(page.teams(2).isSelected());
+    // assert.ok(page.teams(1).isSelected());
   });
 
   page.meeting().save();

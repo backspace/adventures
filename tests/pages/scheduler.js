@@ -1,6 +1,6 @@
 import PageObject from '../page-object';
 
-const { attribute, clickable, collection, customHelper, text, visitable } = PageObject;
+const { attribute, clickable, collection, customHelper, hasClass, text, visitable } = PageObject;
 
 const propertyColourName = customHelper((selectorAndProperty) => {
   const [selector, property] = selectorAndProperty.split(/\s/);
@@ -41,6 +41,8 @@ export default PageObject.create({
           accessibility: text('.accessibility'),
           meetingCountBorderWidth: propertyValue('border-top-width'),
 
+          isSelected: hasClass('selected'),
+
           click: clickable()
         }
       })
@@ -55,6 +57,8 @@ export default PageObject.create({
       users: attribute('title'),
       count: text('.count'),
       riskAversionColour: propertyColourName('border-right-color'),
+
+      isSelected: hasClass('selected'),
 
       click: clickable()
     }

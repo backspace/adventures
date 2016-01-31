@@ -137,6 +137,10 @@ $column-width: 6rem;
         border-top-style: solid;
         border-top-color: lime;
 
+        &.selected {
+          background: lightgray;
+        }
+
         .accessibility {
           border-top: 1px solid #bbb;
         }
