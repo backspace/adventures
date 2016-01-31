@@ -22,7 +22,7 @@
 
   <ul class='teams'>
     {{#each model.teams as |team|}}
-      {{scheduler-team team=team select=(action 'selectTeam')}}
+      {{scheduler-team team=team meeting=meeting select=(action 'selectTeam')}}
     {{/each}}
   </ul>
 

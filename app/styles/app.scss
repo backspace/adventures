@@ -90,6 +90,10 @@ $column-width: 6rem;
       border-top: 0;
 
       padding: 2px 3px;
+
+      &.selected {
+        background: lightgray;
+      }
     }
   }
 
@@ -141,10 +145,6 @@ $column-width: 6rem;
 
         border-left: 3px solid transparent;
         border-right: 3px solid transparent;
-
-        &.selected {
-          background: lightgray;
-        }
 
         .accessibility {
           border-top: 1px solid #bbb;

@@ -159,8 +159,8 @@ test('a new meeting can be scheduled', (assert) => {
     assert.ok(page.regions(1).destinations(2).isSelected());
     assert.notOk(page.regions(1).destinations(1).isSelected());
 
-    // assert.ok(page.teams(2).isSelected());
-    // assert.ok(page.teams(1).isSelected());
+    assert.ok(page.teams(2).isSelected());
+    assert.ok(page.teams(1).isSelected());
   });
 
   page.meeting().save();
