@@ -1,24 +1,19 @@
 import Ember from 'ember';
 
 export default Ember.Route.extend({
-  model() {
-    const db = Ember.getOwner(this).lookup('adapter:application').get('db');
+  map: Ember.inject.service(),
 
-    return db.getAttachment('map', 'image').then(attachment => {
-      return attachment;
-    }).catch(() => {
-      return null;
-    });
+  model() {
+    return this.get('map').getURL();
   },
 
-  setupController(controller, attachment) {
+  setupController(controller, mapURL) {
     this._super();
 
     controller.set('model', this.modelFor('regions'));
 
-    if (attachment) {
-      const src = URL.createObjectURL(attachment);
-      controller.set('mapSrc', src);
+    if (mapURL) {
+      controller.set('mapSrc', mapURL);
     }
   }
 });
