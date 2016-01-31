@@ -36,6 +36,14 @@ const selectText = customHelper((selector) => {
   return $(`${selector} option[value=${id}]`).text();
 });
 
+const hoverable = customHelper(selector => {
+  triggerEvent(selector, 'mouseenter');
+});
+
+const exitable = customHelper(selector => {
+  triggerEvent(selector, 'mouseleave');
+});
+
 export default PageObject.create({
   visit: visitable('/scheduler'),
 
@@ -45,6 +53,9 @@ export default PageObject.create({
     item: {
       name: text('.name'),
       notes: attribute('title'),
+
+      hover: hoverable(),
+      exit: exitable(),
 
       destinations: collection({
         itemScope: '.destination',
@@ -89,7 +100,9 @@ export default PageObject.create({
 
       item: {
         x: x(),
-        y: y()
+        y: y(),
+
+        isHighlighted: hasClass('highlighted')
       }
     })
   },

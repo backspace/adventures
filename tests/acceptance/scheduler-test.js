@@ -99,14 +99,27 @@ test('available destinations are grouped by region', (assert) => {
   });
 });
 
-test('regions with available destinations are displayed on the map', (assert) => {
+test('regions with available destinations are displayed on the map and highlight when hovered in the column', (assert) => {
   page.visit();
 
-  andThen(() => {
-    const region = page.map().regions(1);
+  const region = page.map().regions(1);
 
+  andThen(() => {
     assert.equal(region.x(), 50);
     assert.equal(region.y(), 60);
+    assert.notOk(region.isHighlighted());
+  });
+
+  page.regions(1).hover();
+
+  andThen(() => {
+    assert.ok(region.isHighlighted());
+  });
+
+  page.regions(1).exit();
+
+  andThen(() => {
+    assert.notOk(region.isHighlighted());
   });
 });
 

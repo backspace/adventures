@@ -3,7 +3,7 @@
     <img src={{model.map}}>
     {{#each model.regions as |region|}}
       {{#if region.destinations}}
-        <div class='region' style='left: {{region.x}}px; top: {{region.y}}px'></div>
+        <div class='region {{if (eq highlightedRegion region) 'highlighted'}}' style='left: {{region.x}}px; top: {{region.y}}px'></div>
       {{/if}}
     {{/each}}
   </div>
@@ -11,7 +11,7 @@
   <ul class='regions'>
     {{#each model.regions as |region|}}
       {{#if region.destinations}}
-        <li class='region' title={{region.notes}}>
+        <li class='region' title={{region.notes}} onmouseenter={{action 'mouseEnterRegion' region}} onmouseleave={{action 'mouseLeaveRegion'}}>
           <div class='name'>{{region.name}}</div>
 
           <ul class='destinations'>

@@ -32,6 +32,14 @@ export default Ember.Controller.extend({
       this.get('meeting').rollbackAttributes();
 
       this.set('meeting', this.store.createRecord('meeting'));
+    },
+
+    mouseEnterRegion(region) {
+      this.set('highlightedRegion', region);
+    },
+
+    mouseLeaveRegion() {
+      this.set('highlightedRegion', undefined);
     }
   }
 });
