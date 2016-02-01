@@ -6,7 +6,17 @@ export default Ember.Route.extend({
       teams: this.store.findAll('team'),
       meetings: this.store.findAll('meeting'),
       destinations: this.store.findAll('destination'),
-      regions: this.store.findAll('region')
+      regions: this.store.findAll('region'),
+
+      assets: Ember.RSVP.all([
+        fetch('/fonts/blackout.ttf'),
+        fetch('/fonts/Oswald-Bold.ttf'),
+        fetch('/fonts/Oswald-Regular.ttf')
+      ]).then(responses => {
+        return Ember.RSVP.all(responses.map(response => response.arrayBuffer()));
+      }).then(([header, bold, regular]) => {
+        return {header, bold, regular};
+      })
     });
   }
 });
