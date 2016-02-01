@@ -1,6 +1,8 @@
 import Ember from 'ember';
 
 export default Ember.Route.extend({
+  map: Ember.inject.service(),
+
   model() {
     return Ember.RSVP.hash({
       teams: this.store.findAll('team'),
@@ -15,7 +17,10 @@ export default Ember.Route.extend({
       ]).then(responses => {
         return Ember.RSVP.all(responses.map(response => response.arrayBuffer()));
       }).then(([header, bold, regular]) => {
-        return {header, bold, regular};
+        return Ember.RSVP.hash({
+          header, bold, regular,
+          map: this.get('map').getBase64String()
+        });
       })
     });
   }

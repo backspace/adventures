@@ -20,7 +20,11 @@ export default Ember.Component.extend({
     const bold = this.get('assets.bold');
     const regular = this.get('assets.regular');
 
+    const map = this.get('assets.map');
+
     this.get('teams').forEach(team => {
+      doc.image('data:image/png;base64,' + map, 0, 0, {scale: 0.5});
+
       doc.font(header);
       doc.fontSize(18);
       doc.text(team.get('name'));
