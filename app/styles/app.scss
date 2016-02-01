@@ -197,6 +197,6 @@ $column-width: 6rem;
 }
 
 iframe {
-  width: 50%;
+  width: calc(50% - 3px);
   height: 40rem;
 }

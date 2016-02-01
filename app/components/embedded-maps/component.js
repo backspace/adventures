@@ -8,6 +8,8 @@ import blobStream from 'npm:blob-stream';
 import moment from 'moment';
 
 export default Ember.Component.extend({
+  tagName: 'span',
+
   rendering: true,
 
   didInsertElement() {
