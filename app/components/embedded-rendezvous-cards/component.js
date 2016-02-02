@@ -20,36 +20,60 @@ export default Ember.Component.extend({
     const bold = this.get('assets.bold');
     const regular = this.get('assets.regular');
 
-    this.get('teams').forEach(team => {
-      team.hasMany('meetings').value().forEach((meeting, index) => {
-        const cardData = this._rendezvousCardDataForTeamMeeting(team, meeting, index);
+    const cards = this._rendezvousCards();
 
-        doc.font(header);
-        doc.fontSize(18);
-        doc.text(`Rendezvous ${cardData.letter}`);
+    const verticalCardCount = 2;
+    const horizontalCardCount = 2;
+    const cardsPerPage = verticalCardCount*horizontalCardCount;
 
-        doc.font(regular);
-        doc.fontSize(12);
-        doc.text(cardData.teamName);
+    const pageWidth = 11*72;
+    const pageHeight = 8.5*72;
 
-        doc.text(' ');
-        doc.text(cardData.regionName);
+    const cardWidth = pageWidth/horizontalCardCount;
+    const cardHeight = pageHeight/verticalCardCount;
 
-        doc.text(' ');
-        doc.font(bold);
-        doc.text(`@${cardData.time} meet:`);
+    cards.forEach((cardData, index) => {
+      const cardOnPage = index%cardsPerPage;
 
-        doc.font(regular);
-        doc.text(cardData.otherTeamName);
+      if (index !== 0 && cardOnPage === 0) {
+        doc.addPage();
+      }
 
-        doc.text(' ');
-        doc.text(cardData.destinationDescription);
+      doc.save();
 
-        doc.text(' ');
-        doc.text(' ');
-      });
+      const xPosition = cardOnPage%horizontalCardCount;
+      const yPosition = Math.floor(cardOnPage/horizontalCardCount);
 
-      doc.addPage();
+      const xOffset = xPosition*cardWidth;
+      const yOffset = yPosition*cardHeight;
+
+      doc.translate(xOffset, yOffset);
+
+      doc.font(header);
+      doc.fontSize(18);
+      doc.text(`Rendezvous ${cardData.letter}`, 0, 0);
+
+      doc.font(regular);
+      doc.fontSize(12);
+      doc.text(cardData.teamName);
+
+      doc.text(' ');
+      doc.text(cardData.regionName);
+
+      doc.text(' ');
+      doc.font(bold);
+      doc.text(`@${cardData.time} meet:`);
+
+      doc.font(regular);
+      doc.text(cardData.otherTeamName);
+
+      doc.text(' ');
+      doc.text(cardData.destinationDescription);
+
+      doc.text(' ');
+      doc.text(' ');
+
+      doc.restore();
     });
 
     doc.end();
@@ -58,6 +82,14 @@ export default Ember.Component.extend({
       this.$('iframe').attr('src', stream.toBlobURL('application/pdf'));
       this.set('rendering', false);
     });
+  },
+
+  _rendezvousCards() {
+    return this.get('teams').reduce((cards, team) => {
+      return cards.concat(team.hasMany('meetings').value().map((meeting, index) => {
+        return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
+      }));
+    }, []);
   },
 
   _rendezvousCardDataForTeamMeeting(team, meeting, index) {
