@@ -13,6 +13,8 @@ defmodule Cr2016site.User do
 
     field :admin, :boolean
 
+    field :attending, :boolean
+
     field :teamed, :boolean, virtual: true
 
     field :team_emails, Cr2016site.DowncasedString
@@ -45,8 +47,13 @@ defmodule Cr2016site.User do
   end
 
   def details_changeset(model, params \\ :empty) do
+    required_fields = case Application.get_env(:cr2016site, :request_confirmation) do
+      true -> ~w(attending)
+      _ -> []
+    end
+
     model
-    |> cast(params, [], @optional_fields)
+    |> cast(params, required_fields, @optional_fields)
   end
 
   def account_changeset(model, params \\ :empty) do

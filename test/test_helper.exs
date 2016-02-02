@@ -29,6 +29,20 @@ defmodule Forge do
   register :not_ready_message, [prototype: :message], ready: false
 end
 
+defmodule Cr2016site.ResetRequestConfirmation do
+  use ExUnit.CaseTemplate
+
+  setup do
+    request_confirmation_setting = Application.get_env(:cr2016site, :request_confirmation)
+
+    on_exit fn ->
+      Application.put_env(:cr2016site, :request_confirmation, request_confirmation_setting)
+    end
+
+    :ok
+  end
+end
+
 defmodule Cr2016site.MailgunHelper do
   use ExUnit.CaseTemplate
 

@@ -41,4 +41,7 @@ config :cr2016site, Cr2016site.Repo,
   hostname: "localhost",
   pool_size: 10
 
+config :cr2016site,
+  request_confirmation: true
+
 import_config "dev.secret.exs"

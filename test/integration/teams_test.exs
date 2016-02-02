@@ -127,8 +127,6 @@ defmodule Cr2016site.Integration.Teams do
   end
 
   test "when confirmation-requesting is enabled, show and require the fields" do
-    request_confirmation_setting = Application.get_env(:cr2016site, :request_confirmation)
-
     Application.put_env(:cr2016site, :request_confirmation, true)
 
     Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
@@ -139,7 +137,9 @@ defmodule Cr2016site.Integration.Teams do
 
     assert Details.Attending.present?, "Expected attending fields shown when enabled"
 
-    Application.put_env(:cr2016site, :request_confirmation, request_confirmation_setting)
+    Details.submit
+
+    assert Details.Attending.Error.present?, "Expected an error about the attending field being blank"
   end
 
   test "visiting the details page redirects to login when there is no session" do

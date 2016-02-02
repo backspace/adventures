@@ -1,6 +1,8 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <%= form_for @changeset, user_path(@conn, :update), fn f -> %>
+      <%= render Cr2016site.SharedView, "errors.html", changeset: @changeset, f: f %>
+
       <%= if Application.get_env(:cr2016site, :request_confirmation) do %>
         <div class='form-group attending'>
           <legend>Are you attending?</legend>
