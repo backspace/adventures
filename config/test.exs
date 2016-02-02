@@ -32,4 +32,4 @@ defmodule Blacksmith.Config do
   end
 end
 
-config :cr2016site, mailgun_mode: :test, mailgun_test_file_path: "test/mailgun.json"
+config :cr2016site, mailgun_mode: :test, mailgun_test_file_path: "/tmp/mailgun.json"
