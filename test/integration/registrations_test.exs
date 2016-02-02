@@ -65,7 +65,7 @@ defmodule Cr2016site.Integration.Registrations do
     navigate_to "/"
     Nav.login_link.click
 
-    Login.fill_email "octavia.butler@example.com"
+    Login.fill_email "Octavia.butler@example.com"
     Login.fill_password "Parable of the Talents"
     Login.submit
 

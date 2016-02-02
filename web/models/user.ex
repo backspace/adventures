@@ -2,7 +2,7 @@ defmodule Cr2016site.User do
   use Cr2016site.Web, :model
 
   schema "users" do
-    field :email, :string
+    field :email, Cr2016site.DowncasedString
     field :crypted_password, :string
     field :password, :string, virtual: true
     field :recovery_hash, :string
@@ -15,7 +15,7 @@ defmodule Cr2016site.User do
 
     field :teamed, :boolean, virtual: true
 
-    field :team_emails, :string
+    field :team_emails, Cr2016site.DowncasedString
     field :proposed_team_name, :string
 
     field :risk_aversion, :integer

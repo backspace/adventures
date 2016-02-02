@@ -13,8 +13,8 @@ defmodule Cr2016site.Integration.Teams do
   hound_session
 
   test "teams are negotiable" do
-    Forge.saved_user email: "shevek@example.com",
-                     team_emails: "takver@example.com bedap@example.com tuio@example.com rulag@example.com",
+    Forge.saved_user email: "Shevek@example.com",
+                     team_emails: "Takver@example.com bedap@example.com tuio@example.com rulag@example.com",
                      proposed_team_name: "Sequency",
                      risk_aversion: 1
 
