@@ -42,6 +42,9 @@ $region-length: 4rem;
     width: $region-length;
     height: $region-length;
 
+    margin-left: -$region-length/2;
+    margin-top: -$region-length/2;
+
     border: 1px solid black;
 
     overflow: hidden;
