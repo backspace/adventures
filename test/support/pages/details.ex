@@ -105,6 +105,12 @@ defmodule Cr2016site.Pages.Details do
     end
   end
 
+  defmodule Attending do
+    def present? do
+      element? :css, ".form-group.attending"
+    end
+  end
+
   def active? do
     # FIXME is there no current_url or the like?
     element? :id, "user_accessibility"

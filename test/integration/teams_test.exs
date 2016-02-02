@@ -36,6 +36,8 @@ defmodule Cr2016site.Integration.Teams do
 
     Login.login_as "takver@example.com", "Anarres"
 
+    refute Details.Attending.present?, "Expected attending fields to be hidden unless enabled"
+
     Details.fill_team_emails "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"
     Details.fill_proposed_team_name "Simultaneity"
     Details.choose_risk_aversion "Don’t hold back"
@@ -122,6 +124,22 @@ defmodule Cr2016site.Integration.Teams do
     Login.login_as "takver@example.com", "Anarres"
 
     refute Hound.Matchers.element? :css, "table"
+  end
+
+  test "when confirmation-requesting is enabled, show and require the fields" do
+    request_confirmation_setting = Application.get_env(:cr2016site, :request_confirmation)
+
+    Application.put_env(:cr2016site, :request_confirmation, true)
+
+    Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+
+    navigate_to "/"
+
+    Login.login_as "takver@example.com", "Anarres"
+
+    assert Details.Attending.present?, "Expected attending fields shown when enabled"
+
+    Application.put_env(:cr2016site, :request_confirmation, request_confirmation_setting)
   end
 
   test "visiting the details page redirects to login when there is no session" do

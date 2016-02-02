@@ -1,6 +1,14 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <%= form_for @changeset, user_path(@conn, :update), fn f -> %>
+      <%= if Application.get_env(:cr2016site, :request_confirmation) do %>
+        <div class='form-group attending'>
+          <legend>Are you attending?</legend>
+          <%= radio_button f, :attending, true, class: "attending-true", id: "attending-true" %> <label for='attending-true'>Yes</label>
+          <%= radio_button f, :attending, false, class: "attending-false", id: "attending-false" %> <label for='attending-false'>No</label>
+          <p class='help-text' id='attending-help'>Please confirm that you are attending Clandestine Rendezvous</p>
+        </div>
+      <% end %>
       <div class="form-group">
         <%= label f, :team_emails, "Partner email" %>
         <%= text_input f, :team_emails, class: "form-control", "aria-describedby": "team-emails-help" %>
