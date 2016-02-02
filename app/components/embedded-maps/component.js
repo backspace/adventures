@@ -25,12 +25,17 @@ export default Ember.Component.extend({
     const mapOffsetX = 100;
     const mapOffsetY = 50;
 
+    const mapMarkerFontSize = 12;
+    const mapMarkerCircleRadius = 10;
+
     this.get('teams').forEach(team => {
       doc.image('data:image/png;base64,' + map, mapOffsetX, mapOffsetY, {scale: 0.5});
 
       doc.font(header);
       doc.fontSize(18);
       doc.text(team.get('name'));
+
+      doc.fontSize(mapMarkerFontSize);
 
       team.hasMany('meetings').value().forEach((meeting, index) => {
         const destination = meeting.belongsTo('destination').value();
@@ -42,9 +47,12 @@ export default Ember.Component.extend({
         const y = region.get('y')/2 + mapOffsetY;
 
         doc.lineWidth(1);
-        doc.circle(x, y, 10).stroke();
+        doc.circle(x, y, mapMarkerCircleRadius).stroke();
 
-        doc.text(rendezvousLetter, x, y);
+        doc.text(rendezvousLetter, x - mapMarkerCircleRadius, y - mapMarkerFontSize/2, {
+          width: mapMarkerCircleRadius*2,
+          align: 'center'
+        });
       });
 
       doc.addPage();
