@@ -22,8 +22,11 @@ export default Ember.Component.extend({
 
     const map = this.get('assets.map');
 
+    const mapOffsetX = 100;
+    const mapOffsetY = 50;
+
     this.get('teams').forEach(team => {
-      doc.image('data:image/png;base64,' + map, 0, 0, {scale: 0.5});
+      doc.image('data:image/png;base64,' + map, mapOffsetX, mapOffsetY, {scale: 0.5});
 
       doc.font(header);
       doc.fontSize(18);
@@ -35,8 +38,8 @@ export default Ember.Component.extend({
 
         const rendezvousLetter = String.fromCharCode(65 + index);
 
-        const x = region.get('x')/2;
-        const y = region.get('y')/2;
+        const x = region.get('x')/2 + mapOffsetX;
+        const y = region.get('y')/2 + mapOffsetY;
 
         doc.lineWidth(1);
         doc.circle(x, y, 10).stroke();
