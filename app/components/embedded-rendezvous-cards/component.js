@@ -22,33 +22,28 @@ export default Ember.Component.extend({
 
     this.get('teams').forEach(team => {
       team.hasMany('meetings').value().forEach((meeting, index) => {
-        const destination = meeting.belongsTo('destination').value();
-        const region = destination.belongsTo('region').value();
-
-        const teams = meeting.hasMany('teams').value();
+        const cardData = this._rendezvousCardDataForTeamMeeting(team, meeting, index);
 
         doc.font(header);
         doc.fontSize(18);
-        const rendezvousLetter = String.fromCharCode(65 + index);
-        doc.text(`Rendezvous ${rendezvousLetter}`);
+        doc.text(`Rendezvous ${cardData.letter}`);
 
         doc.font(regular);
         doc.fontSize(12);
-        doc.text(team.get('name'));
+        doc.text(cardData.teamName);
 
         doc.text(' ');
-        doc.text(region.get('name'));
+        doc.text(cardData.regionName);
 
         doc.text(' ');
         doc.font(bold);
-        doc.text(`@${this._getRendezvousTimeForIndex(index)} meet:`);
+        doc.text(`@${cardData.time} meet:`);
 
         doc.font(regular);
-        const otherTeams = teams.rejectBy('id', team.id);
-        doc.text(otherTeams.mapBy('name'));
+        doc.text(cardData.otherTeamName);
 
         doc.text(' ');
-        doc.text(destination.get('description'));
+        doc.text(cardData.destinationDescription);
 
         doc.text(' ');
         doc.text(' ');
@@ -63,6 +58,29 @@ export default Ember.Component.extend({
       this.$('iframe').attr('src', stream.toBlobURL('application/pdf'));
       this.set('rendering', false);
     });
+  },
+
+  _rendezvousCardDataForTeamMeeting(team, meeting, index) {
+    const destination = meeting.belongsTo('destination').value();
+    const region = destination.belongsTo('region').value();
+
+    const teams = meeting.hasMany('teams').value();
+
+    const rendezvousLetter = String.fromCharCode(65 + index);
+    const rendezvousTime = this._getRendezvousTimeForIndex(index);
+
+    const otherTeams = teams.rejectBy('id', team.id);
+    const otherTeamName = otherTeams.mapBy('name');
+
+    return {
+      teamName: team.get('name'),
+      letter: rendezvousLetter,
+      time: rendezvousTime,
+      otherTeamName,
+
+      regionName: region.get('name'),
+      destinationDescription: destination.get('description'),
+    };
   },
 
   _firstRendezvousTime() {
