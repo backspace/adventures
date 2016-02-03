@@ -72,7 +72,7 @@ defmodule Cr2016site.Integration.Admin do
     [team] = Cr2016site.Repo.all(Cr2016site.Team)
     assert team.name == "Team A"
     assert team.risk_aversion == 3
-    assert team.notes == "a@example.com: Some text, b@example.com: More text"
+    assert team.notes == "a: Some text, b: More text"
   end
 
   test "admin can view team JSON" do
