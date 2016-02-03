@@ -82,7 +82,7 @@ export default PageObject.create({
 
     item: {
       name: text('.name'),
-      users: attribute('title'),
+      usersAndNotes: attribute('title'),
       count: text('.count'),
       riskAversionColour: propertyColourName('border-right-color'),
 

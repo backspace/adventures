@@ -23,6 +23,7 @@ moduleForAcceptance('Acceptance | scheduler', {
       const superfans = store.createRecord('team', {
         name: 'Leave It to Beaver superfans',
         users: 'june@example.com, eddie@example.com',
+        notes: 'Here is a note',
         riskAversion: 3,
       });
 
@@ -153,7 +154,7 @@ test('teams are listed', (assert) => {
     const superfans = page.teams(1);
     assert.equal(superfans.name(), 'Leave It to Beaver superfans');
     assert.equal(superfans.riskAversionColour(), 'red');
-    assert.equal(superfans.users(), 'june@example.com, eddie@example.com');
+    assert.equal(superfans.usersAndNotes(), 'june@example.com, eddie@example.com\n\nHere is a note');
   });
 });
 
