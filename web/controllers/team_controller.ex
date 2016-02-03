@@ -53,10 +53,14 @@ defmodule Cr2016site.TeamController do
 
     relationships = Cr2016site.TeamFinder.relationships(base_user, users)
 
+    team_users = [base_user] ++ relationships.mutuals
+
     changeset = Team.changeset(%Team{}, %{
       "name" => base_user.proposed_team_name,
       "risk_aversion" => base_user.risk_aversion,
-      "user_ids" => [base_user.id] ++ Enum.map(relationships.mutuals, fn(u) -> u.id end)
+      "user_ids" => Enum.map(team_users, fn(u) -> u.id end),
+      "notes" => Enum.filter_map(team_users, fn(u) -> String.strip(u.accessibility || "") != "" end, &("#{&1.email}: #{&1.accessibility}"))
+        |> Enum.join(", ")
     })
 
     case Repo.insert(changeset) do

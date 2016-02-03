@@ -40,8 +40,8 @@ defmodule Cr2016site.Integration.Admin do
   end
 
   test "admin can build teams" do
-    {_, a} = Forge.saved_user email: "a@example.com", proposed_team_name: "Team A", team_emails: "b@example.com", risk_aversion: 3
-    {_, b} = Forge.saved_user email: "b@example.com", proposed_team_name: "Team B", team_emails: "a@example.com", risk_aversion: 1
+    {_, a} = Forge.saved_user email: "a@example.com", proposed_team_name: "Team A", team_emails: "b@example.com", risk_aversion: 3, accessibility: "Some text"
+    {_, b} = Forge.saved_user email: "b@example.com", proposed_team_name: "Team B", team_emails: "a@example.com", risk_aversion: 1, accessibility: "More text"
     {_, c} = Forge.saved_user email: "c@example.com", team_emails: "a@example.com b@example.com"
 
     Forge.saved_octavia admin: true
@@ -72,6 +72,7 @@ defmodule Cr2016site.Integration.Admin do
     [team] = Cr2016site.Repo.all(Cr2016site.Team)
     assert team.name == "Team A"
     assert team.risk_aversion == 3
+    assert team.notes == "a@example.com: Some text, b@example.com: More text"
   end
 
   test "admin can view team JSON" do
