@@ -7,6 +7,7 @@ export default Model.extend({
   name: attr('string'),
   users: attr('string'),
   riskAversion: attr('number'),
+  notes: attr('string'),
 
   meetings: hasMany('meeting'),
 

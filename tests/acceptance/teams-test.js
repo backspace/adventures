@@ -56,6 +56,7 @@ test('teams can be overwritten with JSON input', (assert) => {
           "attributes": {
             "name": "jorts",
             "users": "jorts@example.com, jants@example.com",
+            "notes": "some notes",
             "riskAversion": 2
           }
         },
@@ -78,6 +79,7 @@ test('teams can be overwritten with JSON input', (assert) => {
 
     assert.equal(page.teams(1).name(), 'jorts');
     assert.equal(page.teams(1).users(), 'jorts@example.com, jants@example.com');
+    assert.equal(page.teams(1).notes(), 'some notes');
     assert.equal(page.teams(1).riskAversion(), '2');
 
     assert.equal(page.teams(2).name(), 'jants');
