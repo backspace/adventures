@@ -68,6 +68,10 @@ defmodule Cr2016site.Integration.Admin do
     #
     # assert Teams.name(1) == "Team A"
     # assert Teams.risk_aversion(1) == "3"
+
+    [team] = Cr2016site.Repo.all(Cr2016site.Team)
+    assert team.name == "Team A"
+    assert team.risk_aversion == 3
   end
 
   test "admin can view team JSON" do
