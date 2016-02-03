@@ -14,8 +14,9 @@ defmodule Cr2016site.Integration.Admin do
   hound_session
 
   test "logging in as an admin" do
-    {_, user} = Forge.saved_user email: "francine.pascal@example.com", accessibility: "Some accessibility text"
-    {_, admin} = Forge.saved_octavia admin: true, proposed_team_name: "Admins"
+    {_, user} = Forge.saved_user email: "francine.pascal@example.com", accessibility: "Some accessibility text", attending: true
+    {_, admin} = Forge.saved_octavia admin: true, proposed_team_name: "Admins", attending: false
+    {_, blank_attending} = Forge.saved_user email: "blank@example.com"
 
     navigate_to "/"
 
@@ -29,9 +30,13 @@ defmodule Cr2016site.Integration.Admin do
 
     assert Users.email(user.id) == "francine.pascal@example.com"
     assert Users.accessibility(user.id) == "Some accessibility text"
+    assert Users.attending(user.id) == "✓"
 
     assert Users.email(admin.id) == admin.email
     assert Users.proposed_team_name(admin.id) == "Admins"
+    assert Users.attending(admin.id) == "✘"
+
+    assert Users.attending(blank_attending.id) == "?"
   end
 
   test "admin can build teams" do

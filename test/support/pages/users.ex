@@ -13,6 +13,10 @@ defmodule Cr2016site.Pages.Users do
     visible_text({:css, "#{user_container(id)} .accessibility"})
   end
 
+  def attending(id) do
+    visible_text({:css, "#{user_container(id)} .attending"})
+  end
+
   def proposed_team_name(id) do
     visible_text({:css, "#{user_container(id)} .proposed-team-name"})
   end

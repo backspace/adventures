@@ -25,6 +25,14 @@ defmodule Cr2016site.UserView do
     end
   end
 
+  def symbol_for_boolean(value) do
+    case value do
+      true -> "✓"
+      false -> "✘"
+      _ -> "?"
+    end
+  end
+
   def risk_aversion_integer_to_string do
     %{
       1 => "Go easy on me",
