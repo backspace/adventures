@@ -1,11 +1,7 @@
 import Ember from 'ember';
 
-import config from 'adventure-gathering/config/environment';
-
 import PDFDocument from 'npm:pdfkit';
 import blobStream from 'npm:blob-stream';
-
-import moment from 'moment';
 
 export default Ember.Component.extend({
   tagName: 'span',
@@ -17,8 +13,8 @@ export default Ember.Component.extend({
     const stream = doc.pipe(blobStream());
 
     const header = this.get('assets.header');
-    const bold = this.get('assets.bold');
-    const regular = this.get('assets.regular');
+    // const bold = this.get('assets.bold');
+    // const regular = this.get('assets.regular');
 
     const map = this.get('assets.map');
 
