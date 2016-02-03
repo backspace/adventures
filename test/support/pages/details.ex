@@ -110,6 +110,14 @@ defmodule Cr2016site.Pages.Details do
       element? :css, ".form-group.attending"
     end
 
+    def yes do
+      click({:css, "input.attending-true"})
+    end
+
+    def no do
+      click({:css, "input.attending-false"})
+    end
+
     defmodule Error do
       def present? do
         element? :css, ".errors .attending"

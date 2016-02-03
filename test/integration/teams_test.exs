@@ -139,8 +139,15 @@ defmodule Cr2016site.Integration.Teams do
     assert Details.Attending.present?, "Expected attending fields shown when enabled"
 
     Details.submit
-
     assert Details.Attending.Error.present?, "Expected an error about the attending field being blank"
+
+    Details.Attending.yes
+    Details.submit
+    refute Details.Attending.Error.present?, "Expected no error when the person said they were attending"
+
+    Details.Attending.no
+    Details.submit
+    refute Details.Attending.Error.present?, "Expected no error when the person said they were not attending"
   end
 
   test "visiting the details page redirects to login when there is no session" do
