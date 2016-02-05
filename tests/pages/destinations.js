@@ -15,6 +15,7 @@ export default PageObject.create({
 
     item: {
       description: text('.description'),
+      answer: text('.answer'),
       awesomeness: text('.awesomeness'),
       risk: text('.risk'),
 
