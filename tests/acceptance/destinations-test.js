@@ -29,6 +29,7 @@ moduleForAcceptance('Acceptance | destinations', {
           awesomeness: 9,
           risk: 6,
           answer: 'ABC123',
+          mask: 'ABC__3',
           status: 'unavailable',
 
           region: regionOne
@@ -56,6 +57,7 @@ test('existing destinations are listed and can be sorted by region', (assert) =>
   andThen(() => {
     assert.equal(page.destinations(1).description(), 'Ina-Karekh');
     assert.equal(page.destinations(1).answer(), 'ABC123');
+    assert.equal(page.destinations(1).mask(), 'ABC__3');
     assert.equal(page.destinations(1).region(), 'There');
     assert.notOk(page.destinations(1).isIncomplete());
 

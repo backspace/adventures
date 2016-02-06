@@ -18,6 +18,7 @@ export default PageObject.create({
       answer: text('.answer'),
       awesomeness: text('.awesomeness'),
       risk: text('.risk'),
+      mask: text('.mask'),
 
       isIncomplete: hasClass('incomplete'),
 

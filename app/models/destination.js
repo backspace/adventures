@@ -13,6 +13,7 @@ export default Model.extend({
   accessibility: attr('string'),
 
   answer: attr('string'),
+  mask: attr('string'),
 
   awesomeness: attr('number'),
   risk: attr('number'),
