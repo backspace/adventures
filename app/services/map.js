@@ -7,37 +7,37 @@ export default Ember.Service.extend({
     return Ember.getOwner(this).lookup('adapter:application').get('db');
   }),
 
-  getAttachment() {
-    return this.get('db').getAttachment('map', 'image');
+  getAttachment(name) {
+    return this.get('db').getAttachment('map', name);
   },
 
-  getURL() {
-    return this.getAttachment().then(attachment => {
+  getURL(name) {
+    return this.getAttachment(name).then(attachment => {
       return URL.createObjectURL(attachment);
     }).catch(() => {
       return null;
     });
   },
 
-  getArrayBuffer() {
-    return this.getAttachment().then(attachment => {
+  getArrayBuffer(name) {
+    return this.getAttachment(name).then(attachment => {
       return blobUtil.blobToArrayBuffer(attachment);
     });
   },
 
-  getBase64String() {
-    return this.getAttachment().then(attachment => {
+  getBase64String(name) {
+    return this.getAttachment(name).then(attachment => {
       return blobUtil.blobToBase64String(attachment);
     });
   },
 
-  saveFile(file) {
+  saveFile(file, name) {
     const db = this.get('db');
 
     db.get('map').then(map => {
-      return db.putAttachment('map', 'image', map._rev, file, file.type);
+      return db.putAttachment('map', name, map._rev, file, file.type);
     }).catch(() => {
-      return db.putAttachment('map', 'image', file, file.type);
+      return db.putAttachment('map', name, file, file.type);
     });
   }
 });

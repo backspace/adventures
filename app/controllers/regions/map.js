@@ -4,12 +4,15 @@ export default Ember.Controller.extend({
   map: Ember.inject.service(),
 
   actions: {
-    saveMap({target}) {
+    saveAttachment(name, property, {target}) {
+      debugger;
       const file = target.files[0];
 
-      this.set('mapSrc', URL.createObjectURL(file));
+      if (property) {
+        this.set(property, URL.createObjectURL(file));
+      }
 
-      this.get('map').saveFile(file);
+      this.get('map').saveFile(file, name);
     }
   }
 });

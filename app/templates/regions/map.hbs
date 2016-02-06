@@ -2,7 +2,9 @@
   <div class='small-12 columns'>
     <div class='map'>
       <img src='{{mapSrc}}'>
-      <input type='file' onchange={{action 'saveMap'}}>
+
+      <label>Map <input type='file' onchange={{action 'saveAttachment' 'image' 'mapSrc'}}></label>
+      <label>High-res map <input type='file' onchange={{action 'saveAttachment' 'high' 'highMapSrc'}}></label>
       {{#each model as |region|}}
         {{mappable-region region=region}}
       {{/each}}

@@ -4,7 +4,7 @@ export default Ember.Route.extend({
   map: Ember.inject.service(),
 
   model() {
-    return this.get('map').getURL();
+    return this.get('map').getURL('image');
   },
 
   setupController(controller, mapURL) {
