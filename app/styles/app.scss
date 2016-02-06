@@ -199,6 +199,21 @@ $column-width: 6rem;
   }
 }
 
+fieldset {
+  label {
+    display: inline;
+
+    input[type=radio] {
+      margin-right: 0.25rem;
+      margin-left: 1rem;
+    }
+
+    &:first-of-type input[type=radio] {
+      margin-left: 0;
+    }
+  }
+}
+
 iframe {
   width: calc(50% - 3px);
   height: 40rem;

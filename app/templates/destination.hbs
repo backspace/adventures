@@ -26,7 +26,7 @@
   </div>
 </div>
 <div class='row'>
-  <div class='small-6 columns'>
+  <div class='small-4 columns'>
     <label>
       Awesomeness
       {{#draggable-number}}
@@ -34,13 +34,21 @@
       {{/draggable-number}}
     </label>
   </div>
-  <div class='small-6 columns'>
+  <div class='small-4 columns'>
     <label>
       Risk
       {{#draggable-number}}
         {{input value=model.risk type='number' class='risk' min=0 max=10 step=0.25}}
       {{/draggable-number}}
     </label>
+  </div>
+  <div class='small-4 columns'>
+    <fieldset class='status'>
+      <legend>Status</legend>
+      {{#radio-button value='available' groupValue=model.status class='available'}} ✓{{/radio-button}}
+      {{#radio-button value='unavailable' groupValue=model.status class='unavailable'}} ✘{{/radio-button}}
+      {{#radio-button value='unknown' groupValue=model.status class='unknown'}} ?{{/radio-button}}
+    </fieldset>
   </div>
 </div>
 <div class='row'>

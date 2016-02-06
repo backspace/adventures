@@ -71,6 +71,15 @@ export default PageObject.create({
     select: selectable()
   },
 
+  statusFieldset: {
+    scope: 'fieldset.status',
+
+    availableOption: {
+      scope: 'input[value=available]',
+      click: clickable()
+    }
+  },
+
   save: clickable('.save'),
   cancel: clickable('.cancel'),
   delete: clickable('.delete')

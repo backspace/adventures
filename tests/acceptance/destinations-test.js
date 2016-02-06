@@ -131,12 +131,14 @@ test('a destination can be edited and edits can be cancelled', function(assert) 
   page.awesomenessField().fill(10);
   page.riskField().fill(5);
   page.answerField().fill('DEF456');
+  page.statusFieldset().availableOption().click();
   page.save();
 
   andThen(() => {
     const destination = page.destinations(1);
     assert.equal(destination.description(), 'Kisua');
     assert.equal(destination.awesomeness(), '10');
+    assert.equal(destination.status().value(), '✓');
     assert.equal(destination.risk(), '5');
   });
 
