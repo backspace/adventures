@@ -19,7 +19,7 @@ export default Ember.Route.extend({
       }).then(([header, bold, regular]) => {
         return Ember.RSVP.hash({
           header, bold, regular,
-          map: this.get('map').getBase64String()
+          map: this.get('map').getBase64String('high')
         });
       })
     });

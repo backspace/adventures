@@ -25,7 +25,7 @@ export default Ember.Component.extend({
     const mapMarkerCircleRadius = 10;
 
     this.get('teams').forEach(team => {
-      doc.image('data:image/png;base64,' + map, mapOffsetX, mapOffsetY, {scale: 0.5});
+      doc.image('data:image/png;base64,' + map, mapOffsetX, mapOffsetY, {scale: 0.125});
 
       doc.font(header);
       doc.fontSize(18);
