@@ -66,6 +66,18 @@ export default PageObject.create({
     fill: fillable()
   },
 
+  maskField: {
+    scope: 'input.mask',
+    value: value(),
+    fill: fillable()
+  },
+
+  suggestedMaskButton: {
+    scope: 'button.suggested-mask',
+    label: text(),
+    click: clickable()
+  },
+
   regionField: {
     scope: 'select.region',
     value: value(),

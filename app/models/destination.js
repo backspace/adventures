@@ -15,6 +15,10 @@ export default Model.extend({
   answer: attr('string'),
   mask: attr('string'),
 
+  suggestedMask: Ember.computed('answer', function() {
+    return (this.get('answer') || '').replace(/\d/g, '_');
+  }),
+
   awesomeness: attr('number'),
   risk: attr('number'),
 

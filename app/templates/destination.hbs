@@ -13,12 +13,33 @@
       Description
       {{textarea value=model.description class='description' rows=4}}
     </label>
+  </div>
+</div>
 
+<div class='row'>
+  <div class='small-6 columns'>
     <label>
       Answer
       {{input value=model.answer class='answer'}}
     </label>
+  </div>
+  <div class='small-6 columns'>
+    <label>
+      Mask
+      <div class='input-group'>
+        {{input value=model.mask class='mask input-group-field'}}
+        {{#if model.suggestedMask}}
+          <div class='input-group-button'>
+            <button class='suggested-mask button default' {{action 'setMaskToSuggestion'}}>{{model.suggestedMask}}</button>
+          </div>
+        {{/if}}
+      </div>
+    </label>
+  </div>
+</div>
 
+<div class='row'>
+  <div class='small-12 columns'>
     <label>
       Accessibility
       {{textarea value=model.accessibility class='accessibility'}}

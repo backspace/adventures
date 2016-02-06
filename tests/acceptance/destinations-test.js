@@ -106,10 +106,25 @@ test('a destination can be created and will appear at the top of the list', (ass
 
   page.new();
   page.descriptionField().fill('Bromarte');
+  page.answerField().fill('R0E0H0');
+
+  andThen(() => {
+    assert.equal(page.suggestedMaskButton().label(), 'R_E_H_');
+  });
+
+  page.suggestedMaskButton().click();
+
+  andThen(() => {
+    assert.equal(page.maskField().value(), 'R_E_H_');
+  });
+
+  page.maskField().fill('R0E0H_');
+
   page.save();
 
   andThen(() => {
     assert.equal(page.destinations(1).description(), 'Bromarte');
+    assert.equal(page.destinations(1).mask(), 'R0E0H_');
   });
 });
 

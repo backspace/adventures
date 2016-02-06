@@ -9,6 +9,11 @@ export default Ember.Controller.extend({
     setRegion(regionId) {
       const region = this.get('regions').findBy('id', regionId);
       this.get('model').set('region', region);
+    },
+
+    setMaskToSuggestion() {
+      const model = this.get('model');
+      model.set('mask', model.get('suggestedMask'));
     }
   }
 });
