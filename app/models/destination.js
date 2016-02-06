@@ -32,7 +32,7 @@ export default Model.extend({
 
   isAvailable: Ember.computed.equal('status', 'available'),
 
-  region: belongsTo('region'),
+  region: belongsTo('region', {async: false}),
 
   meetings: hasMany('meeting'),
 
