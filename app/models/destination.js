@@ -19,16 +19,41 @@ export default Model.extend({
     return (this.get('answer') || '').replace(/\d/g, '_');
   }),
 
+  maskIsValid: Ember.computed('answer', 'mask', function() {
+    const answer = this.get('answer') || '';
+    const mask = this.get('mask') || '';
+
+    if (answer.length !== mask.length) {
+      return false;
+    }
+
+    for (let i = 0; i < answer.length; i++) {
+      const answerCharacter = answer[i];
+      const maskCharacter = mask[i];
+
+      if (answerCharacter !== maskCharacter) {
+        if (answerCharacter.match(/\d/)) {
+          return maskCharacter === '_';
+        } else {
+          return false;
+        }
+      }
+    }
+
+    return mask.indexOf('_') > -1;
+  }),
+
   awesomeness: attr('number'),
   risk: attr('number'),
 
-  isComplete: Ember.computed('description', 'answer', 'awesomeness', 'risk', function() {
-    const {description, answer, awesomeness, risk} = this.getProperties('description', 'answer', 'awesomeness', 'risk');
+  isComplete: Ember.computed('description', 'answer', 'awesomeness', 'risk', 'maskIsValid', function() {
+    const {description, answer, awesomeness, risk, maskIsValid} = this.getProperties('description', 'answer', 'awesomeness', 'risk', 'maskIsValid');
 
     return !Ember.isEmpty(description) &&
       !Ember.isEmpty(answer) &&
       awesomeness > 0 &&
-      !Ember.isEmpty(risk);
+      !Ember.isEmpty(risk) &&
+      maskIsValid;
   }),
 
   isIncomplete: Ember.computed.not('isComplete'),
