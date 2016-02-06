@@ -32,49 +32,77 @@ export default Ember.Component.extend({
     const cardWidth = pageWidth/horizontalCardCount;
     const cardHeight = pageHeight/verticalCardCount;
 
-    cards.forEach((cardData, index) => {
-      const cardOnPage = index%cardsPerPage;
+    for (let i = 0, j = cards.length; i < j; i+= cardsPerPage) {
+      const chunk = cards.slice(i, i + cardsPerPage);
 
-      if (index !== 0 && cardOnPage === 0) {
+      if (i !== 0) {
         doc.addPage();
       }
 
-      doc.save();
+      chunk.forEach((cardData, index) => {
+        const cardOnPage = index%cardsPerPage;
 
-      const xPosition = cardOnPage%horizontalCardCount;
-      const yPosition = Math.floor(cardOnPage/horizontalCardCount);
+        if (index !== 0 && cardOnPage === 0) {
+          doc.addPage();
+        }
 
-      const xOffset = xPosition*cardWidth;
-      const yOffset = yPosition*cardHeight;
+        doc.save();
 
-      doc.translate(xOffset, yOffset);
+        const xPosition = cardOnPage%horizontalCardCount;
+        const yPosition = Math.floor(cardOnPage/horizontalCardCount);
 
-      doc.font(header);
-      doc.fontSize(18);
-      doc.text(`Rendezvous ${cardData.letter}`, 0, 0);
+        const xOffset = xPosition*cardWidth;
+        const yOffset = yPosition*cardHeight;
 
-      doc.font(regular);
-      doc.fontSize(12);
-      doc.text(cardData.teamName);
+        doc.translate(xOffset, yOffset);
 
-      doc.text(' ');
-      doc.text(cardData.regionName);
+        doc.font(header);
+        doc.fontSize(18);
+        doc.text(`Rendezvous ${cardData.letter}`, 0, 0);
 
-      doc.text(' ');
-      doc.font(bold);
-      doc.text(`@${cardData.time} meet:`);
+        doc.font(regular);
+        doc.fontSize(12);
+        doc.text(cardData.teamName);
 
-      doc.font(regular);
-      doc.text(cardData.otherTeamName);
+        doc.text(' ');
+        doc.text(cardData.regionName);
 
-      doc.text(' ');
-      doc.text(cardData.destinationDescription);
+        doc.text(' ');
+        doc.font(bold);
+        doc.text(`@${cardData.time} meet:`);
 
-      doc.text(' ');
-      doc.text(' ');
+        doc.font(regular);
+        doc.text(cardData.otherTeamName);
 
-      doc.restore();
-    });
+        doc.text(' ');
+        doc.text(cardData.destinationDescription);
+
+        doc.text(' ');
+        doc.text(' ');
+
+        doc.restore();
+      });
+
+      doc.addPage();
+
+      chunk.forEach((cardData, index) => {
+        const cardOnPage = index%cardsPerPage;
+
+        const xPosition = horizontalCardCount - cardOnPage%horizontalCardCount - 1;
+        const yPosition = Math.floor(cardOnPage/horizontalCardCount);
+
+        const xOffset = xPosition*cardWidth;
+        const yOffset = yPosition*cardHeight;
+
+        doc.save();
+
+        doc.translate(xOffset, yOffset);
+
+        doc.text(`Back of ${cardData.letter}/${cardData.teamName}`);
+
+        doc.restore();
+      });
+    }
 
     doc.end();
 
