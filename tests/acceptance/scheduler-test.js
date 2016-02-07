@@ -147,6 +147,15 @@ test('a newly created and available destination will show under its region', (as
   });
 });
 
+test('a destination with a meeting is indicated', (assert) => {
+  destinationsPage.visit();
+
+  andThen(() => {
+    assert.ok(destinationsPage.destinations(1).hasMeetings(), 'expected the first destination to have meetings');
+    assert.notOk(destinationsPage.destinations(2).hasMeetings(), 'expected the second destination not to have meetings');
+  });
+})
+
 test('teams are listed', (assert) => {
   page.visit();
 

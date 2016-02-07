@@ -21,6 +21,7 @@ export default PageObject.create({
       mask: text('.mask'),
 
       isIncomplete: hasClass('incomplete'),
+      hasMeetings: hasClass('meetings'),
 
       region: text('.region'),
 

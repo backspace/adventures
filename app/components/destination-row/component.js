@@ -3,7 +3,9 @@ import Ember from 'ember';
 export default Ember.Component.extend({
   tagName: 'tr',
   classNames: ['destination'],
-  classNameBindings: ['destination.isIncomplete:incomplete'],
+  classNameBindings: ['destination.isIncomplete:incomplete', 'hasMeetings:meetings'],
+
+  hasMeetings: Ember.computed.notEmpty('destination.meetings'),
 
   status: Ember.computed('destination.status', function() {
     const status = this.get('destination.status');
