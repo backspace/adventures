@@ -90,11 +90,11 @@ export default Ember.Component.extend({
         doc.text('Fill in the blanks:');
         doc.font(regular);
 
-        const paddedMask = cardData.mask.replace(/_/g, '__ ');
+        const paddedMask = this._padMask(cardData.mask);
         doc.text(paddedMask);
 
         const skippedMask = cardData.mask.substr(0, cardData.chosenBlankIndex);
-        const paddedSkippedMask = skippedMask.replace(/_/g, '__ ');
+        const paddedSkippedMask = this._padMask(skippedMask);
 
         const widthOfPaddedSkippedMask = doc.widthOfString(paddedSkippedMask);
         doc.text(" ^", widthOfPaddedSkippedMask);
@@ -151,6 +151,10 @@ export default Ember.Component.extend({
       this.$('iframe').attr('src', stream.toBlobURL('application/pdf'));
       this.set('rendering', false);
     });
+  },
+
+  _padMask(mask) {
+    return mask.replace(/_/g, ' __ ').replace(/^ */, '');
   },
 
   _rendezvousCards() {
