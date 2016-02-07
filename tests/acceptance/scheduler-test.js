@@ -191,7 +191,7 @@ test('hovering over a team shows its destinations ordered on the map and its mee
   });
 });
 
-test('a new meeting can be scheduled', (assert) => {
+test('a new meeting can be scheduled and resets the form when saved', (assert) => {
   page.visit();
 
   page.regions(1).destinations(2).click();
@@ -217,6 +217,8 @@ test('a new meeting can be scheduled', (assert) => {
     assert.equal(page.teams(2).count(), '••');
 
     assert.equal(page.regions(1).destinations(2).meetingCountBorderWidth(), '2px');
+
+    assert.equal(page.meeting().teams().count(), 0, 'expected no set teams after saving');
   });
 });
 

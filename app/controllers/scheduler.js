@@ -25,6 +25,8 @@ export default Ember.Controller.extend({
         return Ember.RSVP.all([meeting.get('destination'), meeting.get('teams')]);
       }).then(([destination, teams]) => {
         return Ember.RSVP.all([destination.save(), ...teams.map(team => team.save())]);
+      }).then(() => {
+        this.set('meeting', this.store.createRecord('meeting'));
       });
     },
 
