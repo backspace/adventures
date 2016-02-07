@@ -25,6 +25,7 @@ Router.map(function() {
   this.route('output');
 
   this.route('sync');
+  this.route('settings');
 });
 
 export default Router;
