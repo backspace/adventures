@@ -133,10 +133,15 @@ export default Ember.Component.extend({
 
         const rowHeight = 0.5*72;
 
+        const otherTeam = cardData.otherTeams[0];
+        const otherTeamDigit = cardData.teamDigitsForAnswerAndGoalDigits.get(otherTeam);
+
+        const myDigit = cardData.teamDigitsForAnswerAndGoalDigits.get(cardData.team);
+
         const rows = [
           {label: '^ from other side'},
-          {operand: '?', digit: '#', label: 'from you'},
-          {operand: '?', digit: '#', label: `from ${cardData.otherTeamName}`},
+          {operand: myDigit > 0 ? '+' : '-', digit: otherTeamDigit, label: 'from you'},
+          {operand: otherTeamDigit > 0 ? '+' : '-', digit: myDigit, label: `from ${cardData.otherTeamName}`},
           {operand: '=', label: `answer ${cardData.letter}`}
         ];
 
@@ -218,10 +223,16 @@ export default Ember.Component.extend({
 
     const chosenBlankIndex = this.get('puzzles').chooseBlankIndex({answer, mask, goalDigit});
 
+    const answerDigit = parseInt(answer[chosenBlankIndex]);
+
+    const teamDigitsForAnswerAndGoalDigits = this.get('puzzles').teamDigitsForAnswerAndGoalDigits({teams, goalDigit, answerDigit});
+
     return {
+      team,
       teamName: team.get('name'),
       letter: rendezvousLetter,
       time: rendezvousTime,
+      otherTeams,
       otherTeamName,
 
       regionName: region.get('name'),
@@ -231,7 +242,8 @@ export default Ember.Component.extend({
       goalDigit,
       answer,
       mask,
-      chosenBlankIndex
+      chosenBlankIndex,
+      teamDigitsForAnswerAndGoalDigits
     };
   },
 
