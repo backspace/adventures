@@ -23,7 +23,7 @@ export default Ember.Component.extend({
     const highlightedTeam = this.get('highlightedTeam');
 
     if (highlightedTeam) {
-      const meetingRegionIds = highlightedTeam.hasMany('meetings').value().map(meeting => meeting.belongsTo('destination').value()).map(destination => destination.belongsTo('region').value()).mapBy('id');
+      const meetingRegionIds = highlightedTeam.hasMany('meetings').value().rejectBy('isNew').map(meeting => meeting.belongsTo('destination').value()).map(destination => destination.belongsTo('region').value()).mapBy('id');
       const index = meetingRegionIds.indexOf(regionId);
 
       if (index > -1) {
