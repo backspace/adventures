@@ -112,6 +112,10 @@ $column-width: 6rem;
       &.selected {
         background: lightgray;
       }
+
+      &.highlighted {
+        background: paleturquoise;
+      }
     }
   }
 

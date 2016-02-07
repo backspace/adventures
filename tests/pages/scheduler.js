@@ -87,6 +87,7 @@ export default PageObject.create({
       riskAversionColour: propertyColourName('border-right-color'),
 
       isSelected: hasClass('selected'),
+      isHighlighted: hasClass('highlighted'),
 
       click: clickable(),
       hover: hoverable(),

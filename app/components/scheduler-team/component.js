@@ -18,6 +18,19 @@ export default Ember.Component.extend({
     return teamIds.indexOf(this.get('team.id')) > -1;
   }),
 
+  hasMetHighlightedTeam: Ember.computed('team', 'highlightedTeam', function() {
+    const team = this.get('team');
+    const highlightedTeam = this.get('highlightedTeam');
+
+    if (!highlightedTeam) {
+      return false;
+    }
+
+    const teamMeetings = team.hasMany('meetings').value();
+
+    return teamMeetings.any(meeting => meeting.hasMany('teams').ids().indexOf(highlightedTeam.id) > -1);
+  }),
+
   usersAndNotes: Ember.computed('team.users', 'team.notes', function() {
     return `${this.get('team.users')}\n\n${this.get('team.notes') || ''}`;
   }),

@@ -33,9 +33,11 @@ moduleForAcceptance('Acceptance | scheduler', {
         riskAversion: 1
       });
 
+      const pyjamaGamers = store.createRecord('team', {name: 'The Pyjama Gamers'});
+
       let edmontonCourt, prairieTheatreExchange, globeCinemas, squeakyFloor;
 
-      Ember.RSVP.all([portagePlace.save(), eatonCentre.save(), superfans.save(), mayors.save()]).then(() => {
+      Ember.RSVP.all([portagePlace.save(), eatonCentre.save(), superfans.save(), mayors.save(), pyjamaGamers.save()]).then(() => {
         edmontonCourt = store.createRecord('destination', {
           region: portagePlace,
           description: 'Edmonton Court',
@@ -180,7 +182,7 @@ test('an existing meeting is shown in the teams and destination', (assert) => {
   });
 });
 
-test('hovering over a team shows its destinations ordered on the map and its meetings', (assert) => {
+test('hovering over a team shows its destinations ordered on the map, its meetings, and teams it’s met', (assert) => {
   page.visit();
 
   page.teams(1).hover();
@@ -188,6 +190,8 @@ test('hovering over a team shows its destinations ordered on the map and its mee
   andThen(() => {
     assert.equal(page.map().regions(1).meetingIndex(), '1');
     assert.equal(page.teams(1).meetings().count(), 1);
+    assert.ok(page.teams(2).isHighlighted(), 'expected the met team to be highlighted');
+    assert.notOk(page.teams(3).isHighlighted(), 'expected the other team to not be highlighted');
   });
 });
 

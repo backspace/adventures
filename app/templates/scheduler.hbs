@@ -28,7 +28,7 @@
 
   <ul class='teams'>
     {{#each model.teams as |team|}}
-      {{scheduler-team team=team meeting=meeting select=(action 'selectTeam') enter=(action 'mouseEnterTeam') leave=(action 'mouseLeaveTeam')}}
+      {{scheduler-team team=team highlightedTeam=highlightedTeam meeting=meeting select=(action 'selectTeam') enter=(action 'mouseEnterTeam') leave=(action 'mouseLeaveTeam')}}
     {{/each}}
   </ul>
 
