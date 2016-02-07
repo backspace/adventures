@@ -23,24 +23,7 @@ export default Model.extend({
     const answer = this.get('answer') || '';
     const mask = this.get('mask') || '';
 
-    if (answer.length !== mask.length) {
-      return false;
-    }
-
-    for (let i = 0; i < answer.length; i++) {
-      const answerCharacter = answer[i];
-      const maskCharacter = mask[i];
-
-      if (answerCharacter !== maskCharacter) {
-        if (answerCharacter.match(/\d/)) {
-          return maskCharacter === '_';
-        } else {
-          return false;
-        }
-      }
-    }
-
-    return mask.indexOf('_') > -1;
+    return this.get('puzzles').maskIsValid({answer, mask});
   }),
 
   awesomeness: attr('number'),
@@ -67,5 +50,7 @@ export default Model.extend({
   meetings: hasMany('meeting'),
 
   createdAt: attr('createDate'),
-  updatedAt: attr('updateDate')
+  updatedAt: attr('updateDate'),
+
+  puzzles: Ember.inject.service()
 });
