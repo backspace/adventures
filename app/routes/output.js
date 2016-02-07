@@ -10,6 +10,8 @@ export default Ember.Route.extend({
       destinations: this.store.findAll('destination'),
       regions: this.store.findAll('region'),
 
+      settings: this.store.findRecord('settings', 'settings'),
+
       assets: Ember.RSVP.all([
         fetch('/fonts/blackout.ttf'),
         fetch('/fonts/Oswald-Bold.ttf'),

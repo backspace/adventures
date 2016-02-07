@@ -106,7 +106,11 @@ export default Ember.Component.extend({
         // doc.rect(0, 0, innerCardWidth, cardHeight - cardMargin*2).stroke();
         // doc.rect(-cardMargin, -cardMargin, cardWidth, cardHeight);
 
-        doc.text(`Back of ${cardData.letter}/${cardData.teamName}`);
+        doc.text(`Back of ${cardData.letter}/${cardData.teamName}`, 0, 0);
+
+        doc.text(`Answer: ${cardData.answer}`);
+        doc.text(`Mask: ${cardData.mask}`);
+        doc.text(`Goal letter: ${cardData.goalLetter}`);
 
         doc.restore();
       });
@@ -128,6 +132,8 @@ export default Ember.Component.extend({
     }, []);
   },
 
+  goal: Ember.computed.alias('settings.goal'),
+
   _rendezvousCardDataForTeamMeeting(team, meeting, index) {
     const destination = meeting.belongsTo('destination').value();
     const region = destination.belongsTo('region').value();
@@ -140,6 +146,8 @@ export default Ember.Component.extend({
     const otherTeams = teams.rejectBy('id', team.id);
     const otherTeamName = otherTeams.mapBy('name');
 
+    const goalLetter = this.get('goal')[index];
+
     return {
       teamName: team.get('name'),
       letter: rendezvousLetter,
@@ -148,6 +156,10 @@ export default Ember.Component.extend({
 
       regionName: region.get('name'),
       destinationDescription: destination.get('description'),
+
+      goalLetter: goalLetter,
+      answer: destination.get('answer'),
+      mask: destination.get('mask')
     };
   },
 
