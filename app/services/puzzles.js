@@ -24,6 +24,27 @@ export default Ember.Service.extend({
     }, {maxDistance: -1}).maxDistanceIndex;
   },
 
+  teamDigitsForAnswerAndGoalDigits({teams, answerDigit, goalDigit}) {
+    if (teams.length > 2) {
+      throw Error('More than two teams are not supported');
+    } else if (teams.length < 1) {
+      throw Error('You must supply at least one team');
+    }
+
+    const difference = goalDigit - answerDigit;
+
+    if (teams.length === 1) {
+      return new Map([[teams[0], difference]]);
+    } else {
+      const sortedTeams = teams.sortBy('name');
+
+      return new Map([
+        [sortedTeams[0], Math.ceil(difference/2)],
+        [sortedTeams[1], Math.floor(difference/2)]
+      ]);
+    }
+  },
+
   maskIsValid({answer, mask}) {
     if (answer.length !== mask.length) {
       return false;
