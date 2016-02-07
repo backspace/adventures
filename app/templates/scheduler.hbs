@@ -34,6 +34,7 @@
 
   <div class='meeting-form'>
     <select class='destination'>
+        <option></option>
       {{#each model.destinations as |destination|}}
         {{#if destination.isAvailable}}
           <option value={{destination.id}} selected={{eq meeting.destination.id destination.id}}>{{destination.description}}</option>
