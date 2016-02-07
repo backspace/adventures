@@ -140,8 +140,8 @@ export default Ember.Component.extend({
 
         const rows = [
           {label: '^ from other side'},
-          {operand: myDigit > 0 ? '+' : '-', digit: otherTeamDigit, label: 'from you'},
-          {operand: otherTeamDigit > 0 ? '+' : '-', digit: myDigit, label: `from ${cardData.otherTeamName}`},
+          {operand: myDigit > 0 ? '+' : '-', digit: Math.abs(otherTeamDigit), label: 'from you'},
+          {operand: otherTeamDigit > 0 ? '+' : '-', digit: Math.abs(myDigit), label: `from ${cardData.otherTeamName}`},
           {operand: '=', label: `answer ${cardData.letter}`}
         ];
 
