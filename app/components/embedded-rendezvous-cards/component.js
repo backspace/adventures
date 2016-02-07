@@ -124,6 +124,36 @@ export default Ember.Component.extend({
 
         doc.translate(xOffset, yOffset);
 
+        const operandColumnWidth = 0.25*72;
+        const digitColumnWidth = 0.5*72;
+
+        const labelGap = 0.25*72;
+
+        const labelStart = operandColumnWidth + digitColumnWidth + labelGap;
+
+        const rowHeight = 0.5*72;
+
+        const rows = [
+          {label: '^ from other side'},
+          {operand: '?', digit: '#', label: 'from you'},
+          {operand: '?', digit: '#', label: `from ${cardData.otherTeamName}`},
+          {operand: '=', label: `answer ${cardData.letter}`}
+        ];
+
+        rows.forEach(({operand, digit, label}, index) => {
+          const y = index*rowHeight;
+
+          if (operand) {
+            doc.text(operand, 0, y);
+          }
+
+          if (digit) {
+            doc.text(digit, operandColumnWidth, y);
+          }
+
+          doc.text(label, labelStart, y);
+        });
+
         doc.restore();
 
         if (debug) {
