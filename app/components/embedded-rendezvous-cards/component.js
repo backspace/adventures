@@ -83,7 +83,19 @@ export default Ember.Component.extend({
         });
 
         doc.text(' ');
-        doc.text(' ');
+
+        doc.font(bold);
+        doc.text('Fill in the blanks:');
+        doc.font(regular);
+
+        const paddedMask = cardData.mask.replace(/_/g, '__ ');
+        doc.text(paddedMask);
+
+        const skippedMask = cardData.mask.substr(0, cardData.chosenBlankIndex);
+        const paddedSkippedMask = skippedMask.replace(/_/g, '__ ');
+
+        const widthOfPaddedSkippedMask = doc.widthOfString(paddedSkippedMask);
+        doc.text(" ^", widthOfPaddedSkippedMask);
 
         doc.restore();
       });
@@ -111,6 +123,8 @@ export default Ember.Component.extend({
         doc.text(`Answer: ${cardData.answer}`);
         doc.text(`Mask: ${cardData.mask}`);
         doc.text(`Goal letter: ${cardData.goalLetter}`);
+        doc.text(`Chosen blank index: ${cardData.chosenBlankIndex}`);
+        doc.text(' ');
 
         doc.restore();
       });
@@ -133,6 +147,7 @@ export default Ember.Component.extend({
   },
 
   goal: Ember.computed.alias('settings.goal'),
+  puzzles: Ember.inject.service(),
 
   _rendezvousCardDataForTeamMeeting(team, meeting, index) {
     const destination = meeting.belongsTo('destination').value();
@@ -146,7 +161,13 @@ export default Ember.Component.extend({
     const otherTeams = teams.rejectBy('id', team.id);
     const otherTeamName = otherTeams.mapBy('name');
 
+    const answer = destination.get('answer');
+    const mask = destination.get('mask');
+
     const goalLetter = this.get('goal')[index];
+    const goalDigit = parseInt(goalLetter);
+
+    const chosenBlankIndex = this.get('puzzles').chooseBlankIndex({answer, mask, goalDigit});
 
     return {
       teamName: team.get('name'),
@@ -157,9 +178,11 @@ export default Ember.Component.extend({
       regionName: region.get('name'),
       destinationDescription: destination.get('description'),
 
-      goalLetter: goalLetter,
-      answer: destination.get('answer'),
-      mask: destination.get('mask')
+      goalLetter,
+      goalDigit,
+      answer,
+      mask,
+      chosenBlankIndex
     };
   },
 
