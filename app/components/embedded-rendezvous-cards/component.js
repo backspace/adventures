@@ -103,6 +103,9 @@ export default Ember.Component.extend({
 
         doc.translate(xOffset, yOffset);
 
+        // doc.rect(0, 0, innerCardWidth, cardHeight - cardMargin*2).stroke();
+        // doc.rect(-cardMargin, -cardMargin, cardWidth, cardHeight);
+
         doc.text(`Back of ${cardData.letter}/${cardData.teamName}`);
 
         doc.restore();
