@@ -13,7 +13,9 @@ export default Ember.Component.extend({
   rendering: true,
 
   didInsertElement() {
-    const doc = new PDFDocument({layout: 'landscape'});
+    const debug = true;
+
+    const doc = new PDFDocument({layout: 'portrait'});
     const stream = doc.pipe(blobStream());
 
     const header = this.get('assets.header');
@@ -26,8 +28,8 @@ export default Ember.Component.extend({
     const horizontalCardCount = 2;
     const cardsPerPage = verticalCardCount*horizontalCardCount;
 
-    const pageWidth = 11*72;
-    const pageHeight = 8.5*72;
+    const pageWidth = 8.5*72;
+    const pageHeight = 11*72;
 
     const cardWidth = pageWidth/horizontalCardCount;
     const cardHeight = pageHeight/verticalCardCount;
@@ -98,6 +100,13 @@ export default Ember.Component.extend({
         doc.text(" ^", widthOfPaddedSkippedMask);
 
         doc.restore();
+
+        if (debug) {
+          doc.save();
+          doc.translate(xOffset + cardWidth/2, yOffset);
+          doc.text(`Front of ${cardData.letter}/${cardData.teamName}`);
+          doc.restore();
+        }
       });
 
       doc.addPage();
@@ -115,18 +124,24 @@ export default Ember.Component.extend({
 
         doc.translate(xOffset, yOffset);
 
-        // doc.rect(0, 0, innerCardWidth, cardHeight - cardMargin*2).stroke();
-        // doc.rect(-cardMargin, -cardMargin, cardWidth, cardHeight);
-
-        doc.text(`Back of ${cardData.letter}/${cardData.teamName}`, 0, 0);
-
-        doc.text(`Answer: ${cardData.answer}`);
-        doc.text(`Mask: ${cardData.mask}`);
-        doc.text(`Goal letter: ${cardData.goalLetter}`);
-        doc.text(`Chosen blank index: ${cardData.chosenBlankIndex}`);
-        doc.text(' ');
-
         doc.restore();
+
+        if (debug) {
+          doc.save();
+          doc.translate(xOffset + cardWidth/2, yOffset);
+
+          doc.rect(-cardWidth/2, 0, innerCardWidth, cardHeight - cardMargin*2).stroke();
+          doc.rect(-cardMargin - cardWidth/2, -cardMargin, cardWidth, cardHeight);
+
+          doc.text(`Back of ${cardData.letter}/${cardData.teamName}`, 0, 0);
+
+          doc.text(`Answer: ${cardData.answer}`);
+          doc.text(`Mask: ${cardData.mask}`);
+          doc.text(`Goal letter: ${cardData.goalLetter}`);
+          doc.text(`Chosen blank index: ${cardData.chosenBlankIndex}`);
+
+          doc.restore();
+        }
       });
     }
 
