@@ -75,7 +75,9 @@ export default Ember.Component.extend({
         doc.text(cardData.otherTeamName);
 
         doc.text(' ');
-        doc.text(cardData.destinationDescription);
+        doc.text(cardData.destinationDescription, {
+          width: cardWidth
+        });
 
         doc.text(' ');
         doc.text(' ');
