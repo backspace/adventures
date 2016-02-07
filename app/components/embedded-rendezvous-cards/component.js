@@ -32,6 +32,9 @@ export default Ember.Component.extend({
     const cardWidth = pageWidth/horizontalCardCount;
     const cardHeight = pageHeight/verticalCardCount;
 
+    const cardMargin = 0.5*72;
+    const innerCardWidth = cardWidth - cardMargin*2;
+
     for (let i = 0, j = cards.length; i < j; i+= cardsPerPage) {
       const chunk = cards.slice(i, i + cardsPerPage);
 
@@ -51,8 +54,8 @@ export default Ember.Component.extend({
         const xPosition = cardOnPage%horizontalCardCount;
         const yPosition = Math.floor(cardOnPage/horizontalCardCount);
 
-        const xOffset = xPosition*cardWidth;
-        const yOffset = yPosition*cardHeight;
+        const xOffset = xPosition*cardWidth + cardMargin;
+        const yOffset = yPosition*cardHeight + cardMargin;
 
         doc.translate(xOffset, yOffset);
 
@@ -76,7 +79,7 @@ export default Ember.Component.extend({
 
         doc.text(' ');
         doc.text(cardData.destinationDescription, {
-          width: cardWidth
+          width: innerCardWidth
         });
 
         doc.text(' ');
@@ -93,8 +96,8 @@ export default Ember.Component.extend({
         const xPosition = horizontalCardCount - cardOnPage%horizontalCardCount - 1;
         const yPosition = Math.floor(cardOnPage/horizontalCardCount);
 
-        const xOffset = xPosition*cardWidth;
-        const yOffset = yPosition*cardHeight;
+        const xOffset = xPosition*cardWidth + cardMargin;
+        const yOffset = yPosition*cardHeight + cardMargin;
 
         doc.save();
 
