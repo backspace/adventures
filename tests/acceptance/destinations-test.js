@@ -16,9 +16,6 @@ moduleForAcceptance('Acceptance | destinations', {
       regionOne.set('name', 'There');
       regionTwo.set('name', 'Here');
 
-      this.regionOne = regionOne;
-      this.regionTwo = regionTwo;
-
       Ember.RSVP.all([regionOne.save(), regionTwo.save()]).then(() => {
         const fixtureOne = store.createRecord('destination');
         const fixtureTwo = store.createRecord('destination');
@@ -139,8 +136,7 @@ test('a destination can be edited and edits can be cancelled', function(assert) 
     assert.equal(page.awesomenessField().value(), '9');
     assert.equal(page.riskField().value(), '6');
     assert.equal(page.answerField().value(), 'ABC123');
-    // FIXME how can I check the displayed text rather than field value?
-    assert.equal(page.regionField().value(), this.regionOne.id);
+    assert.equal(page.regionField().text(), 'Here');
   });
 
   page.descriptionField().fill('Kisua');
@@ -177,13 +173,10 @@ test('a destination can be edited and edits can be cancelled', function(assert) 
 test('a new destination defaults to the same region as the previously-created one', function(assert) {
   page.visit();
   page.new();
-  page.descriptionField().fill('The Hetawa');
+  page.descriptionField().fill('Borderlands');
 
   andThen(() => {
-    assert.equal(page.regionField().value(), this.regionOne.id);
-
-    // FIXME how can I select by displayed name instead of ID?
-    page.regionField().select(this.regionTwo.id);
+    page.regionField().fillByText('There');
   });
 
   page.save();
@@ -191,7 +184,7 @@ test('a new destination defaults to the same region as the previously-created on
   page.new();
 
   andThen(() => {
-    assert.equal(page.regionField().value(), this.regionTwo.id);
+    assert.equal(page.regionField().text(), 'There');
   });
 });
 

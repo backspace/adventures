@@ -1,6 +1,18 @@
 import PageObject from '../page-object';
 
-const { clickable, collection, fillable, hasClass, selectable, text, value, visitable } = PageObject;
+const { clickable, collection, customHelper, fillable, hasClass, selectable, text, value, visitable } = PageObject;
+
+const selectText = customHelper((selector) => {
+  const id = $(selector).val();
+  return $(`${selector} option[value=${id}]`).text();
+});
+
+const fillSelectByText = customHelper((selector) => {
+  return (text) => {
+    const id = $(`${selector} option:contains('${text}')`).attr('value');
+    $(selector).val(id).trigger('change');
+  };
+});
 
 export default PageObject.create({
   visit: visitable('/destinations'),
@@ -82,6 +94,8 @@ export default PageObject.create({
   regionField: {
     scope: 'select.region',
     value: value(),
+    text: selectText(),
+    fillByText: fillSelectByText(),
     select: selectable()
   },
 
