@@ -152,7 +152,7 @@ export default Ember.Component.extend({
             doc.text(operand, 0, y);
           }
 
-          if (digit) {
+          if (digit >= 0) {
             doc.text(digit, operandColumnWidth, y);
           }
 
