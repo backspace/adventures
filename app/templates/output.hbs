@@ -1,6 +1,7 @@
 <div class=row>
   <div class='small-12 columns'>
-    {{embedded-maps teams=model.teams assets=model.assets}}
-    {{embedded-rendezvous-cards teams=model.teams settings=model.settings assets=model.assets}}
+    <label>Debug? {{input type='checkbox' checked=debug}}</label>
+    {{embedded-maps teams=model.teams assets=model.assets debug=debug}}
+    {{embedded-rendezvous-cards teams=model.teams settings=model.settings assets=model.assets debug=debug}}
   </div>
 </div>

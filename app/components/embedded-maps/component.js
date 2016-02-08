@@ -9,6 +9,8 @@ export default Ember.Component.extend({
   rendering: true,
 
   didInsertElement() {
+    const debug = this.get('debug');
+
     const doc = new PDFDocument({layout: 'landscape'});
     const stream = doc.pipe(blobStream());
 
@@ -25,7 +27,9 @@ export default Ember.Component.extend({
     const mapMarkerCircleRadius = 10;
 
     this.get('teams').forEach(team => {
-      doc.image('data:image/png;base64,' + map, mapOffsetX, mapOffsetY, {scale: 0.125});
+      if (!debug) {
+        doc.image('data:image/png;base64,' + map, mapOffsetX, mapOffsetY, {scale: 0.125});
+      }
 
       doc.font(header);
       doc.fontSize(18);

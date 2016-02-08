@@ -13,7 +13,7 @@ export default Ember.Component.extend({
   rendering: true,
 
   didInsertElement() {
-    const debug = true;
+    const debug = this.get('debug');
 
     const doc = new PDFDocument({layout: 'portrait'});
     const stream = doc.pipe(blobStream());

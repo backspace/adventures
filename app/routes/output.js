@@ -1,6 +1,12 @@
 import Ember from 'ember';
 
 export default Ember.Route.extend({
+  queryParams: {
+    debug: {
+      refreshModel: true
+    }
+  },
+
   map: Ember.inject.service(),
 
   model() {
