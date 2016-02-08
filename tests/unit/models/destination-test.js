@@ -1,7 +1,7 @@
 import { moduleForModel, test } from 'ember-qunit';
 
 moduleForModel('destination', 'Unit | Model | destination', {
-  needs: ['model:meeting', 'model:region']
+  needs: ['model:meeting', 'model:region', 'service:puzzles']
 });
 
 test('it generates a suggested mask', function(assert) {
