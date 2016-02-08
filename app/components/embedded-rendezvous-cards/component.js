@@ -138,12 +138,22 @@ export default Ember.Component.extend({
 
         const myDigit = cardData.teamDigitsForAnswerAndGoalDigits.get(cardData.team);
 
-        const rows = [
-          {label: '^ from other side'},
-          {operand: myDigit > 0 ? '+' : '-', digit: Math.abs(otherTeamDigit), label: 'from you'},
-          {operand: otherTeamDigit > 0 ? '+' : '-', digit: debug ? Math.abs(myDigit) : undefined, label: `from ${cardData.otherTeamName}`},
-          {operand: '=', label: `answer ${cardData.letter}`}
-        ];
+        const rows = [{label: '^ from other side'}];
+
+        const myRow = {operand: myDigit > 0 ? '+' : '-', digit: Math.abs(otherTeamDigit), label: 'from you'};
+        const otherTeamRow = {operand: otherTeamDigit > 0 ? '+' : '-', digit: debug ? Math.abs(myDigit) : undefined, label: `from ${cardData.otherTeamName}`};
+
+        const sortedTeams = [cardData.team, otherTeam].sortBy('name');
+
+        if (sortedTeams[0] == cardData.team) {
+          rows.push(myRow);
+          rows.push(otherTeamRow);
+        } else {
+          rows.push(otherTeamRow);
+          rows.push(myRow);
+        }
+
+        rows.push({operand: '=', label: `answer ${cardData.letter}`});
 
         rows.forEach(({operand, digit, label}, index) => {
           const y = index*rowHeight;
