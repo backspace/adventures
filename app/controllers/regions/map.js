@@ -5,7 +5,6 @@ export default Ember.Controller.extend({
 
   actions: {
     saveAttachment(name, property, {target}) {
-      debugger;
       const file = target.files[0];
 
       if (property) {

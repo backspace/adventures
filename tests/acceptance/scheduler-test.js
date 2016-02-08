@@ -156,7 +156,7 @@ test('a destination with a meeting is indicated', (assert) => {
     assert.ok(destinationsPage.destinations(1).hasMeetings(), 'expected the first destination to have meetings');
     assert.notOk(destinationsPage.destinations(2).hasMeetings(), 'expected the second destination not to have meetings');
   });
-})
+});
 
 test('teams are listed', (assert) => {
   page.visit();
