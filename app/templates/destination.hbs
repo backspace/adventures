@@ -3,6 +3,7 @@
     <label>
       Region
       <select onchange={{action 'setRegion' value='target.value'}} class='region'>
+        <option></option>
         {{#each sortedRegions as |region|}}
           <option value={{region.id}} selected={{eq model.region.id region.id}}>{{region.name}}</option>
         {{/each}}
