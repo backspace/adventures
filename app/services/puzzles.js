@@ -32,17 +32,18 @@ export default Ember.Service.extend({
     }
 
     const difference = goalDigit - answerDigit;
+    const map = new Ember.Map();
 
     if (teams.length === 1) {
-      return new Map([[teams[0], difference]]);
+      map.set(teams[0], difference);
     } else {
       const sortedTeams = teams.sortBy('name');
 
-      return new Map([
-        [sortedTeams[0], Math.ceil(difference/2)],
-        [sortedTeams[1], Math.floor(difference/2)]
-      ]);
+      map.set(sortedTeams[0], Math.ceil(difference/2));
+      map.set(sortedTeams[1], Math.floor(difference/2));
     }
+
+    return map;
   },
 
   maskIsValid({answer, mask}) {
