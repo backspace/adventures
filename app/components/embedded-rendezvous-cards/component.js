@@ -145,7 +145,7 @@ export default Ember.Component.extend({
 
         const sortedTeams = [cardData.team, otherTeam].sortBy('name');
 
-        if (sortedTeams[0] == cardData.team) {
+        if (sortedTeams[0] === cardData.team) {
           rows.push(myRow);
           rows.push(otherTeamRow);
         } else {
