@@ -37,10 +37,15 @@ export default Ember.Component.extend({
     const cardMargin = 0.5*72;
     const innerCardWidth = cardWidth - cardMargin*2;
 
+    const chunks = [];
+
     for (let i = 0, j = cards.length; i < j; i+= cardsPerPage) {
       const chunk = cards.slice(i, i + cardsPerPage);
+      chunks.push(chunk);
+    }
 
-      if (i !== 0) {
+    chunks.forEach((chunk, chunkIndex) => {
+      if (chunkIndex !== 0) {
         doc.addPage();
       }
 
@@ -188,7 +193,7 @@ export default Ember.Component.extend({
           doc.restore();
         }
       });
-    }
+    });
 
     doc.end();
 
