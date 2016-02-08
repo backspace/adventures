@@ -136,7 +136,7 @@ test('a destination can be edited and edits can be cancelled', function(assert) 
     assert.equal(page.awesomenessField().value(), '9');
     assert.equal(page.riskField().value(), '6');
     assert.equal(page.answerField().value(), 'ABC123');
-    assert.equal(page.regionField().text(), 'Here');
+    assert.equal(page.regionField().text(), 'There');
   });
 
   page.descriptionField().fill('Kisua');
