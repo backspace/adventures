@@ -11,7 +11,7 @@ export default Ember.Component.extend({
   didInsertElement() {
     const debug = this.get('debug');
 
-    const doc = new PDFDocument({layout: 'landscape'});
+    const doc = new PDFDocument({layout: 'portrait'});
     const stream = doc.pipe(blobStream());
 
     const header = this.get('assets.header');
@@ -20,20 +20,37 @@ export default Ember.Component.extend({
 
     const map = this.get('assets.map');
 
-    const mapOffsetX = 100;
-    const mapOffsetY = 50;
+    const mapOffsetX = 0;
+    const mapOffsetY = 0;
 
     const mapMarkerFontSize = 12;
     const mapMarkerCircleRadius = 10;
 
-    this.get('teams').forEach(team => {
+    const pageWidth = 8.5*72;
+    const pageHeight = 11*72;
+
+    const margin = 0.5*72;
+
+    this.get('teams').forEach((team, index) => {
+      if (index > 0 && index % 2 === 0) {
+        doc.addPage();
+      }
+
+      doc.save();
+
+      if (index % 2 === 0) {
+        doc.translate(margin, margin);
+      } else {
+        doc.translate(margin, pageHeight/2 + margin);
+      }
+
       if (!debug) {
         doc.image('data:image/png;base64,' + map, mapOffsetX, mapOffsetY, {scale: 0.125});
       }
 
       doc.font(header);
       doc.fontSize(18);
-      doc.text(team.get('name'));
+      doc.text(team.get('name'), 0, 0);
 
       doc.fontSize(mapMarkerFontSize);
 
@@ -55,7 +72,7 @@ export default Ember.Component.extend({
         });
       });
 
-      doc.addPage();
+      doc.restore();
     });
 
     doc.end();
