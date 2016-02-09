@@ -67,6 +67,14 @@ $region-length: 4rem;
     &.highlighted {
       background: lightgray;
     }
+
+    &:after {
+      content: ' ';
+      position: absolute;
+      top: 50%;
+      left: calc(50% - 2px);
+      border: 1px solid black;
+    }
   }
 }
 
