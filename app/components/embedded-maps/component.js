@@ -23,6 +23,9 @@ export default Ember.Component.extend({
     const mapOffsetX = 0;
     const mapOffsetY = 0;
 
+    const mapClipTop = 50;
+    const mapClipLeft = 0;
+
     const mapMarkerFontSize = 12;
     const mapMarkerCircleRadius = 10;
 
@@ -45,7 +48,12 @@ export default Ember.Component.extend({
       }
 
       if (!debug) {
-        doc.image('data:image/png;base64,' + map, mapOffsetX, mapOffsetY, {scale: 0.125});
+        doc.save();
+
+        doc.rect(0, 0, pageWidth - mapClipLeft, pageHeight/2 - mapClipTop).clip();
+        doc.image('data:image/png;base64,' + map, mapOffsetX - mapClipLeft, mapOffsetY - mapClipTop, {scale: 0.125});
+
+        doc.restore();
       }
 
       doc.font(header);
@@ -60,8 +68,8 @@ export default Ember.Component.extend({
 
         const rendezvousLetter = String.fromCharCode(65 + index);
 
-        const x = region.get('x')/2 + mapOffsetX;
-        const y = region.get('y')/2 + mapOffsetY;
+        const x = region.get('x')/2 + mapOffsetX - mapClipLeft;
+        const y = region.get('y')/2 + mapOffsetY - mapClipTop;
 
         doc.lineWidth(1);
         doc.circle(x, y, mapMarkerCircleRadius).stroke();
