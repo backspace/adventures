@@ -20,6 +20,14 @@ defmodule Cr2016site.UserController do
     current_user = conn.assigns[:current_user_object]
     changeset = User.details_changeset(current_user)
 
+    conn = case Application.get_env(:cr2016site, :registration_closed) do
+      true ->
+        conn
+        |> put_flash(:error, "You may change your details but it’s too late to guarantee the changes can be integrated")
+      _ ->
+        conn
+    end
+
     render conn, "edit.html", user: current_user, relationships: Cr2016site.TeamFinder.relationships(current_user, users), changeset: changeset
   end
 

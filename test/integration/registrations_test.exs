@@ -229,5 +229,10 @@ defmodule Cr2016site.Integration.Registrations do
     Nav.register_link.click
 
     assert Nav.error_text == "Registration is closed; however, you may continue and we will email you"
+
+    Forge.saved_octavia
+    Login.login_as "octavia.butler@example.com", "Xenogenesis"
+
+    assert Nav.error_text == "You may change your details but it’s too late to guarantee the changes can be integrated"
   end
 end
