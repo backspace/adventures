@@ -1,6 +1,7 @@
 defmodule Cr2016site.Integration.Registrations do
   use Cr2016site.ConnCase
   use Cr2016site.MailgunHelper
+  use Cr2016site.ResetRegistrationClosed
 
   alias Cr2016site.Pages.Register
   alias Cr2016site.Pages.Login
@@ -218,5 +219,15 @@ defmodule Cr2016site.Integration.Registrations do
     assert admin_email["to"] == "b@events.chromatin.ca"
     assert admin_email["from"] == "b@events.chromatin.ca"
     assert admin_email["subject"] == "octavia.butler@example.com deleted their account"
+  end
+
+  test "when registration is closed, a warning is displayed on the registration and details routes" do
+    Application.put_env(:cr2016site, :registration_closed, true)
+
+    navigate_to "/"
+
+    Nav.register_link.click
+
+    assert Nav.error_text == "Registration is closed; however, you may continue and we will email you"
   end
 end

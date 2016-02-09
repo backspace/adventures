@@ -4,6 +4,15 @@ defmodule Cr2016site.RegistrationController do
 
   def new(conn, _params) do
     changeset = User.changeset(%User{})
+
+    conn = case Application.get_env(:cr2016site, :registration_closed) do
+      true ->
+        conn
+        |> put_flash(:error, "Registration is closed; however, you may continue and we will email you")
+      _ ->
+        conn
+    end
+
     render conn, changeset: changeset
   end
 

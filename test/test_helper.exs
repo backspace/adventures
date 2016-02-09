@@ -29,6 +29,8 @@ defmodule Forge do
   register :not_ready_message, [prototype: :message], ready: false
 end
 
+# FIXME the duplication below can surely be extracted
+
 defmodule Cr2016site.ResetRequestConfirmation do
   use ExUnit.CaseTemplate
 
@@ -37,6 +39,20 @@ defmodule Cr2016site.ResetRequestConfirmation do
 
     on_exit fn ->
       Application.put_env(:cr2016site, :request_confirmation, request_confirmation_setting)
+    end
+
+    :ok
+  end
+end
+
+defmodule Cr2016site.ResetRegistrationClosed do
+  use ExUnit.CaseTemplate
+
+  setup do
+    registration_closed_setting = Application.get_env(:cr2016site, :registration_closed)
+
+    on_exit fn ->
+      Application.put_env(:cr2016site, :registration_closed, registration_closed_setting)
     end
 
     :ok
