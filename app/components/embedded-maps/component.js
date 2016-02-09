@@ -71,9 +71,6 @@ export default Ember.Component.extend({
         const x = region.get('x')/2 + mapOffsetX - mapClipLeft;
         const y = region.get('y')/2 + mapOffsetY - mapClipTop;
 
-        doc.lineWidth(1);
-        doc.circle(x, y, mapMarkerCircleRadius).stroke();
-
         doc.text(rendezvousLetter, x - mapMarkerCircleRadius, y - mapMarkerFontSize/2, {
           width: mapMarkerCircleRadius*2,
           align: 'center'
