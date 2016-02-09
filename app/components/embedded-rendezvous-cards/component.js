@@ -125,18 +125,20 @@ export default Ember.Component.extend({
         const xOffset = xPosition*cardWidth + cardMargin;
         const yOffset = yPosition*cardHeight + cardMargin;
 
+        doc.fontSize(18);
+
         doc.save();
 
         doc.translate(xOffset, yOffset);
 
-        const operandColumnWidth = 0.25*72;
-        const digitColumnWidth = 0.5*72;
+        const operandColumnWidth = 0.2*72;
+        const digitColumnWidth = 0.4*72;
 
-        const labelGap = 0.25*72;
+        const labelGap = 0.1*72;
 
         const labelStart = operandColumnWidth + digitColumnWidth + labelGap;
 
-        const rowHeight = 0.5*72;
+        const rowHeight = 0.75*72;
 
         const otherTeam = cardData.otherTeams[0];
         const otherTeamDigit = cardData.teamDigitsForAnswerAndGoalDigits.get(otherTeam);
