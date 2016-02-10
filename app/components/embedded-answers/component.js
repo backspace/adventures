@@ -5,6 +5,8 @@ import config from 'adventure-gathering/config/environment';
 import PDFDocument from 'npm:pdfkit';
 import blobStream from 'npm:blob-stream';
 
+import moment from 'moment';
+
 export default Ember.Component.extend({
   tagName: 'span',
 
