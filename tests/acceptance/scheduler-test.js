@@ -49,6 +49,8 @@ moduleForAcceptance('Acceptance | scheduler', {
 
         prairieTheatreExchange = store.createRecord('destination', {
           description: 'Prairie Theatre Exchange',
+          awesomeness: 1,
+          risk: 1,
           region: portagePlace,
           status: 'available'
         });
@@ -174,6 +176,9 @@ test('an existing meeting is shown in the teams and destination', (assert) => {
 
   andThen(() => {
     assert.equal(page.teams(1).count(), '•');
+    assert.equal(page.teams(1).averageAwesomeness(), '3');
+    assert.equal(page.teams(1).averageRisk(), '2');
+
     assert.equal(page.teams(2).count(), '•');
 
     // FIXME the border is currently 2*meetingCount because the style property
@@ -220,6 +225,9 @@ test('a new meeting can be scheduled and resets the form when saved', (assert) =
 
   andThen(() => {
     assert.equal(page.teams(1).count(), '••');
+    assert.equal(page.teams(1).averageAwesomeness(), '2');
+    assert.equal(page.teams(1).averageRisk(), '1.5');
+
     assert.equal(page.teams(2).count(), '••');
 
     assert.equal(page.regions(1).destinations(2).meetingCountBorderWidth(), '2px');

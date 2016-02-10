@@ -1,5 +1,11 @@
 <li class='team {{if isSelected 'selected'}} {{if hasMetHighlightedTeam 'highlighted'}}' title={{usersAndNotes}} data-risk-aversion={{team.riskAversion}} onclick={{action 'select'}}>
   <span class='name'>{{team.name}}</span> <span class='count'>{{count}}</span>
+
+  <div>
+    A<span class='average-awesomeness'>{{team.averageAwesomeness}}</span>
+    R<span class='average-risk'>{{team.averageRisk}}</span>
+  </div>
+
   {{#if showMeetings}}
     <ul>
       {{#each team.meetings as |meeting index|}}

@@ -86,6 +86,9 @@ export default PageObject.create({
       count: text('.count'),
       riskAversionColour: propertyColourName('border-right-color'),
 
+      averageAwesomeness: text('.average-awesomeness'),
+      averageRisk: text('.average-risk'),
+
       isSelected: hasClass('selected'),
       isHighlighted: hasClass('highlighted'),
 
