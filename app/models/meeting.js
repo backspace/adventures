@@ -19,6 +19,8 @@ export default Model.extend({
     return meetingCounts.uniq().length !== 1;
   }),
 
+  index: attr('number'),
+
   createdAt: attr('createDate'),
   updatedAt: attr('updateDate')
 });

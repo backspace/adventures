@@ -1,6 +1,6 @@
 import PageObject from '../page-object';
 
-const { attribute, clickable, collection, customHelper, hasClass, text, visitable } = PageObject;
+const { attribute, clickable, collection, customHelper, hasClass, text, value, visitable } = PageObject;
 
 const x = customHelper(selector => parseInt($(selector).css('left')));
 const y = customHelper(selector => parseInt($(selector).css('top')));
@@ -119,6 +119,7 @@ export default PageObject.create({
     scope: '.meeting-form',
 
     destination: selectText('.destination'),
+    index: value('.index'),
 
     teams: collection({
       itemScope: '.team',

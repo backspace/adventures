@@ -15,6 +15,7 @@ export default Ember.Controller.extend({
         this.set('meeting', this.store.createRecord('meeting'));
       }
 
+      this.set('meeting.index', team.get('meetings.length'));
       this.get('meeting.teams').pushObject(team);
     },
 

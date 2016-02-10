@@ -191,7 +191,7 @@ $column-width: 6rem;
 
     background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,1));
 
-    select {
+    select, input {
       font-size: inherit;
       padding: 0;
       margin: 0;
