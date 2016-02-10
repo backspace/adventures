@@ -35,6 +35,14 @@ export default Ember.Component.extend({
     return `${this.get('team.users')}\n\n${this.get('team.notes') || ''}`;
   }),
 
+  roundedAwesomeness: Ember.computed('team.averageAwesomeness', function() {
+    return Math.round(this.get('team.averageAwesomeness')*100)/100;
+  }),
+
+  roundedRisk: Ember.computed('team.averageRisk', function() {
+    return Math.round(this.get('team.averageRisk')*100)/100;
+  }),
+
   mouseEnter() {
     this.set('showMeetings', true);
     this.attrs.enter(this.get('team'));

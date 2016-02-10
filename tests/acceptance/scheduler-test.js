@@ -49,7 +49,7 @@ moduleForAcceptance('Acceptance | scheduler', {
 
         prairieTheatreExchange = store.createRecord('destination', {
           description: 'Prairie Theatre Exchange',
-          awesomeness: 1,
+          awesomeness: 4/3,
           risk: 1,
           region: portagePlace,
           status: 'available'
@@ -225,7 +225,7 @@ test('a new meeting can be scheduled and resets the form when saved', (assert) =
 
   andThen(() => {
     assert.equal(page.teams(1).count(), '••');
-    assert.equal(page.teams(1).averageAwesomeness(), '2');
+    assert.equal(page.teams(1).averageAwesomeness(), '2.17');
     assert.equal(page.teams(1).averageRisk(), '1.5');
 
     assert.equal(page.teams(2).count(), '••');
