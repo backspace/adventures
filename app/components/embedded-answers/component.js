@@ -17,6 +17,9 @@ export default Ember.Component.extend({
     const stream = doc.pipe(blobStream());
 
     this.get('teams').reduce((intervals, team) => {
+      doc.text(`${team.get('name')}: ${team.get('riskAversion')}, ${team.get('users')}`);
+      doc.moveDown();
+
       const meetings = team.hasMany('meetings').value();
 
       meetings.forEach((meeting, index) => {
