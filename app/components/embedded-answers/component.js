@@ -32,6 +32,8 @@ export default Ember.Component.extend({
 
       return intervals;
     }, []).forEach((interval, index) => {
+      doc.addPage();
+
       doc.fontSize(18);
       doc.text(`Interval ${this._getRendezvousTimeForIndex(index)}`);
 
