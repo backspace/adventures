@@ -269,7 +269,7 @@ export default Ember.Component.extend({
   },
 
   _getRendezvousTimeForIndex(index) {
-    const rendezvousInterval = 30;
+    const rendezvousInterval = config.rendezvousInterval;
 
     return this._firstRendezvousTime().add(rendezvousInterval*index, 'minutes').format('h:mma');
   }
