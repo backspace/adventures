@@ -2,6 +2,7 @@
   <thead>
     <tr>
       <th></th>
+      <th>ID</th>
       <th>Email</th>
       <th>A?</th>
       <th>Risk</th>
@@ -17,6 +18,7 @@
     <%= for {user, i} <- Enum.with_index(@users) do %>
       <tr id='user-<%= user.id %>'>
         <td><%= i %></td>
+        <td><%= user.id %></td>
         <td class='email'><%= user.email %></td>
         <td class='attending'><%= symbol_for_boolean(user.attending) %></td>
         <td class='risk-aversion'><%= user.risk_aversion %></td>
