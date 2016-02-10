@@ -19,7 +19,7 @@ export default Ember.Route.extend({
       }),
       destinations: this.store.findAll('destination'),
       teams: this.store.findAll('team'),
-      map: this.get('map').getURL()
+      map: this.get('map').getURL('image')
     });
   }
 });
