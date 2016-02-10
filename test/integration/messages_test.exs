@@ -71,6 +71,7 @@ defmodule Cr2016site.Integration.Messages do
 
     assert has_team_email["to"] == "user-with-team@example.com"
     assert String.contains?(has_team_email["text"], "True team name")
+    assert String.contains?(has_team_email["text"], "Go easy on me")
 
     assert has_no_team_email["to"] == "teamless-user@example.com"
     assert String.contains?(has_no_team_email["text"], "You have no team assigned!")
