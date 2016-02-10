@@ -24,8 +24,8 @@ export default Ember.Component.extend({
 
     const cards = this._rendezvousCards();
 
-    const verticalCardCount = 2;
-    const horizontalCardCount = 2;
+    const verticalCardCount = 3;
+    const horizontalCardCount = 3;
     const cardsPerPage = verticalCardCount*horizontalCardCount;
 
     const pageWidth = 8.5*72;
@@ -34,7 +34,7 @@ export default Ember.Component.extend({
     const cardWidth = pageWidth/horizontalCardCount;
     const cardHeight = pageHeight/verticalCardCount;
 
-    const cardMargin = 0.5*72;
+    const cardMargin = 0.35*72;
     const innerCardWidth = cardWidth - cardMargin*2;
 
     const chunks = [];
@@ -67,11 +67,11 @@ export default Ember.Component.extend({
         doc.translate(xOffset, yOffset);
 
         doc.font(header);
-        doc.fontSize(18);
+        doc.fontSize(14);
         doc.text(`Rendezvous ${cardData.letter}`, 0, 0);
 
         doc.font(regular);
-        doc.fontSize(12);
+        doc.fontSize(10);
         doc.text(cardData.teamName);
 
         doc.text(' ');
@@ -127,7 +127,7 @@ export default Ember.Component.extend({
         const xOffset = xPosition*cardWidth + cardMargin;
         const yOffset = yPosition*cardHeight + cardMargin;
 
-        doc.fontSize(18);
+        doc.fontSize(16);
 
         doc.save();
 
