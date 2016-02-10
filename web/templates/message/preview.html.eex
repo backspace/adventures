@@ -14,6 +14,18 @@
     </div>
   </div>
 <% end %>
-<%= if assigns[:relationships] do %>
-  <%= render Cr2016site.UserView, "relationships.html", user: @user, relationships: @relationships, email: true %>
+<%= if @message.show_team do %>
+  <div class='row card'>
+    <div class='small-12 columns'>
+      <%= if @team do %>
+        You have successfully constructed a team: <%= @team.name %>
+      <% else %>
+        You have no team assigned! Probably because you did not confirm your attendance. It’s not too late, please contact us as soon as possible!
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <%= if assigns[:relationships] do %>
+    <%= render Cr2016site.UserView, "relationships.html", user: @user, relationships: @relationships, email: true %>
+  <% end %>
 <% end %>

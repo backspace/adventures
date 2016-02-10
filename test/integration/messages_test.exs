@@ -44,6 +44,38 @@ defmodule Cr2016site.Integration.Messages do
     assert String.contains?(empty_email_text, "You haven’t filled in any details!")
   end
 
+  test "a message with show team enabled shows the actual team information instead of their details" do
+    Forge.saved_admin email: "admin@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("admin")
+    {_, team_member_1} = Forge.saved_user email: "user-with-team@example.com", team_emails: "teammate@example.com", proposed_team_name: "Ignored team name"
+    {_, team_member_2} = Forge.saved_user email: "teammate@example.com"
+    Forge.saved_user email: "teamless-user@example.com"
+
+    Forge.saved_team name: "True team name", risk_aversion: 1, user_ids: [team_member_1.id, team_member_2.id]
+
+    navigate_to "/"
+
+    Login.login_as "admin@example.com", "admin"
+    Nav.edit_messages
+
+    Messages.new_message
+
+    Messages.fill_subject "A Subject!"
+    Messages.fill_content "ya"
+    Messages.check_ready
+    Messages.check_show_team
+    Messages.save
+
+    Messages.send
+
+    [_, has_team_email, _, has_no_team_email] = Cr2016site.MailgunHelper.sent_email
+
+    assert has_team_email["to"] == "user-with-team@example.com"
+    assert String.contains?(has_team_email["text"], "True team name")
+
+    assert has_no_team_email["to"] == "teamless-user@example.com"
+    assert String.contains?(has_no_team_email["text"], "You have no team assigned!")
+  end
+
   test "the backlog of existing messages is sent to a new registrant after the welcome" do
     Forge.saved_message subject: "Subject one", content: "Content one"
     Forge.saved_message subject: "Subject two", content: "Content two"

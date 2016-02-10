@@ -6,12 +6,13 @@ defmodule Cr2016site.Message do
     field :content, :string
     field :rendered_content, :string
     field :ready, :boolean, default: false
+    field :show_team, :boolean, default: false
     field :postmarked_at, Ecto.Date
 
     timestamps
   end
 
-  @required_fields ~w(subject content ready postmarked_at)
+  @required_fields ~w(subject content ready show_team postmarked_at)
   @optional_fields ~w(rendered_content)
 
   @doc """

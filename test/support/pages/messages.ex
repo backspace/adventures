@@ -17,6 +17,10 @@ defmodule Cr2016site.Pages.Messages do
     click {:id, "message_ready"}
   end
 
+  def check_show_team do
+    click {:id, "message_show_team"}
+  end
+
   def save do
     click {:css, "input.btn.submit"}
   end

@@ -64,10 +64,14 @@ defmodule Cr2016site.MessageController do
   def deliver(conn, %{"id" => id})do
     message = Repo.get!(Message, id)
     users = Repo.all(Cr2016site.User)
+    teams = Repo.all(Cr2016site.Team)
 
     Enum.each(users, fn(user) ->
       relationships = Cr2016site.TeamFinder.relationships(user, users)
-      Cr2016site.Mailer.send_message(message, user, relationships)
+
+      team = Enum.find(teams, fn(team) -> Enum.member?(team.user_ids, user.id) end)
+
+      Cr2016site.Mailer.send_message(message, user, relationships, team)
     end)
 
     conn
