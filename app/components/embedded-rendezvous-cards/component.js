@@ -91,8 +91,10 @@ export default Ember.Component.extend({
 
         doc.text(' ');
 
+        const maskHasMultipleBlanks = (cardData.mask.match(/_/g) || []).length > 1;
+
         doc.font(bold);
-        doc.text('Fill in the blanks:');
+        doc.text(`Fill in the blank${maskHasMultipleBlanks ? 's' : ''}:`);
         doc.font(regular);
 
         const paddedMask = this._padMask(cardData.mask);
