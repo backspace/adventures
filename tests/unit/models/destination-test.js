@@ -10,6 +10,12 @@ test('it generates a suggested mask', function(assert) {
   assert.equal(model.get('suggestedMask'), 'ABC___');
 });
 
+test('it suggests a maximum of three of the rightmost blanks', function(assert) {
+  const model = this.subject({answer: 'A0C1234'});
+
+  assert.equal(model.get('suggestedMask'), 'A0C1___');
+});
+
 test('a mask is valid when it matches the answer', function(assert) {
   let model = this.subject({
     answer: 'ABC123',
