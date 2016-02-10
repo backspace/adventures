@@ -17,7 +17,7 @@
       <td class='name'><%= team.name %></td>
       <td class='risk-aversion'><%= team.risk_aversion %></td>
       <td><%= team.notes %></td>
-      <td><%= team.user_ids %></td>
+      <td><%= Enum.join(team.user_ids, ", ") %></td>
 
       <td class="text-right">
         <%= link "Show", to: team_path(@conn, :show, team), class: "btn btn-default btn-xs" %>
