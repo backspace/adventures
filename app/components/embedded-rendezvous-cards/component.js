@@ -178,6 +178,19 @@ export default Ember.Component.extend({
           doc.text(label, labelStart, y);
         });
 
+        const cropMarkLength = 0.25*72;
+
+        doc.lineWidth(0.125);
+        doc.strokeOpacity(0.25);
+
+        doc.moveTo(innerCardWidth/2 - cropMarkLength/2, cardHeight - cardMargin)
+           .lineTo(innerCardWidth/2 + cropMarkLength/2, cardHeight - cardMargin)
+           .stroke();
+
+        doc.moveTo(innerCardWidth + cardMargin, cardHeight/2 - cropMarkLength/2)
+           .lineTo(innerCardWidth + cardMargin, cardHeight/2 + cropMarkLength/2)
+           .stroke();
+
         doc.restore();
 
         if (debug) {

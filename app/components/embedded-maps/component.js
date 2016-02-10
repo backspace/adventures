@@ -77,6 +77,15 @@ export default Ember.Component.extend({
         });
       });
 
+      const cropMarkLength = 1*72;
+
+      doc.lineWidth(0.125);
+      doc.strokeOpacity(0.25);
+
+      doc.moveTo(pageWidth/2 - margin - cropMarkLength/2, pageHeight/2 - margin)
+         .lineTo(pageWidth/2 - margin + cropMarkLength/2, pageHeight/2 - margin)
+         .stroke();
+
       doc.restore();
     });
 
