@@ -128,6 +128,8 @@ export default PageObject.create({
       }
     }),
 
+    isForbidden: hasClass('forbidden'),
+
     save: clickable('button.save'),
     reset: clickable('button.reset')
   }

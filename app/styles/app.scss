@@ -197,6 +197,10 @@ $column-width: 6rem;
       margin: 0;
       height: auto;
     }
+
+    &.forbidden {
+      background: red;
+    }
   }
 
   .map {

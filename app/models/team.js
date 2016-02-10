@@ -9,7 +9,7 @@ export default Model.extend({
   riskAversion: attr('number'),
   notes: attr('string'),
 
-  meetings: hasMany('meeting'),
+  meetings: hasMany('meeting', {async: false}),
 
   createdAt: attr('createDate'),
   updatedAt: attr('updateDate')

@@ -32,7 +32,7 @@
     {{/each}}
   </ul>
 
-  <div class='meeting-form'>
+  <div class='meeting-form {{if meeting.isForbidden 'forbidden'}}'>
     <select class='destination'>
         <option></option>
       {{#each model.destinations as |destination|}}

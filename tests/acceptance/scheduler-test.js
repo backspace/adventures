@@ -206,6 +206,8 @@ test('a new meeting can be scheduled and resets the form when saved', (assert) =
     assert.equal(page.meeting().destination(), 'Prairie Theatre Exchange');
     assert.equal(page.meeting().teams(1).value(), 'Mayors');
     assert.equal(page.meeting().teams(2).value(), 'Leave It to Beaver superfans');
+    assert.notOk(page.meeting().isForbidden(), 'expected meeting not be forbidden');
+    //assert.equal(page.meeting().index(), 1);
 
     assert.ok(page.regions(1).destinations(2).isSelected());
     assert.notOk(page.regions(1).destinations(1).isSelected());
@@ -223,6 +225,18 @@ test('a new meeting can be scheduled and resets the form when saved', (assert) =
     assert.equal(page.regions(1).destinations(2).meetingCountBorderWidth(), '2px');
 
     assert.equal(page.meeting().teams().count(), 0, 'expected no set teams after saving');
+  });
+});
+
+test('scheduling a meeting between teams with different meeting counts is impossible', (assert) => {
+  page.visit();
+
+  page.regions(1).destinations(2).click();
+  page.teams(2).click();
+  page.teams(3).click();
+
+  andThen(() => {
+    assert.ok(page.meeting().isForbidden(), 'expected meeting to be forbidden');
   });
 });
 
