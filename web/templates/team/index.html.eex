@@ -3,6 +3,8 @@
 <table class="table">
   <thead>
     <tr>
+      <th></th>
+      <th>ID</th>
       <th>Name</th>
       <th>Risk aversion</th>
       <th>Notes</th>
@@ -12,8 +14,10 @@
     </tr>
   </thead>
   <tbody>
-<%= for team <- @teams do %>
+<%= for {team, i} <- Enum.with_index(@teams) do %>
     <tr>
+      <td><%= i + 1 %></td>
+      <td><%= team.id %></td>
       <td class='name'><%= team.name %></td>
       <td class='risk-aversion'><%= team.risk_aversion %></td>
       <td><%= team.notes %></td>
