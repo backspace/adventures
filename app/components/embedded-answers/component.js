@@ -34,25 +34,22 @@ export default Ember.Component.extend({
     }, []).forEach((interval, index) => {
       doc.addPage();
 
-      doc.fontSize(18);
+      doc.fontSize(14);
       doc.text(`Interval ${this._getRendezvousTimeForIndex(index)}`);
 
-      doc.fontSize(12);
+      doc.fontSize(9);
 
       doc.moveDown();
 
-      interval.forEach(meeting => {
+      doc.text(interval.map(meeting => {
         const teamNames = meeting.hasMany('teams').value().mapBy('name').sort().join(', ');
 
         const destination = meeting.belongsTo('destination').value();
         const region = destination.belongsTo('region').value();
 
-        doc.text(teamNames);
-        doc.text(region.get('name'));
-        doc.text(destination.get('description'));
-        doc.text(destination.get('answer'));
-
-        doc.moveDown();
+        return `${teamNames}\n${region.get('name')}\n\n${destination.get('description')}\n\n${destination.get('answer')}`
+      }).join('\n\n\n'), {
+        columns: 3
       });
 
       doc.moveDown();
