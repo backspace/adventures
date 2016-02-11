@@ -226,7 +226,7 @@ export default Ember.Component.extend({
 
   _rendezvousCards() {
     return this.get('teams').reduce((cards, team) => {
-      return cards.concat(team.hasMany('meetings').value().map((meeting, index) => {
+      return cards.concat(team.hasMany('meetings').value().sortBy('index').map((meeting, index) => {
         return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
       }));
     }, []);
