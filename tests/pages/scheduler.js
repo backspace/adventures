@@ -1,6 +1,6 @@
 import PageObject from '../page-object';
 
-const { attribute, clickable, collection, customHelper, hasClass, text, value, visitable } = PageObject;
+const { attribute, clickable, collection, customHelper, hasClass, isHidden, text, value, visitable } = PageObject;
 
 const x = customHelper(selector => parseInt($(selector).css('left')));
 const y = customHelper(selector => parseInt($(selector).css('top')));
@@ -139,6 +139,7 @@ export default PageObject.create({
     }),
 
     isForbidden: hasClass('forbidden'),
+    saveIsHidden: isHidden('button.save'),
 
     save: clickable('button.save'),
     reset: clickable('button.reset')

@@ -266,6 +266,7 @@ test('scheduling a meeting between teams with different meeting counts is imposs
 
   andThen(() => {
     assert.ok(page.meeting().isForbidden(), 'expected meeting to be forbidden');
+    assert.ok(page.meeting().saveIsHidden(), 'expected save button to be hidden');
   });
 });
 
