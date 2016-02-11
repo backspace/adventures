@@ -15,7 +15,7 @@ export default Ember.Route.extend({
       }).then(regionsAndDestinations => {
         return regionsAndDestinations.filter(({region, destinations}) => {
           return Ember.isPresent(destinations.filterBy('isAvailable'));
-        }).map(regionAndDestinations => regionAndDestinations.region);
+        }).map(regionAndDestinations => regionAndDestinations.region).sortBy('name');
       }),
       destinations: this.store.findAll('destination'),
       teams: this.store.findAll('team'),
