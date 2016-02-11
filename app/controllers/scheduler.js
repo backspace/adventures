@@ -37,6 +37,16 @@ export default Ember.Controller.extend({
       this.set('meeting', this.store.createRecord('meeting'));
     },
 
+    editMeeting(meeting) {
+      const existingMeeting = this.get('meeting');
+
+      if (existingMeeting) {
+        existingMeeting.rollbackAttributes();
+      }
+
+      this.set('meeting', meeting);
+    },
+
     mouseEnterRegion(region) {
       this.set('highlightedRegion', region);
     },

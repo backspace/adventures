@@ -200,6 +200,23 @@ test('hovering over a team shows its destinations ordered on the map, its meetin
   });
 });
 
+test('an existing meeting can be edited', assert => {
+  page.visit();
+  page.teams(1).hover();
+
+  andThen(() => {
+
+  });
+
+  page.teams(1).meetings(1).click();
+
+  andThen(() => {
+    assert.equal(page.meeting().destination(), 'Edmonton Court');
+    assert.equal(page.meeting().teams(1).value(), 'Mayors');
+    assert.equal(page.meeting().teams(2).value(), 'Leave It to Beaver superfans');
+  });
+});
+
 test('a new meeting can be scheduled and resets the form when saved', (assert) => {
   page.visit();
 

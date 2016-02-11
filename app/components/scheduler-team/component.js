@@ -56,6 +56,10 @@ export default Ember.Component.extend({
   actions: {
     select() {
       this.attrs.select(this.get('team'));
+    },
+
+    editMeeting(meeting) {
+      this.attrs.editMeeting(meeting);
     }
   }
 });

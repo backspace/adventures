@@ -92,11 +92,15 @@ export default PageObject.create({
       isSelected: hasClass('selected'),
       isHighlighted: hasClass('highlighted'),
 
-      click: clickable(),
+      click: clickable('.name'),
       hover: hoverable(),
 
       meetings: collection({
-        itemScope: '.meeting'
+        itemScope: '.meeting',
+
+        item: {
+          click: clickable()
+        }
       })
     }
   }),
