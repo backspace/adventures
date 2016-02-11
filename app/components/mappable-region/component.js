@@ -62,5 +62,14 @@ export default Ember.Component.extend({
     this.set('region.y', y + (pageY - originalPosition.y));
 
     this.get('region').save();
+  },
+
+  mouseEnter() {
+    // FIXME accomplish in a more idiomatic Ember fashion?
+    const element = Ember.$(`#region-${this.get('region.id')}`)[0];
+
+    if (element) {
+      element.scrollIntoView();
+    }
   }
 });
