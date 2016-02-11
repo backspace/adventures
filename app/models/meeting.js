@@ -12,6 +12,9 @@ export default Model.extend({
   destination: belongsTo('destination'),
   teams: hasMany('team', {async: false}),
 
+  sortedTeams: Ember.computed.sort('teams', 'teamSort'),
+  teamSort: ['name'],
+
   isForbidden: Ember.computed('teams.@each.meetings', function() {
     const teams = this.get('teams');
     const meetingCounts = teams.mapBy('meetings.length');

@@ -52,7 +52,7 @@
       {{/each}}
     </select>
 
-    {{#each meeting.teams as |meetingTeam|}}
+    {{#each meeting.sortedTeams as |meetingTeam|}}
       <select class='team'>
         {{#each model.teams as |team|}}
           <option value={{team.id}} selected={{eq meetingTeam.id team.id}}>{{team.name}}</option>

@@ -214,8 +214,8 @@ test('an existing meeting can be edited', assert => {
 
   andThen(() => {
     assert.equal(page.meeting().destination(), 'Edmonton Court');
-    assert.equal(page.meeting().teams(1).value(), 'Mayors');
-    assert.equal(page.meeting().teams(2).value(), 'Leave It to Beaver superfans');
+    assert.equal(page.meeting().teams(1).value(), 'Leave It to Beaver superfans');
+    assert.equal(page.meeting().teams(2).value(), 'Mayors');
   });
 });
 
