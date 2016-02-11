@@ -124,6 +124,10 @@ $column-width: 6rem;
       &.highlighted {
         background: paleturquoise;
       }
+
+      &.ahead {
+        opacity: 0.5;
+      }
     }
   }
 

@@ -1,4 +1,4 @@
-<li class='team {{if isSelected 'selected'}} {{if hasMetHighlightedTeam 'highlighted'}}' title={{usersAndNotes}} data-risk-aversion={{team.riskAversion}}>
+<li class='team {{if isSelected 'selected'}} {{if hasMetHighlightedTeam 'highlighted'}} {{if isAhead 'ahead'}}' title={{usersAndNotes}} data-risk-aversion={{team.riskAversion}}>
   <div onclick={{action 'select'}}>
     <span class='name'>{{team.name}}</span> <span class='count'>{{count}}</span>
 

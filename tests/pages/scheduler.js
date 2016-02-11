@@ -91,6 +91,7 @@ export default PageObject.create({
 
       isSelected: hasClass('selected'),
       isHighlighted: hasClass('highlighted'),
+      isAhead: hasClass('ahead'),
 
       click: clickable('.name'),
       hover: hoverable(),

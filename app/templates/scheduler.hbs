@@ -34,6 +34,7 @@
         team=team
         highlightedTeam=highlightedTeam
         meeting=meeting
+        isAhead=(gte team.meetings.length highestMeetingCount)
         editMeeting=(action 'editMeeting')
         select=(action 'selectTeam')
         enter=(action 'mouseEnterTeam')

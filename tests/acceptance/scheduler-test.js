@@ -168,6 +168,11 @@ test('teams are listed', (assert) => {
     assert.equal(superfans.name(), 'Leave It to Beaver superfans');
     assert.equal(superfans.riskAversionColour(), 'red');
     assert.equal(superfans.usersAndNotes(), 'june@example.com, eddie@example.com\n\nHere is a note');
+
+    assert.ok(superfans.isAhead(), 'expected team with meeting to be ahead');
+    assert.ok(page.teams(2).isAhead(), 'expected team with meeting to be ahead');
+
+    assert.notOk(page.teams(3).isAhead(), 'expected team with no meeting not to be ahead');
   });
 });
 

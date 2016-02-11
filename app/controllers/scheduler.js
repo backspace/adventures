@@ -1,6 +1,9 @@
 import Ember from 'ember';
 
 export default Ember.Controller.extend({
+  meetingCounts: Ember.computed.mapBy('model.teams', 'meetings.length'),
+  highestMeetingCount: Ember.computed.max('meetingCounts'),
+
   actions: {
     selectDestination(destination) {
       if (!this.get('meeting')) {
