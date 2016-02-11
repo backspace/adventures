@@ -134,15 +134,15 @@ $column-width: 6rem;
       border-right: 0;
 
       &[data-risk-aversion='1'] {
-        border-right: 3px solid green;
+        border-right: 5px solid green;
       }
 
       &[data-risk-aversion='2'] {
-        border-right: 3px solid darkorange;
+        border-right: 5px solid darkorange;
       }
 
       &[data-risk-aversion='3'] {
-        border-right: 3px solid red;
+        border-right: 5px solid red;
       }
     }
   }
@@ -173,8 +173,8 @@ $column-width: 6rem;
         border-top-style: solid;
         border-top-color: lime;
 
-        border-left: 3px solid transparent;
-        border-right: 3px solid transparent;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
 
         .accessibility {
           border-top: 1px solid #bbb;
