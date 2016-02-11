@@ -11,7 +11,7 @@
   <ul class='regions'>
     {{#each model.regions as |region|}}
       {{#if region.destinations}}
-        <li class='region' title={{region.notes}} onmouseenter={{action 'mouseEnterRegion' region}} onmouseleave={{action 'mouseLeaveRegion'}}>
+        <li class='region' id='region-{{region.id}}' title={{region.notes}} onmouseenter={{action 'mouseEnterRegion' region}} onmouseleave={{action 'mouseLeaveRegion'}}>
           <div class='name'>{{region.name}}</div>
 
           <ul class='destinations'>
