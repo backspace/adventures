@@ -3,7 +3,9 @@
     <img src={{model.map}}>
     {{#each model.regions as |region|}}
       {{#if region.destinations}}
-        {{mappable-region region=region draggable=false isHighlighted=(eq highlightedRegion region) highlightedTeam=highlightedTeam}}
+        {{#mappable-region region=region draggable=false isHighlighted=(eq highlightedRegion region) highlightedTeam=highlightedTeam}}
+          <div class='count'>{{region.meetingCount}}</div>
+        {{/mappable-region}}
       {{/if}}
     {{/each}}
   </div>

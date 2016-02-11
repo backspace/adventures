@@ -117,6 +117,8 @@ export default PageObject.create({
 
         meetingIndex: text('.meeting-index'),
 
+        count: text('.count'),
+
         isHighlighted: hasClass('highlighted')
       }
     })

@@ -207,6 +207,15 @@ $column-width: 6rem;
     img {
       opacity: 0.33;
     }
+
+    .region {
+      .count {
+        position: absolute;
+        font-size: 200%;
+        bottom: 0;
+        right: 0;
+      }
+    }
   }
 
   a.home {

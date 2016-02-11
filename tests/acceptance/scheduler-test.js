@@ -181,6 +181,8 @@ test('an existing meeting is shown in the teams and destination', (assert) => {
 
     assert.equal(page.teams(2).count(), '•');
 
+    assert.equal(page.map().regions(1).count(), '1');
+
     // FIXME the border is currently 2*meetingCount because the style property
     // was somehow overwritten?
     assert.equal(page.regions(1).destinations(1).meetingCountBorderWidth(), '2px');
@@ -233,6 +235,8 @@ test('a new meeting can be scheduled and resets the form when saved', (assert) =
 
     assert.ok(page.regions(1).destinations(2).isSelected());
     assert.notOk(page.regions(1).destinations(1).isSelected());
+
+    assert.equal(page.map().regions(1).count(), '2');
 
     assert.ok(page.teams(2).isSelected());
     assert.ok(page.teams(1).isSelected());

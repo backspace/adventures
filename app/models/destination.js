@@ -60,7 +60,7 @@ export default Model.extend({
 
   region: belongsTo('region', {async: false}),
 
-  meetings: hasMany('meeting'),
+  meetings: hasMany('meeting', {async: false}),
 
   createdAt: attr('createDate'),
   updatedAt: attr('updateDate'),
