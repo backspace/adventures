@@ -1,9 +1,11 @@
 <li class='team {{if isSelected 'selected'}} {{if hasMetHighlightedTeam 'highlighted'}}' title={{usersAndNotes}} data-risk-aversion={{team.riskAversion}}>
-  <span class='name' onclick={{action 'select'}}>{{team.name}}</span> <span class='count'>{{count}}</span>
+  <div onclick={{action 'select'}}>
+    <span class='name'>{{team.name}}</span> <span class='count'>{{count}}</span>
 
-  <div>
-    A<span class='average-awesomeness'>{{roundedAwesomeness}}</span>
-    R<span class='average-risk'>{{roundedRisk}}</span>
+    <div>
+      A<span class='average-awesomeness'>{{roundedAwesomeness}}</span>
+      R<span class='average-risk'>{{roundedRisk}}</span>
+    </div>
   </div>
 
   {{#if showMeetings}}
