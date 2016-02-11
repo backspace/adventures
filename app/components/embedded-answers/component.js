@@ -16,22 +16,15 @@ export default Ember.Component.extend({
     const doc = new PDFDocument({layout: 'portrait'});
     const stream = doc.pipe(blobStream());
 
-    this.get('teams').reduce((intervals, team) => {
+    const meetings = this.get('meetings');
+    const meetingIndices = meetings.mapBy('index').uniq().sort();
+
+    this.get('teams').forEach(team => {
       doc.text(`${team.get('name')}: ${team.get('riskAversion')}, ${team.get('users')}`);
       doc.moveDown();
+    });
 
-      const meetings = team.hasMany('meetings').value();
-
-      meetings.forEach((meeting, index) => {
-        if (!intervals[index]) {
-          intervals[index] = Ember.A();
-        }
-
-        intervals[index].addObject(meeting);
-      });
-
-      return intervals;
-    }, []).forEach((interval, index) => {
+    meetingIndices.forEach(index => {
       doc.addPage();
 
       doc.fontSize(14);
@@ -41,7 +34,9 @@ export default Ember.Component.extend({
 
       doc.moveDown();
 
-      doc.text(interval.map(meeting => {
+      const meetingsWithIndex = meetings.filterBy('index', index);
+
+      doc.text(meetingsWithIndex.map(meeting => {
         const teamNames = meeting.hasMany('teams').value().mapBy('name').sort().join(', ');
 
         const destination = meeting.belongsTo('destination').value();
