@@ -139,6 +139,7 @@ export default Ember.Component.extend({
         const labelGap = 0.1*72;
 
         const labelStart = operandColumnWidth + digitColumnWidth + labelGap;
+        const labelWidth = cardWidth - cardMargin*2 - labelStart;
 
         const rowHeight = 0.75*72;
 
@@ -175,7 +176,7 @@ export default Ember.Component.extend({
             doc.text(digit, operandColumnWidth, y);
           }
 
-          doc.text(label, labelStart, y);
+          doc.text(label, labelStart, y, {width: labelWidth});
         });
 
         const cropMarkLength = 0.25*72;
