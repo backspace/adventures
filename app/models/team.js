@@ -15,7 +15,7 @@ export default Model.extend({
   destinations: Ember.computed.mapBy('meetings', 'destination'),
 
   averageAwesomeness: Ember.computed('destinations.@each.awesomeness', function() {
-    const awesomenesses = this.get('destinations').mapBy('awesomeness');
+    const awesomenesses = this.get('destinations').mapBy('awesomeness').filter(a => a);
 
     if (awesomenesses.length > 0) {
       return awesomenesses.reduce((prev, curr) => prev + curr)/awesomenesses.length;
@@ -23,7 +23,7 @@ export default Model.extend({
   }),
 
   averageRisk: Ember.computed('destinations.@each.risk', function() {
-    const risks = this.get('destinations').mapBy('risk');
+    const risks = this.get('destinations').mapBy('risk').filter(r => r);
 
     if (risks.length > 0) {
       return risks.reduce((prev, curr) => prev + curr)/risks.length;
