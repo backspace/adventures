@@ -33,8 +33,8 @@ module.exports = function(environment) {
       showCreateDate: true
     },
 
-    firstRendezvousTime: '2016-02-12 13:45',
-    rendezvousInterval: 30
+    firstRendezvousTime: '2016-02-12 13:50',
+    rendezvousInterval: 25
   };
 
   if (environment === 'development') {
