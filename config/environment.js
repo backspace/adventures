@@ -34,7 +34,7 @@ module.exports = function(environment) {
     },
 
     firstRendezvousTime: '2016-02-12 13:50',
-    rendezvousInterval: 25
+    rendezvousInterval: 22
   };
 
   if (environment === 'development') {
