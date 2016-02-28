@@ -42,7 +42,7 @@ export default Ember.Component.extend({
         const destination = meeting.belongsTo('destination').value();
         const region = destination.belongsTo('region').value();
 
-        return `${teamNames}\n${region.get('name')}\n\n${destination.get('description')}\n\n${destination.get('answer')}`
+        return `${teamNames}\n${region.get('name')}\n\n${destination.get('description')}\n\n${destination.get('answer')}`;
       }).join('\n\n\n'), {
         columns: 3
       });
