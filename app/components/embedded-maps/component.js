@@ -62,7 +62,7 @@ export default Ember.Component.extend({
 
       doc.fontSize(mapMarkerFontSize);
 
-      team.hasMany('meetings').value().forEach((meeting, index) => {
+      team.hasMany('meetings').value().sortBy('index').forEach((meeting, index) => {
         const destination = meeting.belongsTo('destination').value();
         const region = destination.belongsTo('region').value();
 
