@@ -4,8 +4,8 @@
       <span class='input-group-label'>DB</span>
       {{input value=destination class='destination input-group-field'}}
       <div class='input-group-button'>
-        <button {{action 'sync'}} class='sync button primary'>
-          {{#if isSyncing}}
+        <button onclick={{perform sync}} class='sync button primary'>
+          {{#if syncTask.isRunning}}
             …
           {{else}}
             Sync
