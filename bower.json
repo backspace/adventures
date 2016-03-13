@@ -1,18 +1,14 @@
 {
   "name": "adventure-gathering",
   "dependencies": {
-    "ember": "2.3.0",
+    "ember": "~2.4.1",
     "ember-cli-shims": "0.1.0",
     "ember-cli-test-loader": "0.2.2",
     "ember-qunit-notifications": "0.1.0",
-    "jquery": "^2.1.4",
     "pouchdb": "^3.5.0",
     "relational-pouch": "^1.3.2",
     "foundation-sites": "~6.0.3",
     "blob-polyfill": "~1.0.20150320",
     "tinycolor": "~1.3.0"
-  },
-  "resolutions": {
-    "ember": "2.3.0"
   }
 }
