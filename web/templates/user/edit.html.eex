@@ -1,5 +1,11 @@
 <div class='row card'>
   <div class='small-12 columns'>
+    <p>You can change these details as much as you want up until the day before the initiation!</p>
+  </div>
+</div>
+
+<div class='row card'>
+  <div class='small-12 columns'>
     <%= form_for @changeset, user_path(@conn, :update), fn f -> %>
       <%= render Cr2016site.SharedView, "errors.html", changeset: @changeset, f: f %>
 
