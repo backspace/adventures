@@ -10,28 +10,19 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <p>You are a member of a secret society with a mission of the utmost importance.</p>
-    <p>You will have encounters with other members around the PATH where you will obtain information to get closer to fulfilling your mission.</p>
+    <p>You will have encounters with other members around an undisclosed location where you will obtain information to get closer to fulfilling your mission.</p>
   </div>
 </div>
 
 <div class='row card'>
   <div class='small-12 columns'>
-    <p>Clandestine Rendezvous is an adventure taking place in downtown Toronto’s PATH <em>during the day</em> on <%= full_date %>. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.</p>
+    <p>Clandestine Rendezvous is an adventure taking place at an undisclosed Winnipeg location in the evening on <%= full_date %>. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.</p>
   </div>
 </div>
 
 <div class='row card'>
   <div class='small-12 columns'>
     <img src='/images/painting.jpg'>
-  </div>
-</div>
-
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-sun-o'></i> During the day?!</h4>
-    <p>Yes, the event is taking place during a Friday afternoon to take full advantage of spaces that are only accessible at such times. If you work maybe you can book a day off? Skip school?</p>
-    <!-- TODO another use of “afternoon” -->
-    <p>It will start some time in the early afternoon, around <%= start_time %>, and last about 2.5 hours.</p>
   </div>
 </div>
 
