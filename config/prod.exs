@@ -27,8 +27,8 @@ config :cr2016site, Cr2016site.Repo,
 config :cr2016site,
   mailgun_key: System.get_env("MAILGUN_KEY"),
   google_analytics: true,
-  request_confirmation: true,
-  registration_closed: true
+  request_confirmation: false,
+  registration_closed: false
 
 # Do not print debug messages in production
 config :logger, level: :info
