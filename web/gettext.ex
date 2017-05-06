@@ -5,7 +5,7 @@ defmodule Cr2016site.Gettext do
   By using [Gettext](http://hexdocs.pm/gettext),
   your module gains a set of macros for translations, for example:
 
-      import MyApp.Gettext
+      import Cr2016site.Gettext
 
       # Simple translation
       gettext "Here is the string to translate"
