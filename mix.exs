@@ -46,7 +46,7 @@ defmodule Cr2016site.Mixfile do
      {:cowboy, "~> 1.0"},
      {:mix_test_watch, "~> 0.2.6", only: :dev},
      {:hound, "~> 1.0", only: :test},
-     {:blacksmith, "~> 0.2"},
+     {:blacksmith, "~> 0.2.1"},
      {:comeonin, "~> 1.0"},
      {:mailgun, github: "backspace/mailgun", branch: "multi-email-test"},
      {:poison, "~> 1.5"},
