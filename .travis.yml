@@ -1,6 +1,6 @@
 language: elixir
 elixir:
-  - 1.1.1
+  - 1.4.2
 before_install:
   - "rvm install ruby-2.1.8"
   - "rvm use 2.1.8"
