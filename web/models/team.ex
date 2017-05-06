@@ -7,7 +7,7 @@ defmodule Cr2016site.Team do
     field :notes, :string
     field :user_ids, {:array, :integer}
 
-    timestamps
+    timestamps()
   end
 
   @required_fields ~w(name risk_aversion)

@@ -26,7 +26,7 @@ defmodule Cr2016site.User do
     field :comments, :string
     field :source, :string
 
-    timestamps
+    timestamps()
   end
 
   @required_fields ~w(email password)

@@ -9,7 +9,7 @@ defmodule Cr2016site.Message do
     field :show_team, :boolean, default: false
     field :postmarked_at, Ecto.Date
 
-    timestamps
+    timestamps()
   end
 
   @required_fields ~w(subject content ready show_team postmarked_at)

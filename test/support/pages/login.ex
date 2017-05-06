@@ -18,7 +18,7 @@ defmodule Cr2016site.Pages.Login do
 
     fill_email email
     fill_password password
-    submit
+    submit()
   end
 
   def click_forgot_password do
