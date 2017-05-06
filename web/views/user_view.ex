@@ -33,7 +33,7 @@ defmodule Cr2016site.UserView do
     end
   end
 
-  def risk_aversion_integer_to_string do
+  def risk_aversion_integer_to_string() do
     %{
       1 => "Go easy on me",
       2 => "Push me a little",
@@ -42,7 +42,7 @@ defmodule Cr2016site.UserView do
   end
 
   def risk_aversion_string_into_integer do
-    risk_aversion_integer_to_string
+    risk_aversion_integer_to_string()
     |> Map.to_list
     |> Enum.map(fn {key, value} -> {value, key} end)
     |> Enum.into(%{})

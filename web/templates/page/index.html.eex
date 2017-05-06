@@ -16,7 +16,7 @@
 
 <div class='row card'>
   <div class='small-12 columns'>
-    <p>Clandestine Rendezvous is an adventure taking place at an undisclosed Winnipeg location in the evening on <%= full_date %>. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.</p>
+    <p>Clandestine Rendezvous is an adventure taking place at an undisclosed Winnipeg location in the evening on <%= full_date() %>. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.</p>
   </div>
 </div>
 

@@ -7,7 +7,7 @@ defmodule Cr2016site.Integration.Questions do
 
   use Hound.Helpers
 
-  hound_session
+  hound_session()
 
   test "registering" do
     navigate_to "/"

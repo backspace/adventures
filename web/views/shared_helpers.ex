@@ -8,7 +8,7 @@ defmodule Cr2016site.SharedHelpers do
   end
 
   def ordinal_date do
-    "#{formatted_start_time "%B"} #{Crutches.Format.Integer.ordinalize(parsed_start_time.day)}"
+    "#{formatted_start_time "%B"} #{Crutches.Format.Integer.ordinalize(parsed_start_time().day)}"
   end
 
   def start_time do
@@ -16,11 +16,11 @@ defmodule Cr2016site.SharedHelpers do
   end
 
   defp formatted_start_time(format_string) do
-    Timex.DateFormat.format! parsed_start_time, format_string, :strftime
+    Timex.DateFormat.format! parsed_start_time(), format_string, :strftime
   end
 
   defp parsed_start_time do
-    apply(Timex.Date, :from, raw_start_time)
+    apply(Timex.Date, :from, raw_start_time())
   end
 
   defp raw_start_time do

@@ -9,8 +9,8 @@ defmodule Cr2016site.Mixfile do
      compilers: [:phoenix, :gettext] ++ Mix.compilers,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     aliases: aliases,
-     deps: deps]
+     aliases: aliases(),
+     deps: deps()]
   end
 
   # Configuration for the OTP application.
@@ -25,8 +25,8 @@ defmodule Cr2016site.Mixfile do
     [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex, :gettext, :tzdata, :porcelain]
   end
 
-  def app_list(:test), do: [:blacksmith, :hound] ++ app_list
-  def app_list(_),     do: app_list
+  def app_list(:test), do: [:blacksmith, :hound] ++ app_list()
+  def app_list(_),     do: app_list()
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "web", "test/support"]

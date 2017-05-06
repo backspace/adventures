@@ -14,14 +14,14 @@ defmodule Cr2016site.Integration.Registrations do
   use Hound.Helpers
 
   # Start a Hound session
-  hound_session
+  hound_session()
 
   def set_window_to_show_account do
-    set_window_size current_window_handle, 720, 450
+    set_window_size current_window_handle(), 720, 450
   end
 
   test "registering" do
-    set_window_to_show_account
+    set_window_to_show_account()
 
     navigate_to "/"
     Nav.register_link.click
@@ -61,7 +61,7 @@ defmodule Cr2016site.Integration.Registrations do
   test "logging in" do
     Forge.saved_octavia
 
-    set_window_to_show_account
+    set_window_to_show_account()
 
     navigate_to "/"
     Nav.login_link.click
@@ -90,7 +90,7 @@ defmodule Cr2016site.Integration.Registrations do
   test "changing password" do
     Forge.saved_octavia
 
-    set_window_to_show_account
+    set_window_to_show_account()
 
     navigate_to "/"
     Login.login_as "octavia.butler@example.com", "Xenogenesis"
@@ -135,7 +135,7 @@ defmodule Cr2016site.Integration.Registrations do
   end
 
   test "forgot password" do
-    set_window_to_show_account
+    set_window_to_show_account()
 
     Forge.saved_octavia
 

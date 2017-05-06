@@ -29,7 +29,7 @@
       </div>
       <div class='form-group'>
         <legend>Risk aversion</legend>
-        <%= for {integer, string} <- risk_aversion_integer_to_string do %>
+        <%= for {integer, string} <- risk_aversion_integer_to_string() do %>
           <%= radio_button f, :risk_aversion, integer, class: "level-#{integer}", id: "level-#{integer}", "aria-describedby": "risk-aversion-help" %>
           <label for='level-<%= integer %>'><%= string %></label>
         <% end %>

@@ -16,7 +16,7 @@
               <tr>
                 <td class='email'><%= @user.email %></td>
                 <td class='symbol'></td>
-                <td class='risk-aversion'><%= risk_aversion_integer_to_string[@user.risk_aversion] %></td>
+                <td class='risk-aversion'><%= risk_aversion_integer_to_string()[@user.risk_aversion] %></td>
                 <td class='proposed-team-name'><%= @user.proposed_team_name %></td>
               </tr>
             <% end %>
@@ -24,7 +24,7 @@
               <tr>
                 <td class='email'><%= user.email %></td>
                 <td class='symbol'>✓</td>
-                <td class='risk-aversion <%= class_for_attribute(@user, user, :risk_aversion) %>'><%= symbol_for_attribute(@user, user, :risk_aversion) %> <%= risk_aversion_integer_to_string[user.risk_aversion] %></td>
+                <td class='risk-aversion <%= class_for_attribute(@user, user, :risk_aversion) %>'><%= symbol_for_attribute(@user, user, :risk_aversion) %> <%= risk_aversion_integer_to_string()[user.risk_aversion] %></td>
                 <td class='proposed-team-name <%= class_for_attribute(@user, user, :proposed_team_name) %>'><%= symbol_for_attribute(@user, user, :proposed_team_name) %> <%= user.proposed_team_name %></td>
               </tr>
             <% end %>

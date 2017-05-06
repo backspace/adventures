@@ -11,7 +11,7 @@ defmodule Cr2016site.Integration.Admin do
   use Hound.Helpers
 
   # Start a Hound session
-  hound_session
+  hound_session()
 
   test "logging in as an admin" do
     {_, user} = Forge.saved_user email: "francine.pascal@example.com", accessibility: "Some accessibility text", attending: true
@@ -87,7 +87,7 @@ defmodule Cr2016site.Integration.Admin do
     Login.login_as "octavia.butler@example.com", "Xenogenesis"
 
     navigate_to "/api/teams"
-    json = Floki.find(page_source, "pre") |> Floki.text |> Poison.Parser.parse!
+    json = Floki.find(page_source(), "pre") |> Floki.text |> Poison.Parser.parse!
 
     assert json == %{"data" => [%{
       "type" => "teams",
@@ -108,7 +108,7 @@ defmodule Cr2016site.Integration.Admin do
 
     navigate_to "/users"
 
-    refute page_source =~ "francine.pascal@example.com"
+    refute page_source() =~ "francine.pascal@example.com"
 
     navigate_to "/messages"
     assert Nav.error_text == "Who are you?"

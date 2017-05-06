@@ -8,7 +8,7 @@ defmodule Cr2016site.Integration.Messages do
   alias Cr2016site.Pages.Nav
 
   use Hound.Helpers
-  hound_session
+  hound_session()
 
   test "a message is sent to all registrants with their team information summarised" do
     Forge.saved_admin email: "admin@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("admin")

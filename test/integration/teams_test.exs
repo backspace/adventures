@@ -11,7 +11,7 @@ defmodule Cr2016site.Integration.Teams do
   use Hound.Helpers
 
   # Start a Hound session
-  hound_session
+  hound_session()
 
   test "teams are negotiable" do
     Forge.saved_user email: "Shevek@example.com",

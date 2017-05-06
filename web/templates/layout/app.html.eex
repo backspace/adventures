@@ -9,7 +9,7 @@
 
     <meta name='twitter:card' content='summary'>
 
-    <meta property='og:title' content='Clandestine Rendezvous: Winnipeg, <%= short_date %>'>
+    <meta property='og:title' content='Clandestine Rendezvous: Winnipeg, <%= short_date() %>'>
     <meta property='og:type' content='website'>
     <meta property='og:url' content='http://winnipeg.rendezvous.chromatin.ca'>
     <meta property='og:image' content='https://crwinnipeg.herokuapp.com/images/eye.png'>

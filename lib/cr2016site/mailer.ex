@@ -13,8 +13,8 @@ defmodule Cr2016site.Mailer do
     send_email to: email,
                from: @from,
                subject: "[rendezvous] Welcome!",
-               html: welcome_html,
-               text: welcome_text
+               html: welcome_html(),
+               text: welcome_text()
   end
 
   def send_question(attributes) do
