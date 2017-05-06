@@ -28,9 +28,9 @@ defmodule Cr2016site.Integration.Registrations do
 
     Register.submit
     assert Nav.error_text == "Unable to create account"
-    assert Register.email_error == "Email has invalid format"
+    assert Register.email_error == "Email can't be blank"
     # FIXME fix plural detection
-    assert Register.password_error == "Password should be at least 5 character(s)"
+    assert Register.password_error == "Password can't be blank"
 
     Register.fill_email "franklin.w.dixon@example.com"
     Register.submit
