@@ -44,4 +44,7 @@ config :cr2016site, Cr2016site.Repo,
 config :cr2016site,
   request_confirmation: true
 
+config :mix_test_watch,
+  exclude: [~r/priv\/repo\/migrations\/.*/]
+
 import_config "dev.secret.exs"

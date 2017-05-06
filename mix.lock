@@ -18,7 +18,7 @@
   "idna": {:hex, :idna, "1.0.2"},
   "mailgun": {:git, "https://github.com/backspace/mailgun.git", "a235565fe05e7ccc553ed017885cfa78dafd20a1", [branch: "multi-email-test"]},
   "mimerl": {:hex, :mimerl, "1.0.2"},
-  "mix_test_watch": {:hex, :mix_test_watch, "0.2.4"},
+  "mix_test_watch": {:hex, :mix_test_watch, "0.2.6"},
   "mochiweb": {:hex, :mochiweb, "2.12.2"},
   "phoenix": {:hex, :phoenix, "1.1.2"},
   "phoenix_ecto": {:hex, :phoenix_ecto, "2.0.0"},
