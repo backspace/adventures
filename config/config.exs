@@ -34,3 +34,5 @@ config :phoenix, :generators,
   binary_id: false
 
 config :porcelain, driver: Porcelain.Driver.Basic
+
+config :cr2016site, ecto_repos: [Cr2016site.Repo]

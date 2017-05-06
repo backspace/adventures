@@ -22,7 +22,7 @@ defmodule Cr2016site.Mixfile do
   end
 
   def app_list do
-    [:phoenix, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex, :gettext, :tzdata, :porcelain]
+    [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger, :phoenix_ecto, :postgrex, :gettext, :tzdata, :porcelain]
   end
 
   def app_list(:test), do: [:blacksmith, :hound] ++ app_list
@@ -36,8 +36,9 @@ defmodule Cr2016site.Mixfile do
   #
   # Type `mix help deps` for examples and options.
   defp deps do
-    [{:phoenix, "~> 1.1"},
-     {:phoenix_ecto, "~> 2.0"},
+    [{:phoenix, "~> 1.2.0"},
+     {:phoenix_pubsub, "~> 1.0"},
+     {:phoenix_ecto, "~> 3.0"},
      {:postgrex, ">= 0.0.0"},
      {:phoenix_html, "~> 2.3"},
      {:gettext, "~> 0.9"},
@@ -63,6 +64,7 @@ defmodule Cr2016site.Mixfile do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     ["ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
-     "ecto.reset": ["ecto.drop", "ecto.setup"]]
+     "ecto.reset": ["ecto.drop", "ecto.setup"],
+     "test": ["ecto.create --quiet", "ecto.migrate", "test"]]
   end
 end

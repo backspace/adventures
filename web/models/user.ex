@@ -38,7 +38,7 @@ defmodule Cr2016site.User do
   If no params are provided, an invalid changeset is returned
   with no validation performed.
   """
-  def changeset(model, params \\ :empty) do
+  def changeset(model, params \\ %{}) do
     model
     |> cast(params, @required_fields, @optional_fields)
     |> unique_constraint(:email)
@@ -46,7 +46,7 @@ defmodule Cr2016site.User do
     |> validate_length(:password, min: 5)
   end
 
-  def details_changeset(model, params \\ :empty) do
+  def details_changeset(model, params \\ %{}) do
     required_fields = case Application.get_env(:cr2016site, :request_confirmation) do
       true -> ~w(attending)
       _ -> []
@@ -56,7 +56,7 @@ defmodule Cr2016site.User do
     |> cast(params, required_fields, @optional_fields)
   end
 
-  def account_changeset(model, params \\ :empty) do
+  def account_changeset(model, params \\ %{}) do
     model
     |> cast(params, ~w(current_password new_password new_password_confirmation), [])
     # FIXME duplicated from changeset
@@ -64,7 +64,7 @@ defmodule Cr2016site.User do
     |> validate_confirmation(:new_password)
   end
 
-  def deletion_changeset(model, params \\ :empty) do
+  def deletion_changeset(model, params \\ %{}) do
     model
     |> cast(params, ~w(current_password), [])
   end
@@ -76,7 +76,7 @@ defmodule Cr2016site.User do
     end
   end
 
-  def perform_reset_changeset(model, params \\ :empty) do
+  def perform_reset_changeset(model, params \\ %{}) do
     model
     |> cast(params, ~w(recovery_hash new_password new_password_confirmation), [])
     |> validate_length(:new_password, min: 5)
