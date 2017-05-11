@@ -17,7 +17,7 @@
   "hound": {:hex, :hound, "1.0.2", "b6dd20142d00c28009fad503a23fa4a76bc11899e0d198f36a9c1448427788b2", [:mix], [{:httpoison, "~> 0.8", [hex: :httpoison, optional: false]}, {:poison, ">= 1.4.0", [hex: :poison, optional: false]}]},
   "httpoison": {:hex, :httpoison, "0.8.0", "52a958d40b2aa46da418cdf6d8dfd82ba83e94d5e60920dfa5f40c05b34fe073", [:mix], [{:hackney, "~> 1.4.4", [hex: :hackney, optional: false]}]},
   "idna": {:hex, :idna, "1.0.2", "397e3d001c002319da75759b0a81156bf11849c71d565162436d50020cb7265e", [:make], []},
-  "mailgun": {:git, "https://github.com/backspace/mailgun.git", "a235565fe05e7ccc553ed017885cfa78dafd20a1", [branch: "multi-email-test"]},
+  "mailgun": {:git, "https://github.com/backspace/mailgun.git", "acc3e513385e65efb76c0d437dd4b6fc6531a82b", [branch: "multi-email-test"]},
   "mime": {:hex, :mime, "1.1.0", "01c1d6f4083d8aa5c7b8c246ade95139620ef8effb009edde934e0ec3b28090a", [:mix], []},
   "mimerl": {:hex, :mimerl, "1.0.2", "993f9b0e084083405ed8252b99460c4f0563e41729ab42d9074fd5e52439be88", [:rebar3], []},
   "mix_test_watch": {:hex, :mix_test_watch, "0.2.6", "9fcc2b1b89d1594c4a8300959c19d50da2f0ff13642c8f681692a6e507f92cab", [:mix], [{:fs, "~> 0.9.1", [hex: :fs, optional: false]}]},
