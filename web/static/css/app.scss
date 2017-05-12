@@ -1,19 +1,20 @@
 @import 'util/_unit';
 
-$header-font-family: 'Blackout Sunrise';
+$header-font-family: 'nokia_cellphone_fcsmall';
 
-$body-font-family: 'Oswald', sans-serif;
+$body-font-family: 'nokia_cellphone_fcsmall', sans-serif;
 $body-font-color: white;
 $global-width: rem-calc(480) !default;
 
-$primary-color: fuchsia;
+$background: #8CA375;
+$primary-color: black;
 $success-color: lime;
 $alert-color: $primary-color;
 $warning-color: yellow;
 
 $callout-background-fade: 10%;
 
-$background-one: #111;
+$background-one: transparent;
 $background-two: lighten($background-one, 1%);
 
 $highlight: lighten($background-one, 10%);
@@ -21,8 +22,8 @@ $highlight: lighten($background-one, 10%);
 $form-label-color: white;
 $helptext-color: white;
 $helptext-font-style: normal;
-$input-color: $highlight;
-$button-color: $highlight;
+$input-color: black;
+$button-color: white;
 
 /* Blackout Sunrise */
 @font-face {
@@ -37,7 +38,14 @@ $button-color: $highlight;
 
 }
 
+@font-face {
+    font-family: 'nokia_cellphone_fcsmall';
+    src: url('/fonts/nokiafc22-webfont.woff2') format('woff2'),
+         url('/fonts/nokiafc22-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
 
+}
 
 @import 'foundation';
 
@@ -48,16 +56,8 @@ $button-color: $highlight;
 // TODO foundation-flex-grid wasn’t working?
 @include foundation-everything;
 
-canvas {
-  transform: scale(0.5) translate(-50%, -50%);
-  margin-bottom: -100%;
-}
-
 body {
-  // background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect x='0' y='0' width='100' height='100' style='fill: #{$background-one}' /><path d='M0,0 L50,50 L50,0 L100,0 L50,50 L100,100 L50,100 L50,50 L0,100 Z' style='fill: #{$background-two}' /></svg>");
-  // FIXME allow dynamic computation of this base64?
-  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMDAnIGhlaWdodD0nMTAwJz48cmVjdCB4PScwJyB5PScwJyB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgc3R5bGU9J2ZpbGw6ICMxMTEnIC8+PHBhdGggZD0nTTAsMCBMNTAsNTAgTDUwLDAgTDEwMCwwIEw1MCw1MCBMMTAwLDEwMCBMNTAsMTAwIEw1MCw1MCBMMCwxMDAgWicgc3R5bGU9J2ZpbGw6ICMxNDE0MTQnIC8+PC9zdmc+");
-  background-attachment: fixed;
+  background: $background;
 }
 
 h2 {
@@ -73,20 +73,21 @@ h2 {
   margin-top: 0;
 }
 
-canvas {
-  margin-top: -15px;
-}
-
-.moving-highlight {
-  text-shadow: 0 0 15px $primary-color;
-}
-
 .everything .row {
   background: $highlight;
 }
 
 .top-bar, .top-bar ul {
-  background: transparent;
+  background: $background;
+  padding-left: 0;
+
+  > li:not(.menu-text) {
+    padding: 0;
+
+    > a {
+      padding-left: 0;
+    }
+  }
 }
 
 $nav-height: 6rem;
@@ -150,10 +151,6 @@ $nav-height: 6rem;
   margin-bottom: 1rem;
 }
 
-.moving-highlight {
-  color: #ccc;
-}
-
 // Copied from Foundation to style logout link
 .menu > li > form {
   display: block;
@@ -165,50 +162,6 @@ $nav-height: 6rem;
   font-weight: bold;
 }
 
-$easing-control-points: 1.000, 0.060, 1.000, -0.555;
-
-$final-scale: 10;
-
-$min-max-y: -cbbb-min-max-y-from-control-list($easing-control-points);
-$min-y: nth($min-max-y, 1);
-
-$initial-scale: 1 - ($final-scale - 1)*$min-y;
-
-.zoom-container {
-  overflow: hidden;
-  position: relative;
-
-  img, .secret {
-    transform: scale($initial-scale) translate(percentage(-0.15*$min-y), percentage(0.15*$min-y));
-    transition: all 1s linear;
-    transition-delay: 0.5s;
-  }
-
-  .secret {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-
-    .text {
-      position: absolute;
-      top: 36%;
-      right: 36%;
-
-      font-size: 1px;
-
-      cursor: pointer;
-    }
-  }
-
-  &:hover {
-    img, .secret {
-      transform: scale($final-scale) translate(-15%, 15%);
-      transition: all 10s cubic-bezier($easing-control-points);
-    }
-  }
-}
 
 table, thead {
   color: black;
@@ -224,18 +177,6 @@ thead, tbody {
 
 .fa {
   transform: translateY(12%);
-}
-
-.iris {
-  transition: all 300ms ease-out;
-}
-
-.svg-background-experiment {
-  position: absolute;
-  z-index: -5;
-  top: 0;
-  left: 0;
-  opacity: 0.1;
 }
 
 .form-group {

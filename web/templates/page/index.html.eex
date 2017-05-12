@@ -1,66 +1,50 @@
-<div class='row title moving-highlight' data-highlight='h2'>
-  <div class='small-4 columns'>
-    <img src='/images/logo.png' class='logo'>
-  </div>
-  <div class='small-8 columns'>
-    <h2>Clandestine</h2><h2>Rendezvous</h2>
+<div class='row title'>
+  <div class='small-12 columns'>
+    <h2>txtbeyond</h2>
   </div>
 </div>
 
 <div class='row card'>
   <div class='small-12 columns'>
-    <p>You are a member of a secret society with a mission of the utmost importance.</p>
-    <p>You will have encounters with other members around an undisclosed location where you will obtain information to get closer to fulfilling your mission.</p>
+    <p>We’re a hot new bootstrapped startup working on a technology you simply <em>must</em> experience: txts from <strong>beyond</strong> as a service, or TFBaaS. Please come to our technology preview at to-be-announced Victoria location in the evening on <%= full_date() %>.</p>
   </div>
 </div>
 
 <div class='row card'>
   <div class='small-12 columns'>
-    <p>Clandestine Rendezvous is an adventure taking place at an undisclosed Winnipeg location in the evening on <%= full_date() %>. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.</p>
+    <h4>When and where?</h4>
+    <p>We are still researching options for the ideal testing grounds. Please <%= link "register", to: registration_path(@conn, :new) %> to find out more.</p>
   </div>
 </div>
 
 <div class='row card'>
   <div class='small-12 columns'>
-    <img src='/images/painting.jpg'>
+    <h4>Who?</h4>
+    <p>Anyone is invited to attend. You should have a curiosity about the beyond and a sense of adventure. You can go alone or with a partner; at least one of you should have a phone capable of receiving text messages.</p>
   </div>
 </div>
 
 <div class='row card'>
   <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-clock-o'></i> When and where?</h4>
-    <p>The secret society is so secret that the venue for initiation cannot be shared publicly. We will meet at a downtown Winnipeg location at 5:30pm and travel to the venue together by Winnipeg Transit. If you need to make alternate travel arrangements, such as traveling by bike or car, please contact us for details.</p>
-  </div>
-</div>
-
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-user-secret'></i> Who?</h4>
-    <p>Anyone is invited to attend. You should have a sense of adventure and stealth. You can go alone or with a partner.</p>
-  </div>
-</div>
-
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-dollar'></i> Cost</h4>
-    <p>A $5 donation is requested to cover printing costs and labour. If that’s too much, any amount (including 0) is welcome.</p>
+    <h4>Cost</h4>
+    <p>We are offering access to our technology preview for a mere $5, but any amount (including 0) is welcome.</p>
   </div>
 </div>
 <div class='row card'>
   <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-universal-access'></i> Accessibility</h4>
+    <h4>Accessibility</h4>
     <p>Do you have accessibility needs we should know about? Please tell us <%= link "when you register", to: registration_path(@conn, :new) %> and we will work with you to ensure you can participate.</p>
   </div>
 </div>
 <div class='row card'>
   <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-pencil'></i> Registration</h4>
-    <p>You <em>must</em> <%= link "register", to: registration_path(@conn, :new) %> to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until the day before.</p>
+    <h4>Registration</h4>
+    <p>You <em>must</em> <%= link "register", to: registration_path(@conn, :new) %> to attend the event, as the demonstration is dependent on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until the day before.</p>
   </div>
 </div>
 <div class='row card'>
   <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-question-circle'></i> Questions</h4>
+    <h4>Questions</h4>
 
     <p><strong>This is not the registration form, that’s <%= link "here", to: registration_path(@conn, :new) %>.</strong></p>
 
@@ -89,22 +73,5 @@
         <%= submit "Submit", class: "button" %>
       </div>
     <% end %>
-  </div>
-</div>
-
-<div class='row card eye'>
-  <div class='small-12 columns'>
-    <p>
-      <%= render "eye.html" %>
-    </p>
-  </div>
-</div>
-
-<div class='row card'>
-  <div class='small-12 columns'>
-    <div class='zoom-container'>
-      <img class='secret-image-container' src='/images/bathroom.jpg'>
-      <div class='secret'><div class='text'>you found a secret</div></div>
-    </div>
   </div>
 </div>
