@@ -1,10 +1,10 @@
 defmodule Cr2016site.SharedHelpers do
   def full_date do
-    formatted_start_time "%A, %B %d, %Y"
+    formatted_start_time "%A, %B %e, %Y"
   end
 
   def short_date do
-    formatted_start_time "%B %d"
+    formatted_start_time "%B %e"
   end
 
   def ordinal_date do
