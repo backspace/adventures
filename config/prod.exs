@@ -22,7 +22,7 @@ config :cr2016site, Cr2016site.Endpoint,
 config :cr2016site, Cr2016site.Repo,
   adapter: Ecto.Adapters.Postgres,
   url: System.get_env("DATABASE_URL"),
-  pool_size: 20
+  pool_size: 15
 
 config :cr2016site,
   mailgun_key: System.get_env("MAILGUN_KEY"),
