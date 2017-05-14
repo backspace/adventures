@@ -32,6 +32,22 @@
   </head>
 
   <body>
+    <% rows = 48 %>
+    <% cols = 80 %>
+
+    <div class='row phone'>
+      <div class='small-12 columns'>
+        <div class='display'>
+          <%= for col <- 1..cols do %>
+            <div class='line'>
+              <%= for row <- 1..rows do %><div id='x<%= row %>y<%= col %>' class='pixel'></div><% end %>
+            </div>
+          <% end %>
+        </div>
+        <div class='canvas-container'><canvas id='canvas'></canvas></div>
+      </div>
+    </div>
+
     <div class='row nav'>
       <div class='small-12 columns'>
         <nav class='top-bar'>
