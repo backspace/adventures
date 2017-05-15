@@ -22,7 +22,7 @@
 
 <div class='row card'>
   <div class='small-12 columns'>
-    <img src='/images/painting.jpg'>
+    <img src='/images/first-image.jpg'>
   </div>
 </div>
 
@@ -104,7 +104,7 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <div class='zoom-container'>
-      <img class='secret-image-container' src='/images/bathroom.jpg'>
+      <img class='secret-image-container' src='/images/secret-cover.jpg'>
       <div class='secret'><div class='text'>you found a secret</div></div>
     </div>
   </div>

@@ -22,7 +22,7 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 
 $(() => {
   $('.secret .text').click(function() {
-    $('.secret-image-container').attr('src', '/images/feature.gif');
+    $('.secret-image-container').attr('src', '/images/secret.gif');
   });
 
   $("*[data-action=add-email]").click(function() {
