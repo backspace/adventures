@@ -1,4 +1,5 @@
-@import 'foundation';
+@import "settings";
+@import 'foundation-sites/foundation';
 @include foundation-everything;
 
 td {
