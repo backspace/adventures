@@ -33,6 +33,10 @@ module.exports = function(environment) {
       showCreateDate: true
     },
 
+    'ember-web-app': {
+      name: 'manifest.json'
+    },
+
     firstRendezvousTime: '2016-02-12 13:50',
     rendezvousInterval: 22
   };
