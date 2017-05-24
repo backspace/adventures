@@ -26,7 +26,7 @@ module.exports = function(environment) {
     manifest: {
       enabled: true,
       appcacheFile: "/manifest.appcache",
-      excludePaths: ['index.html', 'someother.html'],
+      excludePaths: ['index.html', 'manifest.ember-web-app.json'],
       includePaths: ['/'],
       network: ['*'],
       showCreateDate: true
