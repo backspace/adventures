@@ -37,7 +37,8 @@ const selectText = customHelper((selector) => {
 });
 
 const hoverable = customHelper(selector => {
-  triggerEvent(selector, 'mouseenter');
+  const event = $.Event('mouseenter');
+  $(selector).trigger(event);
 });
 
 const exitable = customHelper(selector => {

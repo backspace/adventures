@@ -209,13 +209,15 @@ test('hovering over a team shows its destinations ordered on the map, its meetin
 
 test('an existing meeting can be edited', assert => {
   page.visit();
-  page.teams(1).hover();
 
+  // This seems necessary to have the fake hover event actually work.
   andThen(() => {
-
+    page.teams(1).hover();
   });
 
-  page.teams(1).meetings(1).click();
+  andThen(() => {
+    page.teams(1).meetings(1).click();
+  });
 
   andThen(() => {
     assert.equal(page.meeting().destination(), 'Edmonton Court');
