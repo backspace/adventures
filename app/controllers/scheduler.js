@@ -1,7 +1,8 @@
 import Ember from 'ember';
 
 export default Ember.Controller.extend({
-  meetingCounts: Ember.computed.mapBy('model.teams', 'meetings.length'),
+  teamMeetings: Ember.computed.mapBy('model.teams', 'meetings'),
+  meetingCounts: Ember.computed.mapBy('teamMeetings', 'length'),
   highestMeetingCount: Ember.computed.max('meetingCounts'),
 
   actions: {
