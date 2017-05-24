@@ -17,7 +17,12 @@ const dragBy = customHelper(selector => {
 const setMap = customHelper(selector => {
   return ((base64) => {
     const blob = new window.Blob([base64], {type: 'image/gif'});
-    triggerEvent(selector, 'change', {target: {files: [blob]}});
+    const event = $.Event('change');
+    event.target = {
+      files: [blob]
+    };
+
+    $(selector).trigger(event);
   });
 });
 
@@ -36,5 +41,5 @@ export default PageObject.create({
     }
   }),
 
-  setMap: setMap('input')
+  setMap: setMap('input#map')
 });
