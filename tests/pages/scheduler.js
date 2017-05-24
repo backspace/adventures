@@ -42,7 +42,8 @@ const hoverable = customHelper(selector => {
 });
 
 const exitable = customHelper(selector => {
-  triggerEvent(selector, 'mouseleave');
+  const event = $.Event('mouseleave');
+  $(selector).trigger(event);
 });
 
 export default PageObject.create({
