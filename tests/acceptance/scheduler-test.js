@@ -244,7 +244,7 @@ test('a new meeting can be scheduled and resets the form when saved', (assert) =
     assert.equal(page.meeting().teams(1).value(), 'Leave It to Beaver superfans');
     assert.equal(page.meeting().teams(2).value(), 'Mayors');
     assert.notOk(page.meeting().isForbidden(), 'expected meeting not be forbidden');
-    assert.equal(page.meeting().index(), 2);
+    assert.equal(page.meeting().index(), '1');
 
     assert.ok(page.regions(1).destinations(2).isSelected());
     assert.notOk(page.regions(1).destinations(1).isSelected());
