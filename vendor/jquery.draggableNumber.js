@@ -41,6 +41,7 @@
               dy = y - startY;
               rounded = Math.round(dy / divisor) / fraction;
               numberField.val(Math.min(Math.max(min, startValue - rounded), max));
+              event.preventDefault();
               return numberField.trigger('keyup');
             }
           };
