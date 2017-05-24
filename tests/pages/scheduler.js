@@ -37,13 +37,11 @@ const selectText = customHelper((selector) => {
 });
 
 const hoverable = customHelper(selector => {
-  const event = $.Event('mouseenter');
-  $(selector).trigger(event);
+  $(selector).trigger({type: 'mouseenter'});
 });
 
 const exitable = customHelper(selector => {
-  const event = $.Event('mouseleave');
-  $(selector).trigger(event);
+  $(selector).trigger({type: 'mouseleave'});
 });
 
 export default PageObject.create({

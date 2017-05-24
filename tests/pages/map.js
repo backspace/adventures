@@ -17,12 +17,13 @@ const dragBy = customHelper(selector => {
 const setMap = customHelper(selector => {
   return ((base64) => {
     const blob = new window.Blob([base64], {type: 'image/gif'});
-    const event = $.Event('change');
-    event.target = {
-      files: [blob]
-    };
 
-    $(selector).trigger(event);
+    $(selector).trigger({
+      type: 'change',
+      target: {
+        files: [blob]
+      }
+    });
   });
 });
 
