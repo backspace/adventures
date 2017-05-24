@@ -31,8 +31,11 @@ export default Ember.Route.extend({
     },
 
     delete(model) {
-      model.deleteRecord();
-      model.save().then(() => {
+      // This is an unfortunate workaround to address test errors of this form:
+      // Attempted to handle event `pushedData` on … while in state root.deleted.inFlight
+      model.reload().then(reloaded => {
+        return reloaded.destroyRecord();
+      }).then(() => {
         this.transitionTo('destinations');
       });
     }

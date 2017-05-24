@@ -6,8 +6,7 @@ export default Ember.Controller.extend({
       const {data: teams} = JSON.parse(this.get('teamsJSON'));
 
       Ember.RSVP.all(this.get('model').map(model => {
-        model.deleteRecord();
-        return model.save();
+        return model.reload().then(reloaded => reloaded.destroyRecord());
       })).then(() => {
         const teamRecords = teams.map(({attributes}) => {
           const teamRecord = this.store.createRecord('team');

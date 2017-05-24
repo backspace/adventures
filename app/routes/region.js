@@ -17,8 +17,9 @@ export default Ember.Route.extend({
     },
 
     delete(model) {
-      model.deleteRecord();
-      model.save().then(() => {
+      model.reload().then(reloaded => {
+        return reloaded.destroyRecord();
+      }).then(() => {
         this.transitionTo('regions');
       });
     }
