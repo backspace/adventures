@@ -54,7 +54,7 @@ module.exports = function(environment) {
 
     ENV.APP.rootElement = '#ember-testing';
 
-    //ENV.emberPouch.options = {adapter: 'memory'};
+    ENV.emberPouch.localDb = 'test-adventure-gathering';
   }
 
   if (environment === 'production') {
