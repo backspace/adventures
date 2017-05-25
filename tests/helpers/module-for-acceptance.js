@@ -1,6 +1,9 @@
 import { module } from 'qunit';
+import Ember from 'ember';
 import startApp from '../helpers/start-app';
 import destroyApp from '../helpers/destroy-app';
+
+const { RSVP: { Promise } } = Ember;
 
 import PouchDB from 'pouchdb';
 import config from 'adventure-gathering/config/environment';
@@ -22,11 +25,8 @@ export default function(name, options = {}) {
     },
 
     afterEach() {
-      destroyApp(this.application);
-
-      if (options.afterEach) {
-        options.afterEach.apply(this, arguments);
-      }
+      let afterEach = options.afterEach && options.afterEach.apply(this, arguments);
+      return Promise.resolve(afterEach).then(() => destroyApp(this.application));
     }
   });
 }
