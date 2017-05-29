@@ -61,7 +61,7 @@
 </div>
 <div class='row card'>
   <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-question-circle'></i> Questions</h4>
+    <h4 class='moving-highlight' id='questions'><i class='fa fa-white fa-question-circle'></i> Questions</h4>
 
     <p><strong>This is not the registration form, that’s <%= link "here", to: registration_path(@conn, :new) %>.</strong></p>
 
