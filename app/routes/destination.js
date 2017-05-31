@@ -17,7 +17,9 @@ export default Ember.Route.extend({
       model.save().then(() => {
         return model.get('region');
       }).then(region => {
-        this.get('lastRegion').set('lastRegion', region);
+        if (region) {
+          this.get('lastRegion').setLastRegionId(region.id);
+        }
 
         return (region ? region.save() : true);
       }).then(() => {

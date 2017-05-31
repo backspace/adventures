@@ -5,8 +5,11 @@ export default DestinationRoute.extend({
   lastRegion: Ember.inject.service(),
 
   model() {
-    const lastRegion = this.get('lastRegion').get('lastRegion');
-    return this.store.createRecord('destination', {region: lastRegion});
+    const lastRegion = this.get('lastRegion').getLastRegion();
+
+    return lastRegion.then(region => {
+      return this.store.createRecord('destination', {region});
+    });
   },
 
   templateName: 'destination',

@@ -6,7 +6,7 @@ export default Ember.Route.extend({
   actions: {
     save(model) {
       model.save().then(() => {
-        this.get('lastRegion').set('lastRegion', model);
+        this.get('lastRegion').setLastRegionId(model.id);
         this.transitionTo('regions');
       });
     },
