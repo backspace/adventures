@@ -4,7 +4,10 @@
 
     <%= render "form.html", changeset: @changeset,
                             action: message_path(@conn, :update, @message) %>
-
+  </div>
+</div>
+<div class='row card'>
+  <div class='small-12 columns'>
     <%= button("Send", to: message_path(@conn, :deliver, @message), class: "btn send") %>
 
     <%= link "Preview", to: message_path(@conn, :preview, @message) %>
