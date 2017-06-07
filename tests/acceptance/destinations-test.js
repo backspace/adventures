@@ -48,7 +48,7 @@ moduleForAcceptance('Acceptance | destinations', {
   }
 });
 
-test('existing destinations are listed and can be sorted by region', (assert) => {
+test('existing destinations are listed and can be sorted by region or awesomeness', (assert) => {
   visit('/destinations');
 
   andThen(() => {
@@ -75,6 +75,12 @@ test('existing destinations are listed and can be sorted by region', (assert) =>
   andThen(() => {
     assert.equal(page.destinations(1).description(), 'Ina-Karekh');
     assert.equal(page.destinations(2).description(), 'Hona-Karekh');
+  });
+
+  page.headerAwesomeness().click();
+
+  andThen(() => {
+    assert.equal(page.destinations(1).description(), 'Hona-Karekh');
   });
 });
 

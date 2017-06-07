@@ -22,6 +22,11 @@ export default PageObject.create({
     click: clickable()
   },
 
+  headerAwesomeness: {
+    scope: 'th.awesomeness',
+    click: clickable()
+  },
+
   destinations: collection({
     itemScope: '.destination',
 

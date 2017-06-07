@@ -15,6 +15,17 @@ export default Ember.Controller.extend({
       } else {
         this.set('sorting', ['region.name:asc', 'createdAt:desc']);
       }
+    },
+
+    // FIXME this should be generalised, obvs
+    toggleAwesomenessSort() {
+      this.set('defaultSort', !this.get('defaultSort'));
+
+      if (this.get('defaultSort')) {
+        this.set('sorting', ['updatedAt:desc']);
+      } else {
+        this.set('sorting', ['awesomeness', 'createdAt:desc']);
+      }
     }
   }
 });
