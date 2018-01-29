@@ -1,25 +1,26 @@
 ---
 language: node_js
 node_js:
-  - "6.9.1"
-dist: trusty
+  - "6"
+
 sudo: false
+dist: trusty
+
+addons:
+  chrome: stable
 
 cache:
   directories:
-    - node_modules
+    - $HOME/.npm
+
+env:
+  global:
+    # See https://git.io/vdao3 for details.
+    - JOBS=1
 
 before_install:
-  - npm i -g npm@5.0.0
   - npm config set spin false
-  - npm install -g bower
-  - bower --version
-  - npm install phantomjs-prebuilt
-  - node_modules/phantomjs-prebuilt/bin/phantomjs --version
-
-install:
-  - npm install
-  - bower install
 
 script:
+  - npm run lint:js
   - npm test
