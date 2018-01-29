@@ -64,7 +64,7 @@ export default Ember.Component.extend({
     this.get('region').save();
   },
 
-  mouseEnter() {
+  click() {
     // FIXME accomplish in a more idiomatic Ember fashion?
     const element = Ember.$(`#region-${this.get('region.id')}`)[0];
 
