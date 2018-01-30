@@ -41,6 +41,7 @@
     "ember-cli-sass": "^6.1.3",
     "ember-cli-shims": "^1.2.0",
     "ember-cli-sri": "^2.1.0",
+    "ember-cli-test-model-waiter": "mminkoff/ember-cli-test-model-waiter#patch-1",
     "ember-cli-uglify": "^2.0.0",
     "ember-computed-style": "0.1.2",
     "ember-concurrency": "^0.8.13",
