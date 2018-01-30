@@ -2,7 +2,7 @@ import { sort } from '@ember/object/computed';
 import Controller from '@ember/controller';
 
 export default Controller.extend({
-  sorting: ['updatedAt:desc'],
+  sorting: Object.freeze(['updatedAt:desc']),
   defaultSort: true,
 
   destinations: sort('model', 'sorting'),

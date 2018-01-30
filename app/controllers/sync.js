@@ -35,8 +35,8 @@ export default Controller.extend({
       });
     }).catch(error => {
       run(() => {
-        console.log('error with sync:');
-        console.log(stringify(error));
+        // eslint-disable-next-line
+        console.log('error with sync:', stringify(error));
         this.set('error', error);
       });
     });

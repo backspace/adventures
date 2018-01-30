@@ -69,6 +69,7 @@ test('can sync with another database, syncs are remembered and can be returned t
       // FIXME had to add this because PhantomJS was timing out during this test;
       // the test PouchDB was full and producing errors. Should figure out how
       // to destroy the database next time this happens.
+      // eslint-disable-next-line
       console.log(stringify(error));
 
       done();

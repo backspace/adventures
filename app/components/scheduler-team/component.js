@@ -32,7 +32,7 @@ export default Component.extend({
     return teamMeetings.any(meeting => meeting.hasMany('teams').ids().indexOf(highlightedTeam.id) > -1);
   }),
 
-  usersAndNotes: computed('team.users', 'team.notes', function() {
+  usersAndNotes: computed('team.{users,notes}', function() {
     return `${this.get('team.users')}\n\n${this.get('team.notes') || ''}`;
   }),
 
@@ -46,21 +46,21 @@ export default Component.extend({
 
   mouseEnter() {
     this.set('showMeetings', true);
-    this.attrs.enter(this.get('team'));
+    this.get('enter')(this.get('team'));
   },
 
   mouseLeave() {
     this.set('showMeetings', false);
-    this.attrs.leave();
+    this.get('leave')();
   },
 
   actions: {
     select() {
-      this.attrs.select(this.get('team'));
+      this.get('select')(this.get('team'));
     },
 
     editMeeting(meeting) {
-      this.attrs.editMeeting(meeting);
+      this.get('editMeeting')(meeting);
     }
   }
 });

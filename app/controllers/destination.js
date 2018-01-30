@@ -2,7 +2,7 @@ import { sort } from '@ember/object/computed';
 import Controller from '@ember/controller';
 
 export default Controller.extend({
-  regionSort: ['name'],
+  regionSort: Object.freeze(['name']),
 
   sortedRegions: sort('regions', 'regionSort'),
 

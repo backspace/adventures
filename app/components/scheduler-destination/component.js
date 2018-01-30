@@ -21,7 +21,7 @@ export default Component.extend({
 
   actions: {
     select() {
-      this.attrs.select(this.get('destination'));
+      this.get('select')(this.get('destination'));
     }
   }
 });

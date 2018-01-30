@@ -14,7 +14,7 @@ export default Model.extend({
   teams: hasMany('team', {async: false}),
 
   sortedTeams: sort('teams', 'teamSort'),
-  teamSort: ['name'],
+  teamSort: Object.freeze(['name']),
 
   isForbidden: computed('teams.@each.meetings', function() {
     const teams = this.get('teams');

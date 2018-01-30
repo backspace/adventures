@@ -16,7 +16,8 @@ export default Route.extend({
           });
         }));
       }).then(regionsAndDestinations => {
-        return regionsAndDestinations.filter(({region, destinations}) => {
+        // eslint-disable-next-line
+        return regionsAndDestinations.filter(({region , destinations}) => {
           return isPresent(destinations.filterBy('isAvailable'));
         }).map(regionAndDestinations => regionAndDestinations.region).sortBy('name');
       }),

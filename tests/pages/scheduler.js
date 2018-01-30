@@ -2,6 +2,8 @@ import PageObject from '../page-object';
 
 const { attribute, clickable, collection, customHelper, hasClass, isHidden, text, value, visitable } = PageObject;
 
+import $ from 'jquery';
+
 const x = customHelper(selector => parseInt($(selector).css('left')));
 const y = customHelper(selector => parseInt($(selector).css('top')));
 

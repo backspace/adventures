@@ -2,6 +2,8 @@ import PageObject from '../page-object';
 
 const { clickable, collection, customHelper, fillable, hasClass, selectable, text, value, visitable } = PageObject;
 
+import $ from 'jquery';
+
 const selectText = customHelper((selector) => {
   const id = $(selector).val();
   return $(`${selector} option[value=${id}]`).text();
