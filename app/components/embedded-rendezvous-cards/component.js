@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { inject as service } from '@ember/service';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 
 import config from 'adventure-gathering/config/environment';
 
@@ -7,7 +9,7 @@ import blobStream from 'npm:blob-stream';
 
 import moment from 'moment';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName: 'span',
 
   rendering: true,
@@ -233,8 +235,8 @@ export default Ember.Component.extend({
     }, []);
   },
 
-  goal: Ember.computed.alias('settings.goal'),
-  puzzles: Ember.inject.service(),
+  goal: alias('settings.goal'),
+  puzzles: service(),
 
   _rendezvousCardDataForTeamMeeting(team, meeting, index) {
     const destination = meeting.belongsTo('destination').value();

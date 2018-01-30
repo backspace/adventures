@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import EmberMap from '@ember/map';
+import Service from '@ember/service';
 
 // Is a service the best place for these utility functions?
 
-export default Ember.Service.extend({
+export default Service.extend({
   chooseBlankIndex({answer, mask, goalDigit}) {
     if (!this.maskIsValid({answer, mask})) {
       throw Error('Mask is invalid');
@@ -32,7 +33,7 @@ export default Ember.Service.extend({
     }
 
     const difference = goalDigit - answerDigit;
-    const map = new Ember.Map();
+    const map = new EmberMap();
 
     if (teams.length === 1) {
       map.set(teams[0], difference);

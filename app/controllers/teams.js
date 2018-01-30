@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { all } from 'rsvp';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
+export default Controller.extend({
   actions: {
     save() {
       const {data: teams} = JSON.parse(this.get('teamsJSON'));
 
-      Ember.RSVP.all(this.get('model').map(model => {
+      all(this.get('model').map(model => {
         return model.reload().then(reloaded => reloaded.destroyRecord());
       })).then(() => {
         const teamRecords = teams.map(({attributes}) => {
@@ -15,7 +16,7 @@ export default Ember.Controller.extend({
           return teamRecord.save();
         });
 
-        return Ember.RSVP.all(teamRecords);
+        return all(teamRecords);
       });
     }
   }

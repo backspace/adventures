@@ -1,7 +1,7 @@
+import { run } from '@ember/runloop';
 import { test } from 'qunit';
-import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-acceptance';
 
-import Ember from 'ember';
+import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-acceptance';
 
 import page from '../pages/settings';
 
@@ -36,7 +36,7 @@ moduleForAcceptance('Acceptance | settings', {
     this.store = this.application.__container__.lookup('service:store');
     const done = assert.async();
 
-    Ember.run(() => {
+    run(() => {
       const settings = this.store.createRecord('settings', {
         id: 'settings',
         goal: '12345'

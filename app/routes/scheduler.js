@@ -1,20 +1,23 @@
-import Ember from 'ember';
+import { isPresent } from '@ember/utils';
+import { hash, all } from 'rsvp';
+import { inject as service } from '@ember/service';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
-  map: Ember.inject.service(),
+export default Route.extend({
+  map: service(),
 
   model() {
-    return Ember.RSVP.hash({
+    return hash({
       regions: this.store.findAll('region').then(regions => {
-        return Ember.RSVP.all(regions.map(region => {
-          return Ember.RSVP.hash({
+        return all(regions.map(region => {
+          return hash({
             region: region,
             destinations: region.get('destinations')
           });
         }));
       }).then(regionsAndDestinations => {
         return regionsAndDestinations.filter(({region, destinations}) => {
-          return Ember.isPresent(destinations.filterBy('isAvailable'));
+          return isPresent(destinations.filterBy('isAvailable'));
         }).map(regionAndDestinations => regionAndDestinations.region).sortBy('name');
       }),
       destinations: this.store.findAll('destination'),

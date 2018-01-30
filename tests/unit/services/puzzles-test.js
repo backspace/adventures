@@ -1,5 +1,5 @@
+import EmberObject from '@ember/object';
 import { moduleFor, test } from 'ember-qunit';
-import Ember from 'ember';
 
 moduleFor('service:puzzles', 'Unit | Service | puzzles | chooseBlankIndex');
 
@@ -61,8 +61,8 @@ test('throws if the answer and mask have a mismatch', function(assert) {
 
 moduleFor('service:puzzles', 'Unit | Service | puzzles | teamDigitsForAnswerAndGoalDigits', {
   beforeEach() {
-    this.teamA = Ember.Object.create({name: 'A team'});
-    this.teamB = Ember.Object.create({name: 'B team'});
+    this.teamA = EmberObject.create({name: 'A team'});
+    this.teamB = EmberObject.create({name: 'B team'});
 
     this.teams = [this.teamA, this.teamB];
     this.reversedTeams = [this.teamB, this.teamA];

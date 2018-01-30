@@ -1,12 +1,13 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  count: Ember.computed('team.meetings.length', function() {
+export default Component.extend({
+  count: computed('team.meetings.length', function() {
     const length = this.get('team.meetings.length');
     return Array(length + 1).join('•');
   }),
 
-  isSelected: Ember.computed('meeting.teams', function() {
+  isSelected: computed('meeting.teams', function() {
     const meeting = this.get('meeting');
 
     if (!meeting) {
@@ -18,7 +19,7 @@ export default Ember.Component.extend({
     return teamIds.indexOf(this.get('team.id')) > -1;
   }),
 
-  hasMetHighlightedTeam: Ember.computed('team', 'highlightedTeam', function() {
+  hasMetHighlightedTeam: computed('team', 'highlightedTeam', function() {
     const team = this.get('team');
     const highlightedTeam = this.get('highlightedTeam');
 
@@ -31,15 +32,15 @@ export default Ember.Component.extend({
     return teamMeetings.any(meeting => meeting.hasMany('teams').ids().indexOf(highlightedTeam.id) > -1);
   }),
 
-  usersAndNotes: Ember.computed('team.users', 'team.notes', function() {
+  usersAndNotes: computed('team.users', 'team.notes', function() {
     return `${this.get('team.users')}\n\n${this.get('team.notes') || ''}`;
   }),
 
-  roundedAwesomeness: Ember.computed('team.averageAwesomeness', function() {
+  roundedAwesomeness: computed('team.averageAwesomeness', function() {
     return Math.round(this.get('team.averageAwesomeness')*100)/100;
   }),
 
-  roundedRisk: Ember.computed('team.averageRisk', function() {
+  roundedRisk: computed('team.averageRisk', function() {
     return Math.round(this.get('team.averageRisk')*100)/100;
   }),
 

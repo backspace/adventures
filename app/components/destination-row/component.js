@@ -1,13 +1,15 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { notEmpty } from '@ember/object/computed';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName: 'tr',
   classNames: ['destination'],
   classNameBindings: ['destination.isIncomplete:incomplete', 'hasMeetings:meetings'],
 
-  hasMeetings: Ember.computed.notEmpty('destination.meetings'),
+  hasMeetings: notEmpty('destination.meetings'),
 
-  status: Ember.computed('destination.status', function() {
+  status: computed('destination.status', function() {
     const status = this.get('destination.status');
 
     if (status === 'available') {

@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { all } from 'rsvp';
+import { run } from '@ember/runloop';
 import { test } from 'qunit';
 import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-acceptance';
 
@@ -9,14 +10,14 @@ moduleForAcceptance('Acceptance | destinations', {
     const store = this.application.__container__.lookup('service:store');
     const done = assert.async();
 
-    Ember.run(() => {
+    run(() => {
       const regionOne = store.createRecord('region');
       const regionTwo = store.createRecord('region');
 
       regionOne.set('name', 'There');
       regionTwo.set('name', 'Here');
 
-      Ember.RSVP.all([regionOne.save(), regionTwo.save()]).then(() => {
+      all([regionOne.save(), regionTwo.save()]).then(() => {
         const fixtureOne = store.createRecord('destination');
         const fixtureTwo = store.createRecord('destination');
 
@@ -38,9 +39,9 @@ moduleForAcceptance('Acceptance | destinations', {
           region: regionTwo
         });
 
-        return Ember.RSVP.all([fixtureTwo.save(), fixtureOne.save()]);
+        return all([fixtureTwo.save(), fixtureOne.save()]);
       }).then(() => {
-        return Ember.RSVP.all([regionOne.save(), regionTwo.save()]);
+        return all([regionOne.save(), regionTwo.save()]);
       }).then(() => {
         done();
       });

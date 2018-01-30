@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { inject as service } from '@ember/service';
+import { not, equal } from '@ember/object/computed';
+import { isEmpty } from '@ember/utils';
+import { computed } from '@ember/object';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
@@ -15,7 +18,7 @@ export default Model.extend({
   answer: attr('string'),
   mask: attr('string'),
 
-  suggestedMask: Ember.computed('answer', function() {
+  suggestedMask: computed('answer', function() {
     const answer = this.get('answer') || '';
 
     // The suggestion replaces the rightmost three digits with underscores
@@ -32,7 +35,7 @@ export default Model.extend({
     }, {suggestion: '', replaced: 0}).suggestion;
   }),
 
-  maskIsValid: Ember.computed('answer', 'mask', function() {
+  maskIsValid: computed('answer', 'mask', function() {
     const answer = this.get('answer') || '';
     const mask = this.get('mask') || '';
 
@@ -42,21 +45,21 @@ export default Model.extend({
   awesomeness: attr('number'),
   risk: attr('number'),
 
-  isComplete: Ember.computed('description', 'answer', 'awesomeness', 'risk', 'maskIsValid', function() {
+  isComplete: computed('description', 'answer', 'awesomeness', 'risk', 'maskIsValid', function() {
     const {description, answer, awesomeness, risk, maskIsValid} = this.getProperties('description', 'answer', 'awesomeness', 'risk', 'maskIsValid');
 
-    return !Ember.isEmpty(description) &&
-      !Ember.isEmpty(answer) &&
+    return !isEmpty(description) &&
+      !isEmpty(answer) &&
       awesomeness > 0 &&
-      !Ember.isEmpty(risk) &&
+      !isEmpty(risk) &&
       maskIsValid;
   }),
 
-  isIncomplete: Ember.computed.not('isComplete'),
+  isIncomplete: not('isComplete'),
 
   status: attr('string'),
 
-  isAvailable: Ember.computed.equal('status', 'available'),
+  isAvailable: equal('status', 'available'),
 
   region: belongsTo('region', {async: false}),
 
@@ -65,5 +68,5 @@ export default Model.extend({
   createdAt: attr('createDate'),
   updatedAt: attr('updateDate'),
 
-  puzzles: Ember.inject.service()
+  puzzles: service()
 });

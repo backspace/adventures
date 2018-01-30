@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import { computed } from '@ember/object';
+import Component from '@ember/component';
 import computedStyle from 'ember-computed-style';
 
-export default Ember.Component.extend({
+export default Component.extend({
   classNames: ['region'],
   classNameBindings: ['isHighlighted:highlighted'],
 
@@ -10,15 +12,15 @@ export default Ember.Component.extend({
 
   draggable: true,
 
-  top: Ember.computed('region.y', function() {
+  top: computed('region.y', function() {
     return {top: Math.max(this.get('region.y'), 0)};
   }),
 
-  left: Ember.computed('region.x', function() {
+  left: computed('region.x', function() {
     return {left: Math.max(this.get('region.x'), 0)};
   }),
 
-  meetingIndex: Ember.computed('region.id', 'highlightedTeam.id', function() {
+  meetingIndex: computed('region.id', 'highlightedTeam.id', function() {
     const regionId = this.get('region.id');
     const highlightedTeam = this.get('highlightedTeam');
 
@@ -66,7 +68,7 @@ export default Ember.Component.extend({
 
   click() {
     // FIXME accomplish in a more idiomatic Ember fashion?
-    const element = Ember.$(`#region-${this.get('region.id')}`)[0];
+    const element = $(`#region-${this.get('region.id')}`)[0];
 
     if (element) {
       element.scrollIntoView();

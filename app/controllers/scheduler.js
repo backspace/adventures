@@ -1,9 +1,11 @@
-import Ember from 'ember';
+import { all } from 'rsvp';
+import { mapBy, max } from '@ember/object/computed';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
-  teamMeetings: Ember.computed.mapBy('model.teams', 'meetings'),
-  meetingCounts: Ember.computed.mapBy('teamMeetings', 'length'),
-  highestMeetingCount: Ember.computed.max('meetingCounts'),
+export default Controller.extend({
+  teamMeetings: mapBy('model.teams', 'meetings'),
+  meetingCounts: mapBy('teamMeetings', 'length'),
+  highestMeetingCount: max('meetingCounts'),
 
   actions: {
     selectDestination(destination) {
@@ -27,9 +29,9 @@ export default Ember.Controller.extend({
       const meeting = this.get('meeting');
 
       meeting.save().then(() => {
-        return Ember.RSVP.all([meeting.get('destination'), meeting.get('teams')]);
+        return all([meeting.get('destination'), meeting.get('teams')]);
       }).then(([destination, teams]) => {
-        return Ember.RSVP.all([destination.save(), ...teams.map(team => team.save())]);
+        return all([destination.save(), ...teams.map(team => team.save())]);
       }).then(() => {
         this.set('meeting', this.store.createRecord('meeting'));
       });

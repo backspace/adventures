@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 
 import config from 'adventure-gathering/config/environment';
 
@@ -7,7 +7,7 @@ import blobStream from 'npm:blob-stream';
 
 import moment from 'moment';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName: 'span',
 
   rendering: true,

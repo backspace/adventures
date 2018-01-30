@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { getOwner } from '@ember/application';
+import Controller from '@ember/controller';
 import PouchDB from 'pouchdb';
 
 import { task } from 'ember-concurrency';
@@ -9,7 +11,7 @@ import config from 'adventure-gathering/config/environment';
 
 import stringify from 'npm:json-stringify-safe';
 
-export default Ember.Controller.extend({
+export default Controller.extend({
   databases: Databases.create(),
 
   isSyncing: false,
@@ -19,7 +21,7 @@ export default Ember.Controller.extend({
   sync: task(function * () {
     this.get('databases').addObject(this.get('destination'));
 
-    const sourceDb = Ember.getOwner(this).lookup('adapter:application').get('db');
+    const sourceDb = getOwner(this).lookup('adapter:application').get('db');
     const destinationDb = new PouchDB(this.get('destination'), config.emberPouch.options);
 
     const syncPromise = sourceDb.sync(destinationDb);
@@ -28,11 +30,11 @@ export default Ember.Controller.extend({
     this.set('syncPromise', syncPromise);
 
     yield syncPromise.then(result => {
-      Ember.run(() => {
+      run(() => {
         this.set('result', result);
       });
     }).catch(error => {
-      Ember.run(() => {
+      run(() => {
         console.log('error with sync:');
         console.log(stringify(error));
         this.set('error', error);

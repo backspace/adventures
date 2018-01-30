@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { all } from 'rsvp';
+import { run } from '@ember/runloop';
 import { test } from 'qunit';
 import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-acceptance';
 
@@ -9,7 +10,7 @@ moduleForAcceptance('Acceptance | teams', {
     const store = this.application.__container__.lookup('service:store');
     const done = assert.async();
 
-    Ember.run(() => {
+    run(() => {
       const teamOne = store.createRecord('team');
       const teamTwo = store.createRecord('team');
 
@@ -23,7 +24,7 @@ moduleForAcceptance('Acceptance | teams', {
         riskAversion: 1
       });
 
-      Ember.RSVP.all([teamOne.save(), teamTwo.save()]).then(() => {
+      all([teamOne.save(), teamTwo.save()]).then(() => {
         done();
       });
     });

@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
@@ -13,7 +13,7 @@ export default Model.extend({
 
   destinations: hasMany('destination', {async: false}),
 
-  meetingCount: Ember.computed('destinations.@each.meetings', function() {
+  meetingCount: computed('destinations.@each.meetings', function() {
     return this.get('destinations').mapBy('meetings.length').reduce((prev, curr) => prev + curr);
   }),
 

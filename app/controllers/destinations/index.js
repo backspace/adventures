@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import { sort } from '@ember/object/computed';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
+export default Controller.extend({
   sorting: ['updatedAt:desc'],
   defaultSort: true,
 
-  destinations: Ember.computed.sort('model', 'sorting'),
+  destinations: sort('model', 'sorting'),
 
   actions: {
     toggleSort() {

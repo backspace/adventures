@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { Promise as EmberPromise } from 'rsvp';
+import Service, { inject as service } from '@ember/service';
 import StorageObject from 'ember-local-storage/local/object';
 
 const LastRegionIdObject = StorageObject.extend({
@@ -7,18 +8,18 @@ const LastRegionIdObject = StorageObject.extend({
 
 const LastRegionId = LastRegionIdObject.create();
 
-export default Ember.Service.extend({
-  store: Ember.inject.service(),
+export default Service.extend({
+  store: service(),
 
   getLastRegion() {
     const id = LastRegionId.get('id');
 
     if (id) {
       return this.get('store').find('region', LastRegionId.get('id')).catch(() => {
-        return Ember.RSVP.Promise.resolve(undefined);
+        return EmberPromise.resolve(undefined);
       });
     } else {
-      return Ember.RSVP.Promise.resolve(undefined);
+      return EmberPromise.resolve(undefined);
     }
   },
 

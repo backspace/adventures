@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { all } from 'rsvp';
+import { run } from '@ember/runloop';
 import { test } from 'qunit';
 import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-acceptance';
 
@@ -10,7 +11,7 @@ moduleForAcceptance('Acceptance | scheduler', {
     const store = this.application.__container__.lookup('service:store');
     const done = assert.async();
 
-    Ember.run(() => {
+    run(() => {
       const portagePlace = store.createRecord('region', {
         name: 'Portage Place',
         notes: 'Downtown revitalisation!',
@@ -37,7 +38,7 @@ moduleForAcceptance('Acceptance | scheduler', {
 
       let edmontonCourt, prairieTheatreExchange, globeCinemas, squeakyFloor;
 
-      Ember.RSVP.all([portagePlace.save(), eatonCentre.save(), superfans.save(), mayors.save(), pyjamaGamers.save()]).then(() => {
+      all([portagePlace.save(), eatonCentre.save(), superfans.save(), mayors.save(), pyjamaGamers.save()]).then(() => {
         edmontonCourt = store.createRecord('destination', {
           region: portagePlace,
           description: 'Edmonton Court',
@@ -64,16 +65,16 @@ moduleForAcceptance('Acceptance | scheduler', {
           status: 'unavailable'
         });
 
-        return Ember.RSVP.all([edmontonCourt.save(), prairieTheatreExchange.save(), globeCinemas.save(), squeakyFloor.save()]);
+        return all([edmontonCourt.save(), prairieTheatreExchange.save(), globeCinemas.save(), squeakyFloor.save()]);
       }).then(() => {
-        return Ember.RSVP.all([portagePlace.save(), eatonCentre.save()]);
+        return all([portagePlace.save(), eatonCentre.save()]);
       }).then(() => {
         return store.createRecord('meeting', {
           destination: edmontonCourt,
           teams: [superfans, mayors]
         }).save();
       }).then(() => {
-        return Ember.RSVP.all([edmontonCourt.save(), superfans.save(), mayors.save()]);
+        return all([edmontonCourt.save(), superfans.save(), mayors.save()]);
       }).then(() => {
         done();
       });

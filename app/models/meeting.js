@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { sort } from '@ember/object/computed';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
@@ -12,10 +13,10 @@ export default Model.extend({
   destination: belongsTo('destination'),
   teams: hasMany('team', {async: false}),
 
-  sortedTeams: Ember.computed.sort('teams', 'teamSort'),
+  sortedTeams: sort('teams', 'teamSort'),
   teamSort: ['name'],
 
-  isForbidden: Ember.computed('teams.@each.meetings', function() {
+  isForbidden: computed('teams.@each.meetings', function() {
     const teams = this.get('teams');
     const meetingCounts = teams.mapBy('meetings.length');
 

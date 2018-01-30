@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { inject as service } from '@ember/service';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
-  lastRegion: Ember.inject.service(),
+export default Route.extend({
+  lastRegion: service(),
 
   actions: {
     save(model) {

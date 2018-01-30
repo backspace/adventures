@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import { inject as service } from '@ember/service';
 import DestinationRoute from '../destination';
 
 export default DestinationRoute.extend({
-  lastRegion: Ember.inject.service(),
+  lastRegion: service(),
 
   model() {
     const lastRegion = this.get('lastRegion').getLastRegion();

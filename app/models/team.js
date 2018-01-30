@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { mapBy } from '@ember/object/computed';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
@@ -12,9 +13,9 @@ export default Model.extend({
 
   meetings: hasMany('meeting', {async: false}),
 
-  destinations: Ember.computed.mapBy('meetings', 'destination'),
+  destinations: mapBy('meetings', 'destination'),
 
-  averageAwesomeness: Ember.computed('destinations.@each.awesomeness', function() {
+  averageAwesomeness: computed('destinations.@each.awesomeness', function() {
     const awesomenesses = this.get('destinations').mapBy('awesomeness').filter(a => a);
 
     if (awesomenesses.length > 0) {
@@ -22,7 +23,7 @@ export default Model.extend({
     }
   }),
 
-  averageRisk: Ember.computed('destinations.@each.risk', function() {
+  averageRisk: computed('destinations.@each.risk', function() {
     const risks = this.get('destinations').mapBy('risk').filter(r => r);
 
     if (risks.length > 0) {

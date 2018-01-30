@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
 
 import { test } from 'qunit';
 import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-acceptance';
@@ -12,7 +12,7 @@ moduleForAcceptance('Acceptance | sync', {
     const store = this.application.__container__.lookup('service:store');
     const done = assert.async();
 
-    Ember.run(() => {
+    run(() => {
       const fixture = store.createRecord('destination');
 
       fixture.set('description', 'Ina-Karekh');

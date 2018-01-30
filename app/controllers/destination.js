@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import { sort } from '@ember/object/computed';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
+export default Controller.extend({
   regionSort: ['name'],
 
-  sortedRegions: Ember.computed.sort('regions', 'regionSort'),
+  sortedRegions: sort('regions', 'regionSort'),
 
   actions: {
     setRegion(regionId) {

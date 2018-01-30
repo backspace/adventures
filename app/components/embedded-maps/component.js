@@ -1,9 +1,9 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 
 import PDFDocument from 'npm:pdfkit';
 import blobStream from 'npm:blob-stream';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName: 'span',
 
   rendering: true,

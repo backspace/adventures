@@ -1,10 +1,12 @@
-import Ember from 'ember';
+import { getOwner } from '@ember/application';
+import { computed } from '@ember/object';
+import Service from '@ember/service';
 
 import blobUtil from 'npm:blob-util';
 
-export default Ember.Service.extend({
-  db: Ember.computed(function() {
-    return Ember.getOwner(this).lookup('adapter:application').get('db');
+export default Service.extend({
+  db: computed(function() {
+    return getOwner(this).lookup('adapter:application').get('db');
   }),
 
   getAttachment(name) {
