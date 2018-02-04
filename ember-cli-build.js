@@ -8,6 +8,7 @@ module.exports = function(defaults) {
       includePolyfill: true,
     },
     fingerprint: {
+      exclude: ['apple-touch-icon', 'favicon', 'mstile'],
       replaceExtensions: ['html', 'css', 'js', 'json']
     }
   });
