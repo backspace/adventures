@@ -2,11 +2,11 @@ import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
 
-module('Unit | Service | puzzles | chooseBlankIndex', function(hooks) {
+module('Unit | Service | Clandestine Rendezvous | chooseBlankIndex', function(hooks) {
   setupTest(hooks);
 
   test('it chooses a blank index', function(assert) {
-    const service = this.owner.lookup('service:puzzles');
+    const service = this.owner.lookup('service:clandestine-rendezvous');
 
     assert.equal(
       service.chooseBlankIndex({
@@ -34,7 +34,7 @@ module('Unit | Service | puzzles | chooseBlankIndex', function(hooks) {
   });
 
   test('throws if the answer and mask have a mismatch', function(assert) {
-    const service = this.owner.lookup('service:puzzles');
+    const service = this.owner.lookup('service:clandestine-rendezvous');
 
     assert.throws(() => {
       service.chooseBlankIndex({
@@ -62,7 +62,7 @@ module('Unit | Service | puzzles | chooseBlankIndex', function(hooks) {
   });
 });
 
-module('Unit | Service | puzzles | teamDigitsForAnswerAndGoalDigits', function(hooks) {
+module('Unit | Service | Clandestine Rendezvous | teamDigitsForAnswerAndGoalDigits', function(hooks) {
   setupTest(hooks);
 
   hooks.beforeEach(function() {
@@ -74,7 +74,7 @@ module('Unit | Service | puzzles | teamDigitsForAnswerAndGoalDigits', function(h
   });
 
   test('assigns the entire difference to the team if there is only one', function(assert) {
-    const service = this.owner.lookup('service:puzzles');
+    const service = this.owner.lookup('service:clandestine-rendezvous');
 
     let teamToDigitMap = service.teamDigitsForAnswerAndGoalDigits({teams: [this.teamA], answerDigit: 3, goalDigit: 7});
 
@@ -86,7 +86,7 @@ module('Unit | Service | puzzles | teamDigitsForAnswerAndGoalDigits', function(h
   });
 
   test('splits the difference between teams', function(assert) {
-    const service = this.owner.lookup('service:puzzles');
+    const service = this.owner.lookup('service:clandestine-rendezvous');
 
     let teamToDigitMap = service.teamDigitsForAnswerAndGoalDigits({teams: this.teams, answerDigit: 3, goalDigit: 7});
 
@@ -105,7 +105,7 @@ module('Unit | Service | puzzles | teamDigitsForAnswerAndGoalDigits', function(h
   });
 
   test('throws if there are more than two teams', function(assert) {
-    const service = this.owner.lookup('service:puzzles');
+    const service = this.owner.lookup('service:clandestine-rendezvous');
 
     assert.throws(() => {
       service.teamDigitsForAnswerAndGoalDigits({teams: [this.teamA, this.teamA, this.teamA]});
@@ -113,7 +113,7 @@ module('Unit | Service | puzzles | teamDigitsForAnswerAndGoalDigits', function(h
   });
 
   test('throws if there no teams', function(assert) {
-    const service = this.owner.lookup('service:puzzles');
+    const service = this.owner.lookup('service:clandestine-rendezvous');
 
     assert.throws(() => {
       service.teamDigitsForAnswerAndGoalDigits({teams: []});
