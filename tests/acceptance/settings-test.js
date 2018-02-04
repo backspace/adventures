@@ -51,12 +51,15 @@ moduleForAcceptance('Acceptance | settings', {
   }
 });
 
-test('an existing settings document is displayed and can be updated', function(assert) {
+test('an existing settings document is displayed and can be updated, with its boolean flags mirrored to the features service', function(assert) {
   const done = assert.async();
 
   page.visit();
 
   andThen(() => {
+    const featuresService = this.application.__container__.lookup('service:features');
+    assert.ok(featuresService.get('destinationStatus'));
+
     assert.equal(page.goalField.value, '12345');
     assert.ok(page.destinationStatus.isChecked);
   });
