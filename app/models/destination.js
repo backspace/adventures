@@ -39,7 +39,7 @@ export default Model.extend({
     const answer = this.get('answer') || '';
     const mask = this.get('mask') || '';
 
-    return this.get('puzzles.implementation').maskIsValid({answer, mask});
+    return this.get('puzzles.implementation').maskIsValid(answer, mask);
   }),
 
   awesomeness: attr('number'),

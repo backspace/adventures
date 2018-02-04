@@ -3,7 +3,7 @@ import Service from '@ember/service';
 
 export default Service.extend({
   chooseBlankIndex({answer, mask, goalDigit}) {
-    if (!this.maskIsValid({answer, mask})) {
+    if (!this.maskIsValid(answer, mask)) {
       throw Error('Mask is invalid');
     }
 
@@ -45,7 +45,7 @@ export default Service.extend({
     return map;
   },
 
-  maskIsValid({answer, mask}) {
+  maskIsValid(answer, mask) {
     if (answer.length !== mask.length) {
       return false;
     }

@@ -120,3 +120,18 @@ module('Unit | Service | Clandestine Rendezvous | teamDigitsForAnswerAndGoalDigi
     }, 'expected an error with no teams');
   });
 });
+
+module('Unit | Service | Clandestine Rendezvous | maskIsValid', function(hooks) {
+  setupTest(hooks);
+
+  test('it checks mask validity', function(assert) {
+    const service = this.owner.lookup('service:clandestine-rendezvous');
+
+    assert.ok(service.maskIsValid('ABC123', 'ABC___'), 'expected the mask to be valid when it matches the answer');
+    assert.ok(service.maskIsValid('ABC123', 'ABC1_3'), 'expected the mask to be valid when it masks a subset of the answer');
+
+    assert.notOk(service.maskIsValid('ABC123', 'AB___'), 'expected the mask to be invalid when it’s a different length');
+    assert.notOk(service.maskIsValid('ABD123', 'ABC___'), 'expected the mask to be invalid when a letter differs');
+    assert.notOk(service.maskIsValid('ABC123', 'ABC123'), 'expected the mask to be invalid when it has no blanks');
+  });
+});
