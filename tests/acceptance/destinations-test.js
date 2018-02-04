@@ -115,6 +115,7 @@ test('destination status is displayed and can be toggled from the list when the 
 });
 
 test('a destination can be created and will appear at the top of the list', (assert) => {
+  withFeature('clandestine-rendezvous');
   visit('/destinations');
 
   page.new();
@@ -138,6 +139,18 @@ test('a destination can be created and will appear at the top of the list', (ass
   andThen(() => {
     assert.equal(page.destinations(0).description, 'Bromarte');
     assert.equal(page.destinations(0).mask, 'R0E0H_');
+  });
+});
+
+test('the destination’s suggested mask is based on the adventure', (assert) => {
+  withFeature('txtbeyond');
+  visit('/destinations');
+
+  page.new();
+  page.answerField.fill('itchin snitchin witchin');
+
+  andThen(() => {
+    assert.equal(page.suggestedMaskButton.label, 'itchin ________ witchin');
   });
 });
 
