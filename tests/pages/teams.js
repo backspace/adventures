@@ -1,6 +1,10 @@
-import PageObject from '../page-object';
-
-const { clickable, collection, fillable, text, visitable } = PageObject;
+import PageObject, {
+  clickable,
+  collection,
+  fillable,
+  text,
+  visitable
+} from 'ember-cli-page-object';
 
 export default PageObject.create({
   visit: visitable('/teams'),

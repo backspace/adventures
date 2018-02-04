@@ -1,6 +1,10 @@
-import PageObject from '../page-object';
-
-const { clickable, collection, fillable, text, value } = PageObject;
+import PageObject, {
+  clickable,
+  collection,
+  fillable,
+  text,
+  value
+} from 'ember-cli-page-object';
 
 export default PageObject.create({
   visit: clickable('a.sync'),

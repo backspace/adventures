@@ -35,13 +35,13 @@ test('existing teams are listed', function(assert) {
   page.visit();
 
   andThen(function() {
-    assert.equal(page.teams().count(), 2, 'expected two teams to be listed');
+    assert.equal(page.teams().count, 2, 'expected two teams to be listed');
 
-    assert.equal(page.teams(1).name(), 'Team 1');
-    assert.equal(page.teams(1).riskAversion(), '3');
+    assert.equal(page.teams(0).name, 'Team 1');
+    assert.equal(page.teams(0).riskAversion, '3');
 
-    assert.equal(page.teams(2).name(), 'Team 2');
-    assert.equal(page.teams(2).riskAversion(), '1');
+    assert.equal(page.teams(1).name, 'Team 2');
+    assert.equal(page.teams(1).riskAversion, '1');
   });
 });
 
@@ -76,14 +76,14 @@ test('teams can be overwritten with JSON input', (assert) => {
   page.save();
 
   andThen(function() {
-    assert.equal(page.teams().count(), 2, 'expected two teams to be listed');
+    assert.equal(page.teams().count, 2, 'expected two teams to be listed');
 
-    assert.equal(page.teams(1).name(), 'jorts');
-    assert.equal(page.teams(1).users(), 'jorts@example.com, jants@example.com');
-    assert.equal(page.teams(1).notes(), 'some notes');
-    assert.equal(page.teams(1).riskAversion(), '2');
+    assert.equal(page.teams(0).name, 'jorts');
+    assert.equal(page.teams(0).users, 'jorts@example.com, jants@example.com');
+    assert.equal(page.teams(0).notes, 'some notes');
+    assert.equal(page.teams(0).riskAversion, '2');
 
-    assert.equal(page.teams(2).name(), 'jants');
-    assert.equal(page.teams(2).riskAversion(), '2');
+    assert.equal(page.teams(1).name, 'jants');
+    assert.equal(page.teams(1).riskAversion, '2');
   });
 });

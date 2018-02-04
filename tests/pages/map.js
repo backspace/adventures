@@ -1,33 +1,60 @@
-import PageObject from '../page-object';
+import PageObject, {
+  attribute,
+  collection,
+  findElement,
+  text,
+} from 'ember-cli-page-object';
 
-const { attribute, collection, customHelper, text } = PageObject;
+const x = function(selector) {
+  return {
+    isDescriptor: true,
 
-import $ from 'jquery';
+    get() {
+      return parseInt(findElement(this, selector).css('left'));
+    }
+  }
+}
 
-const x = customHelper(selector => parseInt($(selector).css('left')));
-const y = customHelper(selector => parseInt($(selector).css('top')));
+const y = function(selector) {
+  return {
+    isDescriptor: true,
 
-const dragBy = customHelper(selector => {
-  return ((x, y) => {
-    const position = $(selector).position();
+    get() {
+      return parseInt(findElement(this, selector).css('top'));
+    }
+  };
+}
 
-    triggerEvent(selector, 'dragstart', {originalEvent: {pageX: position.left, pageY: position.top}});
-    triggerEvent(selector, 'dragend', {originalEvent: {pageX: position.left + x, pageY: position.top + y}});
-  });
-});
+const dragBy = function(selector) {
+  return {
+    isDescriptor: true,
 
-const setMap = customHelper(selector => {
-  return ((base64) => {
-    const blob = new window.Blob([base64], {type: 'image/gif'});
+    // TODO seems weird that this is called value when it’s performing an action?
+    value(x, y) {
+      const position = findElement(this, selector).position();
 
-    $(selector).trigger({
-      type: 'change',
-      target: {
-        files: [blob]
-      }
-    });
-  });
-});
+      triggerEvent(selector, 'dragstart', {originalEvent: {pageX: position.left, pageY: position.top}});
+      triggerEvent(selector, 'dragend', {originalEvent: {pageX: position.left + x, pageY: position.top + y}});
+    }
+  };
+}
+
+const setMap = function(selector) {
+  return {
+    isDescriptor: true,
+
+    value(base64) {
+      const blob = new window.Blob([base64], {type: 'image/gif'});
+
+      findElement(this, selector).trigger({
+        type: 'change',
+        target: {
+          files: [blob]
+        }
+      });
+    }
+  };
+};
 
 export default PageObject.create({
   imageSrc: attribute('src', 'img'),

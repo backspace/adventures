@@ -1,50 +1,109 @@
-import PageObject from '../page-object';
+import PageObject, {
+  attribute,
+  clickable,
+  collection,
+  findElement,
+  hasClass,
+  isHidden,
+  text,
+  value,
+  visitable
+} from 'ember-cli-page-object';
 
-const { attribute, clickable, collection, customHelper, hasClass, isHidden, text, value, visitable } = PageObject;
+const x = function(selector) {
+  return {
+    isDescriptor: true,
 
-import $ from 'jquery';
+    get() {
+      return parseInt(findElement(this, selector).css('left'));
+    }
+  }
+}
 
-const x = customHelper(selector => parseInt($(selector).css('left')));
-const y = customHelper(selector => parseInt($(selector).css('top')));
+const y = function(selector) {
+  return {
+    isDescriptor: true,
 
-const propertyColourName = customHelper((selectorAndProperty) => {
-  const [selector, property] = selectorAndProperty.split(/\s/);
-  const propertyColour = $(selector).css(property);
+    get() {
+      return parseInt(findElement(this, selector).css('top'));
+    }
+  };
+}
 
-  /* globals tinycolor */
-  const colour = tinycolor(propertyColour);
-  return colour.toName();
-});
+const propertyColourName = function(property) {
+  return {
+    isDescriptor: true,
 
-const propertyColourOpacity = customHelper((selectorAndProperty) => {
-  const split = selectorAndProperty.split(/\s/);
-  const property = split.pop();
+    get() {
+      const propertyColour = findElement(this).css(property);
 
-  const propertyColour = $(split.join(' ')).css(property);
+      /* globals tinycolor */
+      const colour = tinycolor(propertyColour);
+      return colour.toName();
+    }
+  };
+}
 
-  /* globals tinycolor */
-  const colour = tinycolor(propertyColour);
-  return colour.getAlpha();
-});
+const propertyColourOpacity = function(property) {
+  return {
+    isDescriptor: true,
 
-const propertyValue = customHelper((selectorAndProperty) => {
-  const split = selectorAndProperty.split(/\s/);
-  const property = split.pop();
-  return $(split.join(' ')).css(property);
-});
+    get() {
+      const propertyColour = findElement(this).css(property);
 
-const selectText = customHelper((selector) => {
-  const id = $(selector).val();
-  return $(`${selector} option[value=${id}]`).text();
-});
+      /* globals tinycolor */
+      const colour = tinycolor(propertyColour);
+      return colour.getAlpha();
+    }
+  };
+}
 
-const hoverable = customHelper(selector => {
-  $(selector).trigger({type: 'mouseenter'});
-});
+const propertyValue = function(property) {
+  return {
+    isDescriptor: true,
 
-const exitable = customHelper(selector => {
-  $(selector).trigger({type: 'mouseleave'});
-});
+    get() {
+      return findElement(this).css(property);
+    }
+  }
+}
+
+const selectText = function(selector) {
+  return {
+    isDescriptor: true,
+
+    get() {
+      const selectElement = findElement(this, selector);
+      const id = selectElement.val();
+
+      if (id) {
+        return selectElement.find(`option[value=${id}]`).text();
+      } else {
+        return '';
+      }
+    }
+  };
+}
+
+const hoverable = function(selector) {
+  return {
+    isDescriptor: true,
+
+    value() {
+      findElement(this, selector).trigger({type: 'mouseenter'});
+    }
+  };
+}
+
+const exitable = function(selector) {
+  return {
+    isDescriptor: true,
+
+    value() {
+      findElement(this, selector).trigger({type: 'mouseleave'});
+    }
+  };
+}
 
 export default PageObject.create({
   visit: visitable('/scheduler'),

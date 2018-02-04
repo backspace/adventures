@@ -17,10 +17,10 @@ test('a new settings document can be created and saved', function(assert) {
   page.visit();
 
   andThen(() => {
-    assert.equal(page.goalField().value(), '');
+    assert.equal(page.goalField.value, '');
   });
 
-  page.goalField().fill('abc');
+  page.goalField.fill('abc');
   page.save();
 
   andThen(() => {
@@ -55,10 +55,10 @@ test('an existing settings document is displayed and can be updated', function(a
   page.visit();
 
   andThen(() => {
-    assert.equal(page.goalField().value(), '12345');
+    assert.equal(page.goalField.value, '12345');
   });
 
-  page.goalField().fill('789');
+  page.goalField.fill('789');
   page.save();
 
   andThen(() => {

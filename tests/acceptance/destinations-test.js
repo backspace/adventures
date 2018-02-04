@@ -53,35 +53,35 @@ test('existing destinations are listed and can be sorted by region or awesomenes
   visit('/destinations');
 
   andThen(() => {
-    assert.equal(page.destinations(1).description(), 'Ina-Karekh');
-    assert.equal(page.destinations(1).answer(), 'ABC123');
-    assert.equal(page.destinations(1).mask(), 'ABC__3');
-    assert.equal(page.destinations(1).region(), 'There');
-    assert.notOk(page.destinations(1).isIncomplete());
+    assert.equal(page.destinations(0).description, 'Ina-Karekh');
+    assert.equal(page.destinations(0).answer, 'ABC123');
+    assert.equal(page.destinations(0).mask, 'ABC__3');
+    assert.equal(page.destinations(0).region, 'There');
+    assert.notOk(page.destinations(0).isIncomplete);
 
-    assert.equal(page.destinations(2).description(), 'Hona-Karekh');
-    assert.equal(page.destinations(2).region(), 'Here');
-    assert.ok(page.destinations(2).isIncomplete());
+    assert.equal(page.destinations(1).description, 'Hona-Karekh');
+    assert.equal(page.destinations(1).region, 'Here');
+    assert.ok(page.destinations(1).isIncomplete);
   });
 
-  page.headerRegion().click();
+  page.headerRegion.click();
 
   andThen(() => {
-    assert.equal(page.destinations(1).description(), 'Hona-Karekh');
-    assert.equal(page.destinations(2).description(), 'Ina-Karekh');
+    assert.equal(page.destinations(0).description, 'Hona-Karekh');
+    assert.equal(page.destinations(1).description, 'Ina-Karekh');
   });
 
-  page.headerRegion().click();
+  page.headerRegion.click();
 
   andThen(() => {
-    assert.equal(page.destinations(1).description(), 'Ina-Karekh');
-    assert.equal(page.destinations(2).description(), 'Hona-Karekh');
+    assert.equal(page.destinations(0).description, 'Ina-Karekh');
+    assert.equal(page.destinations(1).description, 'Hona-Karekh');
   });
 
-  page.headerAwesomeness().click();
+  page.headerAwesomeness.click();
 
   andThen(() => {
-    assert.equal(page.destinations(1).description(), 'Hona-Karekh');
+    assert.equal(page.destinations(0).description, 'Hona-Karekh');
   });
 });
 
@@ -89,19 +89,19 @@ test('destination status is displayed and can be toggled from the list', (assert
   visit('/destinations');
 
   // Sort by region, otherwise destinations will jump around
-  page.headerRegion().click();
+  page.headerRegion.click();
 
   andThen(() => {
-    assert.equal(page.destinations(1).status().value(), '✓');
-    assert.equal(page.destinations(2).status().value(), '✘');
+    assert.equal(page.destinations(0).status.value, '✓');
+    assert.equal(page.destinations(1).status.value, '✘');
   });
 
-  page.destinations(1).status().click();
-  page.destinations(2).status().click();
+  page.destinations(0).status.click();
+  page.destinations(1).status.click();
 
   andThen(() => {
-    assert.equal(page.destinations(1).status().value(), '✘');
-    assert.equal(page.destinations(2).status().value(), '?');
+    assert.equal(page.destinations(0).status.value, '✘');
+    assert.equal(page.destinations(1).status.value, '?');
   });
 });
 
@@ -109,81 +109,81 @@ test('a destination can be created and will appear at the top of the list', (ass
   visit('/destinations');
 
   page.new();
-  page.descriptionField().fill('Bromarte');
-  page.answerField().fill('R0E0H0');
+  page.descriptionField.fill('Bromarte');
+  page.answerField.fill('R0E0H0');
 
   andThen(() => {
-    assert.equal(page.suggestedMaskButton().label(), 'R_E_H_');
+    assert.equal(page.suggestedMaskButton.label, 'R_E_H_');
   });
 
-  page.suggestedMaskButton().click();
+  page.suggestedMaskButton.click();
 
   andThen(() => {
-    assert.equal(page.maskField().value(), 'R_E_H_');
+    assert.equal(page.maskField.value, 'R_E_H_');
   });
 
-  page.maskField().fill('R0E0H_');
+  page.maskField.fill('R0E0H_');
 
   page.save();
 
   andThen(() => {
-    assert.equal(page.destinations(1).description(), 'Bromarte');
-    assert.equal(page.destinations(1).mask(), 'R0E0H_');
+    assert.equal(page.destinations(0).description, 'Bromarte');
+    assert.equal(page.destinations(0).mask, 'R0E0H_');
   });
 });
 
 test('a destination can be edited and edits can be cancelled', function(assert) {
   visit('/destinations');
 
-  page.destinations(1).edit();
+  page.destinations(0).edit();
 
   andThen(() => {
-    assert.equal(page.descriptionField().value(), 'Ina-Karekh');
-    assert.equal(page.accessibilityField().value(), 'You might need help');
-    assert.equal(page.awesomenessField().value(), '9');
-    assert.equal(page.riskField().value(), '6');
-    assert.equal(page.answerField().value(), 'ABC123');
-    assert.equal(page.regionField().text(), 'There');
+    assert.equal(page.descriptionField.value, 'Ina-Karekh');
+    assert.equal(page.accessibilityField.value, 'You might need help');
+    assert.equal(page.awesomenessField.value, '9');
+    assert.equal(page.riskField.value, '6');
+    assert.equal(page.answerField.value, 'ABC123');
+    assert.equal(page.regionField.text, 'There');
   });
 
-  page.descriptionField().fill('Kisua');
-  page.accessibilityField().fill('You must cross the Empty Thousand!');
-  page.awesomenessField().fill(10);
-  page.riskField().fill(5);
-  page.answerField().fill('DEF456');
-  page.statusFieldset().availableOption().click();
+  page.descriptionField.fill('Kisua');
+  page.accessibilityField.fill('You must cross the Empty Thousand!');
+  page.awesomenessField.fill(10);
+  page.riskField.fill(5);
+  page.answerField.fill('DEF456');
+  page.statusFieldset.availableOption.click();
   page.save();
 
   andThen(() => {
-    const destination = page.destinations(1);
-    assert.equal(destination.description(), 'Kisua');
-    assert.equal(destination.awesomeness(), '10');
-    assert.equal(destination.status().value(), '✓');
-    assert.equal(destination.risk(), '5');
+    const destination = page.destinations(0);
+    assert.equal(destination.description, 'Kisua');
+    assert.equal(destination.awesomeness, '10');
+    assert.equal(destination.status.value, '✓');
+    assert.equal(destination.risk, '5');
   });
 
-  page.destinations(1).edit();
+  page.destinations(0).edit();
 
   andThen(() => {
-    assert.equal(page.accessibilityField().value(), 'You must cross the Empty Thousand!');
-    assert.equal(page.answerField().value(), 'DEF456');
+    assert.equal(page.accessibilityField.value, 'You must cross the Empty Thousand!');
+    assert.equal(page.answerField.value, 'DEF456');
   });
 
-  page.descriptionField().fill('Banbarra');
+  page.descriptionField.fill('Banbarra');
   page.cancel();
 
   andThen(() => {
-    assert.equal(page.destinations(1).description(), 'Kisua');
+    assert.equal(page.destinations(0).description, 'Kisua');
   });
 });
 
 test('a new destination defaults to the same region as the previously-created one', function(assert) {
   page.visit();
   page.new();
-  page.descriptionField().fill('Borderlands');
+  page.descriptionField.fill('Borderlands');
 
   andThen(() => {
-    page.regionField().fillByText('There');
+    page.regionField.fillByText('There');
   });
 
   page.save();
@@ -191,17 +191,17 @@ test('a new destination defaults to the same region as the previously-created on
   page.new();
 
   andThen(() => {
-    assert.equal(page.regionField().text(), 'There');
+    assert.equal(page.regionField.text, 'There');
   });
 });
 
 test('a destination can be deleted', (assert) => {
   page.visit();
 
-  page.destinations(1).edit();
+  page.destinations(0).edit();
   page.delete();
 
   andThen(() => {
-    assert.equal(page.destinations().count(), 1);
+    assert.equal(page.destinations().count, 1);
   });
 });

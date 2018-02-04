@@ -37,29 +37,29 @@ test('can sync with another database, syncs are remembered and can be returned t
     const syncController = this.application.__container__.lookup('controller:sync');
 
     syncController.get('syncPromise').then(() => {
-      assert.equal(page.push().read(), '1');
-      assert.equal(page.push().written(), '1');
-      assert.equal(page.push().writeFailures(), '0');
+      assert.equal(page.push.read, '1');
+      assert.equal(page.push.written, '1');
+      assert.equal(page.push.writeFailures, '0');
 
       // FIXME the sync db is accumulating documents
       //assert.equal(page.pull().read(), '0');
       //assert.equal(page.pull().written(), '0');
-      assert.equal(page.pull().writeFailures(), '0');
+      assert.equal(page.pull.writeFailures, '0');
 
-      assert.equal(page.databases().count(), 1);
+      assert.equal(page.databases().count, 1);
 
       page.enterDestination('other-sync').sync();
 
       andThen(() => {
-        assert.equal(page.databases().count(), 2);
-        assert.equal(page.databases(1).name(), 'sync-db');
-        assert.equal(page.databases(2).name(), 'other-sync');
+        assert.equal(page.databases().count, 2);
+        assert.equal(page.databases(0).name, 'sync-db');
+        assert.equal(page.databases(1).name, 'other-sync');
       });
 
-      page.databases(1).click();
+      page.databases(0).click();
 
       andThen(() => {
-        assert.equal(page.destinationValue(), 'sync-db');
+        assert.equal(page.destinationValue, 'sync-db');
 
         done();
       });

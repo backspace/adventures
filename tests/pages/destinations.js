@@ -1,20 +1,43 @@
-import PageObject from '../page-object';
+import PageObject, {
+  clickable,
+  collection,
+  fillable,
+  findElement,
+  hasClass,
+  selectable,
+  text,
+  value,
+  visitable
+} from 'ember-cli-page-object';
 
-const { clickable, collection, customHelper, fillable, hasClass, selectable, text, value, visitable } = PageObject;
+const selectText = function(selector) {
+  return {
+    isDescriptor: true,
 
-import $ from 'jquery';
+    get() {
+      const selectElement = findElement(this, selector);
+      const id = selectElement.val();
 
-const selectText = customHelper((selector) => {
-  const id = $(selector).val();
-  return $(`${selector} option[value=${id}]`).text();
-});
-
-const fillSelectByText = customHelper((selector) => {
-  return (text) => {
-    const id = $(`${selector} option:contains('${text}')`).attr('value');
-    $(selector).val(id).trigger('change');
+      if (id) {
+        return selectElement.find(`option[value=${id}]`).text();
+      } else {
+        return '';
+      }
+    }
   };
-});
+}
+
+const fillSelectByText = function(selector) {
+  return {
+    isDescriptor: true,
+
+    value(text) {
+      const selectElement = findElement(this, selector);
+      const id = selectElement.find(`option:contains('${text}')`).attr('value');
+      findElement(this, selector).val(id).trigger('change');
+    }
+  };
+};
 
 export default PageObject.create({
   visit: visitable('/destinations'),
