@@ -1,6 +1,10 @@
 <div class='row'>
   <div class='small-12 columns'>
     <div class='input-group'>
+      <span class='input-group-label'>Destination status</span>
+      {{input checked=model.destinationStatus class='destination-status' type='checkbox'}}
+    </div>
+    <div class='input-group'>
       <span class='input-group-label'>Goal</span>
       {{input value=model.goal class='goal input-group-field'}}
       <div class='input-group-button'>

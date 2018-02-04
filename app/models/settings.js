@@ -4,5 +4,7 @@ import DS from 'ember-data';
 const { attr } = DS;
 
 export default Model.extend({
-  goal: attr('string')
+  goal: attr('string'),
+
+  destinationStatus: attr('boolean')
 });

@@ -18,6 +18,7 @@ test('a new settings document can be created and saved', function(assert) {
 
   andThen(() => {
     assert.equal(page.goalField.value, '');
+    assert.notOk(page.destinationStatus.isChecked);
   });
 
   page.goalField.fill('abc');
@@ -39,7 +40,8 @@ moduleForAcceptance('Acceptance | settings', {
     run(() => {
       const settings = this.store.createRecord('settings', {
         id: 'settings',
-        goal: '12345'
+        goal: '12345',
+        destinationStatus: true
       });
 
       settings.save().then(() => {
@@ -56,14 +58,17 @@ test('an existing settings document is displayed and can be updated', function(a
 
   andThen(() => {
     assert.equal(page.goalField.value, '12345');
+    assert.ok(page.destinationStatus.isChecked);
   });
 
   page.goalField.fill('789');
+  page.destinationStatus.click();
   page.save();
 
   andThen(() => {
     this.store.findRecord('settings', 'settings').then(settings => {
       assert.equal(settings.get('goal'), '789');
+      assert.notOk(settings.get('destinationStatus'));
 
       done();
     });
