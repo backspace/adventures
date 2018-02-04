@@ -10,5 +10,8 @@
     "sass-brunch": "^1.9.1",
     "sass-cubic-bezier-bounding-box": "^1.0.2",
     "uglify-js-brunch": ">= 1.0 < 1.8"
+  },
+  "engines": {
+    "node": "5.3.0"
   }
 }
