@@ -22,7 +22,7 @@ defmodule Cr2016site.Pages.Messages do
   end
 
   def save do
-    click {:css, "button.btn.submit"}
+    click {:css, "button.submit"}
   end
 
   def send do

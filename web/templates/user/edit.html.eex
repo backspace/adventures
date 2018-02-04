@@ -34,6 +34,25 @@
           <label for='level-<%= integer %>'><%= string %></label>
         <% end %>
         <p class='help-text' id='risk-aversion-help'>How much risk are you comfortable taking? Do you want to stick to places open to the public, or are you confident enough to push the envelope?</p>
+        <p class='help-text'>You <em>never</em> have to do anything you don't want to. Maybe someone on the team you're meeting will feel more comfortable, or you can just find out the answers from other participants.</p>
+        <p class='help-text'><strong>Choosing a certain level of risk-aversion isn't a guarantee that every location you visit will involve that level of risk.</strong></p>
+        <p class='help-text'>
+          Examples of tasks for the least risk-averse are:
+        </p>
+        <ul class='help-text'>
+          <li>entering a back stairwell</li>
+          <li>finding an empty office</li>
+          <li>using a light to illuminate a dark space</li>
+        </ul>
+        <p class='help-text'>
+          The following are beyond the scope of our secret society:
+        </p>
+        <ul class='help-text'>
+          <li>climbing without a ladder</li>
+          <li>jumping across an empty space</li>
+          <li>picking locks</li>
+          <li>following behind someone to get through a locked door</li>
+        </ul>
       </div>
       <div class='form-group'>
         <%= label f, :accessibility %>

@@ -14,7 +14,7 @@ use Mix.Config
 config :cr2016site, Cr2016site.Endpoint,
   http: [port: {:system, "PORT"}],
   url: [scheme: "http", host: "rendezvous.chromatin.ca", port: 80],
-  #force_ssl: [rewrite_on: [:x_forwarded_proto]],
+  force_ssl: [rewrite_on: [:x_forwarded_proto]],
   cache_static_manifest: "priv/static/manifest.json",
   secret_key_base: System.get_env("SECRET_KEY_BASE")
 
@@ -22,7 +22,7 @@ config :cr2016site, Cr2016site.Endpoint,
 config :cr2016site, Cr2016site.Repo,
   adapter: Ecto.Adapters.Postgres,
   url: System.get_env("DATABASE_URL"),
-  pool_size: 20
+  pool_size: 15
 
 config :cr2016site,
   mailgun_key: System.get_env("MAILGUN_KEY"),
