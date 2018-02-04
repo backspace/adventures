@@ -1,4 +1,4 @@
-<td class='status' onclick={{action 'toggleStatus'}}>{{status}}</td>
+{{#if (feature-flag 'destination-status')}}<td class='status' onclick={{action 'toggleStatus'}}>{{status}}</td>{{/if}}
 <td class='region'>{{destination.region.name}}</td>
 <td class='description'>{{destination.description}}</td>
 <td class='answer'>{{destination.answer}}</td>

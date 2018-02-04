@@ -3,7 +3,7 @@
     <table>
       <thead>
         <tr>
-          <th></th>
+          {{#if (feature-flag 'destination-status')}}<th></th>{{/if}}
           <th class='region' onclick={{action 'toggleSort'}}><span class='secondary label'>Region</span></th>
           <th>Description</th>
           <th>Answer</th>

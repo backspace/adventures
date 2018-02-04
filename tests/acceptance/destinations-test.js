@@ -85,7 +85,16 @@ test('existing destinations are listed and can be sorted by region or awesomenes
   });
 });
 
-test('destination status is displayed and can be toggled from the list', (assert) => {
+test('destination status doesn’t show when the feature flag is off', (assert) => {
+  visit('/destinations');
+
+  andThen(() => {
+    assert.ok(page.destinations(0).status.isHidden, 'expected the status to be hidden');
+  });
+});
+
+test('destination status is displayed and can be toggled from the list when the feature flag is on', (assert) => {
+  withFeature('destination-status');
   visit('/destinations');
 
   // Sort by region, otherwise destinations will jump around
@@ -132,7 +141,18 @@ test('a destination can be created and will appear at the top of the list', (ass
   });
 });
 
+test('the status fieldset doesn’t show when the feature isn’t on', (assert) => {
+  visit('/destinations');
+
+  page.destinations(0).edit();
+
+  andThen(() => {
+    assert.ok(page.statusFieldset.isHidden, 'expected the status fieldset to be hidden');
+  });
+});
+
 test('a destination can be edited and edits can be cancelled', function(assert) {
+  withFeature('destination-status');
   visit('/destinations');
 
   page.destinations(0).edit();

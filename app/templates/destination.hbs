@@ -64,14 +64,16 @@
       {{/draggable-number}}
     </label>
   </div>
-  <div class='small-4 columns'>
-    <fieldset class='status'>
-      <legend>Status</legend>
-      {{#radio-button value='available' groupValue=model.status class='available'}} ✓{{/radio-button}}
-      {{#radio-button value='unavailable' groupValue=model.status class='unavailable'}} ✘{{/radio-button}}
-      {{#radio-button value='unknown' groupValue=model.status class='unknown'}} ?{{/radio-button}}
-    </fieldset>
-  </div>
+  {{#if (feature-flag 'destination-status')}}
+    <div class='small-4 columns'>
+      <fieldset class='status'>
+        <legend>Status</legend>
+        {{#radio-button value='available' groupValue=model.status class='available'}} ✓{{/radio-button}}
+        {{#radio-button value='unavailable' groupValue=model.status class='unavailable'}} ✘{{/radio-button}}
+        {{#radio-button value='unknown' groupValue=model.status class='unknown'}} ?{{/radio-button}}
+      </fieldset>
+    </div>
+  {{/if}}
 </div>
 <div class='row'>
   <div class='small-4 columns'>
