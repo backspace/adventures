@@ -22,11 +22,15 @@ test('a new settings document can be created and saved', function(assert) {
   });
 
   page.goalField.fill('abc');
+  page.clandestineRendezvous.click();
+  page.txtbeyond.click();
   page.save();
 
   andThen(() => {
     this.store.findRecord('settings', 'settings').then(settings => {
       assert.equal(settings.get('goal'), 'abc');
+      assert.ok(settings.get('clandestineRendezvous'));
+      assert.ok(settings.get('txtbeyond'));
       done();
     });
   });
@@ -66,12 +70,16 @@ test('an existing settings document is displayed and can be updated, with its bo
 
   page.goalField.fill('789');
   page.destinationStatus.click();
+  page.clandestineRendezvous.click();
+  page.txtbeyond.click();
   page.save();
 
   andThen(() => {
     this.store.findRecord('settings', 'settings').then(settings => {
       const featuresService = this.application.__container__.lookup('service:features');
       assert.notOk(featuresService.get('destinationStatus'));
+      assert.ok(featuresService.get('clandestineRendezvous'));
+      assert.ok(featuresService.get('txtbeyond'));
 
       assert.equal(settings.get('goal'), '789');
       assert.notOk(settings.get('destinationStatus'));

@@ -21,6 +21,18 @@ export default PageObject.create({
     isChecked: is(':checked')
   },
 
+  clandestineRendezvous: {
+    scope: 'input.clandestine-rendezvous',
+
+    isChecked: is(':checked')
+  },
+
+  txtbeyond: {
+    scope: 'input.txtbeyond',
+
+    isChecked: is(':checked')
+  },
+
   save: clickable('.save'),
   cancel: clickable('.cancel')
 });

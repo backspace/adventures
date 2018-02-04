@@ -21,13 +21,18 @@ export default Service.extend({
 
   syncFeatures() {
     return this.modelPromise().then(settings => {
+      const features = this.get('features');
+
       // FIXME why is this needed?
       run(() => {
-        if (settings.get('destinationStatus')) {
-          this.get('features').enable('destinationStatus');
-        } else {
-          this.get('features').disable('destinationStatus');
-        }
+        ['destinationStatus', 'clandestineRendezvous', 'txtbeyond'].forEach(setting => {
+          if (settings.get(setting)) {
+            features.enable(setting);
+          } else {
+            features.disable(setting);
+          }
+        });
+
         return settings.save();
       });
     });
