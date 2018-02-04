@@ -135,3 +135,14 @@ module('Unit | Service | Clandestine Rendezvous | maskIsValid', function(hooks) 
     assert.notOk(service.maskIsValid('ABC123', 'ABC123'), 'expected the mask to be invalid when it has no blanks');
   });
 });
+
+module('Unit | Service | Clandestine Rendezvous | suggestedMask', function(hooks) {
+  setupTest(hooks);
+
+  test('it suggests masks', function(assert) {
+    const service = this.owner.lookup('service:clandestine-rendezvous');
+
+    assert.equal(service.suggestedMask('ABC123'), 'ABC___', 'expected a suggested mask');
+    assert.equal(service.suggestedMask('A0C1234'), 'A0C1___', 'expected the suggested mask to blank the three rightmost digits');
+  });
+});

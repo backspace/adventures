@@ -66,5 +66,20 @@ export default Service.extend({
     }
 
     return mask.indexOf('_') > -1;
+  },
+
+  suggestedMask(answer) {
+    // The suggestion replaces the rightmost three digits with underscores
+
+    const digitsToReplace = 3;
+    return answer.split('').reduceRight(({suggestion, replaced}, character) => {
+      if (replaced >= digitsToReplace) {
+        return {suggestion: `${character}${suggestion}`, replaced};
+      } else if (character.match(/\d/)) {
+        return {suggestion: `_${suggestion}`, replaced: replaced + 1};
+      } else {
+        return {suggestion: `${character}${suggestion}`, replaced};
+      }
+    }, {suggestion: '', replaced: 0}).suggestion;
   }
 });

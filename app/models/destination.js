@@ -21,18 +21,7 @@ export default Model.extend({
   suggestedMask: computed('answer', function() {
     const answer = this.get('answer') || '';
 
-    // The suggestion replaces the rightmost three digits with underscores
-
-    const digitsToReplace = 3;
-    return answer.split('').reduceRight(({suggestion, replaced}, character) => {
-      if (replaced >= digitsToReplace) {
-        return {suggestion: `${character}${suggestion}`, replaced};
-      } else if (character.match(/\d/)) {
-        return {suggestion: `_${suggestion}`, replaced: replaced + 1};
-      } else {
-        return {suggestion: `${character}${suggestion}`, replaced};
-      }
-    }, {suggestion: '', replaced: 0}).suggestion;
+    return this.get('puzzles.implementation').suggestedMask(answer);
   }),
 
   maskIsValid: computed('answer', 'mask', function() {
