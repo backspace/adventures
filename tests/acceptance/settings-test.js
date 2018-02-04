@@ -70,6 +70,9 @@ test('an existing settings document is displayed and can be updated, with its bo
 
   andThen(() => {
     this.store.findRecord('settings', 'settings').then(settings => {
+      const featuresService = this.application.__container__.lookup('service:features');
+      assert.notOk(featuresService.get('destinationStatus'));
+
       assert.equal(settings.get('goal'), '789');
       assert.notOk(settings.get('destinationStatus'));
 

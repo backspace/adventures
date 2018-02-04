@@ -3,6 +3,7 @@ import { run } from '@ember/runloop';
 import Service from '@ember/service';
 
 export default Service.extend({
+  features: service(),
   store: service(),
 
   modelPromise() {
@@ -15,6 +16,20 @@ export default Service.extend({
       return run(() => store.findRecord('settings', 'settings'));
     }).catch(() => {
       return run(() => store.createRecord('settings', {id: 'settings'}));
+    });
+  },
+
+  syncFeatures() {
+    return this.modelPromise().then(settings => {
+      // FIXME why is this needed?
+      run(() => {
+        if (settings.get('destinationStatus')) {
+          this.get('features').enable('destinationStatus');
+        } else {
+          this.get('features').disable('destinationStatus');
+        }
+        return settings.save();
+      });
     });
   }
 });

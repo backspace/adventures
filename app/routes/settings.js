@@ -10,7 +10,9 @@ export default Route.extend({
 
   actions: {
     save(model) {
-      model.save();
+      model.save().then(() => {
+        this.get('settings').syncFeatures();
+      });
     }
   }
 });

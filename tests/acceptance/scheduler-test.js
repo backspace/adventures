@@ -135,7 +135,7 @@ test('regions with available destinations are displayed on the map and highlight
 
 // This test ensures that a region’s destinations are serialised
 test('a newly created and available destination will show under its region', (assert) => {
-  withFeature('destination-status');
+  withSetting('destination-status');
   destinationsPage.visit();
   destinationsPage.new();
   destinationsPage.descriptionField.fill('Fountain');

@@ -42,7 +42,7 @@ module.exports = {
         embertest: true
       },
       globals: {
-        withFeature: true
+        withSetting: true
       }
     }
   ]
