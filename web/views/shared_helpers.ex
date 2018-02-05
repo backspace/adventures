@@ -1,4 +1,13 @@
 defmodule Cr2016site.SharedHelpers do
+  def city do
+    # Not in config? Unsure…
+    "Winnipeg"
+  end
+
+  def adventure_name do
+    "txtbeyond"
+  end
+
   def full_date do
     formatted_start_time "%A, %B %e, %Y"
   end

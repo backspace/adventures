@@ -14,7 +14,7 @@
           <legend>Are you attending?</legend>
           <%= radio_button f, :attending, true, class: "attending-true", id: "attending-true" %> <label for='attending-true'>Yes</label>
           <%= radio_button f, :attending, false, class: "attending-false", id: "attending-false" %> <label for='attending-false'>No</label>
-          <p class='help-text' id='attending-help'>Please confirm that you are attending Clandestine Rendezvous</p>
+          <p class='help-text' id='attending-help'>Please confirm that you are attending <%= adventure_name() %></p>
         </div>
       <% end %>
       <div class="form-group">

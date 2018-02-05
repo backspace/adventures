@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Clandestine Rendezvous</title>
+    <title><%= adventure_name() %></title>
     <link rel="stylesheet" href="<%= static_url(Cr2016site.Endpoint, "/css/email.css") %>">
   </head>
 
@@ -15,7 +15,7 @@
     <div class='everything'>
       <div class='row title'>
         <div class='small-12 columns'>
-          <h2>Clandestine Rendezvous</h2>
+          <h2><%= adventure_name() %></h2>
         </div>
       </div>
 

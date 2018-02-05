@@ -9,13 +9,13 @@
 
     <meta name='twitter:card' content='summary'>
 
-    <meta property='og:title' content='Clandestine Rendezvous: Victoria, <%= short_date() %>'>
+    <meta property='og:title' content='<%= adventure_name() %>: <%= city() %>, <%= short_date() %>'>
     <meta property='og:type' content='website'>
     <meta property='og:url' content='http://rendezvous.chromatin.ca'>
     <meta property='og:image' content='https://crvictoria.herokuapp.com/images/eye.png'>
     <meta property='og:description' content='You are a member of a secret society with a mission of the utmost importance. You will have encounters with other members around an undisclosed location where you will obtain information to get closer to fulfilling your mission.'>
 
-    <title>Clandestine Rendezvous</title>
+    <title><%= adventure_name() %></title>
     <link href='https://fonts.googleapis.com/css?family=Oswald:300,400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
     <%= if Application.get_env(:cr2016site, :google_analytics) do %>
