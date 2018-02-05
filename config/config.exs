@@ -11,8 +11,7 @@ config :cr2016site, Cr2016site.Endpoint,
   root: Path.dirname(__DIR__),
   secret_key_base: "xn64PMB42eKmnISH1qTC8I+r62bNyMgTxlXYupsWCvvjBnFJEycMHcXdeFitYxyS",
   render_errors: [accepts: ~w(html json)],
-  pubsub: [name: Cr2016site.PubSub,
-           adapter: Phoenix.PubSub.PG2]
+  pubsub: [name: Cr2016site.PubSub, adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -26,7 +25,7 @@ config :cr2016site,
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env}.exs"
+import_config "#{Mix.env()}.exs"
 
 # Configure phoenix generators
 config :phoenix, :generators,
