@@ -50,8 +50,8 @@ defmodule Cr2016site.Integration.Registrations do
 
     assert welcome_email["to"] == "samuel.delaney@example.com"
     assert welcome_email["subject"] == "[rendezvous] Welcome!"
-    assert String.contains?(welcome_email["text"], "secret society")
-    assert String.contains?(welcome_email["html"], "secret society")
+    assert String.contains?(welcome_email["text"], "groundbreaking")
+    assert String.contains?(welcome_email["html"], "groundbreaking")
 
     assert Nav.logout_link.text == "Log out samuel.delaney@example.com"
 
