@@ -24,6 +24,10 @@ defmodule Cr2016site.SharedHelpers do
     formatted_start_time("%-I:%M%p") |> String.downcase()
   end
 
+  def host do
+    Application.get_env(:cr2016site, :host)
+  end
+
   defp formatted_start_time(format_string) do
     Timex.DateFormat.format!(parsed_start_time(), format_string, :strftime)
   end

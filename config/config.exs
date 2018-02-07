@@ -23,7 +23,8 @@ config :cr2016site,
   mailgun_mode: :regular,
   start_time: [{{2018, 3, 1}, {18, 30, 00}}, "Canada/Central"],
   email_address: "beyond@chromatin.ca",
-  email_short_adventure_name: "beyond"
+  email_short_adventure_name: "beyond",
+  host: System.get_env("HOST")
 
 config :sentry,
   dsn: System.get_env("SENTRY_DSN"),

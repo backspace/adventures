@@ -11,8 +11,8 @@
 
     <meta property='og:title' content='<%= adventure_name() %>: <%= city() %>, <%= short_date() %>'>
     <meta property='og:type' content='website'>
-    <meta property='og:url' content='http://rendezvous.chromatin.ca'>
-    <meta property='og:image' content='https://crvictoria.herokuapp.com/images/eye.png'>
+    <meta property='og:url' content='https://<%= host() %>'>
+    <meta property='og:image' content='https://<%= host() %>/images/eye.png'>
     <meta property='og:description' content='You are a member of a secret society with a mission of the utmost importance. You will have encounters with other members around an undisclosed location where you will obtain information to get closer to fulfilling your mission.'>
 
     <title><%= adventure_name() %></title>
