@@ -49,7 +49,7 @@
             <li>using a light to illuminate a dark space</li>
           </ul>
           <p class='help-text'>
-            The following are beyond the scope of the preview:
+            The following are <span class='beyond'>beyond</span> the scope of the preview:
           </p>
           <ul class='help-text'>
             <li>climbing without a ladder</li>

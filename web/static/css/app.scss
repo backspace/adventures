@@ -8,14 +8,16 @@ $global-width: rem-calc(480) !default;
 
 $background: #8CA375;
 $primary-color: black;
-$success-color: lime;
-$alert-color: $primary-color;
+$success-color: rgba(255, 255, 255, 0.2);
+$alert-color: rgb(255, 255, 255);
 $warning-color: yellow;
+
+$animation-duration: 60s;
 
 // Thanks to Steve Calamia https://codepen.io/metagrapher/pen/tgcLl
 @mixin animated-background {
-  animation: colorchange 60s infinite both alternate;
-  -webkit-animation: colorchange 60s infinite both alternate;
+  animation: colorchange $animation-duration infinite both alternate;
+  -webkit-animation: colorchange $animation-duration infinite both alternate;
 }
 
 @keyframes colorchange
@@ -34,6 +36,16 @@ $warning-color: yellow;
   50%  {background: #B6A400;}
   75%  {background: #C7AC00;}
   100% {background: #83847B;}
+}
+
+@keyframes shadowchange {
+  0% {
+    filter: drop-shadow(0 0 1px)
+  },
+
+  100% {
+    filter: drop-shadow(0 0 10px)
+  }
 }
 
 $callout-background-fade: 10%;
@@ -224,4 +236,13 @@ thead, tbody {
   margin: 1rem 0;
 
   background: rgba(255,255,255,0.1);
+}
+
+.beyond {
+  animation: shadowchange $animation-duration/2 infinite both alternate;
+  -webkit-animation: shadowchange $animation-duration/2 infinite both alternate;
+
+  &:hover {
+    filter: drop-shadow(0 0 0) !important;
+  }
 }
