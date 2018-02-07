@@ -232,10 +232,14 @@ thead, tbody {
 }
 
 .risk-aversion-help-container {
-  padding: 1rem;
+  padding: 1.3rem 1rem 1rem 1rem;
   margin: 1rem 0;
 
   background: rgba(255,255,255,0.1);
+
+  ul:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .beyond {
