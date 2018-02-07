@@ -12,6 +12,30 @@ $success-color: lime;
 $alert-color: $primary-color;
 $warning-color: yellow;
 
+// Thanks to Steve Calamia https://codepen.io/metagrapher/pen/tgcLl
+@mixin animated-background {
+  animation: colorchange 60s infinite both alternate;
+  -webkit-animation: colorchange 60s infinite both alternate;
+}
+
+@keyframes colorchange
+{
+  0%   {background: #004F2E;}
+  25%  {background: #6C8D21;}
+  50%  {background: #B6A400;}
+  75%  {background: #C7AC00;}
+  100% {background: #83847B;}
+}
+
+@-webkit-keyframes colorchange /* Safari and Chrome - necessary duplicate */
+{
+  0%   {background: #004F2E;}
+  25%  {background: #6C8D21;}
+  50%  {background: #B6A400;}
+  75%  {background: #C7AC00;}
+  100% {background: #83847B;}
+}
+
 $callout-background-fade: 10%;
 
 $background-one: transparent;
@@ -57,7 +81,7 @@ $button-color: white;
 @include foundation-everything;
 
 body {
-  background: $background;
+  @include animated-background;
 }
 
 h2 {
@@ -78,7 +102,7 @@ h2 {
 }
 
 .top-bar, .top-bar ul {
-  background: $background;
+  @include animated-background;
   padding-left: 0;
 
   > li:not(.menu-text) {
@@ -189,4 +213,15 @@ thead, tbody {
 
 .button {
   margin-bottom: 0;
+}
+
+.risk-aversion-option {
+  display: block;
+}
+
+.risk-aversion-help-container {
+  padding: 1rem;
+  margin: 1rem 0;
+
+  background: rgba(255,255,255,0.1);
 }
