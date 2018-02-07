@@ -22,6 +22,7 @@
         <%= text_input f, :team_emails, class: "form-control", "aria-describedby": "team-emails-help" %>
         <p class='help-text' id='team-emails-help'>If you want to participate with a friend, enter their email address here</p>
       </div>
+      <%= render "relationships.html", user: @user, relationships: @relationships %>
       <div class="form-group">
         <%= label f, :proposed_team_name %>
         <%= text_input f, :proposed_team_name, class: "form-control", "aria-describedby": "team-name-help" %>
@@ -78,7 +79,6 @@
     <% end %>
   </div>
 </div>
-<%= render "relationships.html", user: @user, relationships: @relationships %>
 <div class='row card'>
   <div class='small-12 columns'>
     <%= link "Change your password", to: registration_path(@conn, :edit), class: "account" %>
