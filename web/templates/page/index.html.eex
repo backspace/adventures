@@ -7,7 +7,7 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <p>We’re a hot new bootstrapped startup working on a technology you simply <em>must</em> experience: txts from <strong class='beyond'>beyond</strong> as a service, or <abbr title='txts from beyond as a service'>TFBaaS</abbr>. Please come to our technology preview at an undisclosed <%= city %> location in the evening on <%= full_date() %>.</p>
-    <p><a href='http://events.chromatin.ca/'>But what is this, <em>really</em>?</a></p>
+    <p><a href='http://events.chromatin.ca/' class='underline'>But what is this, <em>really</em>?</a></p>
   </div>
 </div>
 
