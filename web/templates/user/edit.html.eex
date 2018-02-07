@@ -39,7 +39,7 @@
         <div class='risk-aversion-help-container'>
           <p class='help-text' id='risk-aversion-help'>How much risk are you comfortable taking? Do you want to stick to places open to the public, or are you confident enough to push the envelope?</p>
           <p class='help-text'>You <em>never</em> have to do anything you don't want to. Maybe someone on the team you're meeting will feel more comfortable, or you can just find out the answers from other participants.</p>
-          <p class='help-text'><strong>Choosing a certain level of risk-aversion isn't a guarantee that every location you visit will entail that level of risk.</strong> Risk is subjective and connected to social position.</p>
+          <p class='help-text'><strong>Choosing a certain level of risk-aversion isn't a guarantee that every location you visit will require that level of risk.</strong> Risk is subjective and connected to social position.</p>
           <p class='help-text'>
             Examples of tasks for the least risk-averse are:
           </p>
