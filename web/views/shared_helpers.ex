@@ -13,7 +13,8 @@ defmodule Cr2016site.SharedHelpers do
   end
 
   def short_date do
-    formatted_start_time("%B %e")
+    formatted_start_time("%B %e") |>
+    String.replace(~r/ +/, " ")
   end
 
   def ordinal_date do
