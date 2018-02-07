@@ -8,11 +8,12 @@ defmodule Cr2016site.Mailer do
   alias Cr2016site.Endpoint
 
   @from Application.get_env(:cr2016site, :email_address)
+  @short_adventure_name Application.get_env(:cr2016site, :email_short_adventure_name)
 
   def send_welcome_email(email) do
     send_email to: email,
                from: @from,
-               subject: "[rendezvous] Welcome!",
+               subject: "[#{@short_adventure_name}] Welcome!",
                html: welcome_html(),
                text: welcome_text()
   end
@@ -43,7 +44,7 @@ defmodule Cr2016site.Mailer do
   end
 
   def send_message(message, user, relationships, team) do
-    send_email to: user.email, from: @from, subject: "[rendezvous] #{message.subject}", text: message_text(message, user, relationships, team), html: message_html(message, user, relationships, team)
+    send_email to: user.email, from: @from, subject: "[#{@short_adventure_name}] #{message.subject}", text: message_text(message, user, relationships, team), html: message_html(message, user, relationships, team)
   end
 
   def send_backlog(messages, user) do
@@ -52,13 +53,13 @@ defmodule Cr2016site.Mailer do
       _ -> "Messages sent before you registered"
     end
 
-    send_email to: user.email, from: @from, subject: "[rendezvous] #{subject}", text: backlog_text(messages), html: backlog_html(messages)
+    send_email to: user.email, from: @from, subject: "[#{@short_adventure_name}] #{subject}", text: backlog_text(messages), html: backlog_html(messages)
   end
 
   def send_password_reset(user) do
     send_email to: user.email,
                from: @from,
-               subject: "[rendezvous] Password reset",
+               subject: "[#{@short_adventure_name}] Password reset",
                html: "Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link"
   end
 

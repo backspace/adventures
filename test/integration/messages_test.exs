@@ -7,6 +7,8 @@ defmodule Cr2016site.Integration.Messages do
   alias Cr2016site.Pages.Messages
   alias Cr2016site.Pages.Nav
 
+  @short_adventure_name Application.get_env(:cr2016site, :email_short_adventure_name)
+
   use Hound.Helpers
   hound_session()
 
@@ -35,7 +37,7 @@ defmodule Cr2016site.Integration.Messages do
     [_, email, _, %{"text" => empty_email_text}] = Cr2016site.MailgunHelper.sent_email
     assert email["to"] == "user@example.com"
     assert email["from"] == Application.get_env(:cr2016site, :email_address)
-    assert email["subject"] == "[rendezvous] A Subject!"
+    assert email["subject"] == "[#{@short_adventure_name}] A Subject!"
 
     text = email["text"]
     assert String.contains?(text, "Jorts")
@@ -94,7 +96,7 @@ defmodule Cr2016site.Integration.Messages do
     assert backlog_email["to"] == "registerer@example.com"
     assert backlog_email["from"] == Application.get_env(:cr2016site, :email_address)
 
-    assert backlog_email["subject"] == "[rendezvous] Messages sent before you registered"
+    assert backlog_email["subject"] == "[#{@short_adventure_name}] Messages sent before you registered"
 
     text = backlog_email["text"]
     assert String.contains?(text, "These messages were sent before you registered.")

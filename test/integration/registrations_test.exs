@@ -10,6 +10,8 @@ defmodule Cr2016site.Integration.Registrations do
   alias Cr2016site.Pages.Account
   alias Cr2016site.Pages.ForgotPassword
 
+  @short_adventure_name Application.get_env(:cr2016site, :email_short_adventure_name)
+
   # Import Hound helpers
   use Hound.Helpers
 
@@ -49,7 +51,7 @@ defmodule Cr2016site.Integration.Registrations do
     assert admin_email["subject"] == "samuel.delaney@example.com registered"
 
     assert welcome_email["to"] == "samuel.delaney@example.com"
-    assert welcome_email["subject"] == "[rendezvous] Welcome!"
+    assert welcome_email["subject"] == "[#{@short_adventure_name}] Welcome!"
     assert String.contains?(welcome_email["text"], "groundbreaking")
     assert String.contains?(welcome_email["html"], "groundbreaking")
 
@@ -159,7 +161,7 @@ defmodule Cr2016site.Integration.Registrations do
 
     assert forgot_password_email["to"] == "octavia.butler@example.com"
     assert forgot_password_email["from"] == Application.get_env(:cr2016site, :email_address)
-    assert forgot_password_email["subject"] == "[rendezvous] Password reset"
+    assert forgot_password_email["subject"] == "[#{@short_adventure_name}] Password reset"
 
     [url] = Floki.find(forgot_password_email["html"], "a")
     |> Floki.attribute("href")
