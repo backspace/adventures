@@ -21,7 +21,7 @@ config :logger, :console,
 config :cr2016site,
   mailgun_domain: "https://api.mailgun.net/v3/mg.chromatin.ca",
   mailgun_mode: :regular,
-  start_time: [{{2018, 3, 1}, {18, 30, 00}}, "Canada/Central"],
+  start_time: [{{2018, 3, 6}, {18, 30, 00}}, "Canada/Central"],
   email_address: "beyond@chromatin.ca",
   email_short_adventure_name: "beyond",
   host: System.get_env("HOST")
