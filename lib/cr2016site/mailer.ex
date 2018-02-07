@@ -7,7 +7,7 @@ defmodule Cr2016site.Mailer do
   alias Cr2016site.Router
   alias Cr2016site.Endpoint
 
-  @from "b@events.chromatin.ca"
+  @from Application.get_env(:cr2016site, :email_address)
 
   def send_welcome_email(email) do
     send_email to: email,
@@ -18,7 +18,7 @@ defmodule Cr2016site.Mailer do
   end
 
   def send_question(attributes) do
-    send_email to: "b@events.chromatin.ca",
+    send_email to: @from,
                from: @from,
                subject: "Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}",
                text: attributes["question"]

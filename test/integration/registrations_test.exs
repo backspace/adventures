@@ -44,8 +44,8 @@ defmodule Cr2016site.Integration.Registrations do
 
     [admin_email, welcome_email] = Cr2016site.MailgunHelper.sent_email
 
-    assert admin_email["to"] == "b@events.chromatin.ca"
-    assert admin_email["from"] == "b@events.chromatin.ca"
+    assert admin_email["to"] == Application.get_env(:cr2016site, :email_address)
+    assert admin_email["from"] == Application.get_env(:cr2016site, :email_address)
     assert admin_email["subject"] == "samuel.delaney@example.com registered"
 
     assert welcome_email["to"] == "samuel.delaney@example.com"
@@ -158,7 +158,7 @@ defmodule Cr2016site.Integration.Registrations do
     [forgot_password_email] = Cr2016site.MailgunHelper.sent_email
 
     assert forgot_password_email["to"] == "octavia.butler@example.com"
-    assert forgot_password_email["from"] == "b@events.chromatin.ca"
+    assert forgot_password_email["from"] == Application.get_env(:cr2016site, :email_address)
     assert forgot_password_email["subject"] == "[rendezvous] Password reset"
 
     [url] = Floki.find(forgot_password_email["html"], "a")
@@ -216,8 +216,8 @@ defmodule Cr2016site.Integration.Registrations do
 
     [admin_email] = Cr2016site.MailgunHelper.sent_email
 
-    assert admin_email["to"] == "b@events.chromatin.ca"
-    assert admin_email["from"] == "b@events.chromatin.ca"
+    assert admin_email["to"] == Application.get_env(:cr2016site, :email_address)
+    assert admin_email["from"] == Application.get_env(:cr2016site, :email_address)
     assert admin_email["subject"] == "octavia.butler@example.com deleted their account"
   end
 

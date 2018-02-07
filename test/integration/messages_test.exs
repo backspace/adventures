@@ -34,7 +34,7 @@ defmodule Cr2016site.Integration.Messages do
 
     [_, email, _, %{"text" => empty_email_text}] = Cr2016site.MailgunHelper.sent_email
     assert email["to"] == "user@example.com"
-    assert email["from"] == "b@events.chromatin.ca"
+    assert email["from"] == Application.get_env(:cr2016site, :email_address)
     assert email["subject"] == "[rendezvous] A Subject!"
 
     text = email["text"]
@@ -92,7 +92,7 @@ defmodule Cr2016site.Integration.Messages do
     [_admin, _welcome, backlog_email] = Cr2016site.MailgunHelper.sent_email
 
     assert backlog_email["to"] == "registerer@example.com"
-    assert backlog_email["from"] == "b@events.chromatin.ca"
+    assert backlog_email["from"] == Application.get_env(:cr2016site, :email_address)
 
     assert backlog_email["subject"] == "[rendezvous] Messages sent before you registered"
 
