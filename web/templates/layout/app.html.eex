@@ -12,7 +12,7 @@
     <meta property='og:title' content='<%= adventure_name() %>: <%= city() %>, <%= short_date() %>'>
     <meta property='og:type' content='website'>
     <meta property='og:url' content='https://<%= host() %>'>
-    <meta property='og:image' content='https://<%= host() %>/images/eye.png'>
+    <meta property='og:image' content='https://<%= host() %>/images/icon.png'>
     <meta property='og:description' content='Join our technology preview of txts from beyond as a service.'>
 
     <title><%= adventure_name() %></title>
