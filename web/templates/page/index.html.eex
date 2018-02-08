@@ -14,7 +14,7 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <h4>When and where?</h4>
-    <p>We can’t share the technology preview location publicly because of the rampant corporate espionage in this market segment. Please <%= link "register", to: registration_path(@conn, :new) %> to learn more.</p>
+    <p>We can’t share the technology preview location publicly because of the rampant corporate espionage in this market segment. Please <%= link "register", to: registration_path(@conn, :new), class: "underline" %> to learn more.</p>
     <p>We will be meeting at a downtown Winnipeg location and traveling together to the preview for the start time of <%= start_time() %> via Winnipeg Transit. If you need to make alternate travel arrangements, let us know. After we get inside from the bus, everything that follows will remain indoors.</p>
   </div>
 </div>
@@ -35,21 +35,21 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <h4>Accessibility</h4>
-    <p>Do you have accessibility needs we should know about? Please tell us <%= link "when you register", to: registration_path(@conn, :new) %> and we will work with you on how you can participate.</p>
+    <p>Do you have accessibility needs we should know about? Please tell us <%= link "when you register", to: registration_path(@conn, :new), class: "underline" %> and we will work with you on how you can participate.</p>
     <p>The evening could cover large indoor distances, but the particulars can be adjusted according to need.</p>
   </div>
 </div>
 <div class='row card'>
   <div class='small-12 columns'>
     <h4>Registration</h4>
-    <p>You <em>must</em> <%= link "register", to: registration_path(@conn, :new) %> to attend the event, as the technology is dependent on knowing who will be present. If you’re uncertain whether you can make it, register anyway; you can cancel up until the day before. Or, you could register as a team and change out who participates.</p>
+    <p>You <em>must</em> <%= link "register", to: registration_path(@conn, :new), class: "underline" %> to attend the event, as the technology is dependent on knowing who will be present. If you’re uncertain whether you can make it, register anyway; you can cancel up until the day before. Or, you could register as a team and change out who participates.</p>
   </div>
 </div>
 <div class='row card'>
   <div class='small-12 columns'>
     <h4 id='questions'>Questions</h4>
 
-    <p><strong>This is not the registration form, that’s <%= link "here", to: registration_path(@conn, :new) %>.</strong></p>
+    <p><strong>This is not the registration form, that’s <%= link "here", to: registration_path(@conn, :new), class: "underline" %>.</strong></p>
 
     <%= form_for @conn, page_path(@conn, :questions), [as: :question], fn f -> %>
       <div class='form-group'>
