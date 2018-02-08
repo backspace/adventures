@@ -40,11 +40,11 @@ $animation-duration: 60s;
 
 @keyframes shadowchange {
   0% {
-    filter: drop-shadow(0 0 1px)
+    filter: drop-shadow(0 0 1px white)
   },
 
   100% {
-    filter: drop-shadow(0 0 10px)
+    filter: drop-shadow(0 0 10px white)
   }
 }
 
