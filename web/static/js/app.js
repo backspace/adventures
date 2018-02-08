@@ -20,6 +20,21 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 
 // import socket from "./socket"
 
+// TODO can create the SVG pixels here
+
+const drawing = `
+.............
+. .       . .
+.  .     .  .
+.   .   .   .
+.    . .    .
+.     .     .
+.............
+`;
+
+const allDrawingLines = drawing.split('\n');
+const drawingLines = allDrawingLines.splice(1, allDrawingLines.length - 1);
+
 $(() => {
   $("*[data-action=add-email]").click(function() {
     const email = $(this).closest("tr").children(".email").text();
@@ -30,5 +45,17 @@ $(() => {
     if (currentValue.indexOf(email) == -1) {
       teamEmails.val(`${currentValue} ${email}`);
     }
+  });
+
+  drawingLines.forEach((line, rowIndex) => {
+    line.split('').forEach((drawingPixel, colIndex) => {
+      const pixel = $(`#p${rowIndex}-${colIndex}`);
+
+      if (drawingPixel === '.') {
+        pixel.attr('fill', 'white');
+      } else {
+        pixel.attr('fill', 'transparent');
+      }
+    });
   });
 });
