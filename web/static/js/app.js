@@ -35,8 +35,8 @@ const drawing = `
 const allDrawingLines = drawing.split('\n');
 const drawingLines = allDrawingLines.splice(1, allDrawingLines.length - 1);
 
-let iteration = 0;
 const iterations = drawingLines[0].length*3;
+let iteration = drawingLines[0].length*2 + 1;
 
 $(() => {
   $("*[data-action=add-email]").click(function() {
