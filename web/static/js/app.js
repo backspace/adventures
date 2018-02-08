@@ -35,6 +35,9 @@ const drawing = `
 const allDrawingLines = drawing.split('\n');
 const drawingLines = allDrawingLines.splice(1, allDrawingLines.length - 1);
 
+let iteration = 0;
+const iterations = drawingLines[0].length*3;
+
 $(() => {
   $("*[data-action=add-email]").click(function() {
     const email = $(this).closest("tr").children(".email").text();
@@ -47,15 +50,30 @@ $(() => {
     }
   });
 
+  setInterval(() => {
+    drawEnvelope();
+    iteration++;
+
+    if (iteration > iterations) {
+      iteration = 0;
+    }
+  }, 150);
+});
+
+function drawEnvelope() {
+  $('rect').attr('fill', 'transparent');
   drawingLines.forEach((line, rowIndex) => {
     line.split('').forEach((drawingPixel, colIndex) => {
-      const pixel = $(`#p${rowIndex}-${colIndex}`);
+      let offsetColIndex = colIndex - iteration;
+
+      if (offsetColIndex < 0) {
+        offsetColIndex += iterations;
+      }
+      const pixel = $(`#p${rowIndex}-${offsetColIndex}`);
 
       if (drawingPixel === '.') {
         pixel.attr('fill', 'white');
-      } else {
-        pixel.attr('fill', 'transparent');
       }
     });
   });
-});
+}
