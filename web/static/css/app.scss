@@ -105,6 +105,10 @@ h2 {
   }
 }
 
+h4, nav {
+  text-transform: lowercase;
+}
+
 .row.title + .row.card {
   margin-top: 0;
 }
