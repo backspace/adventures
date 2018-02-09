@@ -55,7 +55,7 @@ defmodule Cr2016site.Integration.Registrations do
     assert String.contains?(welcome_email["text"], "groundbreaking")
     assert String.contains?(welcome_email["html"], "groundbreaking")
 
-    assert Nav.logout_link.text == "Log out samuel.delaney@example.com"
+    assert Nav.logout_link.text == "log out samuel.delaney@example.com"
 
     assert Details.active?
   end
@@ -78,7 +78,7 @@ defmodule Cr2016site.Integration.Registrations do
     Login.submit
 
     assert Nav.info_text == "Logged in"
-    assert Nav.logout_link.text == "Log out octavia.butler@example.com"
+    assert Nav.logout_link.text == "log out octavia.butler@example.com"
 
     assert Details.active?
 
@@ -186,12 +186,12 @@ defmodule Cr2016site.Integration.Registrations do
     Account.submit
 
     assert Nav.info_text == "Your password has been changed"
-    assert Nav.logout_link.text == "Log out octavia.butler@example.com"
+    assert Nav.logout_link.text == "log out octavia.butler@example.com"
 
     Nav.logout_link.click
 
     Login.login_as "octavia.butler@example.com", "anewpassword"
-    assert Nav.logout_link.text == "Log out octavia.butler@example.com"
+    assert Nav.logout_link.text == "log out octavia.butler@example.com"
 
     navigate_to reset_path
     assert Nav.error_text == "Unknown password reset token"
