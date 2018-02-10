@@ -15,6 +15,11 @@ defmodule Cr2016site.User do
 
     field :attending, :boolean
 
+    field :display_size, :string
+    field :txt, :boolean
+    field :data, :boolean
+    field :number, :string
+
     field :teamed, :boolean, virtual: true
 
     field :team_emails, Cr2016site.DowncasedString
@@ -30,7 +35,7 @@ defmodule Cr2016site.User do
   end
 
   @required_fields ~w(email password)
-  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source)
+  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source display_size data number)
 
   @doc """
   Creates a changeset based on the `model` and `params`.
@@ -50,7 +55,7 @@ defmodule Cr2016site.User do
     required_fields = case Application.get_env(:cr2016site, :request_confirmation) do
       true -> ~w(attending)
       _ -> []
-    end
+    end ++ ~w(txt)
 
     model
     |> cast(params, required_fields, @optional_fields)

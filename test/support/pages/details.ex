@@ -64,6 +64,22 @@ defmodule Cr2016site.Pages.Details do
     click({:css, "input.level-#{level_integer}"})
   end
 
+  def choose_txt do
+    click({:css, "input.txt-true"})
+  end
+
+  def choose_data do
+    click({:css, "input.data-true"})
+  end
+
+  def fill_number(number) do
+    fill_field({:id, "user_number"}, number)
+  end
+
+  def fill_display_size(size) do
+    fill_field({:id, "user_display_size"}, size)
+  end
+
   def fill_accessibility(accessibility) do
     fill_field({:id, "user_accessibility"}, accessibility)
   end

@@ -41,6 +41,12 @@ defmodule Cr2016site.Integration.Teams do
 
     Details.fill_team_emails "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"
     Details.fill_proposed_team_name "Simultaneity"
+
+    Details.choose_txt
+    Details.choose_data
+    Details.fill_number "2045551212"
+    Details.fill_display_size "7"
+
     Details.choose_risk_aversion "Don’t hold back"
     Details.fill_accessibility "Some accessibility information"
 
@@ -58,8 +64,8 @@ defmodule Cr2016site.Integration.Teams do
     [sent_email] = Cr2016site.MailgunHelper.sent_email
     assert sent_email["to"] == Application.get_env(:cr2016site, :email_address)
     assert sent_email["from"] == Application.get_env(:cr2016site, :email_address)
-    assert sent_email["subject"] == "takver@example.com details changed: accessibility, comments, proposed_team_name, risk_aversion, source, team_emails"
-    assert sent_email["text"] == "%{accessibility: \"Some accessibility information\", comments: \"Some comments\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\"}"
+    assert sent_email["subject"] == "takver@example.com details changed: accessibility, comments, data, display_size, number, proposed_team_name, risk_aversion, source, team_emails, txt"
+    assert sent_email["text"] == "%{accessibility: \"Some accessibility information\", comments: \"Some comments\", data: true, display_size: \"7\", number: \"2045551212\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\", txt: true}"
 
     [shevek, bedap] = Details.mutuals
 
