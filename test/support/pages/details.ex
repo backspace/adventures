@@ -137,6 +137,7 @@ defmodule Cr2016site.Pages.Details do
     defmodule Error do
       def present? do
         element? :css, ".errors .attending"
+        element? :css, ".form-group.attending.has-error"
       end
     end
   end

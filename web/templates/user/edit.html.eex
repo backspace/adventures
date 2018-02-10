@@ -10,7 +10,7 @@
       <%= render Cr2016site.SharedView, "errors.html", changeset: @changeset, f: f %>
 
       <%= if Application.get_env(:cr2016site, :request_confirmation) do %>
-        <div class='form-group attending'>
+        <div class='form-group attending <%= if f.errors[:attending] do %>has-error<% end %>'>
           <legend>Are you attending?</legend>
           <%= radio_button f, :attending, true, class: "attending-true", id: "attending-true" %> <label for='attending-true'>Yes</label>
           <%= radio_button f, :attending, false, class: "attending-false", id: "attending-false" %> <label for='attending-false'>No</label>
@@ -28,7 +28,7 @@
         <p class='help-text' id='team-name-help'>Choose a name for other participants to identify you</p>
       </div>
       <%= render "relationships.html", user: @user, relationships: @relationships %>
-      <div class='form-group txt'>
+      <div class='form-group txt <%= if f.errors[:txt] do %>has-error<% end %>''>
         <legend>During the preview, will you have a device that can send and receive txts?</legend>
         <%= radio_button f, :txt, true, class: "txt-true", id: "txt-true" %> <label for='txt-false'>Yes</label>
         <%= radio_button f, :txt, false, class: "txt-false", id: "txt-false" %> <label for='txt-false'>No</label>

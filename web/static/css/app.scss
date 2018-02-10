@@ -225,6 +225,10 @@ thead, tbody {
   &:last-child {
     margin-bottom: 0;
   }
+
+  &.has-error {
+    background: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .button {
