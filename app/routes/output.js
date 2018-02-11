@@ -10,8 +10,24 @@ export default Route.extend({
   },
 
   map: service(),
+  features: service(),
 
   model() {
+    let fontPaths;
+
+    if (this.get('features.clandestineRendezvous')) {
+      fontPaths = [
+        fetch('/fonts/blackout.ttf'),
+        fetch('/fonts/Oswald-Bold.ttf'),
+        fetch('/fonts/Oswald-Regular.ttf')
+      ];
+    } else if (this.get('features.txtbeyond')) {
+      fontPaths = [
+        fetch('/fonts/nokiafc22.ttf'),
+        fetch('/fonts/Arvo-Bold.ttf'),
+        fetch('/fonts/Arvo-Regular.ttf')
+      ];
+    }
     return hash({
       teams: this.store.findAll('team'),
       meetings: this.store.findAll('meeting'),
@@ -20,11 +36,7 @@ export default Route.extend({
 
       settings: this.store.findRecord('settings', 'settings'),
 
-      assets: all([
-        fetch('/fonts/blackout.ttf'),
-        fetch('/fonts/Oswald-Bold.ttf'),
-        fetch('/fonts/Oswald-Regular.ttf')
-      ]).then(responses => {
+      assets: all(fontPaths).then(responses => {
         return all(responses.map(response => response.arrayBuffer()));
       }).then(([header, bold, regular]) => {
         return hash({

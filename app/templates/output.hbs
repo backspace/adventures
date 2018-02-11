@@ -1,10 +1,15 @@
 <div class=row>
   <div class='small-12 columns'>
     <label>Debug? {{input type='checkbox' checked=debug}}</label>
+
     {{#if (feature-flag 'clandestineRendezvous')}}
       {{embedded-rendezvous-maps teams=model.teams assets=model.assets debug=debug}}
       {{embedded-rendezvous-cards teams=model.teams settings=model.settings assets=model.assets debug=debug}}
       {{embedded-rendezvous-answers teams=model.teams meetings=model.meetings}}
+    {{/if}}
+
+    {{#if (feature-flag 'txtbeyond')}}
+      {{embedded-txtbeyond-cards teams=model.teams settings=model.settings assets=model.assets debug=debug}}
     {{/if}}
   </div>
 </div>
