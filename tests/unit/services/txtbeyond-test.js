@@ -8,5 +8,6 @@ module('Unit | Service | txtbeyond | suggestedMask', function(hooks) {
     const service = this.owner.lookup('service:txtbeyond');
 
     assert.equal(service.suggestedMask('one two three'), 'one ___ three', 'expected a suggested mask with the middle word blanked');
+    assert.equal(service.suggestedMask('one'), '___', 'expected a suggested mask entirely blanked with only one word');
   });
 });
