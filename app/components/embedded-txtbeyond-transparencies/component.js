@@ -32,7 +32,6 @@ const characters = {
  ..
  ..
  ..
- ..
 `,
   '2':
 `
@@ -66,6 +65,11 @@ const characters = {
 `
 };
 
+const characterWidths = Object.keys(characters).reduce((widths, character) => {
+  widths[character] = Math.max(...characters[character].split('\n').map(line => line.length));
+  return widths;
+}, {});
+
 export default Component.extend({
   tagName: 'span',
 
@@ -92,24 +96,30 @@ export default Component.extend({
         doc.font(regular);
         doc.text(`description: ${meeting.get('destination.description')}`);
 
-        const character = meeting.get('destination.description')[0];
         const pixelLength = 5;
+        let leftOffset = 0;
 
-        const characterMap = characters[character];
+        const description = meeting.get('destination.description');
 
-        if (characterMap) {
-          const allLines = characterMap.split('\n');
-          const lines = allLines.splice(1, allLines.length - 1);
+        description.split('').splice(0, 3).forEach(character => {
+          const characterMap = characters[character];
 
-          lines.forEach((line, row) => {
-            line.split('').forEach((c, col) => {
-              if (c === '.') {
-                doc.rect(col*pixelLength, row*pixelLength, pixelLength, pixelLength);
-                doc.fill();
-              }
+          if (characterMap) {
+            const allLines = characterMap.split('\n');
+            const lines = allLines.splice(1, allLines.length - 1);
+
+            lines.forEach((line, row) => {
+              line.split('').forEach((c, col) => {
+                if (c === '.') {
+                  doc.rect(leftOffset*pixelLength + col*pixelLength, row*pixelLength, pixelLength, pixelLength);
+                  doc.fill();
+                }
+              });
             });
-          });
-        }
+
+            leftOffset += characterWidths[character] + 1;
+          }
+        })
 
         doc.addPage();
       });
