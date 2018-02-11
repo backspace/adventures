@@ -10,6 +10,7 @@
 
     {{#if (feature-flag 'txtbeyond')}}
       {{embedded-txtbeyond-cards teams=model.teams settings=model.settings assets=model.assets debug=debug}}
+      {{embedded-txtbeyond-transparencies teams=model.teams settings=model.settings assets=model.assets debug=debug}}
     {{/if}}
   </div>
 </div>
