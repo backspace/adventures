@@ -6,5 +6,8 @@ const { attr } = DS;
 export default Model.extend({
   goal: attr('string'),
 
-  destinationStatus: attr('boolean')
+  destinationStatus: attr('boolean'),
+
+  clandestineRendezvous: attr('boolean'),
+  txtbeyond: attr('boolean')
 });
