@@ -11,8 +11,22 @@ export default Service.extend({
     }).join(' ');
   },
 
-  maskIsValid() {
-    // FIXME empty implementation
-    return true;
-  }
+  maskIsValid(answer, mask) {
+    if (answer.length !== mask.length) {
+      return false;
+    }
+
+    for (let i = 0; i < answer.length; i++) {
+      const answerCharacter = answer[i];
+      const maskCharacter = mask[i];
+
+      if (answerCharacter !== maskCharacter) {
+        if (maskCharacter !== '_') {
+          return false;
+        }
+      }
+    }
+
+    return mask.indexOf('_') > -1;
+  },
 });
