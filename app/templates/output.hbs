@@ -1,8 +1,8 @@
 <div class=row>
   <div class='small-12 columns'>
     <label>Debug? {{input type='checkbox' checked=debug}}</label>
-    {{embedded-maps teams=model.teams assets=model.assets debug=debug}}
+    {{embedded-rendezvous-maps teams=model.teams assets=model.assets debug=debug}}
     {{embedded-rendezvous-cards teams=model.teams settings=model.settings assets=model.assets debug=debug}}
-    {{embedded-answers teams=model.teams meetings=model.meetings}}
+    {{embedded-rendezvous-answers teams=model.teams meetings=model.meetings}}
   </div>
 </div>
