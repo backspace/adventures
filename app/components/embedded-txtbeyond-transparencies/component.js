@@ -366,6 +366,10 @@ m:
  ....
    ..
  ...
+`,
+  ' ':
+`
+   
 `
 };
 
@@ -438,6 +442,8 @@ export default Component.extend({
               });
 
               leftOffset += characterWidths[character] + 1;
+            } else {
+              throw Error(`Couldn’t find character map for '${character}'`);
             }
           });
         });
