@@ -21,4 +21,12 @@ module('Unit | Service | txtbeyond', function(hooks) {
     assert.notOk(service.maskIsValid('hello there', 'horlo _____'), 'expected the mask to be invalid when a letter differs');
     assert.notOk(service.maskIsValid('hello there', 'hello there'), 'expected the mask to be invalid when it has no blanks');
   });
+
+  test('it checks description validity', function(assert) {
+    const service = this.owner.lookup('service:txtbeyond');
+
+    assert.ok(service.descriptionIsValid('hey this has a ~masked~ word'), 'expected a description with a masked word to be valid');
+    assert.notOk(service.descriptionIsValid('this has no masked word'), 'expected a description with no masked word to be invalid');
+    assert.notOk(service.descriptionIsValid('this ~has~ invalid ~masking'), 'expected a description with invalid masking to be invalid');
+  });
 });

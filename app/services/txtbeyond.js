@@ -29,4 +29,10 @@ export default Service.extend({
 
     return mask.indexOf('_') > -1;
   },
+
+  descriptionIsValid(description) {
+    const tildeCount = (description.match(/~/g) || []).length;
+
+    return tildeCount > 0 && tildeCount % 2 === 0;
+  },
 });

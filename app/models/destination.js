@@ -37,7 +37,10 @@ export default Model.extend({
   isComplete: computed('description', 'answer', 'awesomeness', 'risk', 'maskIsValid', function() {
     const {description, answer, awesomeness, risk, maskIsValid} = this.getProperties('description', 'answer', 'awesomeness', 'risk', 'maskIsValid');
 
+    const descriptionIsValid = this.get('puzzles.implementation').descriptionIsValid(description);
+
     return !isEmpty(description) &&
+      descriptionIsValid &&
       !isEmpty(answer) &&
       awesomeness > 0 &&
       !isEmpty(risk) &&
