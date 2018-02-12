@@ -97,9 +97,14 @@ export default Component.extend({
         doc.text(`description: ${meeting.get('destination.description')}`);
 
         const pixelLength = 5;
+        const pixelMargin = 0.5;
+        const drawnLength = pixelLength - pixelMargin;
         let leftOffset = 0;
 
         const description = meeting.get('destination.description');
+
+        doc.save();
+        doc.translate(50, 200);
 
         description.split('').splice(0, 3).forEach(character => {
           const characterMap = characters[character];
@@ -111,7 +116,7 @@ export default Component.extend({
             lines.forEach((line, row) => {
               line.split('').forEach((c, col) => {
                 if (c === '.') {
-                  doc.rect(leftOffset*pixelLength + col*pixelLength, row*pixelLength, pixelLength, pixelLength);
+                  doc.rect(leftOffset*pixelLength + col*pixelLength, row*pixelLength, drawnLength, drawnLength);
                   doc.fill();
                 }
               });
@@ -121,6 +126,7 @@ export default Component.extend({
           }
         })
 
+        doc.restore();
         doc.addPage();
       });
     });
