@@ -79,6 +79,12 @@ const characterWidths = Object.keys(characters).reduce((widths, character) => {
   return widths;
 }, {});
 
+function wordWidth(word) {
+  return word.split('').reduce((width, character) => {
+    return width + (characterWidths[character] || 0) + 1;
+  }, 0);
+}
+
 export default Component.extend({
   tagName: 'span',
 
@@ -117,8 +123,10 @@ export default Component.extend({
         this.get('txtbeyond').descriptionMasks(meeting.get('destination.description')).forEach(mask => {
           let leftOffset = 0;
           doc.translate(0, 200);
+          doc.rect(0, 0, wordWidth(mask)*pixelLength, 8*pixelLength);
+          doc.stroke();
 
-          mask.split('').splice(0, 3).forEach(character => {
+          mask.split('').forEach(character => {
             const characterMap = characters[character];
 
             if (characterMap) {
