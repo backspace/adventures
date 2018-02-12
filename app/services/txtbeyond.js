@@ -35,4 +35,12 @@ export default Service.extend({
 
     return tildeCount > 0 && tildeCount % 2 === 0;
   },
+
+  maskedDescription(description) {
+    return description.replace(/~([^~]*)~/g, (s) => '_'.repeat(s.length - 2));
+  },
+
+  descriptionMasks(description) {
+    return description.match(/~([^~]*)~/g).map(s => s.slice(1, s.length - 1));
+  }
 });

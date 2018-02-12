@@ -202,6 +202,7 @@ export default Component.extend({
 
   goal: alias('settings.goal'),
   puzzles: service(),
+  txtbeyond: service(),
 
   _rendezvousCardDataForTeamMeeting(team, meeting) {
     const destination = meeting.belongsTo('destination').value();
@@ -234,7 +235,7 @@ export default Component.extend({
       otherTeamName,
 
       regionName: region.get('name'),
-      destinationDescription: destination.get('description'),
+      destinationDescription: this.get('txtbeyond').maskedDescription(destination.get('description')),
 
       // goalLetter,
       // goalDigit,

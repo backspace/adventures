@@ -29,4 +29,17 @@ module('Unit | Service | txtbeyond', function(hooks) {
     assert.notOk(service.descriptionIsValid('this has no masked word'), 'expected a description with no masked word to be invalid');
     assert.notOk(service.descriptionIsValid('this ~has~ invalid ~masking'), 'expected a description with invalid masking to be invalid');
   });
+
+  test('it removes masks from descriptions', function(assert) {
+    const service = this.owner.lookup('service:txtbeyond');
+
+    assert.equal(service.maskedDescription('this is ~masked~'), 'this is ______');
+    assert.equal(service.maskedDescription('~is~ this ~masked~'), '__ this ______');
+  });
+
+  test('it extracts masks from descriptions', function(assert) {
+    const service = this.owner.lookup('service:txtbeyond');
+
+    assert.deepEqual(service.descriptionMasks('~is~ this ~masked~'), ['is', 'masked']);
+  });
 });

@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import { inject as service } from '@ember/service';
 
 import PDFDocument from 'npm:pdfkit';
 import blobStream from 'npm:blob-stream';
@@ -22,6 +23,14 @@ const characters = {
 .. ..
 .. ..
 ....
+`,
+  'w':
+`
+..   ..
+.. . ..
+.. . ..
+ .....
+ .. ..
 `,
   '1':
 `
@@ -75,6 +84,8 @@ export default Component.extend({
 
   rendering: true,
 
+  txtbeyond: service(),
+
   didInsertElement() {
     const debug = this.get('debug');
 
@@ -99,32 +110,34 @@ export default Component.extend({
         const pixelLength = 5;
         const pixelMargin = 0.5;
         const drawnLength = pixelLength - pixelMargin;
-        let leftOffset = 0;
-
-        const description = meeting.get('destination.description');
 
         doc.save();
-        doc.translate(50, 200);
+        doc.translate(50, 0);
 
-        description.split('').splice(0, 3).forEach(character => {
-          const characterMap = characters[character];
+        this.get('txtbeyond').descriptionMasks(meeting.get('destination.description')).forEach(mask => {
+          let leftOffset = 0;
+          doc.translate(0, 200);
 
-          if (characterMap) {
-            const allLines = characterMap.split('\n');
-            const lines = allLines.splice(1, allLines.length - 1);
+          mask.split('').splice(0, 3).forEach(character => {
+            const characterMap = characters[character];
 
-            lines.forEach((line, row) => {
-              line.split('').forEach((c, col) => {
-                if (c === '.') {
-                  doc.rect(leftOffset*pixelLength + col*pixelLength, row*pixelLength, drawnLength, drawnLength);
-                  doc.fill();
-                }
+            if (characterMap) {
+              const allLines = characterMap.split('\n');
+              const lines = allLines.splice(1, allLines.length - 1);
+
+              lines.forEach((line, row) => {
+                line.split('').forEach((c, col) => {
+                  if (c === '.') {
+                    doc.rect(leftOffset*pixelLength + col*pixelLength, row*pixelLength, drawnLength, drawnLength);
+                    doc.fill();
+                  }
+                });
               });
-            });
 
-            leftOffset += characterWidths[character] + 1;
-          }
-        })
+              leftOffset += characterWidths[character] + 1;
+            }
+          });
+        });
 
         doc.restore();
         doc.addPage();
