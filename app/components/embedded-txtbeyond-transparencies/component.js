@@ -422,8 +422,17 @@ export default Component.extend({
         this.get('txtbeyond').descriptionMasks(meeting.get('destination.description')).forEach(mask => {
           let leftOffset = 0;
           doc.translate(0, 200);
-          doc.rect(0, 0, wordWidth(mask)*pixelLength, 8*pixelLength);
+
+          const fontSize = 12;
+          const lineGap = 8;
+
+          doc.rect(0, 0, wordWidth(mask)*pixelLength, 8*pixelLength + fontSize + lineGap);
           doc.stroke();
+
+          doc.fontSize(fontSize);
+          doc.lineGap(lineGap);
+          doc.font(header);
+          doc.text(`@${this.get('txtbeyond').twitterName(team.get('name'))}`, 0, 0);
 
           mask.split('').forEach(character => {
             const characterMap = characters[character];
@@ -435,7 +444,7 @@ export default Component.extend({
               lines.forEach((line, row) => {
                 line.split('').forEach((c, col) => {
                   if (c === '.') {
-                    doc.rect(leftOffset*pixelLength + col*pixelLength, row*pixelLength, drawnLength, drawnLength);
+                    doc.rect(leftOffset*pixelLength + col*pixelLength, fontSize + lineGap + row*pixelLength, drawnLength, drawnLength);
                     doc.fill();
                   }
                 });

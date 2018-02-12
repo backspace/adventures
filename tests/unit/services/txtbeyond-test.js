@@ -42,4 +42,15 @@ module('Unit | Service | txtbeyond', function(hooks) {
 
     assert.deepEqual(service.descriptionMasks('~is~ this ~masked~'), ['is', 'masked']);
   });
+
+  test('it converts team names into Twitter usernames', function(assert) {
+    const service = this.owner.lookup('service:txtbeyond');
+
+    assert.equal(service.twitterName('abc'), 'abc');
+    assert.equal(service.twitterName('ABC'), 'abc', 'expected the username to be downcased');
+    assert.equal(service.twitterName('abc  def'), 'abc_def', 'expected groups of spaces to become underscores');
+    assert.equal(service.twitterName('abc\tdef'), 'abc_def', 'expected tabs to become underscores');
+    assert.equal(service.twitterName('1234567890123456'), '123456789012345', 'expected the name to be truncated at 15 characters');
+    assert.equal(service.twitterName('something@etc!!!yes'), 'somethingetcyes', 'expected symbols to be removed');
+  });
 });

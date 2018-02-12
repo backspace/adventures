@@ -42,5 +42,9 @@ export default Service.extend({
 
   descriptionMasks(description) {
     return description.match(/~([^~]*)~/g).map(s => s.slice(1, s.length - 1));
+  },
+
+  twitterName(name) {
+    return name.toLowerCase().replace(/\s+/g, '_').replace(/\W/g, '').slice(0, 15);
   }
 });
