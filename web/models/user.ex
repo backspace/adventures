@@ -20,6 +20,9 @@ defmodule Cr2016site.User do
     field :data, :boolean
     field :number, :string
 
+    field :txt_confirmation_sent, :string
+    field :txt_confirmation_received, :string
+
     field :teamed, :boolean, virtual: true
 
     field :team_emails, Cr2016site.DowncasedString
