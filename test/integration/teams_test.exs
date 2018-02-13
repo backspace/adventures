@@ -149,12 +149,18 @@ defmodule Cr2016site.Integration.Teams do
     assert Details.number_error_present?
   end
 
-  test_with_mock "it sends a confirmation txt", HTTPoison, [post: fn("https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages", _) -> "a response" end] do
-    Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+  test_with_mock "it sends a confirmation txt when the number changed", HTTPoison, [post: fn("https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages", _) -> "a response" end] do
+    Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres"), number: "2040000000", txt: true
     navigate_to "/"
     Login.login_as "takver@example.com", "Anarres"
 
-    Details.choose_txt
+    Details.comments.fill "a test"
+    Details.submit
+
+    refute called HTTPoison.post(
+      "https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages",
+      {:form, [{"From", "twilio_number"}, {"To", "+12040000000"}, {"Body", "jortleby"}]})
+
     Details.fill_number "2045551212"
     Details.submit
 
