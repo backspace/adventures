@@ -132,6 +132,27 @@ defmodule Cr2016site.Integration.Teams do
     end
   end
 
+  test "it validates numbers when txt is enabled" do
+    Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+    navigate_to "/"
+    Login.login_as "takver@example.com", "Anarres"
+
+    Details.choose_txt(false)
+    Details.submit
+
+    refute Details.number_error_present?
+
+    Details.choose_txt
+    Details.submit
+
+    assert Details.number_error_present?
+
+    Details.fill_number "204"
+    Details.submit
+
+    assert Details.number_error_present?
+  end
+
   test "the table is hidden when empty" do
     Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
 

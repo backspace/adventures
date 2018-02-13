@@ -64,8 +64,8 @@ defmodule Cr2016site.Pages.Details do
     click({:css, "input.level-#{level_integer}"})
   end
 
-  def choose_txt do
-    click({:css, "input.txt-true"})
+  def choose_txt(choice \\ true) do
+    click({:css, "input.txt-#{if choice, do: "true", else: "false"}"})
   end
 
   def choose_data do
@@ -74,6 +74,11 @@ defmodule Cr2016site.Pages.Details do
 
   def fill_number(number) do
     fill_field({:id, "user_number"}, number)
+  end
+
+  def number_error_present? do
+    element? :css, ".errors .number"
+    element? :css, ".form-group.number.has-error"
   end
 
   def fill_display_size(size) do

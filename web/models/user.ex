@@ -60,8 +60,13 @@ defmodule Cr2016site.User do
       _ -> []
     end ++ ~w(txt)
 
-    model
+    model = model
     |> cast(params, required_fields, @optional_fields)
+
+    case get_field(model, :txt) do
+      true -> model |> validate_required(:number) |> validate_format(:number, ~r/\d{10}/, message: "must be ten digits") 
+      _ -> model
+    end
   end
 
   def account_changeset(model, params \\ %{}) do
