@@ -43,7 +43,7 @@ defmodule Cr2016site.UserController do
         twilio_number = Application.get_env(:cr2016site, :twilio_number)
 
         Cr2016site.Mailer.send_user_changes(current_user, changeset.changes)
-        HTTPoison.post("https://#{sid}:#{token}@api.twilio.com/2010-04-01/Accounts/#{sid}/Messages", {:form, [{"From", twilio_number}, {"To", user.number}, {"Body", "jortleby"}]})
+        HTTPoison.post("https://#{sid}:#{token}@api.twilio.com/2010-04-01/Accounts/#{sid}/Messages", {:form, [{"From", twilio_number}, {"To", "+1#{user.number}"}, {"Body", "jortleby"}]})
 
         conn
         |> put_flash(:info, "Your details were saved")
