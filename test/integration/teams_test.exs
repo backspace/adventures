@@ -59,7 +59,7 @@ defmodule Cr2016site.Integration.Teams do
 
       Details.submit
 
-      assert Nav.info_text == "Your details were saved"
+      assert Nav.info_text == "Your details were saved; please look for a txt"
 
       assert Details.accessibility_text == "Some accessibility information"
       assert Details.comments.value == "Some comments"
@@ -160,6 +160,7 @@ defmodule Cr2016site.Integration.Teams do
     refute called HTTPoison.post(
       "https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages",
       {:form, [{"From", "twilio_number"}, {"To", "+12040000000"}, {"Body", "jortleby"}]})
+    assert Nav.info_text == "Your details were saved"
 
     Details.fill_number "2045551212"
     Details.submit
@@ -167,6 +168,7 @@ defmodule Cr2016site.Integration.Teams do
     assert called HTTPoison.post(
       "https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages",
       {:form, [{"From", "twilio_number"}, {"To", "+12045551212"}, {"Body", "jortleby"}]})
+    assert Nav.info_text == "Your details were saved; please look for a txt"
   end
 
   test "the table is hidden when empty" do

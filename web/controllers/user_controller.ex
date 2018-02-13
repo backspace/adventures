@@ -44,12 +44,14 @@ defmodule Cr2016site.UserController do
 
         Cr2016site.Mailer.send_user_changes(current_user, changeset.changes)
 
-        if changeset.changes[:number] do
-          HTTPoison.post("https://#{sid}:#{token}@api.twilio.com/2010-04-01/Accounts/#{sid}/Messages", {:form, [{"From", twilio_number}, {"To", "+1#{user.number}"}, {"Body", "jortleby"}]})
+        conn = case changeset.changes[:number] do
+          nil -> put_flash(conn, :info, "Your details were saved")
+          _ ->
+            HTTPoison.post("https://#{sid}:#{token}@api.twilio.com/2010-04-01/Accounts/#{sid}/Messages", {:form, [{"From", twilio_number}, {"To", "+1#{user.number}"}, {"Body", "jortleby"}]})
+            put_flash(conn, :info, "Your details were saved; please look for a txt")
         end
 
         conn
-        |> put_flash(:info, "Your details were saved")
         |> redirect(to: user_path(conn, :edit))
       {:error, changeset} ->
         render(conn, "edit.html", user: current_user, relationships: Cr2016site.TeamFinder.relationships(current_user, users), changeset: changeset)
