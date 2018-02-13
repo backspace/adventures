@@ -47,7 +47,7 @@
       <div class="form-group">
         <%= label f, :display_size, "Diagonal size of device display" %>
         <%= text_input f, :display_size, class: "form-control", "aria-describedby": "display-size-help" %>
-        <p class='help-text' id='display-size-help'>In inches; ff unsure, search the web for your phone model</p>
+        <p class='help-text' id='display-size-help'>In inches; if unsure, search the web for your phone model</p>
       </div>
       <div class='form-group'>
         <legend>Risk aversion</legend>
