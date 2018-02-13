@@ -17,7 +17,7 @@ defmodule Cr2016site.Integration.Teams do
 
   test "teams are negotiable" do
     with_mock HTTPoison, [
-      post: fn("https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages", _) -> "a response" end] do
+      post: fn(_, _) -> "a response" end] do
       Forge.saved_user email: "Shevek@example.com",
                      team_emails: "Takver@example.com bedap@example.com tuio@example.com rulag@example.com",
                      proposed_team_name: "Sequency",
@@ -70,10 +70,6 @@ defmodule Cr2016site.Integration.Teams do
       assert sent_email["from"] == Application.get_env(:cr2016site, :email_address)
       assert sent_email["subject"] == "takver@example.com details changed: accessibility, comments, data, display_size, number, proposed_team_name, risk_aversion, source, team_emails, txt"
       assert sent_email["text"] == "%{accessibility: \"Some accessibility information\", comments: \"Some comments\", data: true, display_size: \"7\", number: \"2045551212\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\", txt: true}"
-
-      assert called HTTPoison.post(
-        "https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages",
-        {:form, [{"From", "twilio_number"}, {"To", "+12045551212"}, {"Body", "jortleby"}]})
 
       [shevek, bedap] = Details.mutuals
 
@@ -151,6 +147,20 @@ defmodule Cr2016site.Integration.Teams do
     Details.submit
 
     assert Details.number_error_present?
+  end
+
+  test_with_mock "it sends a confirmation txt", HTTPoison, [post: fn("https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages", _) -> "a response" end] do
+    Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+    navigate_to "/"
+    Login.login_as "takver@example.com", "Anarres"
+
+    Details.choose_txt
+    Details.fill_number "2045551212"
+    Details.submit
+
+    assert called HTTPoison.post(
+      "https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages",
+      {:form, [{"From", "twilio_number"}, {"To", "+12045551212"}, {"Body", "jortleby"}]})
   end
 
   test "the table is hidden when empty" do
