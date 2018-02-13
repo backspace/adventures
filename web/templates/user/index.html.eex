@@ -11,6 +11,9 @@
       <th>Team emails</th>
       <th>Source</th>
       <th>Comments</th>
+      <th>Txt</th>
+      <th>Data</th>
+      <th>Size|number</th>
       <th>Teamed</th>
     </tr>
   </thead>
@@ -27,6 +30,9 @@
         <td class='team-emails'><%= user.team_emails %></td>
         <td class='source'><%= user.source %></td>
         <td class='comments'><%= user.comments %></td>
+        <td class='txt'><%= symbol_for_boolean(user.txt) %></td>
+        <td class='data'><%= symbol_for_boolean(user.data) %></td>
+        <td class='size-number'><%= user.display_size %> | <%= user.number %></td>
         <td class='teamed'><%= if user.teamed do %>✓<% else %>✘<% end %></td>
         <td><%= link "Build", to: team_path(@conn, :build, user_id: user.id), method: :post, class: "build" %></td>
       </tr>
