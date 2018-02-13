@@ -22,6 +22,11 @@ config :hound, driver: "phantomjs"
 
 config :comeonin, :bcrypt_log_rounds, 4
 
+config :cr2016site,
+  twilio_sid: "twilio_sid",
+  twilio_token: "twilio_token",
+  twilio_number: "twilio_number"
+
 defmodule Blacksmith.Config do
   def save(map) do
     Cr2016site.Repo.insert(map)

@@ -22,7 +22,7 @@ defmodule Cr2016site.Mixfile do
   end
 
   def app_list do
-    [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :sentry, :logger, :phoenix_ecto, :postgrex, :gettext, :tzdata, :porcelain]
+    [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :sentry, :logger, :phoenix_ecto, :postgrex, :gettext, :tzdata, :porcelain, :httpoison]
   end
 
   def app_list(:test), do: [:blacksmith, :hound] ++ app_list()
@@ -54,7 +54,9 @@ defmodule Cr2016site.Mixfile do
      {:floki, "~> 0.7"},
      {:timex, "~> 1.0.0"},
      {:porcelain, "~> 2.0"},
-     {:sentry, "~> 6.1.0"}]
+     {:sentry, "~> 6.1.0"},
+     {:mock, "~> 0.3.0", only: :test},
+     {:httpoison, "~> 1.0"}]
   end
 
   # Aliases are shortcut or tasks specific to the current project.

@@ -24,7 +24,10 @@ config :cr2016site,
   start_time: [{{2018, 3, 6}, {18, 30, 00}}, "Canada/Central"],
   email_address: "beyond@chromatin.ca",
   email_short_adventure_name: "beyond",
-  host: System.get_env("HOST")
+  host: System.get_env("HOST"),
+  twilio_sid: System.get_env("TWILIO_SID"),
+  twilio_token: System.get_env("TWILIO_TOKEN"),
+  twilio_number: System.get_env("TWILIO_NUMBER")
 
 config :sentry,
   dsn: System.get_env("SENTRY_DSN"),

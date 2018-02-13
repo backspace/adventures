@@ -37,8 +37,14 @@ defmodule Cr2016site.UserController do
     changeset = User.details_changeset(current_user, user_params)
 
     case Repo.update(changeset) do
-      {:ok, _} ->
+      {:ok, user} ->
+        sid = Application.get_env(:cr2016site, :twilio_sid)
+        token = Application.get_env(:cr2016site, :twilio_token)
+        twilio_number = Application.get_env(:cr2016site, :twilio_number)
+
         Cr2016site.Mailer.send_user_changes(current_user, changeset.changes)
+        HTTPoison.post("https://#{sid}:#{token}@api.twilio.com/2010-04-01/Accounts/#{sid}/Messages", {:form, [{"From", twilio_number}, {"To", user.number}, {"Body", "jortleby"}]})
+
         conn
         |> put_flash(:info, "Your details were saved")
         |> redirect(to: user_path(conn, :edit))
