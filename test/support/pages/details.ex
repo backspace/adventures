@@ -76,6 +76,10 @@ defmodule Cr2016site.Pages.Details do
     fill_field({:id, "user_number"}, number)
   end
 
+  def confirmation do
+    Cr2016site.Pages.Details.Confirmation
+  end
+
   def number_error_present? do
     element? :css, ".errors .number"
     element? :css, ".form-group.number.has-error"
@@ -123,6 +127,16 @@ defmodule Cr2016site.Pages.Details do
 
     def value do
       attribute_value(@selector, "value")
+    end
+  end
+
+  defmodule Confirmation do
+    def present? do
+      element? :css, ".form-group.confirmation"
+    end
+
+    def fill(confirmation) do
+      fill_field({:id, ".form-group.confirmation"}, confirmation)
     end
   end
 

@@ -51,6 +51,8 @@ defmodule Cr2016site.Integration.Teams do
       Details.fill_number "2045551212"
       Details.fill_display_size "7"
 
+      refute Details.confirmation.present?
+
       Details.choose_risk_aversion "Don’t hold back"
       Details.fill_accessibility "Some accessibility information"
 
@@ -64,6 +66,8 @@ defmodule Cr2016site.Integration.Teams do
       assert Details.accessibility_text == "Some accessibility information"
       assert Details.comments.value == "Some comments"
       assert Details.source.value == "A source"
+
+      assert Details.confirmation.present?
 
       [sent_email] = Cr2016site.MailgunHelper.sent_email
       assert sent_email["to"] == Application.get_env(:cr2016site, :email_address)
