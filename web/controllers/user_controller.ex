@@ -44,8 +44,9 @@ defmodule Cr2016site.UserController do
 
         Cr2016site.Mailer.send_user_changes(current_user, changeset.changes)
 
-        conn = case changeset.changes[:number] do
-          nil -> put_flash(conn, :info, "Your details were saved")
+        conn = case {changeset.changes[:txt_confirmation_sent], changeset.changes[:txt_confirmation_received]} do
+          {nil, nil} -> put_flash(conn, :info, "Your details were saved")
+        {nil, _} -> put_flash(conn, :info, "Thanks for confirming the txt")
           _ ->
             HTTPoison.post("https://#{sid}:#{token}@api.twilio.com/2010-04-01/Accounts/#{sid}/Messages", {:form, [{"From", twilio_number}, {"To", "+1#{user.number}"}, {"Body", user.txt_confirmation_sent}]})
             put_flash(conn, :info, "Your details were saved; please look for a txt")

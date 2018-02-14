@@ -136,7 +136,12 @@ defmodule Cr2016site.Pages.Details do
     end
 
     def fill(confirmation) do
-      fill_field({:id, ".form-group.confirmation"}, confirmation)
+      fill_field({:css, ".form-group.confirmation input"}, confirmation)
+    end
+
+    def error? do
+      element? :css, ".errors .txt_confirmation_received"
+      element? :css, ".form-group.confirmation.has-error"
     end
   end
 

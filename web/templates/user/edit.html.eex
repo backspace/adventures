@@ -44,8 +44,8 @@
         <%= text_input f, :number, class: "form-control", "aria-describedby": "number-help" %>
         <p class='help-text' id='number-help'>Ten digits only; we will send you one test message before the preview, nothing else until the preview</p>
       </div>
-      <%= if @changeset.data.txt_confirmation_sent do %>
-        <div class="form-group confirmation <%= if f.errors[:confirmation] do %>has-error<% end %>">
+      <%= if @changeset.data.txt_confirmation_sent && @changeset.data.txt_confirmation_sent != @changeset.data.txt_confirmation_received do %>
+        <div class="form-group confirmation <%= if f.errors[:txt_confirmation_received] do %>has-error<% end %>">
           <%= label f, :txt_confirmation_received, "Confirmation number we txted you" %>
           <%= text_input f, :txt_confirmation_received, class: "form-control", "aria-describedby": "confirmation-help" %>
           <p class='help-text' id='confirmation-help'>The six-digit number we txted the number you gave above</p>

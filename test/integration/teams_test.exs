@@ -68,6 +68,7 @@ defmodule Cr2016site.Integration.Teams do
       assert Details.source.value == "A source"
 
       assert Details.confirmation.present?
+      refute Details.confirmation.error?
 
       [sent_email] = Cr2016site.MailgunHelper.sent_email
       assert sent_email["to"] == Application.get_env(:cr2016site, :email_address)
@@ -125,7 +126,17 @@ defmodule Cr2016site.Integration.Teams do
 
 
       sadik.add.()
+
+      Details.confirmation.fill "1234"
       Details.submit
+
+      assert Details.confirmation.error?
+
+      Details.confirmation.fill "001234"
+      Details.submit
+
+      refute Details.confirmation.present?
+      assert Nav.info_text == "Thanks for confirming the txt"
 
       # FIXME restore this test that breaks on Travis… Javascript problem?
       # assert length(Details.mutuals) == 3

@@ -38,7 +38,7 @@ defmodule Cr2016site.User do
   end
 
   @required_fields ~w(email password)
-  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source display_size data number)
+  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source display_size data number txt_confirmation_received)
 
   @doc """
   Creates a changeset based on the `model` and `params`.
@@ -70,7 +70,19 @@ defmodule Cr2016site.User do
 
     # FIXME ugh hideous!
     case model.changes[:number] do
-      nil -> model
+      nil ->
+        case model.changes[:txt_confirmation_received] do
+          nil -> model
+          _ ->
+            model
+            |> validate_change(:txt_confirmation_received, fn :txt_confirmation_received, txt_confirmation_received ->
+              if txt_confirmation_received == get_field(model, :txt_confirmation_sent) do
+                []
+              else
+                [txt_confirmation_received: "must equal confirmation txted"]
+              end
+            end)
+          end
       _ ->
         case model.valid? do
           true ->
