@@ -47,9 +47,7 @@ defmodule Cr2016site.UserController do
         conn = case changeset.changes[:number] do
           nil -> put_flash(conn, :info, "Your details were saved")
           _ ->
-            random = Cr2016site.Random.uniform(999999)
-            confirmation = String.pad_leading("#{random}", 6, "0")
-            HTTPoison.post("https://#{sid}:#{token}@api.twilio.com/2010-04-01/Accounts/#{sid}/Messages", {:form, [{"From", twilio_number}, {"To", "+1#{user.number}"}, {"Body", confirmation}]})
+            HTTPoison.post("https://#{sid}:#{token}@api.twilio.com/2010-04-01/Accounts/#{sid}/Messages", {:form, [{"From", twilio_number}, {"To", "+1#{user.number}"}, {"Body", user.txt_confirmation_sent}]})
             put_flash(conn, :info, "Your details were saved; please look for a txt")
         end
 

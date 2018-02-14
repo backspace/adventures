@@ -63,9 +63,22 @@ defmodule Cr2016site.User do
     model = model
     |> cast(params, required_fields, @optional_fields)
 
-    case get_field(model, :txt) do
-      true -> model |> validate_required(:number) |> validate_format(:number, ~r/\d{10}/, message: "must be ten digits") 
+    model = case get_field(model, :txt) do
+      true -> model |> validate_required(:number) |> validate_format(:number, ~r/\d{10}/, message: "must be ten digits")
       _ -> model
+    end
+
+    # FIXME ugh hideous!
+    case model.changes[:number] do
+      nil -> model
+      _ ->
+        case model.valid? do
+          true ->
+            random = Cr2016site.Random.uniform(999999)
+            confirmation = String.pad_leading("#{random}", 6, "0")
+            model |> Ecto.Changeset.put_change(:txt_confirmation_sent, confirmation)
+          _ -> model
+        end
     end
   end
 

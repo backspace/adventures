@@ -16,8 +16,8 @@ defmodule Cr2016site.Integration.Teams do
   hound_session()
 
   test "teams are negotiable" do
-    with_mock HTTPoison, [
-      post: fn(_, _) -> "a response" end] do
+    with_mocks [{HTTPoison, [], [
+      post: fn(_, _) -> "a response" end]}, {Cr2016site.Random, [], [uniform: fn(999999) -> 1234 end]}] do
       Forge.saved_user email: "Shevek@example.com",
                      team_emails: "Takver@example.com bedap@example.com tuio@example.com rulag@example.com",
                      proposed_team_name: "Sequency",
@@ -68,8 +68,8 @@ defmodule Cr2016site.Integration.Teams do
       [sent_email] = Cr2016site.MailgunHelper.sent_email
       assert sent_email["to"] == Application.get_env(:cr2016site, :email_address)
       assert sent_email["from"] == Application.get_env(:cr2016site, :email_address)
-      assert sent_email["subject"] == "takver@example.com details changed: accessibility, comments, data, display_size, number, proposed_team_name, risk_aversion, source, team_emails, txt"
-      assert sent_email["text"] == "%{accessibility: \"Some accessibility information\", comments: \"Some comments\", data: true, display_size: \"7\", number: \"2045551212\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\", txt: true}"
+      assert sent_email["subject"] == "takver@example.com details changed: accessibility, comments, data, display_size, number, proposed_team_name, risk_aversion, source, team_emails, txt, txt_confirmation_sent"
+      assert sent_email["text"] == "%{accessibility: \"Some accessibility information\", comments: \"Some comments\", data: true, display_size: \"7\", number: \"2045551212\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\", txt: true, txt_confirmation_sent: \"001234\"}"
 
       [shevek, bedap] = Details.mutuals
 
