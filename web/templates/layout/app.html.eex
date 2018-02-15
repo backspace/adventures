@@ -42,7 +42,7 @@
                 <li>
                   <%= link to: session_path(@conn, :delete), method: :delete, class: "logout" do %>
                     Log out <span class="show-for-medium"><%= current_user(@conn).email %></span>
-                  <%= end %>
+                  <% end %>
                 </li>
                 <li><%= active_link "Edit details", @conn, user_path(@conn, :edit), class: "details" %></li>
                 <%= if admin?(@conn) do %>
