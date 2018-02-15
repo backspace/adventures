@@ -185,7 +185,7 @@ defmodule Cr2016site.Integration.Teams do
   test_with_mock "it sends a confirmation txt when the number changed", HTTPoison, [post: fn("https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages", _) -> "a response" end] do
     with_mock Cr2016site.Random, [uniform: fn(999999) -> 1234 end] do
 
-    Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres"), number: "2040000000", txt: true
+    {:ok, user} = Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres"), number: "2040000000", txt: true
     navigate_to "/"
     Login.login_as "takver@example.com", "Anarres"
 
@@ -194,7 +194,7 @@ defmodule Cr2016site.Integration.Teams do
 
     refute called HTTPoison.post(
       "https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages",
-      {:form, [{"From", "twilio_number"}, {"To", "+12040000000"}, {"Body", "001234"}]})
+      {:form, [{"From", "twilio_number"}, {"To", "+12040000000"}, {"Body", "txtbeyond confirmation code: 001234\n\nConfirm at http://localhost:4001/confirmations/#{user.id}?confirmations=001234"}]})
     assert Nav.info_text == "Your details were saved"
 
     Details.fill_number "2045551212"
@@ -202,7 +202,7 @@ defmodule Cr2016site.Integration.Teams do
 
     assert called HTTPoison.post(
       "https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages",
-      {:form, [{"From", "twilio_number"}, {"To", "+12045551212"}, {"Body", "001234"}]})
+      {:form, [{"From", "twilio_number"}, {"To", "+12045551212"}, {"Body", "txtbeyond confirmation code: 001234\n\nConfirm at http://localhost:4001/confirmations/#{user.id}?confirmation=001234"}]})
     assert Nav.info_text == "Your details were saved; please look for a txt"
 
     end

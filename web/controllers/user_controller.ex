@@ -3,6 +3,8 @@ defmodule Cr2016site.UserController do
 
   alias Cr2016site.User
 
+  require Logger
+
   plug Cr2016site.Plugs.Admin when action in [:index]
   plug Cr2016site.Plugs.LoginRequired when action in [:edit, :update]
 
@@ -48,7 +50,13 @@ defmodule Cr2016site.UserController do
           {nil, nil} -> put_flash(conn, :info, "Your details were saved")
         {nil, _} -> put_flash(conn, :info, "Thanks for confirming the txt")
           _ ->
-            HTTPoison.post("https://#{sid}:#{token}@api.twilio.com/2010-04-01/Accounts/#{sid}/Messages", {:form, [{"From", twilio_number}, {"To", "+1#{user.number}"}, {"Body", user.txt_confirmation_sent}]})
+            HTTPoison.post(
+              "https://#{sid}:#{token}@api.twilio.com/2010-04-01/Accounts/#{sid}/Messages",
+              {:form, [
+                {"From", twilio_number},
+                {"To", "+1#{user.number}"},
+                {"Body", "txtbeyond confirmation code: #{user.txt_confirmation_sent}\n\nConfirm at #{user_url(Cr2016site.Endpoint, :confirm, user.id, confirmation: user.txt_confirmation_sent)}"}
+              ]})
             put_flash(conn, :info, "Your details were saved; please look for a txt")
         end
 
