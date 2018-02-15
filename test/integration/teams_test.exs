@@ -131,12 +131,14 @@ defmodule Cr2016site.Integration.Teams do
       Details.submit
 
       assert Details.confirmation.error?
+      refute Details.confirmation_success.present?
 
       Details.confirmation.fill "001234"
       Details.submit
 
       refute Details.confirmation.present?
       assert Nav.info_text == "Thanks for confirming the txt"
+      assert Details.confirmation_success.present?
 
       # FIXME restore this test that breaks on Travis… Javascript problem?
       # assert length(Details.mutuals) == 3

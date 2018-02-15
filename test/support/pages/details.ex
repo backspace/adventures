@@ -80,6 +80,10 @@ defmodule Cr2016site.Pages.Details do
     Cr2016site.Pages.Details.Confirmation
   end
 
+  def confirmation_success do
+    Cr2016site.Pages.Details.ConfirmationSuccess
+  end
+
   def number_error_present? do
     element? :css, ".errors .number"
     element? :css, ".form-group.number.has-error"
@@ -142,6 +146,12 @@ defmodule Cr2016site.Pages.Details do
     def error? do
       element? :css, ".errors .txt_confirmation_received"
       element? :css, ".form-group.confirmation.has-error"
+    end
+  end
+
+  defmodule ConfirmationSuccess do
+    def present? do
+      element? :css, ".confirmation-success"
     end
   end
 

@@ -42,7 +42,13 @@
       <div class="form-group number <%= if f.errors[:number] do %>has-error<% end %>">
         <%= label f, :number, "Number for txting" %>
         <%= text_input f, :number, class: "form-control", "aria-describedby": "number-help" %>
-        <p class='help-text' id='number-help'>Ten digits only; we will send you one test message before the preview, nothing else until the preview</p>
+        <p class='help-text' id='number-help'>
+          <%= if @changeset.data.txt_confirmation_sent && @changeset.data.txt_confirmation_sent == @changeset.data.txt_confirmation_received do %>
+            <span class='confirmation-success'>Thanks for confirming your number!</span>
+          <% else %>
+            Ten digits only; we will send you one test message before the preview, nothing else until the preview
+          <% end %>
+        </p>
       </div>
       <%= if @changeset.data.txt_confirmation_sent && @changeset.data.txt_confirmation_sent != @changeset.data.txt_confirmation_received do %>
         <div class="form-group confirmation <%= if f.errors[:txt_confirmation_received] do %>has-error<% end %>">
