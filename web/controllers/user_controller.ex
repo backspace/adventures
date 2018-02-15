@@ -58,4 +58,22 @@ defmodule Cr2016site.UserController do
         render(conn, "edit.html", user: current_user, relationships: Cr2016site.TeamFinder.relationships(current_user, users), changeset: changeset)
     end
   end
+
+  def confirm(conn, %{"id" => id}) do
+    user = Repo.get!(User, id)
+    conn = fetch_query_params(conn)
+
+    changeset = User.confirmation_changeset(user, %{txt_confirmation_received: conn.query_params["confirmation"]})
+
+    case Repo.update(changeset) do
+      {:ok, _} ->
+        conn
+        |> put_flash(:info, "Thanks for confirming the txt")
+        |> redirect(to: user_path(conn, :edit))
+      {:error, _} ->
+        conn
+        |> put_flash(:error, "That confirmation didn’t match!")
+        |> redirect(to: user_path(conn, :edit))
+    end
+  end
 end

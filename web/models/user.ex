@@ -75,13 +75,7 @@ defmodule Cr2016site.User do
           nil -> model
           _ ->
             model
-            |> validate_change(:txt_confirmation_received, fn :txt_confirmation_received, txt_confirmation_received ->
-              if txt_confirmation_received == get_field(model, :txt_confirmation_sent) do
-                []
-              else
-                [txt_confirmation_received: "must equal confirmation txted"]
-              end
-            end)
+            |> validate_txt_confirmation
           end
       _ ->
         case model.valid? do
@@ -92,6 +86,12 @@ defmodule Cr2016site.User do
           _ -> model
         end
     end
+  end
+
+  def confirmation_changeset(model, params \\ %{}) do
+    model
+    |> cast(params, [], ["txt_confirmation_received"])
+    |> validate_txt_confirmation
   end
 
   def account_changeset(model, params \\ %{}) do
@@ -119,5 +119,16 @@ defmodule Cr2016site.User do
     |> cast(params, ~w(recovery_hash new_password new_password_confirmation), [])
     |> validate_length(:new_password, min: 5)
     |> validate_confirmation(:new_password)
+  end
+
+  defp validate_txt_confirmation(model) do
+    model
+    |> validate_change(:txt_confirmation_received, fn :txt_confirmation_received, txt_confirmation_received ->
+      if txt_confirmation_received == get_field(model, :txt_confirmation_sent) do
+        []
+      else
+        [txt_confirmation_received: "must equal confirmation txted"]
+      end
+    end)
   end
 end

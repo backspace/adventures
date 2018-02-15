@@ -34,6 +34,7 @@ defmodule Cr2016site.Router do
     resources "/users", UserController, only: [:index]
     get "/details", UserController, :edit
     put "/details", UserController, :update
+    get "/confirmations/:id", UserController, :confirm
 
     get "/account", RegistrationController, :edit
     put "/account", RegistrationController, :update

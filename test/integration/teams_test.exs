@@ -143,6 +143,24 @@ defmodule Cr2016site.Integration.Teams do
     end
   end
 
+  test "it lets people confirm their txt with a link" do
+    {:ok, user} = Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres"), txt: true, number: "2045555555", txt_confirmation_sent: "000000"
+    navigate_to "/"
+    Login.login_as "takver@example.com", "Anarres"
+
+    assert Details.confirmation.present?
+
+    navigate_to "/confirmations/#{user.id}?confirmation=xyz"
+
+    assert Nav.error_text == "That confirmation didn’t match!"
+    assert Details.confirmation.present?
+
+    navigate_to "/confirmations/#{user.id}?confirmation=000000"
+
+    assert Nav.info_text == "Thanks for confirming the txt"
+    refute Details.confirmation.present?
+  end
+
   test "it validates numbers when txt is enabled" do
     Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
     navigate_to "/"
