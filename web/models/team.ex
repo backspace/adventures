@@ -5,7 +5,7 @@ defmodule Cr2016site.Team do
     field :name, :string
     field :risk_aversion, :integer
     field :notes, :string
-    field :user_ids, {:array, :integer}
+    field :user_ids, {:array, :binary_id}
 
     timestamps()
   end
