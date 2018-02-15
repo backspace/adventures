@@ -30,6 +30,8 @@ defmodule Cr2016site.Integration.Messages do
     Messages.check_ready
     Messages.save
 
+    assert Nav.info_text == "Message created successfully."
+
     Messages.send
 
     assert Nav.info_text == "Message was sent"
