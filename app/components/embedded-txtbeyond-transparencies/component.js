@@ -53,8 +53,6 @@ export default Component.extend({
         });
 
         doc.restore();
-
-        doc.restore();
         doc.addPage();
       });
     });
@@ -64,16 +62,16 @@ export default Component.extend({
     });
     packer.addArray(boxes);
 
-    doc.font(regular);
 
     packer.bins.forEach(bin => {
       console.log('a box:');
       console.log(bin);
 
       bin.rects.forEach(rect => {
-        doc.rect(rect.x, rect.y, rect.width, rect.height);
-        doc.stroke();
-        doc.text(rect.data.mask, rect.x, rect.y);
+        doc.save();
+        doc.translate(rect.x, rect.y);
+        this._drawTransparency(doc, rect.data.team, rect.data.meeting, rect.data.mask);
+        doc.restore();
       });
       doc.addPage();
     });
@@ -131,6 +129,8 @@ export default Component.extend({
         throw Error(`Couldn’t find character map for '${character}'`);
       }
     });
+
+    doc.restore();
 
     return {
       width: wordWidth(mask)*pixelLength + margin*2,
