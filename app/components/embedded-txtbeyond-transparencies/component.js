@@ -40,53 +40,12 @@ export default Component.extend({
         doc.font(regular);
         doc.text(`description: ${meeting.get('destination.description')}`);
 
-        const pixelLength = 5;
-        const pixelMargin = 0.5;
-        const drawnLength = pixelLength - pixelMargin;
-
         doc.save();
         doc.translate(50, 0);
 
         this.get('txtbeyond').descriptionMasks(meeting.get('destination.description')).forEach(mask => {
-          let leftOffset = 0;
+          this._drawTransparency(doc, team, meeting, mask);
           doc.translate(0, 200);
-
-          const fontSize = 12;
-          const lineGap = 8;
-          const margin = 8;
-
-          doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2, 8*pixelLength + fontSize + lineGap + margin*2);
-          doc.stroke();
-
-          doc.save();
-          doc.translate(margin, margin);
-
-          doc.fontSize(fontSize);
-          doc.lineGap(lineGap);
-          doc.font(header);
-          doc.text(`@${this.get('txtbeyond').twitterName(team.get('name'))}`, 0, 0);
-
-          mask.split('').forEach(character => {
-            const characterMap = characters[character];
-
-            if (characterMap) {
-              const allLines = characterMap.split('\n');
-              const lines = allLines.splice(1, allLines.length - 1);
-
-              lines.forEach((line, row) => {
-                line.split('').forEach((c, col) => {
-                  if (c === '.') {
-                    doc.rect(leftOffset*pixelLength + col*pixelLength, fontSize + lineGap + row*pixelLength, drawnLength, drawnLength);
-                    doc.fill();
-                  }
-                });
-              });
-
-              leftOffset += characterWidths[character] + 1;
-            } else {
-              throw Error(`Couldn’t find character map for '${character}'`);
-            }
-          });
         });
 
         doc.restore();
@@ -104,4 +63,50 @@ export default Component.extend({
     });
   },
 
+  _drawTransparency(doc, team, meeting, mask) {
+    const header = this.get('assets.header');
+
+    const pixelLength = 5;
+    const pixelMargin = 0.5;
+    const drawnLength = pixelLength - pixelMargin;
+
+    let leftOffset = 0;
+
+    const fontSize = 12;
+    const lineGap = 8;
+    const margin = 8;
+
+    doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2, 8*pixelLength + fontSize + lineGap + margin*2);
+    doc.stroke();
+
+    doc.save();
+    doc.translate(margin, margin);
+
+    doc.fontSize(fontSize);
+    doc.lineGap(lineGap);
+    doc.font(header);
+    doc.text(`@${this.get('txtbeyond').twitterName(team.get('name'))}`, 0, 0);
+
+    mask.split('').forEach(character => {
+      const characterMap = characters[character];
+
+      if (characterMap) {
+        const allLines = characterMap.split('\n');
+        const lines = allLines.splice(1, allLines.length - 1);
+
+        lines.forEach((line, row) => {
+          line.split('').forEach((c, col) => {
+            if (c === '.') {
+              doc.rect(leftOffset*pixelLength + col*pixelLength, fontSize + lineGap + row*pixelLength, drawnLength, drawnLength);
+              doc.fill();
+            }
+          });
+        });
+
+        leftOffset += characterWidths[character] + 1;
+      } else {
+        throw Error(`Couldn’t find character map for '${character}'`);
+      }
+    });
+  }
 });
