@@ -425,9 +425,13 @@ export default Component.extend({
 
           const fontSize = 12;
           const lineGap = 8;
+          const margin = 8;
 
-          doc.rect(0, 0, wordWidth(mask)*pixelLength, 8*pixelLength + fontSize + lineGap);
+          doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2, 8*pixelLength + fontSize + lineGap + margin*2);
           doc.stroke();
+
+          doc.save();
+          doc.translate(margin, margin);
 
           doc.fontSize(fontSize);
           doc.lineGap(lineGap);
@@ -456,6 +460,8 @@ export default Component.extend({
             }
           });
         });
+
+        doc.restore();
 
         doc.restore();
         doc.addPage();
