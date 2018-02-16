@@ -61,6 +61,14 @@
     </div>
 
     <div class='everything'>
+      <%= if get_flash(@conn, :confirmation) do %>
+        <div class='row flash'>
+          <div class='small-12 columns'>
+            <p class="alert-info success callout" role="alert"><%= get_flash(@conn, :confirmation) %></p>
+          </div>
+        </div>
+      <% end %>
+
       <%= if get_flash(@conn, :info) do %>
         <div class='row flash'>
           <div class='small-12 columns'>

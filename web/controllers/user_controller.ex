@@ -44,7 +44,7 @@ defmodule Cr2016site.UserController do
 
         conn = case {changeset.changes[:txt_confirmation_sent], changeset.changes[:txt_confirmation_received]} do
           {nil, nil} -> put_flash(conn, :info, "Your details were saved")
-        {nil, _} -> put_flash(conn, :info, "Thanks for confirming the txt")
+        {nil, _} -> put_flash(conn, :confirmation, "Thanks for confirming the txt")
           _ ->
             send_confirmation_txt(user)
             put_flash(conn, :info, "Your details were saved; please look for a txt")
@@ -66,7 +66,7 @@ defmodule Cr2016site.UserController do
     case Repo.update(changeset) do
       {:ok, _} ->
         conn
-        |> put_flash(:info, "Thanks for confirming the txt")
+        |> put_flash(:confirmation, "Thanks for confirming the txt")
         |> redirect(to: user_path(conn, :edit))
       {:error, _} ->
         conn
@@ -81,7 +81,7 @@ defmodule Cr2016site.UserController do
     send_confirmation_txt(user)
 
     conn
-    |> put_flash(:info, "We sent the confirmation code again")
+    |> put_flash(:confirmation, "We sent the confirmation code again")
     |> redirect(to: user_path(conn, :edit))
   end
 
