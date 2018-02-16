@@ -14,6 +14,14 @@ function wordWidth(word) {
   }, 0);
 }
 
+const pixelLength = 5;
+const pixelMargin = 0.5;
+const drawnLength = pixelLength - pixelMargin;
+
+const fontSize = 12;
+const lineGap = 8;
+const margin = 8;
+
 export default Component.extend({
   tagName: 'span',
 
@@ -37,23 +45,10 @@ export default Component.extend({
     const boxes = [];
 
     this.get('teams').forEach(team => {
-      team.get('meetings').forEach((meeting, index) => {
-        doc.font(header);
-        doc.text(`team ${team.get('name')}, meeting ${index}`);
-
-        doc.font(regular);
-        doc.text(`description: ${meeting.get('destination.description')}`);
-
-        doc.save();
-        doc.translate(50, 0);
-
+      team.get('meetings').forEach(meeting => {
         this.get('txtbeyond').descriptionMasks(meeting.get('destination.description')).forEach(mask => {
-          boxes.push(this._drawTransparency(doc, team, meeting, mask));
-          doc.translate(0, 200);
+          boxes.push(this._buildTransparency(team, meeting, mask));
         });
-
-        doc.restore();
-        doc.addPage();
       });
     });
 
@@ -62,7 +57,6 @@ export default Component.extend({
     });
     packer.addArray(boxes);
 
-
     packer.bins.forEach(bin => {
       console.log('a box:');
       console.log(bin);
@@ -70,7 +64,7 @@ export default Component.extend({
       bin.rects.forEach(rect => {
         doc.save();
         doc.translate(rect.x, rect.y);
-        this._drawTransparency(doc, rect.data.team, rect.data.meeting, rect.data.mask);
+        this._drawTransparency(doc, rect.data);
         doc.restore();
       });
       doc.addPage();
@@ -84,18 +78,24 @@ export default Component.extend({
     });
   },
 
-  _drawTransparency(doc, team, meeting, mask) {
+  _buildTransparency(team, meeting, mask) {
+    const width = wordWidth(mask)*pixelLength + margin*2;
+    const height = 8*pixelLength + fontSize + lineGap + margin*2;
+
+    return {
+      width,
+      height,
+      data: {
+        teamName: `@${this.get('txtbeyond').twitterName(team.get('name'))}`,
+        mask
+      }
+    };
+  },
+
+  _drawTransparency(doc, {teamName, mask}) {
     const header = this.get('assets.header');
 
-    const pixelLength = 5;
-    const pixelMargin = 0.5;
-    const drawnLength = pixelLength - pixelMargin;
-
     let leftOffset = 0;
-
-    const fontSize = 12;
-    const lineGap = 8;
-    const margin = 8;
 
     doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2, 8*pixelLength + fontSize + lineGap + margin*2);
     doc.stroke();
@@ -106,7 +106,7 @@ export default Component.extend({
     doc.fontSize(fontSize);
     doc.lineGap(lineGap);
     doc.font(header);
-    doc.text(`@${this.get('txtbeyond').twitterName(team.get('name'))}`, 0, 0);
+    doc.text(teamName, 0, 0);
 
     mask.split('').forEach(character => {
       const characterMap = characters[character];
@@ -131,15 +131,5 @@ export default Component.extend({
     });
 
     doc.restore();
-
-    return {
-      width: wordWidth(mask)*pixelLength + margin*2,
-      height: 8*pixelLength + fontSize + lineGap + margin*2,
-      data: {
-        team,
-        meeting,
-        mask
-      }
-    };
   }
 });
