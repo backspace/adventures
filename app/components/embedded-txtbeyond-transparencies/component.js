@@ -4,6 +4,8 @@ import { inject as service } from '@ember/service';
 import PDFDocument from 'npm:pdfkit';
 import blobStream from 'npm:blob-stream';
 
+import MaxRectsPackerPackage from 'npm:maxrects-packer';
+
 import { characters, characterWidths } from 'adventure-gathering/utils/characters';
 
 function wordWidth(word) {
@@ -22,15 +24,17 @@ export default Component.extend({
   didInsertElement() {
     const debug = this.get('debug');
 
-    const doc = new PDFDocument({layout: 'portrait'});
+    const doc = new PDFDocument({layout: 'landscape'});
     const stream = doc.pipe(blobStream());
 
     const header = this.get('assets.header');
     const bold = this.get('assets.bold');
     const regular = this.get('assets.regular');
 
-    // const pageWidth = 8.5*72;
-    // const pageHeight = 11*72;
+    const pageHeight = 8.5*72;
+    const pageWidth = 11*72;
+
+    const boxes = [];
 
     this.get('teams').forEach(team => {
       team.get('meetings').forEach((meeting, index) => {
@@ -44,7 +48,7 @@ export default Component.extend({
         doc.translate(50, 0);
 
         this.get('txtbeyond').descriptionMasks(meeting.get('destination.description')).forEach(mask => {
-          this._drawTransparency(doc, team, meeting, mask);
+          boxes.push(this._drawTransparency(doc, team, meeting, mask));
           doc.translate(0, 200);
         });
 
@@ -53,6 +57,25 @@ export default Component.extend({
         doc.restore();
         doc.addPage();
       });
+    });
+
+    const packer = new MaxRectsPackerPackage.MaxRectsPacker(pageWidth, pageHeight, 2, {
+      pot: false
+    });
+    packer.addArray(boxes);
+
+    doc.font(regular);
+
+    packer.bins.forEach(bin => {
+      console.log('a box:');
+      console.log(bin);
+
+      bin.rects.forEach(rect => {
+        doc.rect(rect.x, rect.y, rect.width, rect.height);
+        doc.stroke();
+        doc.text(rect.data.mask, rect.x, rect.y);
+      });
+      doc.addPage();
     });
 
     doc.end();
@@ -108,5 +131,15 @@ export default Component.extend({
         throw Error(`Couldn’t find character map for '${character}'`);
       }
     });
+
+    return {
+      width: wordWidth(mask)*pixelLength + margin*2,
+      height: 8*pixelLength + fontSize + lineGap + margin*2,
+      data: {
+        team,
+        meeting,
+        mask
+      }
+    };
   }
 });
