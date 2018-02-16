@@ -82,18 +82,21 @@ export default Component.extend({
     const width = wordWidth(mask)*pixelLength + margin*2;
     const height = 8*pixelLength + fontSize + lineGap + margin*2;
 
+    const meetingTeams = meeting.hasMany('teams').ids();
+
     return {
       width,
       height,
       data: {
         teamName: `@${this.get('txtbeyond').twitterName(team.get('name'))}`,
+        teamPosition: meetingTeams.indexOf(team.id),
         description: meeting.get('destination.description'),
         mask
       }
     };
   },
 
-  _drawTransparency(doc, {teamName, mask, description}, debug) {
+  _drawTransparency(doc, {teamName, teamPosition, mask, description}, debug) {
     const header = this.get('assets.header');
     const regular = this.get('assets.regular');
 
@@ -123,7 +126,16 @@ export default Component.extend({
         const allLines = characterMap.split('\n');
         const lines = allLines.splice(1, allLines.length - 1);
 
+        // FIXME this assumes two-team meetings only and doesn’t require the last piece
         lines.forEach((line, row) => {
+          if (row % 2 === teamPosition) {
+            doc.fillColor('black');
+          } else if (debug) {
+            doc.fillColor('yellow');
+          } else {
+            doc.fillColor('white');
+          }
+
           line.split('').forEach((c, col) => {
             if (c === '.') {
               doc.rect(leftOffset*pixelLength + col*pixelLength, fontSize + lineGap + row*pixelLength, drawnLength, drawnLength);
