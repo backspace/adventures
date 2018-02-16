@@ -46,7 +46,7 @@
           <%= if @changeset.data.txt_confirmation_sent && @changeset.data.txt_confirmation_sent == @changeset.data.txt_confirmation_received do %>
             <span class='confirmation-success'>Thanks for confirming your number!</span>
           <% else %>
-            Ten digits only; we will send you one test message before the preview, nothing else until the preview
+            Ten digits only; we will send you one test message before the preview, nothing else until the preview. Didn’t get it? <%= link "Resend", to: user_path(@conn, :resend, @user.id), class: "resend" %>
           <% end %>
         </p>
       </div>

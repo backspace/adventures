@@ -145,6 +145,21 @@ defmodule Cr2016site.Integration.Teams do
     end
   end
 
+  test_with_mock "it lets people resend the confirmation txt", HTTPoison, [post: fn(_, _) -> "a response" end] do
+    {:ok, user} = Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres"), txt: true, number: "2045555555", txt_confirmation_sent: "000000"
+
+    navigate_to "/"
+    Login.login_as "takver@example.com", "Anarres"
+
+    assert Details.confirmation.present?
+    Details.confirmation.resend
+
+    assert called HTTPoison.post(
+      "https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages",
+      {:form, [{"From", "twilio_number"}, {"To", "+12045555555"}, {"Body", "txtbeyond confirmation code: 000000\n\nConfirm at http://localhost:4001/confirmations/#{user.id}?confirmation=000000"}]})
+    assert Nav.info_text == "We sent the confirmation code again"
+  end
+
   test "it lets people confirm their txt with a link" do
     {:ok, user} = Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres"), txt: true, number: "2045555555", txt_confirmation_sent: "000000"
     navigate_to "/"
@@ -162,6 +177,7 @@ defmodule Cr2016site.Integration.Teams do
     assert Nav.info_text == "Thanks for confirming the txt"
     refute Details.confirmation.present?
   end
+
 
   test "it validates numbers when txt is enabled" do
     Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")

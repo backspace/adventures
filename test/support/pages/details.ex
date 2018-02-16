@@ -147,6 +147,10 @@ defmodule Cr2016site.Pages.Details do
       element? :css, ".errors .txt_confirmation_received"
       element? :css, ".form-group.confirmation.has-error"
     end
+
+    def resend do
+      click({:css, "a.resend"})
+    end
   end
 
   defmodule ConfirmationSuccess do

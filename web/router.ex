@@ -35,6 +35,8 @@ defmodule Cr2016site.Router do
     get "/details", UserController, :edit
     put "/details", UserController, :update
     get "/confirmations/:id", UserController, :confirm
+    # FIXME I’d prefer this not be GET but I couldn’t get it to work
+    get "/users/:id/resend", UserController, :resend
 
     get "/account", RegistrationController, :edit
     put "/account", RegistrationController, :update
