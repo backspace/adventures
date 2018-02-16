@@ -64,7 +64,7 @@ export default Component.extend({
       bin.rects.forEach(rect => {
         doc.save();
         doc.translate(rect.x, rect.y);
-        this._drawTransparency(doc, rect.data);
+        this._drawTransparency(doc, rect.data, debug);
         doc.restore();
       });
       doc.addPage();
@@ -87,13 +87,15 @@ export default Component.extend({
       height,
       data: {
         teamName: `@${this.get('txtbeyond').twitterName(team.get('name'))}`,
+        description: meeting.get('destination.description'),
         mask
       }
     };
   },
 
-  _drawTransparency(doc, {teamName, mask}) {
+  _drawTransparency(doc, {teamName, mask, description}, debug) {
     const header = this.get('assets.header');
+    const regular = this.get('assets.regular');
 
     let leftOffset = 0;
 
@@ -107,6 +109,12 @@ export default Component.extend({
     doc.lineGap(lineGap);
     doc.font(header);
     doc.text(teamName, 0, 0);
+
+    if (debug) {
+      doc.font(regular);
+      doc.fontSize(fontSize/2);
+      doc.text(description, 0, fontSize/2);
+    }
 
     mask.split('').forEach(character => {
       const characterMap = characters[character];
