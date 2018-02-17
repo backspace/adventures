@@ -84,6 +84,6 @@ defmodule Cr2016site.MessageController do
 
     conn
     |> put_layout({Cr2016site.EmailView, "layout.html"})
-    |> render("preview.html", message: message)
+    |> render("preview.html", message: message, user: conn.assigns[:current_user_object])
   end
 end
