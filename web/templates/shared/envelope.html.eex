@@ -1,0 +1,8 @@
+<% height = 7; width = 14; resolution = 6 %>
+<svg width=<%= width*resolution %> height=<%= height*resolution %>>
+  <%= for col <- 0..width - 1 do %>
+    <%= for row <- 0..height - 1 do %>
+      <rect id=<%= "p#{row}-#{col}" %> width=<%= resolution %> height=<%= resolution %> x=<%= col*resolution %> y=<%= row*resolution %> fill=transparent />
+    <% end %>
+  <% end %>
+</svg>

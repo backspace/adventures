@@ -41,6 +41,7 @@
       </div>
       <div class='form-group svg'>
         <legend>Can you see this animation on your phone?</legend>
+        <%= render Cr2016site.SharedView, "envelope.html" %>
         <%= radio_button f, :svg, true, class: "svg-true", id: "svg-true" %> <label for='svg-true'>Yes</label>
         <%= radio_button f, :svg, false, class: "svg-false", id: "svg-false" %> <label for='svg-false'>No</label>
       </div>
