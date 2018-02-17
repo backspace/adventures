@@ -6,13 +6,7 @@ import blobStream from 'npm:blob-stream';
 
 import MaxRectsPackerPackage from 'npm:maxrects-packer';
 
-import { characters, characterWidths } from 'adventure-gathering/utils/characters';
-
-function wordWidth(word) {
-  return word.split('').reduce((width, character) => {
-    return width + (characterWidths[character] || 0) + 1;
-  }, 0);
-}
+import { characters, characterWidths, wordWidth } from 'adventure-gathering/utils/characters';
 
 const pixelLength = 5;
 const pixelMargin = 0.5;

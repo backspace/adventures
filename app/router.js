@@ -24,6 +24,7 @@ Router.map(function() {
 
   this.route('scheduler');
   this.route('output');
+  this.route('slice');
 
   this.route('sync');
   this.route('settings');

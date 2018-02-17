@@ -1,0 +1,5 @@
+<svg>
+  {{#each pixels as |pixel|}}
+    <rect x={{pixel.x}} y={{pixel.y}} width={{drawnLength}} height={{drawnLength}} fill={{pixel.fill}} />
+  {{/each}}
+</svg>
