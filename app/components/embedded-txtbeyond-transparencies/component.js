@@ -90,13 +90,14 @@ export default Component.extend({
       data: {
         teamName: `@${this.get('txtbeyond').twitterName(team.get('name'))}`,
         teamPosition: meetingTeams.indexOf(team.id),
+        slices: meetingTeams.length + 1,
         description: meeting.get('destination.description'),
         mask
       }
     };
   },
 
-  _drawTransparency(doc, {teamName, teamPosition, mask, description}, debug) {
+  _drawTransparency(doc, {teamName, teamPosition, slices, mask, description}, debug) {
     const header = this.get('assets.header');
     const regular = this.get('assets.regular');
 
@@ -126,21 +127,25 @@ export default Component.extend({
         const allLines = characterMap.split('\n');
         const lines = allLines.splice(1, allLines.length - 1);
 
+        let characterIndex = 0;
+
         // FIXME this assumes two-team meetings only and doesn’t require the last piece
         lines.forEach((line, row) => {
-          if (row % 2 === teamPosition) {
-            doc.fillColor('black');
-          } else if (debug) {
-            doc.fillColor('yellow');
-          } else {
-            doc.fillColor('white');
-          }
-
           line.split('').forEach((c, col) => {
+            if (characterIndex % slices === teamPosition) {
+              doc.fillColor('black');
+            } else if (debug) {
+              doc.fillColor('yellow');
+            } else {
+              doc.fillColor('white');
+            }
+
             if (c === '.') {
               doc.rect(leftOffset*pixelLength + col*pixelLength, fontSize + lineGap + row*pixelLength, drawnLength, drawnLength);
               doc.fill();
             }
+
+            characterIndex++;
           });
         });
 
