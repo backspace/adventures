@@ -6,7 +6,7 @@ import blobStream from 'npm:blob-stream';
 
 import MaxRectsPackerPackage from 'npm:maxrects-packer';
 
-import { characters, characterWidths, wordWidth } from 'adventure-gathering/utils/characters';
+import { wordLines, wordWidth } from 'adventure-gathering/utils/characters';
 
 const pixelLength = 5;
 const pixelMargin = 0.5;
@@ -114,39 +114,25 @@ export default Component.extend({
       doc.text(description, 0, fontSize/2);
     }
 
-    mask.split('').forEach(character => {
-      const characterMap = characters[character];
+    let characterIndex = 0;
 
-      if (characterMap) {
-        const allLines = characterMap.split('\n');
-        const lines = allLines.splice(1, allLines.length - 1);
+    wordLines(mask).forEach((line, row) => {
+      line.split('').forEach((c, col) => {
+        if (characterIndex % slices === teamPosition) {
+          doc.fillColor('black');
+        } else if (debug) {
+          doc.fillColor('yellow');
+        } else {
+          doc.fillColor('white');
+        }
 
-        let characterIndex = 0;
+        if (c === '.') {
+          doc.rect(leftOffset*pixelLength + col*pixelLength, fontSize + lineGap + row*pixelLength, drawnLength, drawnLength);
+          doc.fill();
+        }
 
-        // FIXME this assumes two-team meetings only and doesn’t require the last piece
-        lines.forEach((line, row) => {
-          line.split('').forEach((c, col) => {
-            if (characterIndex % slices === teamPosition) {
-              doc.fillColor('black');
-            } else if (debug) {
-              doc.fillColor('yellow');
-            } else {
-              doc.fillColor('white');
-            }
-
-            if (c === '.') {
-              doc.rect(leftOffset*pixelLength + col*pixelLength, fontSize + lineGap + row*pixelLength, drawnLength, drawnLength);
-              doc.fill();
-            }
-
-            characterIndex++;
-          });
-        });
-
-        leftOffset += characterWidths[character] + 1;
-      } else {
-        throw Error(`Couldn’t find character map for '${character}'`);
-      }
+        characterIndex++;
+      });
     });
 
     doc.restore();
