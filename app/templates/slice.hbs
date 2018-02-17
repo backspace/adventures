@@ -1,3 +1,21 @@
-{{input value=word}}
-{{input value=slices}}
-{{nokia-string string=word slices=slices debug=debug}}
+<div class='row'>
+  <div class='small-12 columns'>
+    <div class='input-group'>
+      <span class='input-group-label'>String</span>
+      {{input value=word}}
+    </div>
+    <div class='input-group'>
+      <span class='input-group-label'>Slices</span>
+      {{input value=slices}}
+    </div>
+    <div class='input-group'>
+      <span class='input-group-label'>Debug</span>
+      {{input checked=debug type='checkbox'}}
+    </div>
+  </div>
+</div>
+<div class='row'>
+  <div class='small-12 columns'>
+    {{nokia-string string=word slices=slices debug=debug}}
+  </div>
+</div>
