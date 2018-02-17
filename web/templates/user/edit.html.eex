@@ -30,13 +30,13 @@
       <%= render "relationships.html", user: @user, relationships: @relationships %>
       <div class='form-group txt <%= if f.errors[:txt] do %>has-error<% end %>''>
         <legend>During the preview, will you have a device that can send and receive txts?</legend>
-        <%= radio_button f, :txt, true, class: "txt-true", id: "txt-true" %> <label for='txt-false'>Yes</label>
+        <%= radio_button f, :txt, true, class: "txt-true", id: "txt-true" %> <label for='txt-true'>Yes</label>
         <%= radio_button f, :txt, false, class: "txt-false", id: "txt-false" %> <label for='txt-false'>No</label>
         <p class='help-text' id='txt-help'>Each team should have at least one such device</p>
       </div>
       <div class='form-group data'>
         <legend>If so, do you have a data plan to view images on the web during the preview?</legend>
-        <%= radio_button f, :data, true, class: "data-true", id: "data-true" %> <label for='data-false'>Yes</label>
+        <%= radio_button f, :data, true, class: "data-true", id: "data-true" %> <label for='data-true'>Yes</label>
         <%= radio_button f, :data, false, class: "data-false", id: "data-false" %> <label for='data-false'>No</label>
       </div>
       <div class='form-group svg'>
