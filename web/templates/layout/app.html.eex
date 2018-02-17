@@ -15,6 +15,8 @@
     <meta property='og:image' content='https://<%= host() %>/images/icon.png'>
     <meta property='og:description' content='Join our technology preview of txts from beyond as a service.'>
 
+    <link rel='icon' href='/images/icon.png'>
+
     <title><%= adventure_name() %></title>
     <link href="https://fonts.googleapis.com/css?family=Arvo:400,400i,700" rel="stylesheet">
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
