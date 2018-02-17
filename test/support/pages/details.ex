@@ -80,6 +80,10 @@ defmodule Cr2016site.Pages.Details do
     Cr2016site.Pages.Details.Confirmation
   end
 
+  def svg do
+    Cr2016site.Pages.Details.SVG
+  end
+
   def confirmation_success do
     Cr2016site.Pages.Details.ConfirmationSuccess
   end
@@ -150,6 +154,20 @@ defmodule Cr2016site.Pages.Details do
 
     def resend do
       click({:css, "a.resend"})
+    end
+  end
+
+  defmodule SVG do
+    def present? do
+      element? :css, ".form-group.svg"
+    end
+
+    def yes do
+      click({:css, "input.svg-true"})
+    end
+
+    def no do
+      click({:css, "input.svg-false"})
     end
   end
 

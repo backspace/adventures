@@ -18,6 +18,7 @@ defmodule Cr2016site.User do
     field :display_size, :string
     field :txt, :boolean
     field :data, :boolean
+    field :svg, :boolean
     field :number, :string
 
     field :txt_confirmation_sent, :string
@@ -38,7 +39,7 @@ defmodule Cr2016site.User do
   end
 
   @required_fields ~w(email password)
-  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source display_size data number txt_confirmation_received)
+  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source svg display_size data number txt_confirmation_received)
 
   @doc """
   Creates a changeset based on the `model` and `params`.

@@ -50,6 +50,7 @@ defmodule Cr2016site.Integration.Teams do
       Details.choose_data
       Details.fill_number "2045551212"
       Details.fill_display_size "7"
+      Details.svg.yes
 
       refute Details.confirmation.present?
 
@@ -73,8 +74,8 @@ defmodule Cr2016site.Integration.Teams do
       [sent_email] = Cr2016site.MailgunHelper.sent_email
       assert sent_email["to"] == Application.get_env(:cr2016site, :email_address)
       assert sent_email["from"] == Application.get_env(:cr2016site, :email_address)
-      assert sent_email["subject"] == "takver@example.com details changed: accessibility, comments, data, display_size, number, proposed_team_name, risk_aversion, source, team_emails, txt, txt_confirmation_sent"
-      assert sent_email["text"] == "%{accessibility: \"Some accessibility information\", comments: \"Some comments\", data: true, display_size: \"7\", number: \"2045551212\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\", txt: true, txt_confirmation_sent: \"001234\"}"
+      assert sent_email["subject"] == "takver@example.com details changed: accessibility, comments, data, display_size, number, proposed_team_name, risk_aversion, source, svg, team_emails, txt, txt_confirmation_sent"
+      assert sent_email["text"] == "%{accessibility: \"Some accessibility information\", comments: \"Some comments\", data: true, display_size: \"7\", number: \"2045551212\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", svg: true, team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\", txt: true, txt_confirmation_sent: \"001234\"}"
 
       [shevek, bedap] = Details.mutuals
 
