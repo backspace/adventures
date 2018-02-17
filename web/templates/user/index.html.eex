@@ -13,7 +13,8 @@
       <th>Comments</th>
       <th>Txt</th>
       <th>Data</th>
-      <th>Size|number</th>
+      <th>SVG</th>
+      <th>Size|number confirmed?</th>
       <th>Teamed</th>
     </tr>
   </thead>
@@ -32,7 +33,8 @@
         <td class='comments'><%= user.comments %></td>
         <td class='txt'><%= symbol_for_boolean(user.txt) %></td>
         <td class='data'><%= symbol_for_boolean(user.data) %></td>
-        <td class='size-number'><%= user.display_size %> | <%= user.number %></td>
+        <td class='svg'><%= symbol_for_boolean(user.svg) %></td>
+        <td class='size-number'><%= user.display_size %> | <%= user.number %><%= if user.txt_confirmation_sent && user.txt_confirmation_sent == user.txt_confirmation_received do %>✓<% else %>✘<% end %></td>
         <td class='teamed'><%= if user.teamed do %>✓<% else %>✘<% end %></td>
         <td><%= link "Build", to: team_path(@conn, :build, user_id: user.id), method: :post, class: "build" %></td>
       </tr>
