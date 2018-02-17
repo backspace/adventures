@@ -58,6 +58,16 @@ $(() => {
       iteration = 0;
     }
   }, 150);
+
+  $('input[name="user[txt]"]').on('change', function() {
+    const value = $('input[name="user[txt]"]:checked').val();
+
+    if (value === 'true' || value === undefined) {
+      $('.phone-related').show();
+    } else {
+      $('.phone-related').hide();
+    }
+  }).trigger('change');
 });
 
 function drawEnvelope() {

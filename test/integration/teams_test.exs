@@ -201,6 +201,22 @@ defmodule Cr2016site.Integration.Teams do
     assert Details.number_error_present?
   end
 
+  test "it hides phone-related questions when txt is false" do
+    Forge.saved_user email: "takver@example.com", crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+    navigate_to "/"
+    Login.login_as "takver@example.com", "Anarres"
+
+    assert Details.svg.present?
+
+    Details.choose_txt(false)
+
+    refute Details.svg.present?
+
+    Details.choose_txt
+
+    assert Details.svg.present?
+  end
+
   test_with_mock "it sends a confirmation txt when the number changed", HTTPoison, [post: fn("https://twilio_sid:twilio_token@api.twilio.com/2010-04-01/Accounts/twilio_sid/Messages", _) -> "a response" end] do
     with_mock Cr2016site.Random, [uniform: fn(999999) -> 1234 end] do
 

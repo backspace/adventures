@@ -159,7 +159,7 @@ defmodule Cr2016site.Pages.Details do
 
   defmodule SVG do
     def present? do
-      element? :css, ".form-group.svg"
+      element_displayed?({:css, ".form-group.svg"})
     end
 
     def yes do
