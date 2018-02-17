@@ -6,11 +6,41 @@
 <%= if assigns[:user] do %>
   <div class='row card'>
     <div class='small-12 columns'>
-      Your information is summarised below.
+      <p>
+        Your information is summarised below.
 
-      <%= if Cr2016site.UserView.is_empty?(@user) do %>
-        You haven’t filled in any details! Visit the <%= link "site", to: user_url(Cr2016site.Endpoint, :edit) %> to let us know your details.
-      <% end %>
+        <%= if Cr2016site.UserView.is_empty?(@user) do %>
+          You haven’t filled in your details! Visit the <%= link "site", to: user_url(Cr2016site.Endpoint, :edit) %> to let us know your details.
+        <% end %>
+      </p>
+      <table>
+        <tr>
+          <th>Txtable?</th>
+          <td><%= Cr2016site.UserView.symbol_for_attribute(@user, @user, :txt) %></td>
+        </tr>
+        <%= if @user.txt do %>
+          <tr>
+            <th>Data</th>
+            <td><%= Cr2016site.UserView.symbol_for_attribute(@user, @user, :data) %></td>
+          </tr>
+          <tr>
+            <th>Animation</th>
+            <td><%= Cr2016site.UserView.symbol_for_attribute(@user, @user, :svg) %></td>
+          </tr>
+          <tr>
+            <th>Phone number</th>
+            <td><%= @user.number %></td>
+          </tr>
+          <tr>
+            <th>Confirmed?</th>
+            <td><%= Cr2016site.UserView.symbol_for_boolean(@user.txt_confirmation_sent && @user.txt_confirmation_sent == @user.txt_confirmation_received) %></td>
+          </tr>
+          <tr>
+            <th>Display size</th>
+            <td><%= @user.display_size %></td>
+          </tr>
+        <% end %>
+      </table>
     </div>
   </div>
 <% end %>

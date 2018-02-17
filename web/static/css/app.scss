@@ -211,6 +211,10 @@ thead, tbody {
   border: 0;
 }
 
+th {
+  text-align: left;
+}
+
 .conflict {
   background-color: $warning-color;
 }
