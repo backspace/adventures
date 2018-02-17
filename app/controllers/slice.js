@@ -1,7 +1,8 @@
 import Controller from '@ember/controller';
 
 export default Controller.extend({
-  queryParams: ['word'],
+  queryParams: ['word', 'slices', 'debug'],
 
-  debug: false
+  debug: false,
+  slices: 3
 });
