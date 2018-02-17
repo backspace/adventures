@@ -6,7 +6,7 @@ import blobStream from 'npm:blob-stream';
 
 import MaxRectsPackerPackage from 'npm:maxrects-packer';
 
-import { wordLines, wordWidth } from 'adventure-gathering/utils/characters';
+import { wordLines, wordWidth, drawString } from 'adventure-gathering/utils/characters';
 
 const pixelLength = 5;
 const pixelMargin = 0.5;
@@ -95,8 +95,6 @@ export default Component.extend({
     const header = this.get('assets.header');
     const regular = this.get('assets.regular');
 
-    let leftOffset = 0;
-
     doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2, 8*pixelLength + fontSize + lineGap + margin*2);
     doc.stroke();
 
@@ -114,25 +112,10 @@ export default Component.extend({
       doc.text(description, 0, fontSize/2);
     }
 
-    let characterIndex = 0;
-
-    wordLines(mask).forEach((line, row) => {
-      line.split('').forEach((c, col) => {
-        if (characterIndex % slices === teamPosition) {
-          doc.fillColor('black');
-        } else if (debug) {
-          doc.fillColor('yellow');
-        } else {
-          doc.fillColor('white');
-        }
-
-        if (c === '.') {
-          doc.rect(leftOffset*pixelLength + col*pixelLength, fontSize + lineGap + row*pixelLength, drawnLength, drawnLength);
-          doc.fill();
-        }
-
-        characterIndex++;
-      });
+    drawString({string: mask, slices, debug, teamPosition}, (row, col, fill) => {
+      doc.fillColor(fill);
+      doc.rect(col*pixelLength, fontSize + lineGap + row*pixelLength, drawnLength, drawnLength);
+      doc.fill();
     });
 
     doc.restore();

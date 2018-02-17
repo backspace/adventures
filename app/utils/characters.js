@@ -415,4 +415,32 @@ function wordLines(word) {
   return lines;
 }
 
-export { characters, characterLines, characterWidths, wordWidth, wordLines };
+function drawString({string, slices, teamPosition, debug}, drawFunction) {
+  const lines = wordLines(string);
+  const height = lines.length;
+
+  let characterIndex = 0;
+
+  for (let row = 0; row < height; row++) {
+    const line = lines[row];
+    const width = line.length;
+
+    for (let col = 0; col < width; col++) {
+      let fill = 'white';
+
+      if (lines[row][col] === '.') {
+        if (characterIndex % slices === teamPosition) {
+          fill = 'black';
+        } else if (debug) {
+          fill = 'yellow';
+        }
+      }
+
+      drawFunction(row, col, fill);
+
+      characterIndex++;
+    }
+  }
+}
+
+export { characters, characterLines, characterWidths, wordWidth, wordLines, drawString };
