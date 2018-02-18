@@ -48,9 +48,6 @@ export default Component.extend({
     packer.addArray(boxes);
 
     packer.bins.forEach(bin => {
-      console.log('a box:');
-      console.log(bin);
-
       bin.rects.forEach(rect => {
         doc.save();
         doc.translate(rect.x, rect.y);
