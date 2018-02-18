@@ -13,11 +13,11 @@ export default Component.extend({
     const halfRegistration = registrationLength/2;
 
     return [
-      {x1: 0, y1: maximumY + registrationLength*2 - halfRegistration, x2: registrationLength, y2: maximumY + registrationLength*2 - halfRegistration},
-      {x1: halfRegistration, y1: maximumY + registrationLength, x2: halfRegistration, y2: maximumY + registrationLength*2},
+      {x1: registrationLength, y1: maximumY + registrationLength*3 - halfRegistration, x2: registrationLength*2, y2: maximumY + registrationLength*3 - halfRegistration},
+      {x1: halfRegistration*3, y1: maximumY + registrationLength*2, x2: halfRegistration*3, y2: maximumY + registrationLength*3},
 
-      {x1: entireWidth - registrationLength, y1: halfRegistration, x2: entireWidth + halfRegistration, y2: halfRegistration},
-      {x1: entireWidth - halfRegistration, y1: 0, x2: entireWidth - halfRegistration, y2: registrationLength}
+      {x1: entireWidth - registrationLength, y1: halfRegistration*3, x2: entireWidth + halfRegistration, y2: halfRegistration*3},
+      {x1: entireWidth - halfRegistration, y1: registrationLength, x2: entireWidth - halfRegistration, y2: registrationLength*2}
     ];
   }),
 
@@ -30,7 +30,7 @@ export default Component.extend({
   }),
 
   entireHeight: computed(function() {
-    return heightInPixels*pixelLength + registrationLength*2;
+    return heightInPixels*pixelLength + registrationLength*3;
   }),
 
   pixels: computed('string', 'slices', 'debug', function() {

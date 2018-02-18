@@ -109,12 +109,12 @@ export default Component.extend({
     doc.translate(0, fontSize + lineGap);
 
     doc.save();
-    doc.translate(registrationLength/2, 8*pixelLength + registrationLength*1.5);
+    doc.translate(registrationLength/2 + registrationLength, 8*pixelLength + registrationLength*2.5);
     this._drawRegistrationMark(doc),
     doc.restore();
 
     doc.save();
-    doc.translate(wordWidth(mask)*pixelLength + registrationLength, registrationLength/2);
+    doc.translate(wordWidth(mask)*pixelLength + registrationLength/2*3, registrationLength/2 + registrationLength);
     this._drawRegistrationMark(doc),
     doc.restore();
 
