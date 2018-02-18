@@ -433,7 +433,7 @@ function drawString({string, slices, teamPosition, debug}, drawFunction) {
     const width = line.length;
 
     for (let col = 0; col < width; col++) {
-      let fill = 'white';
+      let fill = 'transparent';
 
       if (lines[row][col] === '.') {
         if (characterIndex % slices === teamPosition) {

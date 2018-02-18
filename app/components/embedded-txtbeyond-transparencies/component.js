@@ -122,9 +122,11 @@ export default Component.extend({
     doc.translate(registrationLength*2, registrationLength*2);
 
     drawString({string: mask, slices, debug, teamPosition}, (row, col, fill) => {
-      doc.fillColor(fill);
-      doc.rect(col*pixelLength, row*pixelLength, drawnLength, drawnLength);
-      doc.fill();
+      if (fill !== 'transparent') {
+        doc.fillColor(fill);
+        doc.rect(col*pixelLength, row*pixelLength, drawnLength, drawnLength);
+        doc.fill();
+      }
     });
 
     doc.restore();
