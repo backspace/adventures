@@ -6,7 +6,7 @@ import blobStream from 'npm:blob-stream';
 
 import MaxRectsPackerPackage from 'npm:maxrects-packer';
 
-import { pixelLength, drawnLength, wordWidth, drawString, registrationLength } from 'adventure-gathering/utils/characters';
+import { pixelLength, drawnLength, drawString, registrationLength, pointDimensionsForDisplay } from 'adventure-gathering/utils/characters';
 
 const fontSize = 12;
 const lineGap = 8;
@@ -68,8 +68,11 @@ export default Component.extend({
   },
 
   _buildTransparency(team, meeting, mask) {
-    const width = wordWidth(mask)*pixelLength + margin*2 + registrationLength*2;
-    const height = 8*pixelLength + fontSize + lineGap + margin*2 + registrationLength*2;
+    // FIXME this should be one of the participant phones
+    const displaySize = 5.5;
+    const pointDimensions = pointDimensionsForDisplay(mask, displaySize);
+    const width = pointDimensions.width + margin*2;
+    const height = pointDimensions.height + fontSize + lineGap + margin*2;
 
     const meetingTeams = meeting.hasMany('teams').ids();
 
@@ -81,21 +84,32 @@ export default Component.extend({
         teamPosition: meetingTeams.indexOf(team.id),
         slices: meetingTeams.length + 1,
         description: meeting.get('destination.description'),
-        mask
+        mask,
+        pointDimensions,
+        containerDimensions: {
+          width,
+          height
+        }
       }
     };
   },
 
-  _drawTransparency(doc, {teamName, teamPosition, slices, mask, description}, debug) {
+  _drawTransparency(doc, {teamName, teamPosition, slices, mask, description, pointDimensions, containerDimensions}, debug) {
     const header = this.get('assets.header');
     const regular = this.get('assets.regular');
 
+    const adjustedPixelLength = pointDimensions.pointsPerPixel;
+
+    const pixelMarginRatio = drawnLength/pixelLength;
+
+    const drawnAdjustedLength = adjustedPixelLength*pixelMarginRatio;
+
     if (debug) {
-      doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2 + registrationLength*2, 8*pixelLength + fontSize + lineGap + margin*2 + registrationLength*2);
+      doc.rect(0, 0, containerDimensions.width, containerDimensions.height);
       doc.stroke();
     }
 
-    doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2 + registrationLength*2, 8*pixelLength + fontSize + lineGap + margin*2 + registrationLength*2);
+    doc.rect(0, 0, containerDimensions.width, containerDimensions.height);
     doc.clip();
 
     doc.save();
@@ -116,22 +130,23 @@ export default Component.extend({
     doc.translate(0, fontSize + lineGap);
 
     doc.save();
-    doc.translate(registrationLength/2 + registrationLength, 8*pixelLength + registrationLength*2.5);
+    doc.translate(adjustedPixelLength/2, pointDimensions.height - adjustedPixelLength/2);
     this._drawRegistrationMark(doc),
     doc.restore();
 
     doc.save();
-    doc.translate(wordWidth(mask)*pixelLength + registrationLength/2*3, registrationLength/2 + registrationLength);
+    doc.translate(pointDimensions.width - adjustedPixelLength/2, adjustedPixelLength/2);
     this._drawRegistrationMark(doc),
     doc.restore();
 
     doc.save();
-    doc.translate(registrationLength*2, registrationLength*2);
+    // TODO is a mark indent needed?
+    // doc.translate(registrationLength*2, registrationLength*2);
 
     drawString({string: mask, slices, debug, teamPosition}, (row, col, fill) => {
       if (fill !== 'transparent') {
         doc.fillColor(fill);
-        doc.rect(col*pixelLength, row*pixelLength, drawnLength, drawnLength);
+        doc.rect(col*adjustedPixelLength, row*adjustedPixelLength, drawnAdjustedLength, drawnAdjustedLength);
         doc.fill();
       }
     });

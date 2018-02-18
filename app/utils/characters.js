@@ -409,7 +409,7 @@ const characterLines = Object.keys(characters).reduce((lines, character) => {
 function wordWidth(word) {
   return word.split('').reduce((width, character) => {
     return width + (characterWidths[character] || 0) + 1;
-  }, 0);
+  }, 0) - 1;
 }
 
 function wordLines(word) {
@@ -430,6 +430,23 @@ function wordLines(word) {
   }
 
   return lines;
+}
+
+function pointDimensionsForDisplay(word, displaySize) {
+  const heightInPixelsWithMarks = heightInPixels + 1;
+  const widthInPixelsWithMarks = wordWidth(word) + 1;
+
+  const displayDiagonalInPoints = displaySize*72;
+
+  const diagonalInPixelsWithMarks = Math.sqrt(Math.pow(heightInPixelsWithMarks, 2) + Math.pow(widthInPixelsWithMarks, 2));
+
+  const pointsPerPixel = displayDiagonalInPoints/diagonalInPixelsWithMarks;
+
+  return {
+    pointsPerPixel,
+    width: widthInPixelsWithMarks*pointsPerPixel,
+    height: heightInPixelsWithMarks*pointsPerPixel
+  };
 }
 
 function drawString({string, slices, teamPosition, debug}, drawFunction) {
@@ -471,5 +488,6 @@ export {
   characterWidths,
   wordWidth,
   wordLines,
-  drawString
+  drawString,
+  pointDimensionsForDisplay
 };
