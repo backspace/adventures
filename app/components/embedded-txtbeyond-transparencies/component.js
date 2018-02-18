@@ -6,11 +6,7 @@ import blobStream from 'npm:blob-stream';
 
 import MaxRectsPackerPackage from 'npm:maxrects-packer';
 
-import { wordLines, wordWidth, drawString } from 'adventure-gathering/utils/characters';
-
-const pixelLength = 5;
-const pixelMargin = 0.5;
-const drawnLength = pixelLength - pixelMargin;
+import { pixelLength, drawnLength, wordWidth, drawString } from 'adventure-gathering/utils/characters';
 
 const fontSize = 12;
 const lineGap = 8;

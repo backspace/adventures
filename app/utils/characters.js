@@ -1,3 +1,8 @@
+const pixelLength = 5;
+const pixelMargin = 0.5;
+const drawnLength = pixelLength - pixelMargin;
+
+const heightInPixels = 8;
 
 const characters = {
   A:
@@ -443,4 +448,15 @@ function drawString({string, slices, teamPosition, debug}, drawFunction) {
   }
 }
 
-export { characters, characterLines, characterWidths, wordWidth, wordLines, drawString };
+export {
+  pixelLength,
+  pixelMargin,
+  drawnLength,
+  heightInPixels,
+  characters,
+  characterLines,
+  characterWidths,
+  wordWidth,
+  wordLines,
+  drawString
+};
