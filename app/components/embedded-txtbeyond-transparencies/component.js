@@ -88,8 +88,10 @@ export default Component.extend({
     const header = this.get('assets.header');
     const regular = this.get('assets.regular');
 
-    doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2 + registrationLength*2, 8*pixelLength + fontSize + lineGap + margin*2 + registrationLength*2);
-    doc.stroke();
+    if (debug) {
+      doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2 + registrationLength*2, 8*pixelLength + fontSize + lineGap + margin*2 + registrationLength*2);
+      doc.stroke();
+    }
 
     doc.save();
     doc.translate(margin, margin);
