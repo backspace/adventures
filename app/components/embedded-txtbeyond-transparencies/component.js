@@ -93,6 +93,9 @@ export default Component.extend({
       doc.stroke();
     }
 
+    doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2 + registrationLength*2, 8*pixelLength + fontSize + lineGap + margin*2 + registrationLength*2);
+    doc.clip();
+
     doc.save();
     doc.translate(margin, margin);
 
@@ -131,6 +134,7 @@ export default Component.extend({
       }
     });
 
+    doc.restore();
     doc.restore();
     doc.restore();
     doc.restore();
