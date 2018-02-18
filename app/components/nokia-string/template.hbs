@@ -1,5 +1,8 @@
-<svg>
+<svg width={{entireWidth}} height={{entireHeight}}>
   {{#each pixels as |pixel|}}
     <rect x={{pixel.x}} y={{pixel.y}} width={{drawnLength}} height={{drawnLength}} fill={{pixel.fill}} />
+  {{/each}}
+  {{#each registrationLines as |line|}}
+    <line x1={{line.x1}} y1={{line.y1}} x2={{line.x2}} y2={{line.y2}} stroke=black stroke-width='0.25' />
   {{/each}}
 </svg>

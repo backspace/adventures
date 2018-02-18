@@ -4,6 +4,8 @@ const drawnLength = pixelLength - pixelMargin;
 
 const heightInPixels = 8;
 
+const registrationLength = pixelLength;
+
 const characters = {
   A:
 ` ...
@@ -452,6 +454,7 @@ export {
   pixelLength,
   pixelMargin,
   drawnLength,
+  registrationLength,
   heightInPixels,
   characters,
   characterLines,
