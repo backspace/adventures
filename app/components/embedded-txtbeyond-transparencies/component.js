@@ -32,6 +32,8 @@ export default Component.extend({
     const pageHeight = 8.5*72;
     const pageWidth = 11*72;
 
+    const pageMargin = 18;
+
     const boxes = [];
 
     this.get('teams').forEach(team => {
@@ -42,7 +44,7 @@ export default Component.extend({
       });
     });
 
-    const packer = new MaxRectsPackerPackage.MaxRectsPacker(pageWidth, pageHeight, 2, {
+    const packer = new MaxRectsPackerPackage.MaxRectsPacker(pageWidth - pageMargin*2, pageHeight - pageMargin*2, 2, {
       pot: false
     });
     packer.addArray(boxes);
@@ -50,7 +52,7 @@ export default Component.extend({
     packer.bins.forEach(bin => {
       bin.rects.forEach(rect => {
         doc.save();
-        doc.translate(rect.x, rect.y);
+        doc.translate(rect.x + pageMargin, rect.y + pageMargin);
         this._drawTransparency(doc, rect.data, debug);
         doc.restore();
       });
