@@ -6,7 +6,7 @@ import blobStream from 'npm:blob-stream';
 
 import MaxRectsPackerPackage from 'npm:maxrects-packer';
 
-import { pixelLength, drawnLength, wordWidth, drawString } from 'adventure-gathering/utils/characters';
+import { pixelLength, drawnLength, wordWidth, drawString, registrationLength } from 'adventure-gathering/utils/characters';
 
 const fontSize = 12;
 const lineGap = 8;
@@ -66,8 +66,8 @@ export default Component.extend({
   },
 
   _buildTransparency(team, meeting, mask) {
-    const width = wordWidth(mask)*pixelLength + margin*2;
-    const height = 8*pixelLength + fontSize + lineGap + margin*2;
+    const width = wordWidth(mask)*pixelLength + margin*2 + registrationLength*2;
+    const height = 8*pixelLength + fontSize + lineGap + margin*2 + registrationLength*2;
 
     const meetingTeams = meeting.hasMany('teams').ids();
 
@@ -88,7 +88,7 @@ export default Component.extend({
     const header = this.get('assets.header');
     const regular = this.get('assets.regular');
 
-    doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2, 8*pixelLength + fontSize + lineGap + margin*2);
+    doc.rect(0, 0, wordWidth(mask)*pixelLength + margin*2 + registrationLength*2, 8*pixelLength + fontSize + lineGap + margin*2 + registrationLength*2);
     doc.stroke();
 
     doc.save();
@@ -105,12 +105,38 @@ export default Component.extend({
       doc.text(description, 0, fontSize/2);
     }
 
+    doc.save();
+    doc.translate(0, fontSize + lineGap);
+
+    doc.save();
+    doc.translate(registrationLength/2, 8*pixelLength + registrationLength*1.5);
+    this._drawRegistrationMark(doc),
+    doc.restore();
+
+    doc.save();
+    doc.translate(wordWidth(mask)*pixelLength + registrationLength, registrationLength/2);
+    this._drawRegistrationMark(doc),
+    doc.restore();
+
+    doc.save();
+    doc.translate(registrationLength*2, registrationLength*2);
+
     drawString({string: mask, slices, debug, teamPosition}, (row, col, fill) => {
       doc.fillColor(fill);
-      doc.rect(col*pixelLength, fontSize + lineGap + row*pixelLength, drawnLength, drawnLength);
+      doc.rect(col*pixelLength, row*pixelLength, drawnLength, drawnLength);
       doc.fill();
     });
 
     doc.restore();
+    doc.restore();
+    doc.restore();
+  },
+
+  _drawRegistrationMark(doc) {
+    doc.lineWidth(0.25);
+    doc.moveTo(-registrationLength/2, 0).lineTo(registrationLength/2, 0);
+    doc.stroke();
+    doc.moveTo(0, -registrationLength/2).lineTo(0, registrationLength/2);
+    doc.stroke();
   }
 });
