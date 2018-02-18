@@ -6,7 +6,7 @@ import { drawString, pixelLength, drawnLength } from 'adventure-gathering/utils/
 export default Component.extend({
   drawnLength,
 
-  pixels: computed('pixelWidth', 'pixelHeight', 'string', 'slices', 'debug', function() {
+  pixels: computed('string', 'slices', 'debug', function() {
     const pixels = [];
 
     const string = this.get('string');
