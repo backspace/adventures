@@ -25,10 +25,6 @@ export default Component.extend({
     const doc = new PDFDocument({layout: 'landscape'});
     const stream = doc.pipe(blobStream());
 
-    const header = this.get('assets.header');
-    const bold = this.get('assets.bold');
-    const regular = this.get('assets.regular');
-
     const pageHeight = 8.5*72;
     const pageWidth = 11*72;
 
