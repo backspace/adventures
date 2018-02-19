@@ -6,7 +6,7 @@ import blobStream from 'npm:blob-stream';
 
 import MaxRectsPackerPackage from 'npm:maxrects-packer';
 
-import { pixelLength, drawnLength, drawString, registrationLength, pointDimensionsForDisplay } from 'adventure-gathering/utils/characters';
+import { pixelLength, drawnLength, drawString, registrationLength, pointDimensionsForDisplay } from 'nokia-font/utils/nokia-font';
 
 const fontSize = 12;
 const lineGap = 8;

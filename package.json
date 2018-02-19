@@ -71,6 +71,7 @@
     "maxrects-packer": "^2.0.0",
     "moment": "2.11.1",
     "moment-timezone": "0.5.0",
+    "nokia-font": "backspace/nokia-font#primary",
     "pdfkit": "^0.7.2"
   },
   "engines": {
