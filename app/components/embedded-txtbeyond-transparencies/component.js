@@ -64,7 +64,7 @@ export default Component.extend({
   },
 
   _buildTransparency(team, meeting, mask) {
-    const displaySize = this._getMeetingDisplaySize(meeting);
+    const displaySize = this._getMeetingDisplaySize(meeting) - 0.5;
     const pointDimensions = pointDimensionsForDisplay(mask, displaySize);
     const width = pointDimensions.width + margin*2;
     const height = pointDimensions.height + fontSize + lineGap + margin*2;
