@@ -25,6 +25,8 @@ export default Model.extend({
 
   index: attr('number'),
 
+  phone: attr('string'),
+
   createdAt: attr('createDate'),
   updatedAt: attr('updateDate')
 });

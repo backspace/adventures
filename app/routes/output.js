@@ -12,6 +12,8 @@ export default Route.extend({
   map: service(),
   features: service(),
 
+  txtbeyond: service(),
+
   model() {
     let fontPaths;
 
@@ -45,5 +47,11 @@ export default Route.extend({
         });
       })
     });
+  },
+
+  afterModel(model) {
+    if (model.settings.get('txtbeyond')) {
+      return this.get('txtbeyond').assignMeetingPhones(model.teams, model.meetings);
+    }
   }
 });
