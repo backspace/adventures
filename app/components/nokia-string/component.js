@@ -3,6 +3,8 @@ import Component from '@ember/component';
 
 import { drawString, pixelLength, drawnLength, heightInPixels, registrationLength, wordWidth } from 'adventure-gathering/utils/characters';
 
+const halfRegistration = registrationLength/2;
+
 export default Component.extend({
   drawnLength,
   registrationLength,
@@ -10,14 +12,10 @@ export default Component.extend({
   registrationLines: computed('entireWidth', function() {
     const entireWidth = this.get('entireWidth');
     const maximumY = heightInPixels*pixelLength;
-    const halfRegistration = registrationLength/2;
 
     return [
-      {x1: registrationLength, y1: maximumY + registrationLength*3 - halfRegistration, x2: registrationLength*2, y2: maximumY + registrationLength*3 - halfRegistration},
-      {x1: halfRegistration*3, y1: maximumY + registrationLength*2, x2: halfRegistration*3, y2: maximumY + registrationLength*3},
-
-      {x1: entireWidth - registrationLength, y1: halfRegistration*3, x2: entireWidth + halfRegistration, y2: halfRegistration*3},
-      {x1: entireWidth - halfRegistration, y1: registrationLength, x2: entireWidth - halfRegistration, y2: registrationLength*2}
+      ...this._registrationMarkLines({x: pixelLength/2, y: (heightInPixels + 0.5)*pixelLength}),
+      ...this._registrationMarkLines({x: entireWidth - pixelLength/2, y: pixelLength/2})
     ];
   }),
 
@@ -26,7 +24,7 @@ export default Component.extend({
   }),
 
   entireWidth: computed('maximumX', function() {
-    return this.get('maximumX')*pixelLength + registrationLength*2;
+    return this.get('maximumX')*pixelLength + registrationLength;
   }),
 
   entireHeight: computed(function() {
@@ -43,12 +41,19 @@ export default Component.extend({
 
     drawString({string, slices, debug, teamPosition: slices - 1}, (row, col, fill) => {
       pixels.push({
-        x: col*pixelLength + registrationLength*2,
-        y: row*pixelLength + registrationLength*2,
+        x: col*pixelLength,
+        y: row*pixelLength,
         fill
       });
     });
 
     return pixels;
-  })
+  }),
+
+  _registrationMarkLines({x, y}) {
+    return [
+      {x1: x - halfRegistration, y1: y, x2: x + halfRegistration, y2: y},
+      {x1: x, y1: y - halfRegistration, x2: x, y2: y + halfRegistration}
+    ];
+  }
 });
