@@ -16,7 +16,8 @@ export default PageObject.create({
       name: text('.name'),
       users: text('.users'),
       notes: text('.notes'),
-      riskAversion: text('.risk-aversion')
+      riskAversion: text('.risk-aversion'),
+      phones: text('.phones')
     }
   }),
 

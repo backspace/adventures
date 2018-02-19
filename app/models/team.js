@@ -11,6 +11,8 @@ export default Model.extend({
   riskAversion: attr('number'),
   notes: attr('string'),
 
+  phones: attr(),
+
   meetings: hasMany('meeting', {async: false}),
 
   destinations: mapBy('meetings', 'destination'),
@@ -29,6 +31,12 @@ export default Model.extend({
     if (risks.length > 0) {
       return risks.reduce((prev, curr) => prev + curr)/risks.length;
     }
+  }),
+
+  phonesString: computed('phones.[]', function() {
+    return (this.get('phones') || []).map(phone => {
+      return `${phone.number}: ${phone.displaySize}`;
+    }).join(', ');
   }),
 
   createdAt: attr('createDate'),
