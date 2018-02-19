@@ -64,8 +64,7 @@ export default Component.extend({
   },
 
   _buildTransparency(team, meeting, mask) {
-    // FIXME this should be one of the participant phones
-    const displaySize = 5.5;
+    const displaySize = this._getMeetingDisplaySize(meeting);
     const pointDimensions = pointDimensionsForDisplay(mask, displaySize);
     const width = pointDimensions.width + margin*2;
     const height = pointDimensions.height + fontSize + lineGap + margin*2;
@@ -159,5 +158,15 @@ export default Component.extend({
     doc.stroke();
     doc.moveTo(0, -registrationLength/2).lineTo(0, registrationLength/2);
     doc.stroke();
+  },
+
+  _getMeetingDisplaySize(meeting) {
+    const number = meeting.get('phone');
+
+    if (!number) {
+      throw new Error(`Meeting ${meeting.id} has no phone number!`);
+    }
+
+    return parseFloat(meeting.get('teams').reduce((phones, team) => phones.concat(team.get('phones')), []).find(phone => phone.number === number).displaySize);
   }
 });
