@@ -12,12 +12,16 @@
       <span class='input-group-label'>Debug</span>
       {{input checked=debug type='checkbox'}}
     </div>
+    <div class='input-group'>
+      <span class='input-group-label'>Animated</span>
+      {{input checked=animated type='checkbox'}}
+    </div>
   </div>
 </div>
 <div class='row'>
   <div class='small-12 columns'>
     <div style='padding: 5rem'>
-      {{nokia-string string=word slices=slices debug=debug}}
+      {{nokia-string string=word slices=slices debug=debug animated=animated}}
     </div>
   </div>
 </div>

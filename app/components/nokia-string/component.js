@@ -5,9 +5,39 @@ import { drawString, pixelLength, drawnLength, heightInPixels, registrationLengt
 
 const halfRegistration = registrationLength/2;
 
+const delay = 100;
+const cycleLength = 10;
+const revealLength = 6;
+
+const fills = ['white', 'black'];
+
 export default Component.extend({
   drawnLength,
   registrationLength,
+
+  cycle: 0,
+
+  didInsertElement() {
+    this._super(...arguments);
+
+    if (this.get('animated')) {
+      setInterval(() => {
+        const cycle = this.get('cycle');
+
+        if (cycle < cycleLength) {
+          this.set('cycle', cycle + 1);
+        } else {
+          this.set('cycle', 0);
+        }
+      }, delay);
+    }
+  },
+
+  on: computed('cycle', function () {
+    const cycle = this.get('cycle');
+
+    return cycle < revealLength;
+  }),
 
   registrationLines: computed('entireWidth', function() {
     const entireWidth = this.get('entireWidth');
@@ -31,21 +61,36 @@ export default Component.extend({
     return heightInPixels*pixelLength + registrationLength*3;
   }),
 
-  pixels: computed('string', 'slices', 'debug', function() {
+  pixels: computed('string', 'slices', 'debug', 'on', function() {
     const pixels = [];
 
-    const string = this.get('string');
+    if (this.get('on')) {
+      const string = this.get('string');
 
-    const slices = this.get('slices');
-    const debug = this.get('debug');
+      const slices = this.get('slices');
+      const debug = this.get('debug');
 
-    drawString({string, slices, debug, teamPosition: slices - 1}, (row, col, fill) => {
-      pixels.push({
-        x: col*pixelLength,
-        y: row*pixelLength,
-        fill
+      drawString({string, slices, debug, teamPosition: slices - 1}, (row, col, fill) => {
+        pixels.push({
+          x: col*pixelLength,
+          y: row*pixelLength,
+          fill
+        });
       });
-    });
+    } else {
+      const maximumX = this.get('maximumX');
+      const maximumY = heightInPixels;
+
+      for (let row = 0; row < maximumY; row++) {
+        for (let col = 0; col < maximumX; col++) {
+          pixels.push({
+            x: col*pixelLength,
+            y: row*pixelLength,
+            fill: fills[Math.floor(Math.random() * fills.length)]
+          });
+        }
+      }
+    }
 
     return pixels;
   }),
