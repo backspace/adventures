@@ -66,6 +66,7 @@
     "ember-web-app": "1.2.0",
     "ember-web-app-rename": "1.0.0",
     "eslint-plugin-ember": "^5.0.0",
+    "js-graph-algorithms": "^1.0.18",
     "json-stringify-safe": "^5.0.1",
     "loader.js": "^4.2.3",
     "maxrects-packer": "^2.0.0",
