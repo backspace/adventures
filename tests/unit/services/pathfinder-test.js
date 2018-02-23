@@ -2,9 +2,12 @@ import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
 
 const data = {
-  'A|B': 2,
-  'B|C': 3,
-  'C|D': 4
+  _id: 'whatever',
+  data: {
+    'A|B': 2,
+    'B|C': 3,
+    'C|D': 4
+  }
 };
 
 module('service:pathfinder', 'Unit | Service | pathfinder', function(hooks) {

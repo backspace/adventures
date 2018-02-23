@@ -1,24 +1,29 @@
 import Service from '@ember/service';
 import { computed } from '@ember/object';
+import { inject as service } from '@ember/service';
 
 import jsgraphs from 'npm:js-graph-algorithms';
 
 export default Service.extend({
-  regions: computed('data', function() {
-    return Object.keys(this.get('data')).reduce((regions, key) => regions.concat(key.split('|')), []).uniq();
+  store: service(),
+
+  data: Object.freeze({}),
+
+  regions: computed('data._rev', function() {
+    return Object.keys(this.get('data.data')).reduce((regions, key) => regions.concat(key.split('|')), []).uniq();
   }),
 
   hasRegion(regionName) {
     return this.get('regions').includes(regionName);
   },
 
-  graph: computed('data', function() {
+  graph: computed('data._rev', function() {
     const graph = new jsgraphs.WeightedDiGraph(this.get('regions.length'));
 
     const regionToIndex = {};
     let regionIndex = 0;
 
-    Object.entries(this.get('data')).forEach(([regions, distance]) => {
+    Object.entries(this.get('data.data')).forEach(([regions, distance]) => {
       const [dataA, dataB] = regions.split('|');
 
       [dataA, dataB].forEach(region => {

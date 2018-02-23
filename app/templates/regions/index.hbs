@@ -9,7 +9,7 @@
       </thead>
       <tbody>
         {{#each regions as |region|}}
-          <tr class='region'>
+          <tr class='region {{if region.isComplete 'complete' 'incomplete'}}'>
             <td class='name'>{{region.name}}</td>
             <td>{{link-to 'Edit' 'region' region class='edit'}}</td>
           </tr>

@@ -2,6 +2,7 @@ import PageObject, {
   clickable,
   collection,
   fillable,
+  hasClass,
   text,
   value,
   visitable
@@ -16,6 +17,7 @@ export default PageObject.create({
 
     item: {
       name: text('.name'),
+      isIncomplete: hasClass('incomplete'),
 
       edit: clickable('.edit')
     }
