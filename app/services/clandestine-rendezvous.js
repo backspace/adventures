@@ -45,6 +45,10 @@ export default Service.extend({
     return map;
   },
 
+  descriptionIsValid() {
+    return true;
+  },
+
   maskIsValid(answer, mask) {
     if (answer.length !== mask.length) {
       return false;
