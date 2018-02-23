@@ -7,7 +7,9 @@ import jsgraphs from 'npm:js-graph-algorithms';
 export default Service.extend({
   store: service(),
 
-  data: Object.freeze({}),
+  data: Object.freeze({
+    data: {}
+  }),
 
   regions: computed('data._rev', function() {
     return Object.keys(this.get('data.data')).reduce((regions, key) => regions.concat(key.split('|')), []).uniq();
