@@ -161,7 +161,10 @@ export default PageObject.create({
         itemScope: '.meeting',
 
         item: {
-          click: clickable()
+          click: clickable(),
+
+          index: text('.index'),
+          offset: text('.offset')
         }
       })
     }

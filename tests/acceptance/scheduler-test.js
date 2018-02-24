@@ -71,6 +71,7 @@ moduleForAcceptance('Acceptance | scheduler', {
       }).then(() => {
         return store.createRecord('meeting', {
           destination: edmontonCourt,
+          offset: 15,
           teams: [superfans, mayors]
         }).save();
       }).then(() => {
@@ -209,7 +210,11 @@ test('hovering over a team shows its destinations ordered on the map, its meetin
 
   andThen(() => {
     assert.equal(page.map.regions(0).meetingIndex, '1');
+
     assert.equal(page.teams(0).meetings().count, 1);
+    assert.equal(page.teams(0).meetings(0).index, '0');
+    assert.equal(page.teams(0).meetings(0).offset, '15');
+
     assert.ok(page.teams(1).isHighlighted, 'expected the met team to be highlighted');
     assert.notOk(page.teams(2).isHighlighted, 'expected the other team to not be highlighted');
   });

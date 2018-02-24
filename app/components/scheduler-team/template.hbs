@@ -11,7 +11,7 @@
   {{#if showMeetings}}
     <ul>
       {{#each team.meetings as |meeting index|}}
-        <li class=meeting onclick={{action 'editMeeting' meeting}}>{{index}}</li>
+        <li class=meeting onclick={{action 'editMeeting' meeting}}><span class=index>{{index}}</span>: <span class=offset>{{meeting.offset}}</span></li>
       {{/each}}
     </ul>
   {{/if}}

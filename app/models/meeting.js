@@ -24,6 +24,7 @@ export default Model.extend({
   }),
 
   index: attr('number'),
+  offset: attr('number'),
 
   phone: attr('string'),
 
