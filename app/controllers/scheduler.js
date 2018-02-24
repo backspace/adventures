@@ -1,11 +1,38 @@
 import { all } from 'rsvp';
+import { computed } from '@ember/object';
 import { mapBy, max } from '@ember/object/computed';
+import { inject as service } from '@ember/service';
 import Controller from '@ember/controller';
 
 export default Controller.extend({
   teamMeetings: mapBy('model.teams', 'meetings'),
   meetingCounts: mapBy('teamMeetings', 'length'),
   highestMeetingCount: max('meetingCounts'),
+
+  pathfinder: service(),
+
+  suggestedOffset: computed('meeting.{teams.@each.meetings.lastObject.offset,destination.region.name}', {
+    get() {
+      const lastMeetingOffsets = (this.get('meeting.teams') || []).map(team => team.get('savedMeetings.lastObject.offset') || 0);
+      const maxOffset = Math.max(...lastMeetingOffsets, 0);
+
+      let timeFromLastRegion = 0;
+
+      const newRegionName = this.get('meeting.destination.region.name');
+      const lastMeetingRegionNames = (this.get('meeting.teams') || []).map(team => team.get('savedMeetings.lastObject.destination.region.name')).filter(n => !!n);
+
+      if (newRegionName && lastMeetingRegionNames.length > 0) {
+        const destinationDistances = lastMeetingRegionNames.map(name => this.get('pathfinder').distance(newRegionName, name));
+        timeFromLastRegion = Math.max(...destinationDistances);
+      }
+
+      return maxOffset + timeFromLastRegion;
+    },
+
+    set(key, value) {
+      return value;
+    }
+  }),
 
   actions: {
     selectDestination(destination) {
@@ -27,6 +54,8 @@ export default Controller.extend({
 
     saveMeeting() {
       const meeting = this.get('meeting');
+
+      meeting.set('offset', this.get('suggestedOffset'));
 
       meeting.save().then(() => {
         return all([meeting.get('destination'), meeting.get('teams')]);

@@ -2,6 +2,7 @@ import PageObject, {
   attribute,
   clickable,
   collection,
+  fillable,
   findElement,
   hasClass,
   isHidden,
@@ -194,6 +195,8 @@ export default PageObject.create({
 
     destination: selectText('.destination'),
     index: value('.index'),
+    offset: value('.offset'),
+    fillOffset: fillable('.offset'),
 
     teams: collection({
       itemScope: '.team',

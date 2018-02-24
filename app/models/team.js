@@ -1,5 +1,5 @@
 import { computed } from '@ember/object';
-import { mapBy } from '@ember/object/computed';
+import { filterBy, mapBy } from '@ember/object/computed';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
@@ -16,6 +16,8 @@ export default Model.extend({
   meetings: hasMany('meeting', {async: false}),
 
   destinations: mapBy('meetings', 'destination'),
+
+  savedMeetings: filterBy('meetings', 'isNew', false),
 
   averageAwesomeness: computed('destinations.@each.awesomeness', function() {
     const awesomenesses = this.get('destinations').mapBy('awesomeness').filter(a => a);

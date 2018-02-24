@@ -62,6 +62,7 @@
     {{/each}}
 
     {{input value=meeting.index class='index'}}
+    {{input value=suggestedOffset class='offset'}}
     {{#unless meeting.isForbidden}}
       <button class='save button tiny success' onclick={{action 'saveMeeting'}}>Save</button>
       <button class='reset button tiny alert' onclick={{action 'resetMeeting'}}>Reset</button>
