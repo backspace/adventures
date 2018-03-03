@@ -24,6 +24,13 @@
   </div>
 
   <div class="form-group">
+    <%= label f, :user_ids, class: "control-label" %>
+    <%= for user <- @users do %>
+      <label><%= user.email %> <input name="team[user_ids][]" type="checkbox" value="<%= user.id %>" <%= if Enum.member?(@team.user_ids, user.id) do %>checked<% end %>></label>
+    <% end %>
+  </div>
+
+  <div class="form-group">
     <%= submit "Submit", class: "btn btn-primary" %>
   </div>
 <% end %>

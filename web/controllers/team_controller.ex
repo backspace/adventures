@@ -44,7 +44,8 @@ defmodule Cr2016site.TeamController do
 
   def new(conn, _params) do
     changeset = Team.changeset(%Team{})
-    render(conn, "new.html", changeset: changeset)
+    users = Repo.all(User)
+    render(conn, "new.html", users: users, changeset: changeset)
   end
 
   def build(conn, %{"user_id" => base_user_id}) do
@@ -96,12 +97,14 @@ defmodule Cr2016site.TeamController do
 
   def edit(conn, %{"id" => id}) do
     team = Repo.get!(Team, id)
+    users = Repo.all(User)
     changeset = Team.changeset(team)
-    render(conn, "edit.html", team: team, changeset: changeset)
+    render(conn, "edit.html", team: team, users: users, changeset: changeset)
   end
 
   def update(conn, %{"id" => id, "team" => team_params}) do
     team = Repo.get!(Team, id)
+    users = Repo.all(User)
     changeset = Team.changeset(team, team_params)
 
     case Repo.update(changeset) do
@@ -110,7 +113,7 @@ defmodule Cr2016site.TeamController do
         |> put_flash(:info, "Team updated successfully.")
         |> redirect(to: team_path(conn, :show, team))
       {:error, changeset} ->
-        render(conn, "edit.html", team: team, changeset: changeset)
+        render(conn, "edit.html", users: users, team: team, changeset: changeset)
     end
   end
 
