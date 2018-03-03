@@ -108,10 +108,10 @@ defmodule Cr2016site.TeamController do
     changeset = Team.changeset(team, team_params)
 
     case Repo.update(changeset) do
-      {:ok, team} ->
+      {:ok, _team} ->
         conn
         |> put_flash(:info, "Team updated successfully.")
-        |> redirect(to: team_path(conn, :show, team))
+        |> redirect(to: team_path(conn, :index))
       {:error, changeset} ->
         render(conn, "edit.html", users: users, team: team, changeset: changeset)
     end
