@@ -18,6 +18,10 @@ defmodule Cr2016site.TeamController do
     users = Repo.all(User)
     teams = Repo.all(Team)
     json conn, %{data: Enum.map(teams, fn(team) ->
+      team_users = Enum.map(team.user_ids, fn(user_id) ->
+        Enum.find(users, fn(u) -> u.id == user_id end)
+      end)
+
       team_emails = Enum.map(team.user_ids, fn(user_id) ->
         user = Enum.find(users, fn(u) -> u.id == user_id end)
 
@@ -36,7 +40,9 @@ defmodule Cr2016site.TeamController do
           name: team.name,
           riskAversion: team.risk_aversion,
           notes: team.notes,
-          users: team_emails
+          users: team_emails,
+          phones: Enum.filter(team_users, fn(user) -> user.txt end)
+            |> Enum.map(fn(user) -> %{number: user.number, displaySize: user.display_size, name: user.name} end)
         }
       }
     end)}
