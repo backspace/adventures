@@ -15,7 +15,7 @@
       </p>
       <table>
         <tr>
-          <th>Name</th>
+          <th>Name or alias</th>
           <td><%= @user.name %></td>
         </tr>
         <tr>
