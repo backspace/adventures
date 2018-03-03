@@ -26,6 +26,7 @@ defmodule Cr2016site.User do
 
     field :teamed, :boolean, virtual: true
 
+    field :name, :string
     field :team_emails, Cr2016site.DowncasedString
     field :proposed_team_name, :string
 
@@ -39,7 +40,7 @@ defmodule Cr2016site.User do
   end
 
   @required_fields ~w(email password)
-  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source svg display_size data number txt_confirmation_received)
+  @optional_fields ~w(name team_emails proposed_team_name risk_aversion accessibility comments source svg display_size data number txt_confirmation_received)
 
   @doc """
   Creates a changeset based on the `model` and `params`.

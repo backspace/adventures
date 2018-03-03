@@ -105,6 +105,10 @@ defmodule Cr2016site.Pages.Details do
     attribute_value({:id, "user_accessibility"}, "value")
   end
 
+  def fill_name(name) do
+    fill_field({:id, "user_name"}, name)
+  end
+
   def comments do
     Cr2016site.Pages.Details.Comments
   end
