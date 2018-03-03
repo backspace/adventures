@@ -21,7 +21,16 @@
       <td class='name'><%= team.name %></td>
       <td class='risk-aversion'><%= team.risk_aversion %></td>
       <td><%= team.notes %></td>
-      <td><%= Enum.join(team.user_ids, ", ") %></td>
+      <td><%= Enum.map(team.user_ids, fn(user_id) ->
+        user = Enum.find(@users, fn(u) -> u.id == user_id end)
+
+        if user do
+          user.email
+        else
+          "unknown user #{user_id}"
+        end
+      end)
+      |> Enum.join(", ") %></td>
 
       <td class="text-right">
         <%= link "Show", to: team_path(@conn, :show, team), class: "btn btn-default btn-xs" %>

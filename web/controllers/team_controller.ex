@@ -10,7 +10,7 @@ defmodule Cr2016site.TeamController do
 
   def index(conn, _params) do
     teams = Repo.all(Team)
-    render(conn, "index.html", teams: teams)
+    render(conn, "index.html", teams: teams, users: Repo.all(User))
   end
 
   # FIXME surely there’s a better way
