@@ -10,8 +10,8 @@ defmodule Cr2016site.Team do
     timestamps()
   end
 
-  @required_fields ~w(name risk_aversion)
-  @optional_fields ~w(notes user_ids)
+  @required_fields ~w(risk_aversion)
+  @optional_fields ~w(name notes user_ids)
 
   @doc """
   Creates a changeset based on the `model` and `params`.
