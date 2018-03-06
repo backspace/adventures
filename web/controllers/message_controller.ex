@@ -81,9 +81,13 @@ defmodule Cr2016site.MessageController do
 
   def preview(conn, %{"id" => id}) do
     message = Repo.get!(Message, id)
+    teams = Repo.all(Cr2016site.Team)
+
+    user = conn.assigns[:current_user_object]
+    team = Enum.find(teams, fn(team) -> Enum.member?(team.user_ids, user.id) end)
 
     conn
     |> put_layout({Cr2016site.EmailView, "layout.html"})
-    |> render("preview.html", message: message, user: conn.assigns[:current_user_object])
+    |> render("preview.html", message: message, user: user, team: team)
   end
 end
