@@ -51,11 +51,13 @@
 <%= if @message.show_team do %>
   <div class='row card'>
     <div class='small-12 columns'>
-      <%= if @team do %>
-        You have successfully assembled a team: <%= @team.name %>. Risk aversion: <%= Cr2016site.UserView.risk_aversion_integer_to_string()[@team.risk_aversion] %>
-      <% else %>
-        You have no team assigned! Probably because you did not confirm your attendance. It’s not too late, please contact us as soon as possible!
-      <% end %>
+      <p>
+        <%= if @team do %>
+          You have successfully assembled a team: <%= @team.name %>. Risk aversion: <%= Cr2016site.UserView.risk_aversion_integer_to_string()[@team.risk_aversion] %>
+        <% else %>
+          You have no team assigned! Probably because you did not confirm your attendance. It’s not too late, please contact us as soon as possible!
+        <% end %>
+      </p>
     </div>
   </div>
 <% else %>
