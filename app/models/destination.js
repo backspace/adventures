@@ -18,6 +18,8 @@ export default Model.extend({
   answer: attr('string'),
   mask: attr('string'),
 
+  isOutside: attr('boolean'),
+
   suggestedMask: computed('answer', function() {
     const answer = this.get('answer') || '';
 

@@ -40,10 +40,16 @@
 </div>
 
 <div class='row'>
-  <div class='small-12 columns'>
+  <div class='small-10 columns'>
     <label>
       Accessibility
       {{textarea value=model.accessibility class='accessibility'}}
+    </label>
+  </div>
+  <div class='small-2 columns'>
+    <label>
+      Outside
+      {{input checked=model.isOutside class='outside' type='checkbox'}}
     </label>
   </div>
 </div>
