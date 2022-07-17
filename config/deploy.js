@@ -5,15 +5,13 @@ module.exports = function() {
   let ENV = {
     build: {},
 
-    s3: {
-      accessKeyId: process.env.AWS_KEY,
-      secretAccessKey: process.env.AWS_SECRET,
-      bucket: process.env.AWS_BUCKET,
-      region: process.env.AWS_REGION,
+    sftp: {
+      host: process.env.DEPLOYMENT_HOST,
+      remoteDir: process.env.DEPLOYMENT_DIRECTORY,
+      remoteUser: process.env.DEPLOYMENT_USER,
+      privateKey: process.env.DEPLOYMENT_KEY,
     }
   };
-
-  ENV['s3-index'] = Object.assign({}, ENV.s3);
 
   return ENV;
 };
