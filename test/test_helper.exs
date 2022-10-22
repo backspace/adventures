@@ -8,7 +8,7 @@ defmodule Forge do
   @save_one_function &Blacksmith.Config.save/1
   @save_all_function &Blacksmith.Config.save_all/1
 
-  register(:user, %Cr2016site.User{
+  register(:user, %Cr2016siteWeb.User{
     email: Sequence.next(:email, &"jh#{&1}@example.com")
   })
 
@@ -19,9 +19,9 @@ defmodule Forge do
     crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
   )
 
-  register(:team, %Cr2016site.Team{})
+  register(:team, %Cr2016siteWeb.Team{})
 
-  register(:message, %Cr2016site.Message{
+  register(:message, %Cr2016siteWeb.Message{
     ready: true
   })
 

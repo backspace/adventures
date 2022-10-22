@@ -1,5 +1,5 @@
 defmodule Cr2016site.Integration.Registrations do
-  use Cr2016site.ConnCase
+  use Cr2016siteWeb.ConnCase
   use Cr2016site.MailgunHelper
   use Cr2016site.ResetRegistrationClosed
 

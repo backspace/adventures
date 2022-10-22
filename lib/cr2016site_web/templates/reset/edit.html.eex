@@ -1,0 +1,29 @@
+<div class='row card'>
+  <div class='small-12 columns'>
+    <h2>Set Password</h2>
+
+    <%= form_for @changeset, reset_path(@conn, :update, @token), fn f -> %>
+      <%= render Cr2016siteWeb.SharedView, "errors.html", changeset: @changeset, f: f %>
+
+      <%= hidden_input f, :recovery_hash %>
+
+      <div class='row'>
+        <div class='small-12 columns'>
+          <div class='form-group'>
+            <label>New password
+              <%= password_input f, :new_password, id: "new_password", class: "form-control" %>
+            </label>
+          </div>
+          <div class='form-group'>
+            <label>New password confirmation
+              <%= password_input f, :new_password_confirmation, id: "new_password_confirmation", class: "form-control" %>
+            </label>
+          </div>
+          <div class='form-group'>
+            <%= submit "Set Password", class: "button primary" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

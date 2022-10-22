@@ -1,7 +1,7 @@
-defmodule Cr2016site.UserTest do
+defmodule Cr2016siteWeb.UserTest do
   use Cr2016site.ModelCase
 
-  alias Cr2016site.User
+  alias Cr2016siteWeb.User
 
   @valid_attrs %{password: "some content", email: "some@content"}
   @invalid_attrs %{}

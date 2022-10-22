@@ -1,7 +1,7 @@
-defmodule Cr2016site.MessageTest do
+defmodule Cr2016siteWeb.MessageTest do
   use Cr2016site.ModelCase
 
-  alias Cr2016site.Message
+  alias Cr2016siteWeb.Message
 
   @valid_attrs %{
     content: "some content",

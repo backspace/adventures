@@ -1,4 +1,4 @@
-defmodule Cr2016site.ConnCase do
+defmodule Cr2016siteWeb.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -24,10 +24,10 @@ defmodule Cr2016site.ConnCase do
       import Ecto.Model
       import Ecto.Query, only: [from: 2]
 
-      import Cr2016site.Router.Helpers
+      import Cr2016siteWeb.Router.Helpers
 
       # The default endpoint for testing
-      @endpoint Cr2016site.Endpoint
+      @endpoint Cr2016siteWeb.Endpoint
     end
   end
 

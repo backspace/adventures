@@ -41,15 +41,15 @@ defmodule Cr2016site.Mixfile do
   def app_list(_), do: app_list()
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(:test), do: ["lib", "web", "test/support"]
-  defp elixirc_paths(_), do: ["lib", "web"]
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   # Specifies your project dependencies.
   #
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:phoenix, "~> 1.2.0"},
+      {:phoenix, "~> 1.3.0"},
       {:phoenix_pubsub, "~> 1.0"},
       {:phoenix_ecto, "~> 3.0"},
       {:postgrex, ">= 0.12.2"},
@@ -62,7 +62,7 @@ defmodule Cr2016site.Mixfile do
       {:blacksmith, "~> 0.2.1"},
       {:comeonin, "~> 1.0"},
       {:mailgun, github: "backspace/mailgun", branch: "multi-email-test"},
-      {:poison, "~> 1.5"},
+      {:poison, "~> 2.0"},
       {:crutches, git: "https://github.com/mykewould/crutches.git"},
       {:floki, "~> 0.7"},
       {:timex, "~> 1.0.0"},

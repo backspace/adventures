@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Clandestine Rendezvous</title>
+    <link href='https://fonts.googleapis.com/css?family=Oswald:300,400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="<%= static_url(Cr2016siteWeb.Endpoint, "/css/email.css") %>">
+  </head>
+
+  <body>
+    <div class='everything'>
+      <div class='row title'>
+        <div class='small-12 columns'>
+          <h2 class='moving-highlight'>Clandestine Rendezvous</h2>
+        </div>
+      </div>
+
+      <%= render @view_module, @view_template, assigns %>
+    </div>
+  </body>
+</html>

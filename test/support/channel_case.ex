@@ -1,4 +1,4 @@
-defmodule Cr2016site.ChannelCase do
+defmodule Cr2016siteWeb.ChannelCase do
   @moduledoc """
   This module defines the test case to be used by
   channel tests.
@@ -25,7 +25,7 @@ defmodule Cr2016site.ChannelCase do
       import Ecto.Query, only: [from: 2]
 
       # The default endpoint for testing
-      @endpoint Cr2016site.Endpoint
+      @endpoint Cr2016siteWeb.Endpoint
     end
   end
 

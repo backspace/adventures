@@ -61,7 +61,7 @@ defmodule Cr2016site.Pages.Details do
   end
 
   def choose_risk_aversion(level_string) do
-    level_integer = Cr2016site.UserView.risk_aversion_string_into_integer()[level_string]
+    level_integer = Cr2016siteWeb.UserView.risk_aversion_string_into_integer()[level_string]
     click({:css, "input.level-#{level_integer}"})
   end
 

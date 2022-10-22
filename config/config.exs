@@ -6,7 +6,7 @@
 use Mix.Config
 
 # Configures the endpoint
-config :cr2016site, Cr2016site.Endpoint,
+config :cr2016site, Cr2016siteWeb.Endpoint,
   url: [host: "localhost"],
   root: Path.dirname(__DIR__),
   secret_key_base: "xn64PMB42eKmnISH1qTC8I+r62bNyMgTxlXYupsWCvvjBnFJEycMHcXdeFitYxyS",

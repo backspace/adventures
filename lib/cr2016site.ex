@@ -8,7 +8,7 @@ defmodule Cr2016site do
 
     children = [
       # Start the endpoint when the application starts
-      supervisor(Cr2016site.Endpoint, []),
+      supervisor(Cr2016siteWeb.Endpoint, []),
       # Start the Ecto repository
       supervisor(Cr2016site.Repo, [])
       # Here you could define other workers and supervisors as children
@@ -24,7 +24,7 @@ defmodule Cr2016site do
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
   def config_change(changed, _new, removed) do
-    Cr2016site.Endpoint.config_change(changed, removed)
+    Cr2016siteWeb.Endpoint.config_change(changed, removed)
     :ok
   end
 end

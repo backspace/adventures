@@ -1,7 +1,7 @@
-defmodule Cr2016site.TeamTest do
+defmodule Cr2016siteWeb.TeamTest do
   use Cr2016site.ModelCase
 
-  alias Cr2016site.Team
+  alias Cr2016siteWeb.Team
 
   @valid_attrs %{name: "some content", notes: "some content", risk_aversion: 42, user_ids: []}
   @invalid_attrs %{}

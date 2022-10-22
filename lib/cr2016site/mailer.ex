@@ -5,8 +5,8 @@ defmodule Cr2016site.Mailer do
     mode: Application.get_env(:cr2016site, :mailgun_mode),
     test_file_path: Application.get_env(:cr2016site, :mailgun_test_file_path)
 
-  alias Cr2016site.Router
-  alias Cr2016site.Endpoint
+  alias Cr2016siteWeb.Router
+  alias Cr2016siteWeb.Endpoint
 
   @from "b@events.chromatin.ca"
 
@@ -100,11 +100,11 @@ defmodule Cr2016site.Mailer do
       Phoenix.View.render_to_string(Cr2016site.EmailView, "welcome.html", %{})
     )
 
-    Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016site.Endpoint.url()]).out
+    Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016siteWeb.Endpoint.url()]).out
   end
 
   defp message_html(message, user, relationships, team) do
-    Phoenix.View.render_to_string(Cr2016site.MessageView, "preview.html", %{
+    Phoenix.View.render_to_string(Cr2016siteWeb.MessageView, "preview.html", %{
       message: message,
       user: user,
       relationships: relationships,
@@ -115,7 +115,7 @@ defmodule Cr2016site.Mailer do
 
   defp message_text(message, user, relationships, team) do
     html =
-      Phoenix.View.render_to_string(Cr2016site.MessageView, "preview.html", %{
+      Phoenix.View.render_to_string(Cr2016siteWeb.MessageView, "preview.html", %{
         message: message,
         user: user,
         relationships: relationships,
@@ -124,11 +124,11 @@ defmodule Cr2016site.Mailer do
 
     File.write("/tmp/email.html", html)
 
-    Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016site.Endpoint.url()]).out
+    Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016siteWeb.Endpoint.url()]).out
   end
 
   defp backlog_html(messages) do
-    Phoenix.View.render_to_string(Cr2016site.MessageView, "backlog.html", %{
+    Phoenix.View.render_to_string(Cr2016siteWeb.MessageView, "backlog.html", %{
       messages: messages,
       layout: {Cr2016site.EmailView, "layout.html"}
     })
@@ -136,12 +136,12 @@ defmodule Cr2016site.Mailer do
 
   defp backlog_text(messages) do
     html =
-      Phoenix.View.render_to_string(Cr2016site.MessageView, "backlog.html", %{
+      Phoenix.View.render_to_string(Cr2016siteWeb.MessageView, "backlog.html", %{
         messages: messages
       })
 
     File.write("/tmp/email.html", html)
 
-    Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016site.Endpoint.url()]).out
+    Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016siteWeb.Endpoint.url()]).out
   end
 end

@@ -1,7 +1,7 @@
-defmodule Cr2016site.TeamFinderTest do
+defmodule Cr2016siteWeb.TeamFinderTest do
   use ExUnit.Case, async: true
 
-  alias Cr2016site.TeamFinder
+  alias Cr2016siteWeb.TeamFinder
 
   test "finds mutuals and users proposing teaming up" do
     current = %{email: "A@e.co", team_emails: "M1@e.co M2@e.co P@e.co Z@e.co XX YY"}
