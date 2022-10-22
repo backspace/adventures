@@ -6,7 +6,7 @@ defmodule Cr2016site.Repo.Migrations.CreateTeam do
       add(:name, :string)
       add(:risk_aversion, :integer)
       add(:notes, :text)
-      add(:user_ids, {:array, :integer})
+      add(:user_ids, {:array, :integer}, default: [])
 
       timestamps
     end
