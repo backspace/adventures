@@ -16,7 +16,7 @@ defmodule Cr2016siteWeb.ResetController do
         Cr2016site.Mailer.send_password_reset(user)
         conn
         |> put_flash(:info, "Check your email for a password reset link")
-        |> redirect(to: page_path(@conn, :index))
+        |> redirect(to: page_path(conn, :index))
       {:error, _} ->
         conn
         |> put_flash(:error, "No registration with that email address found")
@@ -29,7 +29,7 @@ defmodule Cr2016siteWeb.ResetController do
       nil ->
         conn
         |> put_flash(:error, "Unknown password reset token")
-        |> redirect(to: page_path(@conn, :index))
+        |> redirect(to: page_path(conn, :index))
       user ->
         changeset = User.perform_reset_changeset(user, %{"recovery_hash" => token})
         render conn, changeset: changeset, token: token
@@ -45,7 +45,7 @@ defmodule Cr2016siteWeb.ResetController do
         conn
         |> put_session(:current_user, user.id)
         |> put_flash(:info, "Your password has been changed")
-        |> redirect(to: user_path(@conn, :edit))
+        |> redirect(to: user_path(conn, :edit))
       {:error, changeset} ->
         conn
         |> put_flash(:error, "New passwords must match")

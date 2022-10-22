@@ -11,7 +11,7 @@ defmodule Cr2016siteWeb.SessionController do
         conn
         |> put_session(:current_user, user.id)
         |> put_flash(:info, "Logged in")
-        |> redirect(to: user_path(@conn, :edit))
+        |> redirect(to: user_path(conn, :edit))
       :error ->
         conn
         |> put_flash(:error, "Wrong email or password")

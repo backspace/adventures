@@ -68,11 +68,11 @@ defmodule Cr2016siteWeb.TeamController do
       {:ok, _team} ->
         conn
         |> put_flash(:info, "Team built successfully")
-        |> redirect(to: user_path(@conn, :index))
+        |> redirect(to: user_path(conn, :index))
       {:error, _changeset} ->
         conn
         |> put_flash(:error, "An error occurred building that team!")
-        |> redirect(to: user_path(@conn, :index))
+        |> redirect(to: user_path(conn, :index))
     end
   end
 
@@ -83,7 +83,7 @@ defmodule Cr2016siteWeb.TeamController do
       {:ok, _team} ->
         conn
         |> put_flash(:info, "Team created successfully.")
-        |> redirect(to: team_path(@conn, :index))
+        |> redirect(to: team_path(conn, :index))
       {:error, changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
@@ -108,7 +108,7 @@ defmodule Cr2016siteWeb.TeamController do
       {:ok, team} ->
         conn
         |> put_flash(:info, "Team updated successfully.")
-        |> redirect(to: team_path(@conn, :show, team))
+        |> redirect(to: team_path(conn, :show, team))
       {:error, changeset} ->
         render(conn, "edit.html", team: team, changeset: changeset)
     end
@@ -123,6 +123,6 @@ defmodule Cr2016siteWeb.TeamController do
 
     conn
     |> put_flash(:info, "Team deleted successfully.")
-    |> redirect(to: team_path(@conn, :index))
+    |> redirect(to: team_path(conn, :index))
   end
 end

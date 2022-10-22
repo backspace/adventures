@@ -89,15 +89,15 @@ defmodule Cr2016site.Mailer do
   end
 
   defp welcome_html do
-    Phoenix.View.render_to_string(Cr2016site.EmailView, "welcome.html", %{
-      layout: {Cr2016site.EmailView, "layout.html"}
+    Phoenix.View.render_to_string(Cr2016siteWeb.EmailView, "welcome.html", %{
+      layout: {Cr2016siteWeb.EmailView, "layout.html"}
     })
   end
 
   defp welcome_text do
     File.write(
       "/tmp/email.html",
-      Phoenix.View.render_to_string(Cr2016site.EmailView, "welcome.html", %{})
+      Phoenix.View.render_to_string(Cr2016siteWeb.EmailView, "welcome.html", %{})
     )
 
     Porcelain.exec("ruby", ["lib/cr2016site/convert-html-to-text.rb", Cr2016siteWeb.Endpoint.url()]).out
@@ -109,7 +109,7 @@ defmodule Cr2016site.Mailer do
       user: user,
       relationships: relationships,
       team: team,
-      layout: {Cr2016site.EmailView, "layout.html"}
+      layout: {Cr2016siteWeb.EmailView, "layout.html"}
     })
   end
 
@@ -130,7 +130,7 @@ defmodule Cr2016site.Mailer do
   defp backlog_html(messages) do
     Phoenix.View.render_to_string(Cr2016siteWeb.MessageView, "backlog.html", %{
       messages: messages,
-      layout: {Cr2016site.EmailView, "layout.html"}
+      layout: {Cr2016siteWeb.EmailView, "layout.html"}
     })
   end
 

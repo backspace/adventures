@@ -19,7 +19,7 @@ defmodule Cr2016siteWeb.RegistrationController do
   def create(conn, %{"user" => user_params}) do
     changeset = User.changeset(%User{}, user_params)
 
-    case Cr2016site.Registration.create(changeset, Cr2016site.Repo) do
+    case Cr2016siteWeb.Registration.create(changeset, Cr2016site.Repo) do
       {:ok, user} ->
         messages = Cr2016site.Repo.all(
           from m in Cr2016siteWeb.Message,
@@ -38,7 +38,7 @@ defmodule Cr2016siteWeb.RegistrationController do
         conn
         |> put_session(:current_user, user.id)
         |> put_flash(:info, "Your account was created")
-        |> redirect(to: user_path(@conn, :edit))
+        |> redirect(to: user_path(conn, :edit))
       {:error, changeset} ->
         conn
         |> put_flash(:error, "Unable to create account")
@@ -61,11 +61,11 @@ defmodule Cr2016siteWeb.RegistrationController do
 
     case Cr2016siteWeb.Session.login(session_params, Cr2016site.Repo) do
       {:ok, _} ->
-        case Cr2016site.Registration.update(changeset, Cr2016site.Repo) do
+        case Cr2016siteWeb.Registration.update(changeset, Cr2016site.Repo) do
           {:ok, _} ->
             conn
             |> put_flash(:info, "Your password has been changed")
-            |> redirect(to: user_path(@conn, :edit))
+            |> redirect(to: user_path(conn, :edit))
           {:error, changeset} ->
             conn
             |> put_flash(:error, "New passwords must match")
@@ -94,13 +94,13 @@ defmodule Cr2016siteWeb.RegistrationController do
 
     case Cr2016siteWeb.Session.login(session_params, Cr2016site.Repo) do
       {:ok, _} ->
-        case Cr2016site.Registration.delete(changeset, Cr2016site.Repo) do
+        case Cr2016siteWeb.Registration.delete(changeset, Cr2016site.Repo) do
           {:ok, _} ->
             Cr2016site.Mailer.send_user_deletion(current_user)
 
             conn
             |> put_flash(:info, "Your account has been deleted 😧")
-            |> redirect(to: page_path(@conn, :index))
+            |> redirect(to: page_path(conn, :index))
           {:error, changeset} ->
             conn
             |> put_flash(:error, "Something went wrong!")
