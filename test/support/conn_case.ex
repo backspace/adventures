@@ -24,7 +24,7 @@ defmodule Cr2016siteWeb.ConnCase do
       import Ecto.Model
       import Ecto.Query, only: [from: 2]
 
-      import Cr2016siteWeb.Router.Helpers
+      alias Cr2016siteWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
       @endpoint Cr2016siteWeb.Endpoint

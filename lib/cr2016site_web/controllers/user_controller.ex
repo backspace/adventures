@@ -41,7 +41,7 @@ defmodule Cr2016siteWeb.UserController do
         Cr2016site.Mailer.send_user_changes(current_user, changeset.changes)
         conn
         |> put_flash(:info, "Your details were saved")
-        |> redirect(to: user_path(conn, :edit))
+        |> redirect(to: Routes.user_path(conn, :edit))
       {:error, changeset} ->
         render(conn, "edit.html", user: current_user, relationships: Cr2016siteWeb.TeamFinder.relationships(current_user, users), changeset: changeset)
     end

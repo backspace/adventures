@@ -34,7 +34,7 @@ defmodule Cr2016siteWeb do
       import Ecto
       import Ecto.Query, only: [from: 1, from: 2]
 
-      import Cr2016siteWeb.Router.Helpers
+      alias Cr2016siteWeb.Router.Helpers, as: Routes
     end
   end
 
@@ -50,7 +50,7 @@ defmodule Cr2016siteWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
-      import Cr2016siteWeb.Router.Helpers
+      alias Cr2016siteWeb.Router.Helpers, as: Routes
       import Cr2016siteWeb.ErrorHelpers
       import Cr2016siteWeb.SharedHelpers
       import Cr2016siteWeb.Gettext

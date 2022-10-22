@@ -2,7 +2,7 @@
   <div class='small-12 columns'>
     <h2>Set Password</h2>
 
-    <%= form_for @changeset, reset_path(@conn, :update, @token), fn f -> %>
+    <%= form_for @changeset, Routes.reset_path(@conn, :update, @token), fn f -> %>
       <%= render Cr2016siteWeb.SharedView, "errors.html", changeset: @changeset, f: f %>
 
       <%= hidden_input f, :recovery_hash %>

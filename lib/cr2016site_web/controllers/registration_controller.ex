@@ -38,7 +38,7 @@ defmodule Cr2016siteWeb.RegistrationController do
         conn
         |> put_session(:current_user, user.id)
         |> put_flash(:info, "Your account was created")
-        |> redirect(to: user_path(conn, :edit))
+        |> redirect(to: Routes.user_path(conn, :edit))
       {:error, changeset} ->
         conn
         |> put_flash(:error, "Unable to create account")
@@ -65,7 +65,7 @@ defmodule Cr2016siteWeb.RegistrationController do
           {:ok, _} ->
             conn
             |> put_flash(:info, "Your password has been changed")
-            |> redirect(to: user_path(conn, :edit))
+            |> redirect(to: Routes.user_path(conn, :edit))
           {:error, changeset} ->
             conn
             |> put_flash(:error, "New passwords must match")
@@ -100,7 +100,7 @@ defmodule Cr2016siteWeb.RegistrationController do
 
             conn
             |> put_flash(:info, "Your account has been deleted 😧")
-            |> redirect(to: page_path(conn, :index))
+            |> redirect(to: Routes.page_path(conn, :index))
           {:error, changeset} ->
             conn
             |> put_flash(:error, "Something went wrong!")

@@ -6,7 +6,7 @@
 
 <div class='row card'>
   <div class='small-12 columns'>
-    <%= form_for @changeset, user_path(@conn, :update), fn f -> %>
+    <%= form_for @changeset, Routes.user_path(@conn, :update), fn f -> %>
       <%= render Cr2016siteWeb.SharedView, "errors.html", changeset: @changeset, f: f %>
 
       <%= if Application.get_env(:cr2016site, :request_confirmation) do %>
@@ -78,11 +78,11 @@
 <%= render "relationships.html", user: @user, relationships: @relationships %>
 <div class='row card'>
   <div class='small-12 columns'>
-    <%= link "Change your password", to: registration_path(@conn, :edit), class: "account" %>
+    <%= link "Change your password", to: Routes.registration_path(@conn, :edit), class: "account" %>
   </div>
 </div>
 <div class='row card'>
   <div class='small-12 columns'>
-    <%= link "Delete your account", to: registration_path(@conn, :maybe_delete), class: "delete" %>
+    <%= link "Delete your account", to: Routes.registration_path(@conn, :maybe_delete), class: "delete" %>
   </div>
 </div>

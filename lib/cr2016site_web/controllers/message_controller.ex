@@ -23,7 +23,7 @@ defmodule Cr2016siteWeb.MessageController do
       {:ok, message} ->
         conn
         |> put_flash(:info, "Message created successfully.")
-        |> redirect(to: message_path(conn, :edit, message))
+        |> redirect(to: Routes.message_path(conn, :edit, message))
 
       {:error, changeset} ->
         render(conn, "new.html", changeset: changeset)
@@ -44,7 +44,7 @@ defmodule Cr2016siteWeb.MessageController do
       {:ok, message} ->
         conn
         |> put_flash(:info, "Message updated successfully.")
-        |> redirect(to: message_path(conn, :edit, message))
+        |> redirect(to: Routes.message_path(conn, :edit, message))
 
       {:error, changeset} ->
         render(conn, "edit.html", message: message, changeset: changeset)
@@ -60,7 +60,7 @@ defmodule Cr2016siteWeb.MessageController do
 
     conn
     |> put_flash(:info, "Message deleted successfully.")
-    |> redirect(to: message_path(conn, :index))
+    |> redirect(to: Routes.message_path(conn, :index))
   end
 
   def deliver(conn, %{"id" => id}) do
@@ -78,7 +78,7 @@ defmodule Cr2016siteWeb.MessageController do
 
     conn
     |> put_flash(:info, "Message was sent")
-    |> redirect(to: message_path(conn, :index))
+    |> redirect(to: Routes.message_path(conn, :index))
   end
 
   def preview(conn, %{"id" => id}) do

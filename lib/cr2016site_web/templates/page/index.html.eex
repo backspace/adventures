@@ -29,7 +29,7 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <h4 class='moving-highlight'><i class='fa fa-white fa-clock-o'></i> When and where?</h4>
-    <p>The secret society is so secret that the venue for initiation cannot be shared publicly. Once it is decided, it will be shared with those who <%= link "register", to: registration_path(@conn, :new) %>. If you have questions about travel, please write to us after registering.</p>
+    <p>The secret society is so secret that the venue for initiation cannot be shared publicly. Once it is decided, it will be shared with those who <%= link "register", to: Routes.registration_path(@conn, :new) %>. If you have questions about travel, please write to us after registering.</p>
     <p>The adventure will begin at <%= start_time() %>. If you have obligations that prevent you from being present at the beginning let us know and we can discuss how to accommodate you.</p>
   </div>
 </div>
@@ -50,22 +50,22 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <h4 class='moving-highlight'><i class='fa fa-white fa-universal-access'></i> Accessibility</h4>
-    <p>Do you have accessibility needs we should know about? Please tell us <%= link "when you register", to: registration_path(@conn, :new) %> and we will work with you to ensure you can participate.</p>
+    <p>Do you have accessibility needs we should know about? Please tell us <%= link "when you register", to: Routes.registration_path(@conn, :new) %> and we will work with you to ensure you can participate.</p>
   </div>
 </div>
 <div class='row card'>
   <div class='small-12 columns'>
     <h4 class='moving-highlight'><i class='fa fa-white fa-pencil'></i> Registration</h4>
-    <p>You <em>must</em> <%= link "register", to: registration_path(@conn, :new) %> to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until the day before.</p>
+    <p>You <em>must</em> <%= link "register", to: Routes.registration_path(@conn, :new) %> to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until the day before.</p>
   </div>
 </div>
 <div class='row card'>
   <div class='small-12 columns'>
     <h4 class='moving-highlight' id='questions'><i class='fa fa-white fa-question-circle'></i> Questions</h4>
 
-    <p><strong>This is not the registration form, that’s <%= link "here", to: registration_path(@conn, :new) %>.</strong></p>
+    <p><strong>This is not the registration form, that’s <%= link "here", to: Routes.registration_path(@conn, :new) %>.</strong></p>
 
-    <%= form_for @conn, page_path(@conn, :questions), [as: :question], fn f -> %>
+    <%= form_for @conn, Routes.page_path(@conn, :questions), [as: :question], fn f -> %>
       <div class='form-group'>
         <%= label f, :name %>
         <%= text_input f, :name, class: "form-control" %>

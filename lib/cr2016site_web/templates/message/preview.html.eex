@@ -9,7 +9,7 @@
       Your information is summarised below.
 
       <%= if Cr2016siteWeb.UserView.is_empty?(@user) do %>
-        You haven’t filled in any details! Visit the <%= link "site", to: user_url(Cr2016siteWeb.Endpoint, :edit) %> to let us know your details.
+        You haven’t filled in any details! Visit the <%= link "site", to: Routes.user_url(Cr2016siteWeb.Endpoint, :edit) %> to let us know your details.
       <% end %>
     </div>
   </div>
