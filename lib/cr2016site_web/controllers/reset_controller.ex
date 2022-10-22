@@ -11,7 +11,7 @@ defmodule Cr2016siteWeb.ResetController do
   def create(conn, %{"user" => user_params}) do
     user = Repo.get_by(Cr2016siteWeb.User, email: user_params["email"])
 
-    case Cr2016site.Reset.create(user, Repo) do
+    case Cr2016siteWeb.Reset.create(user, Repo) do
       {:ok, user} ->
         Cr2016site.Mailer.send_password_reset(user)
         conn
@@ -40,7 +40,7 @@ defmodule Cr2016siteWeb.ResetController do
     user = Repo.get_by(Cr2016siteWeb.User, recovery_hash: user_params["recovery_hash"]) || %User{}
     changeset = User.perform_reset_changeset(user, user_params)
 
-    case Cr2016site.Reset.update(changeset, Repo) do
+    case Cr2016siteWeb.Reset.update(changeset, Repo) do
       {:ok, user} ->
         conn
         |> put_session(:current_user, user.id)
