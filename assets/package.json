@@ -1,14 +1,27 @@
 {
   "repository": {},
+  "scripts": {
+    "deploy": "webpack --mode production",
+    "watch": "webpack --mode development --watch-stdin"
+  },
   "dependencies": {
-    "babel-brunch": "^5.1.1",
-    "brunch": "^1.8.5",
-    "clean-css-brunch": ">= 1.0 < 1.8",
+    "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "babel-loader": "^8.0.0",
+    "copy-webpack-plugin": "^4.5.0",
+    "css-loader": "^0.28.10",
+    "mini-css-extract-plugin": "^0.4.0",
+    "optimize-css-assets-webpack-plugin": "^4.0.0",
+    "uglifyjs-webpack-plugin": "^1.2.4",
+    "webpack": "4.4.0",
+    "webpack-cli": "^2.0.10",
     "css-brunch": ">= 1.0 < 1.8",
     "foundation-sites": "6.1.1",
     "javascript-brunch": ">= 1.0 < 1.8",
     "sass-brunch": "^1.9.1",
-    "sass-cubic-bezier-bounding-box": "^1.0.2",
-    "uglify-js-brunch": ">= 1.0 < 1.8"
+    "sass-cubic-bezier-bounding-box": "^1.0.2"
+  },
+  "volta": {
+    "node": "8.17.0"
   }
 }

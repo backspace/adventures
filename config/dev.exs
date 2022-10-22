@@ -14,13 +14,14 @@ config :cr2016site, Cr2016siteWeb.Endpoint,
   check_origin: false,
   watchers: [
     node: [
-      "node_modules/brunch/bin/brunch",
-      "watch",
-      "--stdin",
+      "node_modules/webpack/bin/webpack.js",
+      "--mode",
+      "development",
+      "--watch-stdin",
       cd: Path.expand("../assets", __DIR__)
     ]
   ]
-
+  
 # Watch static and templates for browser reloading.
 config :cr2016site, Cr2016siteWeb.Endpoint,
   live_reload: [
