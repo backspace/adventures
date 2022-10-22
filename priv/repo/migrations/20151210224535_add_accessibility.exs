@@ -3,7 +3,7 @@ defmodule Cr2016site.Repo.Migrations.AddAccessibility do
 
   def change do
     alter table(:users) do
-      add :accessibility, :text
+      add(:accessibility, :text)
     end
   end
 end

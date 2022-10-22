@@ -3,7 +3,12 @@ defmodule Cr2016site.MessageTest do
 
   alias Cr2016site.Message
 
-  @valid_attrs %{content: "some content", postmarked_at: "2010-04-17", ready: true, subject: "some content"}
+  @valid_attrs %{
+    content: "some content",
+    postmarked_at: "2010-04-17",
+    ready: true,
+    subject: "some content"
+  }
   @invalid_attrs %{}
 
   test "changeset with valid attributes" do

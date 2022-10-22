@@ -14,10 +14,10 @@ defmodule Cr2016site.Pages.Login do
   end
 
   def login_as(email, password) do
-    Cr2016site.Pages.Nav.login_link.click
+    Cr2016site.Pages.Nav.login_link().click
 
-    fill_email email
-    fill_password password
+    fill_email(email)
+    fill_password(password)
     submit()
   end
 

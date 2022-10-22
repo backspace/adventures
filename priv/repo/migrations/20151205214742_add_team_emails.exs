@@ -3,7 +3,7 @@ defmodule Cr2016site.Repo.Migrations.AddTeamEmails do
 
   def change do
     alter table(:users) do
-      add :team_emails, :text
+      add(:team_emails, :text)
     end
   end
 end

@@ -11,14 +11,15 @@ defmodule Cr2016site.Pages.Details do
 
   def proposers do
     find_all_elements(:css, ".proposers tr")
-    |> Enum.map(&(email_and_text_row(&1)))
+    |> Enum.map(&email_and_text_row(&1))
   end
 
   def mutuals do
     find_all_elements(:css, ".mutuals tr")
-    |> Enum.map(fn(row) ->
+    |> Enum.map(fn row ->
       proposed_team_name_element = find_within_element(row, :css, ".proposed-team-name")
       risk_aversion_element = find_within_element(row, :css, ".risk-aversion")
+
       %{
         email: visible_text(find_within_element(row, :css, ".email")),
         symbol: visible_text(find_within_element(row, :css, ".symbol")),
@@ -38,17 +39,17 @@ defmodule Cr2016site.Pages.Details do
 
   def proposals_by_mutuals do
     find_all_elements(:css, ".proposals-by-mutuals tr")
-    |> Enum.map(&(email_and_text_row(&1)))
+    |> Enum.map(&email_and_text_row(&1))
   end
 
   def invalids do
     find_all_elements(:css, ".invalids tr")
-    |> Enum.map(&(email_and_text_row(&1)))
+    |> Enum.map(&email_and_text_row(&1))
   end
 
   def proposees do
     find_all_elements(:css, ".proposees tr")
-    |> Enum.map(&(email_and_text_row(&1)))
+    |> Enum.map(&email_and_text_row(&1))
   end
 
   def fill_team_emails(team_emails) do
@@ -60,7 +61,7 @@ defmodule Cr2016site.Pages.Details do
   end
 
   def choose_risk_aversion(level_string) do
-    level_integer = Cr2016site.UserView.risk_aversion_string_into_integer[level_string]
+    level_integer = Cr2016site.UserView.risk_aversion_string_into_integer()[level_string]
     click({:css, "input.level-#{level_integer}"})
   end
 
@@ -107,7 +108,7 @@ defmodule Cr2016site.Pages.Details do
 
   defmodule Attending do
     def present? do
-      element? :css, ".form-group.attending"
+      element?(:css, ".form-group.attending")
     end
 
     def yes do
@@ -120,14 +121,14 @@ defmodule Cr2016site.Pages.Details do
 
     defmodule Error do
       def present? do
-        element? :css, ".errors .attending"
+        element?(:css, ".errors .attending")
       end
     end
   end
 
   def active? do
     # FIXME is there no current_url or the like?
-    element? :id, "user_accessibility"
+    element?(:id, "user_accessibility")
   end
 
   def submit do

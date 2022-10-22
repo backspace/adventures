@@ -17,13 +17,31 @@ defmodule Cr2016site.TeamFinderTest do
 
     has_not = %{email: "X@e.co", team_emails: "Y@e.co"}
 
-    users = [current, mutual_one, mutual_two, proposer, proposee, mutual_proposal_one, mutual_proposal_two, has_not]
+    users = [
+      current,
+      mutual_one,
+      mutual_two,
+      proposer,
+      proposee,
+      mutual_proposal_one,
+      mutual_proposal_two,
+      has_not
+    ]
 
     relationships = TeamFinder.relationships(current, users)
 
     assert relationships.proposers == [proposer]
     assert relationships.mutuals == [mutual_one, mutual_two]
-    assert relationships.proposals_by_mutuals == Enum.into([{mutual_proposal_one, [mutual_one, mutual_two]}, {mutual_proposal_two, [mutual_one]}], %{})
+
+    assert relationships.proposals_by_mutuals ==
+             Enum.into(
+               [
+                 {mutual_proposal_one, [mutual_one, mutual_two]},
+                 {mutual_proposal_two, [mutual_one]}
+               ],
+               %{}
+             )
+
     assert relationships.proposees == [%{email: proposee.email}, %{email: "Z@e.co"}]
     assert relationships.invalids == ["XX", "YY"]
     refute relationships.empty?

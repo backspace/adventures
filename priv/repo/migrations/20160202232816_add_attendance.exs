@@ -3,7 +3,7 @@ defmodule Cr2016site.Repo.Migrations.AddAttendance do
 
   def change do
     alter table(:users) do
-      add :attending, :boolean
+      add(:attending, :boolean)
     end
   end
 end

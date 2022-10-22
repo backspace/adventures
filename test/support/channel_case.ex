@@ -24,7 +24,6 @@ defmodule Cr2016site.ChannelCase do
       import Ecto.Model
       import Ecto.Query, only: [from: 2]
 
-
       # The default endpoint for testing
       @endpoint Cr2016site.Endpoint
     end

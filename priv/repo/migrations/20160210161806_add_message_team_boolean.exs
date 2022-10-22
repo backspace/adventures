@@ -3,7 +3,7 @@ defmodule Cr2016site.Repo.Migrations.AddMessageTeamBoolean do
 
   def change do
     alter table(:messages) do
-      add :show_team, :boolean
+      add(:show_team, :boolean)
     end
   end
 end

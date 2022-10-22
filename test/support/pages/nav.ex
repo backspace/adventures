@@ -32,11 +32,11 @@ defmodule Cr2016site.Pages.Nav do
   end
 
   def edit_details do
-    click {:css, "a.details"}
+    click({:css, "a.details"})
   end
 
   def edit_messages do
-    click {:css, "a.messages"}
+    click({:css, "a.messages"})
   end
 
   defmodule LogoutLink do
@@ -55,7 +55,7 @@ defmodule Cr2016site.Pages.Nav do
     @selector {:css, "a.login"}
 
     def click do
-      click @selector
+      click(@selector)
     end
 
     def present? do
@@ -68,7 +68,7 @@ defmodule Cr2016site.Pages.Nav do
     @selector {:css, "a.register"}
 
     def click do
-      click @selector
+      click(@selector)
     end
 
     def present? do
@@ -80,7 +80,7 @@ defmodule Cr2016site.Pages.Nav do
     @selector {:css, "a.users"}
 
     def click do
-      click @selector
+      click(@selector)
     end
 
     def absent? do
@@ -92,7 +92,7 @@ defmodule Cr2016site.Pages.Nav do
     @selector {:css, "a.teams"}
 
     def click do
-      click @selector
+      click(@selector)
     end
   end
 end

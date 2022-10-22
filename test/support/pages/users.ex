@@ -26,6 +26,6 @@ defmodule Cr2016site.Pages.Users do
   end
 
   def build_team_from(id) do
-    click {:css, "#{user_container(id)} a"}
+    click({:css, "#{user_container(id)} a"})
   end
 end

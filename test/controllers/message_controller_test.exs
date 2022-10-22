@@ -1,8 +1,13 @@
 defmodule Cr2016site.MessageControllerTest do
   use Cr2016site.ConnCase
 
-  #alias Cr2016site.Message
-  @valid_attrs %{content: "some content", postmarked_at: "2010-04-17", ready: true, subject: "some content"}
+  # alias Cr2016site.Message
+  @valid_attrs %{
+    content: "some content",
+    postmarked_at: "2010-04-17",
+    ready: true,
+    subject: "some content"
+  }
   @invalid_attrs %{}
 
   # FIXME disabled these due to inability to set session for admins…

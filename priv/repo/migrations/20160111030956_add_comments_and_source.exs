@@ -3,8 +3,8 @@ defmodule Cr2016site.Repo.Migrations.AddCommentsAndSource do
 
   def change do
     alter table(:users) do
-      add :comments, :text
-      add :source, :text
+      add(:comments, :text)
+      add(:source, :text)
     end
   end
 end

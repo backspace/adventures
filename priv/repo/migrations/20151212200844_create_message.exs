@@ -3,13 +3,12 @@ defmodule Cr2016site.Repo.Migrations.CreateMessage do
 
   def change do
     create table(:messages) do
-      add :subject, :string
-      add :content, :text
-      add :ready, :boolean, default: false
-      add :postmarked_at, :date
+      add(:subject, :string)
+      add(:content, :text)
+      add(:ready, :boolean, default: false)
+      add(:postmarked_at, :date)
 
       timestamps
     end
-
   end
 end

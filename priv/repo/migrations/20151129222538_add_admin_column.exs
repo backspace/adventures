@@ -3,7 +3,7 @@ defmodule Cr2016site.Repo.Migrations.AddAdminColumn do
 
   def change do
     alter table(:users) do
-      add :admin, :boolean
+      add(:admin, :boolean)
     end
   end
 end

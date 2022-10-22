@@ -2,7 +2,7 @@ defmodule Cr2016site.Pages.Messages do
   use Hound.Helpers
 
   def new_message do
-    click {:css, ".new-message"}
+    click({:css, ".new-message"})
   end
 
   def fill_subject(subject) do
@@ -10,22 +10,22 @@ defmodule Cr2016site.Pages.Messages do
   end
 
   def fill_content(content) do
-    fill_field {:id, "message_content"}, content
+    fill_field({:id, "message_content"}, content)
   end
 
   def check_ready do
-    click {:id, "message_ready"}
+    click({:id, "message_ready"})
   end
 
   def check_show_team do
-    click {:id, "message_show_team"}
+    click({:id, "message_show_team"})
   end
 
   def save do
-    click {:css, "button.submit"}
+    click({:css, "button.submit"})
   end
 
   def send do
-    click {:css, ".btn.send"}
+    click({:css, ".btn.send"})
   end
 end

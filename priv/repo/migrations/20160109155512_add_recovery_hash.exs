@@ -3,7 +3,7 @@ defmodule Cr2016site.Repo.Migrations.AddRecoveryHash do
 
   def change do
     alter table(:users) do
-      add :recovery_hash, :string
+      add(:recovery_hash, :string)
     end
   end
 end
