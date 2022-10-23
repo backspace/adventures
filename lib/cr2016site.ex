@@ -7,6 +7,8 @@ defmodule Cr2016site do
     import Supervisor.Spec, warn: false
 
     children = [
+      # Start the PubSub system
+      {Phoenix.PubSub, name: Cr2016site.PubSub},
       # Start the endpoint when the application starts
       supervisor(Cr2016siteWeb.Endpoint, []),
       # Start the Ecto repository

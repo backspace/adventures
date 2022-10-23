@@ -11,7 +11,7 @@ config :cr2016site, Cr2016siteWeb.Endpoint,
   root: Path.dirname(__DIR__),
   secret_key_base: "xn64PMB42eKmnISH1qTC8I+r62bNyMgTxlXYupsWCvvjBnFJEycMHcXdeFitYxyS",
   render_errors: [accepts: ~w(html json)],
-  pubsub: [name: Cr2016site.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub_server: Cr2016site.PubSub
 
 # Configures Elixir's Logger
 config :logger, :console,

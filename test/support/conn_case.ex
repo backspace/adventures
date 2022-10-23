@@ -18,7 +18,8 @@ defmodule Cr2016siteWeb.ConnCase do
   using do
     quote do
       # Import conveniences for testing with connections
-      use Phoenix.ConnTest
+      import Plug.Conn
+      import Phoenix.ConnTest
 
       alias Cr2016site.Repo
       import Ecto.Query, only: [from: 2]
