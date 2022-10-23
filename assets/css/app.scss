@@ -1,4 +1,4 @@
-@import 'util/_unit';
+@import 'foundation-sites/scss/util/unit';
 
 $header-font-family: 'Blackout Sunrise';
 
@@ -37,11 +37,9 @@ $button-color: $highlight;
 
 }
 
+@import 'foundation-sites/scss/foundation';
 
-
-@import 'foundation';
-
-@import 'cbbb';
+@import 'sass-cubic-bezier-bounding-box/scss/cbbb';
 
 @include foundation-global-styles;
 

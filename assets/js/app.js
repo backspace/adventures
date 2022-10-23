@@ -1,4 +1,4 @@
-// import css from '../css/app.css';
+import '../css/app.scss';
 
 // Brunch automatically concatenates all files in your
 // watched paths. Those paths can be configured at
