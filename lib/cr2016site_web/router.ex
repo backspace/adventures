@@ -53,7 +53,7 @@ defmodule Cr2016siteWeb.Router do
     get("/", PageController, :index)
   end
 
-  scope "/api", Cr2016site do
+  scope "/api", Cr2016siteWeb do
     pipe_through(:api)
 
     get("/teams", TeamController, :index_json)
