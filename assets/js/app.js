@@ -1,4 +1,4 @@
-import css from '../css/app.css';
+// import css from '../css/app.css';
 
 // Brunch automatically concatenates all files in your
 // watched paths. Those paths can be configured at
@@ -13,7 +13,7 @@ import css from '../css/app.css';
 //
 // If you no longer want to use a dependency, remember
 // to also remove its path from "config.paths.watched".
-import "deps/phoenix_html/web/static/js/phoenix_html"
+import "phoenix_html"
 
 // Import local files
 //
@@ -21,6 +21,10 @@ import "deps/phoenix_html/web/static/js/phoenix_html"
 // paths "./socket" or full ones "web/static/js/socket".
 
 // import socket from "./socket"
+
+import $ from 'jquery';
+import THREE from 'three';
+import ShaderToon from './ShaderToon';
 
 $(() => {
   $('.secret .text').click(function() {
