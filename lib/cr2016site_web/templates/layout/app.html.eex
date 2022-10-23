@@ -41,7 +41,7 @@
               <%= if logged_in?(@conn) do %>
                 <li>
                   <%= link to: Routes.session_path(@conn, :delete), method: :delete, class: "logout" do %>
-                    Log out <span class="show-for-medium"><%= current_user(@conn).email %></span>
+                    Log out <span class="show-for-medium session-email"><%= current_user(@conn).email %></span>
                   <%= end %>
                 </li>
                 <li><%= active_link "Edit details", @conn, Routes.user_path(@conn, :edit), class: "details" %></li>
