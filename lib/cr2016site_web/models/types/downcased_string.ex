@@ -1,7 +1,7 @@
 # TODO This seems ridiculous? Is this the standard way to cast database inputs?
 
 defmodule Cr2016siteWeb.DowncasedString do
-  @behaviour Ecto.Type
+  use Ecto.Type
   def type, do: :string
 
   def cast(string) when is_bitstring(string) do
