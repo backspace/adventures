@@ -49,17 +49,17 @@ defmodule Cr2016siteWeb.User do
 
   def details_changeset(model, params \\ %{}) do
     required_fields = case Application.get_env(:cr2016site, :request_confirmation) do
-      true -> ~w(attending)
+      true -> ~w(attending)a
       _ -> []
     end
 
     model
-    |> cast(params, required_fields, @optional_fields)
+    |> cast(params, required_fields ++ @optional_fields)
   end
 
   def account_changeset(model, params \\ %{}) do
     model
-    |> cast(params, ~w(current_password new_password new_password_confirmation), [])
+    |> cast(params, ~w(current_password new_password new_password_confirmation)a, [])
     # FIXME duplicated from changeset
     |> validate_length(:new_password, min: 5)
     |> validate_confirmation(:new_password)
@@ -67,7 +67,7 @@ defmodule Cr2016siteWeb.User do
 
   def deletion_changeset(model, params \\ %{}) do
     model
-    |> cast(params, ~w(current_password), [])
+    |> cast(params, ~w(current_password)a, [])
   end
 
   def reset_changeset(model) do
