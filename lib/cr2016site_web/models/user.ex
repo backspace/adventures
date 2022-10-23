@@ -29,8 +29,8 @@ defmodule Cr2016siteWeb.User do
     timestamps()
   end
 
-  @required_fields ~w(email password)
-  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source)
+  @required_fields ~w(email password)a
+  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source)a
 
   @doc """
   Creates a changeset based on the `model` and `params`.

@@ -12,8 +12,8 @@ defmodule Cr2016siteWeb.Message do
     timestamps()
   end
 
-  @required_fields ~w(subject content ready show_team postmarked_at)
-  @optional_fields ~w(rendered_content)
+  @required_fields ~w(subject content ready show_team postmarked_at)a
+  @optional_fields ~w(rendered_content)a
 
   @doc """
   Creates a changeset based on the `model` and `params`.
