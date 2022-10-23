@@ -21,7 +21,6 @@ defmodule Cr2016siteWeb.ConnCase do
       use Phoenix.ConnTest
 
       alias Cr2016site.Repo
-      import Ecto.Model
       import Ecto.Query, only: [from: 2]
 
       alias Cr2016siteWeb.Router.Helpers, as: Routes

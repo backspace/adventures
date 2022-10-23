@@ -17,7 +17,6 @@ defmodule Cr2016site.ModelCase do
   using do
     quote do
       alias Cr2016site.Repo
-      import Ecto.Model
       import Ecto.Query, only: [from: 2]
       import Cr2016site.ModelCase
     end
