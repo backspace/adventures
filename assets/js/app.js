@@ -123,7 +123,7 @@ function init() {
 
   scene = new THREE.Scene();
 
-  camera = new THREE.PerspectiveCamera(50, 1, 1, 10000);
+  camera = new THREE.PerspectiveCamera(45, 1, 1, 10000);
   camera.position.z = 200;
   scene.add(camera);
 
@@ -170,14 +170,14 @@ function init() {
   //scene.add(anchor);
 
 
-  var light = new THREE.DirectionalLight(0xffffff);
+  var light = new THREE.DirectionalLight(0x666666);
   light.position.set(0.5, 0.5, 1);
 
   var pointLight = new THREE.PointLight(0xff3300);
   pointLight.position.set(0, 0, 100);
   scene.add(pointLight);
 
-  var ambientLight = new THREE.AmbientLight(0xffffff);
+  var ambientLight = new THREE.AmbientLight(0xddd);
   scene.add(ambientLight);
 
   group = new THREE.Object3D();
@@ -220,9 +220,27 @@ function init() {
 
   capMesh.position.y = cylinderHeight/2;
 
-  var lensGeometry = new THREE.CylinderGeometry(cylinderWidth * lensProportion, cylinderWidth * lensProportion, 1, 50, 1);
+  var smallerCylinderWidth = cylinderWidth * 0.75;
+  var smallerCylinderHeight = cylinderWidth * 0.5;
+  var smallerCylinderGeometry = new THREE.CylinderGeometry(smallerCylinderWidth, smallerCylinderWidth, smallerCylinderHeight, 50, 1);
+  var smallerCylinderMesh = new THREE.Mesh(smallerCylinderGeometry, toonMaterial1);
+  smallerCylinderMesh.position.y = cylinderHeight/2;
+  group.add(smallerCylinderMesh);
+
+  var smallerCylinderOutlineMesh = new THREE.Mesh(smallerCylinderGeometry, outlineMaterial);
+  smallerCylinderOutlineMesh.scale.multiplyScalar(1.05);
+  group.add(smallerCylinderOutlineMesh);
+
+  var smallerCapGeometry = new THREE.CylinderGeometry(smallerCylinderWidth, smallerCylinderWidth, 1, 50, 1);
+  var smallerCapMesh = new THREE.Mesh(smallerCapGeometry, outlineMaterial);
+  smallerCapMesh.scale.multiplyScalar(1.05);
+  group.add(smallerCapMesh);
+
+  smallerCapMesh.position.y = (cylinderHeight/2) + (smallerCylinderHeight/2);
+
+  var lensGeometry = new THREE.CylinderGeometry(smallerCylinderWidth * lensProportion, smallerCylinderWidth * lensProportion, 1, 50, 1);
   var lensMesh = new THREE.Mesh(lensGeometry, fillMaterial);
-  lensMesh.position.y = cylinderHeight/2;
+  lensMesh.position.y = smallerCylinderHeight/2 + smallerCylinderMesh.position.y;
   group.add(lensMesh);
 
   scene.add(group);
