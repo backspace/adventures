@@ -16,7 +16,7 @@
   </thead>
   <tbody>
     <%= for {user, i} <- Enum.with_index(@users) do %>
-      <tr id='user-<%= user.id %>'>
+      <tr id={"user-#{ user.id }"}>
         <td><%= i %></td>
         <td><%= user.id %></td>
         <td class='email'><%= user.email %></td>
