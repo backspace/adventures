@@ -31,7 +31,7 @@
         <legend>Risk aversion</legend>
         <%= for {integer, string} <- risk_aversion_integer_to_string() do %>
           <%= radio_button f, :risk_aversion, integer, class: "level-#{integer}", id: "level-#{integer}", "aria-describedby": "risk-aversion-help" %>
-          <label for='level-<%= integer %>'><%= string %></label>
+          <label for={"level-#{ integer }"}><%= string %></label>
         <% end %>
         <p class='help-text' id='risk-aversion-help'>How much risk are you comfortable taking? Do you want to stick to places open to the public, or are you confident enough to push the envelope?</p>
         <p class='help-text'>You <em>never</em> have to do anything you don't want to. Maybe someone on the team you're meeting will feel more comfortable, or you can just find out the answers from other participants.</p>

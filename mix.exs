@@ -55,7 +55,7 @@ defmodule Cr2016site.Mixfile do
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.12.2"},
       {:phoenix_html, "~> 3.0"},
-      {:phoenix_live_view, "~> 0.16.4"},
+      {:phoenix_live_view, "~> 0.17.11"},
       {:gettext, "~> 0.9"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:plug_cowboy, "~> 2.1"},
