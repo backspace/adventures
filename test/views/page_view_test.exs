@@ -1,3 +1,3 @@
-defmodule Cr2016site.PageViewTest do
-  use Cr2016siteWeb.ConnCase, async: true
+defmodule AdventureRegistrations.PageViewTest do
+  use AdventureRegistrationsWeb.ConnCase, async: true
 end

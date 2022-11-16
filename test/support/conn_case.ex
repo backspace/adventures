@@ -1,4 +1,4 @@
-defmodule Cr2016siteWeb.ConnCase do
+defmodule AdventureRegistrationsWeb.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -21,21 +21,21 @@ defmodule Cr2016siteWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
 
-      alias Cr2016site.Repo
+      alias AdventureRegistrations.Repo
       import Ecto.Query, only: [from: 2]
 
-      alias Cr2016siteWeb.Router.Helpers, as: Routes
+      alias AdventureRegistrationsWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
-      @endpoint Cr2016siteWeb.Endpoint
+      @endpoint AdventureRegistrationsWeb.Endpoint
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Cr2016site.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(AdventureRegistrations.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Cr2016site.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(AdventureRegistrations.Repo, {:shared, self()})
     end
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}

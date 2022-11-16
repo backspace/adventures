@@ -1,14 +1,14 @@
-defmodule Cr2016site.Integration.Registrations do
-  use Cr2016siteWeb.ConnCase
-  use Cr2016site.MailgunHelper
-  use Cr2016site.ResetRegistrationClosed
+defmodule AdventureRegistrations.Integration.Registrations do
+  use AdventureRegistrationsWeb.ConnCase
+  use AdventureRegistrations.MailgunHelper
+  use AdventureRegistrations.ResetRegistrationClosed
 
-  alias Cr2016site.Pages.Register
-  alias Cr2016site.Pages.Login
-  alias Cr2016site.Pages.Nav
-  alias Cr2016site.Pages.Details
-  alias Cr2016site.Pages.Account
-  alias Cr2016site.Pages.ForgotPassword
+  alias AdventureRegistrations.Pages.Register
+  alias AdventureRegistrations.Pages.Login
+  alias AdventureRegistrations.Pages.Nav
+  alias AdventureRegistrations.Pages.Details
+  alias AdventureRegistrations.Pages.Account
+  alias AdventureRegistrations.Pages.ForgotPassword
 
   # Import Hound helpers
   use Hound.Helpers
@@ -42,7 +42,7 @@ defmodule Cr2016site.Integration.Registrations do
 
     assert Nav.info_text() == "Your account was created"
 
-    [admin_email, welcome_email] = Cr2016site.MailgunHelper.sent_email()
+    [admin_email, welcome_email] = AdventureRegistrations.MailgunHelper.sent_email()
 
     assert admin_email["to"] == "b@events.chromatin.ca"
     assert admin_email["from"] == "b@events.chromatin.ca"
@@ -148,14 +148,14 @@ defmodule Cr2016site.Integration.Registrations do
     ForgotPassword.submit()
 
     assert Nav.error_text() == "No registration with that email address found"
-    refute Cr2016site.MailgunHelper.emails_sent?()
+    refute AdventureRegistrations.MailgunHelper.emails_sent?()
 
     ForgotPassword.fill_email("octavia.butler@example.com")
     ForgotPassword.submit()
 
     assert Nav.info_text() == "Check your email for a password reset link"
 
-    [forgot_password_email] = Cr2016site.MailgunHelper.sent_email()
+    [forgot_password_email] = AdventureRegistrations.MailgunHelper.sent_email()
 
     assert forgot_password_email["to"] == "octavia.butler@example.com"
     assert forgot_password_email["from"] == "b@events.chromatin.ca"
@@ -215,7 +215,7 @@ defmodule Cr2016site.Integration.Registrations do
 
     assert Nav.info_text() == "Your account has been deleted 😧"
 
-    [admin_email] = Cr2016site.MailgunHelper.sent_email()
+    [admin_email] = AdventureRegistrations.MailgunHelper.sent_email()
 
     assert admin_email["to"] == "b@events.chromatin.ca"
     assert admin_email["from"] == "b@events.chromatin.ca"
@@ -223,7 +223,7 @@ defmodule Cr2016site.Integration.Registrations do
   end
 
   test "when registration is closed, a warning is displayed on the registration and details routes" do
-    Application.put_env(:cr2016site, :registration_closed, true)
+    Application.put_env(:adventure_registrations, :registration_closed, true)
 
     navigate_to("/")
 

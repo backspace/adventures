@@ -1,4 +1,4 @@
-defmodule Cr2016site.Repo.Migrations.AddDetails do
+defmodule AdventureRegistrations.Repo.Migrations.AddDetails do
   use Ecto.Migration
 
   def change do

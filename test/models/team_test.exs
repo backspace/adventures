@@ -1,7 +1,7 @@
-defmodule Cr2016siteWeb.TeamTest do
-  use Cr2016site.ModelCase
+defmodule AdventureRegistrationsWeb.TeamTest do
+  use AdventureRegistrations.ModelCase
 
-  alias Cr2016siteWeb.Team
+  alias AdventureRegistrationsWeb.Team
 
   @valid_attrs %{name: "some content", notes: "some content", risk_aversion: 42, user_ids: []}
   @invalid_attrs %{}

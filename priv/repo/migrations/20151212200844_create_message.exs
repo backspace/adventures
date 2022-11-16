@@ -1,4 +1,4 @@
-defmodule Cr2016site.Repo.Migrations.CreateMessage do
+defmodule AdventureRegistrations.Repo.Migrations.CreateMessage do
   use Ecto.Migration
 
   def change do

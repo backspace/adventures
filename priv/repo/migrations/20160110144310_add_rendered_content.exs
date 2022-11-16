@@ -1,4 +1,4 @@
-defmodule Cr2016site.Repo.Migrations.AddRenderedContent do
+defmodule AdventureRegistrations.Repo.Migrations.AddRenderedContent do
   use Ecto.Migration
 
   def change do

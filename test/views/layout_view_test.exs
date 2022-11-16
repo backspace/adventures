@@ -1,3 +1,3 @@
-defmodule Cr2016site.LayoutViewTest do
-  use Cr2016siteWeb.ConnCase, async: true
+defmodule AdventureRegistrations.LayoutViewTest do
+  use AdventureRegistrationsWeb.ConnCase, async: true
 end

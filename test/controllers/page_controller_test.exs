@@ -1,5 +1,5 @@
-defmodule Cr2016site.PageControllerTest do
-  use Cr2016siteWeb.ConnCase
+defmodule AdventureRegistrations.PageControllerTest do
+  use AdventureRegistrationsWeb.ConnCase
 
   test "GET /" do
     conn = get(build_conn(), "/")

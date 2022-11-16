@@ -1,0 +1,31 @@
+<div class='row card'>
+  <div class='small-12 columns'>
+    <p><%= raw @message.content %></p>
+  </div>
+</div>
+<%= if assigns[:user] do %>
+  <div class='row card'>
+    <div class='small-12 columns'>
+      Your information is summarised below.
+
+      <%= if AdventureRegistrationsWeb.UserView.is_empty?(@user) do %>
+        You haven’t filled in any details! Visit the <%= link "site", to: Routes.user_url(AdventureRegistrationsWeb.Endpoint, :edit) %> to let us know your details.
+      <% end %>
+    </div>
+  </div>
+<% end %>
+<%= if @message.show_team do %>
+  <div class='row card'>
+    <div class='small-12 columns'>
+      <%= if @team do %>
+        You have successfully assembled a team: <%= @team.name %>. Risk aversion: <%= AdventureRegistrationsWeb.UserView.risk_aversion_integer_to_string()[@team.risk_aversion] %>
+      <% else %>
+        You have no team assigned! Probably because you did not confirm your attendance. It’s not too late, please contact us as soon as possible!
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <%= if assigns[:relationships] do %>
+    <%= render AdventureRegistrationsWeb.UserView, "relationships.html", user: @user, relationships: @relationships, email: true %>
+  <% end %>
+<% end %>

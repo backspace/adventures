@@ -1,4 +1,4 @@
-defmodule Cr2016site.Repo.Migrations.AddTeamEmails do
+defmodule AdventureRegistrations.Repo.Migrations.AddTeamEmails do
   use Ecto.Migration
 
   def change do

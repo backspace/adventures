@@ -1,4 +1,4 @@
-defmodule Cr2016site.Repo.Migrations.AddCommentsAndSource do
+defmodule AdventureRegistrations.Repo.Migrations.AddCommentsAndSource do
   use Ecto.Migration
 
   def change do

@@ -1,11 +1,11 @@
-defmodule Cr2016site.Integration.Teams do
-  use Cr2016siteWeb.ConnCase
-  use Cr2016site.MailgunHelper
-  use Cr2016site.ResetRequestConfirmation
+defmodule AdventureRegistrations.Integration.Teams do
+  use AdventureRegistrationsWeb.ConnCase
+  use AdventureRegistrations.MailgunHelper
+  use AdventureRegistrations.ResetRequestConfirmation
 
-  alias Cr2016site.Pages.Login
-  alias Cr2016site.Pages.Nav
-  alias Cr2016site.Pages.Details
+  alias AdventureRegistrations.Pages.Login
+  alias AdventureRegistrations.Pages.Nav
+  alias AdventureRegistrations.Pages.Details
 
   # Import Hound helpers
   use Hound.Helpers
@@ -65,7 +65,7 @@ defmodule Cr2016site.Integration.Teams do
     assert Details.comments().value == "Some comments"
     assert Details.source().value == "A source"
 
-    [sent_email] = Cr2016site.MailgunHelper.sent_email()
+    [sent_email] = AdventureRegistrations.MailgunHelper.sent_email()
     assert sent_email["to"] == "b@events.chromatin.ca"
     assert sent_email["from"] == "b@events.chromatin.ca"
 
@@ -154,7 +154,7 @@ defmodule Cr2016site.Integration.Teams do
   end
 
   test "when confirmation-requesting is enabled, show and require the fields" do
-    Application.put_env(:cr2016site, :request_confirmation, true)
+    Application.put_env(:adventure_registrations, :request_confirmation, true)
 
     Forge.saved_user(
       email: "takver@example.com",

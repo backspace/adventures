@@ -1,6 +1,6 @@
 ExUnit.start()
 
-Ecto.Adapters.SQL.Sandbox.mode(Cr2016site.Repo, :manual)
+Ecto.Adapters.SQL.Sandbox.mode(AdventureRegistrations.Repo, :manual)
 
 defmodule Forge do
   use Blacksmith
@@ -8,7 +8,7 @@ defmodule Forge do
   @save_one_function &Blacksmith.Config.save/1
   @save_all_function &Blacksmith.Config.save_all/1
 
-  register(:user, %Cr2016siteWeb.User{
+  register(:user, %AdventureRegistrationsWeb.User{
     email: Sequence.next(:email, &"jh#{&1}@example.com")
   })
 
@@ -19,9 +19,9 @@ defmodule Forge do
     crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
   )
 
-  register(:team, %Cr2016siteWeb.Team{})
+  register(:team, %AdventureRegistrationsWeb.Team{})
 
-  register(:message, %Cr2016siteWeb.Message{
+  register(:message, %AdventureRegistrationsWeb.Message{
     ready: true
   })
 
@@ -30,53 +30,53 @@ end
 
 # FIXME the duplication below can surely be extracted
 
-defmodule Cr2016site.ResetRequestConfirmation do
+defmodule AdventureRegistrations.ResetRequestConfirmation do
   use ExUnit.CaseTemplate
 
   setup do
-    request_confirmation_setting = Application.get_env(:cr2016site, :request_confirmation)
+    request_confirmation_setting = Application.get_env(:adventure_registrations, :request_confirmation)
 
     on_exit(fn ->
-      Application.put_env(:cr2016site, :request_confirmation, request_confirmation_setting)
+      Application.put_env(:adventure_registrations, :request_confirmation, request_confirmation_setting)
     end)
 
     :ok
   end
 end
 
-defmodule Cr2016site.ResetRegistrationClosed do
+defmodule AdventureRegistrations.ResetRegistrationClosed do
   use ExUnit.CaseTemplate
 
   setup do
-    registration_closed_setting = Application.get_env(:cr2016site, :registration_closed)
+    registration_closed_setting = Application.get_env(:adventure_registrations, :registration_closed)
 
     on_exit(fn ->
-      Application.put_env(:cr2016site, :registration_closed, registration_closed_setting)
+      Application.put_env(:adventure_registrations, :registration_closed, registration_closed_setting)
     end)
 
     :ok
   end
 end
 
-defmodule Cr2016site.MailgunHelper do
+defmodule AdventureRegistrations.MailgunHelper do
   use ExUnit.CaseTemplate
 
   setup do
-    File.rm(Application.get_env(:cr2016site, :mailgun_test_file_path))
+    File.rm(Application.get_env(:adventure_registrations, :mailgun_test_file_path))
 
     on_exit(fn ->
-      File.rm(Application.get_env(:cr2016site, :mailgun_test_file_path))
+      File.rm(Application.get_env(:adventure_registrations, :mailgun_test_file_path))
     end)
 
     :ok
   end
 
   def sent_email do
-    mail_text = File.read!(Application.get_env(:cr2016site, :mailgun_test_file_path))
+    mail_text = File.read!(Application.get_env(:adventure_registrations, :mailgun_test_file_path))
     Poison.Parser.parse!(mail_text)
   end
 
   def emails_sent? do
-    File.exists?(Application.get_env(:cr2016site, :mailgun_test_file_path))
+    File.exists?(Application.get_env(:adventure_registrations, :mailgun_test_file_path))
   end
 end

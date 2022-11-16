@@ -1,4 +1,4 @@
-defmodule Cr2016site.Repo.Migrations.AddRecoveryHash do
+defmodule AdventureRegistrations.Repo.Migrations.AddRecoveryHash do
   use Ecto.Migration
 
   def change do

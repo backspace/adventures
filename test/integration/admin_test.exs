@@ -1,11 +1,11 @@
-defmodule Cr2016site.Integration.Admin do
-  use Cr2016siteWeb.ConnCase
-  use Cr2016site.MailgunHelper
+defmodule AdventureRegistrations.Integration.Admin do
+  use AdventureRegistrationsWeb.ConnCase
+  use AdventureRegistrations.MailgunHelper
 
-  alias Cr2016site.Pages.Login
-  alias Cr2016site.Pages.Nav
-  alias Cr2016site.Pages.Users
-  # alias Cr2016site.Pages.Teams
+  alias AdventureRegistrations.Pages.Login
+  alias AdventureRegistrations.Pages.Nav
+  alias AdventureRegistrations.Pages.Users
+  # alias AdventureRegistrations.Pages.Teams
 
   # Import Hound helpers
   use Hound.Helpers
@@ -91,7 +91,7 @@ defmodule Cr2016site.Integration.Admin do
     # assert Teams.name(1) == "Team A"
     # assert Teams.risk_aversion(1) == "3"
 
-    [team] = Cr2016site.Repo.all(Cr2016siteWeb.Team)
+    [team] = AdventureRegistrations.Repo.all(AdventureRegistrationsWeb.Team)
     assert team.name == "Team A"
     assert team.risk_aversion == 3
     assert team.notes == "a: Some text, b: More text"

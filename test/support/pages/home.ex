@@ -1,4 +1,4 @@
-defmodule Cr2016site.Pages.Home do
+defmodule AdventureRegistrations.Pages.Home do
   use Hound.Helpers
 
   def fill_name(name) do

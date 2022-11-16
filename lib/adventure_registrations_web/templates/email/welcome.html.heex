@@ -1,0 +1,9 @@
+<div class='row card'>
+  <div class='small-12 columns'>
+    <!-- TODO: parameterise “afternoon”? -->
+    <p>Welcome to the secret society so secret it doesn't even have a name! You’ve successfully registered for Clandestine Rendezvous, taking place in Victoria on the evening of <%= full_date() %>.</p>
+    <p>If you haven't already, visit the <%= link "site", to: Routes.user_url(AdventureRegistrationsWeb.Endpoint, :edit) %> to let us know your details.</p>
+    <p>Remember, now that you’ve signed up, you will be scheduled for appointments with other society members on <%= ordinal_date() %>. If you don’t show up, you’ll be letting other people down. Should something come up and you can no longer attend, you can cancel your registration on the site.</p>
+    <p>If you have any questions, you can use the form on the site or send an email to this address.</p>
+  </div>
+</div>

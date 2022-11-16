@@ -1,11 +1,11 @@
-defmodule Cr2016site.Integration.Messages do
-  use Cr2016siteWeb.ConnCase
-  use Cr2016site.MailgunHelper
+defmodule AdventureRegistrations.Integration.Messages do
+  use AdventureRegistrationsWeb.ConnCase
+  use AdventureRegistrations.MailgunHelper
 
-  alias Cr2016site.Pages.Login
-  alias Cr2016site.Pages.Register
-  alias Cr2016site.Pages.Messages
-  alias Cr2016site.Pages.Nav
+  alias AdventureRegistrations.Pages.Login
+  alias AdventureRegistrations.Pages.Register
+  alias AdventureRegistrations.Pages.Messages
+  alias AdventureRegistrations.Pages.Nav
 
   use Hound.Helpers
   hound_session()
@@ -46,7 +46,7 @@ defmodule Cr2016site.Integration.Messages do
 
     assert Nav.info_text() == "Message was sent"
 
-    [_, email, _, %{"text" => empty_email_text}] = Cr2016site.MailgunHelper.sent_email()
+    [_, email, _, %{"text" => empty_email_text}] = AdventureRegistrations.MailgunHelper.sent_email()
     assert email["to"] == "user@example.com"
     assert email["from"] == "b@events.chromatin.ca"
     assert email["subject"] == "[rendezvous] A Subject!"
@@ -95,7 +95,7 @@ defmodule Cr2016site.Integration.Messages do
 
     Messages.send()
 
-    [_, has_team_email, _, has_no_team_email] = Cr2016site.MailgunHelper.sent_email()
+    [_, has_team_email, _, has_no_team_email] = AdventureRegistrations.MailgunHelper.sent_email()
 
     assert has_team_email["to"] == "user-with-team@example.com"
     assert String.contains?(has_team_email["text"], "True team name")
@@ -117,7 +117,7 @@ defmodule Cr2016site.Integration.Messages do
     Register.fill_password("abcdefghi")
     Register.submit()
 
-    [_admin, _welcome, backlog_email] = Cr2016site.MailgunHelper.sent_email()
+    [_admin, _welcome, backlog_email] = AdventureRegistrations.MailgunHelper.sent_email()
 
     assert backlog_email["to"] == "registerer@example.com"
     assert backlog_email["from"] == "b@events.chromatin.ca"

@@ -1,4 +1,4 @@
-defmodule Cr2016site.Pages.Teams do
+defmodule AdventureRegistrations.Pages.Teams do
   use Hound.Helpers
 
   defp team_container(index) do

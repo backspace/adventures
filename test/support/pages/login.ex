@@ -1,4 +1,4 @@
-defmodule Cr2016site.Pages.Login do
+defmodule AdventureRegistrations.Pages.Login do
   use Hound.Helpers
 
   def fill_email(email) do
@@ -14,7 +14,7 @@ defmodule Cr2016site.Pages.Login do
   end
 
   def login_as(email, password) do
-    Cr2016site.Pages.Nav.login_link().click
+    AdventureRegistrations.Pages.Nav.login_link().click
 
     fill_email(email)
     fill_password(password)

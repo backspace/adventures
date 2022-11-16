@@ -1,4 +1,4 @@
-defmodule Cr2016site.Pages.Account do
+defmodule AdventureRegistrations.Pages.Account do
   use Hound.Helpers
 
   def fill_current_password(password) do

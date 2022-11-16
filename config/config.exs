@@ -6,19 +6,19 @@
 use Mix.Config
 
 # Configures the endpoint
-config :cr2016site, Cr2016siteWeb.Endpoint,
+config :adventure_registrations, AdventureRegistrationsWeb.Endpoint,
   url: [host: "localhost"],
   root: Path.dirname(__DIR__),
   secret_key_base: "xn64PMB42eKmnISH1qTC8I+r62bNyMgTxlXYupsWCvvjBnFJEycMHcXdeFitYxyS",
   render_errors: [accepts: ~w(html json)],
-  pubsub_server: Cr2016site.PubSub
+  pubsub_server: AdventureRegistrations.PubSub
 
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-config :cr2016site,
+config :adventure_registrations,
   mailgun_domain: "https://api.mailgun.net/v3/mg.chromatin.ca",
   mailgun_mode: :regular,
   start_time: [{{2017, 6, 8}, {18, 00, 00}}, "Canada/Pacific"]
@@ -37,4 +37,4 @@ config :phoenix, :generators,
 
 config :porcelain, driver: Porcelain.Driver.Basic
 
-config :cr2016site, ecto_repos: [Cr2016site.Repo]
+config :adventure_registrations, ecto_repos: [AdventureRegistrations.Repo]

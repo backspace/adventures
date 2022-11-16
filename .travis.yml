@@ -6,6 +6,6 @@ before_install:
   - "rvm use 2.1.8"
   - "bundle install"
   # FIXME Creates an expected file excluded by .gitignore
-  - "echo 'use Mix.Config\n\nconfig :cr2016site, nothing: 0' > config/dev.secret.exs"
+  - "echo 'use Mix.Config\n\nconfig :adventure_registrations, nothing: 0' > config/dev.secret.exs"
 before_script:
   - "phantomjs -w --webdriver-loglevel=ERROR &"

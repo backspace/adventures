@@ -1,9 +1,9 @@
-defmodule Cr2016site.Mixfile do
+defmodule AdventureRegistrations.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :cr2016site,
+      app: :adventure_registrations,
       version: "0.0.1",
       elixir: "~> 1.0",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -19,7 +19,7 @@ defmodule Cr2016site.Mixfile do
   #
   # Type `mix help compile.app` for more information.
   def application do
-    [mod: {Cr2016site, []}, applications: app_list(Mix.env())]
+    [mod: {AdventureRegistrations, []}, applications: app_list(Mix.env())]
   end
 
   def app_list do

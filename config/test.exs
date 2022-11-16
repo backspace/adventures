@@ -2,7 +2,7 @@ use Mix.Config
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :cr2016site, Cr2016siteWeb.Endpoint,
+config :adventure_registrations, AdventureRegistrationsWeb.Endpoint,
   http: [port: 4001],
   server: true
 
@@ -10,11 +10,11 @@ config :cr2016site, Cr2016siteWeb.Endpoint,
 config :logger, level: :warn
 
 # Configure your database
-config :cr2016site, Cr2016site.Repo,
+config :adventure_registrations, AdventureRegistrations.Repo,
   adapter: Ecto.Adapters.Postgres,
   username: "postgres",
   password: "postgres",
-  database: "cr2016site_test",
+  database: "adventure_registrations_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
@@ -24,12 +24,12 @@ config :comeonin, :bcrypt_log_rounds, 4
 
 defmodule Blacksmith.Config do
   def save(map) do
-    Cr2016site.Repo.insert(map)
+    AdventureRegistrations.Repo.insert(map)
   end
 
   def save_all(list) do
-    Enum.map(list, &Cr2016site.Repo.insert/1)
+    Enum.map(list, &AdventureRegistrations.Repo.insert/1)
   end
 end
 
-config :cr2016site, mailgun_mode: :test, mailgun_test_file_path: "/tmp/mailgun.json"
+config :adventure_registrations, mailgun_mode: :test, mailgun_test_file_path: "/tmp/mailgun.json"

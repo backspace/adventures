@@ -1,4 +1,4 @@
-defmodule Cr2016site.Repo.Migrations.AddMessageTeamBoolean do
+defmodule AdventureRegistrations.Repo.Migrations.AddMessageTeamBoolean do
   use Ecto.Migration
 
   def change do

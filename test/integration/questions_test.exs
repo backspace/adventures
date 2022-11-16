@@ -1,9 +1,9 @@
-defmodule Cr2016site.Integration.Questions do
-  use Cr2016siteWeb.ConnCase
-  use Cr2016site.MailgunHelper
+defmodule AdventureRegistrations.Integration.Questions do
+  use AdventureRegistrationsWeb.ConnCase
+  use AdventureRegistrations.MailgunHelper
 
-  alias Cr2016site.Pages.Home
-  alias Cr2016site.Pages.Nav
+  alias AdventureRegistrations.Pages.Home
+  alias AdventureRegistrations.Pages.Nav
 
   use Hound.Helpers
 
@@ -24,7 +24,7 @@ defmodule Cr2016site.Integration.Questions do
 
     assert Nav.info_text() == "Your question has been submitted."
 
-    [sent_email] = Cr2016site.MailgunHelper.sent_email()
+    [sent_email] = AdventureRegistrations.MailgunHelper.sent_email()
     assert sent_email["to"] == "b@events.chromatin.ca"
     assert sent_email["from"] == "b@events.chromatin.ca"
 

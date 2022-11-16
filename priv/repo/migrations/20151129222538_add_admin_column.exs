@@ -1,4 +1,4 @@
-defmodule Cr2016site.Repo.Migrations.AddAdminColumn do
+defmodule AdventureRegistrations.Repo.Migrations.AddAdminColumn do
   use Ecto.Migration
 
   def change do
