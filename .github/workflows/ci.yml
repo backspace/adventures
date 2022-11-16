@@ -19,6 +19,10 @@ jobs:
         with:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
+      # FIXME Creates an expected file excluded by .gitignore
+      - name: add dev.secret.exs
+        run: |
+          echo 'import Config\n\nconfig :adventure_registrations, nothing: 0' > config/dev.secret.exs
       - name: Retrieve cached dependencies
         uses: actions/cache@v2
         id: mix-cache
@@ -61,6 +65,10 @@ jobs:
         with:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
+      # FIXME Creates an expected file excluded by .gitignore
+      - name: add dev.secret.exs
+        run: |
+          echo 'import Config\n\nconfig :adventure_registrations, nothing: 0' > config/dev.secret.exs
       - name: Retrieve cached dependencies
         uses: actions/cache@v2
         id: mix-cache
