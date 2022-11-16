@@ -60,7 +60,7 @@ defmodule AdventureRegistrationsWeb.TeamController do
       "risk_aversion" => base_user.risk_aversion,
       "user_ids" => Enum.map(team_users, fn(u) -> u.id end),
       "notes" => team_users
-        |> Enum.filter_map(fn(u) -> String.strip(u.accessibility || "") != "" end, &("#{String.split(&1.email, "@") |> hd}: #{&1.accessibility}"))
+        |> Enum.filter_map(fn(u) -> String.trim(u.accessibility || "") != "" end, &("#{String.split(&1.email, "@") |> hd}: #{&1.accessibility}"))
         |> Enum.join(", ")
     })
 
