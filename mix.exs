@@ -39,11 +39,11 @@ defmodule AdventureRegistrations.Mixfile do
       :ecto_sql,
       :mailgun,
       :phoenix_live_view,
-      :phoenix_live_reload,
       :timex,
     ]
   end
 
+  def app_list(:dev), do: [:phoenix_live_reload] ++ app_list()
   def app_list(:test), do: [:blacksmith, :hound] ++ app_list()
   def app_list(_), do: app_list()
 
