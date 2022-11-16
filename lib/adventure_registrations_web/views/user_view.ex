@@ -49,11 +49,11 @@ defmodule AdventureRegistrationsWeb.UserView do
   end
 
   def is_empty?(user) do
-    String.strip(user.team_emails || "") == "" &&
+    String.trim(user.team_emails || "") == "" &&
     !Enum.member?([1,2,3], user.risk_aversion) &&
-    String.strip(user.proposed_team_name || "") == "" &&
-    String.strip(user.accessibility || "") == "" &&
-    String.strip(user.comments || "") == "" &&
-    String.strip(user.source || "") == ""
+    String.trim(user.proposed_team_name || "") == "" &&
+    String.trim(user.accessibility || "") == "" &&
+    String.trim(user.comments || "") == "" &&
+    String.trim(user.source || "") == ""
   end
 end

@@ -19,7 +19,7 @@ defmodule AdventureRegistrations.Mixfile do
   #
   # Type `mix help compile.app` for more information.
   def application do
-    [mod: {AdventureRegistrations, []}, applications: app_list(Mix.env())]
+    [mod: {AdventureRegistrations.Application, []}, applications: app_list(Mix.env())]
   end
 
   def app_list do
@@ -33,10 +33,17 @@ defmodule AdventureRegistrations.Mixfile do
       :postgrex,
       :gettext,
       :tzdata,
-      :porcelain
+      :porcelain,
+      :comeonin,
+      :crutches,
+      :ecto_sql,
+      :mailgun,
+      :phoenix_live_view,
+      :timex,
     ]
   end
 
+  def app_list(:dev), do: [:phoenix_live_reload] ++ app_list()
   def app_list(:test), do: [:blacksmith, :hound] ++ app_list()
   def app_list(_), do: app_list()
 
