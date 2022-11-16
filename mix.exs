@@ -19,7 +19,7 @@ defmodule AdventureRegistrations.Mixfile do
   #
   # Type `mix help compile.app` for more information.
   def application do
-    [mod: {AdventureRegistrations, []}, applications: app_list(Mix.env())]
+    [mod: {AdventureRegistrations.Application, []}, applications: app_list(Mix.env())]
   end
 
   def app_list do
