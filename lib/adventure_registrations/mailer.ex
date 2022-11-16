@@ -1,9 +1,9 @@
 defmodule AdventureRegistrations.Mailer do
   use Mailgun.Client,
-    domain: Application.get_env(:adventure_registrations, :mailgun_domain),
-    key: Application.get_env(:adventure_registrations, :mailgun_key),
-    mode: Application.get_env(:adventure_registrations, :mailgun_mode),
-    test_file_path: Application.get_env(:adventure_registrations, :mailgun_test_file_path)
+    domain: Application.compile_env(:adventure_registrations, :mailgun_domain),
+    key: Application.compile_env(:adventure_registrations, :mailgun_key),
+    mode: Application.compile_env(:adventure_registrations, :mailgun_mode),
+    test_file_path: Application.compile_env(:adventure_registrations, :mailgun_test_file_path)
 
   alias AdventureRegistrationsWeb.Router
   alias AdventureRegistrationsWeb.Endpoint
