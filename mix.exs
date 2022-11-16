@@ -33,7 +33,14 @@ defmodule AdventureRegistrations.Mixfile do
       :postgrex,
       :gettext,
       :tzdata,
-      :porcelain
+      :porcelain,
+      :comeonin,
+      :crutches,
+      :ecto_sql,
+      :mailgun,
+      :phoenix_live_view,
+      :phoenix_live_reload,
+      :timex,
     ]
   end
 
