@@ -17,7 +17,7 @@ jobs:
       # FIXME Creates an expected file excluded by .gitignore
       - name: add dev.secret.exs
         run: |
-          echo 'import Config\n\nconfig :adventure_registrations, nothing: 0' > config/dev.secret.exs
+          echo "import Config\n\nconfig :adventure_registrations, nothing: 0" > config/dev.secret.exs
       - name: Sets up an Erlang/OTP environment
         uses: erlef/setup-beam@v1
         with:
@@ -63,7 +63,7 @@ jobs:
       # FIXME Creates an expected file excluded by .gitignore
       - name: add dev.secret.exs
         run: |
-          echo 'import Config\n\nconfig :adventure_registrations, nothing: 0' > config/dev.secret.exs
+          echo "import Config\n\nconfig :adventure_registrations, nothing: 0" > config/dev.secret.exs
       - name: Sets up an Erlang/OTP environment
         uses: erlef/setup-beam@v1
         with:
