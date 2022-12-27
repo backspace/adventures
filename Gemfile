@@ -1,5 +1,5 @@
 source "https://rubygems.org"
-ruby "2.1.8"
+ruby "2.7.2"
 
 gem "nokogiri"
 gem "premailer"
