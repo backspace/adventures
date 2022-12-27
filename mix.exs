@@ -38,6 +38,7 @@ defmodule AdventureRegistrations.Mixfile do
       :crutches,
       :ecto_sql,
       :swoosh,
+      :premailex,
       :phoenix_live_view,
       :timex,
     ]
@@ -72,10 +73,11 @@ defmodule AdventureRegistrations.Mixfile do
       {:blacksmith, "~> 0.2.1"},
       {:comeonin, "~> 1.0"},
       {:swoosh, "~> 1.9"},
+      {:premailex, "~> 0.3.0"},
       {:jason, "~> 1.0"},
       {:poison, "~> 2.0"},
       {:crutches, git: "https://github.com/mykewould/crutches.git"},
-      {:floki, "~> 0.7"},
+      {:floki, "~> 0.34"},
       {:timex, "~> 1.0.0"},
       {:porcelain, "~> 2.0"}
     ]

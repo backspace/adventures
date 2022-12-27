@@ -95,12 +95,7 @@ defmodule AdventureRegistrations.Mailer do
   end
 
   defp welcome_text do
-    File.write(
-      "/tmp/email.html",
-      Phoenix.View.render_to_string(AdventureRegistrationsWeb.EmailView, "welcome.html", %{})
-    )
-
-    Porcelain.exec("ruby", ["lib/adventure_registrations/convert-html-to-text.rb", AdventureRegistrationsWeb.Endpoint.url()]).out
+    Premailex.to_text(welcome_html())
   end
 
   defp message_html(message, user, relationships, team) do
@@ -114,17 +109,7 @@ defmodule AdventureRegistrations.Mailer do
   end
 
   defp message_text(message, user, relationships, team) do
-    html =
-      Phoenix.View.render_to_string(AdventureRegistrationsWeb.MessageView, "preview.html", %{
-        message: message,
-        user: user,
-        relationships: relationships,
-        team: team
-      })
-
-    File.write("/tmp/email.html", html)
-
-    Porcelain.exec("ruby", ["lib/adventure_registrations/convert-html-to-text.rb", AdventureRegistrationsWeb.Endpoint.url()]).out
+    Premailex.to_text(message_html(message, user, relationships, team))
   end
 
   defp backlog_html(messages) do
@@ -135,13 +120,6 @@ defmodule AdventureRegistrations.Mailer do
   end
 
   defp backlog_text(messages) do
-    html =
-      Phoenix.View.render_to_string(AdventureRegistrationsWeb.MessageView, "backlog.html", %{
-        messages: messages
-      })
-
-    File.write("/tmp/email.html", html)
-
-    Porcelain.exec("ruby", ["lib/adventure_registrations/convert-html-to-text.rb", AdventureRegistrationsWeb.Endpoint.url()]).out
+    Premailex.to_text(backlog_html(messages))
   end
 end
