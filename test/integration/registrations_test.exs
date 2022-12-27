@@ -42,7 +42,7 @@ defmodule AdventureRegistrations.Integration.Registrations do
 
     assert Nav.info_text() == "Your account was created"
 
-    [admin_email, welcome_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [welcome_email, admin_email] = AdventureRegistrations.SwooshHelper.sent_email()
 
     assert admin_email.to == [{"", "b@events.chromatin.ca"}]
     assert admin_email.from == {"", "b@events.chromatin.ca"}

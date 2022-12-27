@@ -46,7 +46,7 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     assert Nav.info_text() == "Message was sent"
 
-    [_, email, _, %{"text" => empty_email_text}] = AdventureRegistrations.SwooshHelper.sent_email()
+    [empty_email, _, email, _] = AdventureRegistrations.SwooshHelper.sent_email()
     assert email.to == [{"", "user@example.com"}]
     assert email.from == {"", "b@events.chromatin.ca"}
     assert email.subject == "[rendezvous] A Subject!"
@@ -55,7 +55,7 @@ defmodule AdventureRegistrations.Integration.Messages do
     assert String.contains?(text, "Jorts")
     assert String.contains?(text, "Jants")
 
-    assert String.contains?(empty_email_text, "You haven’t filled in any details!")
+    assert String.contains?(empty_email.text_body, "You haven’t filled in any details!")
   end
 
   test "a message with show team enabled shows the actual team information instead of their details" do
@@ -95,7 +95,7 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     Messages.send()
 
-    [_, has_team_email, _, has_no_team_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [has_no_team_email, _, has_team_email, _] = AdventureRegistrations.SwooshHelper.sent_email()
 
     assert has_team_email.to == [{"", "user-with-team@example.com"}]
     assert String.contains?(has_team_email.text_body, "True team name")
@@ -117,7 +117,7 @@ defmodule AdventureRegistrations.Integration.Messages do
     Register.fill_password("abcdefghi")
     Register.submit()
 
-    [_admin, _welcome, backlog_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [backlog_email, _welcome_, _admin] = AdventureRegistrations.SwooshHelper.sent_email()
 
     assert backlog_email.to == [{"", "registerer@example.com"}]
     assert backlog_email.from == {"", "b@events.chromatin.ca"}
