@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         elixir: ['1.14.0']
-        otp: ['23.3.4.16'] # FIXME get from .tool-versions
+        otp: ['25.2'] # FIXME get from .tool-versions
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.9.0
@@ -41,7 +41,7 @@ jobs:
     strategy:
       matrix:
         elixir: ['1.14.0']
-        otp: ['23.3.4.16']
+        otp: ['25.2']
     services:
       db:
         image: postgres:latest
