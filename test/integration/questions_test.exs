@@ -1,6 +1,6 @@
 defmodule AdventureRegistrations.Integration.Questions do
   use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.MailgunHelper
+  use AdventureRegistrations.SwooshHelper
 
   alias AdventureRegistrations.Pages.Home
   alias AdventureRegistrations.Pages.Nav
@@ -24,14 +24,14 @@ defmodule AdventureRegistrations.Integration.Questions do
 
     assert Nav.info_text() == "Your question has been submitted."
 
-    [sent_email] = AdventureRegistrations.MailgunHelper.sent_email()
-    assert sent_email["to"] == "b@events.chromatin.ca"
-    assert sent_email["from"] == "b@events.chromatin.ca"
+    [sent_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    assert sent_email.to == [{"", "b@events.chromatin.ca"}]
+    assert sent_email.from == {"", "b@events.chromatin.ca"}
 
-    assert sent_email["subject"] ==
+    assert sent_email.subject ==
              "Question from Lucy Parsons <lucy@example.com>: A Word to Tramps"
 
-    assert sent_email["text"] ==
+    assert sent_email.text_body ==
              "Can you not see that it is the industrial system and not the \"boss\" which must be changed?"
   end
 end

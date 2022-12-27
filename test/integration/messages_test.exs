@@ -1,6 +1,6 @@
 defmodule AdventureRegistrations.Integration.Messages do
   use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.MailgunHelper
+  use AdventureRegistrations.SwooshHelper
 
   alias AdventureRegistrations.Pages.Login
   alias AdventureRegistrations.Pages.Register
@@ -46,12 +46,12 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     assert Nav.info_text() == "Message was sent"
 
-    [_, email, _, %{"text" => empty_email_text}] = AdventureRegistrations.MailgunHelper.sent_email()
-    assert email["to"] == "user@example.com"
-    assert email["from"] == "b@events.chromatin.ca"
-    assert email["subject"] == "[rendezvous] A Subject!"
+    [_, email, _, %{"text" => empty_email_text}] = AdventureRegistrations.SwooshHelper.sent_email()
+    assert email.to == [{"", "user@example.com"}]
+    assert email.from == {"", "b@events.chromatin.ca"}
+    assert email.subject == "[rendezvous] A Subject!"
 
-    text = email["text"]
+    text = email.text_body
     assert String.contains?(text, "Jorts")
     assert String.contains?(text, "Jants")
 
@@ -95,14 +95,14 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     Messages.send()
 
-    [_, has_team_email, _, has_no_team_email] = AdventureRegistrations.MailgunHelper.sent_email()
+    [_, has_team_email, _, has_no_team_email] = AdventureRegistrations.SwooshHelper.sent_email()
 
-    assert has_team_email["to"] == "user-with-team@example.com"
-    assert String.contains?(has_team_email["text"], "True team name")
-    assert String.contains?(has_team_email["text"], "Go easy on me")
+    assert has_team_email.to == [{"", "user-with-team@example.com"}]
+    assert String.contains?(has_team_email.text_body, "True team name")
+    assert String.contains?(has_team_email.text_body, "Go easy on me")
 
-    assert has_no_team_email["to"] == "teamless-user@example.com"
-    assert String.contains?(has_no_team_email["text"], "You have no team assigned!")
+    assert has_no_team_email.to == [{"", "teamless-user@example.com"}]
+    assert String.contains?(has_no_team_email.text_body, "You have no team assigned!")
   end
 
   test "the backlog of existing messages is sent to a new registrant after the welcome" do
@@ -117,14 +117,14 @@ defmodule AdventureRegistrations.Integration.Messages do
     Register.fill_password("abcdefghi")
     Register.submit()
 
-    [_admin, _welcome, backlog_email] = AdventureRegistrations.MailgunHelper.sent_email()
+    [_admin, _welcome, backlog_email] = AdventureRegistrations.SwooshHelper.sent_email()
 
-    assert backlog_email["to"] == "registerer@example.com"
-    assert backlog_email["from"] == "b@events.chromatin.ca"
+    assert backlog_email.to == [{"", "registerer@example.com"}]
+    assert backlog_email.from == {"", "b@events.chromatin.ca"}
 
-    assert backlog_email["subject"] == "[rendezvous] Messages sent before you registered"
+    assert backlog_email.subject == "[rendezvous] Messages sent before you registered"
 
-    text = backlog_email["text"]
+    text = backlog_email.text_body
     assert String.contains?(text, "These messages were sent before you registered.")
 
     assert String.contains?(text, "Subject one")

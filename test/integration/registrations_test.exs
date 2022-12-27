@@ -1,6 +1,6 @@
 defmodule AdventureRegistrations.Integration.Registrations do
   use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.MailgunHelper
+  use AdventureRegistrations.SwooshHelper
   use AdventureRegistrations.ResetRegistrationClosed
 
   alias AdventureRegistrations.Pages.Register
@@ -42,16 +42,16 @@ defmodule AdventureRegistrations.Integration.Registrations do
 
     assert Nav.info_text() == "Your account was created"
 
-    [admin_email, welcome_email] = AdventureRegistrations.MailgunHelper.sent_email()
+    [admin_email, welcome_email] = AdventureRegistrations.SwooshHelper.sent_email()
 
-    assert admin_email["to"] == "b@events.chromatin.ca"
-    assert admin_email["from"] == "b@events.chromatin.ca"
-    assert admin_email["subject"] == "samuel.delaney@example.com registered"
+    assert admin_email.to == [{"", "b@events.chromatin.ca"}]
+    assert admin_email.from == {"", "b@events.chromatin.ca"}
+    assert admin_email.subject == "samuel.delaney@example.com registered"
 
-    assert welcome_email["to"] == "samuel.delaney@example.com"
-    assert welcome_email["subject"] == "[rendezvous] Welcome!"
-    assert String.contains?(welcome_email["text"], "secret society")
-    assert String.contains?(welcome_email["html"], "secret society")
+    assert welcome_email.to == [{"", "samuel.delaney@example.com"}]
+    assert welcome_email.subject == "[rendezvous] Welcome!"
+    assert String.contains?(welcome_email.text_body, "secret society")
+    assert String.contains?(welcome_email.html_body, "secret society")
 
     assert Nav.logout_link().text == "Log out samuel.delaney@example.com"
 
@@ -148,21 +148,21 @@ defmodule AdventureRegistrations.Integration.Registrations do
     ForgotPassword.submit()
 
     assert Nav.error_text() == "No registration with that email address found"
-    refute AdventureRegistrations.MailgunHelper.emails_sent?()
+    refute AdventureRegistrations.SwooshHelper.emails_sent?()
 
     ForgotPassword.fill_email("octavia.butler@example.com")
     ForgotPassword.submit()
 
     assert Nav.info_text() == "Check your email for a password reset link"
 
-    [forgot_password_email] = AdventureRegistrations.MailgunHelper.sent_email()
+    [forgot_password_email] = AdventureRegistrations.SwooshHelper.sent_email()
 
-    assert forgot_password_email["to"] == "octavia.butler@example.com"
-    assert forgot_password_email["from"] == "b@events.chromatin.ca"
-    assert forgot_password_email["subject"] == "[rendezvous] Password reset"
+    assert forgot_password_email.to == [{"", "octavia.butler@example.com"}]
+    assert forgot_password_email.from == {"", "b@events.chromatin.ca"}
+    assert forgot_password_email.subject == "[rendezvous] Password reset"
 
     [url] =
-      Floki.find(forgot_password_email["html"], "a")
+      Floki.find(forgot_password_email.html_body, "a")
       |> Floki.attribute("href")
 
     reset_path = URI.parse(url).path
@@ -215,11 +215,11 @@ defmodule AdventureRegistrations.Integration.Registrations do
 
     assert Nav.info_text() == "Your account has been deleted 😧"
 
-    [admin_email] = AdventureRegistrations.MailgunHelper.sent_email()
+    [admin_email] = AdventureRegistrations.SwooshHelper.sent_email()
 
-    assert admin_email["to"] == "b@events.chromatin.ca"
-    assert admin_email["from"] == "b@events.chromatin.ca"
-    assert admin_email["subject"] == "octavia.butler@example.com deleted their account"
+    assert admin_email.to == [{"", "b@events.chromatin.ca"}]
+    assert admin_email.from == {"", "b@events.chromatin.ca"}
+    assert admin_email.subject == "octavia.butler@example.com deleted their account"
   end
 
   test "when registration is closed, a warning is displayed on the registration and details routes" do

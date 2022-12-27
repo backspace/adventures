@@ -1,9 +1,6 @@
 defmodule AdventureRegistrations.Mailer do
-  use Mailgun.Client,
-    domain: Application.compile_env(:adventure_registrations, :mailgun_domain),
-    key: Application.compile_env(:adventure_registrations, :mailgun_key),
-    mode: Application.compile_env(:adventure_registrations, :mailgun_mode),
-    test_file_path: Application.compile_env(:adventure_registrations, :mailgun_test_file_path)
+  use Swoosh.Mailer, otp_app: :adventure_registrations
+  import Swoosh.Email
 
   alias AdventureRegistrationsWeb.Router
   alias AdventureRegistrationsWeb.Endpoint
@@ -11,55 +8,59 @@ defmodule AdventureRegistrations.Mailer do
   @from "b@events.chromatin.ca"
 
   def send_welcome_email(email) do
-    send_email(
-      to: email,
-      from: @from,
-      subject: "[rendezvous] Welcome!",
-      html: welcome_html(),
-      text: welcome_text()
-    )
+    new()
+    |> to(email)
+    |> from(@from)
+    |> subject("[rendezvous] Welcome!")
+    |> html_body(welcome_html())
+    |> text_body(welcome_text())
+    |> deliver
   end
 
   def send_question(attributes) do
-    send_email(
-      to: "b@events.chromatin.ca",
-      from: @from,
-      subject:
-        "Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}",
-      text: attributes["question"]
-    )
+    new()
+    |> to("b@events.chromatin.ca")
+    |> from(@from)
+    |> subject("Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes.subject}")
+    |> text_body(attributes["question"])
+    |> deliver
   end
 
   def send_user_changes(user, changes) do
-    send_email(
-      to: @from,
-      from: @from,
-      subject: "#{user.email} details changed: #{Enum.join(Map.keys(changes), ", ")}",
-      text: inspect(changes)
-    )
+    new()
+    |> to(@from)
+    |> from(@from)
+    |> subject("#{user.email} details changed: #{Enum.join(Map.keys(changes), ", ")}")
+    |> text_body(inspect(changes))
+    |> deliver
   end
 
   def send_user_deletion(user) do
-    send_email(
-      to: @from,
-      from: @from,
-      subject: "#{user.email} deleted their account",
-      text: inspect(user)
-    )
+    new()
+    |> to(@from)
+    |> from(@from)
+    |> subject("#{user.email} deleted their account")
+    |> text_body(inspect(user))
+    |> deliver
   end
 
   def send_registration(user) do
-    send_email(to: @from, from: @from, subject: "#{user.email} registered", text: "Yes")
+    new()
+    |> to(@from)
+    |> from(@from)
+    |> subject("#{user.email} registered")
+    |> text_body("Yes")
+    |> deliver
   end
 
   def send_message(message, user, relationships, team) do
-    send_email(
-      to: user.email,
-      from: @from,
-      subject: "[rendezvous] #{message.subject}",
-      text: message_text(message, user, relationships, team),
-      html: message_html(message, user, relationships, team)
-    )
+    new()
+    |> to(user.email)
+    |> from(@from)
+    |> subject("[rendezvous] #{message.subject}")
+    |> text_body(message_text(message, user, relationships, team))
+    |> html_body(message_html(message, user, relationships, team))
+    |> deliver
   end
 
   def send_backlog(messages, user) do
@@ -69,23 +70,22 @@ defmodule AdventureRegistrations.Mailer do
         _ -> "Messages sent before you registered"
       end
 
-    send_email(
-      to: user.email,
-      from: @from,
-      subject: "[rendezvous] #{subject}",
-      text: backlog_text(messages),
-      html: backlog_html(messages)
-    )
+    new()
+    |> to(user.email)
+    |> from(@from)
+    |> subject("[rendezvous] #{subject}")
+    |> text_body(backlog_text(messages))
+    |> html_body(backlog_html(messages))
+    |> deliver
   end
 
   def send_password_reset(user) do
-    send_email(
-      to: user.email,
-      from: @from,
-      subject: "[rendezvous] Password reset",
-      html:
-        "Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link"
-    )
+    new()
+    |> to(user.email)
+    |> from(@from)
+    |> subject("[rendezvous] Password reset")
+    |> html_body("Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link)")
+    |> deliver
   end
 
   defp welcome_html do
