@@ -58,25 +58,20 @@ defmodule AdventureRegistrations.ResetRegistrationClosed do
   end
 end
 
-defmodule AdventureRegistrations.MailgunHelper do
+defmodule AdventureRegistrations.SwooshHelper do
   use ExUnit.CaseTemplate
 
   setup do
-    File.rm(Application.get_env(:adventure_registrations, :mailgun_test_file_path))
-
-    on_exit(fn ->
-      File.rm(Application.get_env(:adventure_registrations, :mailgun_test_file_path))
-    end)
+    Swoosh.Adapters.Local.Storage.Memory.delete_all()
 
     :ok
   end
 
   def sent_email do
-    mail_text = File.read!(Application.get_env(:adventure_registrations, :mailgun_test_file_path))
-    Poison.Parser.parse!(mail_text)
+    Swoosh.Adapters.Local.Storage.Memory.all()
   end
 
   def emails_sent? do
-    File.exists?(Application.get_env(:adventure_registrations, :mailgun_test_file_path))
+    length(sent_email()) > 0
   end
 end

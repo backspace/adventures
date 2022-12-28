@@ -1,6 +1,6 @@
 defmodule AdventureRegistrations.Integration.Admin do
   use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.MailgunHelper
+  use AdventureRegistrations.SwooshHelper
 
   alias AdventureRegistrations.Pages.Login
   alias AdventureRegistrations.Pages.Nav

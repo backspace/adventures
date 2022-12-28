@@ -18,9 +18,11 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+config :adventure_registrations, AdventureRegistrations.Mailer,
+  adapter: Swoosh.Adapters.Mailgun,
+  domain: "mg.chromatin.ca"
+
 config :adventure_registrations,
-  mailgun_domain: "https://api.mailgun.net/v3/mg.chromatin.ca",
-  mailgun_mode: :regular,
   start_time: [{{2017, 6, 8}, {18, 00, 00}}, "Canada/Pacific"]
 
 # Import environment specific config. This must remain at the bottom
