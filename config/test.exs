@@ -32,4 +32,5 @@ defmodule Blacksmith.Config do
   end
 end
 
-config :adventure_registrations, mailgun_mode: :test, mailgun_test_file_path: "/tmp/mailgun.json"
+config :adventure_registrations, AdventureRegistrations.Mailer,
+  adapter: Swoosh.Adapters.Local

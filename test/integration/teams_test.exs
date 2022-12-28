@@ -1,6 +1,6 @@
 defmodule AdventureRegistrations.Integration.Teams do
   use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.MailgunHelper
+  use AdventureRegistrations.SwooshHelper
   use AdventureRegistrations.ResetRequestConfirmation
 
   alias AdventureRegistrations.Pages.Login
@@ -65,14 +65,14 @@ defmodule AdventureRegistrations.Integration.Teams do
     assert Details.comments().value == "Some comments"
     assert Details.source().value == "A source"
 
-    [sent_email] = AdventureRegistrations.MailgunHelper.sent_email()
-    assert sent_email["to"] == "b@events.chromatin.ca"
-    assert sent_email["from"] == "b@events.chromatin.ca"
+    [sent_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    assert sent_email.to == [{"", "b@events.chromatin.ca"}]
+    assert sent_email.from == {"", "b@events.chromatin.ca"}
 
-    assert sent_email["subject"] ==
+    assert sent_email.subject ==
              "takver@example.com details changed: accessibility, comments, proposed_team_name, risk_aversion, source, team_emails"
 
-    assert sent_email["text"] ==
+    assert sent_email.text_body ==
              "%{accessibility: \"Some accessibility information\", comments: \"Some comments\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\"}"
 
     [shevek, bedap] = Details.mutuals()

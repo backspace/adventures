@@ -37,7 +37,8 @@ defmodule AdventureRegistrations.Mixfile do
       :comeonin,
       :crutches,
       :ecto_sql,
-      :mailgun,
+      :swoosh,
+      :premailex,
       :phoenix_live_view,
       :timex,
     ]
@@ -71,11 +72,12 @@ defmodule AdventureRegistrations.Mixfile do
       {:hound, "~> 1.1.1", only: :test},
       {:blacksmith, "~> 0.2.1"},
       {:comeonin, "~> 1.0"},
-      {:mailgun, github: "backspace/mailgun", branch: "multi-email-test"},
+      {:swoosh, "~> 1.9"},
+      {:premailex, "~> 0.3.0"},
       {:jason, "~> 1.0"},
       {:poison, "~> 2.0"},
       {:crutches, git: "https://github.com/mykewould/crutches.git"},
-      {:floki, "~> 0.7"},
+      {:floki, "~> 0.34"},
       {:timex, "~> 1.0.0"},
       {:porcelain, "~> 2.0"}
     ]
