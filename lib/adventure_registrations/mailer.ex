@@ -21,7 +21,7 @@ defmodule AdventureRegistrations.Mailer do
     new()
     |> to("b@events.chromatin.ca")
     |> from(@from)
-    |> subject("Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes.subject}")
+    |> subject("Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}")
     |> text_body(attributes["question"])
     |> deliver
   end
