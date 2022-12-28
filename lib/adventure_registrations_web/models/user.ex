@@ -73,13 +73,13 @@ defmodule AdventureRegistrationsWeb.User do
   def reset_changeset(model) do
     if model do
       model
-      |> cast(%{}, [], ~w(recovery_hash))
+      |> cast(%{}, [], ~w(recovery_hash)a)
     end
   end
 
   def perform_reset_changeset(model, params \\ %{}) do
     model
-    |> cast(params, ~w(recovery_hash new_password new_password_confirmation), [])
+    |> cast(params, ~w(recovery_hash new_password new_password_confirmation)a, [])
     |> validate_length(:new_password, min: 5)
     |> validate_confirmation(:new_password)
   end
