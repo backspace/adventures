@@ -75,4 +75,8 @@ jobs:
           chromedriver &
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
       - run: MIX_ENV=test mix do deps.compile, compile
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+        with:
+          limit-access-to-actor: true
       - run: mix test
