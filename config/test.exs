@@ -22,15 +22,5 @@ config :hound, driver: "chrome_driver", browser: "chrome_headless"
 
 config :comeonin, :bcrypt_log_rounds, 4
 
-defmodule Blacksmith.Config do
-  def save(map) do
-    AdventureRegistrations.Repo.insert(map)
-  end
-
-  def save_all(list) do
-    Enum.map(list, &AdventureRegistrations.Repo.insert/1)
-  end
-end
-
 config :adventure_registrations, AdventureRegistrations.Mailer,
   adapter: Swoosh.Adapters.Local

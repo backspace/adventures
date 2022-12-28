@@ -14,15 +14,15 @@ defmodule AdventureRegistrations.Integration.Admin do
   hound_session()
 
   test "logging in as an admin" do
-    {_, user} =
-      Forge.saved_user(
+    user =
+      insert(:user,
         email: "francine.pascal@example.com",
         accessibility: "Some accessibility text",
         attending: true
       )
 
-    {_, admin} = Forge.saved_octavia(admin: true, proposed_team_name: "Admins", attending: false)
-    {_, blank_attending} = Forge.saved_user(email: "blank@example.com")
+    admin = insert(:octavia, admin: true, proposed_team_name: "Admins", attending: false)
+    blank_attending = insert(:user, email: "blank@example.com")
 
     navigate_to("/")
 
@@ -46,8 +46,8 @@ defmodule AdventureRegistrations.Integration.Admin do
   end
 
   test "admin can build teams" do
-    {_, a} =
-      Forge.saved_user(
+    a =
+      insert(:user,
         email: "a@example.com",
         proposed_team_name: "Team A",
         team_emails: "b@example.com",
@@ -55,8 +55,8 @@ defmodule AdventureRegistrations.Integration.Admin do
         accessibility: "Some text"
       )
 
-    {_, b} =
-      Forge.saved_user(
+    b =
+      insert(:user,
         email: "b@example.com",
         proposed_team_name: "Team B",
         team_emails: "a@example.com",
@@ -64,9 +64,9 @@ defmodule AdventureRegistrations.Integration.Admin do
         accessibility: "More text"
       )
 
-    {_, c} = Forge.saved_user(email: "c@example.com", team_emails: "a@example.com b@example.com")
+    c = insert(:user, email: "c@example.com", team_emails: "a@example.com b@example.com")
 
-    Forge.saved_octavia(admin: true)
+    insert(:octavia, admin: true)
 
     navigate_to("/")
     Login.login_as("octavia.butler@example.com", "Xenogenesis")
@@ -98,18 +98,18 @@ defmodule AdventureRegistrations.Integration.Admin do
   end
 
   test "admin can view team JSON" do
-    {_, a} = Forge.saved_user(email: "a@example.com")
-    {_, b} = Forge.saved_user(email: "b@example.com")
+    a = insert(:user, email: "a@example.com")
+    b = insert(:user, email: "b@example.com")
 
-    {_, team} =
-      Forge.saved_team(
+    team =
+      insert(:team,
         name: "A team",
         risk_aversion: 2,
         notes: "Some notes",
         user_ids: [a.id, b.id]
       )
 
-    Forge.saved_octavia(admin: true)
+    insert(:octavia, admin: true)
 
     navigate_to("/")
     Login.login_as("octavia.butler@example.com", "Xenogenesis")
@@ -134,7 +134,7 @@ defmodule AdventureRegistrations.Integration.Admin do
   end
 
   test "non-admins cannot access the user list or messages" do
-    Forge.saved_user(email: "francine.pascal@example.com")
+    insert(:user, email: "francine.pascal@example.com")
 
     assert Nav.users_link().absent?
 

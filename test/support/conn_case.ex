@@ -28,6 +28,8 @@ defmodule AdventureRegistrationsWeb.ConnCase do
 
       # The default endpoint for testing
       @endpoint AdventureRegistrationsWeb.Endpoint
+
+      import AdventureRegistrations.Factory
     end
   end
 
