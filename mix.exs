@@ -19,34 +19,8 @@ defmodule AdventureRegistrations.Mixfile do
   #
   # Type `mix help compile.app` for more information.
   def application do
-    [mod: {AdventureRegistrations.Application, []}, applications: app_list(Mix.env())]
+    [mod: {AdventureRegistrations.Application, []}, extra_applications: [:logger]]
   end
-
-  def app_list do
-    [
-      :phoenix,
-      :phoenix_pubsub,
-      :phoenix_html,
-      :cowboy,
-      :logger,
-      :phoenix_ecto,
-      :postgrex,
-      :gettext,
-      :tzdata,
-      :porcelain,
-      :comeonin,
-      :crutches,
-      :ecto_sql,
-      :swoosh,
-      :premailex,
-      :phoenix_live_view,
-      :timex,
-    ]
-  end
-
-  def app_list(:dev), do: [:phoenix_live_reload] ++ app_list()
-  def app_list(:test), do: [:blacksmith, :hound] ++ app_list()
-  def app_list(_), do: app_list()
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
