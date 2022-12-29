@@ -55,6 +55,7 @@ defmodule AdventureRegistrationsWeb.User do
 
     model
     |> cast(params, required_fields ++ @optional_fields)
+    |> validate_required(required_fields)
   end
 
   def account_changeset(model, params \\ %{}) do
