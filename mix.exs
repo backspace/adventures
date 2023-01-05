@@ -45,7 +45,7 @@ defmodule AdventureRegistrations.Mixfile do
       {:mix_test_watch, "~> 0.2", only: :dev},
       {:hound, "~> 1.1.1", only: :test},
       {:ex_machina, "~> 2.7.0", only: :test},
-      {:comeonin, "~> 1.0"},
+      {:bcrypt_elixir, "~> 3.0"},
       {:swoosh, "~> 1.9"},
       {:premailex, "~> 0.3.0"},
       {:jason, "~> 1.0"},

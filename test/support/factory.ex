@@ -21,7 +21,7 @@ defmodule AdventureRegistrations.Factory do
       user_factory(),
       %{
         email: "octavia.butler@example.com",
-        crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
+        crypted_password: Bcrypt.hash_pwd_salt("Xenogenesis")
       }
     )
   end

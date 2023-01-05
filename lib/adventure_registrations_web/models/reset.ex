@@ -5,7 +5,7 @@ defmodule AdventureRegistrationsWeb.Reset do
   def create(user, repo) do
     if user do
       User.reset_changeset(user)
-      |> put_change(:recovery_hash, Comeonin.Bcrypt.hashpwsalt("1"))
+      |> put_change(:recovery_hash, Bcrypt.hash_pwd_salt("1"))
       |> repo.update()
     else
       {:error, :user_not_found}

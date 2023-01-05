@@ -13,7 +13,7 @@ defmodule AdventureRegistrations.Integration.Messages do
   test "a message is sent to all registrants with their team information summarised" do
     insert(:admin,
       email: "admin@example.com",
-      crypted_password: Comeonin.Bcrypt.hashpwsalt("admin")
+      crypted_password: Bcrypt.hash_pwd_salt("admin")
     )
 
     insert(:user,
@@ -61,7 +61,7 @@ defmodule AdventureRegistrations.Integration.Messages do
   test "a message with show team enabled shows the actual team information instead of their details" do
     insert(:admin,
       email: "admin@example.com",
-      crypted_password: Comeonin.Bcrypt.hashpwsalt("admin")
+      crypted_password: Bcrypt.hash_pwd_salt("admin")
     )
 
     team_member_1 =

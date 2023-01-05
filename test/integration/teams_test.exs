@@ -37,7 +37,7 @@ defmodule AdventureRegistrations.Integration.Teams do
 
     insert(:user,
       email: "takver@example.com",
-      crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+      crypted_password: Bcrypt.hash_pwd_salt("Anarres")
     )
 
     navigate_to("/")
@@ -143,7 +143,7 @@ defmodule AdventureRegistrations.Integration.Teams do
   test "the table is hidden when empty" do
     insert(:user,
       email: "takver@example.com",
-      crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+      crypted_password: Bcrypt.hash_pwd_salt("Anarres")
     )
 
     navigate_to("/")
@@ -158,7 +158,7 @@ defmodule AdventureRegistrations.Integration.Teams do
 
     insert(:user,
       email: "takver@example.com",
-      crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+      crypted_password: Bcrypt.hash_pwd_salt("Anarres")
     )
 
     navigate_to("/")
