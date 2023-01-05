@@ -6,7 +6,7 @@ defmodule AdventureRegistrations.Repo.Migrations.CreateUser do
       add(:email, :string)
       add(:crypted_password, :string)
 
-      timestamps
+      timestamps()
     end
 
     create(unique_index(:users, [:email]))

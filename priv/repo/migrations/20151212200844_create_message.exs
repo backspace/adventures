@@ -8,7 +8,7 @@ defmodule AdventureRegistrations.Repo.Migrations.CreateMessage do
       add(:ready, :boolean, default: false)
       add(:postmarked_at, :date)
 
-      timestamps
+      timestamps()
     end
   end
 end
