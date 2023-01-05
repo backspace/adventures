@@ -2,13 +2,13 @@ defmodule AdventureRegistrationsWeb.MessageControllerTest do
   use AdventureRegistrationsWeb.ConnCase
 
   # alias AdventureRegistrationsWeb.Message
-  @valid_attrs %{
-    content: "some content",
-    postmarked_at: "2010-04-17",
-    ready: true,
-    subject: "some content"
-  }
-  @invalid_attrs %{}
+  # @valid_attrs %{
+  #   content: "some content",
+  #   postmarked_at: "2010-04-17",
+  #   ready: true,
+  #   subject: "some content"
+  # }
+  # @invalid_attrs %{}
 
   # FIXME disabled these due to inability to set session for admins…
   # generated tests, even needed?
