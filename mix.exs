@@ -52,8 +52,7 @@ defmodule AdventureRegistrations.Mixfile do
       {:poison, "~> 5.0"},
       {:crutches, git: "https://github.com/mykewould/crutches.git"},
       {:floki, "~> 0.34"},
-      {:timex, "~> 1.0.0"},
-      {:porcelain, "~> 2.0"}
+      {:timex, "~> 1.0.0"}
     ]
   end
 
