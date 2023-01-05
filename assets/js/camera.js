@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import THREE from 'three/build/Three';
+import THREE from 'three/build/three';
 import './three-objloader';
 import TweenMax from 'gsap/TweenMax';
 
