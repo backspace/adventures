@@ -8,7 +8,7 @@ defmodule AdventureRegistrations.Repo.Migrations.CreateTeam do
       add(:notes, :text)
       add(:user_ids, {:array, :integer}, default: [])
 
-      timestamps
+      timestamps()
     end
   end
 end
