@@ -84,7 +84,7 @@ defmodule AdventureRegistrations.Mailer do
     |> to(user.email)
     |> from(@from)
     |> subject("[rendezvous] Password reset")
-    |> html_body("Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link)")
+    |> html_body("Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link</a>")
     |> deliver
   end
 
