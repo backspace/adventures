@@ -50,7 +50,9 @@ defmodule AdventureRegistrations.Mixfile do
       {:premailex, "~> 0.3.0"},
       {:jason, "~> 1.0"},
       {:poison, "~> 5.0"},
-      {:crutches, git: "https://github.com/mykewould/crutches.git"},
+      {:ex_cldr, "~> 2.33"},
+      {:ex_cldr_numbers, "~> 2.28"},
+      {:ex_cldr_lists, "~> 2.10"},
       {:floki, "~> 0.34"},
       {:timex, "~> 1.0.0"}
     ]

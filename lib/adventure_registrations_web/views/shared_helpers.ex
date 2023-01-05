@@ -8,7 +8,7 @@ defmodule AdventureRegistrationsWeb.SharedHelpers do
   end
 
   def ordinal_date do
-    "#{formatted_start_time "%B"} #{Crutches.Format.Integer.ordinalize(parsed_start_time().day)}"
+    "#{formatted_start_time "%B"} #{AdventureRegistrations.Cldr.Number.to_string!(parsed_start_time().day, format: :ordinal)}"
   end
 
   def start_time do
