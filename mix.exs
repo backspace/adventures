@@ -54,7 +54,7 @@ defmodule AdventureRegistrations.Mixfile do
       {:ex_cldr_numbers, "~> 2.28"},
       {:ex_cldr_lists, "~> 2.10"},
       {:floki, "~> 0.34"},
-      {:timex, "~> 1.0.0"}
+      {:tzdata, "~> 1.1"}
     ]
   end
 
