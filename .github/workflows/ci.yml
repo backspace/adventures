@@ -2,11 +2,11 @@ on: push
 
 jobs:
   dependencies:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         elixir: ['1.14.0']
-        otp: ['25.2'] # FIXME get from .tool-versions
+        otp: ['23.3.2'] # FIXME get from .tool-versions
     steps:
       - name: Cancel previous runs
         uses: styfle/cancel-workflow-action@0.11.0
@@ -37,11 +37,11 @@ jobs:
 
   mix-test:
     needs: dependencies
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         elixir: ['1.14.0']
-        otp: ['25.2']
+        otp: ['23.3.2']
     services:
       db:
         image: postgres:latest
