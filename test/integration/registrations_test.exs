@@ -59,7 +59,7 @@ defmodule AdventureRegistrations.Integration.Registrations do
   end
 
   test "logging in" do
-    Forge.saved_octavia()
+    insert(:octavia)
 
     set_window_to_show_account()
 
@@ -88,7 +88,7 @@ defmodule AdventureRegistrations.Integration.Registrations do
   end
 
   test "changing password" do
-    Forge.saved_octavia()
+    insert(:octavia)
 
     set_window_to_show_account()
 
@@ -137,7 +137,7 @@ defmodule AdventureRegistrations.Integration.Registrations do
   test "forgot password" do
     set_window_to_show_account()
 
-    Forge.saved_octavia()
+    insert(:octavia)
 
     navigate_to("/")
 
@@ -197,7 +197,7 @@ defmodule AdventureRegistrations.Integration.Registrations do
   end
 
   test "delete account" do
-    Forge.saved_octavia()
+    insert(:octavia)
 
     navigate_to("/")
     Login.login_as("octavia.butler@example.com", "Xenogenesis")
@@ -232,7 +232,7 @@ defmodule AdventureRegistrations.Integration.Registrations do
     assert Nav.error_text() ==
              "Registration is closed; however, you may continue and we will email you"
 
-    Forge.saved_octavia()
+    insert(:octavia)
     Login.login_as("octavia.butler@example.com", "Xenogenesis")
 
     assert Nav.error_text() ==

@@ -1,4 +1,4 @@
-import THREE from 'three/build/Three';
+import THREE from 'three/build/three';
 
 /*
  * @author mrdoob / http://mrdoob.com/

@@ -10,7 +10,7 @@ defmodule AdventureRegistrationsWeb.TeamFinder do
 
   def relationships(current_user, users) do
     users_with_current = Enum.filter(users, fn user -> String.contains?(user.team_emails || "", current_user.email) end)
-    {mutuals, proposers} = Enum.partition(users_with_current, fn user -> String.contains?(current_user.team_emails || "", user.email) end)
+    {mutuals, proposers} = Enum.split_with(users_with_current, fn user -> String.contains?(current_user.team_emails || "", user.email) end)
 
     proposals_by_mutuals = Enum.reduce(mutuals, %{}, fn(user, acc) ->
       user_proposals = users_from_email_list(user.team_emails, users)

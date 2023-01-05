@@ -37,6 +37,4 @@ config :phoenix, :generators,
   migration: true,
   binary_id: false
 
-config :porcelain, driver: Porcelain.Driver.Basic
-
 config :adventure_registrations, ecto_repos: [AdventureRegistrations.Repo]

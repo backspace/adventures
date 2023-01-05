@@ -1,32 +1,8 @@
+{:ok, _} = Application.ensure_all_started(:ex_machina)
+
 ExUnit.start()
 
 Ecto.Adapters.SQL.Sandbox.mode(AdventureRegistrations.Repo, :manual)
-
-defmodule Forge do
-  use Blacksmith
-
-  @save_one_function &Blacksmith.Config.save/1
-  @save_all_function &Blacksmith.Config.save_all/1
-
-  register(:user, %AdventureRegistrationsWeb.User{
-    email: Sequence.next(:email, &"jh#{&1}@example.com")
-  })
-
-  register(:admin, [prototype: :user], admin: true)
-
-  register(:octavia, [prototype: :user],
-    email: "octavia.butler@example.com",
-    crypted_password: Comeonin.Bcrypt.hashpwsalt("Xenogenesis")
-  )
-
-  register(:team, %AdventureRegistrationsWeb.Team{})
-
-  register(:message, %AdventureRegistrationsWeb.Message{
-    ready: true
-  })
-
-  register(:not_ready_message, [prototype: :message], ready: false)
-end
 
 # FIXME the duplication below can surely be extracted
 

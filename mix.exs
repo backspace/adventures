@@ -7,7 +7,7 @@ defmodule AdventureRegistrations.Mixfile do
       version: "0.0.1",
       elixir: "~> 1.0",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:phoenix, :gettext] ++ Mix.compilers(),
+      compilers: [:phoenix] ++ Mix.compilers(),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -19,34 +19,8 @@ defmodule AdventureRegistrations.Mixfile do
   #
   # Type `mix help compile.app` for more information.
   def application do
-    [mod: {AdventureRegistrations.Application, []}, applications: app_list(Mix.env())]
+    [mod: {AdventureRegistrations.Application, []}, extra_applications: [:logger]]
   end
-
-  def app_list do
-    [
-      :phoenix,
-      :phoenix_pubsub,
-      :phoenix_html,
-      :cowboy,
-      :logger,
-      :phoenix_ecto,
-      :postgrex,
-      :gettext,
-      :tzdata,
-      :porcelain,
-      :comeonin,
-      :crutches,
-      :ecto_sql,
-      :swoosh,
-      :premailex,
-      :phoenix_live_view,
-      :timex,
-    ]
-  end
-
-  def app_list(:dev), do: [:phoenix_live_reload] ++ app_list()
-  def app_list(:test), do: [:blacksmith, :hound] ++ app_list()
-  def app_list(_), do: app_list()
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
@@ -68,18 +42,18 @@ defmodule AdventureRegistrations.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:plug_cowboy, "~> 2.1"},
       {:plug, "~> 1.7"},
-      {:mix_test_watch, "~> 0.2.6", only: :dev},
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:hound, "~> 1.1.1", only: :test},
-      {:blacksmith, "~> 0.2.1"},
-      {:comeonin, "~> 1.0"},
+      {:ex_machina, "~> 2.7.0", only: :test},
+      {:bcrypt_elixir, "~> 3.0"},
       {:swoosh, "~> 1.9"},
       {:premailex, "~> 0.3.0"},
       {:jason, "~> 1.0"},
-      {:poison, "~> 2.0"},
-      {:crutches, git: "https://github.com/mykewould/crutches.git"},
+      {:ex_cldr, "~> 2.33"},
+      {:ex_cldr_numbers, "~> 2.28"},
+      {:ex_cldr_lists, "~> 2.10"},
       {:floki, "~> 0.34"},
-      {:timex, "~> 1.0.0"},
-      {:porcelain, "~> 2.0"}
+      {:tzdata, "~> 1.1"}
     ]
   end
 

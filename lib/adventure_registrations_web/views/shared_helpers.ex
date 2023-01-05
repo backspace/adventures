@@ -1,14 +1,14 @@
 defmodule AdventureRegistrationsWeb.SharedHelpers do
   def full_date do
-    formatted_start_time "%A, %B %e, %Y"
+    formatted_start_time "%A, %B %-d, %Y"
   end
 
   def short_date do
-    formatted_start_time "%B %e"
+    formatted_start_time "%B %-d"
   end
 
   def ordinal_date do
-    "#{formatted_start_time "%B"} #{Crutches.Format.Integer.ordinalize(parsed_start_time().day)}"
+    "#{formatted_start_time "%B"} #{AdventureRegistrations.Cldr.Number.to_string!(parsed_start_time().day, format: :ordinal)}"
   end
 
   def start_time do
@@ -16,11 +16,17 @@ defmodule AdventureRegistrationsWeb.SharedHelpers do
   end
 
   defp formatted_start_time(format_string) do
-    Timex.DateFormat.format! parsed_start_time(), format_string, :strftime
+    Calendar.strftime(parsed_start_time(), format_string)
   end
 
   defp parsed_start_time do
-    apply(Timex.Date, :from, raw_start_time())
+    [raw_erl_datetime, time_zone_string] = raw_start_time()
+
+    DateTime.from_naive!(
+      NaiveDateTime.from_erl!(raw_erl_datetime),
+      time_zone_string,
+      Tzdata.TimeZoneDatabase
+    )
   end
 
   defp raw_start_time do

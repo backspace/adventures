@@ -47,6 +47,9 @@ defmodule AdventureRegistrationsWeb.ResetController do
         |> put_flash(:info, "Your password has been changed")
         |> redirect(to: Routes.user_path(conn, :edit))
       {:error, changeset} ->
+        # TODO this is a hack to ensure the token is present in the hidden field when an attempt fails, but why isn’t it already?
+        changeset = Ecto.Changeset.put_change(changeset, :recovery_hash, user_params["recovery_hash"])
+
         conn
         |> put_flash(:error, "New passwords must match")
         |> render("edit.html", changeset: changeset, token: user_params["recovery_hash"])

@@ -14,30 +14,30 @@ defmodule AdventureRegistrations.Integration.Teams do
   hound_session()
 
   test "teams are negotiable" do
-    Forge.saved_user(
+    insert(:user,
       email: "Shevek@example.com",
       team_emails: "Takver@example.com bedap@example.com tuio@example.com rulag@example.com",
       proposed_team_name: "Sequency",
       risk_aversion: 1
     )
 
-    Forge.saved_user(
+    insert(:user,
       email: "bedap@example.com",
       team_emails: "takver@example.com shevek@example.com tuio@example.com",
       proposed_team_name: "Simultaneity",
       risk_aversion: 3
     )
 
-    Forge.saved_user(email: "tuio@example.com", team_emails: "shevek@example.com")
-    Forge.saved_user(email: "rulag@example.com", team_emails: "shevek@example.com")
+    insert(:user, email: "tuio@example.com", team_emails: "shevek@example.com")
+    insert(:user, email: "rulag@example.com", team_emails: "shevek@example.com")
 
-    Forge.saved_user(email: "sadik@example.com", team_emails: "takver@example.com")
+    insert(:user, email: "sadik@example.com", team_emails: "takver@example.com")
 
-    Forge.saved_user(email: "sabul@example.com")
+    insert(:user, email: "sabul@example.com")
 
-    Forge.saved_user(
+    insert(:user,
       email: "takver@example.com",
-      crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+      crypted_password: Bcrypt.hash_pwd_salt("Anarres")
     )
 
     navigate_to("/")
@@ -141,9 +141,9 @@ defmodule AdventureRegistrations.Integration.Teams do
   end
 
   test "the table is hidden when empty" do
-    Forge.saved_user(
+    insert(:user,
       email: "takver@example.com",
-      crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+      crypted_password: Bcrypt.hash_pwd_salt("Anarres")
     )
 
     navigate_to("/")
@@ -156,9 +156,9 @@ defmodule AdventureRegistrations.Integration.Teams do
   test "when confirmation-requesting is enabled, show and require the fields" do
     Application.put_env(:adventure_registrations, :request_confirmation, true)
 
-    Forge.saved_user(
+    insert(:user,
       email: "takver@example.com",
-      crypted_password: Comeonin.Bcrypt.hashpwsalt("Anarres")
+      crypted_password: Bcrypt.hash_pwd_salt("Anarres")
     )
 
     navigate_to("/")
