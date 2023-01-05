@@ -49,7 +49,6 @@ defmodule AdventureRegistrations.Mixfile do
       {:swoosh, "~> 1.9"},
       {:premailex, "~> 0.3.0"},
       {:jason, "~> 1.0"},
-      {:poison, "~> 5.0"},
       {:ex_cldr, "~> 2.33"},
       {:ex_cldr_numbers, "~> 2.28"},
       {:ex_cldr_lists, "~> 2.10"},

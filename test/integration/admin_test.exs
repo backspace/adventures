@@ -115,7 +115,7 @@ defmodule AdventureRegistrations.Integration.Admin do
     Login.login_as("octavia.butler@example.com", "Xenogenesis")
 
     navigate_to("/api/teams")
-    json = Floki.find(page_source(), "pre") |> Floki.text() |> Poison.Parser.parse!()
+    json = Floki.find(page_source(), "pre") |> Floki.text() |> Jason.decode!()
 
     assert json == %{
              "data" => [
