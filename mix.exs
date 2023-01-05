@@ -42,7 +42,7 @@ defmodule AdventureRegistrations.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:plug_cowboy, "~> 2.1"},
       {:plug, "~> 1.7"},
-      {:mix_test_watch, "~> 0.2", only: :dev},
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:hound, "~> 1.1.1", only: :test},
       {:ex_machina, "~> 2.7.0", only: :test},
       {:bcrypt_elixir, "~> 3.0"},
