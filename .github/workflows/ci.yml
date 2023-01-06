@@ -83,3 +83,8 @@ jobs:
           chromedriver &
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
       - run: mix test
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          check_name: "test results"
+          files: _build/test/lib/adventure_registrations/test-junit-report.xml

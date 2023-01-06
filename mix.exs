@@ -53,7 +53,8 @@ defmodule AdventureRegistrations.Mixfile do
       {:ex_cldr_numbers, "~> 2.28"},
       {:ex_cldr_lists, "~> 2.10"},
       {:floki, "~> 0.34"},
-      {:tzdata, "~> 1.1"}
+      {:tzdata, "~> 1.1"},
+      {:junit_formatter, "~> 3.3", only: [:test]}
     ]
   end
 
