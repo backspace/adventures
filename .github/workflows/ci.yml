@@ -71,7 +71,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
       - uses: actions/setup-node@v3
         with:
-          node-version: '8.17.0'
+          node-version-file: 'assets/package.json'
           cache: 'npm'
           cache-dependency-path: 'assets/package-lock.json'
       - run: npm install -g npm@6.14.18
