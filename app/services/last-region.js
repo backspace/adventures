@@ -15,9 +15,13 @@ export default Service.extend({
     const id = LastRegionId.get('id');
 
     if (id) {
-      return this.get('store').find('region', LastRegionId.get('id')).catch(() => {
+      let record = this.get('store').peekRecord('region', id);
+
+      if (record) {
+        return EmberPromise.resolve(record);
+      } else {
         return EmberPromise.resolve(undefined);
-      });
+      }
     } else {
       return EmberPromise.resolve(undefined);
     }

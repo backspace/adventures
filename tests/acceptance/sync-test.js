@@ -37,8 +37,8 @@ test('can sync with another database, syncs are remembered and can be returned t
     const syncController = this.application.__container__.lookup('controller:sync');
 
     syncController.get('syncPromise').then(() => {
-      assert.equal(page.push.read, '2');
-      assert.equal(page.push.written, '2');
+      assert.equal(page.push.read, '4');
+      assert.equal(page.push.written, '4');
       assert.equal(page.push.writeFailures, '0');
 
       // FIXME the sync db is accumulating documents

@@ -58,7 +58,7 @@
     "ember-load-initializers": "^1.0.0",
     "ember-local-storage": "0.1.1",
     "ember-moment": "^7.6.0",
-    "ember-pouch": "^3.1.1",
+    "ember-pouch": "^5.1.0",
     "ember-qunit-nice-errors": "^1.2.0",
     "ember-radio-button": "1.0.7",
     "ember-resolver": "^4.0.0",
