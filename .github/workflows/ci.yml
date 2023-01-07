@@ -85,6 +85,7 @@ jobs:
       - run: mix test
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
         with:
           check_name: "test results"
           files: _build/test/lib/adventure_registrations/test-junit-report.xml
