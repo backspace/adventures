@@ -4,6 +4,31 @@ const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 
 module.exports = function(defaults) {
   let app = new EmberApp(defaults, {
+    autoImport: {
+      alias: {
+        fs: 'pdfkit/js/virtual-fs.js',
+      },
+      webpack: {
+        node: {
+          stream: true,
+          zlib: true,
+        },
+        resolve: {
+          alias: {
+            fs: 'pdfkit/js/virtual-fs.js'
+          }
+        },
+        module: {
+          rules: [
+            { enforce: 'post', test: /fontkit[/\\]index.js$/, loader: "transform-loader?brfs" },
+            { enforce: 'post', test: /unicode-properties[/\\]index.js$/, loader: "transform-loader?brfs" },
+            { enforce: 'post', test: /linebreak[/\\]src[/\\]linebreaker.js/, loader: "transform-loader?brfs" },
+            { test: /src[/\\]assets/, loader: 'arraybuffer-loader'},
+            { test: /\.afm$/, loader: 'raw-loader'}
+          ]
+        },
+      },
+    },
     'ember-cli-babel': {
       includePolyfill: true,
     },
@@ -29,12 +54,8 @@ module.exports = function(defaults) {
   var path = require('path');
   app.import({test: path.join(app.bowerDirectory, 'pouchdb/dist/pouchdb.memory.js')});
 
-  app.import('vendor/jquery.draggableNumber.js');
-
-  // FIXME remove unnecessary import outside test environment
-  // Test-specific packages cannot be imported with ember-browserify
-  // https://github.com/ef4/ember-browserify/issues/14
-  app.import(path.join(app.bowerDirectory, 'tinycolor/tinycolor.js'));
+  // FIXME restore draggable number
+  // app.import('vendor/jquery.draggableNumber.js');
 
   return app.toTree();
 };

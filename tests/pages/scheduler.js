@@ -7,9 +7,11 @@ import PageObject, {
   hasClass,
   isHidden,
   text,
+  triggerable,
   value,
   visitable
 } from 'ember-cli-page-object';
+import tinycolor from 'tinycolor2';
 
 const x = function(selector) {
   return {
@@ -38,7 +40,6 @@ const propertyColourName = function(property) {
     get() {
       const propertyColour = findElement(this).css(property);
 
-      /* globals tinycolor */
       const colour = tinycolor(propertyColour);
       return colour.toName();
     }
@@ -52,7 +53,6 @@ const propertyColourOpacity = function(property) {
     get() {
       const propertyColour = findElement(this).css(property);
 
-      /* globals tinycolor */
       const colour = tinycolor(propertyColour);
       return colour.getAlpha();
     }
@@ -86,107 +86,67 @@ const selectText = function(selector) {
   };
 }
 
-const hoverable = function(selector) {
-  return {
-    isDescriptor: true,
-
-    value() {
-      findElement(this, selector).trigger({type: 'mouseenter'});
-    }
-  };
-}
-
-const exitable = function(selector) {
-  return {
-    isDescriptor: true,
-
-    value() {
-      findElement(this, selector).trigger({type: 'mouseleave'});
-    }
-  };
-}
-
 export default PageObject.create({
   visit: visitable('/scheduler'),
 
-  regions: collection({
-    itemScope: 'li.region',
+  regions: collection('li.region', {
+    name: text('.name'),
+    notes: attribute('title'),
 
-    item: {
-      name: text('.name'),
-      notes: attribute('title'),
+    hover: triggerable('mouseenter'),
+    exit: triggerable('mouseleave'),
 
-      hover: hoverable(),
-      exit: exitable(),
+    destinations: collection('.destination', {
+      description: text('.description'),
+      qualities: attribute('title'),
+      accessibility: text('.accessibility'),
 
-      destinations: collection({
-        itemScope: '.destination',
-
-        item: {
-          description: text('.description'),
-          qualities: attribute('title'),
-          accessibility: text('.accessibility'),
-
-          meetingCountBorderWidth: propertyValue('border-top-width'),
-          awesomenessBorderOpacity: propertyColourOpacity('border-left-color'),
-          riskBorderOpacity: propertyColourOpacity('border-right-color'),
-
-          isSelected: hasClass('selected'),
-
-          click: clickable()
-        }
-      })
-    }
-  }),
-
-  teams: collection({
-    itemScope: '.team',
-
-    item: {
-      name: text('.name'),
-      usersAndNotes: attribute('title'),
-      count: text('.count'),
-      riskAversionColour: propertyColourName('border-right-color'),
-
-      averageAwesomeness: text('.average-awesomeness'),
-      averageRisk: text('.average-risk'),
+      meetingCountBorderWidth: propertyValue('border-top-width'),
+      awesomenessBorderOpacity: propertyColourOpacity('border-left-color'),
+      riskBorderOpacity: propertyColourOpacity('border-right-color'),
 
       isSelected: hasClass('selected'),
-      isHighlighted: hasClass('highlighted'),
-      isAhead: hasClass('ahead'),
 
-      click: clickable('.name'),
-      hover: hoverable(),
+      click: clickable()
+    })
+  }),
 
-      meetings: collection({
-        itemScope: '.meeting',
+  teams: collection('.team', {
+    name: text('.name'),
+    usersAndNotes: attribute('title'),
+    count: text('.count'),
+    riskAversionColour: propertyColourName('border-right-color'),
 
-        item: {
-          click: clickable(),
+    averageAwesomeness: text('.average-awesomeness'),
+    averageRisk: text('.average-risk'),
 
-          index: text('.index'),
-          offset: text('.offset')
-        }
-      })
-    }
+    isSelected: hasClass('selected'),
+    isHighlighted: hasClass('highlighted'),
+    isAhead: hasClass('ahead'),
+
+    click: clickable('.name'),
+    hover: triggerable('mouseover', '.name'),
+
+    meetings: collection('.meeting', {
+      click: clickable(),
+
+      index: text('.index'),
+      offset: text('.offset')
+    })
   }),
 
   map: {
     scope: '.map',
 
-    regions: collection({
-      itemScope: '.region',
+    regions: collection('.region', {
+      x: x(),
+      y: y(),
 
-      item: {
-        x: x(),
-        y: y(),
+      meetingIndex: text('.meeting-index'),
 
-        meetingIndex: text('.meeting-index'),
+      count: text('.count'),
 
-        count: text('.count'),
-
-        isHighlighted: hasClass('highlighted')
-      }
+      isHighlighted: hasClass('highlighted')
     })
   },
 
@@ -198,12 +158,8 @@ export default PageObject.create({
     offset: value('.offset'),
     fillOffset: fillable('.offset'),
 
-    teams: collection({
-      itemScope: '.team',
-
-      item: {
-        value: selectText()
-      }
+    teams: collection('.team', {
+      value: selectText()
     }),
 
     isForbidden: hasClass('forbidden'),

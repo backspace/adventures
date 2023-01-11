@@ -1,4 +1,5 @@
 <li class='team {{if isSelected 'selected'}} {{if hasMetHighlightedTeam 'highlighted'}} {{if isAhead 'ahead'}}' title={{usersAndNotes}} data-risk-aversion={{team.riskAversion}}>
+  {{!-- template-lint-disable no-invalid-interactive --}}
   <div onclick={{action 'select'}}>
     <span class='name'>{{team.name}}</span> <span class='count'>{{count}}</span>
 
@@ -11,7 +12,7 @@
   {{#if showMeetings}}
     <ul>
       {{#each team.meetings as |meeting index|}}
-        <li class=meeting onclick={{action 'editMeeting' meeting}}><span class=index>{{index}}</span>: <span class=offset>{{meeting.offset}}</span></li>
+        <li class='meeting' onclick={{action 'editMeeting' meeting}}><span class='index'>{{index}}</span>: <span class='offset'>{{meeting.offset}}</span></li>
       {{/each}}
     </ul>
   {{/if}}

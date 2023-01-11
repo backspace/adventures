@@ -2,8 +2,8 @@ import Component from '@ember/component';
 
 import config from 'adventure-gathering/config/environment';
 
-import PDFDocument from 'npm:pdfkit';
-import blobStream from 'npm:blob-stream';
+import PDFDocument from 'pdfkit';
+import blobStream from 'blob-stream';
 
 import moment from 'moment';
 

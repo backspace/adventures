@@ -4,6 +4,7 @@
       <thead>
         <tr>
           {{#if (feature-flag 'destination-status')}}<th></th>{{/if}}
+          {{!-- template-lint-disable no-invalid-interactive --}}
           <th class='region' onclick={{action 'toggleSort'}}><span class='secondary label'>Region</span></th>
           <th>Description</th>
           <th>Answer</th>

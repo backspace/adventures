@@ -13,13 +13,9 @@ export default PageObject.create({
   destinationValue: value('input.destination'),
   sync: clickable('button.sync'),
 
-  databases: collection({
-    itemScope: '.databases .database',
-
-    item: {
-      name: text(),
-      click: clickable('a')
-    }
+  databases: collection('.databases .database', {
+    name: text(),
+    click: clickable('a')
   }),
 
   push: {

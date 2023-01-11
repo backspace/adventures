@@ -1,15 +1,21 @@
+import { visit } from '@ember/test-helpers';
 import { run } from '@ember/runloop';
 
-import { test } from 'qunit';
-import moduleForAcceptance from 'adventure-gathering/tests/helpers/module-for-acceptance';
+import { module, test } from 'qunit';
+import { setupApplicationTest } from 'ember-qunit';
 
-import stringify from 'npm:json-stringify-safe';
+import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
+
+import stringify from 'json-stringify-safe';
 
 import page from '../pages/sync';
 
-moduleForAcceptance('Acceptance | sync', {
-  beforeEach(assert) {
-    const store = this.application.__container__.lookup('service:store');
+module('Acceptance | sync', function(hooks) {
+  setupApplicationTest(hooks);
+  clearDatabase(hooks);
+
+  hooks.beforeEach(function(assert) {
+    const store = this.owner.lookup('service:store');
     const done = assert.async();
 
     run(() => {
@@ -21,22 +27,20 @@ moduleForAcceptance('Acceptance | sync', {
         done();
       });
     });
-  }
-});
+  });
 
-// I had these as separate tests but localStorage was bleeding through… ugh
-test('can sync with another database, syncs are remembered and can be returned to', function(assert) {
-  const done = assert.async();
+  // I had these as separate tests but localStorage was bleeding through… ugh
+  test('can sync with another database, syncs are remembered and can be returned to', async function(assert) {
+    const done = assert.async();
 
-  visit('/');
-  page.visit();
+    await visit('/');
+    await page.visit();
 
-  page.enterDestination('sync-db').sync();
+    await page.enterDestination('sync-db').sync();
 
-  andThen(() => {
-    const syncController = this.application.__container__.lookup('controller:sync');
+    const syncController = this.owner.lookup('controller:sync');
 
-    syncController.get('syncPromise').then(() => {
+    syncController.get('syncPromise').then(async () => {
       assert.equal(page.push.read, '4');
       assert.equal(page.push.written, '4');
       assert.equal(page.push.writeFailures, '0');
@@ -46,23 +50,19 @@ test('can sync with another database, syncs are remembered and can be returned t
       //assert.equal(page.pull().written(), '0');
       assert.equal(page.pull.writeFailures, '0');
 
-      assert.equal(page.databases().count, 1);
+      assert.equal(page.databases.length, 1);
 
-      page.enterDestination('other-sync').sync();
+      await page.enterDestination('other-sync').sync();
 
-      andThen(() => {
-        assert.equal(page.databases().count, 2);
-        assert.equal(page.databases(0).name, 'sync-db');
-        assert.equal(page.databases(1).name, 'other-sync');
-      });
+      assert.equal(page.databases.length, 2);
+      assert.equal(page.databases[0].name, 'sync-db');
+      assert.equal(page.databases[1].name, 'other-sync');
 
-      page.databases(0).click();
+      await page.databases[0].click();
 
-      andThen(() => {
-        assert.equal(page.destinationValue, 'sync-db');
+      assert.equal(page.destinationValue, 'sync-db');
 
-        done();
-      });
+      done();
     }).catch((error) => {
       assert.ok(false, 'expected no errors syncing');
 

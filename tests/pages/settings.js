@@ -1,7 +1,7 @@
 import PageObject, {
   clickable,
   fillable,
-  is,
+  property,
   value,
   visitable
 } from 'ember-cli-page-object';
@@ -18,19 +18,19 @@ export default PageObject.create({
   destinationStatus: {
     scope: 'input.destination-status',
 
-    isChecked: is(':checked')
+    isChecked: property('checked')
   },
 
   clandestineRendezvous: {
     scope: 'input.clandestine-rendezvous',
 
-    isChecked: is(':checked')
+    isChecked: property('checked')
   },
 
   txtbeyond: {
     scope: 'input.txtbeyond',
 
-    isChecked: is(':checked')
+    isChecked: property('checked')
   },
 
   save: clickable('.save'),

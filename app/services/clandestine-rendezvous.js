@@ -1,4 +1,3 @@
-import EmberMap from '@ember/map';
 import Service from '@ember/service';
 
 export default Service.extend({
@@ -31,7 +30,7 @@ export default Service.extend({
     }
 
     const difference = goalDigit - answerDigit;
-    const map = new EmberMap();
+    const map = new Map();
 
     if (teams.length === 1) {
       map.set(teams[0], difference);

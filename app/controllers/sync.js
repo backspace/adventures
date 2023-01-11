@@ -9,7 +9,7 @@ import Databases from 'adventure-gathering/models/databases';
 
 import config from 'adventure-gathering/config/environment';
 
-import stringify from 'npm:json-stringify-safe';
+import stringify from 'json-stringify-safe';
 
 export default Controller.extend({
   databases: Databases.create(),

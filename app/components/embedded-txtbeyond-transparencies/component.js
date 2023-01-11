@@ -1,10 +1,10 @@
 import Component from '@ember/component';
 import { inject as service } from '@ember/service';
 
-import PDFDocument from 'npm:pdfkit';
-import blobStream from 'npm:blob-stream';
+import PDFDocument from 'pdfkit';
+import blobStream from 'blob-stream';
 
-import MaxRectsPackerPackage from 'npm:maxrects-packer';
+import MaxRectsPackerPackage from 'maxrects-packer';
 
 import { pixelLength, drawnLength, drawString, registrationLength, pointDimensionsForDisplay } from 'nokia-font/utils/nokia-font';
 

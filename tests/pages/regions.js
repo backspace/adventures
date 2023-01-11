@@ -12,15 +12,11 @@ export default PageObject.create({
   visit: visitable('/regions'),
   visitMap: clickable('a.map'),
 
-  regions: collection({
-    itemScope: '.region',
+  regions: collection('.region', {
+    name: text('.name'),
+    isIncomplete: hasClass('incomplete'),
 
-    item: {
-      name: text('.name'),
-      isIncomplete: hasClass('incomplete'),
-
-      edit: clickable('.edit')
-    }
+    edit: clickable('.edit')
   }),
 
   new: clickable('.regions.new'),

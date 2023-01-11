@@ -52,29 +52,25 @@ export default PageObject.create({
     click: clickable()
   },
 
-  destinations: collection({
-    itemScope: '.destination',
+  destinations: collection('.destination', {
+    description: text('.description'),
+    answer: text('.answer'),
+    awesomeness: text('.awesomeness'),
+    risk: text('.risk'),
+    mask: text('.mask'),
 
-    item: {
-      description: text('.description'),
-      answer: text('.answer'),
-      awesomeness: text('.awesomeness'),
-      risk: text('.risk'),
-      mask: text('.mask'),
+    isIncomplete: hasClass('incomplete'),
+    hasMeetings: hasClass('meetings'),
 
-      isIncomplete: hasClass('incomplete'),
-      hasMeetings: hasClass('meetings'),
+    region: text('.region'),
 
-      region: text('.region'),
+    status: {
+      scope: '.status',
+      value: text(),
+      click: clickable()
+    },
 
-      status: {
-        scope: '.status',
-        value: text(),
-        click: clickable()
-      },
-
-      edit: clickable('.edit')
-    }
+    edit: clickable('.edit')
   }),
 
   new: clickable('.destinations.new'),

@@ -4,6 +4,7 @@ export default Component.extend({
   didInsertElement() {
     this._super();
 
-    this.$('input').draggableNumber();
+    // FIXME restore…? but this would be a modifier now ya
+    // this.$('input').draggableNumber();
   }
 });

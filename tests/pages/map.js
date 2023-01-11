@@ -59,16 +59,12 @@ const setMap = function(selector) {
 export default PageObject.create({
   imageSrc: attribute('src', 'img'),
 
-  regions: collection({
-    itemScope: '.region',
+  regions: collection('.region', {
+    name: text('.name'),
+    x: x(),
+    y: y(),
 
-    item: {
-      name: text('.name'),
-      x: x(),
-      y: y(),
-
-      dragBy: dragBy()
-    }
+    dragBy: dragBy()
   }),
 
   setMap: setMap('input#map')

@@ -1,7 +1,7 @@
 import Component from '@ember/component';
 
-import PDFDocument from 'npm:pdfkit';
-import blobStream from 'npm:blob-stream';
+import PDFDocument from 'pdfkit';
+import blobStream from 'blob-stream';
 
 export default Component.extend({
   tagName: 'span',

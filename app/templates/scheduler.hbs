@@ -1,6 +1,6 @@
 <div id='scheduler'>
   <div class='map'>
-    <img src={{model.map}}>
+    <img src={{model.map}} alt='map'>
     {{#each model.regions as |region|}}
       {{#if region.destinations}}
         {{#mappable-region region=region draggable=false isHighlighted=(eq highlightedRegion region) highlightedTeam=highlightedTeam}}
@@ -13,6 +13,7 @@
   <ul class='regions'>
     {{#each model.regions as |region|}}
       {{#if region.destinations}}
+        {{!-- template-lint-disable no-invalid-interactive --}}
         <li class='region' id='region-{{region.id}}' title={{region.notes}} onmouseenter={{action 'mouseEnterRegion' region}} onmouseleave={{action 'mouseLeaveRegion'}}>
           <div class='name'>{{region.name}}</div>
 
@@ -45,7 +46,7 @@
 
   <div class='meeting-form {{if meeting.isForbidden 'forbidden'}}'>
     <select class='destination'>
-        <option></option>
+      <option></option>
       {{#each model.destinations as |destination|}}
         {{#if destination.isAvailable}}
           <option value={{destination.id}} selected={{eq meeting.destination.id destination.id}}>{{destination.description}}</option>

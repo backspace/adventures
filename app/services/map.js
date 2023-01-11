@@ -2,7 +2,7 @@ import { getOwner } from '@ember/application';
 import { computed } from '@ember/object';
 import Service from '@ember/service';
 
-import blobUtil from 'npm:blob-util';
+import blobUtil from 'blob-util';
 
 export default Service.extend({
   db: computed(function() {

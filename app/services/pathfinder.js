@@ -2,7 +2,7 @@ import Service from '@ember/service';
 import { computed } from '@ember/object';
 import { inject as service } from '@ember/service';
 
-import jsgraphs from 'npm:js-graph-algorithms';
+import jsgraphs from 'js-graph-algorithms';
 
 export default Service.extend({
   store: service(),
