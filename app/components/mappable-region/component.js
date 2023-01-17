@@ -1,23 +1,21 @@
 import $ from 'jquery';
 import { computed } from '@ember/object';
 import Component from '@ember/component';
-import computedStyle from 'ember-computed-style';
+import { htmlSafe } from '@ember/template';
 
 export default Component.extend({
   classNames: ['region'],
   classNameBindings: ['isHighlighted:highlighted'],
 
-  style: computedStyle('top', 'left'),
   attributeBindings: ['style', 'draggable'],
 
   draggable: true,
 
-  top: computed('region.y', function() {
-    return {top: Math.max(this.get('region.y'), 0)};
-  }),
-
-  left: computed('region.x', function() {
-    return {left: Math.max(this.get('region.x'), 0)};
+  style: computed('region.{x,y}', function() {
+    return htmlSafe(
+      `top: ${Math.max(this.get('region.y'), 0)}px;` +
+      `left: ${Math.max(this.get('region.x'), 0)}px`
+    );
   }),
 
   meetingIndex: computed('region.id', 'highlightedTeam.id', function() {
