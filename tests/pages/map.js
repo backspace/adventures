@@ -3,6 +3,7 @@ import PageObject, {
   collection,
   findElement,
   text,
+  triggerEvent,
 } from 'ember-cli-page-object';
 
 const x = function(selector) {
