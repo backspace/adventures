@@ -209,5 +209,5 @@ module('Acceptance | regions with existing map', function(hooks) {
 });
 
 async function setMap(base64) {
-  return triggerEvent('input#map', 'change', [new Blob([base64], {type: 'image/gif'})]);
+  return triggerEvent('input#map', 'change', { files: [new Blob([base64], {type: 'image/gif'})] });
 }
