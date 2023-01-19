@@ -1,6 +1,7 @@
 import { inject as service } from '@ember/service';
 import { alias } from '@ember/object/computed';
 import Component from '@ember/component';
+import $ from 'jquery';
 
 import config from 'adventure-gathering/config/environment';
 
@@ -183,7 +184,7 @@ export default Component.extend({
     doc.end();
 
     stream.on('finish', () => {
-      this.$('iframe').attr('src', stream.toBlobURL('application/pdf'));
+      $(this.element).find('iframe').attr('src', stream.toBlobURL('application/pdf'));
       this.set('rendering', false);
     });
   },

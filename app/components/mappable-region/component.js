@@ -41,8 +41,8 @@ export default Component.extend({
       return;
     }
 
-    const offset = this.$().offset();
-    const height = this.$().height();
+    const offset = $(this.element).offset();
+    const height = $(this.element).height();
 
     // Not adding the height causes the region to be off by its height?!
     this.set('originalPosition', {x: offset.left, y: height + offset.top});

@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import $ from 'jquery';
 
 import PDFDocument from 'pdfkit';
 import blobStream from 'blob-stream';
@@ -92,7 +93,7 @@ export default Component.extend({
     doc.end();
 
     stream.on('finish', () => {
-      this.$('iframe').attr('src', stream.toBlobURL('application/pdf'));
+      $(this.element).find('iframe').attr('src', stream.toBlobURL('application/pdf'));
       this.set('rendering', false);
     });
   }
