@@ -1,16 +1,16 @@
 <div class='row'>
   <div class='small-12 columns'>
-    <label>Debug? <Input @type="checkbox" @checked={{debug}} /></label>
+    <label>Debug? <Input @type="checkbox" @checked={{this.debug}} /></label>
 
     {{#if (feature-flag 'clandestineRendezvous')}}
-      <EmbeddedRendezvousMaps @teams={{model.teams}} @assets={{model.assets}} @debug={{debug}} />
-      <EmbeddedRendezvousCards @teams={{model.teams}} @settings={{model.settings}} @assets={{model.assets}} @debug={{debug}} />
-      <EmbeddedRendezvousAnswers @teams={{model.teams}} @meetings={{model.meetings}} />
+      <EmbeddedRendezvousMaps @teams={{this.model.teams}} @assets={{this.model.assets}} @debug={{this.debug}} />
+      <EmbeddedRendezvousCards @teams={{this.model.teams}} @settings={{this.model.settings}} @assets={{this.model.assets}} @debug={{this.debug}} />
+      <EmbeddedRendezvousAnswers @teams={{this.model.teams}} @meetings={{this.model.meetings}} />
     {{/if}}
 
     {{#if (feature-flag 'txtbeyond')}}
-      <EmbeddedTxtbeyondCards @teams={{model.teams}} @settings={{model.settings}} @assets={{model.assets}} @debug={{debug}} />
-      <EmbeddedTxtbeyondTransparencies @teams={{model.teams}} @settings={{model.settings}} @assets={{model.assets}} @debug={{debug}} />
+      <EmbeddedTxtbeyondCards @teams={{this.model.teams}} @settings={{this.model.settings}} @assets={{this.model.assets}} @debug={{this.debug}} />
+      <EmbeddedTxtbeyondTransparencies @teams={{this.model.teams}} @settings={{this.model.settings}} @assets={{this.model.assets}} @debug={{this.debug}} />
     {{/if}}
   </div>
 </div>

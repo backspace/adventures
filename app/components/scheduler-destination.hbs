@@ -1,9 +1,9 @@
 {{!-- template-lint-disable no-inline-styles --}}
 {{!-- template-lint-disable no-invalid-interactive --}}
-<li class='destination {{if isSelected 'selected'}}' title='A{{destination.awesomeness}} R{{destination.risk}}' style={{style}} onclick={{action 'select'}}>
-  <div class='description'>{{destination.description}}</div>
+<li class='destination {{if this.isSelected 'selected'}}' title='A{{this.destination.awesomeness}} R{{this.destination.risk}}' style={{this.style}} onclick={{action 'select'}}>
+  <div class='description'>{{this.destination.description}}</div>
 
-  {{#if destination.accessibility}}
-    <div class='accessibility'>{{destination.accessibility}}</div>
+  {{#if this.destination.accessibility}}
+    <div class='accessibility'>{{this.destination.accessibility}}</div>
   {{/if}}
 </li>

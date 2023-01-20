@@ -2,26 +2,26 @@
   <div class='small-12 columns'>
     <div class='input-group'>
       <span class='input-group-label'>String</span>
-      <Input @value={{word}} />
+      <Input @value={{this.word}} />
     </div>
     <div class='input-group'>
       <span class='input-group-label'>Slices</span>
-      <Input @value={{slices}} />
+      <Input @value={{this.slices}} />
     </div>
     <div class='input-group'>
       <span class='input-group-label'>Debug</span>
-      <Input @checked={{debug}} @type="checkbox" />
+      <Input @checked={{this.debug}} @type="checkbox" />
     </div>
     <div class='input-group'>
       <span class='input-group-label'>Animated</span>
-      <Input @checked={{animated}} @type="checkbox" />
+      <Input @checked={{this.animated}} @type="checkbox" />
     </div>
   </div>
 </div>
 <div class='row'>
   <div class='small-12 columns'>
     <div class='nokia-string-slice'>
-      <NokiaString @string={{word}} @slices={{slices}} @debug={{debug}} @animated={{animated}} />
+      <NokiaString @string={{this.word}} @slices={{this.slices}} @debug={{this.debug}} @animated={{this.animated}} />
     </div>
   </div>
 </div>

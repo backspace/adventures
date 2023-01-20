@@ -1,9 +1,9 @@
 <div id='scheduler'>
   <div class='map'>
-    <img src={{model.map}} alt='map'>
-    {{#each model.regions as |region|}}
+    <img src={{this.model.map}} alt='map'>
+    {{#each this.model.regions as |region|}}
       {{#if region.destinations}}
-        <MappableRegion @region={{region}} @draggable={{false}} @isHighlighted={{eq highlightedRegion region}} @highlightedTeam={{highlightedTeam}}>
+        <MappableRegion @region={{region}} @draggable={{false}} @isHighlighted={{eq this.highlightedRegion region}} @highlightedTeam={{this.highlightedTeam}}>
           <div class='count'>{{region.meetingCount}}</div>
         </MappableRegion>
       {{/if}}
@@ -11,7 +11,7 @@
   </div>
 
   <ul class='regions'>
-    {{#each model.regions as |region|}}
+    {{#each this.model.regions as |region|}}
       {{#if region.destinations}}
         {{!-- template-lint-disable no-invalid-interactive --}}
         <li class='region' id='region-{{region.id}}' title={{region.notes}} onmouseenter={{action 'mouseEnterRegion' region}} onmouseleave={{action 'mouseLeaveRegion'}}>
@@ -20,7 +20,7 @@
           <ul class='destinations'>
             {{#each region.destinations as |destination|}}
               {{#if destination.isAvailable}}
-                <SchedulerDestination @destination={{destination}} @select={{action "selectDestination"}} @isSelected={{eq destination.id meeting.destination.id}} />
+                <SchedulerDestination @destination={{destination}} @select={{action "selectDestination"}} @isSelected={{eq destination.id this.meeting.destination.id}} />
               {{/if}}
             {{/each}}
           </ul>
@@ -30,32 +30,32 @@
   </ul>
 
   <ul class='teams'>
-    {{#each model.teams as |team|}}
-      <SchedulerTeam @team={{team}} @highlightedTeam={{highlightedTeam}} @meeting={{meeting}} @isAhead={{gte team.meetings.length highestMeetingCount}} @editMeeting={{action "editMeeting"}} @select={{action "selectTeam"}} @enter={{action "mouseEnterTeam"}} @leave={{action "mouseLeaveTeam"}} />
+    {{#each this.model.teams as |team|}}
+      <SchedulerTeam @team={{team}} @highlightedTeam={{this.highlightedTeam}} @meeting={{this.meeting}} @isAhead={{gte team.meetings.length this.highestMeetingCount}} @editMeeting={{action "editMeeting"}} @select={{action "selectTeam"}} @enter={{action "mouseEnterTeam"}} @leave={{action "mouseLeaveTeam"}} />
     {{/each}}
   </ul>
 
-  <div class='meeting-form {{if meeting.isForbidden 'forbidden'}}'>
+  <div class='meeting-form {{if this.meeting.isForbidden 'forbidden'}}'>
     <select class='destination'>
       <option></option>
-      {{#each model.destinations as |destination|}}
+      {{#each this.model.destinations as |destination|}}
         {{#if destination.isAvailable}}
-          <option value={{destination.id}} selected={{eq meeting.destination.id destination.id}}>{{destination.description}}</option>
+          <option value={{destination.id}} selected={{eq this.meeting.destination.id destination.id}}>{{destination.description}}</option>
         {{/if}}
       {{/each}}
     </select>
 
-    {{#each meeting.sortedTeams as |meetingTeam|}}
+    {{#each this.meeting.sortedTeams as |meetingTeam|}}
       <select class='team'>
-        {{#each model.teams as |team|}}
+        {{#each this.model.teams as |team|}}
           <option value={{team.id}} selected={{eq meetingTeam.id team.id}}>{{team.name}}</option>
         {{/each}}
       </select>
     {{/each}}
 
-    <Input @value={{meeting.index}} class="index" />
-    <Input @value={{suggestedOffset}} class="offset" />
-    {{#unless meeting.isForbidden}}
+    <Input @value={{this.meeting.index}} class="index" />
+    <Input @value={{this.suggestedOffset}} class="offset" />
+    {{#unless this.meeting.isForbidden}}
       <button class='save button tiny success' onclick={{action 'saveMeeting'}}>Save</button>
       <button class='reset button tiny alert' onclick={{action 'resetMeeting'}}>Reset</button>
     {{/unless}}

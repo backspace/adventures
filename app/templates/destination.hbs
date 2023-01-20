@@ -4,16 +4,15 @@
       Region
       <select onchange={{action 'setRegion' value='target.value'}} class='region'>
         <option></option>
-        {{#each sortedRegions as |region|}}
-          <option value={{region.id}} selected={{eq model.region.id region.id}} data-test-region-name={{region.name}}>{{region.name}}</option>
+        {{#each this.sortedRegions as |region|}}
+          <option value={{region.id}} selected={{eq this.model.region.id region.id}} data-test-region-name={{region.name}}>{{region.name}}</option>
         {{/each}}
       </select>
     </label>
 
     <label>
       Description
-      <Textarea @value={{model.description}} class="description" @rows={{4}} />
-    </label>
+      <Textarea @value={{this.model.description}} class="description" @rows={{4}} />    </label>
   </div>
 </div>
 
@@ -21,17 +20,17 @@
   <div class='small-6 columns'>
     <label>
       Answer
-      <Input @value={{model.answer}} class="answer" />
+      <Input @value={{this.model.answer}} class="answer" />
     </label>
   </div>
   <div class='small-6 columns'>
     <label>
       Mask
       <div class='input-group'>
-        <Input @value={{model.mask}} class="mask input-group-field" />
-        {{#if model.suggestedMask}}
+        <Input @value={{this.model.mask}} class="mask input-group-field" />
+        {{#if this.model.suggestedMask}}
           <div class='input-group-button'>
-            <button class='suggested-mask button default' {{action 'setMaskToSuggestion'}}>{{model.suggestedMask}}</button>
+            <button class='suggested-mask button default' {{action 'setMaskToSuggestion'}}>{{this.model.suggestedMask}}</button>
           </div>
         {{/if}}
       </div>
@@ -43,13 +42,12 @@
   <div class='small-10 columns'>
     <label>
       Accessibility
-      <Textarea @value={{model.accessibility}} class="accessibility" />
-    </label>
+      <Textarea @value={{this.model.accessibility}} class="accessibility" />    </label>
   </div>
   <div class='small-2 columns'>
     <label>
       Outside
-      <Input @checked={{model.isOutside}} class="outside" @type="checkbox" />
+      <Input @checked={{this.model.isOutside}} class="outside" @type="checkbox" />
     </label>
   </div>
 </div>
@@ -58,7 +56,7 @@
     <label>
       Awesomeness
       <DraggableNumber>
-        <Input @value={{model.awesomeness}} @type="number" class="awesomeness" @min={{0}} @max={{10}} @step={{0.25}} />
+        <Input @value={{this.model.awesomeness}} @type="number" class="awesomeness" @min={{0}} @max={{10}} @step={{0.25}} />
       </DraggableNumber>
     </label>
   </div>
@@ -66,7 +64,7 @@
     <label>
       Risk
       <DraggableNumber>
-        <Input @value={{model.risk}} @type="number" class="risk" @min={{0}} @max={{10}} @step={{0.25}} />
+        <Input @value={{this.model.risk}} @type="number" class="risk" @min={{0}} @max={{10}} @step={{0.25}} />
       </DraggableNumber>
     </label>
   </div>
@@ -74,17 +72,17 @@
     <div class='small-4 columns'>
       <fieldset class='status'>
         <legend>Status</legend>
-        <RadioButton @value="available" @groupValue={{model.status}} @class="available"> ✓</RadioButton>
-        <RadioButton @value="unavailable" @groupValue={{model.status}} @class="unavailable"> ✘</RadioButton>
-        <RadioButton @value="unknown" @groupValue={{model.status}} @class="unknown"> ?</RadioButton>
+        <RadioButton @value="available" @groupValue={{this.model.status}} @class="available"> ✓</RadioButton>
+        <RadioButton @value="unavailable" @groupValue={{this.model.status}} @class="unavailable"> ✘</RadioButton>
+        <RadioButton @value="unknown" @groupValue={{this.model.status}} @class="unknown"> ?</RadioButton>
       </fieldset>
     </div>
   {{/if}}
 </div>
 <div class='row'>
   <div class='expanded button-group'>
-    <button {{action 'save' model}} class='save success button' type='button'>Save</button>
-    <button {{action 'delete' model}} class='delete alert button' type='button'>Delete</button>
-    <button {{action 'cancel' model}} class='cancel warning button' type='button'>Cancel</button>
+    <button {{action 'save' this.model}} class='save success button' type='button'>Save</button>
+    <button {{action 'delete' this.model}} class='delete alert button' type='button'>Delete</button>
+    <button {{action 'cancel' this.model}} class='cancel warning button' type='button'>Cancel</button>
   </div>
 </div>
