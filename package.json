@@ -90,10 +90,10 @@
   "engines": {
     "node": "10.* || >= 12"
   },
-  "ember": {
-    "edition": "octane"
-  },
   "volta": {
     "node": "10.24.1"
+  },
+  "ember": {
+    "edition": "octane"
   }
 }
