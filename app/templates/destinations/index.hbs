@@ -17,11 +17,11 @@
       </thead>
       <tbody>
         {{#each destinations as |destination|}}
-          {{destination-row destination=destination}}
+          <DestinationRow @destination={{destination}} />
         {{/each}}
       </tbody>
     </table>
 
-    {{link-to 'New' 'destinations.new' class='new'}}
+    <LinkTo @route="destinations.new" class="new">New</LinkTo>
   </div>
 </div>

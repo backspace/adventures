@@ -7,4 +7,4 @@
 <td class='awesomeness'>{{destination.awesomeness}}</td>
 <td class='risk'>{{destination.risk}}</td>
 <td class='scheduled'>{{if destination.meetings '✓'}}</td>
-<td>{{link-to 'Edit' 'destination' destination class='edit'}}</td>
+<td><LinkTo @route="destination" @model={{destination}} class="edit">Edit</LinkTo></td>

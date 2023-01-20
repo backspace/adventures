@@ -3,9 +3,9 @@
     <img src={{model.map}} alt='map'>
     {{#each model.regions as |region|}}
       {{#if region.destinations}}
-        {{#mappable-region region=region draggable=false isHighlighted=(eq highlightedRegion region) highlightedTeam=highlightedTeam}}
+        <MappableRegion @region={{region}} @draggable={{false}} @isHighlighted={{eq highlightedRegion region}} @highlightedTeam={{highlightedTeam}}>
           <div class='count'>{{region.meetingCount}}</div>
-        {{/mappable-region}}
+        </MappableRegion>
       {{/if}}
     {{/each}}
   </div>
@@ -20,7 +20,7 @@
           <ul class='destinations'>
             {{#each region.destinations as |destination|}}
               {{#if destination.isAvailable}}
-                {{scheduler-destination destination=destination select=(action 'selectDestination') isSelected=(eq destination.id meeting.destination.id)}}
+                <SchedulerDestination @destination={{destination}} @select={{action "selectDestination"}} @isSelected={{eq destination.id meeting.destination.id}} />
               {{/if}}
             {{/each}}
           </ul>
@@ -31,16 +31,7 @@
 
   <ul class='teams'>
     {{#each model.teams as |team|}}
-      {{scheduler-team
-        team=team
-        highlightedTeam=highlightedTeam
-        meeting=meeting
-        isAhead=(gte team.meetings.length highestMeetingCount)
-        editMeeting=(action 'editMeeting')
-        select=(action 'selectTeam')
-        enter=(action 'mouseEnterTeam')
-        leave=(action 'mouseLeaveTeam')
-      }}
+      <SchedulerTeam @team={{team}} @highlightedTeam={{highlightedTeam}} @meeting={{meeting}} @isAhead={{gte team.meetings.length highestMeetingCount}} @editMeeting={{action "editMeeting"}} @select={{action "selectTeam"}} @enter={{action "mouseEnterTeam"}} @leave={{action "mouseLeaveTeam"}} />
     {{/each}}
   </ul>
 
@@ -62,13 +53,13 @@
       </select>
     {{/each}}
 
-    {{input value=meeting.index class='index'}}
-    {{input value=suggestedOffset class='offset'}}
+    <Input @value={{meeting.index}} class="index" />
+    <Input @value={{suggestedOffset}} class="offset" />
     {{#unless meeting.isForbidden}}
       <button class='save button tiny success' onclick={{action 'saveMeeting'}}>Save</button>
       <button class='reset button tiny alert' onclick={{action 'resetMeeting'}}>Reset</button>
     {{/unless}}
   </div>
 
-  {{link-to '⌂' 'index' class='home'}}
+  <LinkTo @route="index" class="home">⌂</LinkTo>
 </div>

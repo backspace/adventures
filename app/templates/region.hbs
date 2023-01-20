@@ -2,12 +2,12 @@
   <div class='small-12 columns'>
     <label>
       Name
-      {{input value=model.name class='name'}}
+      <Input @value={{model.name}} class="name" />
     </label>
 
     <label>
       Notes
-      {{textarea value=model.notes class='notes' rows=4}}
+      <Textarea @value={{model.notes}} class="notes" @rows={{4}} />
     </label>
   </div>
 </div>

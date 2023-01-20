@@ -12,7 +12,7 @@
 
     <label>
       Description
-      {{textarea value=model.description class='description' rows=4}}
+      <Textarea @value={{model.description}} class="description" @rows={{4}} />
     </label>
   </div>
 </div>
@@ -21,14 +21,14 @@
   <div class='small-6 columns'>
     <label>
       Answer
-      {{input value=model.answer class='answer'}}
+      <Input @value={{model.answer}} class="answer" />
     </label>
   </div>
   <div class='small-6 columns'>
     <label>
       Mask
       <div class='input-group'>
-        {{input value=model.mask class='mask input-group-field'}}
+        <Input @value={{model.mask}} class="mask input-group-field" />
         {{#if model.suggestedMask}}
           <div class='input-group-button'>
             <button class='suggested-mask button default' {{action 'setMaskToSuggestion'}}>{{model.suggestedMask}}</button>
@@ -43,13 +43,13 @@
   <div class='small-10 columns'>
     <label>
       Accessibility
-      {{textarea value=model.accessibility class='accessibility'}}
+      <Textarea @value={{model.accessibility}} class="accessibility" />
     </label>
   </div>
   <div class='small-2 columns'>
     <label>
       Outside
-      {{input checked=model.isOutside class='outside' type='checkbox'}}
+      <Input @checked={{model.isOutside}} class="outside" @type="checkbox" />
     </label>
   </div>
 </div>
@@ -57,26 +57,26 @@
   <div class='small-4 columns'>
     <label>
       Awesomeness
-      {{#draggable-number}}
-        {{input value=model.awesomeness type='number' class='awesomeness' min=0 max=10 step=0.25}}
-      {{/draggable-number}}
+      <DraggableNumber>
+        <Input @value={{model.awesomeness}} @type="number" class="awesomeness" @min={{0}} @max={{10}} @step={{0.25}} />
+      </DraggableNumber>
     </label>
   </div>
   <div class='small-4 columns'>
     <label>
       Risk
-      {{#draggable-number}}
-        {{input value=model.risk type='number' class='risk' min=0 max=10 step=0.25}}
-      {{/draggable-number}}
+      <DraggableNumber>
+        <Input @value={{model.risk}} @type="number" class="risk" @min={{0}} @max={{10}} @step={{0.25}} />
+      </DraggableNumber>
     </label>
   </div>
   {{#if (feature-flag 'destination-status')}}
     <div class='small-4 columns'>
       <fieldset class='status'>
         <legend>Status</legend>
-        {{#radio-button value='available' groupValue=model.status class='available'}} ✓{{/radio-button}}
-        {{#radio-button value='unavailable' groupValue=model.status class='unavailable'}} ✘{{/radio-button}}
-        {{#radio-button value='unknown' groupValue=model.status class='unknown'}} ?{{/radio-button}}
+        <RadioButton @value="available" @groupValue={{model.status}} @class="available"> ✓</RadioButton>
+        <RadioButton @value="unavailable" @groupValue={{model.status}} @class="unavailable"> ✘</RadioButton>
+        <RadioButton @value="unknown" @groupValue={{model.status}} @class="unknown"> ?</RadioButton>
       </fieldset>
     </div>
   {{/if}}

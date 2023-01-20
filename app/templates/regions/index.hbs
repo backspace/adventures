@@ -11,13 +11,13 @@
         {{#each regions as |region|}}
           <tr class='region {{if region.isComplete 'complete' 'incomplete'}}'>
             <td class='name'>{{region.name}}</td>
-            <td>{{link-to 'Edit' 'region' region class='edit'}}</td>
+            <td><LinkTo @route="region" @model={{region}} class="edit">Edit</LinkTo></td>
           </tr>
         {{/each}}
       </tbody>
     </table>
 
-    {{link-to 'New' 'regions.new' class='new'}}
-    {{link-to 'Map' 'regions.map' class='map'}}
+    <LinkTo @route="regions.new" class="new">New</LinkTo>
+    <LinkTo @route="regions.map" class="map">Map</LinkTo>
   </div>
 </div>
