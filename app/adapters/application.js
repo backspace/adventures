@@ -1,7 +1,7 @@
 import { assert } from '@ember/debug';
 import { isEmpty } from '@ember/utils';
 import { Adapter } from 'ember-pouch';
-import PouchDB from 'pouchdb';
+import PouchDB from 'ember-pouch/pouchdb';
 import config from 'adventure-gathering/config/environment';
 
 function createDb() {

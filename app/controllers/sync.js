@@ -1,7 +1,7 @@
 import { run } from '@ember/runloop';
 import { getOwner } from '@ember/application';
 import Controller from '@ember/controller';
-import PouchDB from 'pouchdb';
+import PouchDB from 'ember-pouch/pouchdb';
 
 import { task } from 'ember-concurrency';
 

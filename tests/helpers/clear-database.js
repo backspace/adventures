@@ -1,5 +1,5 @@
 import config from 'adventure-gathering/config/environment';
-import PouchDB from 'pouchdb';
+import PouchDB from 'ember-pouch/pouchdb';
 
 export default function clearDatabase(hooks) {
   hooks.beforeEach(async function() {
