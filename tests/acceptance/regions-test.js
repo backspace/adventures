@@ -2,7 +2,7 @@ import { all, Promise as EmberPromise } from 'rsvp';
 import { run } from '@ember/runloop';
 import { module, skip, test } from 'qunit';
 import { setupApplicationTest } from 'ember-qunit';
-import { find, triggerEvent, waitFor } from '@ember/test-helpers';
+import { find, triggerEvent, waitFor, waitUntil } from '@ember/test-helpers';
 
 import withSetting from '../helpers/with-setting';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
@@ -76,6 +76,7 @@ module('Acceptance | regions', function(hooks) {
     await page.new();
     await page.nameField.fill('Jellevy');
     await page.save();
+    await waitUntil(() => page.regions.length);
 
     assert.equal(page.regions[0].name, 'Jellevy');
 
@@ -97,6 +98,7 @@ module('Acceptance | regions', function(hooks) {
 
     await page.nameField.fill('Occupied Gujaareh');
     await page.save();
+    await waitUntil(() => page.regions.length);
 
     const region = page.regions[0];
     assert.equal(region.name, 'Occupied Gujaareh');
@@ -114,6 +116,7 @@ module('Acceptance | regions', function(hooks) {
     await page.new();
     await page.nameField.fill('Jellevy');
     await page.save();
+    await waitUntil(() => page.regions.length);
 
     await page.regions[2].edit();
     await page.nameField.fill('Kisua Protectorate');
@@ -131,6 +134,7 @@ module('Acceptance | regions', function(hooks) {
     await page.visit();
     await page.regions[0].edit();
     await page.delete();
+    await waitUntil(() => page.regions.length);
 
     assert.equal(page.regions.length, 1);
   });

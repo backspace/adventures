@@ -1,4 +1,4 @@
-import { visit } from '@ember/test-helpers';
+import { visit, waitUntil } from '@ember/test-helpers';
 import { all } from 'rsvp';
 import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
@@ -122,6 +122,7 @@ module('Acceptance | destinations', function(hooks) {
     await page.maskField.fill('R0E0H_');
 
     await page.save();
+    await waitUntil(() => page.destinations.length);
 
     assert.equal(page.destinations[0].description, 'Bromarte');
     assert.equal(page.destinations[0].mask, 'R0E0H_');
@@ -165,6 +166,7 @@ module('Acceptance | destinations', function(hooks) {
     await page.answerField.fill('DEF456');
     await page.statusFieldset.availableOption.click();
     await page.save();
+    await waitUntil(() => page.destinations.length);
 
     const destination = page.destinations[0];
     assert.equal(destination.description, 'Kisua');
@@ -202,6 +204,7 @@ module('Acceptance | destinations', function(hooks) {
 
     await page.destinations[0].edit();
     await page.delete();
+    await waitUntil(() => page.destinations.length);
 
     assert.equal(page.destinations.length, 1);
   });
