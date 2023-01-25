@@ -55,7 +55,6 @@ module.exports = function(defaults) {
   // along with the exports of each module as its value.
 
   var path = require('path');
-  app.import({test: path.join(app.bowerDirectory, 'pouchdb/dist/pouchdb.memory.js')});
 
   // FIXME restore draggable number
   // app.import('vendor/jquery.draggableNumber.js');
