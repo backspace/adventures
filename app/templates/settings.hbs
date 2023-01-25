@@ -2,19 +2,19 @@
   <div class='small-12 columns'>
     <div class='input-group'>
       <span class='input-group-label'>Destination status</span>
-      <Input @checked={{this.model.destinationStatus}} class="destination-status" @type="checkbox" />
+      <Input @checked={{this.model.destinationStatus}} class='destination-status' @type='checkbox' />
     </div>
     <div class='input-group'>
       <span class='input-group-label'>Clandestine Rendezvous</span>
-      <Input @checked={{this.model.clandestineRendezvous}} class="clandestine-rendezvous" @type="checkbox" />
+      <Input @checked={{this.model.clandestineRendezvous}} class='clandestine-rendezvous' @type='checkbox' />
     </div>
     <div class='input-group'>
       <span class='input-group-label'>txtbeyond</span>
-      <Input @checked={{this.model.txtbeyond}} class="txtbeyond" @type="checkbox" />
+      <Input @checked={{this.model.txtbeyond}} class='txtbeyond' @type='checkbox' />
     </div>
     <div class='input-group'>
       <span class='input-group-label'>Goal</span>
-      <Input @value={{this.model.goal}} class="goal input-group-field" />
+      <Input @value={{this.model.goal}} class='goal input-group-field' />
       <div class='input-group-button'>
         <button type='button' {{action 'save' this.model}} class='save button primary'>Save</button>
       </div>

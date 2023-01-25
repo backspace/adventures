@@ -20,7 +20,7 @@
           <ul class='destinations'>
             {{#each region.destinations as |destination|}}
               {{#if destination.isAvailable}}
-                <SchedulerDestination @destination={{destination}} @select={{action "selectDestination"}} @isSelected={{eq destination.id this.meeting.destination.id}} />
+                <SchedulerDestination @destination={{destination}} @select={{action 'selectDestination'}} @isSelected={{eq destination.id this.meeting.destination.id}} />
               {{/if}}
             {{/each}}
           </ul>
@@ -31,7 +31,7 @@
 
   <ul class='teams'>
     {{#each this.model.teams as |team|}}
-      <SchedulerTeam @team={{team}} @highlightedTeam={{this.highlightedTeam}} @meeting={{this.meeting}} @isAhead={{gte team.meetings.length this.highestMeetingCount}} @editMeeting={{action "editMeeting"}} @select={{action "selectTeam"}} @enter={{action "mouseEnterTeam"}} @leave={{action "mouseLeaveTeam"}} />
+      <SchedulerTeam @team={{team}} @highlightedTeam={{this.highlightedTeam}} @meeting={{this.meeting}} @isAhead={{gte team.meetings.length this.highestMeetingCount}} @editMeeting={{action 'editMeeting'}} @select={{action 'selectTeam'}} @enter={{action 'mouseEnterTeam'}} @leave={{action 'mouseLeaveTeam'}} />
     {{/each}}
   </ul>
 
@@ -53,13 +53,13 @@
       </select>
     {{/each}}
 
-    <Input @value={{this.meeting.index}} class="index" />
-    <Input @value={{this.suggestedOffset}} class="offset" />
+    <Input @value={{this.meeting.index}} class='index' />
+    <Input @value={{this.suggestedOffset}} class='offset' />
     {{#unless this.meeting.isForbidden}}
       <button type='button' class='save button tiny success' onclick={{action 'saveMeeting'}}>Save</button>
       <button type='button' class='reset button tiny alert' onclick={{action 'resetMeeting'}}>Reset</button>
     {{/unless}}
   </div>
 
-  <LinkTo @route="index" class="home">⌂</LinkTo>
+  <LinkTo @route='index' class='home'>⌂</LinkTo>
 </div>
