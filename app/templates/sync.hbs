@@ -4,7 +4,7 @@
       <span class='input-group-label'>DB</span>
       <Input @type="url" @value={{this.destination}} class="destination input-group-field" />
       <div class='input-group-button'>
-        <button onclick={{perform this.sync}} class='sync button primary'>
+        <button type='button' onclick={{perform this.sync}} class='sync button primary'>
           {{#if this.syncTask.isRunning}}
             …
           {{else}}
