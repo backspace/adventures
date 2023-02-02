@@ -9,20 +9,37 @@ module.exports = function(defaults) {
         fs: 'pdfkit/js/virtual-fs.js',
       },
       webpack: {
-        node: {
-          stream: true,
-          zlib: true,
-        },
         resolve: {
           alias: {
             fs: 'pdfkit/js/virtual-fs.js'
+          },
+          fallback: {
+            assert: require.resolve('assert'),
+            stream: require.resolve('stream-browserify'),
+            util: require.resolve('util'),
+            zlib: require.resolve('browserify-zlib'),
           }
         },
         module: {
           rules: [
-            { enforce: 'post', test: /fontkit[/\\]index.js$/, loader: "transform-loader?brfs" },
-            { enforce: 'post', test: /unicode-properties[/\\]index.js$/, loader: "transform-loader?brfs" },
-            { enforce: 'post', test: /linebreak[/\\]src[/\\]linebreaker.js/, loader: "transform-loader?brfs" },
+            { enforce: 'post', test: /fontkit[/\\]index.js$/, use: [{
+              loader: 'transform-loader',
+              options: {
+                brfs: true
+              }
+            }] },
+            { enforce: 'post', test: /unicode-properties[/\\]index.js$/, use: [{
+              loader: 'transform-loader',
+              options: {
+                brfs: true
+              }
+            }] },
+            { enforce: 'post', test: /linebreak[/\\]src[/\\]linebreaker.js/, use: [{
+              loader: 'transform-loader',
+              options: {
+                brfs: true
+              }
+            }] },
             { test: /src[/\\]assets/, loader: 'arraybuffer-loader'},
             { test: /\.afm$/, loader: 'raw-loader'}
           ]
@@ -53,8 +70,6 @@ module.exports = function(defaults) {
   // modules that you would like to import into your application
   // please specify an object with the list of modules as keys
   // along with the exports of each module as its value.
-
-  var path = require('path');
 
   // FIXME restore draggable number
   // app.import('vendor/jquery.draggableNumber.js');
