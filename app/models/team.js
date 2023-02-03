@@ -25,6 +25,8 @@ export default Model.extend({
     if (awesomenesses.length > 0) {
       return awesomenesses.reduce((prev, curr) => prev + curr)/awesomenesses.length;
     }
+
+    return 0;
   }),
 
   averageRisk: computed('destinations.@each.risk', function() {
@@ -33,6 +35,8 @@ export default Model.extend({
     if (risks.length > 0) {
       return risks.reduce((prev, curr) => prev + curr)/risks.length;
     }
+
+    return 0;
   }),
 
   phonesString: computed('phones.[]', function() {
