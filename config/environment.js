@@ -60,6 +60,7 @@ module.exports = function(environment) {
     ENV.APP.autoboot = false;
 
     ENV.emberPouch.localDb = 'test-adventure-gathering';
+    ENV.emberPouch.options = { adapter: 'memory' };
   }
 
   if (environment === 'production') {

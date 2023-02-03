@@ -7,6 +7,12 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <script type='text/javascript'>
+      window.NODE_DEBUG = false;
+      window.process = window.process || { browser: true, env: {}, nextTick: (f) => setTimeout(f, 0) };
+      window.global = window;
+    </script>
+
     {{content-for "head"}}
     {{content-for "test-head"}}
 

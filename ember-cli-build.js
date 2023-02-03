@@ -1,6 +1,7 @@
 'use strict';
 
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
+const webpack = require('webpack');
 
 module.exports = function(defaults) {
   let app = new EmberApp(defaults, {
@@ -9,12 +10,16 @@ module.exports = function(defaults) {
         fs: 'pdfkit/js/virtual-fs.js',
       },
       webpack: {
+        plugins: [new webpack.ProvidePlugin({
+          Buffer: ['buffer', 'Buffer'],
+        }),],
         resolve: {
           alias: {
             fs: 'pdfkit/js/virtual-fs.js'
           },
           fallback: {
             assert: require.resolve('assert'),
+            Buffer: require.resolve('buffer/'),
             stream: require.resolve('stream-browserify'),
             util: require.resolve('util'),
             zlib: require.resolve('browserify-zlib'),
