@@ -2,6 +2,7 @@ import { all } from 'rsvp';
 import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
 import { setupApplicationTest } from 'ember-qunit';
+import { waitUntil } from '@ember/test-helpers';
 
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 
@@ -88,6 +89,9 @@ module('Acceptance | teams', function(hooks) {
     `);
 
     await page.save();
+
+    // TODO why is this needed now?
+    await waitUntil(() => page.teams.length == 2);
 
     assert.equal(page.teams.length, 2, 'expected two teams to be listed');
 
