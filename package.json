@@ -14,6 +14,7 @@
     "build": "ember build --environment=production",
     "lint:hbs": "ember-template-lint .",
     "lint:js": "eslint .",
+    "postinstall": "patch-package",
     "start": "ember serve",
     "test": "ember test"
   },
@@ -84,6 +85,7 @@
     "moment-timezone": "0.5.0",
     "node-sass": "^4.14.1",
     "nokia-font": "backspace/nokia-font#primary",
+    "patch-package": "^6.5.1",
     "pdfkit": "^0.10.0",
     "pouchdb-adapter-memory": "^7.3.1",
     "qunit-dom": "^1.0.0",
