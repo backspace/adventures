@@ -11,10 +11,13 @@ export default Controller.extend({
 
   pathfinder: service(),
 
-  suggestedOffset: computed('meeting.{teams.@each.meetings.lastObject.offset,destination.region.name}', {
+  lastMeetingOffsets: computed('meeting.teams.@each.meetings', function () {
+    return (this.get('meeting.teams') || []).map(team => team.get('savedMeetings.lastObject.offset') || 0);
+  }),
+
+  suggestedOffset: computed('lastMeetingOffsets.[]', 'meeting.destination.region.name}', {
     get() {
-      const lastMeetingOffsets = (this.get('meeting.teams') || []).map(team => team.get('savedMeetings.lastObject.offset') || 0);
-      const maxOffset = Math.max(...lastMeetingOffsets, 0);
+      const maxOffset = Math.max(...this.get('lastMeetingOffsets'), 0);
 
       let timeFromLastRegion = 0;
 
