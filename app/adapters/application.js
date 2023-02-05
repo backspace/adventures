@@ -1,6 +1,7 @@
 import { assert } from '@ember/debug';
 import { isEmpty } from '@ember/utils';
 import { Adapter } from 'ember-pouch';
+import { getOwner } from '@ember/application';
 import PouchDB from 'adventure-gathering/utils/pouch';
 import config from 'adventure-gathering/config/environment';
 import Ember from 'ember';
@@ -34,6 +35,18 @@ function createDb() {
 export default Adapter.extend({
   init() {
     this._super(...arguments);
-    this.set('db', createDb());
+
+    let owner = getOwner(this);
+    let existingDb = owner.lookup('db:pouch');
+
+    if (!existingDb) {
+      let newDb = createDb();
+      this.set('db', newDb);
+      owner.register('db:pouch', newDb, { instantiate: false });
+    }
+
+    if (!this.get('db')) {
+      this.set('db', existingDb);
+    }
   }
 });
