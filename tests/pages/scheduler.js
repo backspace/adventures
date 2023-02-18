@@ -125,7 +125,7 @@ export default PageObject.create({
     isAhead: hasClass('ahead'),
 
     click: clickable('.name'),
-    hover: triggerable('mouseover', '.name'),
+    hover: triggerable('mouseenter', '.name'),
 
     meetings: collection('.meeting', {
       click: clickable(),

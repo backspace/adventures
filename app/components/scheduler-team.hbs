@@ -1,7 +1,14 @@
-<li class='team {{if this.isSelected 'selected'}} {{if this.hasMetHighlightedTeam 'highlighted'}} {{if this.isAhead 'ahead'}}' title={{this.usersAndNotes}} data-risk-aversion={{this.team.riskAversion}}>
+{{!-- template-lint-disable no-invalid-interactive --}}
+<li
+  class='team {{if this.isSelected 'selected'}} {{if this.hasMetHighlightedTeam 'highlighted'}} {{if @isAhead 'ahead'}}'
+  title={{this.usersAndNotes}}
+  {{on 'mouseenter' (fn this.handleMouseEnter)}}
+  {{on 'mouseleave' (fn this.handleMouseLeave)}}
+  data-risk-aversion={{@team.riskAversion}}
+>
   {{!-- template-lint-disable no-invalid-interactive --}}
   <div onclick={{action 'select'}}>
-    <span class='name'>{{this.team.name}}</span> <span class='count'>{{this.count}}</span>
+    <span class='name'>{{@team.name}}</span> <span class='count'>{{this.count}}</span>
 
     <div>
       A<span class='average-awesomeness'>{{this.roundedAwesomeness}}</span>
@@ -11,7 +18,7 @@
 
   {{#if this.showMeetings}}
     <ul>
-      {{#each this.team.meetings as |meeting index|}}
+      {{#each @team.meetings as |meeting index|}}
         <li class='meeting' onclick={{action 'editMeeting' meeting}}><span class='index'>{{index}}</span>: <span class='offset'>{{meeting.offset}}</span></li>
       {{/each}}
     </ul>

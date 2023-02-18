@@ -1,66 +1,76 @@
-import { computed } from '@ember/object';
-import Component from '@ember/component';
+import Component from "@glimmer/component";
+import { action } from "@ember/object";
+import { tracked } from "@glimmer/tracking";
 
-export default Component.extend({
-  count: computed('team.meetings.length', function() {
-    const length = this.get('team.meetings.length');
-    return Array(length + 1).join('•');
-  }),
+export default class SchedulerTeamComponent extends Component {
+  @tracked showMeetings = false;
 
-  isSelected: computed('meeting.teams', function() {
-    const meeting = this.get('meeting');
+  get count() {
+    const length = this.args.team.get("meetings.length");
+    return Array(length + 1).join("•");
+  }
+
+  get isSelected() {
+    const meeting = this.args.meeting;
 
     if (!meeting) {
       return false;
     }
 
-    const teamIds = this.get('meeting').hasMany('teams').ids();
+    const teamIds = meeting.hasMany("teams").ids();
 
-    return teamIds.indexOf(this.get('team.id')) > -1;
-  }),
+    return teamIds.indexOf(this.args.team.id) > -1;
+  }
 
-  hasMetHighlightedTeam: computed('team', 'highlightedTeam', function() {
-    const team = this.get('team');
-    const highlightedTeam = this.get('highlightedTeam');
+  get hasMetHighlightedTeam() {
+    const team = this.args.team;
+    const highlightedTeam = this.args.highlightedTeam;
 
     if (!highlightedTeam) {
       return false;
     }
 
-    const teamMeetings = team.hasMany('meetings').value();
+    const teamMeetings = team.hasMany("meetings").value();
 
-    return teamMeetings.any(meeting => meeting.hasMany('teams').ids().indexOf(highlightedTeam.id) > -1);
-  }),
-
-  usersAndNotes: computed('team.{users,notes}', function() {
-    return `${this.get('team.users')}\n\n${this.get('team.notes') || ''}`;
-  }),
-
-  roundedAwesomeness: computed('team.averageAwesomeness', function() {
-    return Math.round(this.get('team.averageAwesomeness')*100)/100;
-  }),
-
-  roundedRisk: computed('team.averageRisk', function() {
-    return Math.round(this.get('team.averageRisk')*100)/100;
-  }),
-
-  mouseEnter() {
-    this.set('showMeetings', true);
-    this.get('enter')(this.get('team'));
-  },
-
-  mouseLeave() {
-    this.set('showMeetings', false);
-    this.get('leave')();
-  },
-
-  actions: {
-    select() {
-      this.get('select')(this.get('team'));
-    },
-
-    editMeeting(meeting) {
-      this.get('editMeeting')(meeting);
-    }
+    return teamMeetings.any(
+      (meeting) =>
+        meeting.hasMany("teams").ids().indexOf(highlightedTeam.id) > -1
+    );
   }
-});
+
+  get usersAndNotes() {
+    return `${this.args.team.get("users")}\n\n${
+      this.args.team.get("notes") || ""
+    }`;
+  }
+
+  get roundedAwesomeness() {
+    return Math.round(this.args.team.get("averageAwesomeness") * 100) / 100;
+  }
+
+  get roundedRisk() {
+    return Math.round(this.args.team.get("averageRisk") * 100) / 100;
+  }
+
+  @action
+  handleMouseEnter() {
+    this.showMeetings = true;
+    this.args.enter(this.args.team);
+  }
+
+  @action
+  handleMouseLeave() {
+    this.showMeetings = false;
+    this.args.leave();
+  }
+
+  @action
+  select() {
+    this.args.select(this.args.team);
+  }
+
+  @action
+  editMeeting(meeting) {
+    this.args.editMeeting(meeting);
+  }
+}
