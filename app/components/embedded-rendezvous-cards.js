@@ -1,7 +1,6 @@
 import { inject as service } from '@ember/service';
 import { alias } from '@ember/object/computed';
 import Component from '@ember/component';
-import $ from 'jquery';
 
 import config from 'adventure-gathering/config/environment';
 
@@ -18,12 +17,12 @@ export default Component.extend({
   didInsertElement() {
     const debug = this.get('debug');
 
-    const doc = new PDFDocument({layout: 'portrait'});
-    const stream = doc.pipe(blobStream());
-
     const header = this.get('assets.header');
     const bold = this.get('assets.bold');
     const regular = this.get('assets.regular');
+
+    const doc = new PDFDocument({layout: 'portrait', font: regular});
+    const stream = doc.pipe(blobStream());
 
     const cards = this._rendezvousCards();
 
@@ -219,7 +218,7 @@ export default Component.extend({
     doc.end();
 
     stream.on('finish', () => {
-      $(this.element).find('iframe').attr('src', stream.toBlobURL('application/pdf'));
+      this.src = stream.toBlobURL('application/pdf');
       this.set('rendering', false);
     });
   },
@@ -257,11 +256,11 @@ export default Component.extend({
     const goalLetter = this.get('goal')[index];
     const goalDigit = parseInt(goalLetter);
 
-    const chosenBlankIndex = this.get('puzzles').chooseBlankIndex({answer, mask, goalDigit});
+    const chosenBlankIndex = this.get('puzzles').implementation.chooseBlankIndex({answer, mask, goalDigit});
 
     const answerDigit = parseInt(answer[chosenBlankIndex]);
 
-    const teamDigitsForAnswerAndGoalDigits = this.get('puzzles').teamDigitsForAnswerAndGoalDigits({teams, goalDigit, answerDigit});
+    const teamDigitsForAnswerAndGoalDigits = this.get('puzzles').implementation.teamDigitsForAnswerAndGoalDigits({teams, goalDigit, answerDigit});
 
     return {
       team,

@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import $ from 'jquery';
 
 import config from 'adventure-gathering/config/environment';
 
@@ -14,7 +13,7 @@ export default Component.extend({
   rendering: true,
 
   didInsertElement() {
-    const doc = new PDFDocument({layout: 'portrait'});
+    const doc = new PDFDocument({layout: 'portrait', font: this.get('assets.header')});
     const stream = doc.pipe(blobStream());
 
     const meetings = this.get('meetings');
@@ -54,7 +53,7 @@ export default Component.extend({
     doc.end();
 
     stream.on('finish', () => {
-      $(this.element).find('iframe').attr('src', stream.toBlobURL('application/pdf'));
+      this.src = stream.toBlobURL('application/pdf');
       this.set('rendering', false);
     });
   },

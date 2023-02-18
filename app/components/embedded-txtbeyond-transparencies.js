@@ -1,6 +1,5 @@
 import Component from '@ember/component';
 import { inject as service } from '@ember/service';
-import $ from 'jquery';
 
 import PDFDocument from 'pdfkit';
 import blobStream from 'blob-stream';
@@ -59,7 +58,7 @@ export default Component.extend({
     doc.end();
 
     stream.on('finish', () => {
-      $(this.element).find('iframe').attr('src', stream.toBlobURL('application/pdf'));
+      this.src = stream.toBlobURL('application/pdf');
       this.set('rendering', false);
     });
   },

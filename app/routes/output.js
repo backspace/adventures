@@ -1,6 +1,7 @@
 import { hash, all } from 'rsvp';
 import { inject as service } from '@ember/service';
 import Route from '@ember/routing/route';
+import fs from 'pdfkit/js/virtual-fs';
 
 export default Route.extend({
   queryParams: {
@@ -14,7 +15,7 @@ export default Route.extend({
 
   txtbeyond: service(),
 
-  model() {
+  async model() {
     let fontPaths;
 
     if (this.get('features.clandestineRendezvous')) {
@@ -30,6 +31,10 @@ export default Route.extend({
         fetch('/fonts/Arvo-Regular.ttf')
       ];
     }
+
+    let helvetica = await (await fetch('/fonts/Helvetica.afm')).text();
+    fs.writeFileSync("data/Helvetica.afm", helvetica);
+
     return hash({
       teams: this.store.findAll('team'),
       meetings: this.store.findAll('meeting'),

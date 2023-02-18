@@ -1,5 +1,4 @@
 import Component from '@ember/component';
-import $ from 'jquery';
 
 import PDFDocument from 'pdfkit';
 import blobStream from 'blob-stream';
@@ -12,12 +11,9 @@ export default Component.extend({
   didInsertElement() {
     const debug = this.get('debug');
 
-    const doc = new PDFDocument({layout: 'portrait'});
-    const stream = doc.pipe(blobStream());
-
     const header = this.get('assets.header');
-    // const bold = this.get('assets.bold');
-    // const regular = this.get('assets.regular');
+    const doc = new PDFDocument({layout: 'portrait', font: header});
+    const stream = doc.pipe(blobStream());
 
     const map = this.get('assets.map');
 
@@ -93,7 +89,7 @@ export default Component.extend({
     doc.end();
 
     stream.on('finish', () => {
-      $(this.element).find('iframe').attr('src', stream.toBlobURL('application/pdf'));
+      this.src = stream.toBlobURL('application/pdf');
       this.set('rendering', false);
     });
   }

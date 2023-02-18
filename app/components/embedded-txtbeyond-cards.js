@@ -1,7 +1,6 @@
 import { inject as service } from '@ember/service';
 import { alias } from '@ember/object/computed';
 import Component from '@ember/component';
-import $ from 'jquery';
 
 import config from 'adventure-gathering/config/environment';
 
@@ -18,12 +17,12 @@ export default Component.extend({
   didInsertElement() {
     const debug = this.get('debug');
 
-    const doc = new PDFDocument({layout: 'portrait'});
-    const stream = doc.pipe(blobStream());
-
     const header = this.get('assets.header');
     const bold = this.get('assets.bold');
     const regular = this.get('assets.regular');
+
+    const doc = new PDFDocument({layout: 'portrait', font: regular});
+    const stream = doc.pipe(blobStream());
 
     const cards = this._rendezvousCards();
 
@@ -184,7 +183,7 @@ export default Component.extend({
     doc.end();
 
     stream.on('finish', () => {
-      $(this.element).find('iframe').attr('src', stream.toBlobURL('application/pdf'));
+      this.src = stream.toBlobURL('application/pdf');
       this.set('rendering', false);
     });
   },

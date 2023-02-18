@@ -86,7 +86,7 @@
     "node-sass": "^4.14.1",
     "nokia-font": "backspace/nokia-font#primary",
     "patch-package": "^6.5.1",
-    "pdfkit": "^0.10.0",
+    "pdfkit": "^0.13.0",
     "pouchdb-adapter-http": "^7.3.1",
     "pouchdb-adapter-indexeddb": "^7.3.1",
     "pouchdb-adapter-memory": "^7.3.1",
