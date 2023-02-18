@@ -3,7 +3,7 @@
     <img src={{this.model.map}} alt='map'>
     {{#each this.model.regions as |region|}}
       {{#if region.destinations}}
-        <MappableRegion @region={{region}} @draggable={{false}} @isHighlighted={{eq this.highlightedRegion region}} @highlightedTeam={{this.highlightedTeam}}>
+        <MappableRegion @region={{region}} @draggable={{false}} @isHighlighted={{eq this.highlightedRegion region}} @highlightedTeam={{this.highlightedTeam}} @sidebarRegionElement={{ref-to (concat 'region-' region.id)}}>
           <div class='count'>{{region.meetingCount}}</div>
         </MappableRegion>
       {{/if}}
@@ -14,7 +14,14 @@
     {{#each this.model.regions as |region|}}
       {{#if region.destinations}}
         {{!-- template-lint-disable no-invalid-interactive --}}
-        <li class='region' id='region-{{region.id}}' title={{region.notes}} onmouseenter={{action 'mouseEnterRegion' region}} onmouseleave={{action 'mouseLeaveRegion'}}>
+        <li
+          class='region'
+          id='region-{{region.id}}'
+          title={{region.notes}}
+          {{on 'mouseenter' (fn this.mouseEnterRegion region)}}
+          {{on 'mouseleave' (fn this.mouseLeaveRegion)}}
+          {{create-ref (concat 'region-' region.id)}}
+        >
           <div class='name'>{{region.name}}</div>
 
           <ul class='destinations'>

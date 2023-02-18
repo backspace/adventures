@@ -1,29 +1,43 @@
-import $ from 'jquery';
-import { computed } from '@ember/object';
-import Component from '@ember/component';
-import { htmlSafe } from '@ember/template';
+import Component from "@glimmer/component";
+import { tracked } from "@glimmer/tracking";
+import { action } from "@ember/object";
+import { htmlSafe } from "@ember/template";
+import { ref } from "ember-ref-bucket";
 
-export default Component.extend({
-  classNames: ['region'],
-  classNameBindings: ['isHighlighted:highlighted'],
+// FIXME not used but needed by Foundation??
+import jQuery from "jquery";
 
-  attributeBindings: ['style', 'draggable'],
+export default class MappableRegionComponent extends Component {
+  @ref("Region") regionElement;
+  @tracked originalPosition;
 
-  draggable: true,
+  get draggable() {
+    if (this.args.draggable === false) {
+      return false;
+    }
 
-  style: computed('region.{x,y}', function() {
+    return true;
+  }
+
+  get style() {
     return htmlSafe(
-      `top: ${Math.max(this.get('region.y'), 0)}px;` +
-      `left: ${Math.max(this.get('region.x'), 0)}px`
+      `top: ${Math.max(this.args.region.y)}px;` +
+        `left: ${Math.max(this.args.region.x)}px;`
     );
-  }),
+  }
 
-  meetingIndex: computed('region.id', 'highlightedTeam.id', function() {
-    const regionId = this.get('region.id');
-    const highlightedTeam = this.get('highlightedTeam');
+  get meetingIndex() {
+    const regionId = this.args.region.id;
+    const highlightedTeam = this.args.highlightedTeam;
 
     if (highlightedTeam) {
-      const meetingRegionIds = highlightedTeam.hasMany('meetings').value().rejectBy('isNew').map(meeting => meeting.belongsTo('destination').value()).map(destination => destination.belongsTo('region').value()).mapBy('id');
+      const meetingRegionIds = highlightedTeam
+        .hasMany("meetings")
+        .value()
+        .rejectBy("isNew")
+        .map((meeting) => meeting.belongsTo("destination").value())
+        .map((destination) => destination.belongsTo("region").value())
+        .mapBy("id");
       const index = meetingRegionIds.indexOf(regionId);
 
       if (index > -1) {
@@ -34,42 +48,38 @@ export default Component.extend({
     } else {
       return undefined;
     }
-  }),
+  }
 
+  @action
   dragStart() {
-    if (!this.get('draggable')) {
+    if (!this.draggable) {
       return;
     }
-
-    const offset = $(this.element).offset();
-    const height = $(this.element).height();
 
     // Not adding the height causes the region to be off by its height?!
-    this.set('originalPosition', {x: offset.left, y: height + offset.top});
-  },
+    this.originalPosition = {
+      x: this.regionElement.offsetLeft,
+      y: this.regionElement.offsetHeight + this.regionElement.offsetTop,
+    };
+  }
 
-  dragEnd({originalEvent: {pageX, pageY}}) {
-    if (!this.get('draggable')) {
+  @action
+  dragEnd({ pageX, pageY }) {
+    if (!this.draggable) {
       return;
     }
 
-    const originalPosition = this.get('originalPosition');
+    const x = this.args.region.x;
+    const y = this.args.region.y;
 
-    const x = this.get('region.x');
-    const y = this.get('region.y');
+    this.args.region.x = x + (pageX - this.originalPosition.x);
+    this.args.region.y = y + (pageY - this.originalPosition.y);
 
-    this.set('region.x', x + (pageX - originalPosition.x));
-    this.set('region.y', y + (pageY - originalPosition.y));
-
-    this.get('region').save();
-  },
-
-  click() {
-    // FIXME accomplish in a more idiomatic Ember fashion?
-    const element = $(`#region-${this.get('region.id')}`)[0];
-
-    if (element) {
-      element.scrollIntoView();
-    }
+    this.args.region.save();
   }
-});
+
+  @action
+  click() {
+    this.args.sidebarRegionElement?.scrollIntoView();
+  }
+}

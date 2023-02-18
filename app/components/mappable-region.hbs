@@ -1,5 +1,23 @@
-<div class='name'>{{this.region.name}}</div>
+{{! template-lint-disable no-inline-styles }}
+{{!-- template-lint-disable no-invalid-interactive --}}
+<div
+  class='region {{if this.isHighlighted 'highlighted'}}'
+  style={{this.style}}
+  draggable={{this.draggable}}
+  {{on 'click' this.click}}
+  {{on 'dragstart' this.dragStart}}
+  {{on 'dragend' this.dragEnd}}
+  {{create-ref 'Region'}}
+>
+  <div class='name'>
+    {{@region.name}}
+  </div>
 
-{{#if this.meetingIndex}}<div class='meeting-index'>{{this.meetingIndex}}</div>{{/if}}
+  {{#if this.meetingIndex}}
+    <div class='meeting-index'>
+      {{this.meetingIndex}}
+    </div>
+  {{/if}}
 
-{{yield}}
+  {{yield}}
+</div>
