@@ -99,10 +99,10 @@ module('Acceptance | destinations', function(hooks) {
     assert.equal(page.destinations[1].status.value, '✘');
 
     await page.destinations[0].status.click();
-    await page.destinations[1].status.click();
-
     assert.equal(page.destinations[0].status.value, '✘');
-    assert.equal(page.destinations[1].status.value, '?');
+
+    await page.destinations[0].status.click();
+    assert.equal(page.destinations[0].status.value, '?');
   });
 
   test('a destination can be created and will appear at the top of the list', async function(assert) {
