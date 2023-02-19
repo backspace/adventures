@@ -3,57 +3,43 @@ import PageObject, {
   collection,
   findElement,
   text,
-  triggerEvent,
 } from 'ember-cli-page-object';
+import { triggerEvent } from '@ember/test-helpers';
 
-const x = function(selector) {
+const x = function (selector) {
   return {
     isDescriptor: true,
 
     get() {
       return parseInt(findElement(this, selector).css('left'));
-    }
-  }
-}
+    },
+  };
+};
 
-const y = function(selector) {
+const y = function (selector) {
   return {
     isDescriptor: true,
 
     get() {
       return parseInt(findElement(this, selector).css('top'));
-    }
+    },
   };
-}
+};
 
-const dragBy = function(selector) {
-  return {
-    isDescriptor: true,
-
-    // TODO seems weird that this is called value when it’s performing an action?
-    value(x, y) {
-      const position = findElement(this, selector).position();
-
-      triggerEvent(selector, 'dragstart', {originalEvent: {pageX: position.left, pageY: position.top}});
-      triggerEvent(selector, 'dragend', {originalEvent: {pageX: position.left + x, pageY: position.top + y}});
-    }
-  };
-}
-
-const setMap = function(selector) {
+const setMap = function (selector) {
   return {
     isDescriptor: true,
 
     value(base64) {
-      const blob = new window.Blob([base64], {type: 'image/gif'});
+      const blob = new window.Blob([base64], { type: 'image/gif' });
 
       findElement(this, selector).trigger({
         type: 'change',
         target: {
-          files: [blob]
-        }
+          files: [blob],
+        },
       });
-    }
+    },
   };
 };
 
@@ -65,8 +51,20 @@ export default PageObject.create({
     x: x(),
     y: y(),
 
-    dragBy: dragBy()
+    async dragBy(x, y) {
+      const jqueryElement = findElement(this, '.name');
+      const position = jqueryElement.position();
+
+      await triggerEvent(jqueryElement[0], 'dragstart', {
+        pageX: position.left,
+        pageY: position.top,
+      });
+      await triggerEvent(jqueryElement[0], 'dragend', {
+        pageX: position.left + x,
+        pageY: position.top + y,
+      });
+    },
   }),
 
-  setMap: setMap('input#map')
+  setMap: setMap('input#map'),
 });

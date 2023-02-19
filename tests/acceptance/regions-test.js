@@ -151,8 +151,9 @@ module('Acceptance | regions', function(hooks) {
     assert.equal(mapPage.regions[1].y, 1000);
     assert.equal(mapPage.regions[1].x, 0);
 
-    // This needs to be inside andThen to get offset?!
-    // mapPage.regions[0].dragBy(90, 10);
+    await mapPage.regions[0].dragBy(90, 100);
+    assert.equal(mapPage.regions[0].y, 67);
+    assert.equal(mapPage.regions[0].x, 121);
   });
 });
 

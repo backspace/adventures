@@ -21,8 +21,8 @@ export default class MappableRegionComponent extends Component {
 
   get style() {
     return htmlSafe(
-      `top: ${Math.max(this.args.region.y)}px;` +
-        `left: ${Math.max(this.args.region.x)}px;`
+      `top: ${Math.max(this.args.region.y, 0)}px;` +
+        `left: ${Math.max(this.args.region.x, 0)}px;`
     );
   }
 
