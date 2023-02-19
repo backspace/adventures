@@ -8,7 +8,7 @@ import blobStream from 'blob-stream';
 
 import MaxRectsPackerPackage from 'maxrects-packer';
 
-import { pixelLength, drawnLength, drawString, registrationLength, pointDimensionsForDisplay } from 'nokia-font/utils/nokia-font';
+// import { pixelLength, drawnLength, drawString, registrationLength, pointDimensionsForDisplay } from 'nokia-font/utils/nokia-font';
 
 const fontSize = 12;
 const lineGap = 8;

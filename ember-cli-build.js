@@ -2,6 +2,7 @@
 
 const EmberApp = require("ember-cli/lib/broccoli/ember-app");
 const webpack = require("webpack");
+const nodeSass = require("node-sass");
 
 module.exports = function (defaults) {
   let app = new EmberApp(defaults, {
@@ -77,6 +78,9 @@ module.exports = function (defaults) {
     fingerprint: {
       exclude: ["apple-touch-icon", "favicon", "mstile"],
       replaceExtensions: ["html", "css", "js", "json"],
+    },
+    sassOptions: {
+      implementation: nodeSass,
     },
   });
 
