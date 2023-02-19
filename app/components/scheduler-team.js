@@ -17,7 +17,7 @@ export default class SchedulerTeamComponent extends Component {
       return false;
     }
 
-    const teamIds = meeting.hasMany("teams").ids();
+    const teamIds = meeting.teams.mapBy('id');
 
     return teamIds.indexOf(this.args.team.id) > -1;
   }
