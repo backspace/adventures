@@ -5,14 +5,14 @@ import PouchDB from 'adventure-gathering/utils/pouch';
 
 import { task } from 'ember-concurrency';
 
-import Databases from 'adventure-gathering/models/databases';
+import { storageFor } from 'ember-local-storage';
 
 import config from 'adventure-gathering/config/environment';
 
 import stringify from 'json-stringify-safe';
 
 export default Controller.extend({
-  databases: Databases.create(),
+  databases: storageFor('databases'),
 
   isSyncing: false,
 

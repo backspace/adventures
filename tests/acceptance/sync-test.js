@@ -31,10 +31,16 @@ module('Acceptance | sync', function(hooks) {
 
   // I had these as separate tests but localStorage was bleeding through… ugh
   test('can sync with another database, syncs are remembered and can be returned to', async function(assert) {
+    localStorage.clear();
+    localStorage.setItem('storage:databases', JSON.stringify(['old-db']));
+
     const done = assert.async();
 
     await visit('/');
     await page.visit();
+
+    assert.equal(page.databases.length, 1);
+    assert.equal(page.databases[0].name, 'old-db');
 
     await page.enterDestination('sync-db').sync();
 
@@ -50,15 +56,15 @@ module('Acceptance | sync', function(hooks) {
       //assert.equal(page.pull().written(), '0');
       assert.equal(page.pull.writeFailures, '0');
 
-      assert.equal(page.databases.length, 1);
+      assert.equal(page.databases.length, 2);
 
       await page.enterDestination('other-sync').sync();
 
-      assert.equal(page.databases.length, 2);
-      assert.equal(page.databases[0].name, 'sync-db');
-      assert.equal(page.databases[1].name, 'other-sync');
+      assert.equal(page.databases.length, 3);
+      assert.equal(page.databases[1].name, 'sync-db');
+      assert.equal(page.databases[2].name, 'other-sync');
 
-      await page.databases[0].click();
+      await page.databases[1].click();
 
       assert.equal(page.destinationValue, 'sync-db');
 
