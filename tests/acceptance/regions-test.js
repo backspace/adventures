@@ -30,12 +30,14 @@ module('Acceptance | regions', function(hooks) {
         name: 'Gujaareh',
         notes: 'City of Dreams',
         x: 50,
-        y: 10
+        y: 10,
+        updatedAt: new Date(2010, 0, 1),
       });
       fixtureTwo.setProperties({
         'name': 'Kisua',
         x: -100,
-        y: 1000
+        y: 1000,
+        updatedAt: new Date(2020, 0, 1),
       });
 
       const pathfinderData = {
