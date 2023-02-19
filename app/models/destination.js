@@ -1,7 +1,8 @@
-import { inject as service } from '@ember/service';
-import { not, equal } from '@ember/object/computed';
-import { isEmpty } from '@ember/utils';
+import classic from 'ember-classic-decorator';
 import { computed } from '@ember/object';
+import { inject as service } from '@ember/service';
+import { equal, not } from '@ember/object/computed';
+import { isEmpty } from '@ember/utils';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
@@ -11,32 +12,46 @@ const {
   hasMany
 } = DS;
 
-export default Model.extend({
-  description: attr('string'),
-  accessibility: attr('string'),
+@classic
+export default class Destination extends Model {
+  @attr('string')
+  description;
 
-  answer: attr('string'),
-  mask: attr('string'),
+  @attr('string')
+  accessibility;
 
-  isOutside: attr('boolean'),
+  @attr('string')
+  answer;
 
-  suggestedMask: computed('answer', function() {
+  @attr('string')
+  mask;
+
+  @attr('boolean')
+  isOutside;
+
+  @computed('answer')
+  get suggestedMask() {
     const answer = this.get('answer') || '';
 
     return this.get('puzzles.implementation').suggestedMask(answer);
-  }),
+  }
 
-  maskIsValid: computed('answer', 'mask', function() {
+  @computed('answer', 'mask')
+  get maskIsValid() {
     const answer = this.get('answer') || '';
     const mask = this.get('mask') || '';
 
     return this.get('puzzles.implementation').maskIsValid(answer, mask);
-  }),
+  }
 
-  awesomeness: attr('number'),
-  risk: attr('number'),
+  @attr('number')
+  awesomeness;
 
-  isComplete: computed('description', 'answer', 'awesomeness', 'risk', 'maskIsValid', function() {
+  @attr('number')
+  risk;
+
+  @computed('description', 'answer', 'awesomeness', 'risk', 'maskIsValid')
+  get isComplete() {
     const {description, answer, awesomeness, risk, maskIsValid} = this.getProperties('description', 'answer', 'awesomeness', 'risk', 'maskIsValid');
 
     const descriptionIsValid = this.get('puzzles.implementation').descriptionIsValid(description);
@@ -47,20 +62,29 @@ export default Model.extend({
       awesomeness > 0 &&
       !isEmpty(risk) &&
       maskIsValid;
-  }),
+  }
 
-  isIncomplete: not('isComplete'),
+  @not('isComplete')
+  isIncomplete;
 
-  status: attr('string'),
+  @attr('string')
+  status;
 
-  isAvailable: equal('status', 'available'),
+  @equal('status', 'available')
+  isAvailable;
 
-  region: belongsTo('region', {async: false}),
+  @belongsTo('region', {async: false})
+  region;
 
-  meetings: hasMany('meeting', {async: false}),
+  @hasMany('meeting', {async: false})
+  meetings;
 
-  createdAt: attr('createDate'),
-  updatedAt: attr('updateDate'),
+  @attr('createDate')
+  createdAt;
 
-  puzzles: service()
-});
+  @attr('updateDate')
+  updatedAt;
+
+  @service
+  puzzles;
+}

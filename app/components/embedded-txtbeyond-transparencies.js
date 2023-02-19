@@ -1,5 +1,7 @@
-import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
+import { tagName } from '@ember-decorators/component';
 import { inject as service } from '@ember/service';
+import Component from '@ember/component';
 
 import PDFDocument from 'pdfkit';
 import blobStream from 'blob-stream';
@@ -12,12 +14,13 @@ const fontSize = 12;
 const lineGap = 8;
 const margin = 8;
 
-export default Component.extend({
-  tagName: 'span',
+@classic
+@tagName('span')
+export default class EmbeddedTxtbeyondTransparencies extends Component {
+  rendering = true;
 
-  rendering: true,
-
-  txtbeyond: service(),
+  @service
+  txtbeyond;
 
   didInsertElement() {
     const debug = this.get('debug');
@@ -61,7 +64,7 @@ export default Component.extend({
       this.src = stream.toBlobURL('application/pdf');
       this.set('rendering', false);
     });
-  },
+  }
 
   _buildTransparency(team, meeting, mask) {
     const displaySize = this._getMeetingDisplaySize(meeting) - 0.5;
@@ -87,9 +90,13 @@ export default Component.extend({
         }
       }
     };
-  },
+  }
 
-  _drawTransparency(doc, {teamName, teamPosition, slices, mask, description, pointDimensions, containerDimensions}, debug) {
+  _drawTransparency(
+    doc,
+    {teamName, teamPosition, slices, mask, description, pointDimensions, containerDimensions},
+    debug
+  ) {
     const header = this.get('assets.header');
     const regular = this.get('assets.regular');
 
@@ -150,7 +157,7 @@ export default Component.extend({
     doc.restore();
     doc.restore();
     doc.restore();
-  },
+  }
 
   _drawRegistrationMark(doc) {
     doc.lineWidth(0.25);
@@ -158,7 +165,7 @@ export default Component.extend({
     doc.stroke();
     doc.moveTo(0, -registrationLength/2).lineTo(0, registrationLength/2);
     doc.stroke();
-  },
+  }
 
   _getMeetingDisplaySize(meeting) {
     const number = meeting.get('phone');
@@ -169,4 +176,4 @@ export default Component.extend({
 
     return parseFloat(meeting.get('teams').reduce((phones, team) => phones.concat(team.get('phones')), []).find(phone => phone.number === number).displaySize);
   }
-});
+}

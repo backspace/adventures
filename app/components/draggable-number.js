@@ -1,10 +1,12 @@
+import classic from 'ember-classic-decorator';
 import Component from '@ember/component';
 
-export default Component.extend({
+@classic
+export default class DraggableNumber extends Component {
   didInsertElement() {
-    this._super();
+    super.didInsertElement();
 
     // FIXME restore…? but this would be a modifier now ya
     // $(this.element).find('input').draggableNumber();
   }
-});
+}

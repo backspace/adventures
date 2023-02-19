@@ -1,7 +1,8 @@
+import classic from 'ember-classic-decorator';
 import Controller from '@ember/controller';
 
-export default Controller.extend({
-  queryParams: ['debug'],
-
-  debug: false
-});
+@classic
+export default class OutputController extends Controller {
+  queryParams = ['debug'];
+  debug = false;
+}

@@ -1,15 +1,18 @@
+import classic from 'ember-classic-decorator';
 import { inject as service } from '@ember/service';
 import Route from '@ember/routing/route';
 
-export default Route.extend({
-  map: service(),
+@classic
+export default class MapRoute extends Route {
+  @service
+  map;
 
   model() {
     return this.get('map').getURL('image');
-  },
+  }
 
   setupController(controller, mapURL) {
-    this._super();
+    super.setupController();
 
     controller.set('model', this.modelFor('regions'));
 
@@ -17,4 +20,4 @@ export default Route.extend({
       controller.set('mapSrc', mapURL);
     }
   }
-});
+}

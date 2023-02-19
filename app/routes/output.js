@@ -1,19 +1,25 @@
-import { hash, all } from 'rsvp';
+import classic from 'ember-classic-decorator';
 import { inject as service } from '@ember/service';
+import { hash, all } from 'rsvp';
 import Route from '@ember/routing/route';
 import fs from 'pdfkit/js/virtual-fs';
 
-export default Route.extend({
-  queryParams: {
+@classic
+export default class OutputRoute extends Route {
+  queryParams = {
     debug: {
       refreshModel: true
     }
-  },
+  };
 
-  map: service(),
-  features: service(),
+  @service
+  map;
 
-  txtbeyond: service(),
+  @service
+  features;
+
+  @service
+  txtbeyond;
 
   async model() {
     let fontPaths;
@@ -52,11 +58,11 @@ export default Route.extend({
         });
       })
     });
-  },
+  }
 
   afterModel(model) {
     if (model.settings.get('txtbeyond')) {
       return this.get('txtbeyond').assignMeetingPhones(model.teams, model.meetings);
     }
   }
-});
+}

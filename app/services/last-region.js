@@ -1,15 +1,19 @@
+import classic from 'ember-classic-decorator';
 import { Promise as EmberPromise } from 'rsvp';
 import Service, { inject as service } from '@ember/service';
 import StorageObject from 'ember-local-storage/local/object';
 
-const LastRegionIdObject = StorageObject.extend({
-  storageKey: 'last-region-id'
-});
+@classic
+class LastRegionIdObject extends StorageObject {
+  storageKey = 'last-region-id';
+}
 
 const LastRegionId = LastRegionIdObject.create();
 
-export default Service.extend({
-  store: service(),
+@classic
+export default class LastRegionService extends Service {
+  @service
+  store;
 
   getLastRegion() {
     const id = LastRegionId.get('id');
@@ -25,9 +29,9 @@ export default Service.extend({
     } else {
       return EmberPromise.resolve(undefined);
     }
-  },
+  }
 
   setLastRegionId(id) {
     LastRegionId.set('id', id);
   }
-});
+}

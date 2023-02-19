@@ -1,3 +1,5 @@
+import classic from 'ember-classic-decorator';
+import { tagName } from '@ember-decorators/component';
 import Component from '@ember/component';
 
 import config from 'adventure-gathering/config/environment';
@@ -7,10 +9,10 @@ import blobStream from 'blob-stream';
 
 import moment from 'moment';
 
-export default Component.extend({
-  tagName: 'span',
-
-  rendering: true,
+@classic
+@tagName('span')
+export default class EmbeddedRendezvousAnswers extends Component {
+  rendering = true;
 
   didInsertElement() {
     const doc = new PDFDocument({layout: 'portrait', font: this.get('assets.header')});
@@ -56,17 +58,17 @@ export default Component.extend({
       this.src = stream.toBlobURL('application/pdf');
       this.set('rendering', false);
     });
-  },
+  }
 
   // FIXME these are copied from the card component
 
   _firstRendezvousTime() {
     return moment(config.firstRendezvousTime);
-  },
+  }
 
   _getRendezvousTimeForIndex(index) {
     const rendezvousInterval = config.rendezvousInterval;
 
     return this._firstRendezvousTime().add(rendezvousInterval*index, 'minutes').format('h:mma');
   }
-});
+}

@@ -1,12 +1,14 @@
+import classic from 'ember-classic-decorator';
+import { tagName } from '@ember-decorators/component';
 import Component from '@ember/component';
 
 import PDFDocument from 'pdfkit';
 import blobStream from 'blob-stream';
 
-export default Component.extend({
-  tagName: 'span',
-
-  rendering: true,
+@classic
+@tagName('span')
+export default class EmbeddedRendezvousMaps extends Component {
+  rendering = true;
 
   didInsertElement() {
     const debug = this.get('debug');
@@ -93,4 +95,4 @@ export default Component.extend({
       this.set('rendering', false);
     });
   }
-});
+}

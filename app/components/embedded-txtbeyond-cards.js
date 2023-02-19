@@ -1,3 +1,5 @@
+import classic from 'ember-classic-decorator';
+import { tagName } from '@ember-decorators/component';
 import { inject as service } from '@ember/service';
 import { alias } from '@ember/object/computed';
 import Component from '@ember/component';
@@ -9,10 +11,10 @@ import blobStream from 'blob-stream';
 
 import moment from 'moment';
 
-export default Component.extend({
-  tagName: 'span',
-
-  rendering: true,
+@classic
+@tagName('span')
+export default class EmbeddedTxtbeyondCards extends Component {
+  rendering = true;
 
   didInsertElement() {
     const debug = this.get('debug');
@@ -186,11 +188,11 @@ export default Component.extend({
       this.src = stream.toBlobURL('application/pdf');
       this.set('rendering', false);
     });
-  },
+  }
 
   _padMask(mask) {
     return mask.replace(/_/g, ' __ ').replace(/^ */, '');
-  },
+  }
 
   _rendezvousCards() {
     return this.get('teams').reduce((cards, team) => {
@@ -198,11 +200,16 @@ export default Component.extend({
         return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
       }));
     }, []);
-  },
+  }
 
-  goal: alias('settings.goal'),
-  puzzles: service(),
-  txtbeyond: service(),
+  @alias('settings.goal')
+  goal;
+
+  @service
+  puzzles;
+
+  @service
+  txtbeyond;
 
   _rendezvousCardDataForTeamMeeting(team, meeting) {
     const destination = meeting.belongsTo('destination').value();
@@ -244,15 +251,15 @@ export default Component.extend({
       // chosenBlankIndex,
       // teamDigitsForAnswerAndGoalDigits
     };
-  },
+  }
 
   _firstRendezvousTime() {
     return moment(config.firstRendezvousTime);
-  },
+  }
 
   _getRendezvousTimeForIndex(index) {
     const rendezvousInterval = config.rendezvousInterval;
 
     return this._firstRendezvousTime().add(rendezvousInterval*index, 'minutes').format('h:mma');
   }
-});
+}

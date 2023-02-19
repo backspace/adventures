@@ -1,41 +1,59 @@
+import classic from 'ember-classic-decorator';
 import { computed } from '@ember/object';
+import { inject as service } from '@ember/service';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
-import { inject as service } from '@ember/service';
 
 const {
   attr,
   hasMany
 } = DS;
 
-export default Model.extend({
-  name: attr('string'),
-  notes: attr('string'),
+@classic
+export default class Region extends Model {
+  @attr('string')
+  name;
 
-  destinations: hasMany('destination', {async: false}),
+  @attr('string')
+  notes;
 
-  meetingCount: computed('destinations.@each.meetings', function() {
+  @hasMany('destination', {async: false})
+  destinations;
+
+  @computed('destinations.@each.meetings')
+  get meetingCount() {
     return this.get('destinations').mapBy('meetings.length').reduce((prev, curr) => prev + curr);
-  }),
+  }
 
-  x: attr('number'),
-  y: attr('number'),
+  @attr('number')
+  x;
 
-  createdAt: attr('createDate'),
-  updatedAt: attr('updateDate'),
+  @attr('number')
+  y;
 
-  features: service(),
-  pathfinder: service(),
+  @attr('createDate')
+  createdAt;
 
-  hasPaths: computed('pathfinder.regions.[]', function() {
+  @attr('updateDate')
+  updatedAt;
+
+  @service
+  features;
+
+  @service
+  pathfinder;
+
+  @computed('pathfinder.regions.[]')
+  get hasPaths() {
     return this.get('pathfinder').hasRegion(this.get('name'));
-  }),
+  }
 
-  isComplete: computed('hasPaths', function() {
+  @computed('hasPaths')
+  get isComplete() {
     if (this.get('features.txtbeyond')) {
       return this.get('hasPaths');
     } else {
       return true;
     }
-  })
-});
+  }
+}

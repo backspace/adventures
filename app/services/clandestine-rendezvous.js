@@ -1,6 +1,8 @@
+import classic from 'ember-classic-decorator';
 import Service from '@ember/service';
 
-export default Service.extend({
+@classic
+export default class ClandestineRendezvousService extends Service {
   chooseBlankIndex({answer, mask, goalDigit}) {
     if (!this.maskIsValid(answer, mask)) {
       throw Error('Mask is invalid');
@@ -20,7 +22,7 @@ export default Service.extend({
         }
       }
     }, {maxDistance: -1}).maxDistanceIndex;
-  },
+  }
 
   teamDigitsForAnswerAndGoalDigits({teams, answerDigit, goalDigit}) {
     if (teams.length > 2) {
@@ -42,11 +44,11 @@ export default Service.extend({
     }
 
     return map;
-  },
+  }
 
   descriptionIsValid() {
     return true;
-  },
+  }
 
   maskIsValid(answer, mask) {
     if (answer.length !== mask.length) {
@@ -69,7 +71,7 @@ export default Service.extend({
     }
 
     return mask.indexOf('_') > -1;
-  },
+  }
 
   suggestedMask(answer) {
     // The suggestion replaces the rightmost three digits with underscores
@@ -85,4 +87,4 @@ export default Service.extend({
       }
     }, {suggestion: '', replaced: 0}).suggestion;
   }
-});
+}

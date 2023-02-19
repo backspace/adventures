@@ -1,10 +1,14 @@
-import { inject as service } from '@ember/service';
+import classic from 'ember-classic-decorator';
 import { run } from '@ember/runloop';
-import Service from '@ember/service';
+import Service, { inject as service } from '@ember/service';
 
-export default Service.extend({
-  features: service(),
-  store: service(),
+@classic
+export default class SettingsService extends Service {
+  @service
+  features;
+
+  @service
+  store;
 
   modelPromise() {
     const store = this.get('store');
@@ -17,7 +21,7 @@ export default Service.extend({
     }).catch(() => {
       return run(() => store.createRecord('settings', {id: 'settings'}));
     });
-  },
+  }
 
   syncFeatures() {
     return this.modelPromise().then(settings => {
@@ -37,4 +41,4 @@ export default Service.extend({
       });
     });
   }
-});
+}

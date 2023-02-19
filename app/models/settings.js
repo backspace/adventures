@@ -1,13 +1,20 @@
+import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
 const { attr } = DS;
 
-export default Model.extend({
-  goal: attr('string'),
+@classic
+export default class Settings extends Model {
+  @attr('string')
+  goal;
 
-  destinationStatus: attr('boolean'),
+  @attr('boolean')
+  destinationStatus;
 
-  clandestineRendezvous: attr('boolean'),
-  txtbeyond: attr('boolean')
-});
+  @attr('boolean')
+  clandestineRendezvous;
+
+  @attr('boolean')
+  txtbeyond;
+}

@@ -1,10 +1,17 @@
-import { inject as service } from "@ember/service";
+import classic from 'ember-classic-decorator';
+import { inject as service } from '@ember/service';
 import Route from "@ember/routing/route";
 
-export default Route.extend({
-  pathfinder: service(),
-  settings: service(),
-  store: service(),
+@classic
+export default class ApplicationRoute extends Route {
+  @service
+  pathfinder;
+
+  @service
+  settings;
+
+  @service
+  store;
 
   async beforeModel() {
     const pouch = this.get("store").adapterFor("application").db;
@@ -15,5 +22,5 @@ export default Route.extend({
     } catch (e) {}
 
     return this.settings.syncFeatures();
-  },
-});
+  }
+}

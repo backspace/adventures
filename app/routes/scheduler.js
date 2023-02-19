@@ -1,10 +1,13 @@
+import classic from 'ember-classic-decorator';
+import { inject as service } from '@ember/service';
 import { isPresent } from '@ember/utils';
 import { hash, all } from 'rsvp';
-import { inject as service } from '@ember/service';
 import Route from '@ember/routing/route';
 
-export default Route.extend({
-  map: service(),
+@classic
+export default class SchedulerRoute extends Route {
+  @service
+  map;
 
   model() {
     return hash({
@@ -26,4 +29,4 @@ export default Route.extend({
       map: this.get('map').getURL('image')
     });
   }
-});
+}
