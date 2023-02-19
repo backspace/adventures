@@ -1,7 +1,7 @@
 {{! template-lint-disable no-inline-styles }}
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div
-  class='region {{if this.isHighlighted 'highlighted'}}'
+  class='region {{if @isHighlighted 'highlighted'}}'
   style={{this.style}}
   draggable={{this.draggable}}
   {{on 'click' this.click}}
