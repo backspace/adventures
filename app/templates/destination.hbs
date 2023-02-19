@@ -72,9 +72,9 @@
     <div class='small-4 columns'>
       <fieldset class='status'>
         <legend>Status</legend>
-        <RadioButton @value='available' @groupValue={{this.model.status}} @class='available'> ✓</RadioButton>
-        <RadioButton @value='unavailable' @groupValue={{this.model.status}} @class='unavailable'> ✘</RadioButton>
-        <RadioButton @value='unknown' @groupValue={{this.model.status}} @class='unknown'> ?</RadioButton>
+        <RadioButton @value='available' @groupValue={{this.model.status}} @class='available' @changed={{fn (mut this.model.status) 'available'}}> ✓</RadioButton>
+        <RadioButton @value='unavailable' @groupValue={{this.model.status}} @class='unavailable' @changed={{fn (mut this.model.status) 'unavailable'}}> ✘</RadioButton>
+        <RadioButton @value='unknown' @groupValue={{this.model.status}} @class='unknown' @changed={{fn (mut this.model.status) 'unknown'}}> ?</RadioButton>
       </fieldset>
     </div>
   {{/if}}
