@@ -15,6 +15,6 @@ export default Controller.extend({
     setMaskToSuggestion() {
       const model = this.get('model');
       model.set('mask', model.get('suggestedMask'));
-    }
-  }
+    },
+  },
 });

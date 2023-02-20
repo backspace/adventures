@@ -12,8 +12,8 @@ export default class NewRoute extends DestinationRoute {
   model() {
     const lastRegion = this.get('lastRegion').getLastRegion();
 
-    return lastRegion.then(region => {
-      return this.store.createRecord('destination', {region});
+    return lastRegion.then((region) => {
+      return this.store.createRecord('destination', { region });
     });
   }
 

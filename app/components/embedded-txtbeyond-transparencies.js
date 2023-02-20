@@ -25,31 +25,38 @@ export default class EmbeddedTxtbeyondTransparencies extends Component {
   didInsertElement() {
     const debug = this.get('debug');
 
-    const doc = new PDFDocument({layout: 'landscape'});
+    const doc = new PDFDocument({ layout: 'landscape' });
     const stream = doc.pipe(blobStream());
 
-    const pageHeight = 8.5*72;
-    const pageWidth = 11*72;
+    const pageHeight = 8.5 * 72;
+    const pageWidth = 11 * 72;
 
     const pageMargin = 18;
 
     const boxes = [];
 
-    this.get('teams').forEach(team => {
-      team.get('meetings').forEach(meeting => {
-        this.get('txtbeyond').descriptionMasks(meeting.get('destination.description')).forEach(mask => {
-          boxes.push(this._buildTransparency(team, meeting, mask));
-        });
+    this.get('teams').forEach((team) => {
+      team.get('meetings').forEach((meeting) => {
+        this.get('txtbeyond')
+          .descriptionMasks(meeting.get('destination.description'))
+          .forEach((mask) => {
+            boxes.push(this._buildTransparency(team, meeting, mask));
+          });
       });
     });
 
-    const packer = new MaxRectsPackerPackage.MaxRectsPacker(pageWidth - pageMargin*2, pageHeight - pageMargin*2, 2, {
-      pot: false
-    });
+    const packer = new MaxRectsPackerPackage.MaxRectsPacker(
+      pageWidth - pageMargin * 2,
+      pageHeight - pageMargin * 2,
+      2,
+      {
+        pot: false,
+      }
+    );
     packer.addArray(boxes);
 
-    packer.bins.forEach(bin => {
-      bin.rects.forEach(rect => {
+    packer.bins.forEach((bin) => {
+      bin.rects.forEach((rect) => {
         doc.save();
         doc.translate(rect.x + pageMargin, rect.y + pageMargin);
         this._drawTransparency(doc, rect.data, debug);
@@ -69,8 +76,8 @@ export default class EmbeddedTxtbeyondTransparencies extends Component {
   _buildTransparency(team, meeting, mask) {
     const displaySize = this._getMeetingDisplaySize(meeting) - 0.5;
     const pointDimensions = pointDimensionsForDisplay(mask, displaySize);
-    const width = pointDimensions.width + margin*2;
-    const height = pointDimensions.height + fontSize + lineGap + margin*2;
+    const width = pointDimensions.width + margin * 2;
+    const height = pointDimensions.height + fontSize + lineGap + margin * 2;
 
     const meetingTeams = meeting.hasMany('teams').ids();
 
@@ -86,15 +93,23 @@ export default class EmbeddedTxtbeyondTransparencies extends Component {
         pointDimensions,
         containerDimensions: {
           width,
-          height
-        }
-      }
+          height,
+        },
+      },
     };
   }
 
   _drawTransparency(
     doc,
-    {teamName, teamPosition, slices, mask, description, pointDimensions, containerDimensions},
+    {
+      teamName,
+      teamPosition,
+      slices,
+      mask,
+      description,
+      pointDimensions,
+      containerDimensions,
+    },
     debug
   ) {
     const header = this.get('assets.header');
@@ -102,9 +117,9 @@ export default class EmbeddedTxtbeyondTransparencies extends Component {
 
     const adjustedPixelLength = pointDimensions.pointsPerPixel;
 
-    const pixelMarginRatio = drawnLength/pixelLength;
+    const pixelMarginRatio = drawnLength / pixelLength;
 
-    const drawnAdjustedLength = adjustedPixelLength*pixelMarginRatio;
+    const drawnAdjustedLength = adjustedPixelLength * pixelMarginRatio;
 
     if (debug) {
       doc.rect(0, 0, containerDimensions.width, containerDimensions.height);
@@ -124,34 +139,46 @@ export default class EmbeddedTxtbeyondTransparencies extends Component {
 
     if (debug) {
       doc.font(regular);
-      doc.fontSize(fontSize/2);
-      doc.text(description, 0, fontSize/2);
+      doc.fontSize(fontSize / 2);
+      doc.text(description, 0, fontSize / 2);
     }
 
     doc.save();
     doc.translate(0, fontSize + lineGap);
 
     doc.save();
-    doc.translate(adjustedPixelLength/2, pointDimensions.height - adjustedPixelLength/2);
-    this._drawRegistrationMark(doc),
-    doc.restore();
+    doc.translate(
+      adjustedPixelLength / 2,
+      pointDimensions.height - adjustedPixelLength / 2
+    );
+    this._drawRegistrationMark(doc), doc.restore();
 
     doc.save();
-    doc.translate(pointDimensions.width - adjustedPixelLength/2, adjustedPixelLength/2);
-    this._drawRegistrationMark(doc),
-    doc.restore();
+    doc.translate(
+      pointDimensions.width - adjustedPixelLength / 2,
+      adjustedPixelLength / 2
+    );
+    this._drawRegistrationMark(doc), doc.restore();
 
     doc.save();
     // TODO is a mark indent needed?
     // doc.translate(registrationLength*2, registrationLength*2);
 
-    drawString({string: mask, slices, debug, teamPosition}, (row, col, fill) => {
-      if (fill !== 'transparent') {
-        doc.fillColor(fill);
-        doc.rect(col*adjustedPixelLength, row*adjustedPixelLength, drawnAdjustedLength, drawnAdjustedLength);
-        doc.fill();
+    drawString(
+      { string: mask, slices, debug, teamPosition },
+      (row, col, fill) => {
+        if (fill !== 'transparent') {
+          doc.fillColor(fill);
+          doc.rect(
+            col * adjustedPixelLength,
+            row * adjustedPixelLength,
+            drawnAdjustedLength,
+            drawnAdjustedLength
+          );
+          doc.fill();
+        }
       }
-    });
+    );
 
     doc.restore();
     doc.restore();
@@ -161,9 +188,9 @@ export default class EmbeddedTxtbeyondTransparencies extends Component {
 
   _drawRegistrationMark(doc) {
     doc.lineWidth(0.25);
-    doc.moveTo(-registrationLength/2, 0).lineTo(registrationLength/2, 0);
+    doc.moveTo(-registrationLength / 2, 0).lineTo(registrationLength / 2, 0);
     doc.stroke();
-    doc.moveTo(0, -registrationLength/2).lineTo(0, registrationLength/2);
+    doc.moveTo(0, -registrationLength / 2).lineTo(0, registrationLength / 2);
     doc.stroke();
   }
 
@@ -174,6 +201,11 @@ export default class EmbeddedTxtbeyondTransparencies extends Component {
       throw new Error(`Meeting ${meeting.id} has no phone number!`);
     }
 
-    return parseFloat(meeting.get('teams').reduce((phones, team) => phones.concat(team.get('phones')), []).find(phone => phone.number === number).displaySize);
+    return parseFloat(
+      meeting
+        .get('teams')
+        .reduce((phones, team) => phones.concat(team.get('phones')), [])
+        .find((phone) => phone.number === number).displaySize
+    );
   }
 }

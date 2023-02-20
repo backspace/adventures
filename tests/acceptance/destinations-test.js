@@ -8,11 +8,11 @@ import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 
 import page from '../pages/destinations';
 
-module('Acceptance | destinations', function(hooks) {
+module('Acceptance | destinations', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
-  hooks.beforeEach(function(assert) {
+  hooks.beforeEach(function (assert) {
     const store = this.owner.lookup('service:store');
     const done = assert.async();
 
@@ -23,38 +23,41 @@ module('Acceptance | destinations', function(hooks) {
       regionOne.set('name', 'There');
       regionTwo.set('name', 'Here');
 
-      all([regionOne.save(), regionTwo.save()]).then(() => {
-        const fixtureOne = store.createRecord('destination');
-        const fixtureTwo = store.createRecord('destination');
+      all([regionOne.save(), regionTwo.save()])
+        .then(() => {
+          const fixtureOne = store.createRecord('destination');
+          const fixtureTwo = store.createRecord('destination');
 
-        fixtureOne.setProperties({
-          description: 'Ina-Karekh',
-          accessibility: 'You might need help',
-          awesomeness: 9,
-          risk: 6,
-          answer: 'ABC123',
-          mask: 'ABC__3',
-          status: 'unavailable',
+          fixtureOne.setProperties({
+            description: 'Ina-Karekh',
+            accessibility: 'You might need help',
+            awesomeness: 9,
+            risk: 6,
+            answer: 'ABC123',
+            mask: 'ABC__3',
+            status: 'unavailable',
 
-          region: regionOne
+            region: regionOne,
+          });
+
+          fixtureTwo.setProperties({
+            description: 'Hona-Karekh',
+            status: 'available',
+            region: regionTwo,
+          });
+
+          return all([fixtureTwo.save(), fixtureOne.save()]);
+        })
+        .then(() => {
+          return all([regionOne.save(), regionTwo.save()]);
+        })
+        .then(() => {
+          done();
         });
-
-        fixtureTwo.setProperties({
-          description: 'Hona-Karekh',
-          status: 'available',
-          region: regionTwo
-        });
-
-        return all([fixtureTwo.save(), fixtureOne.save()]);
-      }).then(() => {
-        return all([regionOne.save(), regionTwo.save()]);
-      }).then(() => {
-        done();
-      });
     });
   });
 
-  test('existing destinations are listed and can be sorted by region or awesomeness', async function(assert) {
+  test('existing destinations are listed and can be sorted by region or awesomeness', async function (assert) {
     await visit('/destinations');
 
     assert.equal(page.destinations[0].description, 'Ina-Karekh');
@@ -82,13 +85,16 @@ module('Acceptance | destinations', function(hooks) {
     assert.equal(page.destinations[0].description, 'Hona-Karekh');
   });
 
-  test('destination status doesn’t show when the feature flag is off', async function(assert) {
+  test('destination status doesn’t show when the feature flag is off', async function (assert) {
     await visit('/destinations');
 
-    assert.ok(page.destinations[0].status.isHidden, 'expected the status to be hidden');
+    assert.ok(
+      page.destinations[0].status.isHidden,
+      'expected the status to be hidden'
+    );
   });
 
-  test('destination status is displayed and can be toggled from the list when the feature flag is on', async function(assert) {
+  test('destination status is displayed and can be toggled from the list when the feature flag is on', async function (assert) {
     await withSetting(this.owner, 'destination-status');
     await visit('/destinations');
 
@@ -107,7 +113,7 @@ module('Acceptance | destinations', function(hooks) {
     assert.equal(page.destinations[0].status.value, '?');
   });
 
-  test('a destination can be created and will appear at the top of the list', async function(assert) {
+  test('a destination can be created and will appear at the top of the list', async function (assert) {
     await withSetting(this.owner, 'clandestine-rendezvous');
     await visit('/destinations');
 
@@ -130,7 +136,7 @@ module('Acceptance | destinations', function(hooks) {
     assert.equal(page.destinations[0].mask, 'R0E0H_');
   });
 
-  test('the destination’s suggested mask is based on the adventure', async function(assert) {
+  test('the destination’s suggested mask is based on the adventure', async function (assert) {
     await withSetting(this.owner, 'txtbeyond');
     await visit('/destinations');
 
@@ -140,15 +146,18 @@ module('Acceptance | destinations', function(hooks) {
     assert.equal(page.suggestedMaskButton.label, 'itchin ________ witchin');
   });
 
-  test('the status fieldset doesn’t show when the feature isn’t on', async function(assert) {
+  test('the status fieldset doesn’t show when the feature isn’t on', async function (assert) {
     await visit('/destinations');
 
     await page.destinations[0].edit();
 
-    assert.ok(page.statusFieldset.isHidden, 'expected the status fieldset to be hidden');
+    assert.ok(
+      page.statusFieldset.isHidden,
+      'expected the status fieldset to be hidden'
+    );
   });
 
-  test('a destination can be edited and edits can be cancelled', async function(assert) {
+  test('a destination can be edited and edits can be cancelled', async function (assert) {
     await withSetting(this.owner, 'destination-status');
     await visit('/destinations');
 
@@ -178,7 +187,10 @@ module('Acceptance | destinations', function(hooks) {
 
     await page.destinations[0].edit();
 
-    assert.equal(page.accessibilityField.value, 'You must cross the Empty Thousand!');
+    assert.equal(
+      page.accessibilityField.value,
+      'You must cross the Empty Thousand!'
+    );
     assert.equal(page.answerField.value, 'DEF456');
 
     await page.descriptionField.fill('Banbarra');
@@ -187,7 +199,7 @@ module('Acceptance | destinations', function(hooks) {
     assert.equal(page.destinations[0].description, 'Kisua');
   });
 
-  test('a new destination defaults to the same region as the previously-created one', async function(assert) {
+  test('a new destination defaults to the same region as the previously-created one', async function (assert) {
     await page.visit();
     await page.new();
     await page.descriptionField.fill('Borderlands');

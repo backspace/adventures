@@ -6,11 +6,7 @@ import { isEmpty } from '@ember/utils';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
-const {
-  attr,
-  belongsTo,
-  hasMany
-} = DS;
+const { attr, belongsTo, hasMany } = DS;
 
 @classic
 export default class Destination extends Model {
@@ -52,16 +48,27 @@ export default class Destination extends Model {
 
   @computed('description', 'answer', 'awesomeness', 'risk', 'maskIsValid')
   get isComplete() {
-    const {description, answer, awesomeness, risk, maskIsValid} = this.getProperties('description', 'answer', 'awesomeness', 'risk', 'maskIsValid');
+    const { description, answer, awesomeness, risk, maskIsValid } =
+      this.getProperties(
+        'description',
+        'answer',
+        'awesomeness',
+        'risk',
+        'maskIsValid'
+      );
 
-    const descriptionIsValid = this.get('puzzles.implementation').descriptionIsValid(description);
+    const descriptionIsValid = this.get(
+      'puzzles.implementation'
+    ).descriptionIsValid(description);
 
-    return !isEmpty(description) &&
+    return (
+      !isEmpty(description) &&
       descriptionIsValid &&
       !isEmpty(answer) &&
       awesomeness > 0 &&
       !isEmpty(risk) &&
-      maskIsValid;
+      maskIsValid
+    );
   }
 
   @not('isComplete')
@@ -73,10 +80,10 @@ export default class Destination extends Model {
   @equal('status', 'available')
   isAvailable;
 
-  @belongsTo('region', {async: false})
+  @belongsTo('region', { async: false })
   region;
 
-  @hasMany('meeting', {async: false})
+  @hasMany('meeting', { async: false })
   meetings;
 
   @attr('createDate')

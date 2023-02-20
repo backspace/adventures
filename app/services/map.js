@@ -17,21 +17,23 @@ export default class MapService extends Service {
   }
 
   getURL(name) {
-    return this.getAttachment(name).then(attachment => {
-      return URL.createObjectURL(attachment);
-    }).catch(() => {
-      return null;
-    });
+    return this.getAttachment(name)
+      .then((attachment) => {
+        return URL.createObjectURL(attachment);
+      })
+      .catch(() => {
+        return null;
+      });
   }
 
   getArrayBuffer(name) {
-    return this.getAttachment(name).then(attachment => {
+    return this.getAttachment(name).then((attachment) => {
       return blobUtil.blobToArrayBuffer(attachment);
     });
   }
 
   getBase64String(name) {
-    return this.getAttachment(name).then(attachment => {
+    return this.getAttachment(name).then((attachment) => {
       return blobUtil.blobToBase64String(attachment);
     });
   }
@@ -39,10 +41,12 @@ export default class MapService extends Service {
   saveFile(file, name) {
     const db = this.get('db');
 
-    db.get('map').then(map => {
-      return db.putAttachment('map', name, map._rev, file, file.type);
-    }).catch(() => {
-      return db.putAttachment('map', name, file, file.type);
-    });
+    db.get('map')
+      .then((map) => {
+        return db.putAttachment('map', name, map._rev, file, file.type);
+      })
+      .catch(() => {
+        return db.putAttachment('map', name, file, file.type);
+      });
   }
 }

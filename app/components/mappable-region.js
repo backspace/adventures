@@ -1,14 +1,14 @@
-import Component from "@glimmer/component";
-import { tracked } from "@glimmer/tracking";
-import { action } from "@ember/object";
-import { htmlSafe } from "@ember/template";
-import { ref } from "ember-ref-bucket";
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+import { htmlSafe } from '@ember/template';
+import { ref } from 'ember-ref-bucket';
 
 // FIXME not used but needed by Foundation??
-import jQuery from "jquery";
+import jQuery from 'jquery';
 
 export default class MappableRegionComponent extends Component {
-  @ref("Region") regionElement;
+  @ref('Region') regionElement;
   @tracked originalPosition;
 
   get draggable() {
@@ -32,12 +32,12 @@ export default class MappableRegionComponent extends Component {
 
     if (highlightedTeam) {
       const meetingRegionIds = highlightedTeam
-        .hasMany("meetings")
+        .hasMany('meetings')
         .value()
-        .rejectBy("isNew")
-        .map((meeting) => meeting.belongsTo("destination").value())
-        .map((destination) => destination.belongsTo("region").value())
-        .mapBy("id");
+        .rejectBy('isNew')
+        .map((meeting) => meeting.belongsTo('destination').value())
+        .map((destination) => destination.belongsTo('region').value())
+        .mapBy('id');
       const index = meetingRegionIds.indexOf(regionId);
 
       if (index > -1) {

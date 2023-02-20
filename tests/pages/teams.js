@@ -3,7 +3,7 @@ import PageObject, {
   collection,
   fillable,
   text,
-  visitable
+  visitable,
 } from 'ember-cli-page-object';
 
 export default PageObject.create({
@@ -14,9 +14,9 @@ export default PageObject.create({
     users: text('.users'),
     notes: text('.notes'),
     riskAversion: text('.risk-aversion'),
-    phones: text('.phones')
+    phones: text('.phones'),
   }),
 
   enterJSON: fillable('textarea'),
-  save: clickable('.save')
+  save: clickable('.save'),
 });

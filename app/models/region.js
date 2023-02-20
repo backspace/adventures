@@ -4,10 +4,7 @@ import { inject as service } from '@ember/service';
 import Model from 'ember-pouch/model';
 import DS from 'ember-data';
 
-const {
-  attr,
-  hasMany
-} = DS;
+const { attr, hasMany } = DS;
 
 @classic
 export default class Region extends Model {
@@ -17,12 +14,23 @@ export default class Region extends Model {
   @attr('string')
   notes;
 
-  @hasMany('destination', {async: false})
+  @hasMany('destination', { async: false })
   destinations;
 
   @computed('destinations.@each.meetings')
+  get allMeetings() {
+    return this.get('destinations').mapBy('meetings').flat();
+  }
+
+  @computed('destinations.@each.meetings', 'allMeetings.length')
   get meetingCount() {
-    return this.get('destinations').mapBy('meetings.length').reduce((prev, curr) => prev + curr);
+    console.log(
+      `meeting count ${this.get('name')}`,
+      this.get('destinations')
+        .mapBy('meetings.length')
+        .reduce((prev, curr) => prev + curr)
+    );
+    return this.get('allMeetings.length');
   }
 
   @attr('number')

@@ -5,7 +5,7 @@ import PageObject, {
   hasClass,
   text,
   value,
-  visitable
+  visitable,
 } from 'ember-cli-page-object';
 
 export default PageObject.create({
@@ -16,7 +16,7 @@ export default PageObject.create({
     name: text('.name'),
     isIncomplete: hasClass('incomplete'),
 
-    edit: clickable('.edit')
+    edit: clickable('.edit'),
   }),
 
   new: clickable('.regions.new'),
@@ -24,15 +24,15 @@ export default PageObject.create({
   nameField: {
     scope: 'input.name',
     value: value(),
-    fill: fillable()
+    fill: fillable(),
   },
 
   notesField: {
     scope: 'textarea.notes',
-    value: value()
+    value: value(),
   },
 
   save: clickable('.save'),
   cancel: clickable('.cancel'),
-  delete: clickable('.delete')
+  delete: clickable('.delete'),
 });

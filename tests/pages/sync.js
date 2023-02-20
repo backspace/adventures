@@ -3,7 +3,7 @@ import PageObject, {
   collection,
   fillable,
   text,
-  value
+  value,
 } from 'ember-cli-page-object';
 
 export default PageObject.create({
@@ -15,20 +15,20 @@ export default PageObject.create({
 
   databases: collection('.databases .database', {
     name: text(),
-    click: clickable('a')
+    click: clickable('a'),
   }),
 
   push: {
     scope: 'tr.push',
     read: text('.read'),
     written: text('.written'),
-    writeFailures: text('.write-failures')
+    writeFailures: text('.write-failures'),
   },
 
   pull: {
     scope: 'tr.pull',
     read: text('.read'),
     written: text('.written'),
-    writeFailures: text('.write-failures')
-  }
+    writeFailures: text('.write-failures'),
+  },
 });

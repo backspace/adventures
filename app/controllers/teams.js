@@ -10,12 +10,14 @@ export default class TeamsController extends Controller {
 
   @action
   save() {
-    const {data: teams} = JSON.parse(this.get('teamsJSON'));
+    const { data: teams } = JSON.parse(this.get('teamsJSON'));
 
-    all(this.get('model').map(model => {
-      return model.reload().then(reloaded => reloaded.destroyRecord());
-    })).then(() => {
-      const teamRecords = teams.map(({attributes}) => {
+    all(
+      this.get('model').map((model) => {
+        return model.reload().then((reloaded) => reloaded.destroyRecord());
+      })
+    ).then(() => {
+      const teamRecords = teams.map(({ attributes }) => {
         const teamRecord = this.store.createRecord('team');
         teamRecord.setProperties(attributes);
 

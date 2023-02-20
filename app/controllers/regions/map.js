@@ -9,7 +9,7 @@ export default class MapController extends Controller {
   map;
 
   @action
-  saveAttachment(name, property, {target}) {
+  saveAttachment(name, property, { target }) {
     const file = target.files[0];
 
     if (property) {

@@ -5,7 +5,7 @@ import { setApplication } from '@ember/test-helpers';
 import { setup } from 'qunit-dom';
 import { start } from 'ember-qunit';
 import PouchDB from 'adventure-gathering/utils/pouch';
-import MemoryAdapter from "pouchdb-adapter-memory";
+import MemoryAdapter from 'pouchdb-adapter-memory';
 
 import 'ember-feature-flags/test-support/helpers/with-feature';
 

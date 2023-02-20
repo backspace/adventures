@@ -15,7 +15,9 @@ export default class DestinationRoute extends Route {
   store;
 
   beforeModel() {
-    return this.store.findAll('region').then(regions => this.set('regions', regions));
+    return this.store
+      .findAll('region')
+      .then((regions) => this.set('regions', regions));
   }
 
   setupController(controller, model) {
@@ -25,17 +27,21 @@ export default class DestinationRoute extends Route {
 
   @action
   save(model) {
-    model.save().then(() => {
-      return model.get('region');
-    }).then(region => {
-      if (region) {
-        this.get('lastRegion').setLastRegionId(region.id);
-      }
+    model
+      .save()
+      .then(() => {
+        return model.get('region');
+      })
+      .then((region) => {
+        if (region) {
+          this.get('lastRegion').setLastRegionId(region.id);
+        }
 
-      return (region ? region.save() : true);
-    }).then(() => {
-      this.router.transitionTo('destinations');
-    });
+        return region ? region.save() : true;
+      })
+      .then(() => {
+        this.router.transitionTo('destinations');
+      });
   }
 
   @action
@@ -48,10 +54,13 @@ export default class DestinationRoute extends Route {
   delete(model) {
     // This is an unfortunate workaround to address test errors of this form:
     // Attempted to handle event `pushedData` on … while in state root.deleted.inFlight
-    model.reload().then(reloaded => {
-      return reloaded.destroyRecord();
-    }).then(() => {
-      this.router.transitionTo('destinations');
-    });
+    model
+      .reload()
+      .then((reloaded) => {
+        return reloaded.destroyRecord();
+      })
+      .then(() => {
+        this.router.transitionTo('destinations');
+      });
   }
 }

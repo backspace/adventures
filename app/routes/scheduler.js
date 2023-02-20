@@ -13,22 +13,30 @@ export default class SchedulerRoute extends Route {
 
   model() {
     return hash({
-      regions: this.store.findAll('region').then(regions => {
-        return all(regions.map(region => {
-          return hash({
-            region: region,
-            destinations: region.get('destinations')
-          });
-        }));
-      }).then(regionsAndDestinations => {
-        // eslint-disable-next-line
-        return regionsAndDestinations.filter(({region , destinations}) => {
-          return isPresent(destinations.filterBy('isAvailable'));
-        }).map(regionAndDestinations => regionAndDestinations.region).sortBy('name');
-      }),
+      regions: this.store
+        .findAll('region')
+        .then((regions) => {
+          return all(
+            regions.map((region) => {
+              return hash({
+                region: region,
+                destinations: region.get('destinations'),
+              });
+            })
+          );
+        })
+        .then((regionsAndDestinations) => {
+          // eslint-disable-next-line
+          return regionsAndDestinations
+            .filter(({ region, destinations }) => {
+              return isPresent(destinations.filterBy('isAvailable'));
+            })
+            .map((regionAndDestinations) => regionAndDestinations.region)
+            .sortBy('name');
+        }),
       destinations: this.store.findAll('destination'),
       teams: this.store.findAll('team'),
-      map: this.get('map').getURL('image')
+      map: this.get('map').getURL('image'),
     });
   }
 }

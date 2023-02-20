@@ -7,10 +7,10 @@ import PageObject, {
   selectable,
   text,
   value,
-  visitable
+  visitable,
 } from 'ember-cli-page-object';
 
-const selectText = function(selector) {
+const selectText = function (selector) {
   return {
     isDescriptor: true,
 
@@ -23,11 +23,11 @@ const selectText = function(selector) {
       } else {
         return '';
       }
-    }
+    },
   };
-}
+};
 
-const fillSelectByText = function(selector) {
+const fillSelectByText = function (selector) {
   return {
     isDescriptor: true,
 
@@ -35,7 +35,7 @@ const fillSelectByText = function(selector) {
       const selectElement = findElement(this, selector);
       const id = selectElement.find(`option:contains('${text}')`).attr('value');
       findElement(this, selector).val(id).trigger('change');
-    }
+    },
   };
 };
 
@@ -44,12 +44,12 @@ export default PageObject.create({
 
   headerRegion: {
     scope: 'th.region',
-    click: clickable()
+    click: clickable(),
   },
 
   headerAwesomeness: {
     scope: 'th.awesomeness',
-    click: clickable()
+    click: clickable(),
   },
 
   destinations: collection('.destination', {
@@ -67,10 +67,10 @@ export default PageObject.create({
     status: {
       scope: '.status',
       value: text(),
-      click: clickable()
+      click: clickable(),
     },
 
-    edit: clickable('.edit')
+    edit: clickable('.edit'),
   }),
 
   new: clickable('.destinations.new'),
@@ -78,43 +78,43 @@ export default PageObject.create({
   descriptionField: {
     scope: 'textarea.description',
     value: value(),
-    fill: fillable()
+    fill: fillable(),
   },
 
   accessibilityField: {
     scope: 'textarea.accessibility',
     value: value(),
-    fill: fillable()
+    fill: fillable(),
   },
 
   awesomenessField: {
     scope: 'input.awesomeness',
     value: value(),
-    fill: fillable()
+    fill: fillable(),
   },
 
   riskField: {
     scope: 'input.risk',
     value: value(),
-    fill: fillable()
+    fill: fillable(),
   },
 
   answerField: {
     scope: 'input.answer',
     value: value(),
-    fill: fillable()
+    fill: fillable(),
   },
 
   maskField: {
     scope: 'input.mask',
     value: value(),
-    fill: fillable()
+    fill: fillable(),
   },
 
   suggestedMaskButton: {
     scope: 'button.suggested-mask',
     label: text(),
-    click: clickable()
+    click: clickable(),
   },
 
   regionField: {
@@ -122,7 +122,7 @@ export default PageObject.create({
     value: value(),
     text: selectText(),
     fillByText: fillSelectByText(),
-    select: selectable()
+    select: selectable(),
   },
 
   statusFieldset: {
@@ -130,11 +130,11 @@ export default PageObject.create({
 
     availableOption: {
       scope: 'input[value=available]',
-      click: clickable()
-    }
+      click: clickable(),
+    },
   },
 
   save: clickable('.save'),
   cancel: clickable('.cancel'),
-  delete: clickable('.delete')
+  delete: clickable('.delete'),
 });

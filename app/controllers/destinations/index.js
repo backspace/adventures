@@ -38,6 +38,6 @@ export default Controller.extend({
       } else {
         this.set('sorting', ['meetings.length', 'createdAt:desc']);
       }
-    }
-  }
+    },
+  },
 });

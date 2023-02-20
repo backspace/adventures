@@ -8,18 +8,20 @@ export default Service.extend({
   store: service(),
 
   data: Object.freeze({
-    data: {}
+    data: {},
   }),
 
-  regions: computed('data._rev', function() {
-    return Object.keys(this.get('data.data')).reduce((regions, key) => regions.concat(key.split('|')), []).uniq();
+  regions: computed('data._rev', function () {
+    return Object.keys(this.get('data.data'))
+      .reduce((regions, key) => regions.concat(key.split('|')), [])
+      .uniq();
   }),
 
   hasRegion(regionName) {
     return this.get('regions').includes(regionName);
   },
 
-  graph: computed('data._rev', function() {
+  graph: computed('data._rev', function () {
     const graph = new jsgraphs.WeightedDiGraph(this.get('regions.length'));
 
     const regionToIndex = {};
@@ -28,7 +30,7 @@ export default Service.extend({
     Object.entries(this.get('data.data')).forEach(([regions, distance]) => {
       const [dataA, dataB] = regions.split('|');
 
-      [dataA, dataB].forEach(region => {
+      [dataA, dataB].forEach((region) => {
         if (!regionToIndex[region]) {
           regionToIndex[region] = regionIndex;
           regionIndex++;
@@ -37,8 +39,12 @@ export default Service.extend({
         }
       });
 
-      graph.addEdge(new jsgraphs.Edge(regionToIndex[dataA], regionToIndex[dataB], distance));
-      graph.addEdge(new jsgraphs.Edge(regionToIndex[dataB], regionToIndex[dataA], distance));
+      graph.addEdge(
+        new jsgraphs.Edge(regionToIndex[dataA], regionToIndex[dataB], distance)
+      );
+      graph.addEdge(
+        new jsgraphs.Edge(regionToIndex[dataB], regionToIndex[dataA], distance)
+      );
     });
 
     window.graph = graph;
@@ -59,6 +65,8 @@ export default Service.extend({
   regionToIndex(region) {
     const graph = this.get('graph');
 
-    return Object.keys(graph.nodeInfo).find(key => graph.nodeInfo[key].label === region);
-  }
+    return Object.keys(graph.nodeInfo).find(
+      (key) => graph.nodeInfo[key].label === region
+    );
+  },
 });

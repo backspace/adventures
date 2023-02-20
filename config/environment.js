@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function(environment) {
+module.exports = function (environment) {
   let ENV = {
     modulePrefix: 'adventure-gathering',
     environment,
@@ -13,8 +13,8 @@ module.exports = function(environment) {
       },
       EXTEND_PROTOTYPES: {
         // Prevent Ember Data from overriding Date.parse.
-        Date: false
-      }
+        Date: false,
+      },
     },
 
     APP: {
@@ -25,20 +25,20 @@ module.exports = function(environment) {
     emberPouch: {
       localDb: 'adventure-gathering',
       saveHasMany: true,
-      options: {}
+      options: {},
     },
 
     manifest: {
       enabled: true,
-      appcacheFile: "/manifest.appcache",
+      appcacheFile: '/manifest.appcache',
       excludePaths: ['index.html', 'manifest.ember-web-app.json'],
       includePaths: ['/'],
       network: ['*'],
-      showCreateDate: true
+      showCreateDate: true,
     },
 
     firstRendezvousTime: '2016-02-12 13:50',
-    rendezvousInterval: 22
+    rendezvousInterval: 22,
   };
 
   if (environment === 'development') {

@@ -2,7 +2,7 @@ import { all } from 'rsvp';
 import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
 import { setupApplicationTest } from 'ember-qunit';
-import { find } from '@ember/test-helpers';
+import { find, waitUntil } from '@ember/test-helpers';
 
 import withSetting from '../helpers/with-setting';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
@@ -10,11 +10,11 @@ import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import page from '../pages/scheduler';
 import destinationsPage from '../pages/destinations';
 
-module('Acceptance | scheduler', function(hooks) {
+module('Acceptance | scheduler', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
-  hooks.beforeEach(function(assert) {
+  hooks.beforeEach(function (assert) {
     const store = this.owner.lookup('service:store');
     const db = this.owner.lookup('adapter:application').get('db');
     const done = assert.async();
@@ -24,16 +24,18 @@ module('Acceptance | scheduler', function(hooks) {
         name: 'Portage Place',
         notes: 'Downtown revitalisation!',
         x: 50,
-        y: 60
+        y: 60,
       });
 
       const eatonCentre = store.createRecord('region', {
         name: 'Eaton Centre',
         x: 100,
-        y: 100
+        y: 100,
       });
 
-      const circus = store.createRecord('region', {name: 'Portage and Main Circus'});
+      const circus = store.createRecord('region', {
+        name: 'Portage and Main Circus',
+      });
 
       const superfans = store.createRecord('team', {
         name: 'Leave It to Beaver superfans',
@@ -45,79 +47,112 @@ module('Acceptance | scheduler', function(hooks) {
       const mayors = store.createRecord('team', {
         name: 'Mayors',
         users: 'susan@winnipeg.ca, glen@winnipeg.ca',
-        riskAversion: 1
+        riskAversion: 1,
       });
 
-      const pyjamaGamers = store.createRecord('team', {name: 'The Pyjama Gamers'});
+      const pyjamaGamers = store.createRecord('team', {
+        name: 'The Pyjama Gamers',
+      });
 
       const pathfinderData = {
         _id: 'pathfinder-data',
         data: {
-          'Portage Place|Eaton Centre': 5
-        }
+          'Portage Place|Eaton Centre': 5,
+        },
       };
 
-      let edmontonCourt, prairieTheatreExchange, globeCinemas, squeakyFloor, mrGreenjeans, sculpture;
+      let edmontonCourt,
+        prairieTheatreExchange,
+        globeCinemas,
+        squeakyFloor,
+        mrGreenjeans,
+        sculpture;
 
-      all([portagePlace.save(), eatonCentre.save(), circus.save(), superfans.save(), mayors.save(), pyjamaGamers.save(), db.put(pathfinderData)]).then(() => {
-        edmontonCourt = store.createRecord('destination', {
-          region: portagePlace,
-          description: 'Edmonton Court',
-          accessibility: 'Steps down to centre',
-          awesomeness: 3,
-          risk: 2,
-          status: 'available'
+      all([
+        portagePlace.save(),
+        eatonCentre.save(),
+        circus.save(),
+        superfans.save(),
+        mayors.save(),
+        pyjamaGamers.save(),
+        db.put(pathfinderData),
+      ])
+        .then(() => {
+          edmontonCourt = store.createRecord('destination', {
+            region: portagePlace,
+            description: 'Edmonton Court',
+            accessibility: 'Steps down to centre',
+            awesomeness: 3,
+            risk: 2,
+            status: 'available',
+          });
+
+          prairieTheatreExchange = store.createRecord('destination', {
+            description: 'Prairie Theatre Exchange',
+            awesomeness: 4 / 3,
+            risk: 1,
+            region: portagePlace,
+            status: 'available',
+          });
+
+          globeCinemas = store.createRecord('destination', {
+            region: portagePlace,
+          });
+
+          squeakyFloor = store.createRecord('destination', {
+            region: eatonCentre,
+            status: 'unavailable',
+          });
+
+          mrGreenjeans = store.createRecord('destination', {
+            description: 'Mr. Greenjeans',
+            region: eatonCentre,
+            status: 'available',
+          });
+
+          sculpture = store.createRecord('destination', {
+            region: circus,
+            status: 'unavailable',
+          });
+
+          return all([
+            edmontonCourt.save(),
+            prairieTheatreExchange.save(),
+            globeCinemas.save(),
+            squeakyFloor.save(),
+            mrGreenjeans.save(),
+            sculpture.save(),
+          ]);
+        })
+        .then(() => {
+          return all([portagePlace.save(), eatonCentre.save(), circus.save()]);
+        })
+        .then(() => {
+          return store
+            .createRecord('meeting', {
+              destination: edmontonCourt,
+              offset: 15,
+              teams: [superfans, mayors],
+            })
+            .save();
+        })
+        .then(() => {
+          return all([edmontonCourt.save(), superfans.save(), mayors.save()]);
+        })
+        .then(() => {
+          done();
         });
-
-        prairieTheatreExchange = store.createRecord('destination', {
-          description: 'Prairie Theatre Exchange',
-          awesomeness: 4/3,
-          risk: 1,
-          region: portagePlace,
-          status: 'available'
-        });
-
-        globeCinemas = store.createRecord('destination', {
-          region: portagePlace,
-        });
-
-        squeakyFloor = store.createRecord('destination', {
-          region: eatonCentre,
-          status: 'unavailable'
-        });
-
-        mrGreenjeans = store.createRecord('destination', {
-          description: 'Mr. Greenjeans',
-          region: eatonCentre,
-          status: 'available'
-        });
-
-        sculpture = store.createRecord('destination', {
-          region: circus,
-          status: 'unavailable'
-        });
-
-        return all([edmontonCourt.save(), prairieTheatreExchange.save(), globeCinemas.save(), squeakyFloor.save(), mrGreenjeans.save(), sculpture.save()]);
-      }).then(() => {
-        return all([portagePlace.save(), eatonCentre.save(), circus.save()]);
-      }).then(() => {
-        return store.createRecord('meeting', {
-          destination: edmontonCourt,
-          offset: 15,
-          teams: [superfans, mayors]
-        }).save();
-      }).then(() => {
-        return all([edmontonCourt.save(), superfans.save(), mayors.save()]);
-      }).then(() => {
-        done();
-      });
     });
   });
 
-  test('available destinations are grouped by region', async function(assert) {
+  test('available destinations are grouped by region', async function (assert) {
     await page.visit();
 
-    assert.equal(page.regions.length, 2, 'only regions with available destinations should be listed');
+    assert.equal(
+      page.regions.length,
+      2,
+      'only regions with available destinations should be listed'
+    );
     const region = page.regions[1];
 
     assert.equal(region.name, 'Portage Place');
@@ -135,7 +170,7 @@ module('Acceptance | scheduler', function(hooks) {
     assert.equal(destination.riskBorderOpacity, 0.2);
   });
 
-  test('regions with available destinations are displayed on the map and highlight when hovered in the column', async function(assert) {
+  test('regions with available destinations are displayed on the map and highlight when hovered in the column', async function (assert) {
     await page.visit();
 
     const region = page.map.regions[1];
@@ -150,17 +185,24 @@ module('Acceptance | scheduler', function(hooks) {
   });
 
   // This test ensures that a region’s destinations are serialised
-  test('a newly created and available destination will show under its region', async function(assert) {
+  test('a newly created and available destination will show under its region', async function (assert) {
     await withSetting(this.owner, 'destination-status');
     await destinationsPage.visit();
     await destinationsPage.new();
     await destinationsPage.descriptionField.fill('Fountain');
 
-    const portagePlaceOption = find(`option[data-test-region-name="Portage Place"]`);
+    const portagePlaceOption = find(
+      `option[data-test-region-name="Portage Place"]`
+    );
     await destinationsPage.regionField.select(portagePlaceOption.value);
+    await waitUntil(
+      () => destinationsPage.regionField.text === 'Portage Place'
+    );
 
     await destinationsPage.save();
 
+    await waitUntil(() => destinationsPage.destinations.length);
+    assert.equal(destinationsPage.destinations[0].region, 'Portage Place');
     await destinationsPage.destinations[0].status.click();
 
     await page.visit();
@@ -169,28 +211,40 @@ module('Acceptance | scheduler', function(hooks) {
     assert.equal(region.destinations.length, 3);
   });
 
-  test('a destination with a meeting is indicated', async function(assert) {
+  test('a destination with a meeting is indicated', async function (assert) {
     await destinationsPage.visit();
 
-    assert.ok(destinationsPage.destinations[0].hasMeetings, 'expected the first destination to have meetings');
-    assert.notOk(destinationsPage.destinations[1].hasMeetings, 'expected the second destination not to have meetings');
+    assert.ok(
+      destinationsPage.destinations[0].hasMeetings,
+      'expected the first destination to have meetings'
+    );
+    assert.notOk(
+      destinationsPage.destinations[1].hasMeetings,
+      'expected the second destination not to have meetings'
+    );
   });
 
-  test('teams are listed', async function(assert) {
+  test('teams are listed', async function (assert) {
     await page.visit();
 
     const superfans = page.teams[0];
     assert.equal(superfans.name, 'Leave It to Beaver superfans');
     assert.equal(superfans.riskAversionColour, 'red');
-    assert.equal(superfans.usersAndNotes, 'june@example.com, eddie@example.com\n\nHere is a note');
+    assert.equal(
+      superfans.usersAndNotes,
+      'june@example.com, eddie@example.com\n\nHere is a note'
+    );
 
     assert.ok(superfans.isAhead, 'expected team with meeting to be ahead');
     assert.ok(page.teams[1].isAhead, 'expected team with meeting to be ahead');
 
-    assert.notOk(page.teams[2].isAhead, 'expected team with no meeting not to be ahead');
+    assert.notOk(
+      page.teams[2].isAhead,
+      'expected team with no meeting not to be ahead'
+    );
   });
 
-  test('an existing meeting is shown in the teams and destination', async function(assert) {
+  test('an existing meeting is shown in the teams and destination', async function (assert) {
     await page.visit();
 
     assert.equal(page.teams[0].count, '•');
@@ -203,10 +257,13 @@ module('Acceptance | scheduler', function(hooks) {
 
     // FIXME the border is currently 2*meetingCount because the style property
     // was somehow overwritten?
-    assert.equal(page.regions[1].destinations[0].meetingCountBorderWidth, '2px');
+    assert.equal(
+      page.regions[1].destinations[0].meetingCountBorderWidth,
+      '2px'
+    );
   });
 
-  test('hovering over a team shows its destinations ordered on the map, its meetings, and teams it’s met', async function(assert) {
+  test('hovering over a team shows its destinations ordered on the map, its meetings, and teams it’s met', async function (assert) {
     await page.visit();
 
     await page.teams[0].hover();
@@ -216,11 +273,17 @@ module('Acceptance | scheduler', function(hooks) {
     assert.equal(page.teams[0].meetings[0].index, '0');
     assert.equal(page.teams[0].meetings[0].offset, '15');
 
-    assert.ok(page.teams[1].isHighlighted, 'expected the met team to be highlighted');
-    assert.notOk(page.teams[2].isHighlighted, 'expected the other team to not be highlighted');
+    assert.ok(
+      page.teams[1].isHighlighted,
+      'expected the met team to be highlighted'
+    );
+    assert.notOk(
+      page.teams[2].isHighlighted,
+      'expected the other team to not be highlighted'
+    );
   });
 
-  test('an existing meeting can be edited', async function(assert) {
+  test('an existing meeting can be edited', async function (assert) {
     await page.visit();
 
     await page.teams[0].hover();
@@ -230,7 +293,7 @@ module('Acceptance | scheduler', function(hooks) {
     assert.equal(page.meeting.teams[1].value, 'Mayors');
   });
 
-  test('a new meeting can be scheduled and resets the form when saved', async function(assert) {
+  test('a new meeting can be scheduled and resets the form when saved', async function (assert) {
     await page.visit();
 
     await page.regions[1].destinations[1].click();
@@ -261,9 +324,16 @@ module('Acceptance | scheduler', function(hooks) {
 
     assert.equal(page.teams[1].count, '••');
 
-    assert.equal(page.regions[1].destinations[1].meetingCountBorderWidth, '2px');
+    assert.equal(
+      page.regions[1].destinations[1].meetingCountBorderWidth,
+      '2px'
+    );
 
-    assert.equal(page.meeting.teams.length, 0, 'expected no set teams after saving');
+    assert.equal(
+      page.meeting.teams.length,
+      0,
+      'expected no set teams after saving'
+    );
 
     await page.regions[0].destinations[0].click();
     await page.teams[1].click();
@@ -272,7 +342,7 @@ module('Acceptance | scheduler', function(hooks) {
     assert.equal(page.meeting.offset, '23');
   });
 
-  test('scheduling a meeting between teams with different meeting counts is impossible', async function(assert) {
+  test('scheduling a meeting between teams with different meeting counts is impossible', async function (assert) {
     await page.visit();
 
     await page.regions[1].destinations[1].click();
@@ -283,7 +353,7 @@ module('Acceptance | scheduler', function(hooks) {
     assert.ok(page.meeting.saveIsHidden, 'expected save button to be hidden');
   });
 
-  test('a partially-complete meeting can be cleared', async function(assert) {
+  test('a partially-complete meeting can be cleared', async function (assert) {
     await page.visit();
 
     await page.teams[1].click();

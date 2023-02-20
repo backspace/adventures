@@ -15,18 +15,23 @@ export default class EmbeddedRendezvousAnswers extends Component {
   rendering = true;
 
   didInsertElement() {
-    const doc = new PDFDocument({layout: 'portrait', font: this.get('assets.header')});
+    const doc = new PDFDocument({
+      layout: 'portrait',
+      font: this.get('assets.header'),
+    });
     const stream = doc.pipe(blobStream());
 
     const meetings = this.get('meetings');
     const meetingIndices = meetings.mapBy('index').uniq().sort();
 
-    this.get('teams').forEach(team => {
-      doc.text(`${team.get('name')}: ${team.get('riskAversion')}, ${team.get('users')}`);
+    this.get('teams').forEach((team) => {
+      doc.text(
+        `${team.get('name')}: ${team.get('riskAversion')}, ${team.get('users')}`
+      );
       doc.moveDown();
     });
 
-    meetingIndices.forEach(index => {
+    meetingIndices.forEach((index) => {
       doc.addPage();
 
       doc.fontSize(14);
@@ -38,16 +43,28 @@ export default class EmbeddedRendezvousAnswers extends Component {
 
       const meetingsWithIndex = meetings.filterBy('index', index);
 
-      doc.text(meetingsWithIndex.map(meeting => {
-        const teamNames = meeting.hasMany('teams').value().mapBy('name').sort().join(', ');
+      doc.text(
+        meetingsWithIndex
+          .map((meeting) => {
+            const teamNames = meeting
+              .hasMany('teams')
+              .value()
+              .mapBy('name')
+              .sort()
+              .join(', ');
 
-        const destination = meeting.belongsTo('destination').value();
-        const region = destination.belongsTo('region').value();
+            const destination = meeting.belongsTo('destination').value();
+            const region = destination.belongsTo('region').value();
 
-        return `${teamNames}\n${region.get('name')}\n\n${destination.get('description')}\n\n${destination.get('answer')}`;
-      }).join('\n\n\n'), {
-        columns: 3
-      });
+            return `${teamNames}\n${region.get('name')}\n\n${destination.get(
+              'description'
+            )}\n\n${destination.get('answer')}`;
+          })
+          .join('\n\n\n'),
+        {
+          columns: 3,
+        }
+      );
 
       doc.moveDown();
     });
@@ -69,6 +86,8 @@ export default class EmbeddedRendezvousAnswers extends Component {
   _getRendezvousTimeForIndex(index) {
     const rendezvousInterval = config.rendezvousInterval;
 
-    return this._firstRendezvousTime().add(rendezvousInterval*index, 'minutes').format('h:mma');
+    return this._firstRendezvousTime()
+      .add(rendezvousInterval * index, 'minutes')
+      .format('h:mma');
   }
 }

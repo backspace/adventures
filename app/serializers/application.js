@@ -7,5 +7,5 @@ export default Serializer.extend({
     } else {
       return this._super.apply(this, arguments);
     }
-  }
+  },
 });

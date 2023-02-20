@@ -27,10 +27,13 @@ export default class RegionRoute extends Route {
 
   @action
   delete(model) {
-    model.reload().then(reloaded => {
-      return reloaded.destroyRecord();
-    }).then(() => {
-      this.router.transitionTo('regions');
-    });
+    model
+      .reload()
+      .then((reloaded) => {
+        return reloaded.destroyRecord();
+      })
+      .then(() => {
+        this.router.transitionTo('regions');
+      });
   }
 }

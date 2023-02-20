@@ -23,27 +23,27 @@ export default class EmbeddedRendezvousCards extends Component {
     const bold = this.get('assets.bold');
     const regular = this.get('assets.regular');
 
-    const doc = new PDFDocument({layout: 'portrait', font: regular});
+    const doc = new PDFDocument({ layout: 'portrait', font: regular });
     const stream = doc.pipe(blobStream());
 
     const cards = this._rendezvousCards();
 
     const verticalCardCount = 3;
     const horizontalCardCount = 3;
-    const cardsPerPage = verticalCardCount*horizontalCardCount;
+    const cardsPerPage = verticalCardCount * horizontalCardCount;
 
-    const pageWidth = 8.5*72;
-    const pageHeight = 11*72;
+    const pageWidth = 8.5 * 72;
+    const pageHeight = 11 * 72;
 
-    const cardWidth = pageWidth/horizontalCardCount;
-    const cardHeight = pageHeight/verticalCardCount;
+    const cardWidth = pageWidth / horizontalCardCount;
+    const cardHeight = pageHeight / verticalCardCount;
 
-    const cardMargin = 0.35*72;
-    const innerCardWidth = cardWidth - cardMargin*2;
+    const cardMargin = 0.35 * 72;
+    const innerCardWidth = cardWidth - cardMargin * 2;
 
     const chunks = [];
 
-    for (let i = 0, j = cards.length; i < j; i+= cardsPerPage) {
+    for (let i = 0, j = cards.length; i < j; i += cardsPerPage) {
       const chunk = cards.slice(i, i + cardsPerPage);
       chunks.push(chunk);
     }
@@ -54,7 +54,7 @@ export default class EmbeddedRendezvousCards extends Component {
       }
 
       chunk.forEach((cardData, index) => {
-        const cardOnPage = index%cardsPerPage;
+        const cardOnPage = index % cardsPerPage;
 
         if (index !== 0 && cardOnPage === 0) {
           doc.addPage();
@@ -62,11 +62,11 @@ export default class EmbeddedRendezvousCards extends Component {
 
         doc.save();
 
-        const xPosition = cardOnPage%horizontalCardCount;
-        const yPosition = Math.floor(cardOnPage/horizontalCardCount);
+        const xPosition = cardOnPage % horizontalCardCount;
+        const yPosition = Math.floor(cardOnPage / horizontalCardCount);
 
-        const xOffset = xPosition*cardWidth + cardMargin;
-        const yOffset = yPosition*cardHeight + cardMargin;
+        const xOffset = xPosition * cardWidth + cardMargin;
+        const yOffset = yPosition * cardHeight + cardMargin;
 
         doc.translate(xOffset, yOffset);
 
@@ -90,12 +90,13 @@ export default class EmbeddedRendezvousCards extends Component {
 
         doc.text(' ');
         doc.text(cardData.destinationDescription, {
-          width: innerCardWidth
+          width: innerCardWidth,
         });
 
         doc.text(' ');
 
-        const maskHasMultipleBlanks = (cardData.mask.match(/_/g) || []).length > 1;
+        const maskHasMultipleBlanks =
+          (cardData.mask.match(/_/g) || []).length > 1;
 
         doc.font(bold);
         doc.text(`Fill in the blank${maskHasMultipleBlanks ? 's' : ''}:`);
@@ -108,13 +109,13 @@ export default class EmbeddedRendezvousCards extends Component {
         const paddedSkippedMask = this._padMask(skippedMask);
 
         const widthOfPaddedSkippedMask = doc.widthOfString(paddedSkippedMask);
-        doc.text(" ^", widthOfPaddedSkippedMask);
+        doc.text(' ^', widthOfPaddedSkippedMask);
 
         doc.restore();
 
         if (debug) {
           doc.save();
-          doc.translate(xOffset + cardWidth/2, yOffset);
+          doc.translate(xOffset + cardWidth / 2, yOffset);
           doc.text(`Front of ${cardData.letter}/${cardData.teamName}`);
           doc.restore();
         }
@@ -123,13 +124,14 @@ export default class EmbeddedRendezvousCards extends Component {
       doc.addPage();
 
       chunk.forEach((cardData, index) => {
-        const cardOnPage = index%cardsPerPage;
+        const cardOnPage = index % cardsPerPage;
 
-        const xPosition = horizontalCardCount - cardOnPage%horizontalCardCount - 1;
-        const yPosition = Math.floor(cardOnPage/horizontalCardCount);
+        const xPosition =
+          horizontalCardCount - (cardOnPage % horizontalCardCount) - 1;
+        const yPosition = Math.floor(cardOnPage / horizontalCardCount);
 
-        const xOffset = xPosition*cardWidth + cardMargin;
-        const yOffset = yPosition*cardHeight + cardMargin;
+        const xOffset = xPosition * cardWidth + cardMargin;
+        const yOffset = yPosition * cardHeight + cardMargin;
 
         doc.fontSize(16);
 
@@ -137,25 +139,36 @@ export default class EmbeddedRendezvousCards extends Component {
 
         doc.translate(xOffset, yOffset);
 
-        const operandColumnWidth = 0.2*72;
-        const digitColumnWidth = 0.4*72;
+        const operandColumnWidth = 0.2 * 72;
+        const digitColumnWidth = 0.4 * 72;
 
-        const labelGap = 0.1*72;
+        const labelGap = 0.1 * 72;
 
         const labelStart = operandColumnWidth + digitColumnWidth + labelGap;
-        const labelWidth = cardWidth - cardMargin*2 - labelStart;
+        const labelWidth = cardWidth - cardMargin * 2 - labelStart;
 
-        const rowHeight = 0.75*72;
+        const rowHeight = 0.75 * 72;
 
         const otherTeam = cardData.otherTeams[0];
-        const otherTeamDigit = cardData.teamDigitsForAnswerAndGoalDigits.get(otherTeam);
+        const otherTeamDigit =
+          cardData.teamDigitsForAnswerAndGoalDigits.get(otherTeam);
 
-        const myDigit = cardData.teamDigitsForAnswerAndGoalDigits.get(cardData.team);
+        const myDigit = cardData.teamDigitsForAnswerAndGoalDigits.get(
+          cardData.team
+        );
 
-        const rows = [{label: '^ from other side'}];
+        const rows = [{ label: '^ from other side' }];
 
-        const myRow = {operand: myDigit > 0 ? '+' : '-', digit: Math.abs(otherTeamDigit), label: 'from you'};
-        const otherTeamRow = {operand: otherTeamDigit > 0 ? '+' : '-', digit: debug ? Math.abs(myDigit) : undefined, label: `from ${cardData.otherTeamName}`};
+        const myRow = {
+          operand: myDigit > 0 ? '+' : '-',
+          digit: Math.abs(otherTeamDigit),
+          label: 'from you',
+        };
+        const otherTeamRow = {
+          operand: otherTeamDigit > 0 ? '+' : '-',
+          digit: debug ? Math.abs(myDigit) : undefined,
+          label: `from ${cardData.otherTeamName}`,
+        };
 
         const sortedTeams = [cardData.team, otherTeam].sortBy('name');
 
@@ -167,10 +180,10 @@ export default class EmbeddedRendezvousCards extends Component {
           rows.push(myRow);
         }
 
-        rows.push({operand: '=', label: `answer ${cardData.letter}`});
+        rows.push({ operand: '=', label: `answer ${cardData.letter}` });
 
-        rows.forEach(({operand, digit, label}, index) => {
-          const y = index*rowHeight;
+        rows.forEach(({ operand, digit, label }, index) => {
+          const y = index * rowHeight;
 
           if (operand) {
             doc.text(operand, 0, y);
@@ -180,30 +193,56 @@ export default class EmbeddedRendezvousCards extends Component {
             doc.text(digit, operandColumnWidth, y);
           }
 
-          doc.text(label, labelStart, y, {width: labelWidth});
+          doc.text(label, labelStart, y, { width: labelWidth });
         });
 
-        const cropMarkLength = 0.25*72;
+        const cropMarkLength = 0.25 * 72;
 
         doc.lineWidth(0.125);
         doc.strokeOpacity(0.25);
 
-        doc.moveTo(innerCardWidth/2 - cropMarkLength/2, cardHeight - cardMargin)
-           .lineTo(innerCardWidth/2 + cropMarkLength/2, cardHeight - cardMargin)
-           .stroke();
+        doc
+          .moveTo(
+            innerCardWidth / 2 - cropMarkLength / 2,
+            cardHeight - cardMargin
+          )
+          .lineTo(
+            innerCardWidth / 2 + cropMarkLength / 2,
+            cardHeight - cardMargin
+          )
+          .stroke();
 
-        doc.moveTo(innerCardWidth + cardMargin, cardHeight/2 - cropMarkLength/2)
-           .lineTo(innerCardWidth + cardMargin, cardHeight/2 + cropMarkLength/2)
-           .stroke();
+        doc
+          .moveTo(
+            innerCardWidth + cardMargin,
+            cardHeight / 2 - cropMarkLength / 2
+          )
+          .lineTo(
+            innerCardWidth + cardMargin,
+            cardHeight / 2 + cropMarkLength / 2
+          )
+          .stroke();
 
         doc.restore();
 
         if (debug) {
           doc.save();
-          doc.translate(xOffset + cardWidth/2, yOffset);
+          doc.translate(xOffset + cardWidth / 2, yOffset);
 
-          doc.rect(-cardWidth/2, 0, innerCardWidth, cardHeight - cardMargin*2).stroke();
-          doc.rect(-cardMargin - cardWidth/2, -cardMargin, cardWidth, cardHeight);
+          doc
+            .rect(
+              -cardWidth / 2,
+              0,
+              innerCardWidth,
+              cardHeight - cardMargin * 2
+            )
+            .stroke();
+          doc.rect(
+            -cardMargin - cardWidth / 2,
+            -cardMargin,
+            cardWidth,
+            cardHeight
+          );
 
           doc.text(`Back of ${cardData.letter}/${cardData.teamName}`, 0, 0);
 
@@ -231,9 +270,15 @@ export default class EmbeddedRendezvousCards extends Component {
 
   _rendezvousCards() {
     return this.get('teams').reduce((cards, team) => {
-      return cards.concat(team.hasMany('meetings').value().sortBy('index').map((meeting, index) => {
-        return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
-      }));
+      return cards.concat(
+        team
+          .hasMany('meetings')
+          .value()
+          .sortBy('index')
+          .map((meeting, index) => {
+            return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
+          })
+      );
     }, []);
   }
 
@@ -261,11 +306,19 @@ export default class EmbeddedRendezvousCards extends Component {
     const goalLetter = this.get('goal')[index];
     const goalDigit = parseInt(goalLetter);
 
-    const chosenBlankIndex = this.get('puzzles').implementation.chooseBlankIndex({answer, mask, goalDigit});
+    const chosenBlankIndex = this.get(
+      'puzzles'
+    ).implementation.chooseBlankIndex({ answer, mask, goalDigit });
 
     const answerDigit = parseInt(answer[chosenBlankIndex]);
 
-    const teamDigitsForAnswerAndGoalDigits = this.get('puzzles').implementation.teamDigitsForAnswerAndGoalDigits({teams, goalDigit, answerDigit});
+    const teamDigitsForAnswerAndGoalDigits = this.get(
+      'puzzles'
+    ).implementation.teamDigitsForAnswerAndGoalDigits({
+      teams,
+      goalDigit,
+      answerDigit,
+    });
 
     return {
       team,
@@ -283,7 +336,7 @@ export default class EmbeddedRendezvousCards extends Component {
       answer,
       mask,
       chosenBlankIndex,
-      teamDigitsForAnswerAndGoalDigits
+      teamDigitsForAnswerAndGoalDigits,
     };
   }
 
@@ -294,6 +347,8 @@ export default class EmbeddedRendezvousCards extends Component {
   _getRendezvousTimeForIndex(index) {
     const rendezvousInterval = config.rendezvousInterval;
 
-    return this._firstRendezvousTime().add(rendezvousInterval*index, 'minutes').format('h:mma');
+    return this._firstRendezvousTime()
+      .add(rendezvousInterval * index, 'minutes')
+      .format('h:mma');
   }
 }

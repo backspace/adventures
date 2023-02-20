@@ -1,5 +1,9 @@
 import classic from 'ember-classic-decorator';
-import { classNames, classNameBindings, tagName } from '@ember-decorators/component';
+import {
+  classNames,
+  classNameBindings,
+  tagName,
+} from '@ember-decorators/component';
 import { action, computed } from '@ember/object';
 import { notEmpty } from '@ember/object/computed';
 import Component from '@ember/component';
@@ -7,7 +11,10 @@ import Component from '@ember/component';
 @classic
 @tagName('tr')
 @classNames('destination')
-@classNameBindings('destination.isIncomplete:incomplete', 'hasMeetings:meetings')
+@classNameBindings(
+  'destination.isIncomplete:incomplete',
+  'hasMeetings:meetings'
+)
 export default class DestinationRow extends Component {
   @notEmpty('destination.meetings')
   hasMeetings;

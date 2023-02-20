@@ -8,11 +8,11 @@ import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 
 import page from '../pages/teams';
 
-module('Acceptance | teams', function(hooks) {
+module('Acceptance | teams', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
-  hooks.beforeEach(function(assert) {
+  hooks.beforeEach(function (assert) {
     const store = this.owner.lookup('service:store');
     const done = assert.async();
 
@@ -23,18 +23,16 @@ module('Acceptance | teams', function(hooks) {
       teamOne.setProperties({
         name: 'Team 1',
         riskAversion: 3,
-        phones: [
-          {number: '2045551212', displaySize: '5.5'}
-        ]
+        phones: [{ number: '2045551212', displaySize: '5.5' }],
       });
 
       teamTwo.setProperties({
         name: 'Team 2',
         riskAversion: 1,
         phones: [
-          {number: '2040000000', displaySize: '4'},
-          {number: '5140000000', displaySize: '5'}
-        ]
+          { number: '2040000000', displaySize: '4' },
+          { number: '5140000000', displaySize: '5' },
+        ],
       });
 
       all([teamOne.save(), teamTwo.save()]).then(() => {
@@ -43,7 +41,7 @@ module('Acceptance | teams', function(hooks) {
     });
   });
 
-  test('existing teams are listed', async function(assert) {
+  test('existing teams are listed', async function (assert) {
     await page.visit();
 
     assert.equal(page.teams.length, 2, 'expected two teams to be listed');
@@ -57,7 +55,7 @@ module('Acceptance | teams', function(hooks) {
     assert.equal(page.teams[1].phones, '2040000000: 4, 5140000000: 5');
   });
 
-  test('teams can be overwritten with JSON input', async function(assert) {
+  test('teams can be overwritten with JSON input', async function (assert) {
     await page.visit();
 
     await page.enterJSON(`

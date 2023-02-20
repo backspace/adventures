@@ -9,31 +9,31 @@ import PageObject, {
   text,
   triggerable,
   value,
-  visitable
+  visitable,
 } from 'ember-cli-page-object';
 import tinycolor from 'tinycolor2';
 
-const x = function(selector) {
+const x = function (selector) {
   return {
     isDescriptor: true,
 
     get() {
       return parseInt(findElement(this, selector).css('left'));
-    }
-  }
-}
+    },
+  };
+};
 
-const y = function(selector) {
+const y = function (selector) {
   return {
     isDescriptor: true,
 
     get() {
       return parseInt(findElement(this, selector).css('top'));
-    }
+    },
   };
-}
+};
 
-const propertyColourName = function(property) {
+const propertyColourName = function (property) {
   return {
     isDescriptor: true,
 
@@ -42,11 +42,11 @@ const propertyColourName = function(property) {
 
       const colour = tinycolor(propertyColour);
       return colour.toName();
-    }
+    },
   };
-}
+};
 
-const propertyColourOpacity = function(property) {
+const propertyColourOpacity = function (property) {
   return {
     isDescriptor: true,
 
@@ -55,21 +55,21 @@ const propertyColourOpacity = function(property) {
 
       const colour = tinycolor(propertyColour);
       return colour.getAlpha();
-    }
+    },
   };
-}
+};
 
-const propertyValue = function(property) {
+const propertyValue = function (property) {
   return {
     isDescriptor: true,
 
     get() {
       return findElement(this).css(property);
-    }
-  }
-}
+    },
+  };
+};
 
-const selectText = function(selector) {
+const selectText = function (selector) {
   return {
     isDescriptor: true,
 
@@ -82,9 +82,9 @@ const selectText = function(selector) {
       } else {
         return '';
       }
-    }
+    },
   };
-}
+};
 
 export default PageObject.create({
   visit: visitable('/scheduler'),
@@ -107,8 +107,8 @@ export default PageObject.create({
 
       isSelected: hasClass('selected'),
 
-      click: clickable()
-    })
+      click: clickable(),
+    }),
   }),
 
   teams: collection('.team', {
@@ -131,8 +131,8 @@ export default PageObject.create({
       click: clickable(),
 
       index: text('.index'),
-      offset: text('.offset')
-    })
+      offset: text('.offset'),
+    }),
   }),
 
   map: {
@@ -146,8 +146,8 @@ export default PageObject.create({
 
       count: text('.count'),
 
-      isHighlighted: hasClass('highlighted')
-    })
+      isHighlighted: hasClass('highlighted'),
+    }),
   },
 
   meeting: {
@@ -159,13 +159,13 @@ export default PageObject.create({
     fillOffset: fillable('.offset'),
 
     teams: collection('.team', {
-      value: selectText()
+      value: selectText(),
     }),
 
     isForbidden: hasClass('forbidden'),
     saveIsHidden: isHidden('button.save'),
 
     save: clickable('button.save'),
-    reset: clickable('button.reset')
-  }
+    reset: clickable('button.reset'),
+  },
 });

@@ -23,7 +23,7 @@ export default class Team extends Model {
   @attr()
   phones;
 
-  @hasMany('meeting', {async: false})
+  @hasMany('meeting', { async: false })
   meetings;
 
   @mapBy('meetings', 'destination')
@@ -34,10 +34,14 @@ export default class Team extends Model {
 
   @computed('destinations.@each.awesomeness')
   get averageAwesomeness() {
-    const awesomenesses = this.get('destinations').mapBy('awesomeness').filter(a => a);
+    const awesomenesses = this.get('destinations')
+      .mapBy('awesomeness')
+      .filter((a) => a);
 
     if (awesomenesses.length > 0) {
-      return awesomenesses.reduce((prev, curr) => prev + curr)/awesomenesses.length;
+      return (
+        awesomenesses.reduce((prev, curr) => prev + curr) / awesomenesses.length
+      );
     }
 
     return 0;
@@ -45,10 +49,12 @@ export default class Team extends Model {
 
   @computed('destinations.@each.risk')
   get averageRisk() {
-    const risks = this.get('destinations').mapBy('risk').filter(r => r);
+    const risks = this.get('destinations')
+      .mapBy('risk')
+      .filter((r) => r);
 
     if (risks.length > 0) {
-      return risks.reduce((prev, curr) => prev + curr)/risks.length;
+      return risks.reduce((prev, curr) => prev + curr) / risks.length;
     }
 
     return 0;
@@ -56,9 +62,11 @@ export default class Team extends Model {
 
   @computed('phones.[]')
   get phonesString() {
-    return (this.get('phones') || []).map(phone => {
-      return `${phone.number}: ${phone.displaySize}`;
-    }).join(', ');
+    return (this.get('phones') || [])
+      .map((phone) => {
+        return `${phone.number}: ${phone.displaySize}`;
+      })
+      .join(', ');
   }
 
   @attr('createDate')

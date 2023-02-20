@@ -5,13 +5,16 @@ import { all } from 'rsvp';
 @classic
 export default class TxtbeyondService extends Service {
   suggestedMask(answer) {
-    return answer.split(' ').map((word, index, array) => {
-      if (index === 1 || array.length === 1) {
-        return '_'.repeat(word.length);
-      } else {
-        return word;
-      }
-    }).join(' ');
+    return answer
+      .split(' ')
+      .map((word, index, array) => {
+        if (index === 1 || array.length === 1) {
+          return '_'.repeat(word.length);
+        } else {
+          return word;
+        }
+      })
+      .join(' ');
   }
 
   maskIsValid(answer, mask) {
@@ -44,20 +47,26 @@ export default class TxtbeyondService extends Service {
   }
 
   descriptionMasks(description) {
-    return description.match(/~([^~]*)~/g).map(s => s.slice(1, s.length - 1));
+    return description.match(/~([^~]*)~/g).map((s) => s.slice(1, s.length - 1));
   }
 
   twitterName(name) {
-    return name.toLowerCase().replace(/\s+/g, '_').replace(/\W/g, '').slice(0, 15);
+    return name
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/\W/g, '')
+      .slice(0, 15);
   }
 
   assignMeetingPhones(teams, meetings) {
     const phoneNumberToTeam = teams.reduce((phoneNumberToTeam, team) => {
-      (team.get('phones') || []).forEach(phone => phoneNumberToTeam[phone.number] = team);
+      (team.get('phones') || []).forEach(
+        (phone) => (phoneNumberToTeam[phone.number] = team)
+      );
       return phoneNumberToTeam;
     }, {});
 
-    meetings.rejectBy('number').forEach(meeting => {
+    meetings.rejectBy('number').forEach((meeting) => {
       const phones = meeting.get('teams').reduce((phones, team) => {
         return phones.concat(team.get('phones'));
       }, []);
@@ -69,17 +78,29 @@ export default class TxtbeyondService extends Service {
 
       const minimumCount = Math.min(...Object.values(phoneNumberToCount));
 
-      const phoneNumbersWithMinimumCount = Object.keys(phoneNumberToCount).filter(phoneNumber => {
+      const phoneNumbersWithMinimumCount = Object.keys(
+        phoneNumberToCount
+      ).filter((phoneNumber) => {
         return phoneNumberToCount[phoneNumber] === minimumCount;
       });
 
-      const randomPhoneNumber = phoneNumbersWithMinimumCount[Math.floor(Math.random() * phoneNumbersWithMinimumCount.length)];
+      const randomPhoneNumber =
+        phoneNumbersWithMinimumCount[
+          Math.floor(Math.random() * phoneNumbersWithMinimumCount.length)
+        ];
 
-      this._incrementTeamPhoneMeetingCount(phoneNumberToTeam[randomPhoneNumber], randomPhoneNumber);
+      this._incrementTeamPhoneMeetingCount(
+        phoneNumberToTeam[randomPhoneNumber],
+        randomPhoneNumber
+      );
       meeting.set('phone', randomPhoneNumber);
     });
 
-    return all(teams.map(team => team.save()).concat(meetings.map(meeting => meeting.save())));
+    return all(
+      teams
+        .map((team) => team.save())
+        .concat(meetings.map((meeting) => meeting.save()))
+    );
   }
 
   _incrementTeamPhoneMeetingCount(team, number) {

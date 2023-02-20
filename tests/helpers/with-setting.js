@@ -1,10 +1,10 @@
 import { camelize } from '@ember/string';
 
-export default async function(owner, setting) {
+export default async function (owner, setting) {
   const store = owner.lookup('service:store');
 
   const object = {
-    id: 'settings'
+    id: 'settings',
   };
 
   object[camelize(setting)] = true;

@@ -1,13 +1,13 @@
-import Component from "@glimmer/component";
-import { action } from "@ember/object";
-import { tracked } from "@glimmer/tracking";
+import Component from '@glimmer/component';
+import { action } from '@ember/object';
+import { tracked } from '@glimmer/tracking';
 
 export default class SchedulerTeamComponent extends Component {
   @tracked showMeetings = false;
 
   get count() {
-    const length = this.args.team.get("meetings.length");
-    return Array(length + 1).join("•");
+    const length = this.args.team.get('meetings.length');
+    return Array(length + 1).join('•');
   }
 
   get isSelected() {
@@ -30,26 +30,26 @@ export default class SchedulerTeamComponent extends Component {
       return false;
     }
 
-    const teamMeetings = team.hasMany("meetings").value();
+    const teamMeetings = team.hasMany('meetings').value();
 
     return teamMeetings.any(
       (meeting) =>
-        meeting.hasMany("teams").ids().indexOf(highlightedTeam.id) > -1
+        meeting.hasMany('teams').ids().indexOf(highlightedTeam.id) > -1
     );
   }
 
   get usersAndNotes() {
-    return `${this.args.team.get("users")}\n\n${
-      this.args.team.get("notes") || ""
+    return `${this.args.team.get('users')}\n\n${
+      this.args.team.get('notes') || ''
     }`;
   }
 
   get roundedAwesomeness() {
-    return Math.round(this.args.team.get("averageAwesomeness") * 100) / 100;
+    return Math.round(this.args.team.get('averageAwesomeness') * 100) / 100;
   }
 
   get roundedRisk() {
-    return Math.round(this.args.team.get("averageRisk") * 100) / 100;
+    return Math.round(this.args.team.get('averageRisk') * 100) / 100;
   }
 
   @action

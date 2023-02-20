@@ -7,15 +7,15 @@ import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 
 import page from '../pages/settings';
 
-module('Acceptance | settings', function(hooks) {
+module('Acceptance | settings', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function () {
     this.store = this.owner.lookup('service:store');
   });
 
-  test('a new settings document can be created and saved', async function(assert) {
+  test('a new settings document can be created and saved', async function (assert) {
     const done = assert.async();
 
     await page.visit();
@@ -28,7 +28,7 @@ module('Acceptance | settings', function(hooks) {
     await page.txtbeyond.click();
     await page.save();
 
-    this.store.findRecord('settings', 'settings').then(settings => {
+    this.store.findRecord('settings', 'settings').then((settings) => {
       assert.equal(settings.get('goal'), 'abc');
       assert.ok(settings.get('clandestineRendezvous'));
       assert.ok(settings.get('txtbeyond'));
@@ -37,11 +37,11 @@ module('Acceptance | settings', function(hooks) {
   });
 });
 
-module('Acceptance | settings', function(hooks) {
+module('Acceptance | settings', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
-  hooks.beforeEach(function(assert) {
+  hooks.beforeEach(function (assert) {
     this.store = this.owner.lookup('service:store');
     const done = assert.async();
 
@@ -49,7 +49,7 @@ module('Acceptance | settings', function(hooks) {
       const settings = this.store.createRecord('settings', {
         id: 'settings',
         goal: '12345',
-        destinationStatus: true
+        destinationStatus: true,
       });
 
       settings.save().then(() => {
@@ -58,7 +58,7 @@ module('Acceptance | settings', function(hooks) {
     });
   });
 
-  test('an existing settings document is displayed and can be updated, with its boolean flags mirrored to the features service', async function(assert) {
+  test('an existing settings document is displayed and can be updated, with its boolean flags mirrored to the features service', async function (assert) {
     const done = assert.async();
 
     await page.visit();
@@ -75,7 +75,7 @@ module('Acceptance | settings', function(hooks) {
     await page.txtbeyond.click();
     await page.save();
 
-    this.store.findRecord('settings', 'settings').then(settings => {
+    this.store.findRecord('settings', 'settings').then((settings) => {
       const featuresService = this.owner.lookup('service:features');
       assert.notOk(featuresService.get('destinationStatus'));
       assert.ok(featuresService.get('clandestineRendezvous'));

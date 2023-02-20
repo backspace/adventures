@@ -25,7 +25,7 @@ function createDb() {
 
     db.sync(remoteDb, {
       live: true,
-      retry: true
+      retry: true,
     });
   }
 
@@ -48,5 +48,5 @@ export default Adapter.extend({
     if (!this.get('db')) {
       this.set('db', existingDb);
     }
-  }
+  },
 });

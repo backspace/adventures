@@ -6,14 +6,14 @@ const data = {
   data: {
     'A|B': 2,
     'B|C': 3,
-    'C|D': 4
-  }
+    'C|D': 4,
+  },
 };
 
-module('service:pathfinder', 'Unit | Service | pathfinder', function(hooks) {
+module('service:pathfinder', 'Unit | Service | pathfinder', function (hooks) {
   setupTest(hooks);
 
-  test('it knows whether it contains a region', function(assert) {
+  test('it knows whether it contains a region', function (assert) {
     const pathfinder = this.owner.lookup('service:pathfinder');
 
     pathfinder.set('data', data);
@@ -22,7 +22,7 @@ module('service:pathfinder', 'Unit | Service | pathfinder', function(hooks) {
     assert.notOk(pathfinder.hasRegion('X'));
   });
 
-  test('it finds distances', function(assert) {
+  test('it finds distances', function (assert) {
     const pathfinder = this.owner.lookup('service:pathfinder');
 
     pathfinder.set('data', data);
