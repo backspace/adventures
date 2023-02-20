@@ -2,7 +2,7 @@ import { getOwner } from '@ember/application';
 import { computed } from '@ember/object';
 import Service from '@ember/service';
 
-import blobUtil from 'blob-util';
+import { blobToArrayBuffer, blobToBase64String } from 'blob-util';
 import classic from 'ember-classic-decorator';
 
 @classic
@@ -28,13 +28,13 @@ export default class MapService extends Service {
 
   getArrayBuffer(name) {
     return this.getAttachment(name).then((attachment) => {
-      return blobUtil.blobToArrayBuffer(attachment);
+      return blobToArrayBuffer(attachment);
     });
   }
 
   getBase64String(name) {
     return this.getAttachment(name).then((attachment) => {
-      return blobUtil.blobToBase64String(attachment);
+      return blobToBase64String(attachment);
     });
   }
 
