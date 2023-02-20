@@ -24,6 +24,7 @@ module.exports = function(environment) {
 
     emberPouch: {
       localDb: 'adventure-gathering',
+      saveHasMany: true,
       options: {}
     },
 
