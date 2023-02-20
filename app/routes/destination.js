@@ -8,6 +8,9 @@ export default class DestinationRoute extends Route {
   @service
   lastRegion;
 
+  @service
+  store;
+
   beforeModel() {
     return this.store.findAll('region').then(regions => this.set('regions', regions));
   }

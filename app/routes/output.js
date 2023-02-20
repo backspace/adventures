@@ -18,6 +18,8 @@ export default class OutputRoute extends Route {
   @service
   features;
 
+  @service store;
+
   @service
   txtbeyond;
 

@@ -2,9 +2,12 @@ import classic from 'ember-classic-decorator';
 import { action } from '@ember/object';
 import { all } from 'rsvp';
 import Controller from '@ember/controller';
+import { inject as service } from '@ember/service';
 
 @classic
 export default class TeamsController extends Controller {
+  @service store;
+
   @action
   save() {
     const {data: teams} = JSON.parse(this.get('teamsJSON'));

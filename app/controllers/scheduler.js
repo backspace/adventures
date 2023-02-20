@@ -14,6 +14,7 @@ export default class SchedulerController extends Controller {
   @max("meetingCounts") highestMeetingCount;
 
   @service pathfinder;
+  @service store;
 
   @computed("meeting.teams.@each.meetings")
   get lastMeetingOffsets() {

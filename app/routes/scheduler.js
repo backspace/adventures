@@ -9,6 +9,8 @@ export default class SchedulerRoute extends Route {
   @service
   map;
 
+  @service store;
+
   model() {
     return hash({
       regions: this.store.findAll('region').then(regions => {

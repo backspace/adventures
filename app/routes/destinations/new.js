@@ -7,6 +7,8 @@ export default class NewRoute extends DestinationRoute {
   @service
   lastRegion;
 
+  @service store;
+
   model() {
     const lastRegion = this.get('lastRegion').getLastRegion();
 
