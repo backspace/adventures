@@ -30,6 +30,21 @@ module.exports = {
         },
       },
     ],
+    'import/no-unresolved': [
+      2,
+      {
+        ignore: [
+          '^@ember',
+          '^adventure-gathering',
+          '^ember$',
+          '^ember-cli-page-object',
+          '^ember-feature-flags',
+          '^ember-local-storage',
+          '^ember-pouch',
+          'htmlbars-inline-precompile',
+        ],
+      },
+    ],
   },
   overrides: [
     // node files
