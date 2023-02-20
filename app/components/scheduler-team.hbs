@@ -2,8 +2,8 @@
 <li
   class='team {{if this.isSelected 'selected'}} {{if this.hasMetHighlightedTeam 'highlighted'}} {{if @isAhead 'ahead'}}'
   title={{this.usersAndNotes}}
-  {{on 'mouseenter' (fn this.handleMouseEnter)}}
-  {{on 'mouseleave' (fn this.handleMouseLeave)}}
+  {{on 'mouseenter' this.handleMouseEnter}}
+  {{on 'mouseleave' this.handleMouseLeave}}
   data-risk-aversion={{@team.riskAversion}}
 >
   {{!-- template-lint-disable no-invalid-interactive --}}

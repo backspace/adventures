@@ -19,7 +19,7 @@
           id='region-{{region.id}}'
           title={{region.notes}}
           {{on 'mouseenter' (fn this.mouseEnterRegion region)}}
-          {{on 'mouseleave' (fn this.mouseLeaveRegion)}}
+          {{on 'mouseleave' this.mouseLeaveRegion}}
           {{create-ref (concat 'region-' region.id)}}
         >
           <div class='name'>{{region.name}}</div>
