@@ -8,18 +8,21 @@ export default class RegionRoute extends Route {
   @service
   lastRegion;
 
+  @service
+  router;
+
   @action
   save(model) {
     model.save().then(() => {
       this.get('lastRegion').setLastRegionId(model.id);
-      this.transitionTo('regions');
+      this.router.transitionTo('regions');
     });
   }
 
   @action
   cancel(model) {
     model.rollbackAttributes();
-    this.transitionTo('regions');
+    this.router.transitionTo('regions');
   }
 
   @action
@@ -27,7 +30,7 @@ export default class RegionRoute extends Route {
     model.reload().then(reloaded => {
       return reloaded.destroyRecord();
     }).then(() => {
-      this.transitionTo('regions');
+      this.router.transitionTo('regions');
     });
   }
 }

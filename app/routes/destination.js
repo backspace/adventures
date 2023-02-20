@@ -9,6 +9,9 @@ export default class DestinationRoute extends Route {
   lastRegion;
 
   @service
+  router;
+
+  @service
   store;
 
   beforeModel() {
@@ -31,14 +34,14 @@ export default class DestinationRoute extends Route {
 
       return (region ? region.save() : true);
     }).then(() => {
-      this.transitionTo('destinations');
+      this.router.transitionTo('destinations');
     });
   }
 
   @action
   cancel(model) {
     model.rollbackAttributes();
-    this.transitionTo('destinations');
+    this.router.transitionTo('destinations');
   }
 
   @action
@@ -48,7 +51,7 @@ export default class DestinationRoute extends Route {
     model.reload().then(reloaded => {
       return reloaded.destroyRecord();
     }).then(() => {
-      this.transitionTo('destinations');
+      this.router.transitionTo('destinations');
     });
   }
 }
