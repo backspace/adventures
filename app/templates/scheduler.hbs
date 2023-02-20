@@ -43,7 +43,7 @@
   </ul>
 
   <div class='meeting-form {{if this.meeting.isForbidden 'forbidden'}}'>
-    <select class='destination'>
+    <select class='destination' aria-label='meeting destination'>
       <option></option>
       {{#each this.model.destinations as |destination|}}
         {{#if destination.isAvailable}}
@@ -53,15 +53,15 @@
     </select>
 
     {{#each this.meeting.sortedTeams as |meetingTeam|}}
-      <select class='team'>
+      <select class='team' aria-label='meeting team'>
         {{#each this.model.teams as |team|}}
           <option value={{team.id}} selected={{eq meetingTeam.id team.id}}>{{team.name}}</option>
         {{/each}}
       </select>
     {{/each}}
 
-    <Input @value={{this.meeting.index}} class='index' />
-    <Input @value={{this.suggestedOffset}} class='offset' />
+    <Input @value={{this.meeting.index}} class='index' aria-label='meeting index' />
+    <Input @value={{this.suggestedOffset}} class='offset' aria-label='meeting offset' />
     {{#unless this.meeting.isForbidden}}
       <button type='button' class='save button tiny success' onclick={{action 'saveMeeting'}}>Save</button>
       <button type='button' class='reset button tiny alert' onclick={{action 'resetMeeting'}}>Reset</button>

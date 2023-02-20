@@ -1,8 +1,8 @@
 <div class='row'>
   <div class='small-12 columns'>
     <div class='input-group'>
-      <span class='input-group-label'>DB</span>
-      <Input @type='url' @value={{this.destination}} class='destination input-group-field' />
+      <span for='url' class='input-group-label'>DB</span>
+      <Input id='url' @type='url' @value={{this.destination}} class='destination input-group-field' />
       <div class='input-group-button'>
         <button type='button' onclick={{perform this.sync}} class='sync button primary'>
           {{#if this.syncTask.isRunning}}
