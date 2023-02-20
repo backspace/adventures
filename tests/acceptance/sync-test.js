@@ -47,13 +47,12 @@ module('Acceptance | sync', function(hooks) {
     const syncController = this.owner.lookup('controller:sync');
 
     syncController.get('syncPromise').then(async () => {
-      assert.equal(page.push.read, '4');
-      assert.equal(page.push.written, '4');
+      assert.equal(page.push.read, '2');
+      assert.equal(page.push.written, '2');
       assert.equal(page.push.writeFailures, '0');
 
-      // FIXME the sync db is accumulating documents
-      //assert.equal(page.pull().read(), '0');
-      //assert.equal(page.pull().written(), '0');
+      assert.equal(page.pull.read, '0');
+      assert.equal(page.pull.written, '0');
       assert.equal(page.pull.writeFailures, '0');
 
       assert.equal(page.databases.length, 2);
