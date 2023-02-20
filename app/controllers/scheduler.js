@@ -24,7 +24,7 @@ export default class SchedulerController extends Controller {
 
   @computed(
     'lastMeetingOffsets.[]',
-    'meeting.destination.region.{name,name}}',
+    'meeting.destination.region.name',
     'meeting.teams'
   )
   get suggestedOffset() {
