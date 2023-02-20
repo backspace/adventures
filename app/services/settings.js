@@ -1,6 +1,6 @@
-import classic from 'ember-classic-decorator';
 import { run } from '@ember/runloop';
 import Service, { inject as service } from '@ember/service';
+import classic from 'ember-classic-decorator';
 
 @classic
 export default class SettingsService extends Service {
@@ -11,7 +11,7 @@ export default class SettingsService extends Service {
   store;
 
   modelPromise() {
-    const store = this.get('store');
+    const store = this.store;
     const pouch = store.adapterFor('settings').db;
 
     // FIXME this is a hideous workaround for https://github.com/emberjs/data/issues/2150
@@ -28,7 +28,7 @@ export default class SettingsService extends Service {
 
   syncFeatures() {
     return this.modelPromise().then((settings) => {
-      const features = this.get('features');
+      const features = this.features;
 
       // FIXME why is this needed?
       run(() => {

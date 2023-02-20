@@ -1,5 +1,5 @@
-import classic from 'ember-classic-decorator';
 import Controller from '@ember/controller';
+import classic from 'ember-classic-decorator';
 
 @classic
 export default class SliceController extends Controller {

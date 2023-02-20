@@ -1,7 +1,7 @@
-import classic from 'ember-classic-decorator';
-import { Promise as EmberPromise } from 'rsvp';
 import Service, { inject as service } from '@ember/service';
+import classic from 'ember-classic-decorator';
 import StorageObject from 'ember-local-storage/local/object';
+import { Promise as EmberPromise } from 'rsvp';
 
 @classic
 class LastRegionIdObject extends StorageObject {
@@ -19,7 +19,7 @@ export default class LastRegionService extends Service {
     const id = LastRegionId.get('id');
 
     if (id) {
-      let record = this.get('store').peekRecord('region', id);
+      let record = this.store.peekRecord('region', id);
 
       if (record) {
         return EmberPromise.resolve(record);

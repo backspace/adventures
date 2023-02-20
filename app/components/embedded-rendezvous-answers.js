@@ -1,13 +1,13 @@
-import classic from 'ember-classic-decorator';
-import { tagName } from '@ember-decorators/component';
 import Component from '@ember/component';
+import { tagName } from '@ember-decorators/component';
 
 import config from 'adventure-gathering/config/environment';
 
-import PDFDocument from 'pdfkit';
 import blobStream from 'blob-stream';
+import classic from 'ember-classic-decorator';
 
 import moment from 'moment';
+import PDFDocument from 'pdfkit';
 
 @classic
 @tagName('span')
@@ -15,16 +15,17 @@ export default class EmbeddedRendezvousAnswers extends Component {
   rendering = true;
 
   didInsertElement() {
+    super.didInsertElement(...arguments);
     const doc = new PDFDocument({
       layout: 'portrait',
       font: this.get('assets.header'),
     });
     const stream = doc.pipe(blobStream());
 
-    const meetings = this.get('meetings');
+    const meetings = this.meetings;
     const meetingIndices = meetings.mapBy('index').uniq().sort();
 
-    this.get('teams').forEach((team) => {
+    this.teams.forEach((team) => {
       doc.text(
         `${team.get('name')}: ${team.get('riskAversion')}, ${team.get('users')}`
       );

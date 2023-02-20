@@ -1,8 +1,8 @@
-import classic from 'ember-classic-decorator';
-import { action } from '@ember/object';
-import { all } from 'rsvp';
 import Controller from '@ember/controller';
+import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
+import classic from 'ember-classic-decorator';
+import { all } from 'rsvp';
 
 @classic
 export default class TeamsController extends Controller {
@@ -10,10 +10,10 @@ export default class TeamsController extends Controller {
 
   @action
   save() {
-    const { data: teams } = JSON.parse(this.get('teamsJSON'));
+    const { data: teams } = JSON.parse(this.teamsJSON);
 
     all(
-      this.get('model').map((model) => {
+      this.model.map((model) => {
         return model.reload().then((reloaded) => reloaded.destroyRecord());
       })
     ).then(() => {

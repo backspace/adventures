@@ -1,10 +1,11 @@
-import { visit, waitUntil } from '@ember/test-helpers';
-import { all } from 'rsvp';
 import { run } from '@ember/runloop';
-import { module, test } from 'qunit';
-import { setupApplicationTest } from 'ember-qunit';
-import withSetting from '../helpers/with-setting';
+import { visit, waitUntil } from '@ember/test-helpers';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
+import { setupApplicationTest } from 'ember-qunit';
+import { module, test } from 'qunit';
+import { all } from 'rsvp';
+
+import withSetting from '../helpers/with-setting';
 
 import page from '../pages/destinations';
 

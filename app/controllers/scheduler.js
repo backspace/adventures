@@ -1,10 +1,9 @@
-import { all } from 'rsvp';
-import { computed } from '@ember/object';
+import Controller from '@ember/controller';
+import { computed, action } from '@ember/object';
 import { mapBy, max } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
-import Controller from '@ember/controller';
-import { action } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
+import { all } from 'rsvp';
 
 export default class SchedulerController extends Controller {
   @tracked meeting;
@@ -23,9 +22,13 @@ export default class SchedulerController extends Controller {
     );
   }
 
-  @computed('lastMeetingOffsets.[]', 'meeting.destination.region.name}')
+  @computed(
+    'lastMeetingOffsets.[]',
+    'meeting.destination.region.{name,name}}',
+    'meeting.teams'
+  )
   get suggestedOffset() {
-    const maxOffset = Math.max(...this.get('lastMeetingOffsets'), 0);
+    const maxOffset = Math.max(...this.lastMeetingOffsets, 0);
 
     let timeFromLastRegion = 0;
 
@@ -38,7 +41,7 @@ export default class SchedulerController extends Controller {
 
     if (newRegionName && lastMeetingRegionNames.length > 0) {
       const destinationDistances = lastMeetingRegionNames.map((name) =>
-        this.get('pathfinder').distance(newRegionName, name)
+        this.pathfinder.distance(newRegionName, name)
       );
       timeFromLastRegion = Math.max(...destinationDistances);
     }
@@ -51,7 +54,7 @@ export default class SchedulerController extends Controller {
   }
 
   @action selectDestination(destination) {
-    if (!this.get('meeting')) {
+    if (!this.meeting) {
       this.meeting = this.store.createRecord('meeting');
     }
 
@@ -59,7 +62,7 @@ export default class SchedulerController extends Controller {
   }
 
   @action selectTeam(team) {
-    if (!this.get('meeting')) {
+    if (!this.meeting) {
       this.set('meeting', this.store.createRecord('meeting'));
     }
 
@@ -68,9 +71,9 @@ export default class SchedulerController extends Controller {
   }
 
   @action saveMeeting() {
-    const meeting = this.get('meeting');
+    const meeting = this.meeting;
 
-    meeting.set('offset', this.get('suggestedOffset'));
+    meeting.set('offset', this.suggestedOffset);
 
     meeting
       .save()
@@ -86,13 +89,13 @@ export default class SchedulerController extends Controller {
   }
 
   @action resetMeeting() {
-    this.get('meeting').rollbackAttributes();
+    this.meeting.rollbackAttributes();
 
     this.set('meeting', this.store.createRecord('meeting'));
   }
 
   @action editMeeting(meeting) {
-    const existingMeeting = this.get('meeting');
+    const existingMeeting = this.meeting;
 
     if (existingMeeting) {
       existingMeeting.rollbackAttributes();

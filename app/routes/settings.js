@@ -1,7 +1,7 @@
-import classic from 'ember-classic-decorator';
 import { action } from '@ember/object';
-import { inject as service } from '@ember/service';
 import Route from '@ember/routing/route';
+import { inject as service } from '@ember/service';
+import classic from 'ember-classic-decorator';
 
 @classic
 export default class SettingsRoute extends Route {
@@ -9,13 +9,13 @@ export default class SettingsRoute extends Route {
   settings;
 
   model() {
-    return this.get('settings').modelPromise();
+    return this.settings.modelPromise();
   }
 
   @action
   save(model) {
     model.save().then(() => {
-      this.get('settings').syncFeatures();
+      this.settings.syncFeatures();
     });
   }
 }

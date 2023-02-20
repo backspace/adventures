@@ -1,5 +1,5 @@
-import classic from 'ember-classic-decorator';
 import Service from '@ember/service';
+import classic from 'ember-classic-decorator';
 
 @classic
 export default class ClandestineRendezvousService extends Service {

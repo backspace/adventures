@@ -1,10 +1,10 @@
+import { getOwner } from '@ember/application';
 import { assert } from '@ember/debug';
 import { isEmpty } from '@ember/utils';
-import { Adapter } from 'ember-pouch';
-import { getOwner } from '@ember/application';
-import PouchDB from 'adventure-gathering/utils/pouch';
 import config from 'adventure-gathering/config/environment';
+import PouchDB from 'adventure-gathering/utils/pouch';
 import Ember from 'ember';
+import { Adapter } from 'ember-pouch';
 
 window.process = window.process || {};
 window.global = window;
@@ -45,7 +45,7 @@ export default Adapter.extend({
       owner.register('db:pouch', newDb, { instantiate: false });
     }
 
-    if (!this.get('db')) {
+    if (!this.db) {
       this.set('db', existingDb);
     }
   },

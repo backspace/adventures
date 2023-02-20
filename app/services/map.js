@@ -1,9 +1,9 @@
-import classic from 'ember-classic-decorator';
-import { computed } from '@ember/object';
 import { getOwner } from '@ember/application';
+import { computed } from '@ember/object';
 import Service from '@ember/service';
 
 import blobUtil from 'blob-util';
+import classic from 'ember-classic-decorator';
 
 @classic
 export default class MapService extends Service {
@@ -13,7 +13,7 @@ export default class MapService extends Service {
   }
 
   getAttachment(name) {
-    return this.get('db').getAttachment('map', name);
+    return this.db.getAttachment('map', name);
   }
 
   getURL(name) {
@@ -39,7 +39,7 @@ export default class MapService extends Service {
   }
 
   saveFile(file, name) {
-    const db = this.get('db');
+    const db = this.db;
 
     db.get('map')
       .then((map) => {

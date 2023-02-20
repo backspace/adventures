@@ -1,6 +1,6 @@
 import classic from 'ember-classic-decorator';
-import Model from 'ember-pouch/model';
 import DS from 'ember-data';
+import Model from 'ember-pouch/model';
 
 const { attr } = DS;
 

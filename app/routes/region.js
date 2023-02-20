@@ -1,7 +1,7 @@
-import classic from 'ember-classic-decorator';
 import { action } from '@ember/object';
-import { inject as service } from '@ember/service';
 import Route from '@ember/routing/route';
+import { inject as service } from '@ember/service';
+import classic from 'ember-classic-decorator';
 
 @classic
 export default class RegionRoute extends Route {
@@ -14,7 +14,7 @@ export default class RegionRoute extends Route {
   @action
   save(model) {
     model.save().then(() => {
-      this.get('lastRegion').setLastRegionId(model.id);
+      this.lastRegion.setLastRegionId(model.id);
       this.router.transitionTo('regions');
     });
   }

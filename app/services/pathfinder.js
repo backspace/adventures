@@ -1,6 +1,5 @@
-import Service from '@ember/service';
 import { computed } from '@ember/object';
-import { inject as service } from '@ember/service';
+import Service, { inject as service } from '@ember/service';
 
 import jsgraphs from 'js-graph-algorithms';
 
@@ -11,17 +10,17 @@ export default Service.extend({
     data: {},
   }),
 
-  regions: computed('data._rev', function () {
+  regions: computed('data.{_rev,data}', function () {
     return Object.keys(this.get('data.data'))
       .reduce((regions, key) => regions.concat(key.split('|')), [])
       .uniq();
   }),
 
   hasRegion(regionName) {
-    return this.get('regions').includes(regionName);
+    return this.regions.includes(regionName);
   },
 
-  graph: computed('data._rev', function () {
+  graph: computed('data.{_rev,data}', 'regions.length', function () {
     const graph = new jsgraphs.WeightedDiGraph(this.get('regions.length'));
 
     const regionToIndex = {};
@@ -52,7 +51,7 @@ export default Service.extend({
   }),
 
   distance(regionA, regionB) {
-    const graph = this.get('graph');
+    const graph = this.graph;
 
     const regionAIndex = this.regionToIndex(regionA);
     const regionBIndex = this.regionToIndex(regionB);
@@ -63,7 +62,7 @@ export default Service.extend({
   },
 
   regionToIndex(region) {
-    const graph = this.get('graph');
+    const graph = this.graph;
 
     return Object.keys(graph.nodeInfo).find(
       (key) => graph.nodeInfo[key].label === region

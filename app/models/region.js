@@ -1,8 +1,8 @@
-import classic from 'ember-classic-decorator';
 import { computed } from '@ember/object';
 import { inject as service } from '@ember/service';
-import Model from 'ember-pouch/model';
+import classic from 'ember-classic-decorator';
 import DS from 'ember-data';
+import Model from 'ember-pouch/model';
 
 const { attr, hasMany } = DS;
 
@@ -19,14 +19,14 @@ export default class Region extends Model {
 
   @computed('destinations.@each.meetings')
   get allMeetings() {
-    return this.get('destinations').mapBy('meetings').flat();
+    return this.destinations.mapBy('meetings').flat();
   }
 
-  @computed('destinations.@each.meetings', 'allMeetings.length')
+  @computed('allMeetings.length', 'destinations.@each.meetings', 'name')
   get meetingCount() {
     console.log(
-      `meeting count ${this.get('name')}`,
-      this.get('destinations')
+      `meeting count ${this.name}`,
+      this.destinations
         .mapBy('meetings.length')
         .reduce((prev, curr) => prev + curr)
     );
@@ -51,15 +51,15 @@ export default class Region extends Model {
   @service
   pathfinder;
 
-  @computed('pathfinder.regions.[]')
+  @computed('name', 'pathfinder.regions.[]')
   get hasPaths() {
-    return this.get('pathfinder').hasRegion(this.get('name'));
+    return this.pathfinder.hasRegion(this.name);
   }
 
-  @computed('hasPaths')
+  @computed('features.txtbeyond', 'hasPaths')
   get isComplete() {
     if (this.get('features.txtbeyond')) {
-      return this.get('hasPaths');
+      return this.hasPaths;
     } else {
       return true;
     }

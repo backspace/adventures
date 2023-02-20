@@ -1,5 +1,5 @@
-import { sort } from '@ember/object/computed';
 import Controller from '@ember/controller';
+import { sort } from '@ember/object/computed';
 
 export default Controller.extend({
   sorting: Object.freeze(['updatedAt:desc']),
@@ -9,9 +9,9 @@ export default Controller.extend({
 
   actions: {
     toggleSort() {
-      this.set('defaultSort', !this.get('defaultSort'));
+      this.set('defaultSort', !this.defaultSort);
 
-      if (this.get('defaultSort')) {
+      if (this.defaultSort) {
         this.set('sorting', ['updatedAt:desc']);
       } else {
         this.set('sorting', ['region.name:asc', 'createdAt:desc']);
@@ -20,9 +20,9 @@ export default Controller.extend({
 
     // FIXME this should be generalised, obvs
     toggleAwesomenessSort() {
-      this.set('defaultSort', !this.get('defaultSort'));
+      this.set('defaultSort', !this.defaultSort);
 
-      if (this.get('defaultSort')) {
+      if (this.defaultSort) {
         this.set('sorting', ['updatedAt:desc']);
       } else {
         this.set('sorting', ['awesomeness', 'createdAt:desc']);
@@ -31,9 +31,9 @@ export default Controller.extend({
 
     // FIXME this should be generalised, obvs
     toggleScheduledSort() {
-      this.set('defaultSort', !this.get('defaultSort'));
+      this.set('defaultSort', !this.defaultSort);
 
-      if (this.get('defaultSort')) {
+      if (this.defaultSort) {
         this.set('sorting', ['updatedAt:desc']);
       } else {
         this.set('sorting', ['meetings.length', 'createdAt:desc']);

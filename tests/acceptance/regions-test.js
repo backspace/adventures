@@ -1,15 +1,16 @@
-import { all, Promise as EmberPromise } from 'rsvp';
 import { run } from '@ember/runloop';
-import { module, skip, test } from 'qunit';
-import { setupApplicationTest } from 'ember-qunit';
 import { find, triggerEvent, waitFor, waitUntil } from '@ember/test-helpers';
 
-import withSetting from '../helpers/with-setting';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
+import { setupApplicationTest } from 'ember-qunit';
+import { module, skip, test } from 'qunit';
+import { all, Promise as EmberPromise } from 'rsvp';
 
-import page from '../pages/regions';
+import withSetting from '../helpers/with-setting';
+
 import destinationsPage from '../pages/destinations';
 import mapPage from '../pages/map';
+import page from '../pages/regions';
 
 const base64Gif =
   'R0lGODlhDwAPAKECAAAAzMzM/////wAAACwAAAAADwAPAAACIISPeQHsrZ5ModrLlN48CXF8m2iQ3YmmKqVlRtW4MLwWACH+H09wdGltaXplZCBieSBVbGVhZCBTbWFydFNhdmVyIQAAOw==';

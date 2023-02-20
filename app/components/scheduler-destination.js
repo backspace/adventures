@@ -1,5 +1,5 @@
-import { computed } from '@ember/object';
 import Component from '@ember/component';
+import { computed } from '@ember/object';
 import { htmlSafe } from '@ember/template';
 
 export default Component.extend({
@@ -20,7 +20,7 @@ export default Component.extend({
 
   actions: {
     select() {
-      this.get('select')(this.get('destination'));
+      this.select(this.destination);
     },
   },
 });

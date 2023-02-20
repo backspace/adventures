@@ -1,12 +1,12 @@
-import classic from 'ember-classic-decorator';
+import Component from '@ember/component';
+import { action, computed } from '@ember/object';
+import { notEmpty } from '@ember/object/computed';
 import {
   classNames,
   classNameBindings,
   tagName,
 } from '@ember-decorators/component';
-import { action, computed } from '@ember/object';
-import { notEmpty } from '@ember/object/computed';
-import Component from '@ember/component';
+import classic from 'ember-classic-decorator';
 
 @classic
 @tagName('tr')
@@ -46,6 +46,6 @@ export default class DestinationRow extends Component {
     }
 
     this.set('destination.status', newStatus);
-    this.get('destination').save();
+    this.destination.save();
   }
 }

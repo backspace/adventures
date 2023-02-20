@@ -1,10 +1,10 @@
-import { all } from 'rsvp';
 import { run } from '@ember/runloop';
-import { module, test } from 'qunit';
-import { setupApplicationTest } from 'ember-qunit';
 import { waitUntil } from '@ember/test-helpers';
 
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
+import { setupApplicationTest } from 'ember-qunit';
+import { module, test } from 'qunit';
+import { all } from 'rsvp';
 
 import page from '../pages/teams';
 

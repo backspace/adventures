@@ -1,9 +1,9 @@
-import classic from 'ember-classic-decorator';
-import { tagName } from '@ember-decorators/component';
 import Component from '@ember/component';
+import { tagName } from '@ember-decorators/component';
+import blobStream from 'blob-stream';
+import classic from 'ember-classic-decorator';
 
 import PDFDocument from 'pdfkit';
-import blobStream from 'blob-stream';
 
 @classic
 @tagName('span')
@@ -11,7 +11,8 @@ export default class EmbeddedRendezvousMaps extends Component {
   rendering = true;
 
   didInsertElement() {
-    const debug = this.get('debug');
+    super.didInsertElement(...arguments);
+    const debug = this.debug;
 
     const header = this.get('assets.header');
     const doc = new PDFDocument({ layout: 'portrait', font: header });
@@ -33,7 +34,7 @@ export default class EmbeddedRendezvousMaps extends Component {
 
     const margin = 0.5 * 72;
 
-    this.get('teams').forEach((team, index) => {
+    this.teams.forEach((team, index) => {
       if (index > 0 && index % 2 === 0) {
         doc.addPage();
       }

@@ -1,14 +1,15 @@
-import { all } from 'rsvp';
 import { run } from '@ember/runloop';
-import { module, test } from 'qunit';
-import { setupApplicationTest } from 'ember-qunit';
 import { find, waitUntil } from '@ember/test-helpers';
 
-import withSetting from '../helpers/with-setting';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
+import { setupApplicationTest } from 'ember-qunit';
+import { module, test } from 'qunit';
+import { all } from 'rsvp';
 
-import page from '../pages/scheduler';
+import withSetting from '../helpers/with-setting';
+
 import destinationsPage from '../pages/destinations';
+import page from '../pages/scheduler';
 
 module('Acceptance | scheduler', function (hooks) {
   setupApplicationTest(hooks);

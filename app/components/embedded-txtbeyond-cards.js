@@ -1,15 +1,15 @@
-import classic from 'ember-classic-decorator';
-import { tagName } from '@ember-decorators/component';
-import { inject as service } from '@ember/service';
-import { alias } from '@ember/object/computed';
 import Component from '@ember/component';
+import { alias } from '@ember/object/computed';
+import { inject as service } from '@ember/service';
+import { tagName } from '@ember-decorators/component';
 
 import config from 'adventure-gathering/config/environment';
 
-import PDFDocument from 'pdfkit';
 import blobStream from 'blob-stream';
+import classic from 'ember-classic-decorator';
 
 import moment from 'moment';
+import PDFDocument from 'pdfkit';
 
 @classic
 @tagName('span')
@@ -17,7 +17,8 @@ export default class EmbeddedTxtbeyondCards extends Component {
   rendering = true;
 
   didInsertElement() {
-    const debug = this.get('debug');
+    super.didInsertElement(...arguments);
+    const debug = this.debug;
 
     const header = this.get('assets.header');
     const bold = this.get('assets.bold');
@@ -223,7 +224,7 @@ export default class EmbeddedTxtbeyondCards extends Component {
   }
 
   _rendezvousCards() {
-    return this.get('teams').reduce((cards, team) => {
+    return this.teams.reduce((cards, team) => {
       return cards.concat(
         team
           .hasMany('meetings')
@@ -276,7 +277,7 @@ export default class EmbeddedTxtbeyondCards extends Component {
       otherTeamName,
 
       regionName: region.get('name'),
-      destinationDescription: this.get('txtbeyond').maskedDescription(
+      destinationDescription: this.txtbeyond.maskedDescription(
         destination.get('description')
       ),
 

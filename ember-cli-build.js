@@ -1,8 +1,8 @@
-"use strict";
+'use strict';
 
-const EmberApp = require("ember-cli/lib/broccoli/ember-app");
-const webpack = require("webpack");
-const nodeSass = require("node-sass");
+const EmberApp = require('ember-cli/lib/broccoli/ember-app');
+const nodeSass = require('node-sass');
+const webpack = require('webpack');
 
 module.exports = function (defaults) {
   let app = new EmberApp(defaults, {
@@ -10,57 +10,57 @@ module.exports = function (defaults) {
       webpack: {
         plugins: [
           new webpack.ProvidePlugin({
-            Buffer: ["buffer", "Buffer"],
-            process: "process/browser",
+            Buffer: ['buffer', 'Buffer'],
+            process: 'process/browser',
           }),
         ],
         resolve: {
           alias: {
-            fs: "pdfkit/js/virtual-fs.js",
-            "iconv-lite": false,
+            fs: 'pdfkit/js/virtual-fs.js',
+            'iconv-lite': false,
           },
           fallback: {
             crypto: false,
-            assert: require.resolve("assert"),
-            Buffer: require.resolve("buffer/"),
-            buffer: require.resolve("buffer/"),
-            stream: require.resolve("stream-browserify"),
-            util: require.resolve("util"),
-            zlib: require.resolve("browserify-zlib"),
+            assert: require.resolve('assert'),
+            Buffer: require.resolve('buffer/'),
+            buffer: require.resolve('buffer/'),
+            stream: require.resolve('stream-browserify'),
+            util: require.resolve('util'),
+            zlib: require.resolve('browserify-zlib'),
           },
         },
         module: {
           rules: [
-            { test: /src[/\\]assets/, loader: "arraybuffer-loader" },
-            { test: /\.afm$/, type: "asset/source" },
+            { test: /src[/\\]assets/, loader: 'arraybuffer-loader' },
+            { test: /\.afm$/, type: 'asset/source' },
             // bundle and load binary files inside static-assets folder as base64
             {
               test: /src[/\\]static-assets/,
-              type: "asset/inline",
+              type: 'asset/inline',
               generator: {
                 dataUrl: (content) => {
-                  return content.toString("base64");
+                  return content.toString('base64');
                 },
               },
             },
             // load binary files inside lazy-assets folder as an URL
             {
               test: /src[/\\]lazy-assets/,
-              type: "asset/resource",
+              type: 'asset/resource',
             },
             // convert to base64 and include inline file system binary files used by fontkit and linebreak
             {
-              enforce: "post",
+              enforce: 'post',
               test: /fontkit[/\\]index.js$/,
-              loader: "transform-loader",
+              loader: 'transform-loader',
               options: {
                 brfs: {},
               },
             },
             {
-              enforce: "post",
+              enforce: 'post',
               test: /linebreak[/\\]src[/\\]linebreaker.js/,
-              loader: "transform-loader",
+              loader: 'transform-loader',
               options: {
                 brfs: {},
               },
@@ -69,15 +69,15 @@ module.exports = function (defaults) {
         },
       },
     },
-    "ember-cli-babel": {
+    'ember-cli-babel': {
       includePolyfill: true,
     },
-    "ember-cli-foundation-6-sass": {
-      foundationJs: "all",
+    'ember-cli-foundation-6-sass': {
+      foundationJs: 'all',
     },
     fingerprint: {
-      exclude: ["apple-touch-icon", "favicon", "mstile"],
-      replaceExtensions: ["html", "css", "js", "json"],
+      exclude: ['apple-touch-icon', 'favicon', 'mstile'],
+      replaceExtensions: ['html', 'css', 'js', 'json'],
     },
     sassOptions: {
       implementation: nodeSass,

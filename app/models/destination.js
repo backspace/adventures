@@ -1,10 +1,10 @@
-import classic from 'ember-classic-decorator';
 import { computed } from '@ember/object';
-import { inject as service } from '@ember/service';
 import { equal, not } from '@ember/object/computed';
+import { inject as service } from '@ember/service';
 import { isEmpty } from '@ember/utils';
-import Model from 'ember-pouch/model';
+import classic from 'ember-classic-decorator';
 import DS from 'ember-data';
+import Model from 'ember-pouch/model';
 
 const { attr, belongsTo, hasMany } = DS;
 
@@ -25,17 +25,17 @@ export default class Destination extends Model {
   @attr('boolean')
   isOutside;
 
-  @computed('answer')
+  @computed('answer', 'puzzles.implementation')
   get suggestedMask() {
-    const answer = this.get('answer') || '';
+    const answer = this.answer || '';
 
     return this.get('puzzles.implementation').suggestedMask(answer);
   }
 
-  @computed('answer', 'mask')
+  @computed('answer', 'mask', 'puzzles.implementation')
   get maskIsValid() {
-    const answer = this.get('answer') || '';
-    const mask = this.get('mask') || '';
+    const answer = this.answer || '';
+    const mask = this.mask || '';
 
     return this.get('puzzles.implementation').maskIsValid(answer, mask);
   }
@@ -46,7 +46,14 @@ export default class Destination extends Model {
   @attr('number')
   risk;
 
-  @computed('description', 'answer', 'awesomeness', 'risk', 'maskIsValid')
+  @computed(
+    'answer',
+    'awesomeness',
+    'description',
+    'maskIsValid',
+    'puzzles.implementation',
+    'risk'
+  )
   get isComplete() {
     const { description, answer, awesomeness, risk, maskIsValid } =
       this.getProperties(

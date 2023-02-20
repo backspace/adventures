@@ -1,8 +1,8 @@
-import classic from 'ember-classic-decorator';
+import Route from '@ember/routing/route';
 import { inject as service } from '@ember/service';
 import { isPresent } from '@ember/utils';
+import classic from 'ember-classic-decorator';
 import { hash, all } from 'rsvp';
-import Route from '@ember/routing/route';
 
 @classic
 export default class SchedulerRoute extends Route {
@@ -36,7 +36,7 @@ export default class SchedulerRoute extends Route {
         }),
       destinations: this.store.findAll('destination'),
       teams: this.store.findAll('team'),
-      map: this.get('map').getURL('image'),
+      map: this.map.getURL('image'),
     });
   }
 }

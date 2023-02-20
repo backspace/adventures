@@ -1,12 +1,12 @@
-import classic from 'ember-classic-decorator';
-import { tagName } from '@ember-decorators/component';
-import { inject as service } from '@ember/service';
 import Component from '@ember/component';
+import { inject as service } from '@ember/service';
+import { tagName } from '@ember-decorators/component';
 
-import PDFDocument from 'pdfkit';
 import blobStream from 'blob-stream';
+import classic from 'ember-classic-decorator';
 
 import MaxRectsPackerPackage from 'maxrects-packer';
+import PDFDocument from 'pdfkit';
 
 // import { pixelLength, drawnLength, drawString, registrationLength, pointDimensionsForDisplay } from 'nokia-font/utils/nokia-font';
 
@@ -23,7 +23,8 @@ export default class EmbeddedTxtbeyondTransparencies extends Component {
   txtbeyond;
 
   didInsertElement() {
-    const debug = this.get('debug');
+    super.didInsertElement(...arguments);
+    const debug = this.debug;
 
     const doc = new PDFDocument({ layout: 'landscape' });
     const stream = doc.pipe(blobStream());
@@ -35,9 +36,9 @@ export default class EmbeddedTxtbeyondTransparencies extends Component {
 
     const boxes = [];
 
-    this.get('teams').forEach((team) => {
+    this.teams.forEach((team) => {
       team.get('meetings').forEach((meeting) => {
-        this.get('txtbeyond')
+        this.txtbeyond
           .descriptionMasks(meeting.get('destination.description'))
           .forEach((mask) => {
             boxes.push(this._buildTransparency(team, meeting, mask));
@@ -85,7 +86,7 @@ export default class EmbeddedTxtbeyondTransparencies extends Component {
       width,
       height,
       data: {
-        teamName: `@${this.get('txtbeyond').twitterName(team.get('name'))}`,
+        teamName: `@${this.txtbeyond.twitterName(team.get('name'))}`,
         teamPosition: meetingTeams.indexOf(team.id),
         slices: meetingTeams.length + 1,
         description: meeting.get('destination.description'),

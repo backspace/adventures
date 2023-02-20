@@ -1,8 +1,8 @@
-import classic from 'ember-classic-decorator';
 import { computed } from '@ember/object';
 import { mapBy, filterBy } from '@ember/object/computed';
-import Model from 'ember-pouch/model';
+import classic from 'ember-classic-decorator';
 import DS from 'ember-data';
+import Model from 'ember-pouch/model';
 
 const { attr, hasMany } = DS;
 
@@ -34,7 +34,7 @@ export default class Team extends Model {
 
   @computed('destinations.@each.awesomeness')
   get averageAwesomeness() {
-    const awesomenesses = this.get('destinations')
+    const awesomenesses = this.destinations
       .mapBy('awesomeness')
       .filter((a) => a);
 
@@ -49,9 +49,7 @@ export default class Team extends Model {
 
   @computed('destinations.@each.risk')
   get averageRisk() {
-    const risks = this.get('destinations')
-      .mapBy('risk')
-      .filter((r) => r);
+    const risks = this.destinations.mapBy('risk').filter((r) => r);
 
     if (risks.length > 0) {
       return risks.reduce((prev, curr) => prev + curr) / risks.length;
@@ -62,7 +60,7 @@ export default class Team extends Model {
 
   @computed('phones.[]')
   get phonesString() {
-    return (this.get('phones') || [])
+    return (this.phones || [])
       .map((phone) => {
         return `${phone.number}: ${phone.displaySize}`;
       })

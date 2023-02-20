@@ -1,7 +1,7 @@
 import { computed } from '@ember/object';
 import { sort } from '@ember/object/computed';
-import Model from 'ember-pouch/model';
 import DS from 'ember-data';
+import Model from 'ember-pouch/model';
 
 const { attr, belongsTo, hasMany } = DS;
 
@@ -13,7 +13,7 @@ export default Model.extend({
   teamSort: Object.freeze(['name']),
 
   isForbidden: computed('teams.@each.meetings', function () {
-    const teams = this.get('teams');
+    const teams = this.teams;
     const meetingCounts = teams.mapBy('meetings.length');
 
     return meetingCounts.uniq().length !== 1;

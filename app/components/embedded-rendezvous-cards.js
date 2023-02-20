@@ -1,15 +1,15 @@
-import classic from 'ember-classic-decorator';
-import { tagName } from '@ember-decorators/component';
-import { inject as service } from '@ember/service';
-import { alias } from '@ember/object/computed';
 import Component from '@ember/component';
+import { alias } from '@ember/object/computed';
+import { inject as service } from '@ember/service';
+import { tagName } from '@ember-decorators/component';
 
 import config from 'adventure-gathering/config/environment';
 
-import PDFDocument from 'pdfkit';
 import blobStream from 'blob-stream';
+import classic from 'ember-classic-decorator';
 
 import moment from 'moment';
+import PDFDocument from 'pdfkit';
 
 @classic
 @tagName('span')
@@ -17,7 +17,8 @@ export default class EmbeddedRendezvousCards extends Component {
   rendering = true;
 
   didInsertElement() {
-    const debug = this.get('debug');
+    super.didInsertElement(...arguments);
+    const debug = this.debug;
 
     const header = this.get('assets.header');
     const bold = this.get('assets.bold');
@@ -269,7 +270,7 @@ export default class EmbeddedRendezvousCards extends Component {
   }
 
   _rendezvousCards() {
-    return this.get('teams').reduce((cards, team) => {
+    return this.teams.reduce((cards, team) => {
       return cards.concat(
         team
           .hasMany('meetings')
@@ -303,22 +304,23 @@ export default class EmbeddedRendezvousCards extends Component {
     const answer = destination.get('answer');
     const mask = destination.get('mask');
 
-    const goalLetter = this.get('goal')[index];
+    const goalLetter = this.goal[index];
     const goalDigit = parseInt(goalLetter);
 
-    const chosenBlankIndex = this.get(
-      'puzzles'
-    ).implementation.chooseBlankIndex({ answer, mask, goalDigit });
+    const chosenBlankIndex = this.puzzles.implementation.chooseBlankIndex({
+      answer,
+      mask,
+      goalDigit,
+    });
 
     const answerDigit = parseInt(answer[chosenBlankIndex]);
 
-    const teamDigitsForAnswerAndGoalDigits = this.get(
-      'puzzles'
-    ).implementation.teamDigitsForAnswerAndGoalDigits({
-      teams,
-      goalDigit,
-      answerDigit,
-    });
+    const teamDigitsForAnswerAndGoalDigits =
+      this.puzzles.implementation.teamDigitsForAnswerAndGoalDigits({
+        teams,
+        goalDigit,
+        answerDigit,
+      });
 
     return {
       team,

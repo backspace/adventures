@@ -1,8 +1,8 @@
-import classic from 'ember-classic-decorator';
-import { inject as service } from '@ember/service';
-import { hash, all } from 'rsvp';
 import Route from '@ember/routing/route';
+import { inject as service } from '@ember/service';
+import classic from 'ember-classic-decorator';
 import fs from 'pdfkit/js/virtual-fs';
+import { hash, all } from 'rsvp';
 
 @classic
 export default class OutputRoute extends Route {
@@ -60,7 +60,7 @@ export default class OutputRoute extends Route {
             header,
             bold,
             regular,
-            map: this.get('map').getBase64String('high'),
+            map: this.map.getBase64String('high'),
           });
         }),
     });
@@ -68,10 +68,7 @@ export default class OutputRoute extends Route {
 
   afterModel(model) {
     if (model.settings.get('txtbeyond')) {
-      return this.get('txtbeyond').assignMeetingPhones(
-        model.teams,
-        model.meetings
-      );
+      return this.txtbeyond.assignMeetingPhones(model.teams, model.meetings);
     }
   }
 }

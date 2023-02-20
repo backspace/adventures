@@ -1,7 +1,7 @@
-import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 import { htmlSafe } from '@ember/template';
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 import { ref } from 'ember-ref-bucket';
 
 // FIXME not used but needed by Foundation??

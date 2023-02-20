@@ -1,10 +1,10 @@
+import { triggerEvent } from '@ember/test-helpers';
 import PageObject, {
   attribute,
   collection,
   findElement,
   text,
 } from 'ember-cli-page-object';
-import { triggerEvent } from '@ember/test-helpers';
 
 const x = function (selector) {
   return {

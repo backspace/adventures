@@ -1,7 +1,7 @@
-import classic from 'ember-classic-decorator';
+import Controller from '@ember/controller';
 import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
-import Controller from '@ember/controller';
+import classic from 'ember-classic-decorator';
 
 @classic
 export default class MapController extends Controller {
@@ -16,6 +16,6 @@ export default class MapController extends Controller {
       this.set(property, URL.createObjectURL(file));
     }
 
-    this.get('map').saveFile(file, name);
+    this.map.saveFile(file, name);
   }
 }

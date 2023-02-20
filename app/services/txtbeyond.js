@@ -1,5 +1,5 @@
-import classic from 'ember-classic-decorator';
 import Service from '@ember/service';
+import classic from 'ember-classic-decorator';
 import { all } from 'rsvp';
 
 @classic

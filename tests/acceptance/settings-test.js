@@ -1,9 +1,7 @@
 import { run } from '@ember/runloop';
-import { module, test } from 'qunit';
-
-import { setupApplicationTest } from 'ember-qunit';
-
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
+import { setupApplicationTest } from 'ember-qunit';
+import { module, test } from 'qunit';
 
 import page from '../pages/settings';
 
