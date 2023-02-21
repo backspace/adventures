@@ -12,6 +12,10 @@ body.draglessness {
   user-select: none;
 }
 
+.undraggable {
+  touch-action: none;
+}
+
 .top-bar ul li.pair {
   a {
     display: inline-block;

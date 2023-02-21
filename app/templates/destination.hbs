@@ -55,17 +55,13 @@
   <div class='small-4 columns'>
     <label>
       Awesomeness
-      <DraggableNumber>
-        <Input @value={{this.model.awesomeness}} @type='number' class='awesomeness' min={{0}} max={{10}} step={{0.25}} />
-      </DraggableNumber>
+      <Input {{draggable-number}} @value={{this.model.awesomeness}} @type='number' class='awesomeness undraggable' min={{0}} max={{10}} step={{0.25}} />
     </label>
   </div>
   <div class='small-4 columns'>
     <label>
       Risk
-      <DraggableNumber>
-        <Input @value={{this.model.risk}} @type='number' class='risk' min={{0}} max={{10}} step={{0.25}} />
-      </DraggableNumber>
+      <Input {{draggable-number}} @value={{this.model.risk}} @type='number' class='risk undraggable' min={{0}} max={{10}} step={{0.25}} />
     </label>
   </div>
   {{#if (feature-flag 'destination-status')}}
