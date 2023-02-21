@@ -24,12 +24,6 @@ export default class Region extends Model {
 
   @computed('allMeetings.length', 'destinations.@each.meetings', 'name')
   get meetingCount() {
-    console.log(
-      `meeting count ${this.name}`,
-      this.destinations
-        .mapBy('meetings.length')
-        .reduce((prev, curr) => prev + curr)
-    );
     return this.get('allMeetings.length');
   }
 
