@@ -33,6 +33,12 @@ export default PageObject.create({
     isChecked: property('checked'),
   },
 
+  unmnemonicDevices: {
+    scope: '[data-test-unmnemonic-devices]',
+
+    isChecked: property('checked'),
+  },
+
   save: clickable('.save'),
   cancel: clickable('.cancel'),
 });

@@ -71,6 +71,7 @@ module('Acceptance | settings', function (hooks) {
     await page.destinationStatus.click();
     await page.clandestineRendezvous.click();
     await page.txtbeyond.click();
+    await page.unmnemonicDevices.click();
     await page.save();
 
     this.store.findRecord('settings', 'settings').then((settings) => {
@@ -78,6 +79,7 @@ module('Acceptance | settings', function (hooks) {
       assert.notOk(featuresService.get('destinationStatus'));
       assert.ok(featuresService.get('clandestineRendezvous'));
       assert.ok(featuresService.get('txtbeyond'));
+      assert.ok(featuresService.get('unmnemonicDevices'));
 
       assert.equal(settings.get('goal'), '789');
       assert.notOk(settings.get('destinationStatus'));

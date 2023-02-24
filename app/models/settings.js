@@ -17,4 +17,7 @@ export default class Settings extends Model {
 
   @attr('boolean')
   txtbeyond;
+
+  @attr('boolean')
+  unmnemonicDevices;
 }

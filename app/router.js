@@ -11,6 +11,10 @@ Router.map(function () {
     this.route('new');
   });
 
+  this.route('waypoints', function () {
+    this.route('new');
+  });
+
   this.route('destination', { path: '/destinations/:destination_id' });
 
   this.route('regions', function () {

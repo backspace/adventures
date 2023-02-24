@@ -3,6 +3,9 @@
     <div class='top-bar'>
       <ul class='menu'>
         <li class='pair'><LinkTo @route='destinations'>destinations</LinkTo> <LinkTo @route='destinations.new' class='destinations new'>+</LinkTo></li>
+        {{#if (feature-flag 'unmnemonicDevices')}}
+          <li class='pair'><LinkTo @route='waypoints' data-test-waypoints>waypoints</LinkTo></li>
+        {{/if}}
         <li class='pair'><LinkTo @route='regions'>regions</LinkTo> <LinkTo @route='regions.new' class='regions new'>+</LinkTo></li>
         <li class='show-for-medium'><LinkTo @route='teams' class='teams'>teams</LinkTo></li>
         <li class='show-for-medium'><LinkTo @route='scheduler'>scheduler</LinkTo></li>

@@ -32,15 +32,18 @@ export default class SettingsService extends Service {
 
       // FIXME why is this needed?
       run(() => {
-        ['destinationStatus', 'clandestineRendezvous', 'txtbeyond'].forEach(
-          (setting) => {
-            if (settings.get(setting)) {
-              features.enable(setting);
-            } else {
-              features.disable(setting);
-            }
+        [
+          'destinationStatus',
+          'clandestineRendezvous',
+          'txtbeyond',
+          'unmnemonicDevices',
+        ].forEach((setting) => {
+          if (settings.get(setting)) {
+            features.enable(setting);
+          } else {
+            features.disable(setting);
           }
-        );
+        });
 
         return settings.save();
       });
