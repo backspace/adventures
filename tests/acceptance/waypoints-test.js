@@ -5,7 +5,7 @@ import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 import { all } from 'rsvp';
 
-import withSetting from '../helpers/with-setting';
+import withSetting, { withoutSetting } from '../helpers/with-setting';
 
 import page from 'adventure-gathering/tests/pages/waypoints';
 import homePage from 'adventure-gathering/tests/pages/home';
@@ -15,6 +15,8 @@ module('Acceptance | waypoints', function (hooks) {
   clearDatabase(hooks);
 
   hooks.beforeEach(async function (assert) {
+    await withSetting(this.owner, 'unmnemonic-devices');
+
     const store = this.owner.lookup('service:store');
 
     const regionOne = store.createRecord('region');
@@ -52,20 +54,19 @@ module('Acceptance | waypoints', function (hooks) {
   });
 
   test('waypoints show for unmnemonic devices', async function (assert) {
-    await withSetting(this.owner, 'unmnemonic-devices');
     await homePage.visit();
 
     assert.ok(homePage.waypoints.isPresent);
   });
 
   test('waypoints do not show otherwise', async function (assert) {
+    await withoutSetting(this.owner, 'unmnemonic-devices');
     await homePage.visit();
 
     assert.notOk(homePage.waypoints.isPresent);
   });
 
   test('existing waypoints are listed', async function (assert) {
-    await withSetting(this.owner, 'unmnemonic-devices');
     await homePage.visit();
     await homePage.waypoints.click();
 

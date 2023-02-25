@@ -1,14 +1,18 @@
 import { camelize } from '@ember/string';
 
-export default async function (owner, setting) {
+export default async function withSetting(owner, setting, value = true) {
   const store = owner.lookup('service:store');
 
-  const object = {
-    id: 'settings',
-  };
+  const record =
+    store.peekRecord('settings', 'settings') ||
+    store.createRecord('settings', {
+      id: 'settings',
+    });
 
-  object[camelize(setting)] = true;
+  record.set(camelize(setting), value);
+  return record.save();
+}
 
-  const settings = store.createRecord('settings', object);
-  return settings.save();
+export async function withoutSetting(owner, setting) {
+  return withSetting(owner, setting, false);
 }
