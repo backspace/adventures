@@ -8,4 +8,19 @@ const { attr, belongsTo, hasMany } = DS;
 export default class Waypoint extends Model {
   @belongsTo('region', { async: false })
   region;
+
+  @attr('string')
+  name;
+
+  @attr('string')
+  author;
+
+  @attr('string')
+  call;
+
+  @attr('createDate')
+  createdAt;
+
+  @attr('updateDate')
+  updatedAt;
 }

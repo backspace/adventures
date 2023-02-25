@@ -22,8 +22,8 @@ module('Acceptance | waypoints', function (hooks) {
     const regionOne = store.createRecord('region');
     const regionTwo = store.createRecord('region');
 
-    regionOne.set('name', 'Harvey Smith');
-    regionTwo.set('name', 'Henderson');
+    regionOne.set('name', 'Henderson');
+    regionTwo.set('name', 'Harvey Smith');
 
     await regionOne.save();
     await regionTwo.save();
@@ -31,7 +31,7 @@ module('Acceptance | waypoints', function (hooks) {
     const waypointOne = store.createRecord('waypoint');
 
     waypointOne.setProperties({
-      name: 'The Shadowed Sun',
+      name: 'The Killing Moon',
       author: 'N. K. Jemisin',
       call: 'FICTION SCI JEMISIN',
       region: regionOne,
@@ -43,7 +43,7 @@ module('Acceptance | waypoints', function (hooks) {
     const waypointTwo = store.createRecord('waypoint');
 
     waypointTwo.setProperties({
-      name: 'The Killing Moon',
+      name: 'The Shadowed Sun',
       author: 'N. K. Jemisin',
       call: 'FICTION SCI JEMISIN',
       region: regionTwo,
@@ -81,5 +81,21 @@ module('Acceptance | waypoints', function (hooks) {
       assert.equal(two.author, 'N. K. Jemisin');
       assert.equal(two.region, 'Henderson');
     });
+  });
+
+  test('a waypoint can be created and will appear at the top of the list', async function (assert) {
+    await homePage.visit();
+    await homePage.waypoints.click();
+
+    await page.new();
+    await page.nameField.fill('A Half-Built Garden');
+    await page.authorField.fill('Ruthanna Emrys');
+    await page.callField.fill('FICTION SCI EMRYS');
+
+    await page.save();
+    await waitUntil(() => page.waypoints.length);
+
+    assert.equal(page.waypoints[0].name, 'A Half-Built Garden');
+    assert.equal(page.waypoints[0].author, 'Ruthanna Emrys');
   });
 });

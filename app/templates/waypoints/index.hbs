@@ -9,7 +9,7 @@
         </tr>
       </thead>
       <tbody>
-        {{#each this.model as |waypoint|}}
+        {{#each this.waypoints as |waypoint|}}
           <tr data-test-waypoint>
             <td data-test-name>
               {{waypoint.name}}
@@ -24,5 +24,9 @@
         {{/each}}
       </tbody>
     </table>
+
+    <LinkTo @route="waypoints.new" data-test-waypoints-new>
+      New
+    </LinkTo>
   </div>
 </div>
