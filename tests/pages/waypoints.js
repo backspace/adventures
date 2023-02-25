@@ -11,6 +11,8 @@ export default PageObject.create({
     name: text('[data-test-name]'),
     author: text('[data-test-author]'),
     region: text('[data-test-region]'),
+
+    edit: clickable('[data-test-edit]'),
   }),
 
   new: clickable('[data-test-waypoints-new]'),

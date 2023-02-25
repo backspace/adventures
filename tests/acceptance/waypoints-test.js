@@ -98,4 +98,34 @@ module('Acceptance | waypoints', function (hooks) {
     assert.equal(page.waypoints[0].name, 'A Half-Built Garden');
     assert.equal(page.waypoints[0].author, 'Ruthanna Emrys');
   });
+
+  test('a waypoint can be edited and edits can be cancelled', async function (assert) {
+    await homePage.visit();
+    await homePage.waypoints.click();
+    await page.waypoints[0].edit();
+
+    assert.equal(page.nameField.value, 'The Shadowed Sun');
+    assert.equal(page.authorField.value, 'N. K. Jemisin');
+    assert.equal(page.callField.value, 'FICTION SCI JEMISIN');
+
+    await page.nameField.fill('The Fifth Season');
+    await page.authorField.fill('NK');
+    await page.callField.fill('978-0-356-50819-1');
+    await page.save();
+    await waitUntil(() => page.waypoints.length);
+
+    page.waypoints[0].as((edited) => {
+      assert.equal(edited.name, 'The Fifth Season');
+      assert.equal(edited.author, 'NK');
+    });
+
+    await page.waypoints[0].edit();
+
+    assert.equal(page.callField.value, '978-0-356-50819-1');
+
+    await page.nameField.fill('The Obelisk Gate');
+    await page.cancel();
+
+    assert.equal(page.waypoints[0].name, 'The Fifth Season');
+  });
 });

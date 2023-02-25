@@ -20,6 +20,11 @@
             <td data-test-region>
               {{waypoint.region.name}}
             </td>
+            <td>
+              <LinkTo @route="waypoint" @model={{waypoint}} data-test-edit>
+                Edit
+              </LinkTo>
+            </td>
           </tr>
         {{/each}}
       </tbody>
