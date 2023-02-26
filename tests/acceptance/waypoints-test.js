@@ -131,9 +131,8 @@ module('Acceptance | waypoints', function (hooks) {
 
   test('a new waypoint defaults to the same region as the previously-created one', async function (assert) {
     await homePage.visit();
-    await homePage.waypoints.click();
+    await homePage.waypoints.new();
 
-    await page.new();
     await page.nameField.fill('Borderlands');
 
     await page.regionField.fillByText('Henderson');
