@@ -11,14 +11,14 @@
       <tbody>
         {{#each this.waypoints as |waypoint|}}
           <tr data-test-waypoint>
+            <td data-test-region>
+              {{waypoint.region.name}}
+            </td>
             <td data-test-name>
               {{waypoint.name}}
             </td>
             <td data-test-author>
               {{waypoint.author}}
-            </td>
-            <td data-test-region>
-              {{waypoint.region.name}}
             </td>
             <td>
               <LinkTo @route="waypoint" @model={{waypoint}} data-test-edit>

@@ -128,4 +128,20 @@ module('Acceptance | waypoints', function (hooks) {
 
     assert.equal(page.waypoints[0].name, 'The Fifth Season');
   });
+
+  test('a new waypoint defaults to the same region as the previously-created one', async function (assert) {
+    await homePage.visit();
+    await homePage.waypoints.click();
+
+    await page.new();
+    await page.nameField.fill('Borderlands');
+
+    await page.regionField.fillByText('Henderson');
+
+    await page.save();
+
+    await page.new();
+
+    assert.equal(page.regionField.text, 'Henderson');
+  });
 });
