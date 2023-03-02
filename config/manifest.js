@@ -7,12 +7,12 @@ module.exports = function (/* environment, appConfig */) {
 
   return {
     name: 'adventure-gathering',
-    short_name: 'adventure-gathering',
-    description: '',
+    short_name: 'Gathering',
+    description: 'data gathering for adventures',
     start_url: '/',
     display: 'standalone',
     background_color: '#fff',
-    theme_color: '#fff',
+    theme_color: '#1779ba',
     icons: [
       {
         src: '/favicon.png',
