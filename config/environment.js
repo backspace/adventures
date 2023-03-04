@@ -28,15 +28,6 @@ module.exports = function (environment) {
       options: {},
     },
 
-    manifest: {
-      enabled: true,
-      appcacheFile: '/manifest.appcache',
-      excludePaths: ['index.html', 'manifest.ember-web-app.json'],
-      includePaths: ['/'],
-      network: ['*'],
-      showCreateDate: true,
-    },
-
     firstRendezvousTime: '2016-02-12 13:50',
     rendezvousInterval: 22,
   };
