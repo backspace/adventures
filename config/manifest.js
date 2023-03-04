@@ -10,6 +10,7 @@ module.exports = function (/* environment, appConfig */) {
     short_name: 'Gathering',
     description: 'data gathering for adventures',
     start_url: '/',
+    scope: '/',
     display: 'standalone',
     background_color: '#fff',
     theme_color: '#1779ba',
