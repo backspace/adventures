@@ -1,10 +1,8 @@
+import { hasMany, attr } from '@ember-data/model';
 import { computed } from '@ember/object';
 import { mapBy, filterBy } from '@ember/object/computed';
 import classic from 'ember-classic-decorator';
-import DS from 'ember-data';
 import Model from 'ember-pouch/model';
-
-const { attr, hasMany } = DS;
 
 @classic
 export default class Team extends Model {

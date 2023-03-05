@@ -1,7 +1,7 @@
-import DS from 'ember-data';
+import DateTransform from 'adventure-gathering/transforms/ember-data-date';
 
-export default DS.DateTransform.extend({
-  serialize: function () {
-    return this._super(new Date());
-  },
-});
+export default class UpdateDateTransform extends DateTransform {
+  serialize(deserialized) {
+    return super.serialize(new Date());
+  }
+}

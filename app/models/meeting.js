@@ -1,9 +1,7 @@
+import { hasMany, belongsTo, attr } from '@ember-data/model';
 import { computed } from '@ember/object';
 import { sort } from '@ember/object/computed';
-import DS from 'ember-data';
 import Model from 'ember-pouch/model';
-
-const { attr, belongsTo, hasMany } = DS;
 
 export default Model.extend({
   destination: belongsTo('destination'),

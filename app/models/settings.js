@@ -1,8 +1,6 @@
+import { attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';
-import DS from 'ember-data';
 import Model from 'ember-pouch/model';
-
-const { attr } = DS;
 
 @classic
 export default class Settings extends Model {

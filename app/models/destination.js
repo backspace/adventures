@@ -1,12 +1,10 @@
+import { hasMany, belongsTo, attr } from '@ember-data/model';
 import { computed } from '@ember/object';
 import { equal, not } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { isEmpty } from '@ember/utils';
 import classic from 'ember-classic-decorator';
-import DS from 'ember-data';
 import Model from 'ember-pouch/model';
-
-const { attr, belongsTo, hasMany } = DS;
 
 @classic
 export default class Destination extends Model {
