@@ -5,7 +5,7 @@ import { module, test } from 'qunit';
 
 import page from '../pages/settings';
 
-module('Acceptance | settings', function (hooks) {
+module('Acceptance | settings: fresh', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
@@ -35,7 +35,7 @@ module('Acceptance | settings', function (hooks) {
   });
 });
 
-module('Acceptance | settings', function (hooks) {
+module('Acceptance | settings: existing', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
