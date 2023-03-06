@@ -33,8 +33,6 @@ module('Acceptance | sync', function (hooks) {
     localStorage.clear();
     localStorage.setItem('storage:databases', JSON.stringify(['old-db']));
 
-    const done = assert.async();
-
     await visit('/');
     await page.visit();
 
@@ -44,42 +42,26 @@ module('Acceptance | sync', function (hooks) {
     await page.enterDestination('sync-db').sync();
 
     const syncController = this.owner.lookup('controller:sync');
+    await syncController.get('syncPromise');
 
-    syncController
-      .get('syncPromise')
-      .then(async () => {
-        assert.equal(page.push.read, '2');
-        assert.equal(page.push.written, '2');
-        assert.equal(page.push.writeFailures, '0');
+    assert.equal(page.push.read, '2');
+    assert.equal(page.push.written, '2');
+    assert.equal(page.push.writeFailures, '0');
 
-        assert.equal(page.pull.read, '0');
-        assert.equal(page.pull.written, '0');
-        assert.equal(page.pull.writeFailures, '0');
+    assert.equal(page.pull.read, '0');
+    assert.equal(page.pull.written, '0');
+    assert.equal(page.pull.writeFailures, '0');
 
-        assert.equal(page.databases.length, 2);
+    assert.equal(page.databases.length, 2);
 
-        await page.enterDestination('other-sync').sync();
+    await page.enterDestination('other-sync').sync();
 
-        assert.equal(page.databases.length, 3);
-        assert.equal(page.databases[1].name, 'sync-db');
-        assert.equal(page.databases[2].name, 'other-sync');
+    assert.equal(page.databases.length, 3);
+    assert.equal(page.databases[1].name, 'sync-db');
+    assert.equal(page.databases[2].name, 'other-sync');
 
-        await page.databases[1].click();
+    await page.databases[1].click();
 
-        assert.equal(page.destinationValue, 'sync-db');
-
-        done();
-      })
-      .catch((error) => {
-        assert.ok(false, 'expected no errors syncing');
-
-        // FIXME had to add this because PhantomJS was timing out during this test;
-        // the test PouchDB was full and producing errors. Should figure out how
-        // to destroy the database next time this happens.
-        // eslint-disable-next-line
-        console.log(stringify(error));
-
-        done();
-      });
+    assert.equal(page.destinationValue, 'sync-db');
   });
 });

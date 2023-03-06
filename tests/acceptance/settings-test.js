@@ -14,8 +14,6 @@ module('Acceptance | settings: fresh', function (hooks) {
   });
 
   test('a new settings document can be created and saved', async function (assert) {
-    const done = assert.async();
-
     await page.visit();
 
     assert.equal(page.goalField.value, '');
@@ -26,12 +24,11 @@ module('Acceptance | settings: fresh', function (hooks) {
     await page.txtbeyond.click();
     await page.save();
 
-    this.store.findRecord('settings', 'settings').then((settings) => {
-      assert.equal(settings.get('goal'), 'abc');
-      assert.ok(settings.get('clandestineRendezvous'));
-      assert.ok(settings.get('txtbeyond'));
-      done();
-    });
+    let settings = await this.store.findRecord('settings', 'settings');
+
+    assert.equal(settings.get('goal'), 'abc');
+    assert.ok(settings.get('clandestineRendezvous'));
+    assert.ok(settings.get('txtbeyond'));
   });
 });
 
@@ -57,8 +54,6 @@ module('Acceptance | settings: existing', function (hooks) {
   });
 
   test('an existing settings document is displayed and can be updated, with its boolean flags mirrored to the features service', async function (assert) {
-    const done = assert.async();
-
     await page.visit();
 
     const featuresService = this.owner.lookup('service:features');
@@ -74,17 +69,14 @@ module('Acceptance | settings: existing', function (hooks) {
     await page.unmnemonicDevices.click();
     await page.save();
 
-    this.store.findRecord('settings', 'settings').then((settings) => {
-      const featuresService = this.owner.lookup('service:features');
-      assert.notOk(featuresService.get('destinationStatus'));
-      assert.ok(featuresService.get('clandestineRendezvous'));
-      assert.ok(featuresService.get('txtbeyond'));
-      assert.ok(featuresService.get('unmnemonicDevices'));
+    const settings = await this.store.findRecord('settings', 'settings');
 
-      assert.equal(settings.get('goal'), '789');
-      assert.notOk(settings.get('destinationStatus'));
+    assert.notOk(featuresService.get('destinationStatus'));
+    assert.ok(featuresService.get('clandestineRendezvous'));
+    assert.ok(featuresService.get('txtbeyond'));
+    assert.ok(featuresService.get('unmnemonicDevices'));
 
-      done();
-    });
+    assert.equal(settings.get('goal'), '789');
+    assert.notOk(settings.get('destinationStatus'));
   });
 });

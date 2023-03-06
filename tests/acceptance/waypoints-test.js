@@ -69,17 +69,15 @@ module('Acceptance | waypoints', function (hooks) {
     await homePage.visit();
     await homePage.waypoints.click();
 
-    page.waypoints[0].as((one) => {
-      assert.equal(one.name, 'The Shadowed Sun');
-      assert.equal(one.author, 'N. K. Jemisin');
-      assert.equal(one.region, 'Harvey Smith');
-    });
+    let one = page.waypoints[0];
+    assert.equal(one.name, 'The Shadowed Sun');
+    assert.equal(one.author, 'N. K. Jemisin');
+    assert.equal(one.region, 'Harvey Smith');
 
-    page.waypoints[1].as((two) => {
-      assert.equal(two.name, 'The Killing Moon');
-      assert.equal(two.author, 'N. K. Jemisin');
-      assert.equal(two.region, 'Henderson');
-    });
+    let two = page.waypoints[1];
+    assert.equal(two.name, 'The Killing Moon');
+    assert.equal(two.author, 'N. K. Jemisin');
+    assert.equal(two.region, 'Henderson');
   });
 
   test('a waypoint can be created and will appear at the top of the list', async function (assert) {
@@ -113,10 +111,9 @@ module('Acceptance | waypoints', function (hooks) {
     await page.save();
     await waitUntil(() => page.waypoints.length);
 
-    page.waypoints[0].as((edited) => {
-      assert.equal(edited.name, 'The Fifth Season');
-      assert.equal(edited.author, 'NK');
-    });
+    let edited = page.waypoints[0];
+    assert.equal(edited.name, 'The Fifth Season');
+    assert.equal(edited.author, 'NK');
 
     await page.waypoints[0].edit();
 
