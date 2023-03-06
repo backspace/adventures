@@ -26,9 +26,8 @@ export default class SchedulerRoute extends Route {
           );
         })
         .then((regionsAndDestinations) => {
-          // eslint-disable-next-line
           return regionsAndDestinations
-            .filter(({ region, destinations }) => {
+            .filter(({ destinations }) => {
               return isPresent(destinations.filterBy('isAvailable'));
             })
             .map((regionAndDestinations) => regionAndDestinations.region)

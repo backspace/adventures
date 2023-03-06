@@ -5,6 +5,7 @@ import { tracked } from '@glimmer/tracking';
 import { ref } from 'ember-ref-bucket';
 
 // FIXME not used but needed by Foundation??
+// eslint-disable-next-line
 import jQuery from 'jquery';
 
 export default class MappableRegionComponent extends Component {

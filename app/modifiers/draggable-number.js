@@ -1,12 +1,11 @@
 import { modifier } from 'ember-modifier';
 
-export default modifier(function draggableNumber(element, positional, named) {
+export default modifier(function draggableNumber(element) {
   let divisor = 5.0;
   let fraction = 1 / parseFloat(element.getAttribute('step'));
   let max = parseFloat(element.getAttribute('max')) || Number.MAX_VALUE;
   let min = parseFloat(element.getAttribute('min'));
 
-  let started = false;
   let startValue = void 0;
   let startY = void 0;
 
@@ -18,9 +17,7 @@ export default modifier(function draggableNumber(element, positional, named) {
     element.value = Math.min(Math.max(min, startValue - rounded), max);
   };
 
-  let bodyStopListener = (e) => {
-    let y = getY(e);
-
+  let bodyStopListener = () => {
     document.body.removeEventListener('mousemove', bodyStartListener);
     document.body.removeEventListener('touchmove', bodyStartListener);
     document.body.removeEventListener('mouseup', bodyStopListener);

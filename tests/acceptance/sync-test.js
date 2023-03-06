@@ -4,7 +4,6 @@ import { visit } from '@ember/test-helpers';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
 
-import stringify from 'json-stringify-safe';
 import { module, test } from 'qunit';
 
 import page from '../pages/sync';

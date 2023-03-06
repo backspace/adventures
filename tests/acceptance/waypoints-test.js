@@ -1,11 +1,9 @@
-import { run } from '@ember/runloop';
-import { visit, waitUntil } from '@ember/test-helpers';
+import { waitUntil } from '@ember/test-helpers';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import homePage from 'adventure-gathering/tests/pages/home';
 import page from 'adventure-gathering/tests/pages/waypoints';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
-import { all } from 'rsvp';
 
 import withSetting, { withoutSetting } from '../helpers/with-setting';
 
@@ -13,7 +11,7 @@ module('Acceptance | waypoints', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
-  hooks.beforeEach(async function (assert) {
+  hooks.beforeEach(async function () {
     await withSetting(this.owner, 'unmnemonic-devices');
 
     const store = this.owner.lookup('service:store');
