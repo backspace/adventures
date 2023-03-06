@@ -1,14 +1,13 @@
 import { run } from '@ember/runloop';
 import { visit, waitUntil } from '@ember/test-helpers';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
+import homePage from 'adventure-gathering/tests/pages/home';
+import page from 'adventure-gathering/tests/pages/waypoints';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 import { all } from 'rsvp';
 
 import withSetting, { withoutSetting } from '../helpers/with-setting';
-
-import page from 'adventure-gathering/tests/pages/waypoints';
-import homePage from 'adventure-gathering/tests/pages/home';
 
 module('Acceptance | waypoints', function (hooks) {
   setupApplicationTest(hooks);

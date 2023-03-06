@@ -1,8 +1,8 @@
-import { hasMany, belongsTo, attr } from '@ember-data/model';
 import { computed } from '@ember/object';
 import { equal, not } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { isEmpty } from '@ember/utils';
+import { hasMany, belongsTo, attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
 

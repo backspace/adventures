@@ -1,6 +1,6 @@
-import { hasMany, attr } from '@ember-data/model';
 import { computed } from '@ember/object';
 import { mapBy, filterBy } from '@ember/object/computed';
+import { hasMany, attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
 
