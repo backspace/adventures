@@ -31,7 +31,7 @@ export default modifier(function draggableNumber(element, positional, named) {
     let y = getY(e);
     let value = element.value;
 
-    startValue = value === NaN || value === '' ? 0 : parseFloat(element.value);
+    startValue = isNaN(value) || value === '' ? 0 : parseFloat(element.value);
     startY = y;
 
     document.body.addEventListener('mousemove', bodyStartListener);
