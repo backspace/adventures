@@ -1,27 +1,13 @@
-import Component from '@ember/component';
-import { action, computed } from '@ember/object';
-import { notEmpty } from '@ember/object/computed';
-import {
-  classNames,
-  classNameBindings,
-  tagName,
-} from '@ember-decorators/component';
-import classic from 'ember-classic-decorator';
+import Component from '@glimmer/component';
+import { action } from '@ember/object';
 
-@classic
-@tagName('tr')
-@classNames('destination')
-@classNameBindings(
-  'destination.isIncomplete:incomplete',
-  'hasMeetings:meetings'
-)
 export default class DestinationRow extends Component {
-  @notEmpty('destination.meetings')
-  hasMeetings;
+  get hasMeetings() {
+    return this.args.destination.meetings.length;
+  }
 
-  @computed('destination.status')
   get status() {
-    const status = this.get('destination.status');
+    const status = this.args.destination.status;
 
     if (status === 'available') {
       return '✓';
@@ -34,7 +20,7 @@ export default class DestinationRow extends Component {
 
   @action
   toggleStatus() {
-    const status = this.get('destination.status');
+    const status = this.args.destination.status;
     let newStatus;
 
     if (status === 'available') {
@@ -45,7 +31,7 @@ export default class DestinationRow extends Component {
       newStatus = 'available';
     }
 
-    this.set('destination.status', newStatus);
-    this.destination.save();
+    this.args.destination.status = newStatus;
+    this.args.destination.save();
   }
 }
