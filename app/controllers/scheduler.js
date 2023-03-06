@@ -22,11 +22,7 @@ export default class SchedulerController extends Controller {
     );
   }
 
-  @computed(
-    'lastMeetingOffsets.[]',
-    'meeting.destination.region.name',
-    'meeting.teams'
-  )
+  @computed('lastMeetingOffsets.[]', 'meeting.{destination.region.name,teams}')
   get suggestedOffset() {
     const maxOffset = Math.max(...this.lastMeetingOffsets, 0);
 
