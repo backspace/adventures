@@ -153,6 +153,17 @@ module('Acceptance | destinations', function (hooks) {
 
     await page.new();
     assert.ok(page.maskField.isHidden);
+
+    await page.descriptionField.fill('Bromarte');
+    await page.answerField.fill('R0E0H0');
+    await page.awesomenessField.fill(10);
+    await page.riskField.fill(5);
+
+    await page.save();
+    await waitUntil(() => page.destinations.length);
+
+    assert.equal(page.destinations[0].description, 'Bromarte');
+    assert.notOk(page.destinations[0].isIncomplete);
   });
 
   test('the status fieldset doesn’t show when the feature isn’t on', async function (assert) {
