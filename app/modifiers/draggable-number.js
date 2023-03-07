@@ -22,6 +22,8 @@ export default modifier(function draggableNumber(element) {
     document.body.removeEventListener('touchmove', bodyStartListener);
     document.body.removeEventListener('mouseup', bodyStopListener);
     document.body.removeEventListener('touchend', bodyStopListener);
+
+    element.dispatchEvent(new Event('change'));
   };
 
   let elementStartListener = (e) => {
