@@ -147,6 +147,14 @@ module('Acceptance | destinations', function (hooks) {
     assert.equal(page.suggestedMaskButton.label, 'itchin ________ witchin');
   });
 
+  test('there’s no mask for unmnemonic devices', async function (assert) {
+    await withSetting(this.owner, 'unmnemonic-devices');
+    await visit('/destinations');
+
+    await page.new();
+    assert.ok(page.maskField.isHidden);
+  });
+
   test('the status fieldset doesn’t show when the feature isn’t on', async function (assert) {
     await visit('/destinations');
 
