@@ -7,6 +7,11 @@ export default class SettingsController extends Controller {
   settings;
 
   @action
+  refresh() {
+    window.location.reload();
+  }
+
+  @action
   async save() {
     await this.model.save();
     await this.settings.syncFeatures();
