@@ -16,6 +16,9 @@ export default class Waypoint extends Model {
   @attr('string')
   call;
 
+  @attr('string')
+  credit;
+
   @attr('createDate')
   createdAt;
 

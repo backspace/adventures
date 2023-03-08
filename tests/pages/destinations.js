@@ -117,6 +117,12 @@ export default PageObject.create({
     click: clickable(),
   },
 
+  creditField: {
+    scope: '[data-test-credit]',
+    value: value(),
+    fill: fillable(),
+  },
+
   regionField: {
     scope: 'select.region',
     value: value(),

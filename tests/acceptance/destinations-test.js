@@ -36,6 +36,7 @@ module('Acceptance | destinations', function (hooks) {
             risk: 6,
             answer: 'ABC123',
             mask: 'ABC__3',
+            credit: 'greatnesses',
             status: 'unavailable',
 
             region: regionOne,
@@ -188,6 +189,7 @@ module('Acceptance | destinations', function (hooks) {
     assert.equal(page.awesomenessField.value, '9');
     assert.equal(page.riskField.value, '6');
     assert.equal(page.answerField.value, 'ABC123');
+    assert.equal(page.creditField.value, 'greatnesses');
     assert.equal(page.regionField.text, 'There');
 
     await page.descriptionField.fill('Kisua');
@@ -195,6 +197,7 @@ module('Acceptance | destinations', function (hooks) {
     await page.awesomenessField.fill(10);
     await page.riskField.fill(5);
     await page.answerField.fill('DEF456');
+    await page.creditField.fill('excellences');
     await page.statusFieldset.availableOption.click();
     await page.save();
     await waitUntil(() => page.destinations.length);
@@ -212,6 +215,7 @@ module('Acceptance | destinations', function (hooks) {
       'You must cross the Empty Thousand!'
     );
     assert.equal(page.answerField.value, 'DEF456');
+    assert.equal(page.creditField.value, 'excellences');
 
     await page.descriptionField.fill('Banbarra');
     await page.cancel();

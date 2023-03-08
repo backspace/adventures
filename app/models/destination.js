@@ -23,6 +23,9 @@ export default class Destination extends Model {
   @attr('boolean')
   isOutside;
 
+  @attr('string')
+  credit;
+
   @computed('answer', 'puzzles.implementation')
   get suggestedMask() {
     const answer = this.answer || '';

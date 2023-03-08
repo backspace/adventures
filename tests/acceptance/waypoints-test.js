@@ -43,6 +43,7 @@ module('Acceptance | waypoints', function (hooks) {
       name: 'The Shadowed Sun',
       author: 'N. K. Jemisin',
       call: 'FICTION SCI JEMISIN',
+      credit: 'greatnesses',
       region: regionTwo,
     });
 
@@ -102,10 +103,12 @@ module('Acceptance | waypoints', function (hooks) {
     assert.equal(page.nameField.value, 'The Shadowed Sun');
     assert.equal(page.authorField.value, 'N. K. Jemisin');
     assert.equal(page.callField.value, 'FICTION SCI JEMISIN');
+    assert.equal(page.creditField.value, 'greatnesses');
 
     await page.nameField.fill('The Fifth Season');
     await page.authorField.fill('NK');
     await page.callField.fill('978-0-356-50819-1');
+    await page.creditField.fill('excellences');
     await page.save();
     await waitUntil(() => page.waypoints.length);
 
@@ -116,6 +119,7 @@ module('Acceptance | waypoints', function (hooks) {
     await page.waypoints[0].edit();
 
     assert.equal(page.callField.value, '978-0-356-50819-1');
+    assert.equal(page.creditField.value, 'excellences');
 
     await page.nameField.fill('The Obelisk Gate');
     await page.cancel();
