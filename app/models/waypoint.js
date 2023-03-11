@@ -17,6 +17,18 @@ export default class Waypoint extends Model {
   call;
 
   @attr('string')
+  excerpt;
+
+  @attr('string')
+  page;
+
+  @attr('string')
+  dimensions;
+
+  @attr('string')
+  outline;
+
+  @attr('string')
   credit;
 
   @attr('createDate')

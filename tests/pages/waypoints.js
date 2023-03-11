@@ -67,7 +67,31 @@ export default PageObject.create({
   },
 
   creditField: {
-    scope: '[data-test-credit]',
+    scope: '[data-test-credit-field]',
+    value: value(),
+    fill: fillable(),
+  },
+
+  outlineField: {
+    scope: '[data-test-outline-field]',
+    value: value(),
+    fill: fillable(),
+  },
+
+  excerptField: {
+    scope: '[data-test-excerpt-field]',
+    value: value(),
+    fill: fillable(),
+  },
+
+  pageField: {
+    scope: '[data-test-page-field]',
+    value: value(),
+    fill: fillable(),
+  },
+
+  dimensionsField: {
+    scope: '[data-test-dimensions-field]',
     value: value(),
     fill: fillable(),
   },

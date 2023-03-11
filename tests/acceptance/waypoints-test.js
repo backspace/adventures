@@ -44,6 +44,10 @@ module('Acceptance | waypoints', function (hooks) {
       author: 'N. K. Jemisin',
       call: 'FICTION SCI JEMISIN',
       credit: 'greatnesses',
+      excerpt: 'on the|relations between pleasure and death,|which',
+      page: '24',
+      dimensions: '12,18.1',
+      outline: '(7.3,10.6),3.6,.35,-3.1,.35,-1.5,-.35,1',
       region: regionTwo,
     });
 
@@ -105,10 +109,27 @@ module('Acceptance | waypoints', function (hooks) {
     assert.equal(page.callField.value, 'FICTION SCI JEMISIN');
     assert.equal(page.creditField.value, 'greatnesses');
 
+    assert.equal(
+      page.excerptField.value,
+      'on the|relations between pleasure and death,|which'
+    );
+    assert.equal(page.pageField.value, '24');
+    assert.equal(page.dimensionsField.value, '12,18.1');
+    assert.equal(
+      page.outlineField.value,
+      '(7.3,10.6),3.6,.35,-3.1,.35,-1.5,-.35,1'
+    );
+
     await page.nameField.fill('The Fifth Season');
     await page.authorField.fill('NK');
     await page.callField.fill('978-0-356-50819-1');
     await page.creditField.fill('excellences');
+
+    await page.excerptField.fill('activity|as it is absent of air.|Buildings');
+    await page.pageField.fill('276');
+    await page.dimensionsField.fill('12.1,16.4');
+    await page.outlineField.fill('(2.2,1.5),1.8,.25');
+
     await page.save();
     await waitUntil(() => page.waypoints.length);
 
@@ -120,6 +141,14 @@ module('Acceptance | waypoints', function (hooks) {
 
     assert.equal(page.callField.value, '978-0-356-50819-1');
     assert.equal(page.creditField.value, 'excellences');
+
+    assert.equal(
+      page.excerptField.value,
+      'activity|as it is absent of air.|Buildings'
+    );
+    assert.equal(page.pageField.value, '276');
+    assert.equal(page.dimensionsField.value, '12.1,16.4');
+    assert.equal(page.outlineField.value, '(2.2,1.5),1.8,.25');
 
     await page.nameField.fill('The Obelisk Gate');
     await page.cancel();
