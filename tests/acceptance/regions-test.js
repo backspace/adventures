@@ -98,7 +98,7 @@ module('Acceptance | regions', function (hooks) {
 
     // FIXME this is an unpleasant way to find the label of the selected value
     const id = destinationsPage.regionField.value;
-    assert.equal(find(`option[value='${id}']`).innerHTML, 'Jellevy');
+    assert.equal(find(`option[value='${id}']`).innerHTML.trim(), 'Jellevy');
   });
 
   test('a region can be edited and edits can be cancelled', async function (assert) {
@@ -140,7 +140,10 @@ module('Acceptance | regions', function (hooks) {
 
     // FIXME see above
     const id = destinationsPage.regionField.value;
-    assert.equal(find(`option[value='${id}']`).innerHTML, 'Kisua Protectorate');
+    assert.equal(
+      find(`option[value='${id}']`).innerHTML.trim(),
+      'Kisua Protectorate'
+    );
   });
 
   test('a region can be deleted', async function (assert) {

@@ -17,7 +17,7 @@ const selectText = function (selector) {
       const id = selectElement.val();
 
       if (id) {
-        return selectElement.find(`option[value=${id}]`).text();
+        return selectElement.find(`option[value=${id}]`).text().trim();
       } else {
         return '';
       }
