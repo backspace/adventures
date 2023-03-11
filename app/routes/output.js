@@ -38,6 +38,8 @@ export default class OutputRoute extends Route {
         fetch('/fonts/Arvo-Bold.ttf'),
         fetch('/fonts/Arvo-Regular.ttf'),
       ];
+    } else {
+      fontPaths = [];
     }
 
     let helvetica = await (await fetch('/fonts/Helvetica.afm')).text();
