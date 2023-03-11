@@ -43,6 +43,14 @@ export default class OutputRoute extends Route {
     let helvetica = await (await fetch('/fonts/Helvetica.afm')).text();
     fs.writeFileSync('data/Helvetica.afm', helvetica);
 
+    let map;
+
+    try {
+      map = await this.map.getBase64String('high');
+    } catch (e) {
+      console.log('Unable to fetch map');
+    }
+
     return hash({
       teams: this.store.findAll('team'),
       meetings: this.store.findAll('meeting'),
@@ -60,7 +68,7 @@ export default class OutputRoute extends Route {
             header,
             bold,
             regular,
-            map: this.map.getBase64String('high'),
+            map,
           });
         }),
     });
