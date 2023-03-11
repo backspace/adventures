@@ -1,19 +1,40 @@
-<div class='row'>
-  <div class='small-12 columns'>
-    <label>
-      Name
-      <Input @value={{this.model.name}} class='name' />
-    </label>
+<div class='grid-container'>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <label>
+        Name
+        <Input @value={{this.model.name}} class='name' />
+      </label>
 
-    <label>
-      Notes
-      <Textarea @value={{this.model.notes}} class='notes' rows={{4}} />    </label>
+      <label>
+        Notes
+        <Textarea @value={{this.model.notes}} class='notes' rows={{4}} />
+      </label>
+    </div>
   </div>
-</div>
-<div class='row'>
-  <div class='expanded button-group'>
-    <button {{action 'save' this.model}} class='save success button' type='button'>Save</button>
-    <button {{action 'delete' this.model}} class='delete alert button' type='button'>Delete</button>
-    <button {{action 'cancel' this.model}} class='cancel warning button' type='button'>Cancel</button>
+  <div class='grid-x grid-padding-x'>
+    <div class='expanded button-group'>
+      <button
+        class='save success button'
+        type='button'
+        {{action 'save' this.model}}
+      >
+        Save
+      </button>
+      <button
+        class='delete alert button'
+        type='button'
+        {{action 'delete' this.model}}
+      >
+        Delete
+      </button>
+      <button
+        class='cancel warning button'
+        type='button'
+        {{action 'cancel' this.model}}
+      >
+        Cancel
+      </button>
+    </div>
   </div>
 </div>

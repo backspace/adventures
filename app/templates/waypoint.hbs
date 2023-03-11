@@ -1,85 +1,96 @@
-<div class="row">
-  <div class="small-12 columns">
-    <label>
-      Region
-      <select onchange={{action 'setRegion' value='target.value'}} data-test-region>
-        <option></option>
-        {{#each this.sortedRegions as |region|}}
-          <option value={{region.id}} selected={{eq this.model.region.id region.id}} data-test-region-name={{region.name}}>{{region.name}}</option>
-        {{/each}}
-      </select>
-    </label>
+<div class='grid-container'>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <label>
+        Region
+        <select
+          onchange={{action 'setRegion' value='target.value'}}
+          data-test-region
+        >
+          <option></option>
+          {{#each this.sortedRegions as |region|}}
+            <option
+              value={{region.id}}
+              selected={{eq this.model.region.id region.id}}
+              data-test-region-name={{region.name}}
+            >
+              {{region.name}}
+            </option>
+          {{/each}}
+        </select>
+      </label>
 
-    <label>
-      Name
-      <Input @value={{this.model.name}} data-test-name-field />
-    </label>
-  </div>
-</div>
-
-<div class="row">
-  <div class="small-6 columns">
-    <label>
-      Author
-      <Input @value={{this.model.author}} data-test-author-field />
-    </label>
-  </div>
-  <div class="small-6 columns">
-    <label>
-      Call
-      <Input @value={{this.model.call}} data-test-call-field />
-    </label>
-  </div>
-</div>
-
-<div class='row'>
-  <div class='small-6 columns'>
-    <label>
-      Credit
-      <Input @value={{this.model.credit}} data-test-credit />
-    </label>
-  </div>
-</div>
-
-<div class="row">
-  {{!--
-  {{#if (feature-flag 'destination-status')}}
-    <div class='small-4 columns'>
-      <fieldset class='status'>
-        <legend>Status</legend>
-        <RadioButton @value='available' @groupValue={{this.model.status}} @class='available' @changed={{fn (mut this.model.status) 'available'}}> ✓</RadioButton>
-        <RadioButton @value='unavailable' @groupValue={{this.model.status}} @class='unavailable' @changed={{fn (mut this.model.status) 'unavailable'}}> ✘</RadioButton>
-        <RadioButton @value='unknown' @groupValue={{this.model.status}} @class='unknown' @changed={{fn (mut this.model.status) 'unknown'}}> ?</RadioButton>
-      </fieldset>
+      <label>
+        Name
+        <Input @value={{this.model.name}} data-test-name-field />
+      </label>
     </div>
-  {{/if}}
-  --}}
-</div>
-<div class="row">
-  <div class="expanded button-group">
-    <button
-      class="save success button"
-      type="button"
-      data-test-save-button
-      {{action "save" this.model}}
-    >
-      Save
-    </button>
-    <button
-      class="delete alert button"
-      type="button"
-      data-test-delete-button
-      {{action "delete" this.model}}
-    >
-      Delete
-    </button>
-    <button
-      class="cancel warning button"
-      type="button"
-      data-test-cancel-button
-      {{action "cancel" this.model}}
-    >
-      Cancel
-    </button>
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    <div class='small-6 cell'>
+      <label>
+        Author
+        <Input @value={{this.model.author}} data-test-author-field />
+      </label>
+    </div>
+    <div class='small-6 cell'>
+      <label>
+        Call
+        <Input @value={{this.model.call}} data-test-call-field />
+      </label>
+    </div>
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    <div class='small-6 cell'>
+      <label>
+        Credit
+        <Input @value={{this.model.credit}} data-test-credit />
+      </label>
+    </div>
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    {{!--
+    {{#if (feature-flag 'destination-status')}}
+      <div class='small-4 cell'>
+        <fieldset class='status'>
+          <legend>Status</legend>
+          <RadioButton @value='available' @groupValue={{this.model.status}} @class='available' @changed={{fn (mut this.model.status) 'available'}}> ✓</RadioButton>
+          <RadioButton @value='unavailable' @groupValue={{this.model.status}} @class='unavailable' @changed={{fn (mut this.model.status) 'unavailable'}}> ✘</RadioButton>
+          <RadioButton @value='unknown' @groupValue={{this.model.status}} @class='unknown' @changed={{fn (mut this.model.status) 'unknown'}}> ?</RadioButton>
+        </fieldset>
+      </div>
+    {{/if}}
+    --}}
+  </div>
+  <div class='grid-x grid-padding-x'>
+    <div class='expanded button-group'>
+      <button
+        class='save success button'
+        type='button'
+        data-test-save-button
+        {{action 'save' this.model}}
+      >
+        Save
+      </button>
+      <button
+        class='delete alert button'
+        type='button'
+        data-test-delete-button
+        {{action 'delete' this.model}}
+      >
+        Delete
+      </button>
+      <button
+        class='cancel warning button'
+        type='button'
+        data-test-cancel-button
+        {{action 'cancel' this.model}}
+      >
+        Cancel
+      </button>
+    </div>
   </div>
 </div>

@@ -1,27 +1,40 @@
-<div class='row'>
-  <div class='small-12 columns'>
+<div class='grid-x'>
+  <div class='small-12 cell'>
     <div class='input-group'>
-      <span for='String' class='input-group-label'>String</span>
+      <span for='String' class='input-group-label'>
+        String
+      </span>
       <Input id='String' @value={{this.word}} />
     </div>
     <div class='input-group'>
-      <span for='Slices' class='input-group-label'>Slices</span>
+      <span for='Slices' class='input-group-label'>
+        Slices
+      </span>
       <Input id='Slices' @value={{this.slices}} />
     </div>
     <div class='input-group'>
-      <span for='Debug' class='input-group-label'>Debug</span>
+      <span for='Debug' class='input-group-label'>
+        Debug
+      </span>
       <Input id='Debug' @checked={{this.debug}} @type='checkbox' />
     </div>
     <div class='input-group'>
-      <span for='Animated' class='input-group-label'>Animated</span>
+      <span for='Animated' class='input-group-label'>
+        Animated
+      </span>
       <Input id='Animated' @checked={{this.animated}} @type='checkbox' />
     </div>
   </div>
 </div>
-<div class='row'>
-  <div class='small-12 columns'>
+<div class='grid-x'>
+  <div class='small-12 cell'>
     <div class='nokia-string-slice'>
-      <NokiaString @string={{this.word}} @slices={{this.slices}} @debug={{this.debug}} @animated={{this.animated}} />
+      <NokiaString
+        @string={{this.word}}
+        @slices={{this.slices}}
+        @debug={{this.debug}}
+        @animated={{this.animated}}
+      />
     </div>
   </div>
 </div>

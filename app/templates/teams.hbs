@@ -1,28 +1,53 @@
-<div class='row'>
-  <div class='small-12 columns'>
-    <Textarea aria-label='teams JSON' @value={{this.teamsJSON}} rows={{4}} />    <button {{action 'save'}} class='save success button' type='button'>Save</button>
+<div class='grid-container'>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <Textarea aria-label='teams JSON' @value={{this.teamsJSON}} rows={{4}} />
+      <button class='save success button' type='button' {{action 'save'}}>
+        Save
+      </button>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Users</th>
-          <th>Phones</th>
-          <th>Risk</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each this.model as |team|}}
-          <tr class='team'>
-            <td class='name'>{{team.name}}</td>
-            <td class='users'>{{team.users}}</td>
-            <td class='phones'>{{team.phonesString}}</td>
-            <td class='risk-aversion'>{{team.riskAversion}}</td>
-            <td class='notes'>{{team.notes}}</td>
+      <table>
+        <thead>
+          <tr>
+            <th>
+              Name
+            </th>
+            <th>
+              Users
+            </th>
+            <th>
+              Phones
+            </th>
+            <th>
+              Risk
+            </th>
+            <th>
+              Notes
+            </th>
           </tr>
-        {{/each}}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {{#each this.model as |team|}}
+            <tr class='team'>
+              <td class='name'>
+                {{team.name}}
+              </td>
+              <td class='users'>
+                {{team.users}}
+              </td>
+              <td class='phones'>
+                {{team.phonesString}}
+              </td>
+              <td class='risk-aversion'>
+                {{team.riskAversion}}
+              </td>
+              <td class='notes'>
+                {{team.notes}}
+              </td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

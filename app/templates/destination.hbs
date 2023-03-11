@@ -1,96 +1,179 @@
-<div class='row'>
-  <div class='small-12 columns'>
-    <label>
-      Region
-      <select onchange={{action 'setRegion' value='target.value'}} class='region'>
-        <option></option>
-        {{#each this.sortedRegions as |region|}}
-          <option value={{region.id}} selected={{eq this.model.region.id region.id}} data-test-region-name={{region.name}}>{{region.name}}</option>
-        {{/each}}
-      </select>
-    </label>
-
-    <label>
-      Description
-      <Textarea @value={{this.model.description}} class='description' rows={{4}} />    </label>
-  </div>
-</div>
-
-<div class='row'>
-  <div class='small-6 columns'>
-    <label>
-      Answer
-      <Input @value={{this.model.answer}} class='answer' />
-    </label>
-  </div>
-
-  {{#unless (feature-flag 'unmnemonicDevices')}}
-    <div class='small-6 columns'>
+<div class='grid-container'>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
       <label>
-        Mask
-        <div class='input-group'>
-          <Input @value={{this.model.mask}} class='mask input-group-field' />
-          {{#if this.model.suggestedMask}}
-            <div class='input-group-button'>
-              <button type='button' class='suggested-mask button default' {{action 'setMaskToSuggestion'}}>{{this.model.suggestedMask}}</button>
-            </div>
-          {{/if}}
-        </div>
+        Region
+        <select
+          onchange={{action 'setRegion' value='target.value'}}
+          class='region'
+        >
+          <option></option>
+          {{#each this.sortedRegions as |region|}}
+            <option
+              value={{region.id}}
+              selected={{eq this.model.region.id region.id}}
+              data-test-region-name={{region.name}}
+            >
+              {{region.name}}
+            </option>
+          {{/each}}
+        </select>
+      </label>
+
+      <label>
+        Description
+        <Textarea
+          @value={{this.model.description}}
+          class='description'
+          rows={{4}}
+        />
       </label>
     </div>
-  {{/unless}}
+  </div>
 
-</div>
-
-<div class='row'>
-  <div class='small-10 columns'>
-    <label>
-      Accessibility
-      <Textarea @value={{this.model.accessibility}} class='accessibility' />    </label>
-  </div>
-  <div class='small-2 columns'>
-    <label>
-      Outside
-      <Input @checked={{this.model.isOutside}} class='outside' @type='checkbox' />
-    </label>
-  </div>
-</div>
-<div class='row'>
-  <div class='small-6 columns'>
-    <label>
-      Credit
-      <Input @value={{this.model.credit}} data-test-credit />
-    </label>
-  </div>
-</div>
-<div class='row'>
-  <div class='small-4 columns'>
-    <label>
-      Awesomeness
-      <Input {{draggable-number}} @value={{this.model.awesomeness}} @type='number' class='awesomeness undraggable' min={{0}} max={{10}} step={{0.25}} />
-    </label>
-  </div>
-  <div class='small-4 columns'>
-    <label>
-      Risk
-      <Input {{draggable-number}} @value={{this.model.risk}} @type='number' class='risk undraggable' min={{0}} max={{10}} step={{0.25}} />
-    </label>
-  </div>
-  {{#if (feature-flag 'destination-status')}}
-    <div class='small-4 columns'>
-      <fieldset class='status'>
-        <legend>Status</legend>
-        <RadioButton @value='available' @groupValue={{this.model.status}} @class='available' @changed={{fn (mut this.model.status) 'available'}}> ✓</RadioButton>
-        <RadioButton @value='unavailable' @groupValue={{this.model.status}} @class='unavailable' @changed={{fn (mut this.model.status) 'unavailable'}}> ✘</RadioButton>
-        <RadioButton @value='unknown' @groupValue={{this.model.status}} @class='unknown' @changed={{fn (mut this.model.status) 'unknown'}}> ?</RadioButton>
-      </fieldset>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-6 cell'>
+      <label>
+        Answer
+        <Input @value={{this.model.answer}} class='answer' />
+      </label>
     </div>
-  {{/if}}
-</div>
-<div class='row'>
-  <div class='expanded button-group'>
-    <button {{action 'save' this.model}} class='save success button' type='button'>Save</button>
-    <button {{action 'delete' this.model}} class='delete alert button' type='button'>Delete</button>
-    <button {{action 'cancel' this.model}} class='cancel warning button' type='button'>Cancel</button>
+
+    {{#unless (feature-flag 'unmnemonicDevices')}}
+      <div class='small-6 cell'>
+        <label>
+          Mask
+          <div class='input-group'>
+            <Input @value={{this.model.mask}} class='mask input-group-field' />
+            {{#if this.model.suggestedMask}}
+              <div class='input-group-button'>
+                <button
+                  type='button'
+                  class='suggested-mask button default'
+                  {{action 'setMaskToSuggestion'}}
+                >
+                  {{this.model.suggestedMask}}
+                </button>
+              </div>
+            {{/if}}
+          </div>
+        </label>
+      </div>
+    {{/unless}}
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    <div class='small-10 cell'>
+      <label>
+        Accessibility
+        <Textarea @value={{this.model.accessibility}} class='accessibility' />
+      </label>
+    </div>
+    <div class='small-2 cell'>
+      <label>
+        Outside
+        <Input
+          @checked={{this.model.isOutside}}
+          class='outside'
+          @type='checkbox'
+        />
+      </label>
+    </div>
+  </div>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-6 cell'>
+      <label>
+        Credit
+        <Input @value={{this.model.credit}} data-test-credit />
+      </label>
+    </div>
+  </div>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-4 cell'>
+      <label>
+        Awesomeness
+        <Input
+          @value={{this.model.awesomeness}}
+          @type='number'
+          class='awesomeness undraggable'
+          min={{0}}
+          max={{10}}
+          step={{0.25}}
+          {{draggable-number}}
+        />
+      </label>
+    </div>
+    <div class='small-4 cell'>
+      <label>
+        Risk
+        <Input
+          @value={{this.model.risk}}
+          @type='number'
+          class='risk undraggable'
+          min={{0}}
+          max={{10}}
+          step={{0.25}}
+          {{draggable-number}}
+        />
+      </label>
+    </div>
+    {{#if (feature-flag 'destination-status')}}
+      <div class='small-4 cell'>
+        <fieldset class='status'>
+          <legend>
+            Status
+          </legend>
+          <RadioButton
+            @value='available'
+            @groupValue={{this.model.status}}
+            @class='available'
+            @changed={{fn (mut this.model.status) 'available'}}
+          >
+            ✓
+          </RadioButton>
+          <RadioButton
+            @value='unavailable'
+            @groupValue={{this.model.status}}
+            @class='unavailable'
+            @changed={{fn (mut this.model.status) 'unavailable'}}
+          >
+            ✘
+          </RadioButton>
+          <RadioButton
+            @value='unknown'
+            @groupValue={{this.model.status}}
+            @class='unknown'
+            @changed={{fn (mut this.model.status) 'unknown'}}
+          >
+            ?
+          </RadioButton>
+        </fieldset>
+      </div>
+    {{/if}}
+  </div>
+  <div class='grid-x grid-padding-x'>
+    <div class='expanded button-group'>
+      <button
+        class='save success button'
+        type='button'
+        {{action 'save' this.model}}
+      >
+        Save
+      </button>
+      <button
+        class='delete alert button'
+        type='button'
+        {{action 'delete' this.model}}
+      >
+        Delete
+      </button>
+      <button
+        class='cancel warning button'
+        type='button'
+        {{action 'cancel' this.model}}
+      >
+        Cancel
+      </button>
+    </div>
   </div>
 </div>

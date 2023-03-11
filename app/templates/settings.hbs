@@ -1,82 +1,83 @@
-<div class='grid-x'>
-  <div class='cell small-6'>
-    <div class='input-group'>
-      <label for='destination-status' class='input-group-label'>
-        Destination status
-      </label>
-      <Input
-        id='destination-status'
-        @checked={{this.model.destinationStatus}}
-        class='destination-status'
-        @type='checkbox'
-      />
+<div class='grid-container'>
+  <div class='grid-x grid-padding-x'>
+    <div class='cell small-6'>
+      <div class='input-group'>
+        <label for='destination-status' class='input-group-label'>
+          Destination status
+        </label>
+        <Input
+          id='destination-status'
+          @checked={{this.model.destinationStatus}}
+          class='destination-status'
+          @type='checkbox'
+        />
+      </div>
     </div>
   </div>
-</div>
-<div class='grid-x'>
-  <div class='cell small-4'>
-    <div class='input-group'>
-      <label for='clandestine-rendezvous' class='input-group-label'>
-        Clandestine Rendezvous
-      </label>
-      <Input
-        id='clandestine-rendezvous'
-        @checked={{this.model.clandestineRendezvous}}
-        class='clandestine-rendezvous'
-        @type='checkbox'
-      />
+  <div class='grid-x grid-padding-x'>
+    <div class='cell small-4'>
+      <div class='input-group'>
+        <label for='clandestine-rendezvous' class='input-group-label'>
+          Clandestine Rendezvous
+        </label>
+        <Input
+          id='clandestine-rendezvous'
+          @checked={{this.model.clandestineRendezvous}}
+          class='clandestine-rendezvous'
+          @type='checkbox'
+        />
+      </div>
+    </div>
+    <div class='cell small-4'>
+      <div class='input-group'>
+        <label for='txtbeyond' class='input-group-label'>
+          txtbeyond
+        </label>
+        <Input
+          id='txtbeyond'
+          @checked={{this.model.txtbeyond}}
+          class='txtbeyond'
+          @type='checkbox'
+        />
+      </div>
+    </div>
+    <div class='cell small-4'>
+      <div class='input-group'>
+        <label for='unmnemonic-devices' class='input-group-label'>
+          unmnemonic devices
+        </label>
+        <Input
+          id='unmnemonic-devices'
+          @checked={{this.model.unmnemonicDevices}}
+          @type='checkbox'
+          data-test-unmnemonic-devices
+        />
+      </div>
     </div>
   </div>
-  <div class='cell small-4'>
-    <div class='input-group'>
-      <label for='txtbeyond' class='input-group-label'>
-        txtbeyond
-      </label>
-      <Input
-        id='txtbeyond'
-        @checked={{this.model.txtbeyond}}
-        class='txtbeyond'
-        @type='checkbox'
-      />
+  <div class='grid-x grid-padding-x'>
+    <div class='cell small-6'>
+      <div class='input-group'>
+        <label for='goal' class='input-group-label'>
+          Goal
+        </label>
+        <Input
+          id='goal'
+          @value={{this.model.goal}}
+          class='goal input-group-field'
+        />
+      </div>
     </div>
   </div>
-  <div class='cell small-4'>
-    <div class='input-group'>
-      <label for='unmnemonic-devices' class='input-group-label'>
-        unmnemonic devices
-      </label>
-      <Input
-        id='unmnemonic-devices'
-        @checked={{this.model.unmnemonicDevices}}
-        @type='checkbox'
-        data-test-unmnemonic-devices
-      />
-    </div>
-  </div>
-</div>
-<div class='grid-x'>
-  <div class='cell small-6'>
-    <div class='input-group'>
-      <label for='goal' class='input-group-label'>
-        Goal
-      </label>
-      <Input
-        id='goal'
-        @value={{this.model.goal}}
-        class='goal input-group-field'
-      />
-    </div>
-  </div>
-</div>
 
-<div class='row'>
-  <button type='button' class='save button primary' {{on 'click' this.save}}>
-    Save
-  </button>
-</div>
-
-<div class='row'>
-  <button type='button' class='button warning' {{on 'click' this.refresh}}>
-    Refresh
-  </button>
+  <div class='grid-x grid-padding-x'>
+    <div class='button-group expanded'>
+      <button type='button' class='save button primary' {{on 'click' this.save}}>
+        Save
+      </button>
+      <button type='button' class='button warning' {{on 'click' this.refresh}}>
+        Refresh
+      </button>
+    </div>
+  </div>
 </div>
