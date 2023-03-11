@@ -69,16 +69,18 @@
         <Textarea @value={{this.model.accessibility}} class='accessibility' />
       </label>
     </div>
-    <div class='small-2 cell'>
-      <label>
+    <fieldset class='small-2 cell'>
+      <legend>&nbsp;</legend>
+      <Input
+        @checked={{this.model.isOutside}}
+        id='outside'
+        class='outside'
+        @type='checkbox'
+      />
+      <label for='outside'>
         Outside
-        <Input
-          @checked={{this.model.isOutside}}
-          class='outside'
-          @type='checkbox'
-        />
       </label>
-    </div>
+    </fieldset>
   </div>
   <div class='grid-x grid-padding-x'>
     <div class='small-6 cell'>
