@@ -30,7 +30,9 @@ body.draglessness {
   }
 }
 
-tr.destination, tr.region {
+tr.destination,
+tr.region,
+tr.waypoint {
   &.incomplete {
     border-left: 5px solid red;
   }

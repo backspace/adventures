@@ -17,7 +17,10 @@
       </thead>
       <tbody>
         {{#each this.waypoints as |waypoint|}}
-          <tr data-test-waypoint>
+          <tr
+            class='waypoint {{if waypoint.isIncomplete 'incomplete'}}'
+            data-test-waypoint
+          >
             <td data-test-region>
               {{waypoint.region.name}}
             </td>

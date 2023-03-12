@@ -118,6 +118,7 @@
     "tinycolor2": "^1.5.2",
     "transform-loader": "^0.2.4",
     "util": "^0.12.5",
+    "validator": "^13.9.0",
     "webpack": "^5.75.0"
   },
   "engines": {

@@ -3,6 +3,7 @@ import PageObject, {
   collection,
   fillable,
   findElement,
+  hasClass,
   selectable,
   text,
   value,
@@ -42,6 +43,8 @@ export default PageObject.create({
     name: text('[data-test-name]'),
     author: text('[data-test-author]'),
     region: text('[data-test-region]'),
+
+    isIncomplete: hasClass('incomplete'),
 
     edit: clickable('[data-test-edit]'),
   }),

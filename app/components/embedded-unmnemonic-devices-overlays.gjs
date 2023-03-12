@@ -15,7 +15,7 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
     let doc = new PDFDocument({ layout: 'portrait'});
     let stream = doc.pipe(blobStream());
 
-    this.args.waypoints.forEach((waypoint, index) => {
+    this.args.waypoints.filterBy('isComplete').forEach((waypoint, index) => {
       if (index > 0) {
         doc.addPage();
       }

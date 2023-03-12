@@ -76,11 +76,13 @@ module('Acceptance | waypoints', function (hooks) {
     assert.equal(one.name, 'The Shadowed Sun');
     assert.equal(one.author, 'N. K. Jemisin');
     assert.equal(one.region, 'Harvey Smith');
+    assert.notOk(one.isIncomplete);
 
     let two = page.waypoints[1];
     assert.equal(two.name, 'The Killing Moon');
     assert.equal(two.author, 'N. K. Jemisin');
     assert.equal(two.region, 'Henderson');
+    assert.ok(two.isIncomplete);
   });
 
   test('a waypoint can be created and will appear at the top of the list', async function (assert) {
