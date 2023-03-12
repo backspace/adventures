@@ -38,6 +38,12 @@ export default class OutputRoute extends Route {
         fetch('/fonts/Arvo-Bold.ttf'),
         fetch('/fonts/Arvo-Regular.ttf'),
       ];
+    } else if (this.get('features.unmnemonicDevices')) {
+      fontPaths = [
+        fetch('/fonts/unmnemonic-regular.ttf'),
+        fetch('/fonts/unmnemonic-regular.ttf'),
+        fetch('/fonts/unmnemonic-regular.ttf'),
+      ];
     } else {
       fontPaths = [];
     }

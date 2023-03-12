@@ -39,7 +39,10 @@
     {{/if}}
 
     {{#if (feature-flag 'unmnemonicDevices')}}
-      <EmbeddedUnmnemonicDevicesOverlays @waypoints={{this.model.waypoints}} />
+      <EmbeddedUnmnemonicDevicesOverlays
+        @waypoints={{this.model.waypoints}}
+        @assets={{this.model.assets}}
+      />
     {{/if}}
   </div>
 </div>

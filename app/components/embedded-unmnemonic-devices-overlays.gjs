@@ -15,7 +15,9 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
   constructor() {
     super(...arguments);
 
-    let doc = new PDFDocument({ layout: 'portrait'});
+    let regular = this.args.assets.regular;
+
+    let doc = new PDFDocument({ layout: 'portrait', font: regular });
     let stream = doc.pipe(blobStream());
 
     this.args.waypoints.filterBy('isComplete').forEach((waypoint, index) => {
