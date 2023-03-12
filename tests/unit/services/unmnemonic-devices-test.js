@@ -100,18 +100,17 @@ module(
     test('it checks outline validity', function (assert) {
       const service = this.owner.lookup('service:unmnemonic-devices');
 
-      assert.ok(service.outlineIsValid('(3.2,2.3),1.5'));
       assert.ok(service.outlineIsValid('(3.2,2.3),1.5,-0.5'));
 
       assert.notOk(service.outlineIsValid(null), 'outline must be present');
 
       assert.notOk(
-        service.outlineIsValid('(-3.2,0),1.5'),
+        service.outlineIsValid('(-3.2,0),1.5,2'),
         'first point cannot be negative'
       );
 
       assert.notOk(
-        service.outlineIsValid('(0,-2.3),1.5'),
+        service.outlineIsValid('(0,-2.3),1.5,2'),
         'second point cannot be negative'
       );
 
@@ -124,6 +123,11 @@ module(
         service.outlineIsValid('(0,2.3),1.5,3.x'),
         'displacements must be floats'
       );
+
+      assert.notOk(
+        service.outlineIsValid('(0,2.3),1.5'),
+        'there must be at least two displacement points'
+      );
     });
   }
 );
@@ -134,9 +138,12 @@ module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
   test('it parses outlines', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
 
-    assert.deepEqual(service.parsedOutline('(3.2,2.3),1.5'), [
+    assert.deepEqual(service.parsedOutline('(3.2,2.3),1.5,-0.5'), [
       [cmToPt(3.2), cmToPt(2.3)],
-      [[cmToPt(3.2 + 1.5), cmToPt(2.3)]],
+      [
+        [cmToPt(3.2 + 1.5), cmToPt(2.3)],
+        [cmToPt(3.2 + 1.5), cmToPt(2.3 + -0.5)],
+      ],
     ]);
   });
 });

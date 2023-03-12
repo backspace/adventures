@@ -51,7 +51,13 @@ export default class UnmnemonicDevicesService extends Service {
       return false;
     }
 
-    return displacements.split(',').every((d) => {
+    let displacementStrings = displacements.split(',');
+
+    if (displacementStrings.length <= 1) {
+      return false;
+    }
+
+    return displacementStrings.every((d) => {
       return isFloat(d) && parseFloat(d) !== 0;
     });
   }
