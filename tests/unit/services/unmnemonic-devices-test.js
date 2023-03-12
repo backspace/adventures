@@ -1,3 +1,4 @@
+import cmToPt from 'adventure-gathering/utils/cm-to-pt';
 import { setupTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 
@@ -76,6 +77,22 @@ module(
 );
 
 module(
+  'Unit | Service | unmnemonic-devices | parsedDimensions',
+  function (hooks) {
+    setupTest(hooks);
+
+    test('it parses dimensions', function (assert) {
+      const service = this.owner.lookup('service:unmnemonic-devices');
+
+      assert.deepEqual(service.parsedDimensions('13.1,14.3'), [
+        cmToPt(13.1),
+        cmToPt(14.3),
+      ]);
+    });
+  }
+);
+
+module(
   'Unit | Service | unmnemonic-devices | outlineIsValid',
   function (hooks) {
     setupTest(hooks);
@@ -110,3 +127,16 @@ module(
     });
   }
 );
+
+module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
+  setupTest(hooks);
+
+  test('it parses outlines', function (assert) {
+    const service = this.owner.lookup('service:unmnemonic-devices');
+
+    assert.deepEqual(service.parsedOutline('(3.2,2.3),1.5'), [
+      [cmToPt(3.2), cmToPt(2.3)],
+      [[cmToPt(3.2 + 1.5), cmToPt(2.3)]],
+    ]);
+  });
+});

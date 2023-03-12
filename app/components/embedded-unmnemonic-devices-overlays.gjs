@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
+import { inject as service } from '@ember/service';
 
 import blobStream from 'blob-stream';
 import PDFDocument from 'pdfkit';
@@ -8,6 +9,8 @@ const pageMargin = 0.5 * 72;
 
 export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Component {
   @tracked src;
+
+  @service('unmnemonic-devices') devices;
 
   constructor() {
     super(...arguments);
@@ -27,32 +30,16 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
       doc.text(`Page ${index}`);
       doc.text(waypoint.get('name'));
 
-      let dimensionsString = waypoint.get('dimensions');
-      let [ widthString, heightString ] = dimensionsString.split(',');
-      let width = cmToPt(parseFloat(widthString)), height = cmToPt(parseFloat(heightString));
+      let [ width, height ] = this.devices.parsedDimensions(waypoint.dimensions);
 
       doc.rect(0, 0, width, height).stroke();
-
-      let outlineString = waypoint.get('outline');
-      let [ start, displacements ] = outlineString.substring(1).split('),');
-
-      let [ startX, startY ] = start.split(',').map(s => cmToPt(parseFloat(s)));
+      let [ [startX, startY], outlinePoints ] = this.devices.parsedOutline(waypoint.outline);
 
       doc.moveTo(startX, startY);
 
-      let currentX = startX, currentY = startY;
-
-      displacements.split(',').forEach((s, displacementIndex) => {
-        let displacementPts = cmToPt(parseFloat(s));
-
-        if (displacementIndex % 2 === 0) {
-          currentX += displacementPts;
-        } else {
-          currentY += displacementPts;
-        }
-
-        doc.lineTo(currentX, currentY);
-      });
+      outlinePoints.forEach(([displacementX, displacementY]) => {
+        doc.lineTo(displacementX, displacementY);
+      })
 
       doc.lineTo(startX, startY);
 
@@ -84,8 +71,4 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
       </iframe>
     {{/if}}
   </template>
-}
-
-function cmToPt(f) {
-  return (f / 2.54) * 72;
 }

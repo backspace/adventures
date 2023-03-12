@@ -1,4 +1,5 @@
 import Service from '@ember/service';
+import cmToPt from 'adventure-gathering/utils/cm-to-pt';
 import isFloat from 'validator/lib/isFloat';
 
 export default class UnmnemonicDevicesService extends Service {
@@ -30,6 +31,13 @@ export default class UnmnemonicDevicesService extends Service {
     return isFloat(widthString, { gt: 0 }) && isFloat(heightString, { gt: 0 });
   }
 
+  parsedDimensions(dimensions) {
+    let [widthString, heightString] = dimensions.split(',');
+    let width = cmToPt(parseFloat(widthString)),
+      height = cmToPt(parseFloat(heightString));
+    return [width, height];
+  }
+
   outlineIsValid(outline) {
     if (!outline) {
       return null;
@@ -46,5 +54,29 @@ export default class UnmnemonicDevicesService extends Service {
     return displacements.split(',').every((d) => {
       return isFloat(d) && parseFloat(d) !== 0;
     });
+  }
+
+  parsedOutline(outline) {
+    let [start, displacements] = outline.substring(1).split('),');
+
+    let [startX, startY] = start.split(',').map((s) => cmToPt(parseFloat(s)));
+
+    let currentX = startX,
+      currentY = startY;
+
+    return [
+      [startX, startY],
+      displacements.split(',').map((d, index) => {
+        let displacementPts = cmToPt(parseFloat(d));
+
+        if (index % 2 === 0) {
+          currentX += displacementPts;
+        } else {
+          currentY += displacementPts;
+        }
+
+        return [currentX, currentY];
+      }),
+    ];
   }
 }
