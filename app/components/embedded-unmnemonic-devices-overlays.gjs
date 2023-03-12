@@ -32,16 +32,18 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
       doc.text(`Page ${index}`);
       doc.text(waypoint.get('name'));
 
-      let [ width, height ] = this.devices.parsedDimensions(waypoint.dimensions);
+      let [width, height] = this.devices.parsedDimensions(waypoint.dimensions);
 
       doc.rect(0, 0, width, height).stroke();
-      let [ [startX, startY], outlinePoints ] = this.devices.parsedOutline(waypoint.outline);
+      let [[startX, startY], outlinePoints] = this.devices.parsedOutline(
+        waypoint.outline
+      );
 
       doc.moveTo(startX, startY);
 
       outlinePoints.forEach(([displacementX, displacementY]) => {
         doc.lineTo(displacementX, displacementY);
-      })
+      });
 
       doc.stroke();
 
@@ -56,18 +58,14 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
     });
   }
 
-  get iframeSrc() {
-  }
+  get iframeSrc() {}
 
   <template>
     FIXME these should be team-specific, not all waypoints
     {{#if this.rendering}}
       …
     {{else}}
-      <iframe
-        title='embedded-unmnemonic-devices-overlays'
-        src={{this.src}}
-      >
+      <iframe title='embedded-unmnemonic-devices-overlays' src={{this.src}}>
       </iframe>
     {{/if}}
   </template>
