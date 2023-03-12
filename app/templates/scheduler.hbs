@@ -1,9 +1,15 @@
 <div id='scheduler'>
   <div class='map'>
-    <img src={{this.model.map}} alt='map'>
+    <img src={{this.model.map}} alt='map' />
     {{#each this.model.regions as |region|}}
       {{#if region.destinations}}
-        <MappableRegion @region={{region}} @draggable={{false}} @isHighlighted={{eq this.highlightedRegion region}} @highlightedTeam={{this.highlightedTeam}} @sidebarRegionElement={{ref-to (concat 'region-' region.id)}}>
+        <MappableRegion
+          @region={{region}}
+          @draggable={{false}}
+          @isHighlighted={{eq this.highlightedRegion region}}
+          @highlightedTeam={{this.highlightedTeam}}
+          @sidebarRegionElement={{ref-to (concat 'region-' region.id)}}
+        >
           <div class='count'>{{region.meetingCount}}</div>
         </MappableRegion>
       {{/if}}
@@ -13,7 +19,7 @@
   <ul class='regions'>
     {{#each this.model.regions as |region|}}
       {{#if region.destinations}}
-        {{!-- template-lint-disable no-invalid-interactive --}}
+        {{! template-lint-disable no-invalid-interactive }}
         <li
           class='region'
           id='region-{{region.id}}'
@@ -27,7 +33,11 @@
           <ul class='destinations'>
             {{#each region.destinations as |destination|}}
               {{#if destination.isAvailable}}
-                <SchedulerDestination @destination={{destination}} @select={{action 'selectDestination'}} @isSelected={{eq destination.id this.meeting.destination.id}} />
+                <SchedulerDestination
+                  @destination={{destination}}
+                  @select={{action 'selectDestination'}}
+                  @isSelected={{eq destination.id this.meeting.destination.id}}
+                />
               {{/if}}
             {{/each}}
           </ul>
@@ -38,16 +48,28 @@
 
   <ul class='teams'>
     {{#each this.model.teams as |team|}}
-      <SchedulerTeam @team={{team}} @highlightedTeam={{this.highlightedTeam}} @meeting={{this.meeting}} @isAhead={{gte team.meetings.length this.highestMeetingCount}} @editMeeting={{action 'editMeeting'}} @select={{action 'selectTeam'}} @enter={{action 'mouseEnterTeam'}} @leave={{action 'mouseLeaveTeam'}} />
+      <SchedulerTeam
+        @team={{team}}
+        @highlightedTeam={{this.highlightedTeam}}
+        @meeting={{this.meeting}}
+        @isAhead={{gte team.meetings.length this.highestMeetingCount}}
+        @editMeeting={{action 'editMeeting'}}
+        @select={{action 'selectTeam'}}
+        @enter={{action 'mouseEnterTeam'}}
+        @leave={{action 'mouseLeaveTeam'}}
+      />
     {{/each}}
   </ul>
 
-  <div class='meeting-form {{if this.meeting.isForbidden 'forbidden'}}'>
+  <div class='meeting-form {{if this.meeting.isForbidden "forbidden"}}'>
     <select class='destination' aria-label='meeting destination'>
       <option></option>
       {{#each this.model.destinations as |destination|}}
         {{#if destination.isAvailable}}
-          <option value={{destination.id}} selected={{eq this.meeting.destination.id destination.id}}>{{destination.description}}</option>
+          <option
+            value={{destination.id}}
+            selected={{eq this.meeting.destination.id destination.id}}
+          >{{destination.description}}</option>
         {{/if}}
       {{/each}}
     </select>
@@ -55,16 +77,35 @@
     {{#each this.meeting.sortedTeams as |meetingTeam|}}
       <select class='team' aria-label='meeting team'>
         {{#each this.model.teams as |team|}}
-          <option value={{team.id}} selected={{eq meetingTeam.id team.id}}>{{team.name}}</option>
+          <option
+            value={{team.id}}
+            selected={{eq meetingTeam.id team.id}}
+          >{{team.name}}</option>
         {{/each}}
       </select>
     {{/each}}
 
-    <Input @value={{this.meeting.index}} class='index' aria-label='meeting index' />
-    <Input @value={{this.suggestedOffset}} class='offset' aria-label='meeting offset' />
+    <Input
+      @value={{this.meeting.index}}
+      class='index'
+      aria-label='meeting index'
+    />
+    <Input
+      @value={{this.suggestedOffset}}
+      class='offset'
+      aria-label='meeting offset'
+    />
     {{#unless this.meeting.isForbidden}}
-      <button type='button' class='save button tiny success' onclick={{action 'saveMeeting'}}>Save</button>
-      <button type='button' class='reset button tiny alert' onclick={{action 'resetMeeting'}}>Reset</button>
+      <button
+        type='button'
+        class='save button tiny success'
+        onclick={{action 'saveMeeting'}}
+      >Save</button>
+      <button
+        type='button'
+        class='reset button tiny alert'
+        onclick={{action 'resetMeeting'}}
+      >Reset</button>
     {{/unless}}
   </div>
 

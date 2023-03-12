@@ -2,16 +2,45 @@
   <div class='small-12 cell'>
     <div class='top-bar'>
       <ul class='menu'>
-        <li class='pair'><LinkTo @route='destinations'>dest<span class='show-for-medium'>inations</span></LinkTo> <LinkTo @route='destinations.new' class='destinations new'>+</LinkTo></li>
+        <li class='pair'><LinkTo @route='destinations'>dest<span
+              class='show-for-medium'
+            >inations</span></LinkTo>
+          <LinkTo
+            @route='destinations.new'
+            class='destinations new'
+          >+</LinkTo></li>
         {{#if (feature-flag 'unmnemonicDevices')}}
-          <li class='pair'><LinkTo @route='waypoints' data-test-waypoints>way<span class='show-for-medium'>points</span></LinkTo> <LinkTo @route='waypoints.new' data-test-waypoint-new>+</LinkTo></li>
+          <li class='pair'><LinkTo
+              @route='waypoints'
+              data-test-waypoints
+            >way<span class='show-for-medium'>points</span></LinkTo>
+            <LinkTo
+              @route='waypoints.new'
+              data-test-waypoint-new
+            >+</LinkTo></li>
         {{/if}}
-        <li class='pair'><LinkTo @route='regions'>reg<span class='show-for-medium'>ions</span></LinkTo> <LinkTo @route='regions.new' class='regions new'>+</LinkTo></li>
-        <li class='show-for-medium'><LinkTo @route='teams' class='teams'>teams</LinkTo></li>
-        <li class='show-for-medium'><LinkTo @route='scheduler'>scheduler</LinkTo></li>
-        <li class='show-for-medium pair'><LinkTo @route='output' @query={{hash debug=false}}>output</LinkTo><LinkTo @route='output' @query={{hash debug=true}}>/d</LinkTo></li>
+        <li class='pair'><LinkTo @route='regions'>reg<span
+              class='show-for-medium'
+            >ions</span></LinkTo>
+          <LinkTo @route='regions.new' class='regions new'>+</LinkTo></li>
+        <li class='show-for-medium'><LinkTo
+            @route='teams'
+            class='teams'
+          >teams</LinkTo></li>
+        <li class='show-for-medium'><LinkTo
+            @route='scheduler'
+          >scheduler</LinkTo></li>
+        <li class='show-for-medium pair'><LinkTo
+            @route='output'
+            @query={{hash debug=false}}
+          >output</LinkTo><LinkTo
+            @route='output'
+            @query={{hash debug=true}}
+          >/d</LinkTo></li>
         <li><LinkTo @route='sync' class='sync'>sync</LinkTo></li>
-        <li class='show-for-medium'><LinkTo @route='settings'>settings</LinkTo></li>
+        <li class='show-for-medium'><LinkTo
+            @route='settings'
+          >settings</LinkTo></li>
       </ul>
     </div>
   </div>

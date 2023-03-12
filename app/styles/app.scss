@@ -1,4 +1,4 @@
-@import "settings";
+@import 'settings';
 @import 'foundation-sites/foundation';
 @include foundation-everything;
 
@@ -105,7 +105,8 @@ $column-width: 6rem;
     line-height: 1;
   }
 
-  .teams, .regions {
+  .teams,
+  .regions {
     position: fixed;
     top: 0;
     right: 0;
@@ -198,11 +199,16 @@ $column-width: 6rem;
     position: fixed;
     bottom: 0;
     right: 0;
-    width: $column-width*2;
+    width: $column-width * 2;
 
-    background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,1));
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 1)
+    );
 
-    select, input {
+    select,
+    input {
       font-size: inherit;
       padding: 0;
       margin: 0;
@@ -243,12 +249,12 @@ fieldset {
   label {
     display: inline;
 
-    input[type=radio] {
+    input[type='radio'] {
       margin-right: 0.25rem;
       margin-left: 1rem;
     }
 
-    &:first-of-type input[type=radio] {
+    &:first-of-type input[type='radio'] {
       margin-left: 0;
     }
   }

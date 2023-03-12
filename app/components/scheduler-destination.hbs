@@ -1,6 +1,11 @@
-{{!-- template-lint-disable no-inline-styles --}}
-{{!-- template-lint-disable no-invalid-interactive --}}
-<li class='destination {{if this.isSelected 'selected'}}' title='A{{this.destination.awesomeness}} R{{this.destination.risk}}' style={{this.style}} onclick={{action 'select'}}>
+{{! template-lint-disable no-inline-styles }}
+{{! template-lint-disable no-invalid-interactive }}
+<li
+  class='destination {{if this.isSelected "selected"}}'
+  title='A{{this.destination.awesomeness}} R{{this.destination.risk}}'
+  style={{this.style}}
+  onclick={{action 'select'}}
+>
   <div class='description'>{{this.destination.description}}</div>
 
   {{#if this.destination.accessibility}}

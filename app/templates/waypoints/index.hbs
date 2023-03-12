@@ -1,5 +1,5 @@
-<div class="row">
-  <div class="small-12 columns">
+<div class='row'>
+  <div class='small-12 columns'>
     <table>
       <thead>
         <tr>
@@ -18,7 +18,7 @@
       <tbody>
         {{#each this.waypoints as |waypoint|}}
           <tr
-            class='waypoint {{if waypoint.isIncomplete 'incomplete'}}'
+            class='waypoint {{if waypoint.isIncomplete "incomplete"}}'
             data-test-waypoint
           >
             <td data-test-region>
@@ -31,7 +31,7 @@
               {{waypoint.author}}
             </td>
             <td>
-              <LinkTo @route="waypoint" @model={{waypoint}} data-test-edit>
+              <LinkTo @route='waypoint' @model={{waypoint}} data-test-edit>
                 Edit
               </LinkTo>
             </td>
@@ -40,7 +40,7 @@
       </tbody>
     </table>
 
-    <LinkTo @route="waypoints.new" data-test-waypoints-new>
+    <LinkTo @route='waypoints.new' data-test-waypoints-new>
       New
     </LinkTo>
   </div>

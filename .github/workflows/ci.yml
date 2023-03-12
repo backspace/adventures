@@ -9,7 +9,7 @@ on:
 
 jobs:
   lint:
-    name: "Lint"
+    name: 'Lint'
     runs-on: ubuntu-latest
 
     steps:
@@ -26,9 +26,8 @@ jobs:
       - name: Lint HBS
         run: npm run lint:hbs
 
-
   test:
-    name: "Test"
+    name: 'Test'
     runs-on: ubuntu-latest
 
     steps:
