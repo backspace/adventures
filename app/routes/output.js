@@ -57,6 +57,7 @@ export default class OutputRoute extends Route {
       teams: this.store.findAll('team'),
       meetings: this.store.findAll('meeting'),
       destinations: this.store.findAll('destination'),
+      waypoints: this.store.findAll('waypoint'),
       regions: this.store.findAll('region'),
 
       settings: this.store.findRecord('settings', 'settings'),
