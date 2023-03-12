@@ -41,8 +41,6 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
         doc.lineTo(displacementX, displacementY);
       })
 
-      doc.lineTo(startX, startY);
-
       doc.stroke();
 
       doc.restore();

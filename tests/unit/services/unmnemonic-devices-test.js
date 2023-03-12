@@ -138,12 +138,18 @@ module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
   test('it parses outlines', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
 
-    assert.deepEqual(service.parsedOutline('(3.2,2.3),1.5,-0.5'), [
-      [cmToPt(3.2), cmToPt(2.3)],
+    assert.deepEqual(
+      service.parsedOutline('(3.2,2.3),1.5,-0.5'),
       [
-        [cmToPt(3.2 + 1.5), cmToPt(2.3)],
-        [cmToPt(3.2 + 1.5), cmToPt(2.3 + -0.5)],
+        [cmToPt(3.2), cmToPt(2.3)],
+        [
+          [cmToPt(3.2 + 1.5), cmToPt(2.3)],
+          [cmToPt(3.2 + 1.5), cmToPt(2.3 + -0.5)],
+          [cmToPt(3.2), cmToPt(2.3 + -0.5)],
+          [cmToPt(3.2), cmToPt(2.3)],
+        ],
       ],
-    ]);
+      'it closes the polygon'
+    );
   });
 });

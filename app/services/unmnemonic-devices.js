@@ -70,19 +70,21 @@ export default class UnmnemonicDevicesService extends Service {
     let currentX = startX,
       currentY = startY;
 
-    return [
-      [startX, startY],
-      displacements.split(',').map((d, index) => {
-        let displacementPts = cmToPt(parseFloat(d));
+    let polygonPoints = displacements.split(',').map((d, index) => {
+      let displacementPts = cmToPt(parseFloat(d));
 
-        if (index % 2 === 0) {
-          currentX += displacementPts;
-        } else {
-          currentY += displacementPts;
-        }
+      if (index % 2 === 0) {
+        currentX += displacementPts;
+      } else {
+        currentY += displacementPts;
+      }
 
-        return [currentX, currentY];
-      }),
-    ];
+      return [currentX, currentY];
+    });
+
+    polygonPoints.push([startX, currentY]);
+    polygonPoints.push([startX, startY]);
+
+    return [[startX, startY], polygonPoints];
   }
 }
