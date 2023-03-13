@@ -34,6 +34,8 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
 
       doc.rect(0, 0, width, height).fillAndStroke('#ccc', 'black');
 
+      let regionAndCall = `${waypoint.region.name}: ${waypoint.call}`;
+
       doc
         .fillColor('black')
         .strokeColor('white')
@@ -41,12 +43,33 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
         .text(waypoint.get('name'), pagePadding, pagePadding, {
           fill: true,
           stroke: true,
-        });
+        })
+        .text(waypoint.page, pagePadding, pagePadding, {
+          width: width - pagePadding * 2,
+          align: 'right',
+          fill: true,
+          stroke: true,
+        })
+        .text(
+          regionAndCall,
+          pagePadding,
+          height - doc.currentLineHeight() - pagePadding,
+          { stroke: true, fill: true }
+        );
 
       doc
         .fillColor('black')
         .lineWidth(1)
-        .text(waypoint.get('name'), pagePadding, pagePadding);
+        .text(waypoint.get('name'), pagePadding, pagePadding)
+        .text(waypoint.page, pagePadding, pagePadding, {
+          width: width - pagePadding * 2,
+          align: 'right',
+        })
+        .text(
+          regionAndCall,
+          pagePadding,
+          height - doc.currentLineHeight() - pagePadding
+        );
 
       doc.strokeColor('black');
 
