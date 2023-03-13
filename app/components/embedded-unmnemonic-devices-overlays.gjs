@@ -6,6 +6,7 @@ import blobStream from 'blob-stream';
 import PDFDocument from 'pdfkit';
 
 const pageMargin = 0.5 * 72;
+const pagePadding = 0.25 * 72;
 
 export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Component {
   @tracked src;
@@ -29,12 +30,26 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
 
       doc.translate(pageMargin, pageMargin);
 
-      doc.text(`Page ${index}`);
-      doc.text(waypoint.get('name'));
-
       let [width, height] = this.devices.parsedDimensions(waypoint.dimensions);
 
-      doc.rect(0, 0, width, height).stroke();
+      doc.rect(0, 0, width, height).fillAndStroke('#ccc', 'black');
+
+      doc
+        .fillColor('black')
+        .strokeColor('white')
+        .lineWidth(3)
+        .text(waypoint.get('name'), pagePadding, pagePadding, {
+          fill: true,
+          stroke: true,
+        });
+
+      doc
+        .fillColor('black')
+        .lineWidth(1)
+        .text(waypoint.get('name'), pagePadding, pagePadding);
+
+      doc.strokeColor('black');
+
       let [[startX, startY], outlinePoints] = this.devices.parsedOutline(
         waypoint.outline
       );
