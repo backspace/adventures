@@ -89,9 +89,11 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
 
       doc.strokeColor('black');
 
-      let [[startX, startY], outlinePoints] = this.devices.parsedOutline(
+      let { end, points: outlinePoints } = this.devices.parsedOutline(
         waypoint.outline
       );
+
+      let [startX, startY] = outlinePoints.shift();
 
       doc.moveTo(startX, startY);
 
@@ -110,8 +112,6 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
       let preExcerpt = this.devices.preExcerpt(waypoint.excerpt),
         postExcerpt = this.devices.postExcerpt(waypoint.excerpt);
 
-      let fakePostPoint = outlinePoints[outlinePoints.length - 2];
-
       doc.fontSize(10);
 
       doc
@@ -124,7 +124,7 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
           stroke: true,
           width: startX,
         })
-        .text(postExcerpt, fakePostPoint[0], fakePostPoint[1], {
+        .text(postExcerpt, end[0], end[1], {
           stroke: true,
           fill: true,
         });
@@ -136,7 +136,7 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
           align: 'right',
           width: startX,
         })
-        .text(postExcerpt, fakePostPoint[0], fakePostPoint[1], {});
+        .text(postExcerpt, end[0], end[1], {});
 
       doc.restore();
     });

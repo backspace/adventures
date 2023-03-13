@@ -150,15 +150,16 @@ module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
 
     assert.deepEqual(
       service.parsedOutline('(3.2,2.3),1.5,-0.5'),
-      [
-        [cmToPt(3.2), cmToPt(2.3)],
-        [
+      {
+        end: [cmToPt(3.2 + 1.5), cmToPt(2.3)],
+        points: [
+          [cmToPt(3.2), cmToPt(2.3)],
           [cmToPt(3.2 + 1.5), cmToPt(2.3)],
           [cmToPt(3.2 + 1.5), cmToPt(2.3 + -0.5)],
           [cmToPt(3.2), cmToPt(2.3 + -0.5)],
           [cmToPt(3.2), cmToPt(2.3)],
         ],
-      ],
+      },
       'it closes the polygon'
     );
   });

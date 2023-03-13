@@ -93,6 +93,14 @@ export default class UnmnemonicDevicesService extends Service {
     polygonPoints.push([startX, currentY]);
     polygonPoints.push([startX, startY]);
 
-    return [[startX, startY], polygonPoints];
+    let maxY = Math.max(...polygonPoints.map((p) => p[1]));
+    let maxYmaxX = Math.max(
+      ...polygonPoints.filter((p) => p[1] === maxY).map((p) => p[0])
+    );
+
+    return {
+      end: [maxYmaxX, maxY],
+      points: [[startX, startY], ...polygonPoints],
+    };
   }
 }
