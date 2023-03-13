@@ -15,6 +15,14 @@ export default class UnmnemonicDevicesService extends Service {
     return excerpt && excerpt.match(/\|/g).length === 2;
   }
 
+  preExcerpt(excerpt) {
+    return excerpt.split('|')[0];
+  }
+
+  postExcerpt(excerpt) {
+    return excerpt.split('|')[2];
+  }
+
   dimensionsIsValid(dimensions) {
     let parts = dimensions.split(',');
 

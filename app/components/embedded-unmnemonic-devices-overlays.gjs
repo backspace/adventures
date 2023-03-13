@@ -50,6 +50,8 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
 
       let regionAndCall = `${waypoint.region.name}: ${waypoint.call}`;
 
+      doc.fontSize(14);
+
       doc
         .fillColor('black')
         .strokeColor('white')
@@ -104,6 +106,37 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
         doc.text(waypoint.outline);
         doc.text(waypoint.excerpt);
       }
+
+      let preExcerpt = this.devices.preExcerpt(waypoint.excerpt),
+        postExcerpt = this.devices.postExcerpt(waypoint.excerpt);
+
+      let fakePostPoint = outlinePoints[outlinePoints.length - 2];
+
+      doc.fontSize(10);
+
+      doc
+        .fillColor('black')
+        .strokeColor('white')
+        .lineWidth(3)
+        .text(preExcerpt, 0, startY, {
+          align: 'right',
+          fill: true,
+          stroke: true,
+          width: startX,
+        })
+        .text(postExcerpt, fakePostPoint[0], fakePostPoint[1], {
+          stroke: true,
+          fill: true,
+        });
+
+      doc
+        .fillColor('black')
+        .lineWidth(1)
+        .text(preExcerpt, 0, startY, {
+          align: 'right',
+          width: startX,
+        })
+        .text(postExcerpt, fakePostPoint[0], fakePostPoint[1], {});
 
       doc.restore();
     });

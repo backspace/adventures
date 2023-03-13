@@ -11,6 +11,16 @@ module('Unit | Service | unmnemonic-devices', function (hooks) {
     assert.ok(service.descriptionIsValid());
     assert.ok(service.maskIsValid());
   });
+
+  test('preExcerpt returns the text before the excerpt', function (assert) {
+    const service = this.owner.lookup('service:unmnemonic-devices');
+    assert.equal(service.preExcerpt('an|excerpt|exists'), 'an');
+  });
+
+  test('postExcerpt returns the text before the excerpt', function (assert) {
+    const service = this.owner.lookup('service:unmnemonic-devices');
+    assert.equal(service.postExcerpt('an|excerpt|exists'), 'exists');
+  });
 });
 
 module(
