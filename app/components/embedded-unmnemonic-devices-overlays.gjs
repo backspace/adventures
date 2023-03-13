@@ -32,7 +32,21 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
 
       let [width, height] = this.devices.parsedDimensions(waypoint.dimensions);
 
-      doc.rect(0, 0, width, height).fillAndStroke('#ccc', 'black');
+      doc.save();
+      doc.rect(0, 0, width, height).clip();
+
+      doc.image(
+        this.args.assets.background1,
+        -pageMargin * 2,
+        -pageMargin * 2,
+        {
+          cover: [width + pageMargin * 4, height + pageMargin * 4],
+          align: 'center',
+          valign: 'center',
+        }
+      );
+
+      doc.restore();
 
       let regionAndCall = `${waypoint.region.name}: ${waypoint.call}`;
 
@@ -83,7 +97,7 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
         doc.lineTo(displacementX, displacementY);
       });
 
-      doc.stroke();
+      doc.fillAndStroke('white', 'black');
 
       if (this.args.debug) {
         doc.text(waypoint.dimensions, 0, height);
