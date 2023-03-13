@@ -47,6 +47,12 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
 
       doc.stroke();
 
+      if (this.args.debug) {
+        doc.text(waypoint.dimensions, 0, height);
+        doc.text(waypoint.outline);
+        doc.text(waypoint.excerpt);
+      }
+
       doc.restore();
     });
 
