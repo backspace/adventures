@@ -102,8 +102,6 @@ export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Componen
     });
   }
 
-  get iframeSrc() {}
-
   <template>
     FIXME these should be team-specific, not all waypoints
     {{#if this.rendering}}
