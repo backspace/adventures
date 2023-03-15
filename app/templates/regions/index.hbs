@@ -6,6 +6,9 @@
           <th>
             Name
           </th>
+          <th>
+            Hours
+          </th>
           <th></th>
         </tr>
       </thead>
@@ -15,6 +18,7 @@
             <td class='name'>
               {{region.name}}
             </td>
+            <td data-test-hours>{{region.hours}}</td>
             <td>
               <LinkTo @route='region' @model={{region}} class='edit'>
                 Edit

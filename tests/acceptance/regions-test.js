@@ -31,6 +31,8 @@ module('Acceptance | regions', function (hooks) {
       fixtureOne.setProperties({
         name: 'Gujaareh',
         notes: 'City of Dreams',
+        hours: 'Closes at 8am',
+        accessibility: 'Unlikely',
         x: 50,
         y: 10,
         updatedAt: new Date(2010, 0, 1),
@@ -63,7 +65,10 @@ module('Acceptance | regions', function (hooks) {
     await page.visit();
 
     assert.equal(page.regions.length, 2, 'expected two regions to be listed');
+
     assert.equal(page.regions[0].name, 'Gujaareh');
+    assert.equal(page.regions[0].hours, 'Closes at 8am');
+
     assert.equal(page.regions[1].name, 'Kisua');
 
     assert.notOk(
@@ -88,10 +93,12 @@ module('Acceptance | regions', function (hooks) {
 
     await page.new();
     await page.nameField.fill('Jellevy');
+    await page.hoursField.fill('Never');
     await page.save();
     await waitUntil(() => page.regions.length);
 
     assert.equal(page.regions[0].name, 'Jellevy');
+    assert.equal(page.regions[0].hours, 'Never');
 
     await destinationsPage.visit();
     await destinationsPage.new();
@@ -107,6 +114,8 @@ module('Acceptance | regions', function (hooks) {
     await page.regions[0].edit();
 
     assert.equal(page.nameField.value, 'Gujaareh');
+    assert.equal(page.hoursField.value, 'Closes at 8am');
+    assert.equal(page.accessibilityField.value, 'Unlikely');
     assert.equal(page.notesField.value, 'City of Dreams');
 
     await page.nameField.fill('Occupied Gujaareh');

@@ -14,6 +14,7 @@ export default PageObject.create({
 
   regions: collection('.region', {
     name: text('.name'),
+    hours: text('[data-test-hours]'),
     isIncomplete: hasClass('incomplete'),
 
     edit: clickable('.edit'),
@@ -30,6 +31,18 @@ export default PageObject.create({
   notesField: {
     scope: 'textarea.notes',
     value: value(),
+  },
+
+  accessibilityField: {
+    scope: '[data-test-accessibility-field]',
+    value: value(),
+    fill: fillable(),
+  },
+
+  hoursField: {
+    scope: '[data-test-hours-field]',
+    value: value(),
+    fill: fillable(),
   },
 
   save: clickable('.save'),

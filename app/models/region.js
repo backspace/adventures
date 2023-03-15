@@ -10,6 +10,12 @@ export default class Region extends Model {
   name;
 
   @attr('string')
+  hours;
+
+  @attr('string')
+  accessibility;
+
+  @attr('string')
   notes;
 
   @hasMany('destination', { async: false })

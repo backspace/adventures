@@ -13,6 +13,22 @@
     </div>
   </div>
   <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <label>
+        Hours
+        <Input @value={{this.model.hours}} data-test-hours-field />
+      </label>
+    </div>
+  </div>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <label>
+        Accessibility
+        <Textarea @value={{this.model.accessibility}} data-test-accessibility-field />
+      </label>
+    </div>
+  </div>
+  <div class='grid-x grid-padding-x'>
     <div class='expanded button-group'>
       <button
         class='save success button'
