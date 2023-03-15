@@ -98,8 +98,14 @@ export default class UnmnemonicDevicesService extends Service {
       ...polygonPoints.filter((p) => p[1] === maxY).map((p) => p[0])
     );
 
+    let pointAfterEnd = [maxYmaxX, maxY];
+    let pointAfterEndIndex = polygonPoints.findIndex(
+      (p) => p[0] === pointAfterEnd[0] && p[1] === pointAfterEnd[1]
+    );
+
+    let end = polygonPoints[pointAfterEndIndex - 1];
     return {
-      end: [maxYmaxX, maxY],
+      end,
       points: [[startX, startY], ...polygonPoints],
     };
   }
