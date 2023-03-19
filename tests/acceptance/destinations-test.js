@@ -148,22 +148,38 @@ module('Acceptance | destinations', function (hooks) {
     assert.equal(page.suggestedMaskButton.label, 'itchin ________ witchin');
   });
 
-  test('there’s no mask for unmnemonic devices', async function (assert) {
+  test('unmnemonic devices suggests and requires a mask', async function (assert) {
     await withSetting(this.owner, 'unmnemonic-devices');
     await visit('/destinations');
 
     await page.new();
-    assert.ok(page.maskField.isHidden);
 
     await page.descriptionField.fill('Bromarte');
-    await page.answerField.fill('R0E0H0');
+    await page.answerField.fill('property of comparative literature');
     await page.awesomenessField.fill(10);
     await page.riskField.fill(5);
+
+    assert.equal(
+      page.suggestedMaskButton.label,
+      'property __ ___________ literature'
+    );
 
     await page.save();
     await waitUntil(() => page.destinations.length);
 
     assert.equal(page.destinations[0].description, 'Bromarte');
+    assert.ok(page.destinations[0].isIncomplete);
+
+    await page.destinations[0].edit();
+    await page.maskField.fill('property of ___________ __________');
+
+    await page.save();
+    await waitUntil(() => page.destinations.length);
+
+    assert.equal(
+      page.destinations[0].mask,
+      'property of ___________ __________'
+    );
     assert.notOk(page.destinations[0].isIncomplete);
   });
 

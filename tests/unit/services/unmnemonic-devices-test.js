@@ -5,11 +5,10 @@ import { module, test } from 'qunit';
 module('Unit | Service | unmnemonic-devices', function (hooks) {
   setupTest(hooks);
 
-  test('it accepts all descriptions and masks', function (assert) {
+  test('it accepts all descriptions', function (assert) {
     let service = this.owner.lookup('service:unmnemonic-devices');
 
     assert.ok(service.descriptionIsValid());
-    assert.ok(service.maskIsValid());
   });
 
   test('preExcerpt returns the text before the excerpt', function (assert) {
@@ -20,6 +19,26 @@ module('Unit | Service | unmnemonic-devices', function (hooks) {
   test('postExcerpt returns the text before the excerpt', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
     assert.equal(service.postExcerpt('an|excerpt|exists'), 'exists');
+  });
+
+  test('it suggests masks', function (assert) {
+    const service = this.owner.lookup('service:unmnemonic-devices');
+
+    assert.equal(
+      service.suggestedMask('one two three'),
+      'one ___ three',
+      'expected a suggested mask with the middle word blanked'
+    );
+    assert.equal(
+      service.suggestedMask('one two three four'),
+      'one ___ _____ four',
+      'expected a suggested mask with the middle words blanked'
+    );
+    assert.equal(
+      service.suggestedMask('one'),
+      '___',
+      'expected a suggested mask entirely blanked with only one word'
+    );
   });
 });
 

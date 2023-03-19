@@ -1,14 +1,33 @@
-import Service from '@ember/service';
+import Service, { inject as service } from '@ember/service';
 import cmToPt from 'adventure-gathering/utils/cm-to-pt';
 import isFloat from 'validator/lib/isFloat';
 
 export default class UnmnemonicDevicesService extends Service {
+  @service txtbeyond;
+
   descriptionIsValid() {
     return true;
   }
 
-  maskIsValid() {
-    return true;
+  suggestedMask(answer) {
+    let answerWords = answer.split(' ');
+    let answerIsSingleWord = answerWords.length === 1;
+
+    return answerWords
+      .map((word, index) => {
+        let wordIsNotFirstOrLast = index > 0 && index < answerWords.length - 1;
+
+        if (wordIsNotFirstOrLast || answerIsSingleWord) {
+          return '_'.repeat(word.length);
+        } else {
+          return word;
+        }
+      })
+      .join(' ');
+  }
+
+  maskIsValid(answer, mask) {
+    return this.txtbeyond.maskIsValid(answer, mask);
   }
 
   excerptIsValid(excerpt) {
