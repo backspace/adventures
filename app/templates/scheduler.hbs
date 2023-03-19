@@ -1,4 +1,4 @@
-<div id='scheduler'>
+<div id='scheduler' class={{if this.puzzles.implementation.hasWaypoints 'has-waypoints'}}>
   <div class='map'>
     <img src={{this.model.map}} alt='map' />
     {{#each this.model.regions as |region|}}

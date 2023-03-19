@@ -99,6 +99,20 @@ $column-width: 6rem;
 
   background: white;
 
+  display: grid;
+
+  grid-template-columns: auto $column-width $column-width;
+  grid-template-areas:
+    'map teams destinations'
+    'map form form';
+
+  &.has-waypoints {
+    grid-template-columns: auto $column-width $column-width $column-width;
+    grid-template-areas:
+      'map teams waypoints destinations'
+      'map form form form';
+  }
+
   font-family: Silkscreen;
   font-size: 8px;
 
@@ -109,10 +123,6 @@ $column-width: 6rem;
   .teams,
   .regions,
   .waypoint-regions {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
     overflow-y: scroll;
 
     width: $column-width;
@@ -142,7 +152,7 @@ $column-width: 6rem;
   }
 
   .teams {
-    right: $column-width;
+    grid-area: teams;
 
     li {
       border-right: 0;
@@ -162,11 +172,11 @@ $column-width: 6rem;
   }
 
   .waypoint-regions {
-    right: $column-width;
+    grid-area: waypoints;
   }
 
-  .waypoint-regions + .teams {
-    right: $column-width * 2;
+  .regions {
+    grid-area: destinations;
   }
 
   .regions,
@@ -208,10 +218,7 @@ $column-width: 6rem;
   }
 
   .meeting-form {
-    position: fixed;
-    bottom: 0;
-    right: 0;
-    width: $column-width * 2;
+    grid-area: form;
 
     background: linear-gradient(
       180deg,
