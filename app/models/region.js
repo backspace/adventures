@@ -21,6 +21,9 @@ export default class Region extends Model {
   @hasMany('destination', { async: false })
   destinations;
 
+  @hasMany('waypoint', { async: false })
+  waypoints;
+
   @computed('destinations.@each.meetings')
   get allMeetings() {
     return this.destinations.mapBy('meetings').flat();

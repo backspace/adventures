@@ -9,7 +9,7 @@
             @route='destinations.new'
             class='destinations new'
           >+</LinkTo></li>
-        {{#if (feature-flag 'unmnemonicDevices')}}
+        {{#if this.puzzles.implementation.hasWaypoints}}
           <li class='pair'><LinkTo
               @route='waypoints'
               data-test-waypoints

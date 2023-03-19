@@ -89,7 +89,7 @@ const selectText = function (selector) {
 export default PageObject.create({
   visit: visitable('/scheduler'),
 
-  regions: collection('li.region', {
+  regions: collection('[data-test-regions-destinations] li.region', {
     name: text('.name'),
     notes: attribute('title'),
 
@@ -104,6 +104,29 @@ export default PageObject.create({
       meetingCountBorderWidth: propertyValue('border-top-width'),
       awesomenessBorderOpacity: propertyColourOpacity('border-left-color'),
       riskBorderOpacity: propertyColourOpacity('border-right-color'),
+
+      isSelected: hasClass('selected'),
+
+      click: clickable(),
+    }),
+  }),
+
+  waypointsContainer: {
+    scope: '[data-test-waypoint-regions]',
+  },
+
+  waypointRegions: collection('[data-test-waypoint-regions] li.region', {
+    name: text('.name'),
+    notes: attribute('title'),
+
+    hover: triggerable('mouseenter'),
+    exit: triggerable('mouseleave'),
+
+    waypoints: collection('[data-test-waypoint]', {
+      description: text('.description'),
+      accessibility: text('.accessibility'),
+
+      meetingCountBorderWidth: propertyValue('border-top-width'),
 
       isSelected: hasClass('selected'),
 

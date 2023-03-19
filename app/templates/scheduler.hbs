@@ -16,7 +16,7 @@
     {{/each}}
   </div>
 
-  <ul class='regions'>
+  <ul class='regions' data-test-regions-destinations>
     {{#each this.model.regions as |region|}}
       {{#if region.destinations}}
         {{! template-lint-disable no-invalid-interactive }}
@@ -45,6 +45,38 @@
       {{/if}}
     {{/each}}
   </ul>
+
+  {{#if this.puzzles.implementation.hasWaypoints}}
+    <ul class='waypoint-regions' data-test-waypoint-regions>
+      {{#each this.model.regions as |region|}}
+        {{#if region.waypoints}}
+          {{! template-lint-disable no-invalid-interactive }}
+          <li
+            class='region'
+            id='waypoint-region-{{region.id}}'
+            title={{region.notes}}
+            {{on 'mouseenter' (fn this.mouseEnterRegion region)}}
+            {{on 'mouseleave' this.mouseLeaveRegion}}
+            {{create-ref (concat 'region-' region.id)}}
+          >
+            <div class='name'>{{region.name}}</div>
+
+            <ul class='waypoints'>
+              {{#each region.waypoints as |waypoint|}}
+                {{#if waypoint.isAvailable}}
+                  <SchedulerWaypoint
+                    @waypoint={{waypoint}}
+                    {{!-- @select={{action 'selectDestination'}}
+                    @isSelected={{eq destination.id this.meeting.destination.id}} --}}
+                  />
+                {{/if}}
+              {{/each}}
+            </ul>
+          </li>
+        {{/if}}
+      {{/each}}
+    </ul>
+  {{/if}}
 
   <ul class='teams'>
     {{#each this.model.teams as |team|}}

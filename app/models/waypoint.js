@@ -1,3 +1,4 @@
+import { equal } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { isEmpty } from '@ember/utils';
 import { belongsTo, attr } from '@ember-data/model';
@@ -62,6 +63,21 @@ export default class Waypoint extends Model {
   get isIncomplete() {
     return !this.isComplete;
   }
+
+  @attr('string')
+  status;
+
+  @equal('status', 'available')
+  isAvailable;
+
+  @belongsTo('region', { async: false })
+  region;
+
+  @attr('createDate')
+  createdAt;
+
+  @attr('updateDate')
+  updatedAt;
 
   @service
   puzzles;

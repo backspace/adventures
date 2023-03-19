@@ -107,7 +107,8 @@ $column-width: 6rem;
   }
 
   .teams,
-  .regions {
+  .regions,
+  .waypoint-regions {
     position: fixed;
     top: 0;
     right: 0;
@@ -160,7 +161,16 @@ $column-width: 6rem;
     }
   }
 
-  .regions {
+  .waypoint-regions {
+    right: $column-width;
+  }
+
+  .waypoint-regions + .teams {
+    right: $column-width * 2;
+  }
+
+  .regions,
+  .waypoint-regions {
     > li {
       background: black;
       color: white;
@@ -174,7 +184,8 @@ $column-width: 6rem;
       }
     }
 
-    .destinations {
+    .destinations,
+    .waypoints {
       margin: 0;
       background: white;
 

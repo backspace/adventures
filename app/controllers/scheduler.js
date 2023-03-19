@@ -13,6 +13,7 @@ export default class SchedulerController extends Controller {
   @max('meetingCounts') highestMeetingCount;
 
   @service pathfinder;
+  @service puzzles;
   @service store;
 
   @computed('meeting.teams.@each.meetings')
