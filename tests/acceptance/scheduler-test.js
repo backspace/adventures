@@ -1,4 +1,3 @@
-import { run } from '@ember/runloop';
 import { find, waitUntil } from '@ember/test-helpers';
 
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
@@ -15,135 +14,122 @@ module('Acceptance | scheduler', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
-  hooks.beforeEach(function (assert) {
+  hooks.beforeEach(async function () {
     const store = this.owner.lookup('service:store');
     const db = this.owner.lookup('adapter:application').get('db');
-    const done = assert.async();
 
-    run(() => {
-      const portagePlace = store.createRecord('region', {
-        name: 'Portage Place',
-        notes: 'Downtown revitalisation!',
-        x: 50,
-        y: 60,
-      });
-
-      const eatonCentre = store.createRecord('region', {
-        name: 'Eaton Centre',
-        x: 100,
-        y: 100,
-      });
-
-      const circus = store.createRecord('region', {
-        name: 'Portage and Main Circus',
-      });
-
-      const superfans = store.createRecord('team', {
-        name: 'Leave It to Beaver superfans',
-        users: 'june@example.com, eddie@example.com',
-        notes: 'Here is a note',
-        riskAversion: 3,
-      });
-
-      const mayors = store.createRecord('team', {
-        name: 'Mayors',
-        users: 'susan@winnipeg.ca, glen@winnipeg.ca',
-        riskAversion: 1,
-      });
-
-      const pyjamaGamers = store.createRecord('team', {
-        name: 'The Pyjama Gamers',
-      });
-
-      const pathfinderData = {
-        _id: 'pathfinder-data',
-        data: {
-          'Portage Place|Eaton Centre': 5,
-        },
-      };
-
-      let edmontonCourt,
-        prairieTheatreExchange,
-        globeCinemas,
-        squeakyFloor,
-        mrGreenjeans,
-        sculpture;
-
-      all([
-        portagePlace.save(),
-        eatonCentre.save(),
-        circus.save(),
-        superfans.save(),
-        mayors.save(),
-        pyjamaGamers.save(),
-        db.put(pathfinderData),
-      ])
-        .then(() => {
-          edmontonCourt = store.createRecord('destination', {
-            region: portagePlace,
-            description: 'Edmonton Court',
-            accessibility: 'Steps down to centre',
-            awesomeness: 3,
-            risk: 2,
-            status: 'available',
-          });
-
-          prairieTheatreExchange = store.createRecord('destination', {
-            description: 'Prairie Theatre Exchange',
-            awesomeness: 4 / 3,
-            risk: 1,
-            region: portagePlace,
-            status: 'available',
-          });
-
-          globeCinemas = store.createRecord('destination', {
-            region: portagePlace,
-          });
-
-          squeakyFloor = store.createRecord('destination', {
-            region: eatonCentre,
-            status: 'unavailable',
-          });
-
-          mrGreenjeans = store.createRecord('destination', {
-            description: 'Mr. Greenjeans',
-            region: eatonCentre,
-            status: 'available',
-          });
-
-          sculpture = store.createRecord('destination', {
-            region: circus,
-            status: 'unavailable',
-          });
-
-          return all([
-            edmontonCourt.save(),
-            prairieTheatreExchange.save(),
-            globeCinemas.save(),
-            squeakyFloor.save(),
-            mrGreenjeans.save(),
-            sculpture.save(),
-          ]);
-        })
-        .then(() => {
-          return all([portagePlace.save(), eatonCentre.save(), circus.save()]);
-        })
-        .then(() => {
-          return store
-            .createRecord('meeting', {
-              destination: edmontonCourt,
-              offset: 15,
-              teams: [superfans, mayors],
-            })
-            .save();
-        })
-        .then(() => {
-          return all([edmontonCourt.save(), superfans.save(), mayors.save()]);
-        })
-        .then(() => {
-          done();
-        });
+    const portagePlace = store.createRecord('region', {
+      name: 'Portage Place',
+      notes: 'Downtown revitalisation!',
+      x: 50,
+      y: 60,
     });
+
+    const eatonCentre = store.createRecord('region', {
+      name: 'Eaton Centre',
+      x: 100,
+      y: 100,
+    });
+
+    const circus = store.createRecord('region', {
+      name: 'Portage and Main Circus',
+    });
+
+    const superfans = store.createRecord('team', {
+      name: 'Leave It to Beaver superfans',
+      users: 'june@example.com, eddie@example.com',
+      notes: 'Here is a note',
+      riskAversion: 3,
+    });
+
+    const mayors = store.createRecord('team', {
+      name: 'Mayors',
+      users: 'susan@winnipeg.ca, glen@winnipeg.ca',
+      riskAversion: 1,
+    });
+
+    const pyjamaGamers = store.createRecord('team', {
+      name: 'The Pyjama Gamers',
+    });
+
+    const pathfinderData = {
+      _id: 'pathfinder-data',
+      data: {
+        'Portage Place|Eaton Centre': 5,
+      },
+    };
+
+    let edmontonCourt,
+      prairieTheatreExchange,
+      globeCinemas,
+      squeakyFloor,
+      mrGreenjeans,
+      sculpture;
+
+    await all([
+      portagePlace.save(),
+      eatonCentre.save(),
+      circus.save(),
+      superfans.save(),
+      mayors.save(),
+      pyjamaGamers.save(),
+      db.put(pathfinderData),
+    ]);
+    edmontonCourt = store.createRecord('destination', {
+      region: portagePlace,
+      description: 'Edmonton Court',
+      accessibility: 'Steps down to centre',
+      awesomeness: 3,
+      risk: 2,
+      status: 'available',
+    });
+
+    prairieTheatreExchange = store.createRecord('destination', {
+      description: 'Prairie Theatre Exchange',
+      awesomeness: 4 / 3,
+      risk: 1,
+      region: portagePlace,
+      status: 'available',
+    });
+
+    globeCinemas = store.createRecord('destination', {
+      region: portagePlace,
+    });
+
+    squeakyFloor = store.createRecord('destination', {
+      region: eatonCentre,
+      status: 'unavailable',
+    });
+
+    mrGreenjeans = store.createRecord('destination', {
+      description: 'Mr. Greenjeans',
+      region: eatonCentre,
+      status: 'available',
+    });
+
+    sculpture = store.createRecord('destination', {
+      region: circus,
+      status: 'unavailable',
+    });
+
+    await all([
+      edmontonCourt.save(),
+      prairieTheatreExchange.save(),
+      globeCinemas.save(),
+      squeakyFloor.save(),
+      mrGreenjeans.save(),
+      sculpture.save(),
+    ]);
+    await all([portagePlace.save(), eatonCentre.save(), circus.save()]);
+
+    await store
+      .createRecord('meeting', {
+        destination: edmontonCourt,
+        offset: 15,
+        teams: [superfans, mayors],
+      })
+      .save();
+    await all([edmontonCourt.save(), superfans.save(), mayors.save()]);
   });
 
   test('available destinations are grouped by region', async function (assert) {
