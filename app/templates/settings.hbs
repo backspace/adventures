@@ -75,7 +75,9 @@
       <button
         type='button'
         class='save button primary'
+        disabled={{not this.model.hasDirtyAttributes}}
         {{on 'click' this.save}}
+        data-test-save-button
       >
         Save
       </button>

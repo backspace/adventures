@@ -39,6 +39,10 @@ export default PageObject.create({
     isChecked: property('checked'),
   },
 
-  save: clickable('.save'),
+  saveButton: {
+    scope: '[data-test-save-button]',
+    isDisabled: property('disabled'),
+  },
+
   cancel: clickable('.cancel'),
 });

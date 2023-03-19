@@ -18,11 +18,15 @@ module('Acceptance | settings: fresh', function (hooks) {
 
     assert.equal(page.goalField.value, '');
     assert.notOk(page.destinationStatus.isChecked);
+    assert.ok(page.saveButton.isDisabled);
 
     await page.goalField.fill('abc');
     await page.clandestineRendezvous.click();
     await page.txtbeyond.click();
-    await page.save();
+
+    assert.notOk(page.saveButton.isDisabled);
+
+    await page.saveButton.click();
 
     let settings = await this.store.findRecord('settings', 'settings');
 
@@ -61,13 +65,17 @@ module('Acceptance | settings: existing', function (hooks) {
 
     assert.equal(page.goalField.value, '12345');
     assert.ok(page.destinationStatus.isChecked);
+    assert.ok(page.saveButton.isDisabled);
 
     await page.goalField.fill('789');
     await page.destinationStatus.click();
     await page.clandestineRendezvous.click();
     await page.txtbeyond.click();
     await page.unmnemonicDevices.click();
-    await page.save();
+
+    assert.notOk(page.saveButton.isDisabled);
+
+    await page.saveButton.click();
 
     const settings = await this.store.findRecord('settings', 'settings');
 
