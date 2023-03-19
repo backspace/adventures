@@ -39,12 +39,23 @@ const fillSelectByText = function (selector) {
 };
 
 export default PageObject.create({
+  headerRegion: {
+    scope: 'th.region',
+    click: clickable(),
+  },
+
   waypoints: collection('[data-test-waypoint]', {
     name: text('[data-test-name]'),
     author: text('[data-test-author]'),
     region: text('[data-test-region]'),
 
     isIncomplete: hasClass('incomplete'),
+
+    status: {
+      scope: '[data-test-status]',
+      value: text(),
+      click: clickable(),
+    },
 
     edit: clickable('[data-test-edit]'),
   }),
@@ -105,6 +116,15 @@ export default PageObject.create({
     text: selectText(),
     fillByText: fillSelectByText(),
     select: selectable(),
+  },
+
+  statusFieldset: {
+    scope: 'fieldset.status',
+
+    availableOption: {
+      scope: 'input[value=available]',
+      click: clickable(),
+    },
   },
 
   save: clickable('[data-test-save-button]'),

@@ -3,8 +3,14 @@
     <table>
       <thead>
         <tr>
-          <th>
-            Region
+          {{#if (feature-flag 'destination-status')}}
+            <th></th>
+          {{/if}}
+          {{! template-lint-disable no-invalid-interactive }}
+          <th class='region' onclick={{action 'toggleSort'}}>
+            <span class='secondary label'>
+              Region
+            </span>
           </th>
           <th>
             Name
@@ -17,25 +23,7 @@
       </thead>
       <tbody>
         {{#each this.waypoints as |waypoint|}}
-          <tr
-            class='waypoint {{if waypoint.isIncomplete "incomplete"}}'
-            data-test-waypoint
-          >
-            <td data-test-region>
-              {{waypoint.region.name}}
-            </td>
-            <td data-test-name>
-              {{waypoint.name}}
-            </td>
-            <td data-test-author>
-              {{waypoint.author}}
-            </td>
-            <td>
-              <LinkTo @route='waypoint' @model={{waypoint}} data-test-edit>
-                Edit
-              </LinkTo>
-            </td>
-          </tr>
+          <WaypointRow @waypoint={{waypoint}} />
         {{/each}}
       </tbody>
     </table>

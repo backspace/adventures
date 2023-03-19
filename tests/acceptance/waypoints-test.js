@@ -32,6 +32,7 @@ module('Acceptance | waypoints', function (hooks) {
       author: 'N. K. Jemisin',
       call: 'FICTION SCI JEMISIN',
       region: regionOne,
+      status: 'unavailable',
     });
 
     await waypointOne.save();
@@ -49,6 +50,7 @@ module('Acceptance | waypoints', function (hooks) {
       dimensions: '12,18.1',
       outline: '(7.3,10.6),3.6,.35,-3.1,.35,-1.5,-.35,1',
       region: regionTwo,
+      status: 'available',
     });
 
     await waypointTwo.save();
@@ -85,6 +87,36 @@ module('Acceptance | waypoints', function (hooks) {
     assert.ok(two.isIncomplete);
   });
 
+  test('waypoint status doesn’t show when the feature flag is off', async function (assert) {
+    await homePage.visit();
+    await homePage.waypoints.click();
+
+    assert.ok(
+      page.waypoints[0].status.isHidden,
+      'expected the status to be hidden'
+    );
+  });
+
+  test('waypoint status is displayed and can be toggled from the list when the feature flag is on', async function (assert) {
+    await withSetting(this.owner, 'destination-status');
+    await homePage.visit();
+    await homePage.waypoints.click();
+
+    // Sort by region, otherwise waypoints will jump around
+    await page.headerRegion.click();
+
+    assert.equal(page.waypoints[0].status.value, '✓');
+    assert.equal(page.waypoints[1].status.value, '✘');
+
+    await page.waypoints[0].status.click();
+    assert.equal(page.waypoints[0].status.value, '✘');
+
+    await page.waypoints[0].status.click();
+    // TODO why does this help?
+    await waitUntil(() => page.waypoints[0].status.value === '?');
+    assert.equal(page.waypoints[0].status.value, '?');
+  });
+
   test('a waypoint can be created and will appear at the top of the list', async function (assert) {
     await homePage.visit();
     await homePage.waypoints.click();
@@ -101,7 +133,20 @@ module('Acceptance | waypoints', function (hooks) {
     assert.equal(page.waypoints[0].author, 'Ruthanna Emrys');
   });
 
+  test('the status fieldset doesn’t show when the feature isn’t on', async function (assert) {
+    await homePage.visit();
+    await homePage.waypoints.click();
+
+    await page.waypoints[0].edit();
+
+    assert.ok(
+      page.statusFieldset.isHidden,
+      'expected the status fieldset to be hidden'
+    );
+  });
+
   test('a waypoint can be edited and edits can be cancelled', async function (assert) {
+    await withSetting(this.owner, 'destination-status');
     await homePage.visit();
     await homePage.waypoints.click();
     await page.waypoints[0].edit();
@@ -131,6 +176,7 @@ module('Acceptance | waypoints', function (hooks) {
     await page.pageField.fill('276');
     await page.dimensionsField.fill('12.1,16.4');
     await page.outlineField.fill('(2.2,1.5),1.8,.25');
+    await page.statusFieldset.availableOption.click();
 
     await page.save();
     await waitUntil(() => page.waypoints.length);
@@ -138,6 +184,7 @@ module('Acceptance | waypoints', function (hooks) {
     let edited = page.waypoints[0];
     assert.equal(edited.name, 'The Fifth Season');
     assert.equal(edited.author, 'NK');
+    assert.equal(edited.status.value, '✓');
 
     await page.waypoints[0].edit();
 
