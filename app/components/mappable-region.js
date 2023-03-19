@@ -52,20 +52,20 @@ export default class MappableRegionComponent extends Component {
   }
 
   @action
-  dragStart() {
+  dragStart({ clientX, clientY, offsetX }) {
     if (!this.draggable) {
       return;
     }
 
-    // Not adding the height causes the region to be off by its height?!
+    // Adding the offset removes a corresponding horizontal shift when dropping. Unclear why it doesn’t happen vertically.
     this.originalPosition = {
-      x: this.regionElement.offsetLeft,
-      y: this.regionElement.offsetHeight + this.regionElement.offsetTop,
+      x: clientX + offsetX,
+      y: clientY,
     };
   }
 
   @action
-  dragEnd({ pageX, pageY }) {
+  dragEnd({ clientX, clientY }) {
     if (!this.draggable) {
       return;
     }
@@ -73,8 +73,8 @@ export default class MappableRegionComponent extends Component {
     const x = this.args.region.x;
     const y = this.args.region.y;
 
-    this.args.region.x = x + (pageX - this.originalPosition.x);
-    this.args.region.y = y + (pageY - this.originalPosition.y);
+    this.args.region.x = x + (clientX - this.originalPosition.x);
+    this.args.region.y = y + (clientY - this.originalPosition.y);
 
     this.args.region.save();
   }

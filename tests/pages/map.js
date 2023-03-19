@@ -56,12 +56,13 @@ export default PageObject.create({
       const position = jqueryElement.position();
 
       await triggerEvent(jqueryElement[0], 'dragstart', {
-        pageX: position.left,
-        pageY: position.top,
+        clientX: position.left,
+        clientY: position.top,
+        offsetX: 0,
       });
       await triggerEvent(jqueryElement[0], 'dragend', {
-        pageX: position.left + x,
-        pageY: position.top + y,
+        clientX: position.left + x,
+        clientY: position.top + y,
       });
     },
   }),

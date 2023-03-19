@@ -177,8 +177,8 @@ module('Acceptance | regions', function (hooks) {
     assert.equal(mapPage.regions[1].x, 0);
 
     await mapPage.regions[0].dragBy(90, 100);
-    assert.equal(mapPage.regions[0].y, 67);
-    assert.equal(mapPage.regions[0].x, 121);
+    assert.equal(mapPage.regions[0].y, 110);
+    assert.equal(mapPage.regions[0].x, 140);
   });
 });
 
