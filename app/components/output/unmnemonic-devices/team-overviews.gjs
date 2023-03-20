@@ -60,55 +60,55 @@ export default class TeamOverviewsComponent extends Component {
           // FIXME how to determine size?
           // { scale: 0.125 }
         );
-
-        doc.font(regular);
-        doc.fontSize(mapTeamFontSize);
-        doc.text(team.name, 0, 0);
-
-        doc.fontSize(mapMarkerFontSize);
-
-        team
-          .hasMany('meetings')
-          .value()
-          .sortBy('index')
-          .forEach((meeting, index) => {
-            const rendezvousLetter = String.fromCharCode(65 + index);
-
-            const destination = meeting.belongsTo('destination').value();
-            const destinationRegion = destination.belongsTo('region').value();
-
-            const destinationX =
-              destinationRegion.get('x') / 2 + mapOffsetX - mapClipLeft;
-            const destinationY =
-              destinationRegion.get('y') / 2 + mapOffsetY - mapClipTop;
-
-            doc.text(
-              `${rendezvousLetter}-D FIXPOS`,
-              destinationX - mapMarkerCircleRadius,
-              destinationY + mapMarkerFontSize,
-              {
-                width: mapMarkerCircleRadius * 2,
-                align: 'center',
-              }
-            );
-
-            const waypoint = meeting.belongsTo('waypoint').value();
-            const waypointRegion = waypoint.belongsTo('region').value();
-
-            const waypointX = waypointRegion.x / 2 + mapOffsetX - mapClipLeft;
-            const waypointY = waypointRegion.y / 2 + mapOffsetY - mapClipTop;
-
-            doc.text(
-              `${rendezvousLetter}-W FIXPOS`,
-              waypointX - mapMarkerCircleRadius,
-              waypointY + mapMarkerFontSize,
-              {
-                width: mapMarkerCircleRadius * 2,
-                align: 'center',
-              }
-            );
-          });
       }
+
+      doc.font(regular);
+      doc.fontSize(mapTeamFontSize);
+      doc.text(team.name, 0, 0);
+
+      doc.fontSize(mapMarkerFontSize);
+
+      team
+        .hasMany('meetings')
+        .value()
+        .sortBy('index')
+        .forEach((meeting, index) => {
+          const rendezvousLetter = String.fromCharCode(65 + index);
+
+          const destination = meeting.belongsTo('destination').value();
+          const destinationRegion = destination.belongsTo('region').value();
+
+          const destinationX =
+            destinationRegion.get('x') / 2 + mapOffsetX - mapClipLeft;
+          const destinationY =
+            destinationRegion.get('y') / 2 + mapOffsetY - mapClipTop;
+
+          doc.text(
+            `${rendezvousLetter}-D FIXPOS`,
+            destinationX - mapMarkerCircleRadius,
+            destinationY + mapMarkerFontSize,
+            {
+              width: mapMarkerCircleRadius * 2,
+              align: 'center',
+            }
+          );
+
+          const waypoint = meeting.belongsTo('waypoint').value();
+          const waypointRegion = waypoint.belongsTo('region').value();
+
+          const waypointX = waypointRegion.x / 2 + mapOffsetX - mapClipLeft;
+          const waypointY = waypointRegion.y / 2 + mapOffsetY - mapClipTop;
+
+          doc.text(
+            `${rendezvousLetter}-W FIXPOS`,
+            waypointX - mapMarkerCircleRadius,
+            waypointY + mapMarkerFontSize,
+            {
+              width: mapMarkerCircleRadius * 2,
+              align: 'center',
+            }
+          );
+        });
     });
 
     doc.end();
