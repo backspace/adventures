@@ -65,6 +65,14 @@ export default class SchedulerController extends Controller {
     this.set('meeting.destination', destination);
   }
 
+  @action selectWaypoint(waypoint) {
+    if (!this.meeting) {
+      this.meeting = this.store.createRecord('meeting');
+    }
+
+    this.meeting.waypoint = waypoint;
+  }
+
   @action selectTeam(team) {
     if (!this.meeting) {
       this.set('meeting', this.store.createRecord('meeting'));

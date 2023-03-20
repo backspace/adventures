@@ -10,7 +10,7 @@ export default class SchedulerWaypointComponent extends Component {
   <template>
     {{! template-lint-disable no-invalid-interactive }}
     <li
-      class='waypoint {{if this.isSelected "selected"}}'
+      class='waypoint {{if @isSelected "selected"}}'
       style={{this.style}}
       {{on 'click' this.select}}
       data-test-waypoint

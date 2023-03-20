@@ -518,5 +518,56 @@ module('Acceptance | scheduler', function (hooks) {
       assert.equal(page.meeting.waypoint, 'fourten');
       assert.equal(page.meeting.teams[0].value, 'Leave It to Beaver superfans');
     });
+
+    test('a new meeting can be scheduled and resets the form when saved', async function (assert) {
+      await page.visit();
+
+      await page.regions[1].destinations[1].click();
+      await page.waypointRegions[2].waypoints[0].click();
+      await page.teams[0].click();
+
+      assert.equal(page.meeting.destination, 'Prairie Theatre Exchange');
+      assert.equal(page.meeting.waypoint, 'fourten');
+
+      assert.equal(page.meeting.teams[0].value, 'Leave It to Beaver superfans');
+      assert.notOk(
+        page.meeting.isForbidden,
+        'expected meeting not be forbidden'
+      );
+      assert.equal(page.meeting.index, '1');
+      assert.equal(page.meeting.offset, '15');
+
+      assert.ok(page.regions[1].destinations[1].isSelected);
+      assert.notOk(page.regions[1].destinations[0].isSelected);
+
+      assert.ok(page.waypointRegions[2].waypoints[0].isSelected);
+      assert.notOk(page.waypointRegions[0].waypoints[0].isSelected);
+
+      assert.equal(page.map.regions[1].count, '3');
+
+      assert.ok(page.teams[0].isSelected);
+
+      await page.meeting.save();
+
+      assert.equal(page.teams[0].count, '••');
+      assert.equal(page.teams[0].averageAwesomeness, '2.17');
+      assert.equal(page.teams[0].averageRisk, '1.5');
+
+      assert.equal(page.teams[1].count, '');
+
+      // FIXME destination and waypoint meeting count borders
+      // assert.equal(
+      //   page.regions[1].destinations[1].meetingCountBorderWidth,
+      //   '2px'
+      // );
+
+      await waitUntil(() => !page.meeting.teams.length);
+
+      assert.equal(
+        page.meeting.teams.length,
+        0,
+        'expected no set teams after saving'
+      );
+    });
   });
 });

@@ -64,8 +64,8 @@
                 {{#if waypoint.isAvailable}}
                   <SchedulerWaypoint
                     @waypoint={{waypoint}}
-                    {{!-- @select={{action 'selectDestination'}}
-                    @isSelected={{eq destination.id this.meeting.destination.id}} --}}
+                    @select={{action 'selectWaypoint'}}
+                    @isSelected={{eq waypoint.id this.meeting.waypoint.id}}
                   />
                 {{/if}}
               {{/each}}
