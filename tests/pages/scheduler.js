@@ -180,8 +180,10 @@ export default PageObject.create({
     waypoint: selectText('.waypoint'),
 
     index: value('.index'),
-    offset: value('.offset'),
-    fillOffset: fillable('.offset'),
+
+    offset: {
+      scope: '[data-test-offset-input]',
+    },
 
     teams: collection('.team', {
       value: selectText(),

@@ -3,6 +3,10 @@ import classic from 'ember-classic-decorator';
 
 @classic
 export default class ClandestineRendezvousService extends Service {
+  hasMeetingOffsets() {
+    return true;
+  }
+
   chooseBlankIndex({ answer, mask, goalDigit }) {
     if (!this.maskIsValid(answer, mask)) {
       throw Error('Mask is invalid');

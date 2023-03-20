@@ -147,14 +147,17 @@
       />
     </div>
 
-    <div class='row'>
-      <label for='offset-input'>O</label>
-      <Input
-        @value={{this.suggestedOffset}}
-        id='offset-input'
-        class='offset'
-      />
-    </div>
+    {{#if this.puzzles.implementation.hasMeetingOffsets}}
+      <div class='row'>
+        <label for='offset-input'>O</label>
+        <Input
+          @value={{this.suggestedOffset}}
+          id='offset-input'
+          class='offset'
+          data-test-offset-input
+        />
+      </div>
+    {{/if}}
 
     {{#unless this.meeting.isForbidden}}
       <button

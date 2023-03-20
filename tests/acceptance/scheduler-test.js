@@ -130,8 +130,10 @@ module('Acceptance | scheduler', function (hooks) {
     await all([portagePlace.save(), eatonCentre.save(), circus.save()]);
   });
 
-  module('with multi-team meetings', function (hooks) {
+  module('for Clandestine Rendezvous', function (hooks) {
     hooks.beforeEach(async function () {
+      await withSetting(this.owner, 'clandestine-rendezvous');
+
       await store
         .createRecord('meeting', {
           destination: edmontonCourt,
@@ -324,7 +326,7 @@ module('Acceptance | scheduler', function (hooks) {
           'expected meeting not be forbidden'
         );
         assert.equal(page.meeting.index, '1');
-        assert.equal(page.meeting.offset, '15');
+        assert.equal(page.meeting.offset.value, '15');
 
         assert.ok(page.regions[1].destinations[1].isSelected);
         assert.notOk(page.regions[1].destinations[0].isSelected);
@@ -334,7 +336,7 @@ module('Acceptance | scheduler', function (hooks) {
         assert.ok(page.teams[1].isSelected);
         assert.ok(page.teams[0].isSelected);
 
-        await page.meeting.fillOffset('18');
+        await page.meeting.offset.fill('18');
         await page.meeting.save();
 
         assert.equal(page.teams[0].count, '••');
@@ -358,7 +360,7 @@ module('Acceptance | scheduler', function (hooks) {
         await page.teams[1].click();
         await page.teams[0].click();
 
-        assert.equal(page.meeting.offset, '23');
+        assert.equal(page.meeting.offset.value, '23');
       }
     );
 
@@ -463,6 +465,12 @@ module('Acceptance | scheduler', function (hooks) {
       ]);
     });
 
+    test('the offset field is hidden', async function (assert) {
+      await page.visit();
+
+      assert.ok(page.meeting.offset.isHidden);
+    });
+
     test('available waypoints are grouped by region', async function (assert) {
       await page.visit();
 
@@ -503,7 +511,6 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.equal(page.teams[0].meetings.length, 1);
       assert.equal(page.teams[0].meetings[0].index, '0');
-      assert.equal(page.teams[0].meetings[0].offset, '15');
 
       assert.notOk(page.teams[1].isHighlighted);
       assert.notOk(page.teams[2].isHighlighted);
@@ -535,7 +542,6 @@ module('Acceptance | scheduler', function (hooks) {
         'expected meeting not be forbidden'
       );
       assert.equal(page.meeting.index, '1');
-      assert.equal(page.meeting.offset, '15');
 
       assert.ok(page.regions[1].destinations[1].isSelected);
       assert.notOk(page.regions[1].destinations[0].isSelected);
