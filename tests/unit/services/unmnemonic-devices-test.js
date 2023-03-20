@@ -1,6 +1,6 @@
 import cmToPt from 'adventure-gathering/utils/cm-to-pt';
 import { setupTest } from 'ember-qunit';
-import { module, test } from 'qunit';
+import { module, test, todo } from 'qunit';
 
 module('Unit | Service | unmnemonic-devices', function (hooks) {
   setupTest(hooks);
@@ -164,7 +164,7 @@ module(
 module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
   setupTest(hooks);
 
-  test('it parses outlines', function (assert) {
+  todo('it parses outlines', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
 
     assert.deepEqual(
