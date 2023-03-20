@@ -45,6 +45,7 @@ export default class TeamOverviewsComponent extends Component {
         doc.addPage();
       }
 
+      doc.save();
       doc.translate(margin, margin);
 
       if (!debug) {
@@ -60,6 +61,8 @@ export default class TeamOverviewsComponent extends Component {
           // FIXME how to determine size?
           // { scale: 0.125 }
         );
+
+        doc.restore();
       }
 
       doc.font(regular);
@@ -109,6 +112,8 @@ export default class TeamOverviewsComponent extends Component {
             }
           );
         });
+
+      doc.restore();
     });
 
     doc.end();
