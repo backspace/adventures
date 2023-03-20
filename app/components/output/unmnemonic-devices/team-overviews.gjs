@@ -59,9 +59,9 @@ export default class TeamOverviewsComponent extends Component {
         doc.image(
           'data:image/png;base64,' + map,
           mapOffsetX - mapClipLeft,
-          mapOffsetY - mapClipTop
+          mapOffsetY - mapClipTop,
           // FIXME how to determine size?
-          // { scale: 0.125 }
+          { scale: 0.125 }
         );
 
         doc.restore();
