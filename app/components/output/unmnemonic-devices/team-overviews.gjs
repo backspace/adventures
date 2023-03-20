@@ -113,6 +113,23 @@ export default class TeamOverviewsComponent extends Component {
           );
         });
 
+      doc.translate(0, pageHeight / 2);
+
+      team
+        .hasMany('meetings')
+        .value()
+        .sortBy('index')
+        .forEach((meeting) => {
+          let waypoint = meeting.belongsTo('waypoint').value();
+          let waypointRegion = waypoint.belongsTo('region').value();
+
+          let destination = meeting.belongsTo('destination').value();
+
+          doc.text(
+            `Library ${waypointRegion.name}, book ${waypoint.name}, call in with phrase, destination mask ${destination.mask}`
+          );
+        });
+
       doc.restore();
     });
 
