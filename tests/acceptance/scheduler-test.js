@@ -508,5 +508,15 @@ module('Acceptance | scheduler', function (hooks) {
       assert.notOk(page.teams[1].isHighlighted);
       assert.notOk(page.teams[2].isHighlighted);
     });
+
+    test('an existing meeting can be edited', async function (assert) {
+      await page.visit();
+
+      await page.teams[0].hover();
+      await page.teams[0].meetings[0].click();
+      assert.equal(page.meeting.destination, 'Edmonton Court');
+      assert.equal(page.meeting.waypoint, 'fourten');
+      assert.equal(page.meeting.teams[0].value, 'Leave It to Beaver superfans');
+    });
   });
 });

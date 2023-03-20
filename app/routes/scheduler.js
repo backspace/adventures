@@ -54,6 +54,7 @@ export default class SchedulerRoute extends Route {
             .sortBy('name');
         }),
       destinations: this.store.findAll('destination'),
+      waypoints: this.store.findAll('waypoint'),
       teams: this.store.findAll('team'),
       map: this.map.getURL('image'),
     });

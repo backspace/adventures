@@ -177,6 +177,8 @@ export default PageObject.create({
     scope: '.meeting-form',
 
     destination: selectText('.destination'),
+    waypoint: selectText('.waypoint'),
+
     index: value('.index'),
     offset: value('.offset'),
     fillOffset: fillable('.offset'),

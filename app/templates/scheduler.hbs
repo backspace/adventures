@@ -104,6 +104,20 @@
       {{/each}}
     </select>
 
+    {{#if this.puzzles.implementation.hasWaypoints}}
+      <select class='waypoint' aria-label='meeting waypoint'>
+        <option></option>
+        {{#each this.model.waypoints as |waypoint|}}
+          {{#if waypoint.isAvailable}}
+            <option
+              value={{waypoint.id}}
+              selected={{eq this.meeting.waypoint.id waypoint.id}}
+            >{{waypoint.name}}</option>
+          {{/if}}
+        {{/each}}
+      </select>
+    {{/if}}
+
     {{#each this.meeting.sortedTeams as |meetingTeam|}}
       <select class='team' aria-label='meeting team'>
         {{#each this.model.teams as |team|}}
