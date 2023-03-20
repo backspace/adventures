@@ -232,6 +232,14 @@ $column-width: 6rem;
       rgba(255, 255, 255, 1)
     );
 
+    .row {
+      display: flex;
+
+      label {
+        width: 2em;
+      }
+    }
+
     select,
     input {
       font-size: inherit;
