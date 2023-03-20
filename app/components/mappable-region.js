@@ -1,4 +1,5 @@
 import { action } from '@ember/object';
+import { inject as service } from '@ember/service';
 import { htmlSafe } from '@ember/template';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
@@ -9,6 +10,8 @@ import { ref } from 'ember-ref-bucket';
 import jQuery from 'jquery';
 
 export default class MappableRegionComponent extends Component {
+  @service puzzles;
+
   @ref('Region') regionElement;
   @tracked originalPosition;
 
@@ -52,6 +55,10 @@ export default class MappableRegionComponent extends Component {
   }
 
   get waypointMeetingIndex() {
+    if (!this.puzzles.implementation.hasWaypoints) {
+      return undefined;
+    }
+
     const regionId = this.args.region.id;
     const highlightedTeam = this.args.highlightedTeam;
 
@@ -60,6 +67,7 @@ export default class MappableRegionComponent extends Component {
         .hasMany('meetings')
         .value()
         .rejectBy('isNew')
+        .filterBy('waypoint')
         .map((meeting) => meeting.belongsTo('waypoint').value())
         .map((waypoint) => waypoint.belongsTo('region').value())
         .mapBy('id');
