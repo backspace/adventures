@@ -9,6 +9,10 @@ export default class UnmnemonicDevicesService extends Service {
     return true;
   }
 
+  hasTeamIdentifiers() {
+    return true;
+  }
+
   descriptionIsValid() {
     return true;
   }

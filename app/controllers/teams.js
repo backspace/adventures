@@ -6,6 +6,7 @@ import { all } from 'rsvp';
 
 @classic
 export default class TeamsController extends Controller {
+  @service puzzles;
   @service store;
 
   @action

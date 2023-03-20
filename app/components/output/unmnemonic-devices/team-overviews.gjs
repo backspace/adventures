@@ -67,7 +67,7 @@ export default class TeamOverviewsComponent extends Component {
 
       doc.font(regular);
       doc.fontSize(mapTeamFontSize);
-      doc.text(team.name, 0, 0);
+      doc.text(`${team.name}: ${team.identifier}`, 0, 0);
 
       doc.fontSize(mapMarkerFontSize);
 

@@ -6,6 +6,8 @@ import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 import { all } from 'rsvp';
 
+import withSetting from '../helpers/with-setting';
+
 import page from '../pages/teams';
 
 module('Acceptance | teams', function (hooks) {
@@ -99,7 +101,43 @@ module('Acceptance | teams', function (hooks) {
     assert.equal(page.teams[0].notes, 'some notes');
     assert.equal(page.teams[0].riskAversion, '2');
 
+    assert.notOk(page.teams[0].identifier.isVisible);
+
     assert.equal(page.teams[1].name, 'jants');
     assert.equal(page.teams[1].riskAversion, '2');
+  });
+
+  test('teams can have identifiers for unmnemonic devices', async function (assert) {
+    await withSetting(this.owner, 'unmnemonic-devices');
+    await page.visit();
+
+    await page.enterJSON(`
+      {
+        "data": [
+          {
+            "type": "teams",
+            "id": 100,
+            "attributes": {
+              "name": "jorts",
+              "users": "jorts@example.com, jants@example.com",
+              "notes": "some notes",
+              "phones": [
+                {"number": "2041231234", "displaySize": "5.75"}
+              ],
+              "identifier": "i wont do what you tell me",
+              "riskAversion": 2
+            }
+          }
+        ]
+      }
+    `);
+
+    await page.save();
+
+    // TODO why is this needed now?
+    await waitUntil(() => page.teams.length == 1);
+
+    assert.equal(page.teams[0].name, 'jorts');
+    assert.equal(page.teams[0].identifier.text, 'i wont do what you tell me');
   });
 });

@@ -26,9 +26,9 @@
             </th>
           </tr>
         </thead>
-        <tbody>
-          {{#each this.model as |team|}}
-            <tr class='team'>
+        {{#each this.model as |team|}}
+          <tbody data-test-team>
+            <tr>
               <td class='name'>
                 {{team.name}}
               </td>
@@ -45,8 +45,16 @@
                 {{team.notes}}
               </td>
             </tr>
-          {{/each}}
-        </tbody>
+            {{#if this.puzzles.implementation.hasTeamIdentifiers}}
+              <tr data-test-identifier>
+                <td></td>
+                <td colspan='4'>
+                  {{team.identifier}}
+                </td>
+              </tr>
+            {{/if}}
+          </tbody>
+        {{/each}}
       </table>
     </div>
   </div>

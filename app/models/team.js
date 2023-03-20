@@ -18,6 +18,9 @@ export default class Team extends Model {
   @attr('string')
   notes;
 
+  @attr('string')
+  identifier;
+
   @attr()
   phones;
 

@@ -9,12 +9,16 @@ import PageObject, {
 export default PageObject.create({
   visit: visitable('/teams'),
 
-  teams: collection('.team', {
+  teams: collection('[data-test-team]', {
     name: text('.name'),
     users: text('.users'),
     notes: text('.notes'),
     riskAversion: text('.risk-aversion'),
     phones: text('.phones'),
+
+    identifier: {
+      scope: '[data-test-identifier]',
+    },
   }),
 
   enterJSON: fillable('textarea'),
