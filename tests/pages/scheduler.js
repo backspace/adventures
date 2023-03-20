@@ -165,6 +165,7 @@ export default PageObject.create({
       y: y(),
 
       meetingIndex: text('.meeting-index'),
+      waypointMeetingIndex: text('[data-test-waypoint-meeting-index]'),
 
       count: text('.count'),
 

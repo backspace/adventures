@@ -51,6 +51,30 @@ export default class MappableRegionComponent extends Component {
     }
   }
 
+  get waypointMeetingIndex() {
+    const regionId = this.args.region.id;
+    const highlightedTeam = this.args.highlightedTeam;
+
+    if (highlightedTeam) {
+      const waypointMeetingRegionIds = highlightedTeam
+        .hasMany('meetings')
+        .value()
+        .rejectBy('isNew')
+        .map((meeting) => meeting.belongsTo('waypoint').value())
+        .map((waypoint) => waypoint.belongsTo('region').value())
+        .mapBy('id');
+      const index = waypointMeetingRegionIds.indexOf(regionId);
+
+      if (index > -1) {
+        return index + 1;
+      } else {
+        return undefined;
+      }
+    } else {
+      return undefined;
+    }
+  }
+
   @action
   dragStart({ clientX, clientY, offsetX }) {
     if (!this.draggable) {

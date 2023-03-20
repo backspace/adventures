@@ -5,6 +5,8 @@ import Model from 'ember-pouch/model';
 
 export default Model.extend({
   destination: belongsTo('destination'),
+  waypoint: belongsTo('waypoint'),
+
   teams: hasMany('team', { async: false }),
 
   sortedTeams: sort('teams', 'teamSort'),

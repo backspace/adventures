@@ -19,5 +19,11 @@
     </div>
   {{/if}}
 
+  {{#if this.waypointMeetingIndex}}
+    <div class='waypoint-meeting-index' data-test-waypoint-meeting-index>
+      {{this.waypointMeetingIndex}}W
+    </div>
+  {{/if}}
+
   {{yield}}
 </div>

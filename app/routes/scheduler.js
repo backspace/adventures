@@ -13,7 +13,7 @@ export default class SchedulerRoute extends Route {
 
   model() {
     return hash({
-      regions: this.store
+      destinationRegions: this.store
         .findAll('region')
         .then((regions) => {
           return all(
@@ -31,6 +31,26 @@ export default class SchedulerRoute extends Route {
               return isPresent(destinations.filterBy('isAvailable'));
             })
             .map((regionAndDestinations) => regionAndDestinations.region)
+            .sortBy('name');
+        }),
+      waypointRegions: this.store
+        .findAll('region')
+        .then((regions) => {
+          return all(
+            regions.map((region) => {
+              return hash({
+                region: region,
+                waypoints: region.get('waypoints'),
+              });
+            })
+          );
+        })
+        .then((regionsAndWaypoints) => {
+          return regionsAndWaypoints
+            .filter(({ waypoints }) => {
+              return isPresent(waypoints.filterBy('isAvailable'));
+            })
+            .map((regionAndWaypoints) => regionAndWaypoints.region)
             .sortBy('name');
         }),
       destinations: this.store.findAll('destination'),

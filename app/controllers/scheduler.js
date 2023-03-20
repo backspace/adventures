@@ -16,6 +16,13 @@ export default class SchedulerController extends Controller {
   @service puzzles;
   @service store;
 
+  get allRegions() {
+    return [
+      ...this.model.destinationRegions,
+      ...this.model.waypointRegions,
+    ].uniqBy('id');
+  }
+
   @computed('meeting.teams.@each.meetings')
   get lastMeetingOffsets() {
     return (this.get('meeting.teams') || []).map(

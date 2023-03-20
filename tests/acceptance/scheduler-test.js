@@ -389,9 +389,17 @@ module('Acceptance | scheduler', function (hooks) {
     hooks.beforeEach(async function () {
       await withSetting(this.owner, 'unmnemonic-devices');
 
-      let edmontonCourt = store.createRecord('waypoint', {
-        region: portagePlace,
-        name: 'Edmonton Court',
+      let webb = store.createRecord('region', {
+        name: 'PP Megacomplex',
+        x: 200,
+        y: 200,
+      });
+
+      await webb.save();
+
+      let fourten = store.createRecord('waypoint', {
+        name: 'fourten',
+        region: webb,
         status: 'available',
       });
 
@@ -422,7 +430,7 @@ module('Acceptance | scheduler', function (hooks) {
       });
 
       await all([
-        edmontonCourt.save(),
+        fourten.save(),
         prairieTheatreExchange.save(),
         globeCinemas.save(),
         squeakyFloor.save(),
@@ -430,7 +438,29 @@ module('Acceptance | scheduler', function (hooks) {
         sculpture.save(),
       ]);
 
-      await all([portagePlace.save(), eatonCentre.save(), circus.save()]);
+      await all([
+        portagePlace.save(),
+        eatonCentre.save(),
+        circus.save(),
+        webb.save(),
+      ]);
+
+      await store
+        .createRecord('meeting', {
+          destination: edmontonCourt,
+          waypoint: fourten,
+          offset: 15,
+          teams: [superfans],
+        })
+        .save();
+
+      await all([
+        edmontonCourt.save(),
+        webb.save(),
+        fourten.save(),
+        superfans.save(),
+        mayors.save(),
+      ]);
     });
 
     test('available waypoints are grouped by region', async function (assert) {
@@ -440,18 +470,43 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.equal(
         page.waypointRegions.length,
-        2,
+        3,
         'only regions with available waypoints should be listed'
       );
-      const region = page.waypointRegions[1];
+      const region = page.waypointRegions[2];
 
-      assert.equal(region.name, 'Portage Place');
-      assert.equal(region.notes, 'Downtown revitalisation!');
+      assert.equal(region.name, 'PP Megacomplex');
 
-      assert.equal(region.waypoints.length, 2);
+      assert.equal(region.waypoints.length, 1);
       const waypoints = region.waypoints[0];
 
-      assert.equal(waypoints.name, 'Edmonton Court');
+      assert.equal(waypoints.name, 'fourten');
+    });
+
+    test('an existing meeting is shown in the teams and destination', async function (assert) {
+      await page.visit();
+
+      assert.equal(page.teams[0].count, '•');
+      assert.equal(page.teams[0].averageAwesomeness, '3');
+      assert.equal(page.teams[0].averageRisk, '2');
+
+      assert.equal(page.teams[1].count, '');
+    });
+
+    test('hovering over a team shows its destinations and waypoints ordered on the map, its meetings, and teams it’s met', async function (assert) {
+      await page.visit();
+
+      await page.teams[0].hover();
+
+      assert.equal(page.map.regions[1].meetingIndex, '1');
+      assert.equal(page.map.regions[2].waypointMeetingIndex, '1W');
+
+      assert.equal(page.teams[0].meetings.length, 1);
+      assert.equal(page.teams[0].meetings[0].index, '0');
+      assert.equal(page.teams[0].meetings[0].offset, '15');
+
+      assert.notOk(page.teams[1].isHighlighted);
+      assert.notOk(page.teams[2].isHighlighted);
     });
   });
 });

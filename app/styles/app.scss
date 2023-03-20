@@ -65,11 +65,17 @@ $region-length: 4rem;
       font-size: 33%;
     }
 
-    .meeting-index {
+    .meeting-index,
+    .waypoint-meeting-index {
       width: 100%;
       height: 100%;
       text-align: center;
       font-size: 500%;
+    }
+
+    .waypoint-meeting-index {
+      margin-top: 50%;
+      font-size: 250%;
     }
 
     &.highlighted {

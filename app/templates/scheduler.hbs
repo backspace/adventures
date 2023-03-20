@@ -1,23 +1,21 @@
 <div id='scheduler' class={{if this.puzzles.implementation.hasWaypoints 'has-waypoints'}}>
   <div class='map'>
     <img src={{this.model.map}} alt='map' />
-    {{#each this.model.regions as |region|}}
-      {{#if region.destinations}}
-        <MappableRegion
-          @region={{region}}
-          @draggable={{false}}
-          @isHighlighted={{eq this.highlightedRegion region}}
-          @highlightedTeam={{this.highlightedTeam}}
-          @sidebarRegionElement={{ref-to (concat 'region-' region.id)}}
-        >
-          <div class='count'>{{region.meetingCount}}</div>
-        </MappableRegion>
-      {{/if}}
+    {{#each this.allRegions as |region|}}
+      <MappableRegion
+        @region={{region}}
+        @draggable={{false}}
+        @isHighlighted={{eq this.highlightedRegion region}}
+        @highlightedTeam={{this.highlightedTeam}}
+        @sidebarRegionElement={{ref-to (concat 'region-' region.id)}}
+      >
+        <div class='count'>{{region.meetingCount}}</div>
+      </MappableRegion>
     {{/each}}
   </div>
 
   <ul class='regions' data-test-regions-destinations>
-    {{#each this.model.regions as |region|}}
+    {{#each this.model.destinationRegions as |region|}}
       {{#if region.destinations}}
         {{! template-lint-disable no-invalid-interactive }}
         <li
@@ -48,7 +46,7 @@
 
   {{#if this.puzzles.implementation.hasWaypoints}}
     <ul class='waypoint-regions' data-test-waypoint-regions>
-      {{#each this.model.regions as |region|}}
+      {{#each this.model.waypointRegions as |region|}}
         {{#if region.waypoints}}
           {{! template-lint-disable no-invalid-interactive }}
           <li
