@@ -123,8 +123,7 @@ export default PageObject.create({
     exit: triggerable('mouseleave'),
 
     waypoints: collection('[data-test-waypoint]', {
-      description: text('.description'),
-      accessibility: text('.accessibility'),
+      name: text('[data-test-name]'),
 
       meetingCountBorderWidth: propertyValue('border-top-width'),
 

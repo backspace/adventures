@@ -382,13 +382,12 @@ module('Acceptance | scheduler', function (hooks) {
 
       let edmontonCourt = store.createRecord('waypoint', {
         region: portagePlace,
-        description: 'Edmonton Court',
-        accessibility: 'Steps down to centre',
+        name: 'Edmonton Court',
         status: 'available',
       });
 
       let prairieTheatreExchange = store.createRecord('waypoint', {
-        description: 'Prairie Theatre Exchange',
+        name: 'Prairie Theatre Exchange',
         region: portagePlace,
         status: 'available',
       });
@@ -403,7 +402,7 @@ module('Acceptance | scheduler', function (hooks) {
       });
 
       let mrGreenjeans = store.createRecord('waypoint', {
-        description: 'Mr. Greenjeans',
+        name: 'Mr. Greenjeans',
         region: eatonCentre,
         status: 'available',
       });
@@ -443,8 +442,7 @@ module('Acceptance | scheduler', function (hooks) {
       assert.equal(region.waypoints.length, 2);
       const waypoints = region.waypoints[0];
 
-      assert.equal(waypoints.description, 'Edmonton Court');
-      assert.equal(waypoints.accessibility, 'Steps down to centre');
+      assert.equal(waypoints.name, 'Edmonton Court');
     });
   });
 });
