@@ -51,6 +51,8 @@ export default class TeamOverviewsComponent extends Component {
       if (!debug) {
         doc.save();
 
+        doc.translate(0, mapTeamFontSize);
+
         doc
           .rect(0, 0, pageWidth - mapClipLeft, pageHeight / 2 - mapClipTop)
           .clip();
@@ -70,6 +72,9 @@ export default class TeamOverviewsComponent extends Component {
       doc.text(`${team.name}: ${team.identifier}`, 0, 0);
 
       doc.fontSize(mapMarkerFontSize);
+
+      doc.save();
+      doc.translate(0, mapTeamFontSize);
 
       team
         .hasMany('meetings')
@@ -112,6 +117,8 @@ export default class TeamOverviewsComponent extends Component {
             }
           );
         });
+
+      doc.restore();
 
       doc.translate(0, pageHeight / 2);
 
