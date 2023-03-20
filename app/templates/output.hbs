@@ -6,31 +6,31 @@
     </label>
 
     {{#if (feature-flag 'clandestineRendezvous')}}
-      <EmbeddedRendezvousMaps
+      <Output::ClandestineRendezvous::Maps
         @teams={{this.model.teams}}
         @assets={{this.model.assets}}
         @debug={{this.debug}}
       />
-      <EmbeddedRendezvousCards
+      <Output::ClandestineRendezvous::Cards
         @teams={{this.model.teams}}
         @settings={{this.model.settings}}
         @assets={{this.model.assets}}
         @debug={{this.debug}}
       />
-      <EmbeddedRendezvousAnswers
+      <Output::ClandestineRendezvous::Answers
         @teams={{this.model.teams}}
         @meetings={{this.model.meetings}}
       />
     {{/if}}
 
     {{#if (feature-flag 'txtbeyond')}}
-      <EmbeddedTxtbeyondCards
+      <Output::Txtbeyond::Cards
         @teams={{this.model.teams}}
         @settings={{this.model.settings}}
         @assets={{this.model.assets}}
         @debug={{this.debug}}
       />
-      <EmbeddedTxtbeyondTransparencies
+      <Output::Txtbeyond::Transparencies
         @teams={{this.model.teams}}
         @settings={{this.model.settings}}
         @assets={{this.model.assets}}
@@ -39,7 +39,7 @@
     {{/if}}
 
     {{#if (feature-flag 'unmnemonicDevices')}}
-      <EmbeddedUnmnemonicDevicesOverlays
+      <Output::UnmnemonicDevices::Overlays
         @waypoints={{this.model.waypoints}}
         @assets={{this.model.assets}}
         @debug={{this.debug}}

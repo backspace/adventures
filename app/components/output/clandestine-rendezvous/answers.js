@@ -11,7 +11,7 @@ import PDFDocument from 'pdfkit';
 
 @classic
 @tagName('span')
-export default class EmbeddedRendezvousAnswers extends Component {
+export default class ClandestineRendezvousAnswersComponent extends Component {
   rendering = true;
 
   didInsertElement() {

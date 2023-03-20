@@ -8,7 +8,7 @@ import PDFDocument from 'pdfkit';
 const pageMargin = 0.5 * 72;
 const pagePadding = 0.25 * 72;
 
-export default class EmbeddedUnmnemonicDevicesOverlaysComponent extends Component {
+export default class UnmnemonicDevicesOverlaysComponent extends Component {
   @tracked src;
 
   @service('unmnemonic-devices') devices;

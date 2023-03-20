@@ -13,7 +13,7 @@ import PDFDocument from 'pdfkit';
 
 @classic
 @tagName('span')
-export default class EmbeddedTxtbeyondCards extends Component {
+export default class clandestineRendezvousCardsComponent extends Component {
   rendering = true;
 
   didInsertElement() {
@@ -140,16 +140,62 @@ export default class EmbeddedTxtbeyondCards extends Component {
 
         doc.translate(xOffset, yOffset);
 
-        // const operandColumnWidth = 0.2*72;
-        // const digitColumnWidth = 0.4*72;
-        //
-        // const labelGap = 0.1*72;
+        const operandColumnWidth = 0.2 * 72;
+        const digitColumnWidth = 0.4 * 72;
 
-        // const labelStart = operandColumnWidth + digitColumnWidth + labelGap;
-        // const labelWidth = cardWidth - cardMargin*2 - labelStart;
+        const labelGap = 0.1 * 72;
 
-        // const rowHeight = 0.75*72;
-        doc.text('something goes here');
+        const labelStart = operandColumnWidth + digitColumnWidth + labelGap;
+        const labelWidth = cardWidth - cardMargin * 2 - labelStart;
+
+        const rowHeight = 0.75 * 72;
+
+        const otherTeam = cardData.otherTeams[0];
+        const otherTeamDigit =
+          cardData.teamDigitsForAnswerAndGoalDigits.get(otherTeam);
+
+        const myDigit = cardData.teamDigitsForAnswerAndGoalDigits.get(
+          cardData.team
+        );
+
+        const rows = [{ label: '^ from other side' }];
+
+        const myRow = {
+          operand: myDigit > 0 ? '+' : '-',
+          digit: Math.abs(otherTeamDigit),
+          label: 'from you',
+        };
+        const otherTeamRow = {
+          operand: otherTeamDigit > 0 ? '+' : '-',
+          digit: debug ? Math.abs(myDigit) : undefined,
+          label: `from ${cardData.otherTeamName}`,
+        };
+
+        const sortedTeams = [cardData.team, otherTeam].sortBy('name');
+
+        if (sortedTeams[0] === cardData.team) {
+          rows.push(myRow);
+          rows.push(otherTeamRow);
+        } else {
+          rows.push(otherTeamRow);
+          rows.push(myRow);
+        }
+
+        rows.push({ operand: '=', label: `answer ${cardData.letter}` });
+
+        rows.forEach(({ operand, digit, label }, index) => {
+          const y = index * rowHeight;
+
+          if (operand) {
+            doc.text(operand, 0, y);
+          }
+
+          if (digit >= 0) {
+            doc.text(digit, operandColumnWidth, y);
+          }
+
+          doc.text(label, labelStart, y, { width: labelWidth });
+        });
 
         const cropMarkLength = 0.25 * 72;
 
@@ -243,17 +289,14 @@ export default class EmbeddedTxtbeyondCards extends Component {
   @service
   puzzles;
 
-  @service
-  txtbeyond;
-
-  _rendezvousCardDataForTeamMeeting(team, meeting) {
+  _rendezvousCardDataForTeamMeeting(team, meeting, index) {
     const destination = meeting.belongsTo('destination').value();
     const region = destination.belongsTo('region').value();
 
     const teams = meeting.hasMany('teams').value();
 
-    // const rendezvousLetter = String.fromCharCode(65 + index);
-    // const rendezvousTime = this._getRendezvousTimeForIndex(index);
+    const rendezvousLetter = String.fromCharCode(65 + index);
+    const rendezvousTime = this._getRendezvousTimeForIndex(index);
 
     const otherTeams = teams.rejectBy('id', team.id);
     const otherTeamName = otherTeams.mapBy('name');
@@ -261,32 +304,41 @@ export default class EmbeddedTxtbeyondCards extends Component {
     const answer = destination.get('answer');
     const mask = destination.get('mask');
 
-    // const goalLetter = this.get('goal')[index];
-    // const goalDigit = parseInt(goalLetter);
+    const goalLetter = this.goal[index];
+    const goalDigit = parseInt(goalLetter);
 
-    // const chosenBlankIndex = this.get('puzzles').chooseBlankIndex({answer, mask, goalDigit});
-    //
-    // const answerDigit = parseInt(answer[chosenBlankIndex]);
-    //
-    // const teamDigitsForAnswerAndGoalDigits = this.get('puzzles').teamDigitsForAnswerAndGoalDigits({teams, goalDigit, answerDigit});
+    const chosenBlankIndex = this.puzzles.implementation.chooseBlankIndex({
+      answer,
+      mask,
+      goalDigit,
+    });
+
+    const answerDigit = parseInt(answer[chosenBlankIndex]);
+
+    const teamDigitsForAnswerAndGoalDigits =
+      this.puzzles.implementation.teamDigitsForAnswerAndGoalDigits({
+        teams,
+        goalDigit,
+        answerDigit,
+      });
 
     return {
       team,
       teamName: team.get('name'),
+      letter: rendezvousLetter,
+      time: rendezvousTime,
       otherTeams,
       otherTeamName,
 
       regionName: region.get('name'),
-      destinationDescription: this.txtbeyond.maskedDescription(
-        destination.get('description')
-      ),
+      destinationDescription: destination.get('description'),
 
-      // goalLetter,
-      // goalDigit,
+      goalLetter,
+      goalDigit,
       answer,
       mask,
-      // chosenBlankIndex,
-      // teamDigitsForAnswerAndGoalDigits
+      chosenBlankIndex,
+      teamDigitsForAnswerAndGoalDigits,
     };
   }
 

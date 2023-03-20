@@ -16,7 +16,7 @@ const margin = 8;
 
 @classic
 @tagName('span')
-export default class EmbeddedTxtbeyondTransparencies extends Component {
+export default class TxtbeyondTransparenciesComponent extends Component {
   rendering = true;
 
   @service

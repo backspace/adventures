@@ -7,7 +7,7 @@ import PDFDocument from 'pdfkit';
 
 @classic
 @tagName('span')
-export default class EmbeddedRendezvousMaps extends Component {
+export default class clandestineRendezvousMapsComponent extends Component {
   rendering = true;
 
   didInsertElement() {
