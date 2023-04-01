@@ -1,30 +1,11 @@
-use axum::{
-    routing::{get, post},
-    http::StatusCode,
-    response::IntoResponse,
-    Json, Router};
-
-use std::net::SocketAddr;
-use serde::{Deserialize, Serialize};
+use axum::Server;
+use std::net::{SocketAddr, TcpListener};
+use unmnemonic_devices_vrs::app;
 
 #[tokio::main]
 async fn main() {
-
-    tracing_subscriber::fmt::init();
-    let app = Router::new()
-        .route("/", get(root));
-
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    tracing::info!("listening on {}", addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
-}
-
-async fn root() -> &'static str {
-    r#"<?xml version="1.0" encoding="UTF-8"?>
-    <Response>
-         <Say>Hello. Welcome to unmnemonic devices.</Say>
-    </Response>"#
+    let listener = TcpListener::bind("127.0.0.1:3000".parse::<SocketAddr>().unwrap()).unwrap();
+    Server::from_tcp(listener)
+        .expect("Failed to listen")
+        .serve(app().into_make_service());
 }
