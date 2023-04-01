@@ -1,4 +1,4 @@
-# AdventureRegistrations [![.github/workflows/ci.yml](https://github.com/backspace/adventure-registrations/actions/workflows/ci.yml/badge.svg)](https://github.com/backspace/adventure-registrations/actions/workflows/ci.yml)
+# AdventureRegistrations [![.github/workflows/ci-registrations.yml](https://github.com/backspace/adventure-registrations/actions/workflows/ci-registrations.yml/badge.svg)](https://github.com/backspace/adventure-registrations/actions/workflows/ci-registrations.yml)
 
 This site is to advertise and collect registrations for a specific adventure. If it goes well, I may generalise it for other instances of that adventure. The eventual dream is to make it adaptable enough to accommodate registrations for any adventure I organise.
 

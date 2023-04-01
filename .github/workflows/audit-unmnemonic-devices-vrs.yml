@@ -1,0 +1,17 @@
+name: unmnemonic devices security audit
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    paths:
+      - "unmnemonic_devices_vrs/**/Cargo.toml"
+      - "unmnemonic_devices_vrs/**/Cargo.lock"
+jobs:
+  security_audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: taiki-e/install-action@cargo-deny
+      - name: Scan for vulnerabilities
+        working-directory: unmnemonic_devices_vrs
+        run: cargo deny check advisories
