@@ -4,6 +4,8 @@ on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
+  SQLX_VERSION: 0.7.0-alpha.2
+  SQLX_FEATURES: "rustls,postgres"
 
 jobs:
   test:
@@ -66,22 +68,33 @@ jobs:
     name: Code coverage
     runs-on: ubuntu-latest
     services:
-      db:
-        image: postgres:latest
-        ports: ['5432:5432']
+      postgres:
+        image: postgres:14
         env:
           POSTGRES_PASSWORD: postgres
-    container:
-      image: xd009642/tarpaulin
-      options: --security-opt seccomp=unconfined
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up database
         run: psql -f unmnemonic_devices_vrs/tests/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install postgresql-client
+        run: sudo apt-get update && sudo apt-get install postgresql-client -y
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: sqlx-${{ env.SQLX_VERSION }}
+      - name: Install sqlx-cli
+        run:
+          cargo install sqlx-cli
+          --version=${{ env.SQLX_VERSION }}
+          --features ${{ env.SQLX_FEATURES }}
+          --no-default-features
+          --locked
       - name: Generate code coverage
         working-directory: unmnemonic_devices_vrs
-        run: |
-          cargo tarpaulin --verbose --workspace
+        run: cargo install cargo-tarpaulin && cargo tarpaulin --verbose --workspace
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost/postgres
