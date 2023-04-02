@@ -92,6 +92,68 @@ async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
     assert!(response.text().await.unwrap().contains("BEGUN"));
 }
 
+#[sqlx::test(fixtures("schema"))]
+async fn root_post_begun_redirects_to_root_begun(db: PgPool) {
+    let app_address = spawn_app(db).await.address;
+
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Failed to construct request client");
+
+    let body = "SpeechResult=begun";
+
+    let response = client
+        .post(&format!("{}/", &app_address))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_redirection());
+    assert_eq!(
+        response
+            .headers()
+            .get("Location")
+            .expect("Failed to extract Location header")
+            .to_str()
+            .unwrap(),
+        "/?begun"
+    );
+}
+
+#[sqlx::test(fixtures("schema"))]
+async fn root_post_else_redirects_to_root(db: PgPool) {
+    let app_address = spawn_app(db).await.address;
+
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Failed to construct request client");
+
+    let body = "SpeechResult=whatever";
+
+    let response = client
+        .post(&format!("{}/", &app_address))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_redirection());
+    assert_eq!(
+        response
+            .headers()
+            .get("Location")
+            .expect("Failed to extract Location header")
+            .to_str()
+            .unwrap(),
+        "/"
+    );
+}
+
 pub struct TestApp {
     pub address: String,
 }

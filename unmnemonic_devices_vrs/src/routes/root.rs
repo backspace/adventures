@@ -1,4 +1,4 @@
-use axum::{extract::Query, extract::State};
+use axum::{extract::Query, extract::State, response::Redirect, Form};
 use serde::Deserialize;
 
 use crate::AppState;
@@ -8,7 +8,7 @@ pub struct RootParams {
     begun: Option<String>,
 }
 
-pub async fn root(State(state): State<AppState>, params: Query<RootParams>) -> &'static str {
+pub async fn get_root(State(state): State<AppState>, params: Query<RootParams>) -> &'static str {
     let settings = sqlx::query!("SELECT begun FROM settings LIMIT 1")
         .fetch_one(&state.db)
         .await
@@ -21,5 +21,19 @@ pub async fn root(State(state): State<AppState>, params: Query<RootParams>) -> &
       <Response>
            <Say>Hello. Welcome to unmnemonic devices.</Say>
       </Response>"#
+    }
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct RootForm {
+    speech_result: String,
+}
+
+pub async fn post_root(Form(form): Form<RootForm>) -> Redirect {
+    if form.speech_result == "begun" {
+        Redirect::to("/?begun")
+    } else {
+        Redirect::to("/")
     }
 }

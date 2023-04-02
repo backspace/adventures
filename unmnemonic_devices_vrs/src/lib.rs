@@ -1,9 +1,12 @@
 pub mod routes;
 
-use axum::{routing::get, Router};
+use axum::{
+    routing::{get, post},
+    Router,
+};
 use sqlx::PgPool;
 
-use crate::routes::root;
+use crate::routes::*;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -13,5 +16,8 @@ pub struct AppState {
 pub async fn app(db: PgPool) -> Router {
     let shared_state = AppState { db };
 
-    Router::new().route("/", get(root)).with_state(shared_state)
+    Router::new()
+        .route("/", get(get_root))
+        .route("/", post(post_root))
+        .with_state(shared_state)
 }
