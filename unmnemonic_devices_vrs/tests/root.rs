@@ -63,6 +63,35 @@ async fn root_serves_welcome_when_begun(db: PgPool) {
     assert!(response.text().await.unwrap().contains("BEGUN"));
 }
 
+#[sqlx::test(fixtures("schema"))]
+async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
+    sqlx::query!(
+        r#"
+        INSERT INTO settings (id, inserted_at, updated_at)
+        VALUES ($1, $2, $3)
+        "#,
+        1,
+        Utc::now().naive_utc(),
+        Utc::now().naive_utc(),
+    )
+    .execute(&db)
+    .await
+    .expect("Failed to insert settings row");
+
+    let app_address = spawn_app(db).await.address;
+
+    let client = reqwest::Client::new();
+
+    let response = client
+        .get(&format!("{}/?begun", &app_address))
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert!(response.text().await.unwrap().contains("BEGUN"));
+}
+
 pub struct TestApp {
     pub address: String,
 }
