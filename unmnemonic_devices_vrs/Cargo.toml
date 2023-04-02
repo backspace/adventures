@@ -11,12 +11,19 @@ path = "src/main.rs"
 name = "unmnemonic_devices_vrs"
 
 [dependencies]
-axum = "0.5.11"
+axum = "0.6"
+chrono = "0.4.15"
 tokio = { version = "1.0", features = ["full"] }
 tracing = "0.1.35"
 tracing-subscriber = "0.3.14"
 serde = { version = "1.0.138", features = ["derive"] }
 serde_json = "1.0"
+sqlx = { version = "0.7.0-alpha.2", features = [
+  "chrono",
+  "migrate",
+  "postgres",
+  "runtime-tokio",
+] }
 
 [dev-dependencies]
 reqwest = "0.11"
