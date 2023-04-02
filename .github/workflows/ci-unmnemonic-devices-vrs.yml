@@ -9,13 +9,23 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:latest
+        ports: ['5432:5432']
+        env:
+          POSTGRES_PASSWORD: postgres
     steps:
       - uses: actions/checkout@v3
+      - name: Set up database
+        run: psql -f unmnemonic_devices_vrs/tests/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Run tests
         working-directory: unmnemonic_devices_vrs
         run: cargo test
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost/postgres
 
   fmt:
     name: Rustfmt
@@ -32,8 +42,16 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:latest
+        ports: ['5432:5432']
+        env:
+          POSTGRES_PASSWORD: postgres
     steps:
       - uses: actions/checkout@v3
+      - name: Set up database
+        run: psql -f unmnemonic_devices_vrs/tests/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
@@ -41,17 +59,29 @@ jobs:
       - name: Linting
         working-directory: unmnemonic_devices_vrs
         run: cargo clippy -- -D warnings
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost/postgres
 
   coverage:
     name: Code coverage
     runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:latest
+        ports: ['5432:5432']
+        env:
+          POSTGRES_PASSWORD: postgres
     container:
       image: xd009642/tarpaulin
       options: --security-opt seccomp=unconfined
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Set up database
+        run: psql -f unmnemonic_devices_vrs/tests/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
       - name: Generate code coverage
         working-directory: unmnemonic_devices_vrs
         run: |
           cargo tarpaulin --verbose --workspace
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost/postgres
