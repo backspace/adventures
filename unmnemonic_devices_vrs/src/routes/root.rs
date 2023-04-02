@@ -24,12 +24,20 @@ pub async fn get_root(
         .expect("Failed to fetch settings");
 
     let body = if settings.begun.unwrap() || params.begun.is_some() {
-        r#"BEGUN!!!"#
+        r#"
+        <Response>
+            <Say>Has it begun?</Say>
+        </Response>
+        "#
     } else {
-        r#"<?xml version="1.0" encoding="UTF-8"?>
-      <Response>
-           <Say>Hello. Welcome to unmnemonic devices.</Say>
-      </Response>"#
+        r#"
+        <Response>
+            <Gather input="speech" hints="begun, jortle, tortle">
+                <Say>Hello. Welcome to unmnemonic devices. Say something?</Say>
+            </Gather>
+            <Say>We didn't hear anything. Goodbye.</Say>
+        </Response>
+        "#
     };
 
     Response::builder()

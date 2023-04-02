@@ -60,7 +60,7 @@ async fn root_serves_welcome_when_begun(db: PgPool) {
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
-    assert!(response.text().await.unwrap().contains("BEGUN"));
+    assert!(response.text().await.unwrap().contains("Has it begun"));
 }
 
 #[sqlx::test(fixtures("schema"))]
@@ -89,7 +89,7 @@ async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
-    assert!(response.text().await.unwrap().contains("BEGUN"));
+    assert!(response.text().await.unwrap().contains("Has it begun"));
 }
 
 #[sqlx::test(fixtures("schema"))]
