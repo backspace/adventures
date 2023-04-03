@@ -16,9 +16,46 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: _sqlx_test; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA _sqlx_test;
+
+
+--
+-- Name: unmnemonic_devices; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA unmnemonic_devices;
+
+
+--
+-- Name: database_ids; Type: SEQUENCE; Schema: _sqlx_test; Owner: -
+--
+
+CREATE SEQUENCE _sqlx_test.database_ids
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: databases; Type: TABLE; Schema: _sqlx_test; Owner: -
+--
+
+CREATE TABLE _sqlx_test.databases (
+    db_name text NOT NULL,
+    test_path text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
 
 --
 -- Name: messages; Type: TABLE; Schema: public; Owner: -
@@ -65,40 +102,6 @@ CREATE TABLE public.schema_migrations (
     version bigint NOT NULL,
     inserted_at timestamp without time zone
 );
-
-
---
--- Name: settings; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.settings (
-    id bigint NOT NULL,
-    override text,
-    begun boolean DEFAULT false,
-    ending boolean DEFAULT false,
-    down boolean DEFAULT false,
-    inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL
-);
-
-
---
--- Name: settings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.settings_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.settings_id_seq OWNED BY public.settings.id;
 
 
 --
@@ -179,17 +182,44 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: settings; Type: TABLE; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE TABLE unmnemonic_devices.settings (
+    id bigint NOT NULL,
+    override text,
+    begun boolean DEFAULT false,
+    ending boolean DEFAULT false,
+    down boolean DEFAULT false,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: settings_id_seq; Type: SEQUENCE; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE SEQUENCE unmnemonic_devices.settings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: settings_id_seq; Type: SEQUENCE OWNED BY; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER SEQUENCE unmnemonic_devices.settings_id_seq OWNED BY unmnemonic_devices.settings.id;
+
+
+--
 -- Name: messages id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.messages ALTER COLUMN id SET DEFAULT nextval('public.messages_id_seq'::regclass);
-
-
---
--- Name: settings id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.settings ALTER COLUMN id SET DEFAULT nextval('public.settings_id_seq'::regclass);
 
 
 --
@@ -204,6 +234,21 @@ ALTER TABLE ONLY public.teams ALTER COLUMN id SET DEFAULT nextval('public.teams_
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Name: settings id; Type: DEFAULT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.settings ALTER COLUMN id SET DEFAULT nextval('unmnemonic_devices.settings_id_seq'::regclass);
+
+
+--
+-- Name: databases databases_pkey; Type: CONSTRAINT; Schema: _sqlx_test; Owner: -
+--
+
+ALTER TABLE ONLY _sqlx_test.databases
+    ADD CONSTRAINT databases_pkey PRIMARY KEY (db_name);
 
 
 --
@@ -223,14 +268,6 @@ ALTER TABLE ONLY public.schema_migrations
 
 
 --
--- Name: settings settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.settings
-    ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
-
-
---
 -- Name: teams teams_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -244,6 +281,21 @@ ALTER TABLE ONLY public.teams
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: settings settings_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.settings
+    ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: databases_created_at; Type: INDEX; Schema: _sqlx_test; Owner: -
+--
+
+CREATE INDEX databases_created_at ON _sqlx_test.databases USING btree (created_at);
 
 
 --
@@ -269,4 +321,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20160111030956);
 INSERT INTO public."schema_migrations" (version) VALUES (20160116213130);
 INSERT INTO public."schema_migrations" (version) VALUES (20160202232816);
 INSERT INTO public."schema_migrations" (version) VALUES (20160210161806);
-INSERT INTO public."schema_migrations" (version) VALUES (20230328234859);
+INSERT INTO public."schema_migrations" (version) VALUES (20230403015430);
+INSERT INTO public."schema_migrations" (version) VALUES (20230403015446);

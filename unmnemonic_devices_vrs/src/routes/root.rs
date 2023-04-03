@@ -18,7 +18,7 @@ pub async fn get_root(
     State(state): State<AppState>,
     params: Query<RootParams>,
 ) -> Response<Full<Bytes>> {
-    let settings = sqlx::query!("SELECT begun FROM settings LIMIT 1")
+    let settings = sqlx::query!("SELECT begun FROM unmnemonic_devices.settings LIMIT 1")
         .fetch_one(&state.db)
         .await
         .expect("Failed to fetch settings");

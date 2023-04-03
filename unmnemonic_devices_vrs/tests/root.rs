@@ -8,7 +8,7 @@ use unmnemonic_devices_vrs::app;
 async fn root_serves_prewelcome(db: PgPool) {
     sqlx::query!(
         r#"
-        INSERT INTO settings (id, inserted_at, updated_at)
+        INSERT INTO unmnemonic_devices.settings (id, inserted_at, updated_at)
         VALUES ($1, $2, $3)
         "#,
         1,
@@ -37,7 +37,7 @@ async fn root_serves_prewelcome(db: PgPool) {
 async fn root_serves_welcome_when_begun(db: PgPool) {
     sqlx::query!(
         r#"
-        INSERT INTO settings (id, begun, inserted_at, updated_at)
+        INSERT INTO unmnemonic_devices.settings (id, begun, inserted_at, updated_at)
         VALUES ($1, $2, $3, $4)
         "#,
         1,
@@ -67,7 +67,7 @@ async fn root_serves_welcome_when_begun(db: PgPool) {
 async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
     sqlx::query!(
         r#"
-        INSERT INTO settings (id, inserted_at, updated_at)
+        INSERT INTO unmnemonic_devices.settings (id, inserted_at, updated_at)
         VALUES ($1, $2, $3)
         "#,
         1,
