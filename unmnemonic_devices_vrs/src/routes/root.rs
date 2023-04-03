@@ -53,7 +53,7 @@ pub struct RootForm {
 }
 
 pub async fn post_root(Form(form): Form<RootForm>) -> Redirect {
-    if form.speech_result == "begun" {
+    if form.speech_result == "Begun." {
         Redirect::to("/?begun")
     } else {
         Redirect::to("/")

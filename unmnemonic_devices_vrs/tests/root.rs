@@ -101,7 +101,7 @@ async fn root_post_begun_redirects_to_root_begun(db: PgPool) {
         .build()
         .expect("Failed to construct request client");
 
-    let body = "SpeechResult=begun";
+    let body = "SpeechResult=Begun.";
 
     let response = client
         .post(&format!("{}/", &app_address))
