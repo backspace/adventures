@@ -10,12 +10,12 @@ defmodule AdventureRegistrations.Pages.Details do
   end
 
   def proposers do
-    find_all_elements(:css, ".proposers tr")
+    find_all_elements(:css, "[data-test-proposers]")
     |> Enum.map(&email_and_text_row(&1))
   end
 
   def mutuals do
-    find_all_elements(:css, ".mutuals tr")
+    find_all_elements(:css, "[data-test-mutuals]")
     |> Enum.map(fn row ->
       proposed_team_name_element = find_within_element(row, :css, ".proposed-team-name")
       risk_aversion_element = find_within_element(row, :css, ".risk-aversion")
@@ -38,17 +38,17 @@ defmodule AdventureRegistrations.Pages.Details do
   end
 
   def proposals_by_mutuals do
-    find_all_elements(:css, ".proposals-by-mutuals tr")
+    find_all_elements(:css, "[data-test-proposals-by-mutuals]")
     |> Enum.map(&email_and_text_row(&1))
   end
 
   def invalids do
-    find_all_elements(:css, ".invalids tr")
+    find_all_elements(:css, "[data-test-invalids]")
     |> Enum.map(&email_and_text_row(&1))
   end
 
   def proposees do
-    find_all_elements(:css, ".proposees tr")
+    find_all_elements(:css, "[data-test-proposees]")
     |> Enum.map(&email_and_text_row(&1))
   end
 
