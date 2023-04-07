@@ -1,6 +1,7 @@
 defmodule AdventureRegistrations.Integration.Questions do
   use AdventureRegistrationsWeb.ConnCase
   use AdventureRegistrations.SwooshHelper
+  use AdventureRegistrations.ClandestineRendezvous
 
   alias AdventureRegistrations.Pages.Home
   alias AdventureRegistrations.Pages.Nav

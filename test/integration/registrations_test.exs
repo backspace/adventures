@@ -2,6 +2,7 @@ defmodule AdventureRegistrations.Integration.Registrations do
   use AdventureRegistrationsWeb.ConnCase
   use AdventureRegistrations.SwooshHelper
   use AdventureRegistrations.ResetRegistrationClosed
+  use AdventureRegistrations.ClandestineRendezvous
 
   alias AdventureRegistrations.Pages.Register
   alias AdventureRegistrations.Pages.Login

@@ -17,7 +17,8 @@ module.exports = (env, options) => {
       ]
     },
     entry: {
-      'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js'])
+      'clandestine-rendezvous': glob.sync('./vendor/clandestine-rendezvous/**/*.js').concat(['./js/clandestine-rendezvous.js']),
+      'unmnemonic-devices': glob.sync('./vendor/unmnemonic-devices/**/*.js').concat(['./js/unmnemonic-devices.js']),
     },
     externals: [ 'foundation-sites' ],
     output: {
@@ -53,7 +54,7 @@ module.exports = (env, options) => {
       ]
     },
     plugins: [
-      new MiniCssExtractPlugin({ filename: '../css/app.css' }),
+      new MiniCssExtractPlugin({ filename: '../css/[name].css' }),
       new CopyWebpackPlugin([{ from: 'static/', to: '../' }])
     ]
     .concat(devMode ? [new HardSourceWebpackPlugin()] : [])

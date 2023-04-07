@@ -2,6 +2,7 @@ defmodule AdventureRegistrations.Integration.Teams do
   use AdventureRegistrationsWeb.ConnCase
   use AdventureRegistrations.SwooshHelper
   use AdventureRegistrations.ResetRequestConfirmation
+  use AdventureRegistrations.ClandestineRendezvous
 
   alias AdventureRegistrations.Pages.Login
   alias AdventureRegistrations.Pages.Nav

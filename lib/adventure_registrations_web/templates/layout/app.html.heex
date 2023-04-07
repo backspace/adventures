@@ -17,7 +17,7 @@
 
     <title>Clandestine Rendezvous</title>
     <link href='https://fonts.googleapis.com/css?family=Oswald:300,400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href={Routes.static_path(@conn, "/css/app.css")}>
+    <link rel="stylesheet" href={Routes.static_path(@conn, "/css/#{Application.get_env(:adventure_registrations, :adventure)}.css")}>
   </head>
 
   <body>
@@ -69,6 +69,6 @@
       <%= @inner_content %>
     </div>
 
-    <script src={Routes.static_path(@conn, "/js/app.js")}></script>
+    <script src={Routes.static_path(@conn, "/js/#{Application.get_env(:adventure_registrations, :adventure)}.js")}></script>
   </body>
 </html>

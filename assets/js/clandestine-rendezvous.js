@@ -1,4 +1,4 @@
-import '../css/app.scss';
+import '../css/clandestine-rendezvous.scss';
 
 // Brunch automatically concatenates all files in your
 // watched paths. Those paths can be configured at
@@ -23,7 +23,7 @@ import "phoenix_html"
 // import socket from "./socket"
 
 import './add-to-team-emails';
-import './camera';
-import './eye-tracking';
-import './moving-highlight';
-import './secret-image';
+import './clandestine-rendezvous/camera';
+import './clandestine-rendezvous/eye-tracking';
+import './clandestine-rendezvous/moving-highlight';
+import './clandestine-rendezvous/secret-image';

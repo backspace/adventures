@@ -1,5 +1,6 @@
 defmodule AdventureRegistrations.PageControllerTest do
   use AdventureRegistrationsWeb.ConnCase
+  use AdventureRegistrations.ClandestineRendezvous
 
   test "GET /" do
     conn = get(build_conn(), "/")
