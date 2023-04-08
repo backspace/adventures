@@ -10,6 +10,8 @@ defmodule AdventureRegistrations.Application do
     children = [
       # Start the Ecto repository
       AdventureRegistrations.Repo,
+      # Start the Telemetry supervisor
+      AdventureRegistrationsWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: AdventureRegistrations.PubSub},
       # Start the Endpoint (http/https)

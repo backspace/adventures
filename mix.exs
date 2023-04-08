@@ -47,6 +47,8 @@ defmodule AdventureRegistrations.Mixfile do
       {:ex_machina, "~> 2.7.0", only: :test},
       {:bcrypt_elixir, "~> 3.0"},
       {:swoosh, "~> 1.9"},
+      {:telemetry_metrics, "~> 0.6"},
+      {:telemetry_poller, "~> 1.0"},
       {:premailex, "~> 0.3.17"},
       {:jason, "~> 1.0"},
       {:ex_cldr, "~> 2.33"},
