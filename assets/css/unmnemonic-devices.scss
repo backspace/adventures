@@ -6,6 +6,10 @@ $body-font-color: white;
 
 $global-width: rem-calc(480) !default;
 
+$form-label-color: white;
+$helptext-color: white;
+$helptext-font-style: normal;
+
 @font-face {
     font-family: 'ud-body';
     src: url('/fonts/unmnemonic-devices/ud-body-regular.woff2') format('woff2'),

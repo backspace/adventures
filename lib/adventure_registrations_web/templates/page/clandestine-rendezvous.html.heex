@@ -62,34 +62,7 @@
 <div class='row card'>
   <div class='small-12 columns'>
     <h4 class='moving-highlight' id='questions'><i class='fa fa-white fa-question-circle'></i> Questions</h4>
-
-    <p><strong>This is not the registration form, that’s <%= link "here", to: Routes.registration_path(@conn, :new) %>.</strong></p>
-
-    <%= form_for @conn, Routes.page_path(@conn, :questions), [as: :question], fn f -> %>
-      <div class='form-group'>
-        <%= label f, :name %>
-        <%= text_input f, :name, class: "form-control" %>
-      </div>
-
-      <div class='form-group'>
-        <%= label f, :email %>
-        <%= text_input f, :email, class: "form-control" %>
-      </div>
-
-      <div class='form-group'>
-        <%= label f, :subject %>
-        <%= text_input f, :subject, class: "form-control" %>
-      </div>
-
-      <div class='form-group'>
-        <%= label f, :question %>
-        <%= textarea f, :question, class: "form-control" %>
-      </div>
-
-      <div class="form-group">
-        <%= submit "Submit", class: "button" %>
-      </div>
-    <% end %>
+    <%= render AdventureRegistrationsWeb.SharedView, "question.html", conn: @conn %>
   </div>
 </div>
 

@@ -66,3 +66,17 @@ defmodule AdventureRegistrations.ClandestineRendezvous do
     on_exit(fn -> Application.put_env(app, key, previous_value) end)
   end
 end
+
+defmodule AdventureRegistrations.UnmnemonicDevices do
+  use ExUnit.CaseTemplate
+
+  setup do
+    put_application_env_for_test(:adventure_registrations, :adventure, "unmnemonic-devices")
+  end
+
+  defp put_application_env_for_test(app, key, value) do
+    previous_value = Application.get_env(app, key)
+    Application.put_env(app, key, value)
+    on_exit(fn -> Application.put_env(app, key, previous_value) end)
+  end
+end
