@@ -2,8 +2,9 @@
 
 $header-font-family: 'ud-body';
 $body-font-family: 'ud-body';
+$body-font-color: white;
 
-$global-width: rem-calc(640) !default;
+$global-width: rem-calc(480) !default;
 
 @font-face {
     font-family: 'ud-body';
@@ -54,12 +55,17 @@ $global-width: rem-calc(640) !default;
 @include foundation-global-styles;
 @include foundation-everything;
 
+body {
+  background: black;
+}
+
 .hero .columns {
   position: relative;
 }
 
 h1 {
   font-family: 'ud-script';
+  font-size: 2.1rem;
   position: absolute;
   bottom: 0;
   margin-left: 1.5rem;
