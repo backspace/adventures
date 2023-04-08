@@ -28,7 +28,6 @@ config :adventure_registrations, AdventureRegistrations.Mailer,
   api_key: System.get_env("MAILGUN_KEY")
 
 config :adventure_registrations,
-  adventure: System.get_env("ADVENTURE"),
   request_confirmation: false,
   registration_closed: false
 

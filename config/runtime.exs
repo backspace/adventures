@@ -63,6 +63,15 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  adventure =
+    System.get_env("ADVENTURE") ||
+      raise """
+      environment variable ADVENTURE is missing.
+      """
+
+  config :adventure_registrations,
+    adventure: adventure
+
   # ## Configuring the mailer
   #
   # In production you need to configure the mailer to use a different adapter.
