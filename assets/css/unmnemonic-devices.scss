@@ -3,6 +3,8 @@
 $header-font-family: 'ud-body';
 $body-font-family: 'ud-body';
 
+$global-width: rem-calc(640) !default;
+
 @font-face {
     font-family: 'ud-body';
     src: url('/fonts/unmnemonic-devices/ud-body-regular.woff2') format('woff2'),
@@ -52,6 +54,22 @@ $body-font-family: 'ud-body';
 @include foundation-global-styles;
 @include foundation-everything;
 
+.hero .columns {
+  position: relative;
+}
+
 h1 {
   font-family: 'ud-script';
+  position: absolute;
+  bottom: 0;
+  margin-left: 1.5rem;
+  color: white;
+  text-shadow: 2px 2px 1px black;
+
+  sup {
+    font-family: 'ud-body';
+    font-size: 20%;
+    top: -1em;
+    left: -1em;
+  }
 }
