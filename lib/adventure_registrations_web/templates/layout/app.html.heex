@@ -69,6 +69,17 @@
       <%= @inner_content %>
     </div>
 
+    <!-- Should each adventure have a layout? -->
+    <%= if Application.get_env(:adventure_registrations, :adventure) == "unmnemonic-devices" do %>
+      <div id='pi'>&pi;</div>
+      <dialog id='pi-dialog'>
+        <img src='/images/unmnemonic-devices/thenet.gif'>
+        <form method='dialog'>
+          <button value='default'>okay</button>
+        </form>
+      </dialog>
+    <% end %>
+
     <script src={Routes.static_path(@conn, "/js/#{Application.get_env(:adventure_registrations, :adventure)}.js")}></script>
   </body>
 </html>
