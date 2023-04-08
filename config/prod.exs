@@ -24,9 +24,6 @@ config :adventure_registrations, AdventureRegistrations.Repo,
   url: System.get_env("DATABASE_URL"),
   pool_size: 15
 
-config :adventure_registrations, AdventureRegistrations.Mailer,
-  api_key: System.get_env("MAILGUN_KEY")
-
 config :adventure_registrations,
   request_confirmation: false,
   registration_closed: false
