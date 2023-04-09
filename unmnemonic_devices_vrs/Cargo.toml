@@ -12,7 +12,7 @@ name = "unmnemonic_devices_vrs"
 
 [dependencies]
 axum = "0.6"
-chrono = "0.4.15"
+chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 tokio = { version = "1.0", features = ["full"] }
 tracing = "0.1.35"
 tracing-subscriber = "0.3.14"
