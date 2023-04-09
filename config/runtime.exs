@@ -20,14 +20,16 @@ if System.get_env("PHX_SERVER") do
   config :adventure_registrations, AdventureRegistrationsWeb.Endpoint, server: true
 end
 
-adventure =
-  System.get_env("ADVENTURE") ||
-    raise """
-    environment variable ADVENTURE is missing.
-    """
+if config_env() != :test do
+  adventure =
+    System.get_env("ADVENTURE") ||
+      raise """
+      environment variable ADVENTURE is missing.
+      """
 
-config :adventure_registrations,
-  adventure: adventure
+  config :adventure_registrations,
+    adventure: adventure
+end
 
 if config_env() == :prod do
   database_url =

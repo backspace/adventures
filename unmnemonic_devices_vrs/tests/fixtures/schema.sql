@@ -189,6 +189,7 @@ CREATE TABLE unmnemonic_devices.settings (
     id bigint NOT NULL,
     override text,
     begun boolean DEFAULT false,
+    compromised boolean DEFAULT false,
     ending boolean DEFAULT false,
     down boolean DEFAULT false,
     inserted_at timestamp(0) without time zone NOT NULL,

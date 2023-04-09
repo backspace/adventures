@@ -5,6 +5,7 @@ defmodule AdventureRegistrations.Repo.Migrations.AddUnmnemonicDevicesSettingsTab
     create table("settings", prefix: "unmnemonic_devices") do
       add :override, :text
       add :begun, :boolean, default: false
+      add :compromised, :boolean, default: false
       add :ending, :boolean, default: false
       add :down, :boolean, default: false
 

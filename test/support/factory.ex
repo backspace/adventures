@@ -44,4 +44,8 @@ defmodule AdventureRegistrations.Factory do
       }
     )
   end
+
+  def unmnemonic_devices_settings_factory do
+    %AdventureRegistrationsWeb.UnmnemonicDevices.Settings{}
+  end
 end

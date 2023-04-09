@@ -20,4 +20,8 @@ defmodule AdventureRegistrations.Pages.Home do
   def submit_question do
     click({:class, "button"})
   end
+
+  def pi_present? do
+    element?(:id, "pi")
+  end
 end
