@@ -55,6 +55,6 @@ config :adventure_registrations,
 config :mix_test_watch,
   exclude: [~r/priv\/repo\/migrations\/.*/]
 
-if File.exists?("dev.secret.exs") do
+if File.exists?("config/dev.secret.exs") do
   import_config "dev.secret.exs"
 end
