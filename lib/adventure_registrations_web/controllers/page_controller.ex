@@ -3,16 +3,7 @@ defmodule AdventureRegistrationsWeb.PageController do
 
   def index(conn, _params) do
     adventure_name = Application.get_env(:adventure_registrations, :adventure);
-
-    settings = case adventure_name do
-      "unmnemonic-devices" ->
-        (Ecto.Query.first(AdventureRegistrationsWeb.UnmnemonicDevices.Settings) |> Repo.one()) || %AdventureRegistrationsWeb.UnmnemonicDevices.Settings{}
-
-      _ ->
-        %AdventureRegistrationsWeb.UnmnemonicDevices.Settings{}
-    end
-
-    render(conn, "#{adventure_name}.html", settings: settings)
+    render(conn, "#{adventure_name}.html")
   end
 
   def questions(conn, %{"question" => question_params}) do

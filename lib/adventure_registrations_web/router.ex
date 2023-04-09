@@ -8,6 +8,7 @@ defmodule AdventureRegistrationsWeb.Router do
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
     plug(AdventureRegistrationsWeb.Plugs.CurrentUser)
+    plug(AdventureRegistrationsWeb.Plugs.Settings)
   end
 
   pipeline :api do

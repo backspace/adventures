@@ -71,7 +71,7 @@
 
     <!-- Should each adventure have a layout? -->
     <%= if Application.get_env(:adventure_registrations, :adventure) == "unmnemonic-devices" do %>
-      <%= if @settings.compromised do %>
+      <%= if @conn.assigns[:settings].compromised do %>
         <div id='pi'>&pi;</div>
         <dialog id='pi-dialog'>
           <img src='/images/unmnemonic-devices/thenet.gif'>
