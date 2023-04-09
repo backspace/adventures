@@ -1,6 +1,6 @@
 <div class='row card'>
   <div class='small-12 columns'>
-    <p>You can change these details as much as you want up until the day before the initiation!</p>
+    <p><%= phrase("change_deadline") %></p>
   </div>
 </div>
 
@@ -14,18 +14,18 @@
           <legend>Are you attending?</legend>
           <%= radio_button f, :attending, true, class: "attending-true", id: "attending-true" %> <label for='attending-true'>Yes</label>
           <%= radio_button f, :attending, false, class: "attending-false", id: "attending-false" %> <label for='attending-false'>No</label>
-          <p class='help-text' id='attending-help'>Please confirm that you are attending Clandestine Rendezvous</p>
+          <p class='help-text' id='attending-help'>Please confirm that you are attending <%= phrase("title") %></p>
         </div>
       <% end %>
       <div class="form-group">
-        <%= label f, :team_emails, "Partner email" %>
+        <%= label f, :team_emails, phrase("team_emails_label") %>
         <%= text_input f, :team_emails, class: "form-control", "aria-describedby": "team-emails-help" %>
-        <p class='help-text' id='team-emails-help'>If you want to participate with a friend, enter their email address here</p>
+        <p class='help-text' id='team-emails-help'><%= phrase("team_emails_help") %></p>
       </div>
       <div class="form-group">
         <%= label f, :proposed_team_name %>
         <%= text_input f, :proposed_team_name, class: "form-control", "aria-describedby": "team-name-help" %>
-        <p class='help-text' id='team-name-help'>Choose a name for other teams to identify you</p>
+        <p class='help-text' id='team-name-help'><%= phrase("team_name_help") %></p>
       </div>
       <div class='form-group'>
         <legend>Risk aversion</legend>
@@ -57,12 +57,12 @@
       <div class='form-group'>
         <%= label f, :accessibility %>
         <%= textarea f, :accessibility, class: "form-control", "aria-describedby": "accessibility-help" %>
-        <p class='help-text' id='accessibility-help'>Do you have any accessibility needs we should know about when scheduling your appointments? We will communicate further with you if clarifications are needed.</p>
+        <p class='help-text' id='accessibility-help'><%= phrase("accessibility_help") %></p>
       </div>
       <div class='form-group'>
         <%= label f, :source %>
         <%= textarea f, :source, class: "form-control", "aria-describedby": "source-help" %>
-        <p class='help-text' id='source-help'>How did you hear about us, supersecretly?</p>
+        <p class='help-text' id='source-help'><%= phrase("source_help") %></p>
       </div>
       <div class='form-group'>
         <%= label f, :comments %>

@@ -20,6 +20,15 @@ if System.get_env("PHX_SERVER") do
   config :adventure_registrations, AdventureRegistrationsWeb.Endpoint, server: true
 end
 
+adventure =
+  System.get_env("ADVENTURE") ||
+    raise """
+    environment variable ADVENTURE is missing.
+    """
+
+config :adventure_registrations,
+  adventure: adventure
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
@@ -62,15 +71,6 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base
-
-  adventure =
-    System.get_env("ADVENTURE") ||
-      raise """
-      environment variable ADVENTURE is missing.
-      """
-
-  config :adventure_registrations,
-    adventure: adventure
 
   # ## Configuring the mailer
   #

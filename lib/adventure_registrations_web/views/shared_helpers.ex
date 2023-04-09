@@ -1,4 +1,16 @@
 defmodule AdventureRegistrationsWeb.SharedHelpers do
+  def adventure do
+    Application.get_env(:adventure_registrations, :adventure)
+  end
+
+  def phrase(id) do
+    Gettext.dgettext(
+      AdventureRegistrationsWeb.Gettext,
+      adventure(),
+      id
+    )
+  end
+
   def full_date do
     formatted_start_time "%A, %B %-d, %Y"
   end

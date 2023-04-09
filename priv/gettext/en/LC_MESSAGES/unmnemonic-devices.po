@@ -1,0 +1,23 @@
+msgid "title"
+msgstr "unmnemonic devices"
+
+msgid "description"
+msgstr "Attend a technical demonstration of our groundbreaking new technology to help you block out the nightmare present"
+
+msgid "change_deadline"
+msgstr "You can change these details as much as you want up until the day before the demonstration."
+
+msgid "team_emails_label"
+msgstr "Partner emails"
+
+msgid "team_emails_help"
+msgstr "To journey with friends, enter their email addresses here separated by spaces. A maximum of three people per group is recommended."
+
+msgid "team_name_help"
+msgstr " "
+
+msgid "accessibility_help"
+msgstr "Do you have any accessibility needs we should know about when researching your cathartic journey? We will communicate further with you if clarifications are needed."
+
+msgid "source_help"
+msgstr "How did you hear about our revolutionary product?"

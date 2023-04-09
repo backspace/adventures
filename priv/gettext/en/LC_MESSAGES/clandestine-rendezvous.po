@@ -1,0 +1,23 @@
+msgid "title"
+msgstr "Clandestine Rendezvous"
+
+msgid "description"
+msgstr "You are a member of a secret society with a mission of the utmost importance. You will have encounters with other members around an undisclosed location where you will obtain information to get closer to fulfilling your mission."
+
+msgid "change_deadline"
+msgstr "You can change these details as much as you want up until the day before the initiation!"
+
+msgid "team_emails_label"
+msgstr "Partner email"
+
+msgid "team_emails_help"
+msgstr "If you want to participate with a friend, enter their email address here"
+
+msgid "team_name_help"
+msgstr "Choose a name for other teams to identify you"
+
+msgid "accessibility_help"
+msgstr "Do you have any accessibility needs we should know about when scheduling your appointments? We will communicate further with you if clarifications are needed."
+
+msgid "source_help"
+msgstr "How did you hear about us, supersecretly?"
