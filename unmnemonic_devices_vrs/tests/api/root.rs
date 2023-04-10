@@ -28,6 +28,10 @@ async fn root_serves_prewelcome(db: PgPool) {
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
+    assert_eq!(
+        response.headers().get("Content-Type").unwrap(),
+        "application/xml"
+    );
     assert!(response.text().await.unwrap().contains("unmnemonic"));
 }
 
@@ -58,6 +62,10 @@ async fn root_serves_welcome_when_begun(db: PgPool) {
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
+    assert_eq!(
+        response.headers().get("Content-Type").unwrap(),
+        "application/xml"
+    );
     assert!(response.text().await.unwrap().contains("Has it begun"));
 }
 
@@ -87,6 +95,10 @@ async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
+    assert_eq!(
+        response.headers().get("Content-Type").unwrap(),
+        "application/xml"
+    );
     assert!(response.text().await.unwrap().contains("Has it begun"));
 }
 
