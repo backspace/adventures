@@ -1,3 +1,4 @@
+pub mod render_xml;
 pub mod routes;
 
 use axum::{
