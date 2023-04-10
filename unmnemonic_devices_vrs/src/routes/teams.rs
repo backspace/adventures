@@ -1,9 +1,10 @@
 use axum::{
     extract::{Path, State},
-    response::IntoResponse,
+    response::{IntoResponse, Redirect},
+    Form,
 };
 use axum_template::Key;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{render_xml::RenderXml, AppState};
 
@@ -26,6 +27,31 @@ pub async fn get_teams(Key(key): Key, State(state): State<AppState>) -> impl Int
         .expect("Failed to fetch team");
 
     RenderXml(key, state.engine, Teams { teams })
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct TeamsForm {
+    speech_result: String,
+}
+
+pub async fn post_teams(
+    State(state): State<AppState>,
+    Form(form): Form<TeamsForm>,
+) -> impl IntoResponse {
+    let mut transformed_voicepass = form.speech_result.to_lowercase();
+    transformed_voicepass.pop();
+
+    let team = sqlx::query_as::<_, Team>("SELECT * FROM teams WHERE voicepass = $1")
+        .bind(transformed_voicepass)
+        .fetch_one(&state.db)
+        .await;
+
+    if team.is_ok() {
+        Redirect::to(&format!("/teams/{}", team.unwrap().id)).into_response()
+    } else {
+        RenderXml("/teams/not-found", state.engine, ()).into_response()
+    }
 }
 
 pub async fn get_team(
