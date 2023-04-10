@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.5
+-- Dumped from database version 13.6
 -- Dumped by pg_dump version 13.4
 
 SET statement_timeout = 0;
@@ -115,7 +115,8 @@ CREATE TABLE public.teams (
     notes text,
     user_ids integer[] DEFAULT ARRAY[]::integer[],
     inserted_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    voicepass character varying(255)
 );
 
 
@@ -324,3 +325,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20160202232816);
 INSERT INTO public."schema_migrations" (version) VALUES (20160210161806);
 INSERT INTO public."schema_migrations" (version) VALUES (20230403015430);
 INSERT INTO public."schema_migrations" (version) VALUES (20230403015446);
+INSERT INTO public."schema_migrations" (version) VALUES (20230410042355);

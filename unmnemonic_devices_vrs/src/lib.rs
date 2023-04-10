@@ -32,6 +32,7 @@ pub async fn app(db: PgPool) -> Router {
     Router::new()
         .route("/", get(get_root))
         .route("/", post(post_root))
+        .route("/teams", get(get_teams))
         .route("/teams/:id", get(get_team))
         .with_state(shared_state)
 }
