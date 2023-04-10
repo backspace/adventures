@@ -39,8 +39,10 @@ pub async fn post_teams(
     State(state): State<AppState>,
     Form(form): Form<TeamsForm>,
 ) -> impl IntoResponse {
-    let mut transformed_voicepass = form.speech_result.to_lowercase();
-    transformed_voicepass.pop();
+    let transformed_voicepass = form
+        .speech_result
+        .to_lowercase()
+        .replace(&['?', '.', ','][..], "");
 
     let team = sqlx::query_as::<_, Team>("SELECT * FROM teams WHERE voicepass = $1")
         .bind(transformed_voicepass)

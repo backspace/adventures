@@ -72,7 +72,8 @@ async fn teams_post_redirects_to_found_voicepass_team(db: PgPool) {
         .build()
         .expect("Failed to construct request client");
 
-    let body = "SpeechResult=This is another voicepass.";
+    // Twilio editorialises punctuation and always capitalises.
+    let body = "SpeechResult=This is another, voicepass?";
 
     let response = client
         .post(&format!("{}/teams", &app_address))
