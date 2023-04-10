@@ -14,6 +14,10 @@ async fn main() {
 
     println!("unmnemonic devices VRS listening on {}", listener_address);
 
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .init();
+
     Server::from_tcp(listener)
         .expect("Failed to listen")
         .serve(app(db).await.into_make_service())
