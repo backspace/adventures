@@ -101,6 +101,11 @@ table, thead {
   color: black;
 }
 
+summary {
+  display: list-item;
+  cursor: pointer;
+}
+
 .row.highlight {
   background: #333;
   margin: 1rem auto;
