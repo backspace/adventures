@@ -29,9 +29,6 @@ async fn team_show_names_team(db: PgPool) {
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
-    assert_eq!(
-        response.headers().get("Content-Type").unwrap(),
-        "application/xml"
-    );
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
     assert!(response.text().await.unwrap().contains("jortle"));
 }
