@@ -45,10 +45,15 @@ where
         let RenderXml(key, engine, data) = self;
 
         // handlebars stores template paths with no leading slash but axum-template keys have one
-        let mut key_with_no_leading_slash = String::from(key.as_ref());
-        key_with_no_leading_slash.remove(0);
+        let mut adapted_key = String::from(key.as_ref());
+        adapted_key.remove(0);
 
-        let result = engine.render(key_with_no_leading_slash.as_ref(), data);
+        // templates/.hbs doesn’t result in a key match
+        if adapted_key.is_empty() {
+            adapted_key = "root".to_string();
+        }
+
+        let result = engine.render(adapted_key.as_ref(), data);
 
         match result {
             Ok(x) => Xml(x).into_response(),

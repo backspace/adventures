@@ -1,49 +1,41 @@
 use axum::{
-    body::{Bytes, Full},
     extract::Query,
     extract::State,
-    response::{Redirect, Response},
+    response::{IntoResponse, Redirect},
     Form,
 };
-use serde::Deserialize;
+use axum_template::Key;
+use serde::{Deserialize, Serialize};
 
-use crate::AppState;
+use crate::{render_xml::RenderXml, AppState};
 
 #[derive(Deserialize)]
 pub struct RootParams {
     begun: Option<String>,
 }
 
+#[derive(Serialize)]
+struct Settings {
+    begun: bool,
+}
+
 pub async fn get_root(
+    Key(key): Key,
     State(state): State<AppState>,
     params: Query<RootParams>,
-) -> Response<Full<Bytes>> {
+) -> impl IntoResponse {
     let settings = sqlx::query!("SELECT begun FROM unmnemonic_devices.settings LIMIT 1")
         .fetch_one(&state.db)
         .await
         .expect("Failed to fetch settings");
 
-    let body = if settings.begun.unwrap() || params.begun.is_some() {
-        r#"
-        <Response>
-            <Say>Has it begun?</Say>
-        </Response>
-        "#
-    } else {
-        r#"
-        <Response>
-            <Gather input="speech" hints="begun, jortle, tortle">
-                <Say>Hello. Welcome to unmnemonic devices. Say something?</Say>
-            </Gather>
-            <Say>We didn't hear anything. Goodbye.</Say>
-        </Response>
-        "#
-    };
-
-    Response::builder()
-        .header("content-type", "application/xml")
-        .body(Full::from(body))
-        .unwrap()
+    RenderXml(
+        key,
+        state.engine,
+        Settings {
+            begun: settings.begun.unwrap() || params.begun.is_some(),
+        },
+    )
 }
 
 #[derive(Deserialize)]
