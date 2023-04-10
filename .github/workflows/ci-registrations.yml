@@ -24,10 +24,11 @@ jobs:
         id: mix-cache
         with:
           path: |
-            deps
-            _build
+            registrations/deps
+            registrations/_build
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
       - name: Install dependencies
+        working-directory: registrations
         if: steps.mix-cache.outputs.cache-hit != 'true'
         run: |
           mix local.rebar --force
@@ -66,26 +67,30 @@ jobs:
         id: mix-cache
         with:
           path: |
-            deps
-            _build
+            registrations/deps
+            registrations/_build
           key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
       - uses: actions/setup-node@v3
         with:
-          node-version-file: 'assets/package.json'
+          node-version-file: 'registrations/assets/package.json'
           cache: 'npm'
-          cache-dependency-path: 'assets/package-lock.json'
+          cache-dependency-path: 'registrations/assets/package-lock.json'
       - run: npm install -g npm@6.14.18
+        working-directory: registrations
       - run: npm install --prefix assets
+        working-directory: registrations
       - run: npm run deploy --prefix assets
+        working-directory: registrations
       - uses: nanasess/setup-chromedriver@v1
       - run: |
           export DISPLAY=:99
           chromedriver &
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
       - run: mix test
+        working-directory: registrations
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           check_name: "test results"
-          files: _build/test/lib/adventure_registrations/test-junit-report.xml
+          files: registrations/_build/test/lib/adventure_registrations/test-junit-report.xml
