@@ -1,4 +1,5 @@
 use crate::helpers::spawn_app;
+use select::{document::Document, predicate::Name};
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
@@ -16,8 +17,18 @@ async fn teams_show_gathers_team_voicepasses(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert_that(&response.text().await.unwrap())
-        .contains("hints=\"a voicepass, this is another voicepass, \"");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+
+    assert_that(
+        &document
+            .find(Name("gather"))
+            .next()
+            .unwrap()
+            .attr("hints")
+            .unwrap(),
+    )
+    .contains("a voicepass, this is another voicepass, ");
 }
 
 #[sqlx::test(fixtures("schema", "teams"))]
@@ -73,8 +84,12 @@ async fn teams_post_renders_not_found_when_no_voicepass_matches(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert_that(&response.text().await.unwrap())
-        .contains("<Redirect method=\"GET\">/teams</Redirect>");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+    let redirect = document.find(Name("redirect")).next().unwrap();
+
+    assert_that(&redirect.text()).contains("/teams");
+    assert_eq!(redirect.attr("method").unwrap(), "GET");
 }
 
 #[sqlx::test(fixtures("schema", "teams"))]
@@ -94,5 +109,9 @@ async fn team_show_names_team(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert_that(&response.text().await.unwrap()).contains("jortle");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+    let say = document.find(Name("say")).next().unwrap();
+
+    assert_that(&say.text()).contains("jortles");
 }
