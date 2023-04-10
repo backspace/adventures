@@ -14,7 +14,7 @@ name = "unmnemonic_devices_vrs"
 axum = "0.6"
 axum-template = { version = "0.15", features = ["handlebars"] }
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
-handlebars = "4"
+handlebars = { version = "4", features = ["dir_source"] }
 http = "0.2.9"
 mime = "0.3.16"
 tokio = { version = "1.0", features = ["full"] }

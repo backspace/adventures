@@ -21,11 +21,8 @@ pub struct AppState {
 
 pub async fn app(db: PgPool) -> Router {
     let mut hbs = Handlebars::new();
-    hbs.register_template_string(
-        "/teams/:id",
-        "<Response><Say>Welcome, team {{name}}</Say></Response>",
-    )
-    .unwrap();
+    hbs.register_templates_directory(".hbs", "src/templates")
+        .expect("Failed to register templates directory");
 
     let shared_state = AppState {
         db,

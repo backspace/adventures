@@ -44,7 +44,11 @@ where
     fn into_response(self) -> axum::response::Response {
         let RenderXml(key, engine, data) = self;
 
-        let result = engine.render(key.as_ref(), data);
+        // handlebars stores template paths with no leading slash but axum-template keys have one
+        let mut key_with_no_leading_slash = String::from(key.as_ref());
+        key_with_no_leading_slash.remove(0);
+
+        let result = engine.render(key_with_no_leading_slash.as_ref(), data);
 
         match result {
             Ok(x) => Xml(x).into_response(),
