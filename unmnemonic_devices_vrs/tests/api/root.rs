@@ -1,5 +1,6 @@
 use crate::helpers::spawn_app;
 use chrono::Utc;
+use speculoos::prelude::*;
 use sqlx::PgPool;
 
 #[sqlx::test(fixtures("schema"))]
@@ -29,7 +30,7 @@ async fn root_serves_prewelcome(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert!(response.text().await.unwrap().contains("unmnemonic"));
+    assert_that(&response.text().await.unwrap()).contains("unmnemonic");
 }
 
 #[sqlx::test(fixtures("schema"))]
@@ -60,7 +61,7 @@ async fn root_serves_welcome_when_begun(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert!(response.text().await.unwrap().contains("Has it begun"));
+    assert_that(&response.text().await.unwrap()).contains("Has it begun");
 }
 
 #[sqlx::test(fixtures("schema"))]
@@ -90,7 +91,7 @@ async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert!(response.text().await.unwrap().contains("Has it begun"));
+    assert_that(&response.text().await.unwrap()).contains("Has it begun");
 }
 
 #[sqlx::test(fixtures("schema"))]

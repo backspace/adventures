@@ -31,4 +31,5 @@ sqlx = { version = "0.7.0-alpha.2", features = [
 ] }
 
 [dev-dependencies]
+speculoos = "0.9"
 reqwest = "0.11"

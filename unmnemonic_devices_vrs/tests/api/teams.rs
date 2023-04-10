@@ -1,5 +1,6 @@
 use crate::helpers::spawn_app;
 use chrono::Utc;
+use speculoos::prelude::*;
 use sqlx::PgPool;
 
 #[sqlx::test(fixtures("schema"))]
@@ -36,11 +37,8 @@ async fn teams_show_gathers_team_voicepasses(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert!(response
-        .text()
-        .await
-        .unwrap()
-        .contains("hints=\"here is a voicepass, this is another voicepass, \""));
+    assert_that(&response.text().await.unwrap())
+        .contains("hints=\"here is a voicepass, this is another voicepass, \"");
 }
 
 #[sqlx::test(fixtures("schema"))]
@@ -131,11 +129,8 @@ async fn teams_post_renders_not_found_when_no_voicepass_matches(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert!(response
-        .text()
-        .await
-        .unwrap()
-        .contains("<Redirect method=\"GET\">/teams</Redirect>"));
+    assert_that(&response.text().await.unwrap())
+        .contains("<Redirect method=\"GET\">/teams</Redirect>");
 }
 
 #[sqlx::test(fixtures("schema"))]
@@ -167,5 +162,5 @@ async fn team_show_names_team(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert!(response.text().await.unwrap().contains("jortle"));
+    assert_that(&response.text().await.unwrap()).contains("jortle");
 }
