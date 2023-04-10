@@ -2,4 +2,6 @@
   <Gather timeout="2" input="speech" hints="{{#each teams}}{{this.voicepass}}, {{/each}}">
     <Say>What is your voice password?</Say>
   </Gather>
+  <Say>We didn't hear anything.</Say>
+  <Redirect method="GET">/teams</Redirect>
 </Response>
