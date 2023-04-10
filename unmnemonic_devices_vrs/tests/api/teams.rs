@@ -1,7 +1,7 @@
 use crate::helpers::spawn_app;
 use chrono::Utc;
 use speculoos::prelude::*;
-use sqlx::PgPool;
+use sqlx::{types::Uuid, PgPool};
 
 #[sqlx::test(fixtures("schema"))]
 async fn teams_show_gathers_team_voicepasses(db: PgPool) {
@@ -10,12 +10,12 @@ async fn teams_show_gathers_team_voicepasses(db: PgPool) {
       INSERT INTO teams (id, name, voicepass, inserted_at, updated_at)
       VALUES ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10)
       "#,
-        1,
+        Uuid::parse_str("48e3bda7-db52-4c99-985f-337e266f7832").expect("Failed to parse uuid"),
         "jortles",
         "here is a voicepass",
         Utc::now().naive_utc(),
         Utc::now().naive_utc(),
-        2,
+        Uuid::parse_str("5f721b36-38bd-4504-a5aa-428e9447ab12").expect("Failed to parse uuid"),
         "tortles",
         "this is another voicepass",
         Utc::now().naive_utc(),
@@ -48,12 +48,12 @@ async fn teams_post_redirects_to_found_voicepass_team(db: PgPool) {
         INSERT INTO teams (id, name, voicepass, inserted_at, updated_at)
         VALUES ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10)
         "#,
-        1,
+        Uuid::parse_str("48e3bda7-db52-4c99-985f-337e266f7832").expect("Failed to parse uuid"),
         "jortles",
         "here is a voicepass",
         Utc::now().naive_utc(),
         Utc::now().naive_utc(),
-        2,
+        Uuid::parse_str("5f721b36-38bd-4504-a5aa-428e9447ab12").expect("Failed to parse uuid"),
         "tortles",
         "this is another voicepass",
         Utc::now().naive_utc(),
@@ -89,7 +89,7 @@ async fn teams_post_redirects_to_found_voicepass_team(db: PgPool) {
             .expect("Failed to extract Location header")
             .to_str()
             .unwrap(),
-        "/teams/2"
+        "/teams/5f721b36-38bd-4504-a5aa-428e9447ab12"
     );
 }
 
@@ -100,7 +100,7 @@ async fn teams_post_renders_not_found_when_no_voicepass_matches(db: PgPool) {
         INSERT INTO teams (id, name, voicepass, inserted_at, updated_at)
         VALUES ($1, $2, $3, $4, $5)
         "#,
-        1,
+        Uuid::parse_str("48e3bda7-db52-4c99-985f-337e266f7832").expect("Failed to parse uuid"),
         "jortles",
         "here is a voicepass",
         Utc::now().naive_utc(),
@@ -140,7 +140,7 @@ async fn team_show_names_team(db: PgPool) {
       INSERT INTO teams (id, name, voicepass, inserted_at, updated_at)
       VALUES ($1, $2, $3, $4, $5)
       "#,
-        1,
+        Uuid::parse_str("48e3bda7-db52-4c99-985f-337e266f7832").expect("Failed to parse uuid"),
         "jortles",
         "a voicepass",
         Utc::now().naive_utc(),
@@ -155,7 +155,10 @@ async fn team_show_names_team(db: PgPool) {
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/teams/1", &app_address))
+        .get(&format!(
+            "{}/teams/48e3bda7-db52-4c99-985f-337e266f7832",
+            &app_address
+        ))
         .send()
         .await
         .expect("Failed to execute request.");

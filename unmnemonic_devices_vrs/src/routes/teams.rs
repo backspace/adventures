@@ -5,6 +5,7 @@ use axum::{
 };
 use axum_template::Key;
 use serde::{Deserialize, Serialize};
+use sqlx::types::Uuid;
 
 use crate::{render_xml::RenderXml, AppState};
 
@@ -15,7 +16,7 @@ pub struct Teams {
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct Team {
-    id: i32,
+    id: Uuid,
     name: String,
     voicepass: String,
 }
@@ -58,7 +59,7 @@ pub async fn post_teams(
 
 pub async fn get_team(
     Key(key): Key,
-    Path(id): Path<i32>,
+    Path(id): Path<Uuid>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
     let team = sqlx::query_as::<_, Team>("SELECT * FROM teams WHERE id = $1")

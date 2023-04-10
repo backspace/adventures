@@ -1,6 +1,8 @@
 defmodule AdventureRegistrationsWeb.Message do
   use AdventureRegistrationsWeb, :model
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+
   schema "messages" do
     field :subject, :string
     field :content, :string

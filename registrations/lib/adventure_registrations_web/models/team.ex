@@ -1,11 +1,13 @@
 defmodule AdventureRegistrationsWeb.Team do
   use AdventureRegistrationsWeb, :model
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+
   schema "teams" do
     field :name, :string
     field :risk_aversion, :integer
     field :notes, :string
-    field :user_ids, {:array, :integer}
+    field :user_ids, {:array, :binary_id}
 
     timestamps()
   end

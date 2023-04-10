@@ -1,6 +1,8 @@
 defmodule AdventureRegistrationsWeb.User do
   use AdventureRegistrationsWeb, :model
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+
   schema "users" do
     field :email, AdventureRegistrationsWeb.DowncasedString
     field :crypted_password, :string

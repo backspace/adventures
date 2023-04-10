@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.6
+-- Dumped from database version 13.9
 -- Dumped by pg_dump version 13.4
 
 SET statement_timeout = 0;
@@ -17,29 +17,10 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: _sqlx_test; Type: SCHEMA; Schema: -; Owner: -
---
-
-CREATE SCHEMA _sqlx_test;
-
-
---
 -- Name: unmnemonic_devices; Type: SCHEMA; Schema: -; Owner: -
 --
 
 CREATE SCHEMA unmnemonic_devices;
-
-
---
--- Name: database_ids; Type: SEQUENCE; Schema: _sqlx_test; Owner: -
---
-
-CREATE SEQUENCE _sqlx_test.database_ids
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
 
 
 SET default_tablespace = '';
@@ -47,51 +28,20 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: databases; Type: TABLE; Schema: _sqlx_test; Owner: -
---
-
-CREATE TABLE _sqlx_test.databases (
-    db_name text NOT NULL,
-    test_path text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
-
---
 -- Name: messages; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.messages (
-    id integer NOT NULL,
+    id uuid NOT NULL,
     subject character varying(255),
     content text,
     ready boolean DEFAULT false,
     postmarked_at date,
-    inserted_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL,
     rendered_content text,
     show_team boolean
 );
-
-
---
--- Name: messages_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.messages_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: messages_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.messages_id_seq OWNED BY public.messages.id;
 
 
 --
@@ -100,7 +50,7 @@ ALTER SEQUENCE public.messages_id_seq OWNED BY public.messages.id;
 
 CREATE TABLE public.schema_migrations (
     version bigint NOT NULL,
-    inserted_at timestamp without time zone
+    inserted_at timestamp(0) without time zone
 );
 
 
@@ -109,35 +59,15 @@ CREATE TABLE public.schema_migrations (
 --
 
 CREATE TABLE public.teams (
-    id integer NOT NULL,
+    id uuid NOT NULL,
     name character varying(255),
     risk_aversion integer,
     notes text,
-    user_ids integer[] DEFAULT ARRAY[]::integer[],
-    inserted_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL,
+    user_ids uuid[] DEFAULT ARRAY[]::uuid[],
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL,
     voicepass character varying(255)
 );
-
-
---
--- Name: teams_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.teams_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: teams_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.teams_id_seq OWNED BY public.teams.id;
 
 
 --
@@ -145,11 +75,11 @@ ALTER SEQUENCE public.teams_id_seq OWNED BY public.teams.id;
 --
 
 CREATE TABLE public.users (
-    id integer NOT NULL,
+    id uuid NOT NULL,
     email character varying(255),
     crypted_password character varying(255),
-    inserted_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL,
     admin boolean,
     team_emails text,
     proposed_team_name text,
@@ -160,26 +90,6 @@ CREATE TABLE public.users (
     source text,
     attending boolean
 );
-
-
---
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.users_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
@@ -218,39 +128,10 @@ ALTER SEQUENCE unmnemonic_devices.settings_id_seq OWNED BY unmnemonic_devices.se
 
 
 --
--- Name: messages id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.messages ALTER COLUMN id SET DEFAULT nextval('public.messages_id_seq'::regclass);
-
-
---
--- Name: teams id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.teams ALTER COLUMN id SET DEFAULT nextval('public.teams_id_seq'::regclass);
-
-
---
--- Name: users id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
-
-
---
 -- Name: settings id; Type: DEFAULT; Schema: unmnemonic_devices; Owner: -
 --
 
 ALTER TABLE ONLY unmnemonic_devices.settings ALTER COLUMN id SET DEFAULT nextval('unmnemonic_devices.settings_id_seq'::regclass);
-
-
---
--- Name: databases databases_pkey; Type: CONSTRAINT; Schema: _sqlx_test; Owner: -
---
-
-ALTER TABLE ONLY _sqlx_test.databases
-    ADD CONSTRAINT databases_pkey PRIMARY KEY (db_name);
 
 
 --
@@ -291,13 +172,6 @@ ALTER TABLE ONLY public.users
 
 ALTER TABLE ONLY unmnemonic_devices.settings
     ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
-
-
---
--- Name: databases_created_at; Type: INDEX; Schema: _sqlx_test; Owner: -
---
-
-CREATE INDEX databases_created_at ON _sqlx_test.databases USING btree (created_at);
 
 
 --
