@@ -21,7 +21,61 @@ defmodule AdventureRegistrations.Pages.Home do
     click({:class, "button"})
   end
 
-  def pi_present? do
-    element?(:id, "pi")
+  def pi do
+    AdventureRegistrations.Pages.Home.Pi
+  end
+
+  defmodule Pi do
+    @selector {:id, "pi"}
+
+    def present? do
+      apply(Hound.Matchers, :element?, Tuple.to_list(@selector))
+    end
+
+    def click do
+      click(@selector)
+    end
+  end
+
+  def overlay do
+    AdventureRegistrations.Pages.Home.Overlay
+  end
+
+  defmodule Overlay do
+    def voicepass do
+      AdventureRegistrations.Pages.Home.Overlay.Voicepass
+    end
+
+    defmodule Voicepass do
+      @selector {:css, "[data-test-voicepass]"}
+
+      def present? do
+        apply(Hound.Matchers, :element?, Tuple.to_list(@selector))
+      end
+
+      def text do
+        visible_text(@selector)
+      end
+    end
+
+    def regenerate do
+      AdventureRegistrations.Pages.Home.Overlay.Regenerate
+    end
+
+    defmodule Regenerate do
+      @selector {:css, "[data-test-regenerate]"}
+
+      def present? do
+        apply(Hound.Matchers, :element?, Tuple.to_list(@selector))
+      end
+
+      def text do
+        visible_text(@selector)
+      end
+
+      def click do
+        click(@selector)
+      end
+    end
   end
 end

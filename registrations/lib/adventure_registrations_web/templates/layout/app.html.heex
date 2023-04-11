@@ -77,6 +77,18 @@
         <div id='pi'>&pi;</div>
         <dialog id='pi-dialog'>
           <img src='/images/unmnemonic-devices/thenet.gif'>
+
+          <%= if logged_in?(@conn) do %>
+            <%= if current_user(@conn).voicepass do %>
+              <p data-test-voicepass><%= current_user(@conn).voicepass %></p>
+              <button class='button' data-test-regenerate>regenerate</button>
+            <% else %>
+              <p data-test-voicepass>generate a voicepass</p>
+              <button class='button' data-test-regenerate>generate</button>
+            <% end %>
+          <% else %>
+            <p>Log in for more</p>
+          <% end %>
           <form method='dialog'>
             <button value='default'>okay</button>
           </form>

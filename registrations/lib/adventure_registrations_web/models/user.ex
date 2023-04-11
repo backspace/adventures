@@ -28,6 +28,9 @@ defmodule AdventureRegistrationsWeb.User do
     field :comments, :string
     field :source, :string
 
+    # specific to unmnemonic-devices
+    field :voicepass, :string
+
     timestamps()
   end
 
@@ -57,6 +60,14 @@ defmodule AdventureRegistrationsWeb.User do
 
     model
     |> cast(params, required_fields ++ @optional_fields)
+    |> validate_required(required_fields)
+  end
+
+  def voicepass_changeset(model, params \\ %{}) do
+    required_fields = ~w(voicepass)a
+
+    model
+    |> cast(params, required_fields)
     |> validate_required(required_fields)
   end
 

@@ -58,5 +58,6 @@ defmodule AdventureRegistrationsWeb.Router do
     pipe_through(:api)
 
     get("/teams", TeamController, :index_json)
+    patch("/users/voicepass", UserController, :voicepass)
   end
 end

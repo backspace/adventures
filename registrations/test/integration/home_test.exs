@@ -1,12 +1,19 @@
-
 defmodule AdventureRegistrations.UnmnemonicDevices.Integration.Home do
   use AdventureRegistrationsWeb.ConnCase
   use AdventureRegistrations.SwooshHelper
   use AdventureRegistrations.UnmnemonicDevices
 
   alias AdventureRegistrations.Pages.Home
+  alias AdventureRegistrations.Pages.Login
+  alias AdventureRegistrations.Pages.Nav
 
   use Hound.Helpers
+
+  require WaitForIt
+
+  def set_window_to_show_account do
+    set_window_size(current_window_handle(), 720, 450)
+  end
 
   hound_session()
 
@@ -15,14 +22,68 @@ defmodule AdventureRegistrations.UnmnemonicDevices.Integration.Home do
 
     navigate_to("/")
 
-    refute Home.pi_present?
+    refute Home.pi().present?
   end
 
-  test "pi shows when compromised" do
+  test "pi shows when compromised but cannot create a voicepass when not logged in" do
     insert(:unmnemonic_devices_settings, compromised: true)
 
     navigate_to("/")
 
-    assert Home.pi_present?
+    assert Home.pi().present?
+
+    Home.pi().click
+
+    refute Home.overlay().regenerate.present?
+  end
+
+  test "overlay shows voicepass when it exists" do
+    insert(:unmnemonic_devices_settings, compromised: true)
+    insert(:octavia, voicepass: "acknowledgements")
+
+    set_window_to_show_account()
+
+    navigate_to("/")
+    Nav.login_link().click
+    Login.fill_email("Octavia.butler@example.com")
+    Login.fill_password("Xenogenesis")
+    Login.submit()
+
+    Home.pi().click
+
+    assert Home.overlay().voicepass.text == "acknowledgements"
+  end
+
+  test "a logged-in user can generate a voicepass" do
+    insert(:unmnemonic_devices_settings, compromised: true)
+    insert(:octavia)
+
+    set_window_to_show_account()
+
+    navigate_to("/")
+    Nav.login_link().click
+    Login.fill_email("Octavia.butler@example.com")
+    Login.fill_password("Xenogenesis")
+    Login.submit()
+
+    Home.pi().click
+
+    assert Home.overlay().voicepass.text == "generate a voicepass"
+
+    assert Home.overlay().regenerate.present?
+    assert Home.overlay().regenerate.text == "generate"
+
+    Home.overlay().regenerate.click
+
+    WaitForIt.wait(String.length(Home.overlay().voicepass.text) == 16)
+
+    new_voicepass = Home.overlay().voicepass.text
+    assert String.length(new_voicepass) == 16
+
+    assert Home.overlay().regenerate.text == "regenerate"
+
+    refresh_page()
+    Home.pi().click
+    assert Home.overlay().voicepass.text == new_voicepass
   end
 end

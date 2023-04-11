@@ -46,4 +46,19 @@ defmodule AdventureRegistrationsWeb.UserController do
         render(conn, "edit.html", user: current_user, relationships: AdventureRegistrationsWeb.TeamFinder.relationships(current_user, users), changeset: changeset)
     end
   end
+
+  def voicepass(conn, _params) do
+    current_user = conn.assigns[:current_user_object]
+
+    file = File.open!("config/sixteen.txt")
+    lines = Enum.to_list(IO.stream(file, :line))
+    random_index = :rand.uniform(length(lines))
+    new_voicepass = Enum.at(lines, random_index)
+
+    changeset = User.voicepass_changeset(current_user, %{voicepass: new_voicepass})
+
+    Repo.update(changeset)
+
+    json conn, %{data: %{voicepass: new_voicepass}}
+  end
 end
