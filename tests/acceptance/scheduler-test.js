@@ -575,5 +575,19 @@ module('Acceptance | scheduler', function (hooks) {
         'expected no set teams after saving'
       );
     });
+
+    test('selecting a second team for a meeting does nothing', async function (assert) {
+      await page.visit();
+
+      await page.regions[1].destinations[1].click();
+      await page.waypointRegions[2].waypoints[0].click();
+      await page.teams[0].click();
+
+      assert.equal(page.meeting.teams.length, 1);
+
+      await page.teams[1].click();
+
+      assert.equal(page.meeting.teams.length, 1);
+    });
   });
 });

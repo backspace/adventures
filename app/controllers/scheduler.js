@@ -78,6 +78,14 @@ export default class SchedulerController extends Controller {
       this.set('meeting', this.store.createRecord('meeting'));
     }
 
+    if (
+      this.puzzles.implementation.hasSingleTeamMeetings &&
+      this.meeting.teams.length
+    ) {
+      console.log('Ignoring second team for a single-team-meeting adventure');
+      return;
+    }
+
     this.set('meeting.index', team.get('meetings.length'));
     this.get('meeting.teams').pushObject(team);
   }

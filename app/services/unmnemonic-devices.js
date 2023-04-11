@@ -17,6 +17,10 @@ export default class UnmnemonicDevicesService extends Service {
     return true;
   }
 
+  get hasSingleTeamMeetings() {
+    return true;
+  }
+
   suggestedMask(answer) {
     let answerWords = answer.split(' ');
     let answerIsSingleWord = answerWords.length === 1;
