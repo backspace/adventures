@@ -2,7 +2,7 @@ defmodule AdventureRegistrationsWeb.SessionController do
   use AdventureRegistrationsWeb, :controller
 
   def new(conn, _params) do
-    render conn, "new.html"
+    render(conn, "new.html")
   end
 
   def create(conn, %{"session" => session_params}) do
@@ -12,6 +12,7 @@ defmodule AdventureRegistrationsWeb.SessionController do
         |> put_session(:current_user, user.id)
         |> put_flash(:info, "Logged in")
         |> redirect(to: Routes.user_path(conn, :edit))
+
       :error ->
         conn
         |> put_flash(:error, "Wrong email or password")

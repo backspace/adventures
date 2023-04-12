@@ -4,12 +4,12 @@ defmodule AdventureRegistrationsWeb.Message do
   @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "messages" do
-    field :subject, :string
-    field :content, :string
-    field :rendered_content, :string
-    field :ready, :boolean, default: false
-    field :show_team, :boolean, default: false
-    field :postmarked_at, :date
+    field(:subject, :string)
+    field(:content, :string)
+    field(:rendered_content, :string)
+    field(:ready, :boolean, default: false)
+    field(:show_team, :boolean, default: false)
+    field(:postmarked_at, :date)
 
     timestamps()
   end

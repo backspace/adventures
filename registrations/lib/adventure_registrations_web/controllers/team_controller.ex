@@ -17,29 +17,34 @@ defmodule AdventureRegistrationsWeb.TeamController do
   def index_json(conn, _params) do
     users = Repo.all(User)
     teams = Repo.all(Team)
-    json conn, %{data: Enum.map(teams, fn(team) ->
-      team_emails = Enum.map(team.user_ids, fn(user_id) ->
-        user = Enum.find(users, fn(u) -> u.id == user_id end)
 
-        if user do
-          user.email
-        else
-          "unknown user #{user_id}"
-        end
-      end)
-      |> Enum.join(", ")
+    json(conn, %{
+      data:
+        Enum.map(teams, fn team ->
+          team_emails =
+            Enum.map(team.user_ids, fn user_id ->
+              user = Enum.find(users, fn u -> u.id == user_id end)
 
-      %{
-        type: "teams",
-        id: team.id,
-        attributes: %{
-          name: team.name,
-          riskAversion: team.risk_aversion,
-          notes: team.notes,
-          users: team_emails
-        }
-      }
-    end)}
+              if user do
+                user.email
+              else
+                "unknown user #{user_id}"
+              end
+            end)
+            |> Enum.join(", ")
+
+          %{
+            type: "teams",
+            id: team.id,
+            attributes: %{
+              name: team.name,
+              riskAversion: team.risk_aversion,
+              notes: team.notes,
+              users: team_emails
+            }
+          }
+        end)
+    })
   end
 
   def new(conn, _params) do
@@ -55,21 +60,24 @@ defmodule AdventureRegistrationsWeb.TeamController do
 
     team_users = [base_user] ++ relationships.mutuals
 
-    changeset = Team.changeset(%Team{}, %{
-      "name" => base_user.proposed_team_name,
-      "risk_aversion" => base_user.risk_aversion,
-      "user_ids" => Enum.map(team_users, fn(u) -> u.id end),
-      "notes" => team_users
-        |> Enum.filter(fn(u) -> String.trim(u.accessibility || "") != "" end)
-        |> Enum.map(&("#{String.split(&1.email, "@") |> hd}: #{&1.accessibility}"))
-        |> Enum.join(", ")
-    })
+    changeset =
+      Team.changeset(%Team{}, %{
+        "name" => base_user.proposed_team_name,
+        "risk_aversion" => base_user.risk_aversion,
+        "user_ids" => Enum.map(team_users, fn u -> u.id end),
+        "notes" =>
+          team_users
+          |> Enum.filter(fn u -> String.trim(u.accessibility || "") != "" end)
+          |> Enum.map(&"#{String.split(&1.email, "@") |> hd}: #{&1.accessibility}")
+          |> Enum.join(", ")
+      })
 
     case Repo.insert(changeset) do
       {:ok, _team} ->
         conn
         |> put_flash(:info, "Team built successfully")
         |> redirect(to: Routes.user_path(conn, :index))
+
       {:error, _changeset} ->
         conn
         |> put_flash(:error, "An error occurred building that team!")
@@ -85,6 +93,7 @@ defmodule AdventureRegistrationsWeb.TeamController do
         conn
         |> put_flash(:info, "Team created successfully.")
         |> redirect(to: Routes.team_path(conn, :index))
+
       {:error, changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
@@ -110,6 +119,7 @@ defmodule AdventureRegistrationsWeb.TeamController do
         conn
         |> put_flash(:info, "Team updated successfully.")
         |> redirect(to: Routes.team_path(conn, :show, team))
+
       {:error, changeset} ->
         render(conn, "edit.html", team: team, changeset: changeset)
     end

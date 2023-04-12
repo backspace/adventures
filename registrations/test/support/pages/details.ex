@@ -61,7 +61,9 @@ defmodule AdventureRegistrations.Pages.Details do
   end
 
   def choose_risk_aversion(level_string) do
-    level_integer = AdventureRegistrationsWeb.UserView.risk_aversion_string_into_integer()[level_string]
+    level_integer =
+      AdventureRegistrationsWeb.UserView.risk_aversion_string_into_integer()[level_string]
+
     click({:css, "input.level-#{level_integer}"})
   end
 

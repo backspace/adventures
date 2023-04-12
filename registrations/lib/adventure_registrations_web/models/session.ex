@@ -3,16 +3,17 @@ defmodule AdventureRegistrationsWeb.Session do
 
   def login(params, repo) do
     user = repo.get_by(User, email: String.downcase(params["email"]))
+
     case authenticate(user, params["password"]) do
       true -> {:ok, user}
-      _    -> :error
+      _ -> :error
     end
   end
 
   defp authenticate(user, password) do
     case user do
       nil -> false
-      _   -> Bcrypt.verify_pass(password, user.crypted_password)
+      _ -> Bcrypt.verify_pass(password, user.crypted_password)
     end
   end
 

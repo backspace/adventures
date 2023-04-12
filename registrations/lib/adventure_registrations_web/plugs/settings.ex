@@ -8,15 +8,18 @@ defmodule AdventureRegistrationsWeb.Plugs.Settings do
   def call(conn, _) do
     conn = fetch_session(conn)
 
-    adventure_name = Application.get_env(:adventure_registrations, :adventure);
+    adventure_name = Application.get_env(:adventure_registrations, :adventure)
 
-    settings = case adventure_name do
-      "unmnemonic-devices" ->
-        (Ecto.Query.first(AdventureRegistrationsWeb.UnmnemonicDevices.Settings) |> AdventureRegistrations.Repo.one()) || %AdventureRegistrationsWeb.UnmnemonicDevices.Settings{}
+    settings =
+      case adventure_name do
+        "unmnemonic-devices" ->
+          Ecto.Query.first(AdventureRegistrationsWeb.UnmnemonicDevices.Settings)
+          |> AdventureRegistrations.Repo.one() ||
+            %AdventureRegistrationsWeb.UnmnemonicDevices.Settings{}
 
-      _ ->
-        %AdventureRegistrationsWeb.UnmnemonicDevices.Settings{}
-    end
+        _ ->
+          %AdventureRegistrationsWeb.UnmnemonicDevices.Settings{}
+      end
 
     assign(conn, :settings, settings)
   end

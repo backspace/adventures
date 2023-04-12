@@ -14,7 +14,10 @@ defmodule AdventureRegistrationsWeb.Reset do
 
   def update(changeset, repo) do
     changeset
-    |> put_change(:crypted_password, AdventureRegistrationsWeb.Registration.hashed_password(changeset.params["new_password"]))
+    |> put_change(
+      :crypted_password,
+      AdventureRegistrationsWeb.Registration.hashed_password(changeset.params["new_password"])
+    )
     |> put_change(:recovery_hash, nil)
     |> repo.update()
   end

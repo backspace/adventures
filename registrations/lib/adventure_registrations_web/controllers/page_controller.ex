@@ -2,7 +2,7 @@ defmodule AdventureRegistrationsWeb.PageController do
   use AdventureRegistrationsWeb, :controller
 
   def index(conn, _params) do
-    adventure_name = Application.get_env(:adventure_registrations, :adventure);
+    adventure_name = Application.get_env(:adventure_registrations, :adventure)
     render(conn, "#{adventure_name}.html")
   end
 

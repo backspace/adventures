@@ -1,6 +1,6 @@
 {:ok, _} = Application.ensure_all_started(:ex_machina)
 
-ExUnit.configure formatters: [JUnitFormatter, ExUnit.CLIFormatter]
+ExUnit.configure(formatters: [JUnitFormatter, ExUnit.CLIFormatter])
 ExUnit.start()
 
 Ecto.Adapters.SQL.Sandbox.mode(AdventureRegistrations.Repo, :manual)
@@ -11,10 +11,15 @@ defmodule AdventureRegistrations.ResetRequestConfirmation do
   use ExUnit.CaseTemplate
 
   setup do
-    request_confirmation_setting = Application.get_env(:adventure_registrations, :request_confirmation)
+    request_confirmation_setting =
+      Application.get_env(:adventure_registrations, :request_confirmation)
 
     on_exit(fn ->
-      Application.put_env(:adventure_registrations, :request_confirmation, request_confirmation_setting)
+      Application.put_env(
+        :adventure_registrations,
+        :request_confirmation,
+        request_confirmation_setting
+      )
     end)
 
     :ok
@@ -25,10 +30,15 @@ defmodule AdventureRegistrations.ResetRegistrationClosed do
   use ExUnit.CaseTemplate
 
   setup do
-    registration_closed_setting = Application.get_env(:adventure_registrations, :registration_closed)
+    registration_closed_setting =
+      Application.get_env(:adventure_registrations, :registration_closed)
 
     on_exit(fn ->
-      Application.put_env(:adventure_registrations, :registration_closed, registration_closed_setting)
+      Application.put_env(
+        :adventure_registrations,
+        :registration_closed,
+        registration_closed_setting
+      )
     end)
 
     :ok

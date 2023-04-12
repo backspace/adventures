@@ -21,7 +21,9 @@ defmodule AdventureRegistrations.Mailer do
     new()
     |> to("b@events.chromatin.ca")
     |> from(@from)
-    |> subject("Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}")
+    |> subject(
+      "Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}"
+    )
     |> text_body(attributes["question"])
     |> deliver
   end
@@ -84,7 +86,9 @@ defmodule AdventureRegistrations.Mailer do
     |> to(user.email)
     |> from(@from)
     |> subject("[rendezvous] Password reset")
-    |> html_body("Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link</a>")
+    |> html_body(
+      "Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link</a>"
+    )
     |> deliver
   end
 

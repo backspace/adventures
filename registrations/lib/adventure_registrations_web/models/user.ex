@@ -5,32 +5,32 @@ defmodule AdventureRegistrationsWeb.User do
   @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "users" do
-    field :email, AdventureRegistrationsWeb.DowncasedString
-    field :crypted_password, :string
-    field :password, :string, virtual: true
-    field :recovery_hash, :string
+    field(:email, AdventureRegistrationsWeb.DowncasedString)
+    field(:crypted_password, :string)
+    field(:password, :string, virtual: true)
+    field(:recovery_hash, :string)
 
-    field :new_password, :string, virtual: true
-    field :new_password_confirmation, :string, virtual: true
-    field :current_password, :string, virtual: true
+    field(:new_password, :string, virtual: true)
+    field(:new_password_confirmation, :string, virtual: true)
+    field(:current_password, :string, virtual: true)
 
-    field :admin, :boolean
+    field(:admin, :boolean)
 
-    field :attending, :boolean
+    field(:attending, :boolean)
 
-    field :teamed, :boolean, virtual: true
+    field(:teamed, :boolean, virtual: true)
 
-    field :team_emails, AdventureRegistrationsWeb.DowncasedString
-    field :proposed_team_name, :string
+    field(:team_emails, AdventureRegistrationsWeb.DowncasedString)
+    field(:proposed_team_name, :string)
 
-    field :risk_aversion, :integer
-    field :accessibility, :string
+    field(:risk_aversion, :integer)
+    field(:accessibility, :string)
 
-    field :comments, :string
-    field :source, :string
+    field(:comments, :string)
+    field(:source, :string)
 
     # specific to unmnemonic-devices
-    field :voicepass, :string
+    field(:voicepass, :string)
 
     timestamps()
   end
@@ -54,10 +54,11 @@ defmodule AdventureRegistrationsWeb.User do
   end
 
   def details_changeset(model, params \\ %{}) do
-    required_fields = case Application.get_env(:adventure_registrations, :request_confirmation) do
-      true -> ~w(attending)a
-      _ -> []
-    end
+    required_fields =
+      case Application.get_env(:adventure_registrations, :request_confirmation) do
+        true -> ~w(attending)a
+        _ -> []
+      end
 
     model
     |> cast(params, required_fields ++ @optional_fields)

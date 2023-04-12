@@ -9,10 +9,13 @@ defmodule AdventureRegistrationsWeb.UserController do
   def index(conn, _params) do
     teams = Repo.all(AdventureRegistrationsWeb.Team)
 
-    users = Repo.all(User)
-    |> Enum.map(fn(u) -> Map.put(u, :teamed, Enum.any?(teams, fn(t) -> Enum.member?(t.user_ids, u.id) end)) end)
+    users =
+      Repo.all(User)
+      |> Enum.map(fn u ->
+        Map.put(u, :teamed, Enum.any?(teams, fn t -> Enum.member?(t.user_ids, u.id) end))
+      end)
 
-    render conn, "index.html", users: users
+    render(conn, "index.html", users: users)
   end
 
   def edit(conn, _) do
@@ -20,15 +23,24 @@ defmodule AdventureRegistrationsWeb.UserController do
     current_user = conn.assigns[:current_user_object]
     changeset = User.details_changeset(current_user)
 
-    conn = case Application.get_env(:adventure_registrations, :registration_closed) do
-      true ->
-        conn
-        |> put_flash(:error, "You may change your details but it’s too late to guarantee the changes can be integrated")
-      _ ->
-        conn
-    end
+    conn =
+      case Application.get_env(:adventure_registrations, :registration_closed) do
+        true ->
+          conn
+          |> put_flash(
+            :error,
+            "You may change your details but it’s too late to guarantee the changes can be integrated"
+          )
 
-    render conn, "edit.html", user: current_user, relationships: AdventureRegistrationsWeb.TeamFinder.relationships(current_user, users), changeset: changeset
+        _ ->
+          conn
+      end
+
+    render(conn, "edit.html",
+      user: current_user,
+      relationships: AdventureRegistrationsWeb.TeamFinder.relationships(current_user, users),
+      changeset: changeset
+    )
   end
 
   def update(conn, %{"user" => user_params}) do
@@ -39,11 +51,17 @@ defmodule AdventureRegistrationsWeb.UserController do
     case Repo.update(changeset) do
       {:ok, _} ->
         AdventureRegistrations.Mailer.send_user_changes(current_user, changeset.changes)
+
         conn
         |> put_flash(:info, "Your details were saved")
         |> redirect(to: Routes.user_path(conn, :edit))
+
       {:error, changeset} ->
-        render(conn, "edit.html", user: current_user, relationships: AdventureRegistrationsWeb.TeamFinder.relationships(current_user, users), changeset: changeset)
+        render(conn, "edit.html",
+          user: current_user,
+          relationships: AdventureRegistrationsWeb.TeamFinder.relationships(current_user, users),
+          changeset: changeset
+        )
     end
   end
 
@@ -58,6 +76,6 @@ defmodule AdventureRegistrationsWeb.UserController do
 
     Repo.update(changeset)
 
-    json conn, %{data: %{voicepass: new_voicepass}}
+    json(conn, %{data: %{voicepass: new_voicepass}})
   end
 end

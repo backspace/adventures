@@ -14,7 +14,10 @@ defmodule AdventureRegistrationsWeb.Plugs.LoginRequired do
     else
       conn
       |> Phoenix.Controller.put_flash(:info, "Please log in to edit your details")
-      |> Phoenix.Controller.redirect(to: AdventureRegistrationsWeb.Router.Helpers.session_path(conn, :new)) |> halt
+      |> Phoenix.Controller.redirect(
+        to: AdventureRegistrationsWeb.Router.Helpers.session_path(conn, :new)
+      )
+      |> halt
     end
   end
 end

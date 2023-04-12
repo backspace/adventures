@@ -5,7 +5,7 @@ defmodule AdventureRegistrationsWeb.UserView do
     if length(mutuals) == 1 do
       "#{hd(mutuals).email} has this address in their team emails list."
     else
-      "#{AdventureRegistrations.Cldr.List.to_string!(Enum.map(mutuals, &(&1.email)))} have this address in their team emails lists."
+      "#{AdventureRegistrations.Cldr.List.to_string!(Enum.map(mutuals, & &1.email))} have this address in their team emails lists."
     end
   end
 
@@ -43,17 +43,17 @@ defmodule AdventureRegistrationsWeb.UserView do
 
   def risk_aversion_string_into_integer do
     risk_aversion_integer_to_string()
-    |> Map.to_list
+    |> Map.to_list()
     |> Enum.map(fn {key, value} -> {value, key} end)
     |> Enum.into(%{})
   end
 
   def is_empty?(user) do
     String.trim(user.team_emails || "") == "" &&
-    !Enum.member?([1,2,3], user.risk_aversion) &&
-    String.trim(user.proposed_team_name || "") == "" &&
-    String.trim(user.accessibility || "") == "" &&
-    String.trim(user.comments || "") == "" &&
-    String.trim(user.source || "") == ""
+      !Enum.member?([1, 2, 3], user.risk_aversion) &&
+      String.trim(user.proposed_team_name || "") == "" &&
+      String.trim(user.accessibility || "") == "" &&
+      String.trim(user.comments || "") == "" &&
+      String.trim(user.source || "") == ""
   end
 end
