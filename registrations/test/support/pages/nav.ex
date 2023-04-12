@@ -31,6 +31,10 @@ defmodule AdventureRegistrations.Pages.Nav do
     AdventureRegistrations.Pages.Nav.TeamsLink
   end
 
+  def settings_link do
+    AdventureRegistrations.Pages.Nav.SettingsLink
+  end
+
   def edit_details do
     click({:css, "a.details"})
   end
@@ -90,6 +94,14 @@ defmodule AdventureRegistrations.Pages.Nav do
 
   defmodule TeamsLink do
     @selector {:css, "a.teams"}
+
+    def click do
+      click(@selector)
+    end
+  end
+
+  defmodule SettingsLink do
+    @selector {:css, "a.settings"}
 
     def click do
       click(@selector)

@@ -50,11 +50,6 @@ defmodule AdventureRegistrationsWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
-      alias AdventureRegistrationsWeb.Router.Helpers, as: Routes
-      import AdventureRegistrationsWeb.ErrorHelpers
-      import AdventureRegistrationsWeb.SharedHelpers
-      import AdventureRegistrationsWeb.Gettext
-
       import AdventureRegistrationsWeb.Session, only: [current_user: 1, logged_in?: 1, admin?: 1]
 
       # Adapter from http://stackoverflow.com/a/31577025/760389
@@ -81,6 +76,9 @@ defmodule AdventureRegistrationsWeb do
 
         link(text, opts)
       end
+
+      # Include shared imports and aliases for views
+      unquote(view_helpers())
     end
   end
 
@@ -97,6 +95,24 @@ defmodule AdventureRegistrationsWeb do
       alias AdventureRegistrations.Repo
       import Ecto
       import Ecto.Query, only: [from: 1, from: 2]
+    end
+  end
+
+  defp view_helpers do
+    quote do
+      # Use all HTML functionality (forms, tags, etc)
+      use Phoenix.HTML
+
+      # Import LiveView and .heex helpers (live_render, live_patch, <.form>, etc)
+      import Phoenix.LiveView.Helpers
+
+      # Import basic rendering functionality (render, render_layout, etc)
+      import Phoenix.View
+
+      import AdventureRegistrationsWeb.ErrorHelpers
+      import AdventureRegistrationsWeb.SharedHelpers
+      import AdventureRegistrationsWeb.Gettext
+      alias AdventureRegistrationsWeb.Router.Helpers, as: Routes
     end
   end
 

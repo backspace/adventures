@@ -33,6 +33,8 @@ defmodule AdventureRegistrations.Integration.Admin do
     Login.fill_password("Xenogenesis")
     Login.submit()
 
+    refute element?(:css, "a.settings")
+
     Nav.users_link().click
 
     assert Users.email(user.id) == "francine.pascal@example.com"
@@ -147,6 +149,55 @@ defmodule AdventureRegistrations.Integration.Admin do
     assert Nav.error_text() == "Who are you?"
 
     navigate_to("/teams")
+    assert Nav.error_text() == "Who are you?"
+
+    navigate_to("/settings")
+    assert Nav.error_text() == "Who are you?"
+  end
+end
+
+defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Admin do
+  use AdventureRegistrationsWeb.ConnCase
+  use AdventureRegistrations.SwooshHelper
+  use AdventureRegistrations.UnmnemonicDevices
+
+  alias AdventureRegistrations.Pages.Login
+  alias AdventureRegistrations.Pages.Nav
+
+  use Hound.Helpers
+
+  hound_session()
+
+  test "admin can create and update settings" do
+    insert(:octavia, admin: true)
+
+    navigate_to("/")
+
+    Nav.login_link().click
+
+    Login.fill_email("octavia.butler@example.com")
+    Login.fill_password("Xenogenesis")
+    Login.submit()
+
+    Nav.settings_link().click
+
+    refute selected?({:id, "settings_begun"})
+
+    fill_field({:id, "settings_override"}, "an override")
+    click({:id, "settings_begun"})
+
+    click({:css, "button[type=submit]"})
+
+    assert current_path() == "/settings"
+
+    assert selected?({:id, "settings_begun"})
+    assert visible_text({:css, ".alert-info"}) == "Settings updated successfully."
+  end
+
+  test "non-admins cannot access the user list or messages" do
+    insert(:user, email: "francine.pascal@example.com")
+
+    navigate_to("/settings")
     assert Nav.error_text() == "Who are you?"
   end
 end

@@ -50,6 +50,8 @@ defmodule AdventureRegistrationsWeb.Router do
     post("/messages/:id/send", MessageController, :deliver)
     get("/messages/:id/preview", MessageController, :preview)
 
+    resources "/settings", SettingsController
+
     post("/questions", PageController, :questions)
     get("/", PageController, :index)
   end
