@@ -50,8 +50,7 @@ defmodule AdventureRegistrationsWeb.UserController do
   def voicepass(conn, _params) do
     current_user = conn.assigns[:current_user_object]
 
-    file = File.open!("config/sixteen.txt")
-    lines = Enum.to_list(IO.stream(file, :line))
+    lines = User.voicepass_candidates()
     random_index = :rand.uniform(length(lines))
     new_voicepass = Enum.at(lines, random_index)
 

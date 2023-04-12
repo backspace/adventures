@@ -1,5 +1,6 @@
 defmodule AdventureRegistrationsWeb.User do
   use AdventureRegistrationsWeb, :model
+  alias AdventureRegistrations.Repo
 
   @primary_key {:id, :binary_id, autogenerate: true}
 
@@ -96,5 +97,26 @@ defmodule AdventureRegistrationsWeb.User do
     |> cast(params, ~w(recovery_hash new_password new_password_confirmation)a, [])
     |> validate_length(:new_password, min: 5)
     |> validate_confirmation(:new_password)
+  end
+
+  def voicepass_candidates() do
+    file = File.open!("config/sixteen.txt")
+    all_voicepasses = Enum.map(IO.stream(file, :line), &String.trim/1)
+
+    existing_voicepasse_prefixes =
+      Repo.all(
+        from(u in AdventureRegistrationsWeb.User,
+          select: u.voicepass
+        )
+      )
+      |> Enum.filter(& &1)
+      |> Enum.map(fn str -> String.slice(str, 0, 4) end)
+
+    Enum.reject(all_voicepasses, fn line ->
+      Enum.member?(
+        existing_voicepasse_prefixes,
+        String.slice(line, 0, 4)
+      )
+    end)
   end
 end
