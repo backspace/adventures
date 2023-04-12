@@ -12,19 +12,23 @@ defmodule AdventureRegistrationsWeb.SharedHelpers do
   end
 
   def full_date do
-    formatted_start_time "%A, %B %-d, %Y"
+    formatted_start_time("%A, %B %-d, %Y")
   end
 
   def short_date do
-    formatted_start_time "%B %-d"
+    formatted_start_time("%B %-d")
   end
 
   def ordinal_date do
-    "#{formatted_start_time "%B"} #{AdventureRegistrations.Cldr.Number.to_string!(parsed_start_time().day, format: :ordinal)}"
+    "#{formatted_start_time("%B")} #{AdventureRegistrations.Cldr.Number.to_string!(parsed_start_time().day, format: :ordinal)}"
   end
 
   def start_time do
-    formatted_start_time("%-I:%M%p") |> String.downcase
+    formatted_start_time("%-I:%M%p") |> String.downcase()
+  end
+
+  def is_unmnemonic_devices() do
+    Application.get_env(:adventure_registrations, :adventure) == "unmnemonic-devices"
   end
 
   defp formatted_start_time(format_string) do
