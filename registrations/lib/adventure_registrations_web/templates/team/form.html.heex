@@ -23,6 +23,14 @@
     <%= error_tag f, :notes %>
   </div>
 
+  <%= if Application.get_env(:adventure_registrations, :adventure) == "unmnemonic-devices" do %>
+    <div class="form-group">
+      <%= label f, :voicepass, class: "control-label" %>
+      <%= text_input f, :voicepass, class: "form-control" %>
+      <%= error_tag f, :voicepass %>
+    </div>
+  <% end %>
+
   <div class="form-group">
     <%= submit "Submit", class: "btn btn-primary" %>
   </div>

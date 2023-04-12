@@ -8,6 +8,9 @@
       <th>Name</th>
       <th>Risk aversion</th>
       <th>Notes</th>
+      <%= if Application.get_env(:adventure_registrations, :adventure) == "unmnemonic-devices" do %>
+        <th>Voicepass</th>
+      <% end %>
       <th>User ids</th>
 
       <th></th>
@@ -21,6 +24,9 @@
       <td class='name'><%= team.name %></td>
       <td class='risk-aversion'><%= team.risk_aversion %></td>
       <td><%= team.notes %></td>
+      <%= if Application.get_env(:adventure_registrations, :adventure) == "unmnemonic-devices" do %>
+        <td><%= team.voicepass %></td>
+      <% end %>
       <td><%= Enum.join(team.user_ids, ", ") %></td>
 
       <td class="text-right">

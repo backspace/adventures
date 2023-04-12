@@ -4,16 +4,17 @@ defmodule AdventureRegistrationsWeb.Team do
   @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "teams" do
-    field :name, :string
-    field :risk_aversion, :integer
-    field :notes, :string
-    field :user_ids, {:array, :binary_id}
+    field(:name, :string)
+    field(:risk_aversion, :integer)
+    field(:notes, :string)
+    field(:voicepass, :string)
+    field(:user_ids, {:array, :binary_id})
 
     timestamps()
   end
 
   @required_fields ~w(name risk_aversion)a
-  @optional_fields ~w(notes user_ids)a
+  @optional_fields ~w(notes voicepass user_ids)a
 
   @doc """
   Creates a changeset based on the `model` and `params`.
