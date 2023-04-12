@@ -89,11 +89,19 @@
               <p data-test-voicepass>generate a voicepass</p>
               <button class='button' data-test-regenerate>generate</button>
             <% end %>
+
+            <p>
+              your voice password shows above. call chromatins voicemail at FIXME, say “remember”, and then your voice password.
+              chromatin cheaped out on the voice system and it shows. you sometime have to speak really loud for it to understand
+              you or it hers background noise and thinks it was a command. pretty bad. if your password is hard to pronounce
+              choose a new one? some of those who remember will be trying to improve reliability so we can keep lines of
+              communication open between each other during the demonstration.
+            </p>
           <% else %>
             <p>Log in for more</p>
           <% end %>
           <form method='dialog'>
-            <button value='default'>okay</button>
+            <button class='button secondary hollow' value='default'>okay</button>
           </form>
         </dialog>
       <% end %>
