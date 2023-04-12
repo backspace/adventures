@@ -57,7 +57,7 @@ defmodule AdventureRegistrations.Mixfile do
       {:floki, "~> 0.34"},
       {:tzdata, "~> 1.1"},
       {:junit_formatter, "~> 3.3", only: [:test]},
-      {:wait_for_it, "~> 1.3"}
+      {:wait_for_it, "~> 1.3", only: [:test]}
     ]
   end
 
