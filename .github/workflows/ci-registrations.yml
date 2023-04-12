@@ -3,8 +3,15 @@ name: AdventureRegistrations checks
 on: push
 
 jobs:
-  dependencies:
+  mix-test:
     runs-on: ubuntu-20.04
+    services:
+      db:
+        image: postgres:latest
+        ports: ["5432:5432"]
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     strategy:
       matrix:
         elixir: ["1.14.0"]
@@ -37,41 +44,6 @@ jobs:
           mix local.hex --force
           mix deps.get
           mix deps.compile
-
-  mix-test:
-    needs: dependencies
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        elixir: ["1.14.0"]
-        otp: ["23.3.2"]
-    services:
-      db:
-        image: postgres:latest
-        ports: ["5432:5432"]
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.11.0
-        with:
-          access_token: ${{ github.token }}
-      - name: Checkout Github repo
-        uses: actions/checkout@v3
-      - name: Sets up an Erlang/OTP environment
-        uses: erlef/setup-beam@v1
-        with:
-          elixir-version: ${{ matrix.elixir }}
-          otp-version: ${{ matrix.otp }}
-      - name: Retrieve cached dependencies
-        uses: actions/cache@v3
-        id: mix-cache
-        with:
-          path: |
-            registrations/deps
-            registrations/_build
-          key: ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
       - uses: actions/setup-node@v3
         with:
           node-version-file: "registrations/assets/package.json"
