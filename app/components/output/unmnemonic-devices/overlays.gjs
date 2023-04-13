@@ -1,6 +1,8 @@
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { inject as service } from '@ember/service';
+import { trackedFunction } from 'ember-resources/util/function';
+import { Input } from '@ember/component';
 
 import blobStream from 'blob-stream';
 import PDFDocument from 'pdfkit';
@@ -9,19 +11,41 @@ const pageMargin = 0.5 * 72;
 const pagePadding = 0.25 * 72;
 
 export default class UnmnemonicDevicesOverlaysComponent extends Component {
-  @tracked src;
+  @tracked allOverlays;
 
   @service('unmnemonic-devices') devices;
 
-  constructor() {
-    super(...arguments);
-
+  generator = trackedFunction(this, async () => {
     let regular = this.args.assets.regular;
 
     let doc = new PDFDocument({ layout: 'portrait', font: regular });
     let stream = doc.pipe(blobStream());
 
-    this.args.waypoints.filterBy('isComplete').forEach((waypoint, index) => {
+    let waypointsToGenerate;
+
+    if (this.allOverlays) {
+      waypointsToGenerate = this.args.waypoints.filterBy('isComplete');
+    } else {
+      waypointsToGenerate = this.args.teams.reduce((waypoints, team) => {
+        team.meetings.forEach((meeting) =>
+          waypoints.push({ team, waypoint: meeting.get('waypoint') })
+        );
+        return waypoints;
+      }, []);
+    }
+
+    waypointsToGenerate.forEach((maybeTeamAndWaypoint, index) => {
+      let waypoint = maybeTeamAndWaypoint.waypoint || maybeTeamAndWaypoint;
+
+      let dimensions = waypoint.get('dimensions');
+      let regionAndCall = `${waypoint.get('region.name')}: ${waypoint.get(
+        'call'
+      )}`;
+      let waypointName = waypoint.get('name');
+      let excerpt = waypoint.get('excerpt');
+      let outline = waypoint.get('outline');
+      let page = waypoint.get('page');
+
       if (index > 0) {
         doc.addPage();
       }
@@ -30,7 +54,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
       doc.translate(pageMargin, pageMargin);
 
-      let [width, height] = this.devices.parsedDimensions(waypoint.dimensions);
+      let [width, height] = this.devices.parsedDimensions(dimensions);
 
       doc.save();
       doc.rect(0, 0, width, height).clip();
@@ -48,19 +72,17 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
       doc.restore();
 
-      let regionAndCall = `${waypoint.region.name}: ${waypoint.call}`;
-
       doc.fontSize(14);
 
       doc
         .fillColor('black')
         .strokeColor('white')
         .lineWidth(3)
-        .text(waypoint.get('name'), pagePadding, pagePadding, {
+        .text(waypointName, pagePadding, pagePadding, {
           fill: true,
           stroke: true,
         })
-        .text(waypoint.page, pagePadding, pagePadding, {
+        .text(page, pagePadding, pagePadding, {
           width: width - pagePadding * 2,
           align: 'right',
           fill: true,
@@ -76,8 +98,8 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       doc
         .fillColor('black')
         .lineWidth(1)
-        .text(waypoint.get('name'), pagePadding, pagePadding)
-        .text(waypoint.page, pagePadding, pagePadding, {
+        .text(waypointName, pagePadding, pagePadding)
+        .text(page, pagePadding, pagePadding, {
           width: width - pagePadding * 2,
           align: 'right',
         })
@@ -89,9 +111,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
       doc.strokeColor('black');
 
-      let { end, points: outlinePoints } = this.devices.parsedOutline(
-        waypoint.outline
-      );
+      let { end, points: outlinePoints } = this.devices.parsedOutline(outline);
 
       let [startX, startY] = outlinePoints.shift();
 
@@ -104,13 +124,13 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       doc.fillAndStroke('white', 'black');
 
       if (this.args.debug) {
-        doc.text(waypoint.dimensions, 0, height);
-        doc.text(waypoint.outline);
-        doc.text(waypoint.excerpt);
+        doc.text(dimensions, 0, height);
+        doc.text(outline);
+        doc.text(excerpt);
       }
 
-      let preExcerpt = this.devices.preExcerpt(waypoint.excerpt),
-        postExcerpt = this.devices.postExcerpt(waypoint.excerpt);
+      let preExcerpt = this.devices.preExcerpt(excerpt),
+        postExcerpt = this.devices.postExcerpt(excerpt);
 
       doc.fontSize(10);
 
@@ -138,24 +158,52 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         })
         .text(postExcerpt, end[0], end[1], {});
 
+      let team = maybeTeamAndWaypoint.team;
+
+      if (team) {
+        doc.fontSize(14);
+        doc
+          .fillColor('black')
+          .text(team.name, pagePadding, height + pagePadding / 2);
+
+        doc
+          .strokeColor('black')
+          .lineWidth(0.25)
+          .moveTo(0, height + pagePadding + 14)
+          .lineTo(width, height + pagePadding + 14)
+          .stroke();
+      }
+
       doc.restore();
     });
 
     doc.end();
 
-    stream.on('finish', () => {
-      this.rendering = false;
-      this.src = stream.toBlobURL('application/pdf');
+    let blobUrl = await new Promise((resolve) => {
+      stream.on('finish', () => {
+        this.rendering = false;
+        resolve(stream.toBlobURL('application/pdf'));
+      });
     });
+
+    return blobUrl;
+  });
+
+  get src() {
+    return this.generator.value ?? undefined;
   }
 
   <template>
-    FIXME these should be team-specific, not all waypoints
-    {{#if this.rendering}}
-      …
-    {{else}}
+    <label>
+      All overlays instead of per-team?
+      <Input @type='checkbox' @checked={{this.allOverlays}} />
+    </label>
+
+    {{#if this.src}}
       <iframe title='embedded-unmnemonic-devices-overlays' src={{this.src}}>
       </iframe>
+    {{else}}
+      …
     {{/if}}
   </template>
 }

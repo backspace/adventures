@@ -40,6 +40,7 @@
 
     {{#if (feature-flag 'unmnemonicDevices')}}
       <Output::UnmnemonicDevices::Overlays
+        @teams={{this.model.teams}}
         @waypoints={{this.model.waypoints}}
         @assets={{this.model.assets}}
         @debug={{this.debug}}
