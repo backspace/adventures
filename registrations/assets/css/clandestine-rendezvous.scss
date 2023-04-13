@@ -1,28 +1,6 @@
 @import 'foundation-sites/scss/util/unit';
-
-$header-font-family: 'Blackout Sunrise';
-
-$body-font-family: 'Oswald', sans-serif;
-$body-font-color: white;
-$global-width: rem-calc(480) !default;
-
-$primary-color: fuchsia;
-$success-color: lime;
-$alert-color: $primary-color;
-$warning-color: yellow;
-
-$callout-background-fade: 10%;
-
-$background-one: #111;
-$background-two: lighten($background-one, 1%);
-
-$highlight: lighten($background-one, 10%);
-
-$form-label-color: white;
-$helptext-color: white;
-$helptext-font-style: normal;
-$input-color: $highlight;
-$button-color: $highlight;
+@import 'foundation-sites/scss/util/util';
+@import '_clandestine-rendezvous-settings';
 
 /* Blackout Sunrise */
 @font-face {
@@ -37,14 +15,12 @@ $button-color: $highlight;
 
 }
 
-@import 'foundation-sites/scss/foundation';
+@import '~foundation-sites/scss/foundation';
+
+@include foundation-everything;
+@include foundation-flex-grid;
 
 @import 'sass-cubic-bezier-bounding-box/scss/cbbb';
-
-@include foundation-global-styles;
-
-// TODO foundation-flex-grid wasn’t working?
-@include foundation-everything;
 
 canvas {
   transform: scale(0.5) translate(-50%, -50%);
