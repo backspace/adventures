@@ -1,18 +1,5 @@
 @import 'foundation-sites/scss/util/unit';
-
-$header-font-family: 'ud-body';
-$body-font-family: 'ud-body';
-$body-font-color: white;
-
-$primary-color: #DDC49C;
-
-$topbar-background: #A18D72;
-
-$global-width: rem-calc(480) !default;
-
-$form-label-color: white;
-$helptext-color: white;
-$helptext-font-style: normal;
+@import '_settings';
 
 @font-face {
     font-family: 'ud-body';
@@ -59,9 +46,10 @@ $helptext-font-style: normal;
 
 }
 
-@import 'foundation-sites/scss/foundation';
-@include foundation-global-styles;
+@import '~foundation-sites/scss/foundation';
+
 @include foundation-everything;
+@include foundation-flex-grid;
 
 body {
   background: black;
@@ -125,4 +113,9 @@ summary {
 
 #pi-dialog p {
   max-width: 20rem;
+}
+
+.row.card {
+  background-color: inherit;
+  border-color: transparent;
 }

@@ -16,13 +16,13 @@
     "babel-loader": "^8.0.0",
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.4.2",
-    "foundation-sites": "6.1.1",
+    "foundation-sites": "^6.7.0",
     "gsap": "^1.18.5",
     "sass-loader": "^8.0.2",
     "sass-cubic-bezier-bounding-box": "^1.0.2",
     "node-sass": "^4.13.1",
     "hard-source-webpack-plugin": "^0.13.1",
-    "jquery": "^2.1.4",
+    "jquery": "^3.6.0",
     "mini-css-extract-plugin": "^0.9.0",
     "optimize-css-assets-webpack-plugin": "^5.0.1",
     "terser-webpack-plugin": "^2.3.2",
@@ -31,7 +31,7 @@
     "webpack-cli": "^3.3.2"
   },
   "volta": {
-    "node": "8.17.0",
+    "node": "12.22.12",
     "npm": "6.14.18"
   }
 }
