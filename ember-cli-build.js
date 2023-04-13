@@ -72,15 +72,13 @@ module.exports = function (defaults) {
     'ember-cli-babel': {
       includePolyfill: true,
     },
-    'ember-cli-foundation-6-sass': {
-      foundationJs: 'all',
-    },
     fingerprint: {
       exclude: ['apple-touch-icon', 'favicon', 'mstile'],
       replaceExtensions: ['html', 'css', 'js', 'json'],
     },
     sassOptions: {
       implementation: nodeSass,
+      includePaths: ['node_modules/foundation-sites/scss'],
     },
   });
 
