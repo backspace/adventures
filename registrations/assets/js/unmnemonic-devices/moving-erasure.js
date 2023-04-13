@@ -1,24 +1,24 @@
-import $ from 'jquery';
+import $ from "jquery";
 
 // Adapted from http://css-tricks.com/moving-highlight/
 
 $(() => {
-  $('.moving-erasure').each(function() {
-    const originalBackground = $(this).css('background');
-    const newColour = 'black';
+  $(".moving-erasure").each(function () {
+    const originalBackground = $(this).css("background");
+    const newColour = "black";
 
     const elementToErase = this;
 
-    const clone = $(this).clone().css(
-      {
-        position: 'absolute',
-        margin: '-3em',
-        padding: '3em',
+    const clone = $(this)
+      .clone()
+      .css({
+        position: "absolute",
+        margin: "-3em",
+        padding: "3em",
         opacity: 0,
-      }
-    )
-    .attr('aria-hidden', 'true')
-    .addClass('moving-erasure-target');
+      })
+      .attr("aria-hidden", "true")
+      .addClass("moving-erasure-target");
 
     let targets = $(clone);
 
@@ -35,7 +35,11 @@ $(() => {
 
         const bgWebKit = `-webkit-gradient(radial, ${xy}, 0, ${xy}, 100, from(rgba(0,0,0,0.6)), to(rgba(255,255,255,1))), ${newColour}`;
 
-        $(elementToErase).css({background: bgWebKit, "-webkit-background-clip": "text", "-webkit-text-fill-color": "transparent"});
+        $(elementToErase).css({
+          background: bgWebKit,
+          "-webkit-background-clip": "text",
+          "-webkit-text-fill-color": "transparent",
+        });
       });
     };
 
