@@ -24,8 +24,8 @@ $(() => {
 
     clone.insertBefore(this);
 
-    $(clone).mousemove(function(e) {
-      targets.each(function() {
+    let move = function (e) {
+      targets.each(function () {
         // FIXME calculating this each time is wasteful
         const offset = $(elementToErase).offset();
         const x = e.pageX - offset.left;
@@ -37,9 +37,17 @@ $(() => {
 
         $(elementToErase).css({background: bgWebKit, "-webkit-background-clip": "text", "-webkit-text-fill-color": "transparent"});
       });
-    }).mouseleave(function() {
-        $(elementToErase).css({background: originalBackground, "-webkit-background-clip": "initial", "-webkit-text-fill-color": "initial"});
-        $(elementToErase).removeClass("followed");
-    });
+    };
+
+    let leave = function () {
+      $(elementToErase).css({
+        background: originalBackground,
+        "-webkit-background-clip": "initial",
+        "-webkit-text-fill-color": "initial",
+      });
+      $(elementToErase).removeClass("followed");
+    };
+
+    $(clone).on("mousemove touchmove", move).on("mouseleave touchend", leave);
   });
 });
