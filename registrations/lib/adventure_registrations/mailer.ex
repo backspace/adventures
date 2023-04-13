@@ -1,6 +1,7 @@
 defmodule AdventureRegistrations.Mailer do
   use Swoosh.Mailer, otp_app: :adventure_registrations
   import Swoosh.Email
+  import AdventureRegistrationsWeb.SharedHelpers
 
   alias AdventureRegistrationsWeb.Router
   alias AdventureRegistrationsWeb.Endpoint
@@ -11,7 +12,7 @@ defmodule AdventureRegistrations.Mailer do
     new()
     |> to(email)
     |> from(@from)
-    |> subject("[rendezvous] Welcome!")
+    |> subject("[#{phrase("email_title")}] Welcome!")
     |> html_body(welcome_html())
     |> text_body(welcome_text())
     |> deliver
@@ -59,7 +60,7 @@ defmodule AdventureRegistrations.Mailer do
     new()
     |> to(user.email)
     |> from(@from)
-    |> subject("[rendezvous] #{message.subject}")
+    |> subject("[#{phrase("email_title")}] #{message.subject}")
     |> text_body(message_text(message, user, relationships, team))
     |> html_body(message_html(message, user, relationships, team))
     |> deliver
@@ -75,17 +76,19 @@ defmodule AdventureRegistrations.Mailer do
     new()
     |> to(user.email)
     |> from(@from)
-    |> subject("[rendezvous] #{subject}")
+    |> subject("[#{phrase("email_title")}] #{subject}")
     |> text_body(backlog_text(messages))
     |> html_body(backlog_html(messages))
     |> deliver
   end
 
+  @spec send_password_reset(atom | %{:email => any, :recovery_hash => any, optional(any) => any}) ::
+          {:error, any} | {:ok, any}
   def send_password_reset(user) do
     new()
     |> to(user.email)
     |> from(@from)
-    |> subject("[rendezvous] Password reset")
+    |> subject("[#{phrase("email_title")}] Password reset")
     |> html_body(
       "Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link</a>"
     )
@@ -93,9 +96,13 @@ defmodule AdventureRegistrations.Mailer do
   end
 
   defp welcome_html do
-    Phoenix.View.render_to_string(AdventureRegistrationsWeb.EmailView, "welcome.html", %{
-      layout: {AdventureRegistrationsWeb.EmailView, "layout.html"}
-    })
+    Phoenix.View.render_to_string(
+      AdventureRegistrationsWeb.EmailView,
+      "#{adventure()}-welcome.html",
+      %{
+        layout: email_layout()
+      }
+    )
   end
 
   defp welcome_text do
@@ -108,7 +115,7 @@ defmodule AdventureRegistrations.Mailer do
       user: user,
       relationships: relationships,
       team: team,
-      layout: {AdventureRegistrationsWeb.EmailView, "layout.html"}
+      layout: email_layout()
     })
   end
 
@@ -119,11 +126,15 @@ defmodule AdventureRegistrations.Mailer do
   defp backlog_html(messages) do
     Phoenix.View.render_to_string(AdventureRegistrationsWeb.MessageView, "backlog.html", %{
       messages: messages,
-      layout: {AdventureRegistrationsWeb.EmailView, "layout.html"}
+      layout: email_layout()
     })
   end
 
   defp backlog_text(messages) do
     Premailex.to_text(backlog_html(messages))
+  end
+
+  defp email_layout do
+    {AdventureRegistrationsWeb.EmailView, "#{adventure()}-layout.html"}
   end
 end

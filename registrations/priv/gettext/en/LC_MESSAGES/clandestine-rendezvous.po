@@ -1,6 +1,9 @@
 msgid "title"
 msgstr "Clandestine Rendezvous"
 
+msgid "email_title"
+msgstr "rendezvous"
+
 msgid "description"
 msgstr "You are a member of a secret society with a mission of the utmost importance. You will have encounters with other members around an undisclosed location where you will obtain information to get closer to fulfilling your mission."
 

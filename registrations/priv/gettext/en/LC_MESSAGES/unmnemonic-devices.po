@@ -1,6 +1,9 @@
 msgid "title"
 msgstr "unmnemonic devices"
 
+msgid "email_title"
+msgstr "unmnemonic"
+
 msgid "description"
 msgstr "Attend a technical demonstration of our groundbreaking new technology to help you block out the nightmare present"
 
