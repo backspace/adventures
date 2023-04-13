@@ -5,58 +5,102 @@
       <Input @type='checkbox' @checked={{this.debug}} />
     </label>
 
-    {{#if (feature-flag 'clandestineRendezvous')}}
-      <Output::ClandestineRendezvous::Maps
-        @teams={{this.model.teams}}
-        @assets={{this.model.assets}}
-        @debug={{this.debug}}
-      />
-      <Output::ClandestineRendezvous::Cards
-        @teams={{this.model.teams}}
-        @settings={{this.model.settings}}
-        @assets={{this.model.assets}}
-        @debug={{this.debug}}
-      />
-      <Output::ClandestineRendezvous::Answers
-        @teams={{this.model.teams}}
-        @meetings={{this.model.meetings}}
-      />
-    {{/if}}
+    <table>
+      <tbody>
+        {{#if (feature-flag 'clandestineRendezvous')}}
+          <tr>
+            <Output::ClandestineRendezvous::Maps
+              @teams={{this.model.teams}}
+              @assets={{this.model.assets}}
+              @debug={{this.debug}}
+            />
+            <Output::ClandestineRendezvous::Cards
+              @teams={{this.model.teams}}
+              @settings={{this.model.settings}}
+              @assets={{this.model.assets}}
+              @debug={{this.debug}}
+            />
+            <Output::ClandestineRendezvous::Answers
+              @teams={{this.model.teams}}
+              @meetings={{this.model.meetings}}
+            />
+          </tr>
+        {{/if}}
 
-    {{#if (feature-flag 'txtbeyond')}}
-      <Output::Txtbeyond::Cards
-        @teams={{this.model.teams}}
-        @settings={{this.model.settings}}
-        @assets={{this.model.assets}}
-        @debug={{this.debug}}
-      />
-      <Output::Txtbeyond::Transparencies
-        @teams={{this.model.teams}}
-        @settings={{this.model.settings}}
-        @assets={{this.model.assets}}
-        @debug={{this.debug}}
-      />
-    {{/if}}
+        {{#if (feature-flag 'txtbeyond')}}
+          <tr>
+            <Output::Txtbeyond::Cards
+              @teams={{this.model.teams}}
+              @settings={{this.model.settings}}
+              @assets={{this.model.assets}}
+              @debug={{this.debug}}
+            />
+            <Output::Txtbeyond::Transparencies
+              @teams={{this.model.teams}}
+              @settings={{this.model.settings}}
+              @assets={{this.model.assets}}
+              @debug={{this.debug}}
+            />
+          </tr>
+        {{/if}}
 
-    {{#if (feature-flag 'unmnemonicDevices')}}
-      <Output::UnmnemonicDevices::Overlays
-        @teams={{this.model.teams}}
-        @waypoints={{this.model.waypoints}}
-        @assets={{this.model.assets}}
-        @debug={{this.debug}}
-      />
+        {{#if (feature-flag 'unmnemonicDevices')}}
+          <tr>
+            <td>
+              <label>
+                Overlays?
+                <Input @type='checkbox' @checked={{this.unmnemonicDevicesOverlays}} />
+              </label>
+            </td>
+            <td>
+              {{#if this.unmnemonicDevicesOverlays}}
+                <Output::UnmnemonicDevices::Overlays
+                  @teams={{this.model.teams}}
+                  @waypoints={{this.model.waypoints}}
+                  @assets={{this.model.assets}}
+                  @debug={{this.debug}}
+                />
+              {{/if}}
+            </td>
+          </tr>
 
-      <Output::UnmnemonicDevices::TeamOverviews
-        @teams={{this.model.teams}}
-        @assets={{this.model.assets}}
-        @debug={{this.debug}}
-      />
+          <tr>
+            <td>
+              <label>
+                Team overviews?
+                <Input @type='checkbox' @checked={{this.unmnemonicDevicesTeamOverviews}} />
+              </label>
+            </td>
+            <td>
+              {{#if this.unmnemonicDevicesTeamOverviews}}
+              <Output::UnmnemonicDevices::TeamOverviews
+                @teams={{this.model.teams}}
+                @assets={{this.model.assets}}
+                @debug={{this.debug}}
+              />
+              {{/if}}
+            </td>
+          </tr>
 
-      <Output::UnmnemonicDevices::Verification
-        @regions={{this.model.regions}}
-        @assets={{this.model.assets}}
-        @debug={{this.debug}}
-      />
-    {{/if}}
+          <tr>
+            <td>
+              <label>
+                Verification?
+                <Input @type='checkbox' @checked={{this.unmnemonicDevicesVerification}} />
+              </label>
+            </td>
+            <td>
+              {{#if this.unmnemonicDevicesVerification}}
+                <Output::UnmnemonicDevices::Verification
+                  @regions={{this.model.regions}}
+                  @assets={{this.model.assets}}
+                  @debug={{this.debug}}
+                />
+              {{/if}}
+            </td>
+          </tr>
+        {{/if}}
+      </tbody>
+    </table>
   </div>
 </div>
