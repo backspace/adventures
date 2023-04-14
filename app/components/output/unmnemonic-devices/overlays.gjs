@@ -157,15 +157,25 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
       doc.fontSize(14);
 
+      let upperLeftText, upperRightText;
+
+      if (page % 2 === 0) {
+        upperLeftText = page;
+        upperRightText = waypointName;
+      } else {
+        upperLeftText = waypointName;
+        upperRightText = page;
+      }
+
       doc
         .fillColor('black')
         .strokeColor('white')
         .lineWidth(3)
-        .text(waypointName, pagePadding, pagePadding, {
+        .text(upperLeftText, pagePadding, pagePadding, {
           fill: true,
           stroke: true,
         })
-        .text(page, pagePadding, pagePadding, {
+        .text(upperRightText, pagePadding, pagePadding, {
           width: width - pagePadding * 2,
           align: 'right',
           fill: true,
@@ -181,8 +191,8 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       doc
         .fillColor('black')
         .lineWidth(1)
-        .text(waypointName, pagePadding, pagePadding)
-        .text(page, pagePadding, pagePadding, {
+        .text(upperLeftText, pagePadding, pagePadding)
+        .text(upperRightText, pagePadding, pagePadding, {
           width: width - pagePadding * 2,
           align: 'right',
         })
