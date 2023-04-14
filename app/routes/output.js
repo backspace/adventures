@@ -43,7 +43,11 @@ export default class OutputRoute extends Route {
         fetch('/fonts/unmnemonic-regular.ttf'),
         fetch('/fonts/unmnemonic-regular.ttf'),
         fetch('/fonts/unmnemonic-regular.ttf'),
+        fetch('/unmnemonic-devices/background-0.png'),
         fetch('/unmnemonic-devices/background-1.png'),
+        fetch('/unmnemonic-devices/background-2.png'),
+        fetch('/unmnemonic-devices/background-3.png'),
+        fetch('/unmnemonic-devices/background-4.png'),
       ];
     } else {
       fontPaths = [];
@@ -73,15 +77,30 @@ export default class OutputRoute extends Route {
         .then((responses) => {
           return all(responses.map((response) => response.arrayBuffer()));
         })
-        .then(([header, bold, regular, background1]) => {
-          return hash({
+        .then(
+          ([
             header,
             bold,
             regular,
-            map,
+            background0,
             background1,
-          });
-        }),
+            background2,
+            background3,
+            background4,
+          ]) => {
+            return hash({
+              header,
+              bold,
+              regular,
+              map,
+              background0,
+              background1,
+              background2,
+              background3,
+              background4,
+            });
+          }
+        ),
     });
   }
 

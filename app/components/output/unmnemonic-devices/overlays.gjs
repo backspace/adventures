@@ -10,6 +10,8 @@ import PDFDocument from 'pdfkit';
 const pageMargin = 0.5 * 72;
 const pagePadding = 0.25 * 72;
 
+const BACKGROUND_COUNT = 5;
+
 export default class UnmnemonicDevicesOverlaysComponent extends Component {
   @tracked allOverlays;
 
@@ -59,16 +61,26 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       doc.save();
       doc.rect(0, 0, width, height).clip();
 
-      doc.image(
-        this.args.assets.background1,
-        -pageMargin * 2,
-        -pageMargin * 2,
-        {
-          cover: [width + pageMargin * 4, height + pageMargin * 4],
+      let backgroundIndex = index % BACKGROUND_COUNT;
+
+      if (backgroundIndex === 1) {
+        doc.image(
+          this.args.assets.background1,
+          -pageMargin * 2,
+          -pageMargin * 2,
+          {
+            cover: [width + pageMargin * 4, height + pageMargin * 4],
+            align: 'center',
+            valign: 'center',
+          }
+        );
+      } else {
+        doc.image(this.args.assets[`background${backgroundIndex}`], 0, 0, {
+          cover: [width, height],
           align: 'center',
           valign: 'center',
-        }
-      );
+        });
+      }
 
       doc.restore();
 
