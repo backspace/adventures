@@ -124,3 +124,11 @@ summary {
 .alert-info.success, .alert-danger.alert {
   color: black;
 }
+
+.alert-info.success::before {
+  content: '☑️ ';
+}
+
+.alert-danger.alert::before {
+  content: '❗️ ';
+}
