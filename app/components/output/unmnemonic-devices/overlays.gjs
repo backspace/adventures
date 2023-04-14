@@ -10,7 +10,13 @@ import PDFDocument from 'pdfkit';
 const pageMargin = 0.5 * 72;
 const pagePadding = 0.25 * 72;
 
+const registrationPadding = pagePadding;
+const registrationLength = pagePadding;
+const registrationTotal = registrationPadding + registrationLength;
+
 const BACKGROUND_COUNT = 5;
+const TEAM_FONT_SIZE = 14;
+const TEAM_GAP_SIZE = pagePadding;
 
 export default class UnmnemonicDevicesOverlaysComponent extends Component {
   @tracked allOverlays;
@@ -53,10 +59,75 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       }
 
       doc.save();
-
       doc.translate(pageMargin, pageMargin);
 
       let [width, height] = this.devices.parsedDimensions(dimensions);
+
+      let team = maybeTeamAndWaypoint.team;
+
+      doc.save();
+      doc.translate(
+        registrationLength + registrationPadding,
+        registrationLength + registrationPadding
+      );
+
+      doc.lineWidth(0.25);
+
+      // NW ver
+      doc
+        .moveTo(0, -registrationPadding)
+        .lineTo(0, -registrationTotal)
+        .stroke();
+
+      // NW hor
+      doc
+        .moveTo(-registrationPadding, 0)
+        .lineTo(-registrationTotal, 0)
+        .stroke();
+
+      // NE ver
+      doc
+        .moveTo(width + registrationPadding, -registrationPadding)
+        .lineTo(width + registrationPadding, -registrationTotal)
+        .stroke();
+
+      // NE hor
+      doc
+        .moveTo(width + registrationPadding, 0)
+        .lineTo(width + registrationTotal, 0)
+        .stroke();
+
+      let teamBottomMargin = team ? TEAM_FONT_SIZE + TEAM_GAP_SIZE : 0;
+
+      doc.save();
+      doc.translate(0, teamBottomMargin);
+
+      // SW ver
+      doc
+        .moveTo(0, height + registrationPadding)
+        .lineTo(0, height + registrationTotal)
+        .stroke();
+
+      // SW hor
+      doc
+        .moveTo(-registrationPadding, height)
+        .lineTo(-registrationTotal, height)
+        .stroke();
+
+      // SE ver
+      doc
+        .moveTo(width, height + registrationPadding)
+        .lineTo(width, height + registrationTotal)
+        .stroke();
+
+      // SE hor
+      doc
+        .moveTo(width + registrationPadding, height)
+        .lineTo(width + registrationTotal, height)
+        .stroke();
+
+      // Maybe team margin
+      doc.restore();
 
       doc.save();
       doc.rect(0, 0, width, height).clip();
@@ -170,22 +241,21 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         })
         .text(postExcerpt, end[0], end[1], {});
 
-      let team = maybeTeamAndWaypoint.team;
-
       if (team) {
-        doc.fontSize(14);
+        doc.fontSize(TEAM_FONT_SIZE);
         doc
           .fillColor('black')
-          .text(team.name, pagePadding, height + pagePadding / 2);
-
-        doc
-          .strokeColor('black')
-          .lineWidth(0.25)
-          .moveTo(0, height + pagePadding + 14)
-          .lineTo(width, height + pagePadding + 14)
-          .stroke();
+          .text(
+            team.name,
+            pagePadding,
+            height + TEAM_GAP_SIZE - TEAM_FONT_SIZE
+          );
       }
 
+      // Registration marks
+      doc.restore();
+
+      // Margins
       doc.restore();
     });
 
