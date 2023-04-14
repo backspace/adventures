@@ -145,7 +145,7 @@ defmodule AdventureRegistrations.Integration.Registrations do
     Nav.login_link().click
     Login.click_forgot_password()
 
-    ForgotPassword.fill_email("noone")
+    ForgotPassword.fill_email("noone@example.com")
     ForgotPassword.submit()
 
     assert Nav.error_text() == "No registration with that email address found"
