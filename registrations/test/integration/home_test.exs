@@ -17,6 +17,20 @@ defmodule AdventureRegistrations.UnmnemonicDevices.Integration.Home do
 
   hound_session()
 
+  test "head tags are correct" do
+    navigate_to("/")
+
+    assert inner_text({:css, "title"}) == "unmnemonic devices"
+
+    assert attribute_value({:css, "meta[property='og:title']"}, "content") ==
+             "unmnemonic devices: Zagreb, June 8"
+
+    assert attribute_value({:css, "meta[property='og:url']"}, "content") == "http://example.com"
+
+    assert attribute_value({:css, "meta[property='og:image']"}, "content") ==
+             "http://example.com/images/unmnemonic-devices/meta.png"
+  end
+
   test "pi does not show by default" do
     insert(:unmnemonic_devices_settings)
 

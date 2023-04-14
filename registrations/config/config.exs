@@ -23,7 +23,9 @@ config :adventure_registrations, AdventureRegistrations.Mailer,
   domain: "mg.chromatin.ca"
 
 config :adventure_registrations,
-  start_time: [{{2017, 6, 8}, {18, 00, 00}}, "Canada/Pacific"]
+  start_time: [{{2017, 6, 8}, {18, 00, 00}}, "Canada/Pacific"],
+  location: "Zagreb",
+  base_url: "http://example.com"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
@@ -36,5 +38,7 @@ config :phoenix, :json_library, Jason
 config :phoenix, :generators,
   migration: true,
   binary_id: false
+
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
 config :adventure_registrations, ecto_repos: [AdventureRegistrations.Repo]

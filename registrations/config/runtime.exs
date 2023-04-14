@@ -32,6 +32,22 @@ if config_env() != :test do
 end
 
 if config_env() == :prod do
+  location =
+    System.get_env("LOCATION") ||
+      raise """
+      environment variable LOCATION is missing.
+      """
+
+  base_url =
+    System.get_env("BASE_URL") ||
+      raise """
+      environment variable BASE_URL is missing.
+      """
+
+  config :adventure_registrations,
+    location: location,
+    base_url: base_url
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """

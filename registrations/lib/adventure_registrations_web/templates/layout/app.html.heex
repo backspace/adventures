@@ -9,10 +9,10 @@
 
     <meta name='twitter:card' content='summary'>
 
-    <meta property='og:title' content={"Clandestine Rendezvous: Victoria, #{short_date()}"}>
+    <meta property='og:title' content={"#{phrase("title")}: #{location()}, #{short_date()}"}>
     <meta property='og:type' content='website'>
-    <meta property='og:url' content='http://rendezvous.chromatin.ca'>
-    <meta property='og:image' content='https://crvictoria.herokuapp.com/images/eye.png'>
+    <meta property='og:url' content={base_url()}>
+    <meta property='og:image' content={"#{base_url()}/images/#{adventure()}/meta.png"}>
     <meta property='og:description' content={phrase("description")}>
 
     <title><%= phrase("title") %></title>

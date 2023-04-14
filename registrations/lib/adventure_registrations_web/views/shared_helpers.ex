@@ -3,6 +3,14 @@ defmodule AdventureRegistrationsWeb.SharedHelpers do
     Application.get_env(:adventure_registrations, :adventure)
   end
 
+  def location do
+    Application.get_env(:adventure_registrations, :location)
+  end
+
+  def base_url do
+    Application.get_env(:adventure_registrations, :base_url)
+  end
+
   def phrase(id) do
     Gettext.dgettext(
       AdventureRegistrationsWeb.Gettext,
