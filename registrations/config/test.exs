@@ -20,5 +20,4 @@ config :adventure_registrations, AdventureRegistrations.Repo,
 
 config :hound, driver: "chrome_driver", browser: "chrome_headless"
 
-config :adventure_registrations, AdventureRegistrations.Mailer,
-  adapter: Swoosh.Adapters.Local
+config :adventure_registrations, AdventureRegistrations.Mailer, adapter: Swoosh.Adapters.Local
