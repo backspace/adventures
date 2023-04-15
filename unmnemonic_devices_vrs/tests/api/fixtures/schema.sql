@@ -88,7 +88,9 @@ CREATE TABLE public.users (
     recovery_hash character varying(255),
     comments text,
     source text,
-    attending boolean
+    attending boolean,
+    voicepass character varying(255)
+);
 );
 
 
@@ -200,3 +202,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20160210161806);
 INSERT INTO public."schema_migrations" (version) VALUES (20230403015430);
 INSERT INTO public."schema_migrations" (version) VALUES (20230403015446);
 INSERT INTO public."schema_migrations" (version) VALUES (20230410042355);
+INSERT INTO public."schema_migrations" (version) VALUES (20230411002346);
