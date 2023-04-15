@@ -73,9 +73,9 @@ pub async fn get_team(
             FROM
                 public.teams t
             LEFT JOIN
-                unmnemonic_devices.books_teams bt ON t.id = bt.team_id
+                unmnemonic_devices.meetings m ON t.id = m.team_id
             LEFT JOIN
-                unmnemonic_devices.books b ON bt.book_id = b.id
+                unmnemonic_devices.books b ON m.book_id = b.id
             WHERE
                 t.id = $1
             GROUP BY
@@ -88,4 +88,49 @@ pub async fn get_team(
     .expect("Failed to fetch team");
 
     RenderXml(key, state.engine, team)
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct TeamForm {
+    speech_result: String,
+}
+
+#[derive(sqlx::FromRow, Serialize)]
+pub struct MeetingId {
+    id: Uuid,
+}
+
+pub async fn post_team(
+    State(state): State<AppState>,
+    Path(id): Path<Uuid>,
+    Form(form): Form<TeamForm>,
+) -> impl IntoResponse {
+    let transformed_excerpt = form
+        .speech_result
+        .to_lowercase()
+        .replace(&['?', '.', ','][..], "");
+
+    let meeting_id = sqlx::query_as::<_, MeetingId>(
+        r#"
+          SELECT
+            m.id
+          FROM
+            unmnemonic_devices.meetings m
+            LEFT JOIN unmnemonic_devices.books b ON m.book_id = b.id
+          WHERE
+            m.team_id = $1
+            AND b.excerpt = $2
+        "#,
+    )
+    .bind(id)
+    .bind(transformed_excerpt)
+    .fetch_one(&state.db)
+    .await;
+
+    if meeting_id.is_ok() {
+        Redirect::to(&format!("/meetings/{}", meeting_id.unwrap().id)).into_response()
+    } else {
+        RenderXml("/meetings/not-found", state.engine, id).into_response()
+    }
 }

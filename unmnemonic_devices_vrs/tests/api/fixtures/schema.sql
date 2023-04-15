@@ -135,12 +135,35 @@ CREATE TABLE unmnemonic_devices.books (
 
 
 --
--- Name: books_teams; Type: TABLE; Schema: unmnemonic_devices; Owner: -
+-- Name: destinations; Type: TABLE; Schema: unmnemonic_devices; Owner: -
 --
 
-CREATE TABLE unmnemonic_devices.books_teams (
+CREATE TABLE unmnemonic_devices.destinations (
+    id uuid NOT NULL,
+    description character varying(255),
+    region_id uuid NOT NULL
+);
+
+
+--
+-- Name: meetings; Type: TABLE; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE TABLE unmnemonic_devices.meetings (
+    id uuid NOT NULL,
     book_id uuid NOT NULL,
+    destination_id uuid NOT NULL,
     team_id uuid NOT NULL
+);
+
+
+--
+-- Name: regions; Type: TABLE; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE TABLE unmnemonic_devices.regions (
+    id uuid NOT NULL,
+    name character varying(255)
 );
 
 
@@ -235,11 +258,27 @@ ALTER TABLE ONLY unmnemonic_devices.books
 
 
 --
--- Name: books_teams books_teams_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+-- Name: destinations destinations_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
 --
 
-ALTER TABLE ONLY unmnemonic_devices.books_teams
-    ADD CONSTRAINT books_teams_pkey PRIMARY KEY (book_id, team_id);
+ALTER TABLE ONLY unmnemonic_devices.destinations
+    ADD CONSTRAINT destinations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: meetings meetings_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.meetings
+    ADD CONSTRAINT meetings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: regions regions_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.regions
+    ADD CONSTRAINT regions_pkey PRIMARY KEY (id);
 
 
 --
@@ -265,19 +304,35 @@ CREATE UNIQUE INDEX users_email_index ON public.users USING btree (email);
 
 
 --
--- Name: books_teams books_teams_book_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+-- Name: destinations destinations_region_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
 --
 
-ALTER TABLE ONLY unmnemonic_devices.books_teams
-    ADD CONSTRAINT books_teams_book_id_fkey FOREIGN KEY (book_id) REFERENCES unmnemonic_devices.books(id);
+ALTER TABLE ONLY unmnemonic_devices.destinations
+    ADD CONSTRAINT destinations_region_id_fkey FOREIGN KEY (region_id) REFERENCES unmnemonic_devices.regions(id);
 
 
 --
--- Name: books_teams books_teams_team_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+-- Name: meetings meetings_book_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
 --
 
-ALTER TABLE ONLY unmnemonic_devices.books_teams
-    ADD CONSTRAINT books_teams_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(id);
+ALTER TABLE ONLY unmnemonic_devices.meetings
+    ADD CONSTRAINT meetings_book_id_fkey FOREIGN KEY (book_id) REFERENCES unmnemonic_devices.books(id);
+
+
+--
+-- Name: meetings meetings_destination_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.meetings
+    ADD CONSTRAINT meetings_destination_id_fkey FOREIGN KEY (destination_id) REFERENCES unmnemonic_devices.destinations(id);
+
+
+--
+-- Name: meetings meetings_team_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.meetings
+    ADD CONSTRAINT meetings_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(id);
 
 
 --
@@ -301,4 +356,6 @@ INSERT INTO public."schema_migrations" (version) VALUES (20230403015446);
 INSERT INTO public."schema_migrations" (version) VALUES (20230410042355);
 INSERT INTO public."schema_migrations" (version) VALUES (20230411002346);
 INSERT INTO public."schema_migrations" (version) VALUES (20230415020954);
-INSERT INTO public."schema_migrations" (version) VALUES (20230415021429);
+INSERT INTO public."schema_migrations" (version) VALUES (20230415180333);
+INSERT INTO public."schema_migrations" (version) VALUES (20230415180346);
+INSERT INTO public."schema_migrations" (version) VALUES (20230415180351);

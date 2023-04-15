@@ -35,6 +35,7 @@ pub async fn app(db: PgPool) -> Router {
         .route("/teams", get(get_teams))
         .route("/teams", post(post_teams))
         .route("/teams/:id", get(get_team))
+        .route("/teams/:id", post(post_team))
         .with_state(shared_state)
         .layer(tower_http::trace::TraceLayer::new_for_http())
 }

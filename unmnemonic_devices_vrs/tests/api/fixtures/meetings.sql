@@ -1,0 +1,21 @@
+insert into
+  "unmnemonic_devices"."meetings" ("id", "book_id", "team_id", "destination_id")
+values
+  (
+    'DE805DAF-28E7-F7A9-8CB2-9806730B54E5',
+    '721ED5B5-BCD7-5DA5-9470-CE708084F3CF',
+    '48e3bda7-db52-4c99-985f-337e266f7832',
+    '836A0B80-8A07-702A-B5AE-6506C712C1E0'
+  ),
+  (
+    '2460cb8f-bd7f-4790-a2d8-86df38d5cbdc',
+    '3BD5D123-7389-0668-9F32-1EF96763E91C',
+    '48e3bda7-db52-4c99-985f-337e266f7832',
+    'AC7A854D-274D-B26E-B85F-355FC6AA14EC'
+  ),
+  (
+    '6224c7ea-43c7-4549-bd59-6bd9a60391ff',
+    '89DCBA43-1DCB-52CA-A00C-9BD185D4A14C',
+    '5f721b36-38bd-4504-a5aa-428e9447ab12',
+    '836A0B80-8A07-702A-B5AE-6506C712C1E0'
+  )
