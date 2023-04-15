@@ -92,8 +92,8 @@ async fn teams_post_renders_not_found_when_no_voicepass_matches(db: PgPool) {
     assert_eq!(redirect.attr("method").unwrap(), "GET");
 }
 
-#[sqlx::test(fixtures("schema", "teams"))]
-async fn team_show_names_team(db: PgPool) {
+#[sqlx::test(fixtures("schema", "teams", "books", "books-teams"))]
+async fn team_show_names_team_and_gathers_excerpts(db: PgPool) {
     let app_address = spawn_app(db).await.address;
 
     let client = reqwest::Client::new();
@@ -114,4 +114,14 @@ async fn team_show_names_team(db: PgPool) {
     let say = document.find(Name("say")).next().unwrap();
 
     assert_that(&say.text()).contains("jortles");
+
+    assert_that(
+        &document
+            .find(Name("gather"))
+            .next()
+            .unwrap()
+            .attr("hints")
+            .unwrap(),
+    )
+    .contains("schnimbleby, abused or ignored, ");
 }

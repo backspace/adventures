@@ -1,5 +1,11 @@
 <Response>
   <Say>
-    Welcome, team {{name}}
+    Welcome, team {{name}}.
   </Say>
+  <Gather timeout="2" input="speech" hints="{{#each excerpts}}{{this}}, {{/each}}">
+    <Say>
+      FIXME what is your cathartic phrase or the collation of the findings
+      from your kinetic instructions?
+    </Say>
+  </Gather>
 </Response>

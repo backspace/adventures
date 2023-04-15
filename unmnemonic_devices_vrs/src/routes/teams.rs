@@ -19,10 +19,11 @@ pub struct Team {
     id: Uuid,
     name: String,
     voicepass: String,
+    excerpts: Option<Vec<String>>,
 }
 
 pub async fn get_teams(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
-    let teams = sqlx::query_as::<_, Team>("SELECT * FROM teams")
+    let teams = sqlx::query_as::<_, Team>("SELECT *, ARRAY[]::VARCHAR[] AS excerpts FROM teams")
         .fetch_all(&state.db)
         .await
         .expect("Failed to fetch team");
@@ -45,10 +46,12 @@ pub async fn post_teams(
         .to_lowercase()
         .replace(&['?', '.', ','][..], "");
 
-    let team = sqlx::query_as::<_, Team>("SELECT * FROM teams WHERE voicepass = $1")
-        .bind(transformed_voicepass)
-        .fetch_one(&state.db)
-        .await;
+    let team = sqlx::query_as::<_, Team>(
+        "SELECT *, ARRAY[]::VARCHAR[] AS excerpts FROM teams WHERE voicepass = $1",
+    )
+    .bind(transformed_voicepass)
+    .fetch_one(&state.db)
+    .await;
 
     if team.is_ok() {
         Redirect::to(&format!("/teams/{}", team.unwrap().id)).into_response()
@@ -62,11 +65,27 @@ pub async fn get_team(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    let team = sqlx::query_as::<_, Team>("SELECT * FROM teams WHERE id = $1")
-        .bind(id)
-        .fetch_one(&state.db)
-        .await
-        .expect("Failed to fetch team");
+    let team = sqlx::query_as::<_, Team>(
+        r#"
+            SELECT
+              t.*,
+              ARRAY_AGG(b.excerpt) AS excerpts
+            FROM
+                public.teams t
+            LEFT JOIN
+                unmnemonic_devices.books_teams bt ON t.id = bt.team_id
+            LEFT JOIN
+                unmnemonic_devices.books b ON bt.book_id = b.id
+            WHERE
+                t.id = $1
+            GROUP BY
+                t.id;
+          "#,
+    )
+    .bind(id)
+    .fetch_one(&state.db)
+    .await
+    .expect("Failed to fetch team");
 
     RenderXml(key, state.engine, team)
 }

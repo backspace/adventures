@@ -91,6 +91,26 @@ CREATE TABLE public.users (
     attending boolean,
     voicepass character varying(255)
 );
+
+
+--
+-- Name: books; Type: TABLE; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE TABLE unmnemonic_devices.books (
+    id uuid NOT NULL,
+    excerpt character varying(255),
+    title character varying(255)
+);
+
+
+--
+-- Name: books_teams; Type: TABLE; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE TABLE unmnemonic_devices.books_teams (
+    book_id uuid NOT NULL,
+    team_id uuid NOT NULL
 );
 
 
@@ -169,6 +189,22 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: books books_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.books
+    ADD CONSTRAINT books_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: books_teams books_teams_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.books_teams
+    ADD CONSTRAINT books_teams_pkey PRIMARY KEY (book_id, team_id);
+
+
+--
 -- Name: settings settings_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
 --
 
@@ -181,6 +217,22 @@ ALTER TABLE ONLY unmnemonic_devices.settings
 --
 
 CREATE UNIQUE INDEX users_email_index ON public.users USING btree (email);
+
+
+--
+-- Name: books_teams books_teams_book_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.books_teams
+    ADD CONSTRAINT books_teams_book_id_fkey FOREIGN KEY (book_id) REFERENCES unmnemonic_devices.books(id);
+
+
+--
+-- Name: books_teams books_teams_team_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.books_teams
+    ADD CONSTRAINT books_teams_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(id);
 
 
 --
@@ -203,3 +255,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20230403015430);
 INSERT INTO public."schema_migrations" (version) VALUES (20230403015446);
 INSERT INTO public."schema_migrations" (version) VALUES (20230410042355);
 INSERT INTO public."schema_migrations" (version) VALUES (20230411002346);
+INSERT INTO public."schema_migrations" (version) VALUES (20230415020954);
+INSERT INTO public."schema_migrations" (version) VALUES (20230415021429);
