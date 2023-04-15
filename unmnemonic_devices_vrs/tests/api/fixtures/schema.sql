@@ -17,15 +17,45 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: _sqlx_test; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA _sqlx_test;
+
+
+--
 -- Name: unmnemonic_devices; Type: SCHEMA; Schema: -; Owner: -
 --
 
 CREATE SCHEMA unmnemonic_devices;
 
 
+--
+-- Name: database_ids; Type: SEQUENCE; Schema: _sqlx_test; Owner: -
+--
+
+CREATE SEQUENCE _sqlx_test.database_ids
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: databases; Type: TABLE; Schema: _sqlx_test; Owner: -
+--
+
+CREATE TABLE _sqlx_test.databases (
+    db_name text NOT NULL,
+    test_path text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
 
 --
 -- Name: messages; Type: TABLE; Schema: public; Owner: -
@@ -157,6 +187,14 @@ ALTER TABLE ONLY unmnemonic_devices.settings ALTER COLUMN id SET DEFAULT nextval
 
 
 --
+-- Name: databases databases_pkey; Type: CONSTRAINT; Schema: _sqlx_test; Owner: -
+--
+
+ALTER TABLE ONLY _sqlx_test.databases
+    ADD CONSTRAINT databases_pkey PRIMARY KEY (db_name);
+
+
+--
 -- Name: messages messages_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -210,6 +248,13 @@ ALTER TABLE ONLY unmnemonic_devices.books_teams
 
 ALTER TABLE ONLY unmnemonic_devices.settings
     ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: databases_created_at; Type: INDEX; Schema: _sqlx_test; Owner: -
+--
+
+CREATE INDEX databases_created_at ON _sqlx_test.databases USING btree (created_at);
 
 
 --
