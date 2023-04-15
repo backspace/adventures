@@ -9,6 +9,7 @@ export default class OutputController extends Controller {
     'unmnemonicDevicesOverlays',
     'unmnemonicDevicesTeamOverviews',
     'unmnemonicDevicesVerification',
+    'unmnemonicDevicesVrssql',
   ];
 
   @tracked debug = false;
@@ -16,4 +17,5 @@ export default class OutputController extends Controller {
   @tracked unmnemonicDevicesOverlays = false;
   @tracked unmnemonicDevicesTeamOverviews = false;
   @tracked unmnemonicDevicesVerification = false;
+  @tracked unmnemonicDevicesVrssql = false;
 }

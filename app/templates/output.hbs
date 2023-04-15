@@ -99,6 +99,24 @@
               {{/if}}
             </td>
           </tr>
+
+          <tr>
+            <td>
+              <label>
+                VRS SQL?
+                <Input @type='checkbox' @checked={{this.unmnemonicDevicesVrssql}} />
+              </label>
+            </td>
+            <td>
+              {{#if this.unmnemonicDevicesVrssql}}
+                <Output::UnmnemonicDevices::Vrssql
+                  @meetings={{this.model.meetings}}
+                  @waypoints={{this.model.waypoints}}
+                  @debug={{this.debug}}
+                />
+              {{/if}}
+            </td>
+          </tr>
         {{/if}}
       </tbody>
     </table>

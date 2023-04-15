@@ -50,6 +50,10 @@ export default class UnmnemonicDevicesService extends Service {
     return excerpt.split('|')[0];
   }
 
+  inExcerpt(excerpt) {
+    return excerpt.split('|')[1];
+  }
+
   postExcerpt(excerpt) {
     return excerpt.split('|')[2];
   }
