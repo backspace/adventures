@@ -87,8 +87,8 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
       // NE ver
       doc
-        .moveTo(width + registrationPadding, -registrationPadding)
-        .lineTo(width + registrationPadding, -registrationTotal)
+        .moveTo(width, -registrationPadding)
+        .lineTo(width, -registrationTotal)
         .stroke();
 
       // NE hor
