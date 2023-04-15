@@ -11,12 +11,37 @@ export default class TeamOverviewsComponent extends Component {
   @service('unmnemonic-devices') devices;
 
   get outputs() {
-    let getterNames = ['books', 'teamBooks'];
+    let getterNames = ['books', 'regions', 'destinations', 'meetings'];
 
     return getterNames.map((getterName) => ({
       name: getterName,
       query: this[getterName].toString(),
     }));
+  }
+
+  get regions() {
+    return knex({ client: 'pg' })('unmnemonic_devices.regions')
+      .insert(
+        this.args.meetings.map((meeting) => ({
+          id: meeting.get('destination.region.id'),
+          name: meeting.get('destination.region.name'),
+        }))
+      )
+      .onConflict('id')
+      .merge();
+  }
+
+  get destinations() {
+    return knex({ client: 'pg' })('unmnemonic_devices.destinations')
+      .insert(
+        this.args.meetings.map((meeting) => ({
+          id: meeting.get('destination.id'),
+          description: meeting.get('destination.description'),
+          region_id: meeting.get('destination.region.id'),
+        }))
+      )
+      .onConflict('id')
+      .merge();
   }
 
   get books() {
@@ -32,15 +57,17 @@ export default class TeamOverviewsComponent extends Component {
       .merge();
   }
 
-  get teamBooks() {
-    return knex({ client: 'pg' })('unmnemonic_devices.books_teams')
+  get meetings() {
+    return knex({ client: 'pg' })('unmnemonic_devices.meetings')
       .insert(
         this.args.meetings.map((meeting) => ({
+          id: meeting.get('id'),
           team_id: meeting.get('teams.firstObject.id'),
           book_id: meeting.get('waypoint.id'),
+          destination_id: meeting.get('destination.id'),
         }))
       )
-      .onConflict(['team_id', 'book_id'])
+      .onConflict(['id'])
       .merge();
   }
 
