@@ -15,6 +15,7 @@ const registrationLength = pagePadding;
 const registrationTotal = registrationPadding + registrationLength;
 
 const BACKGROUND_COUNT = 5;
+const OUTLINE_WIDTH = 4;
 const TEAM_FONT_SIZE = 14;
 const TEAM_GAP_SIZE = pagePadding;
 
@@ -170,7 +171,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       doc
         .fillColor('black')
         .strokeColor('white')
-        .lineWidth(3)
+        .lineWidth(OUTLINE_WIDTH)
         .text(upperLeftText, pagePadding, pagePadding, {
           fill: true,
           stroke: true,
@@ -230,7 +231,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       doc
         .fillColor('black')
         .strokeColor('white')
-        .lineWidth(3)
+        .lineWidth(OUTLINE_WIDTH)
         .text(preExcerpt, 0, startY, {
           align: 'right',
           fill: true,
