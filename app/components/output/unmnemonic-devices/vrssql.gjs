@@ -22,10 +22,10 @@ export default class TeamOverviewsComponent extends Component {
   get books() {
     return knex({ client: 'pg' })('unmnemonic_devices.books')
       .insert(
-        this.args.waypoints.filterBy('isComplete').map((book) => ({
-          id: book.id,
-          title: book.name,
-          excerpt: this.devices.inExcerpt(book.excerpt),
+        this.args.meetings.map((meeting) => ({
+          id: meeting.get('waypoint.id'),
+          title: meeting.get('waypoint.name'),
+          excerpt: this.devices.inExcerpt(meeting.get('waypoint.excerpt')),
         }))
       )
       .onConflict('id')
