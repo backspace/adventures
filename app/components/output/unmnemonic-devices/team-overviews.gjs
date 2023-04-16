@@ -112,6 +112,15 @@ export default class TeamOverviewsComponent extends Component {
           const waypointX = waypointRegion.x / 2 + mapOffsetX - mapClipLeft;
           const waypointY = waypointRegion.y / 2 + mapOffsetY - mapClipTop;
 
+          doc.save();
+          doc
+            .circle(waypointX, waypointY, mapMarkerCircleRadius)
+            .fillOpacity(0.25)
+            .fillAndStroke('white', 'black');
+          doc.restore();
+
+          drawArrow(doc, waypointX, waypointY, destinationX, destinationY);
+
           doc.text(
             `${rendezvousLetter}-W FIXPOS`,
             waypointX - mapMarkerCircleRadius,
@@ -168,4 +177,45 @@ export default class TeamOverviewsComponent extends Component {
       …
     {{/if}}
   </template>
+}
+
+function drawArrow(doc, waypointX, waypointY, destinationX, destinationY) {
+  // Configuration
+  const arrowLength = 30;
+  const arrowHeadSize = 7;
+
+  const directionX = destinationX - waypointX;
+  const directionY = destinationY - waypointY;
+  const magnitude = Math.sqrt(
+    directionX * directionX + directionY * directionY
+  );
+  const unitDirectionX = directionX / magnitude;
+  const unitDirectionY = directionY / magnitude;
+
+  // End the body early so it doesn’t peek beyond the head
+  const earlyEndX =
+    waypointX + unitDirectionX * (arrowLength - arrowHeadSize / 2);
+  const earlyEndY =
+    waypointY + unitDirectionY * (arrowLength - arrowHeadSize / 2);
+
+  const headX = waypointX + unitDirectionX * arrowLength;
+  const headY = waypointY + unitDirectionY * arrowLength;
+
+  doc.moveTo(waypointX, waypointY).lineTo(earlyEndX, earlyEndY).stroke();
+
+  const arrowHeadAngle = Math.atan2(unitDirectionY, unitDirectionX);
+  const arrowHeadX1 =
+    headX - arrowHeadSize * Math.cos(arrowHeadAngle - Math.PI / 6);
+  const arrowHeadY1 =
+    headY - arrowHeadSize * Math.sin(arrowHeadAngle - Math.PI / 6);
+  const arrowHeadX2 =
+    headX - arrowHeadSize * Math.cos(arrowHeadAngle + Math.PI / 6);
+  const arrowHeadY2 =
+    headY - arrowHeadSize * Math.sin(arrowHeadAngle + Math.PI / 6);
+
+  doc
+    .moveTo(arrowHeadX1, arrowHeadY1)
+    .lineTo(headX, headY)
+    .lineTo(arrowHeadX2, arrowHeadY2)
+    .fill();
 }
