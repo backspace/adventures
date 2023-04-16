@@ -4,10 +4,10 @@ use axum::{
     Form,
 };
 use axum_template::Key;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use sqlx::types::Uuid;
 
-use crate::{render_xml::RenderXml, AppState};
+use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Serialize)]
 pub struct Teams {
@@ -31,15 +31,9 @@ pub async fn get_teams(Key(key): Key, State(state): State<AppState>) -> impl Int
     RenderXml(key, state.engine, Teams { teams })
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct TeamsForm {
-    speech_result: String,
-}
-
 pub async fn post_teams(
     State(state): State<AppState>,
-    Form(form): Form<TeamsForm>,
+    Form(form): Form<TwilioForm>,
 ) -> impl IntoResponse {
     let transformed_voicepass = form
         .speech_result
@@ -90,12 +84,6 @@ pub async fn get_team(
     RenderXml(key, state.engine, team)
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct TeamForm {
-    speech_result: String,
-}
-
 #[derive(sqlx::FromRow, Serialize)]
 pub struct MeetingId {
     id: Uuid,
@@ -104,7 +92,7 @@ pub struct MeetingId {
 pub async fn post_team(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
-    Form(form): Form<TeamForm>,
+    Form(form): Form<TwilioForm>,
 ) -> impl IntoResponse {
     let transformed_excerpt = form
         .speech_result
