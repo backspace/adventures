@@ -7,20 +7,20 @@ import { Input } from '@ember/component';
 import blobStream from 'blob-stream';
 import PDFDocument from 'pdfkit';
 
-const pageMargin = 0.5 * 72;
-const pagePadding = 0.25 * 72;
+let pageMargin = 0.5 * 72;
+let pagePadding = 0.25 * 72;
 
-const registrationPadding = pagePadding;
-const registrationLength = pagePadding;
-const registrationTotal = registrationPadding + registrationLength;
+let registrationPadding = pagePadding;
+let registrationLength = pagePadding;
+let registrationTotal = registrationPadding + registrationLength;
 
-const BACKGROUND_COUNT = 5;
-const OUTLINE_WIDTH = 4;
-const TEAM_FONT_SIZE = 14;
-const TEAM_GAP_SIZE = pagePadding;
+let BACKGROUND_COUNT = 5;
+let OUTLINE_WIDTH = 4;
+let TEAM_FONT_SIZE = 14;
+let TEAM_GAP_SIZE = pagePadding;
 
 export default class UnmnemonicDevicesOverlaysComponent extends Component {
-  @tracked allOverlays;
+  @tracked allOverlays = true;
 
   @service('unmnemonic-devices') devices;
 
@@ -135,17 +135,12 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
       let backgroundIndex = index % BACKGROUND_COUNT;
 
-      if (backgroundIndex === 1) {
-        doc.image(
-          this.args.assets.background1,
-          -pageMargin * 2,
-          -pageMargin * 2,
-          {
-            cover: [width + pageMargin * 4, height + pageMargin * 4],
-            align: 'center',
-            valign: 'center',
-          }
-        );
+      if (backgroundIndex === 0) {
+        drawZigzagBackground(doc, width, height);
+      } else if (backgroundIndex === 1) {
+        drawConcentricCirclesBackground(doc, width, height);
+      } else if (backgroundIndex === 4) {
+        drawConcentricStarsBackground(doc, width, height);
       } else {
         doc.image(this.args.assets[`background${backgroundIndex}`], 0, 0, {
           cover: [width, height],
@@ -299,4 +294,107 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       …
     {{/if}}
   </template>
+}
+
+function drawZigzagBackground(doc, width, height) {
+  let overprint = 5;
+  let zigzagWidth = 20;
+  let zigzagHeight = 4;
+  let lineWidth = 3;
+
+  doc.save();
+
+  doc.translate(-overprint, -overprint);
+  width += overprint * 2;
+  height += overprint * 2;
+
+  doc.lineWidth(lineWidth);
+
+  for (let y = 0; y < height; y += zigzagHeight * 2) {
+    let path = `M 0,${y}`;
+    let direction = 1;
+
+    for (let x = 0; x < width; x += zigzagWidth) {
+      let newX = x + zigzagWidth;
+      let newY = y + direction * zigzagHeight;
+
+      path += ` L ${newX},${newY}`;
+      direction = -direction;
+    }
+
+    doc.path(path).stroke();
+  }
+
+  doc.restore();
+}
+
+function drawConcentricCirclesBackground(doc, width, height) {
+  let lineWidth = 2;
+
+  let centreX = Math.random() * width;
+  let centreY = Math.random() * height;
+
+  // Calculate the maximum possible radius to cover the entire page
+  let distances = [
+    Math.sqrt(Math.pow(centreX, 2) + Math.pow(centreY, 2)),
+    Math.sqrt(Math.pow(width - centreX, 2) + Math.pow(centreY, 2)),
+    Math.sqrt(Math.pow(width - centreX, 2) + Math.pow(height - centreY, 2)),
+    Math.sqrt(Math.pow(centreX, 2) + Math.pow(height - centreY, 2)),
+  ];
+  let maxRadius = Math.max(...distances);
+
+  doc.lineWidth(lineWidth);
+
+  for (let radius = lineWidth; radius < maxRadius; radius += lineWidth * 2) {
+    doc.circle(centreX, centreY, radius).stroke();
+  }
+}
+
+function drawConcentricStarsBackground(doc, width, height) {
+  let lineWidth = 2;
+  let starPoints = 5;
+  let innerToOuterRatio = 0.5;
+
+  doc.lineWidth(lineWidth);
+
+  // Choose a random point within the page width and height
+  let centreX = Math.random() * width;
+  let centreY = Math.random() * height;
+
+  // Calculate the maximum possible radius to cover the entire page
+  let distances = [
+    Math.sqrt(Math.pow(centreX, 2) + Math.pow(centreY, 2)),
+    Math.sqrt(Math.pow(width - centreX, 2) + Math.pow(centreY, 2)),
+    Math.sqrt(Math.pow(width - centreX, 2) + Math.pow(height - centreY, 2)),
+    Math.sqrt(Math.pow(centreX, 2) + Math.pow(height - centreY, 2)),
+  ];
+  let maxDistance = Math.max(...distances);
+  let outerRadiusFactor = 1 / (1 - innerToOuterRatio);
+  let maxRadius = maxDistance * outerRadiusFactor;
+
+  for (let radius = lineWidth; radius < maxRadius; radius += lineWidth * 4) {
+    let innerRadius = radius * innerToOuterRatio;
+    let outerRadius = radius;
+
+    drawStar(doc, centreX, centreY, innerRadius, outerRadius, starPoints);
+  }
+}
+
+function drawStar(doc, centreX, centreY, innerRadius, outerRadius, starPoints) {
+  let angle = Math.PI / starPoints;
+  let path = '';
+
+  for (let i = 0; i <= 2 * starPoints; i++) {
+    let r = i % 2 === 0 ? outerRadius : innerRadius;
+    let currX = centreX + r * Math.cos(i * angle);
+    let currY = centreY - r * Math.sin(i * angle);
+
+    if (i === 0) {
+      path = `M ${currX},${currY}`;
+    } else {
+      path += ` L ${currX},${currY}`;
+    }
+  }
+
+  doc.path(path).closePath().stroke();
 }
