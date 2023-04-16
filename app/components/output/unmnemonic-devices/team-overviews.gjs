@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
+import { trackedFunction } from 'ember-resources/util/function';
 import { inject as service } from '@ember/service';
 
 import blobStream from 'blob-stream';
@@ -9,13 +10,10 @@ const pageMargin = 0.5 * 72;
 const pagePadding = 0.25 * 72;
 
 export default class TeamOverviewsComponent extends Component {
-  @tracked src;
-
+  @service map;
   @service('unmnemonic-devices') devices;
 
-  constructor() {
-    super(...arguments);
-
+  generator = trackedFunction(this, async () => {
     let debug = this.args.debug;
 
     let regular = this.args.assets.regular;
@@ -23,7 +21,15 @@ export default class TeamOverviewsComponent extends Component {
     let doc = new PDFDocument({ layout: 'portrait', font: regular });
     let stream = doc.pipe(blobStream());
 
-    let map = this.args.assets.map;
+    let mapBlob = this.args.assets.map;
+    let lowMapBlob = this.args.assets.lowMap;
+
+    let mapBitmap = await createImageBitmap(mapBlob);
+    let lowMapBitmap = await createImageBitmap(lowMapBlob);
+
+    let map = await this.map.blobToBase64String(mapBlob);
+
+    let mapHighToLowRatio = lowMapBitmap.width / mapBitmap.width;
 
     let mapOffsetX = 0;
     let mapOffsetY = 10;
@@ -60,8 +66,7 @@ export default class TeamOverviewsComponent extends Component {
           'data:image/png;base64,' + map,
           mapOffsetX - mapClipLeft,
           mapOffsetY - mapClipTop,
-          // FIXME how to determine size?
-          { scale: 0.125 }
+          { scale: mapHighToLowRatio }
         );
 
         doc.restore();
@@ -142,18 +147,25 @@ export default class TeamOverviewsComponent extends Component {
 
     doc.end();
 
-    stream.on('finish', () => {
-      this.rendering = false;
-      this.src = stream.toBlobURL('application/pdf');
+    let blobUrl = await new Promise((resolve) => {
+      stream.on('finish', () => {
+        resolve(stream.toBlobURL('application/pdf'));
+      });
     });
+
+    return blobUrl;
+  });
+
+  get src() {
+    return this.generator.value ?? undefined;
   }
 
   <template>
-    {{#if this.rendering}}
-      …
-    {{else}}
+    {{#if this.src}}
       <iframe title='team-overviews' src={{this.src}}>
       </iframe>
+    {{else}}
+      …
     {{/if}}
   </template>
 }

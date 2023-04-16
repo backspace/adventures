@@ -38,6 +38,10 @@ export default class MapService extends Service {
     });
   }
 
+  blobToBase64String(blob) {
+    return blobToBase64String(blob);
+  }
+
   saveFile(file, name) {
     const db = this.db;
 

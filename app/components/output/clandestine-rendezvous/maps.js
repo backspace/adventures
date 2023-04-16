@@ -1,24 +1,27 @@
 import Component from '@ember/component';
+import { inject as service } from '@ember/service';
 import { tagName } from '@ember-decorators/component';
 import blobStream from 'blob-stream';
 import classic from 'ember-classic-decorator';
+import { trackedFunction } from 'ember-resources/util/function';
 
 import PDFDocument from 'pdfkit';
 
 @classic
 @tagName('span')
 export default class clandestineRendezvousMapsComponent extends Component {
-  rendering = true;
+  @service
+  map;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
+  generator = trackedFunction(this, async () => {
     const debug = this.debug;
 
     const header = this.get('assets.header');
     const doc = new PDFDocument({ layout: 'portrait', font: header });
     const stream = doc.pipe(blobStream());
 
-    const map = this.get('assets.map');
+    const mapBlob = this.get('assets.map');
+    const map = await this.map.blobToBase64String(mapBlob);
 
     const mapOffsetX = 0;
     const mapOffsetY = 0;
@@ -114,9 +117,16 @@ export default class clandestineRendezvousMapsComponent extends Component {
 
     doc.end();
 
-    stream.on('finish', () => {
-      this.src = stream.toBlobURL('application/pdf');
-      this.set('rendering', false);
+    let blobUrl = await new Promise((resolve) => {
+      stream.on('finish', () => {
+        resolve(stream.toBlobURL('application/pdf'));
+      });
     });
+
+    return blobUrl;
+  });
+
+  get src() {
+    return this.generator.value ?? undefined;
   }
 }

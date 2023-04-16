@@ -51,10 +51,11 @@ export default class OutputRoute extends Route {
     let helvetica = await (await fetch('/fonts/Helvetica.afm')).text();
     fs.writeFileSync('data/Helvetica.afm', helvetica);
 
-    let map;
+    let map, lowMap;
 
     try {
-      map = await this.map.getBase64String('high');
+      map = await this.map.getAttachment('high');
+      lowMap = await this.map.getAttachment('image');
     } catch (e) {
       console.log('Unable to fetch map');
     }
@@ -78,6 +79,7 @@ export default class OutputRoute extends Route {
             bold,
             regular,
             map,
+            lowMap,
           });
         }),
     });
