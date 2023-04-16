@@ -91,6 +91,7 @@ export default PageObject.create({
 
   regions: collection('[data-test-regions-destinations] li.region', {
     name: text('.name'),
+    accessibility: text('[data-test-accessibility]'),
     notes: attribute('title'),
 
     hover: triggerable('mouseenter'),
@@ -117,6 +118,7 @@ export default PageObject.create({
 
   waypointRegions: collection('[data-test-waypoint-regions] li.region', {
     name: text('.name'),
+    accessibility: text('[data-test-accessibility]'),
     notes: attribute('title'),
 
     hover: triggerable('mouseenter'),

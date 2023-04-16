@@ -27,6 +27,9 @@
           {{create-ref (concat 'region-' region.id)}}
         >
           <div class='name'>{{region.name}}</div>
+          {{#if region.accessibility}}
+            <div class='accessibility' data-test-accessibility>{{region.accessibility}}</div>
+          {{/if}}
 
           <ul class='destinations'>
             {{#each region.destinations as |destination|}}
@@ -58,6 +61,9 @@
             {{create-ref (concat 'region-' region.id)}}
           >
             <div class='name'>{{region.name}}</div>
+            {{#if region.accessibility}}
+              <div class='accessibility' data-test-accessibility>{{region.accessibility}}</div>
+            {{/if}}
 
             <ul class='waypoints'>
               {{#each region.waypoints as |waypoint|}}

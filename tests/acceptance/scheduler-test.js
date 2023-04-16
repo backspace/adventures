@@ -28,6 +28,7 @@ module('Acceptance | scheduler', function (hooks) {
 
     portagePlace = store.createRecord('region', {
       name: 'Portage Place',
+      accessibility: 'Aggressive security',
       notes: 'Downtown revitalisation!',
       x: 50,
       y: 60,
@@ -157,6 +158,7 @@ module('Acceptance | scheduler', function (hooks) {
       const region = page.regions[1];
 
       assert.equal(region.name, 'Portage Place');
+      assert.equal(region.accessibility, 'Aggressive security');
       assert.equal(region.notes, 'Downtown revitalisation!');
 
       assert.equal(region.destinations.length, 2);
@@ -393,6 +395,7 @@ module('Acceptance | scheduler', function (hooks) {
 
       let webb = store.createRecord('region', {
         name: 'PP Megacomplex',
+        accessibility: 'Aggressive security',
         x: 200,
         y: 200,
       });
@@ -484,6 +487,7 @@ module('Acceptance | scheduler', function (hooks) {
       const region = page.waypointRegions[2];
 
       assert.equal(region.name, 'PP Megacomplex');
+      assert.equal(region.accessibility, 'Aggressive security');
 
       assert.equal(region.waypoints.length, 1);
       const waypoints = region.waypoints[0];

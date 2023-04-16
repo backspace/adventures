@@ -195,10 +195,15 @@ $column-width: 6rem;
 
       font-weight: bold;
 
-      .name {
+      .name, .accessibility {
         padding: 2px 3px;
       }
-    }
+
+      .accessibility {
+        font-weight: normal;
+        border-top: 1px solid #bbb;
+      }
+  }
 
     .destinations,
     .waypoints {
