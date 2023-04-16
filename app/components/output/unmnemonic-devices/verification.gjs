@@ -1,18 +1,15 @@
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { inject as service } from '@ember/service';
+import { trackedFunction } from 'ember-resources/util/function';
 
 import blobStream from 'blob-stream';
 import PDFDocument from 'pdfkit';
 
 export default class TeamOverviewsComponent extends Component {
-  @tracked src;
-
   @service('unmnemonic-devices') devices;
 
-  constructor() {
-    super(...arguments);
-
+  generator = trackedFunction(this, async () => {
     let debug = this.args.debug;
 
     let regular = this.args.assets.regular;
@@ -58,18 +55,25 @@ export default class TeamOverviewsComponent extends Component {
 
     doc.end();
 
-    stream.on('finish', () => {
-      this.rendering = false;
-      this.src = stream.toBlobURL('application/pdf');
+    let blobUrl = await new Promise((resolve) => {
+      stream.on('finish', () => {
+        resolve(stream.toBlobURL('application/pdf'));
+      });
     });
+
+    return blobUrl;
+  });
+
+  get src() {
+    return this.generator.value ?? undefined;
   }
 
   <template>
-    {{#if this.rendering}}
-      …
-    {{else}}
-      <iframe title='team-overviews' src={{this.src}}>
+    {{#if this.src}}
+      <iframe title='verification' src={{this.src}}>
       </iframe>
+    {{else}}
+      …
     {{/if}}
   </template>
 }
