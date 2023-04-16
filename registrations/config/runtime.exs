@@ -44,9 +44,31 @@ if config_env() == :prod do
       environment variable BASE_URL is missing.
       """
 
+  start_time_string =
+    System.get_env("START_TIME") ||
+      raise """
+      environment variable START_TIME is missing.
+      """
+
+  start_timezone =
+    System.get_env("START_TIMEZONE") ||
+      raise """
+      environment variable START_TIMEZONE is missing.
+      """
+
+  start_time =
+    case Calendar.ISO.parse_naive_datetime(start_time_string) do
+      {:ok, {year, month, day, hour, minute, second, _microsecond}} ->
+        [{{year, month, day}, {hour, minute, second}}, start_timezone]
+
+      _ ->
+        raise "Failed to parse START_TIME"
+    end
+
   config :adventure_registrations,
     location: location,
-    base_url: base_url
+    base_url: base_url,
+    start_time: start_time
 
   database_url =
     System.get_env("DATABASE_URL") ||
