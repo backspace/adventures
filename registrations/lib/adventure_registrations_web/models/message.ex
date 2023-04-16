@@ -6,6 +6,8 @@ defmodule AdventureRegistrationsWeb.Message do
   schema "messages" do
     field(:subject, :string)
     field(:content, :string)
+    field(:from_name, :string)
+    field(:from_address, :string)
     field(:rendered_content, :string)
     field(:ready, :boolean, default: false)
     field(:show_team, :boolean, default: false)
@@ -15,7 +17,7 @@ defmodule AdventureRegistrationsWeb.Message do
   end
 
   @required_fields ~w(subject content ready show_team postmarked_at)a
-  @optional_fields ~w(rendered_content)a
+  @optional_fields ~w(rendered_content from_name from_address)a
 
   @doc """
   Creates a changeset based on the `model` and `params`.

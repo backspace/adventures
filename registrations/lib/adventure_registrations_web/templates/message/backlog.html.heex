@@ -11,6 +11,7 @@
   <div class='row card'>
     <div class='small-12 columns'>
       <h3><%= raw message.subject %>: <%= message.postmarked_at %></h3>
+      <%= AdventureRegistrations.Mailer.message_from_string(message) %>
       <p><%= raw message.content %></p>
     </div>
   </div>

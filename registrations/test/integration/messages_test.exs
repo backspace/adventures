@@ -59,6 +59,36 @@ defmodule AdventureRegistrations.Integration.Messages do
     assert String.contains?(empty_email.text_body, "You haven’t filled in any details!")
   end
 
+  test "message sender name/address can be overridden" do
+    insert(:admin,
+      email: "admin@example.com",
+      crypted_password: Bcrypt.hash_pwd_salt("admin")
+    )
+
+    navigate_to("/")
+
+    Login.login_as("admin@example.com", "admin")
+    Nav.edit_messages()
+
+    Messages.new_message()
+
+    Messages.fill_subject("A Subject!")
+    Messages.fill_content("This is the content.")
+
+    Messages.fill_from_name("Knut")
+    Messages.fill_from_address("knut@example.com")
+
+    Messages.check_ready()
+    Messages.save()
+
+    Messages.send()
+
+    assert Nav.info_text() == "Message was sent"
+
+    [email] = AdventureRegistrations.SwooshHelper.sent_email()
+    assert email.from == {"Knut", "knut@example.com"}
+  end
+
   test "a message with show team enabled shows the actual team information instead of their details" do
     insert(:admin,
       email: "admin@example.com",
@@ -107,7 +137,7 @@ defmodule AdventureRegistrations.Integration.Messages do
   end
 
   test "the backlog of existing messages is sent to a new registrant after the welcome" do
-    insert(:message, subject: "Subject one", content: "Content one")
+    insert(:message, subject: "Subject one", content: "Content one", from_name: "Yes", from_address: "yes@example.com")
     insert(:message, subject: "Subject two", content: "Content two")
     insert(:not_ready_message, subject: "Not ready", content: "Not ready")
 
@@ -129,6 +159,7 @@ defmodule AdventureRegistrations.Integration.Messages do
     assert String.contains?(text, "These messages were sent before you registered.")
 
     assert String.contains?(text, "Subject one")
+    assert String.contains?(text, "From: Yes <yes@example.com>")
     assert String.contains?(text, "Content one")
 
     assert String.contains?(text, "Subject two")

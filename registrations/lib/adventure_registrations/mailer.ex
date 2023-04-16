@@ -59,7 +59,7 @@ defmodule AdventureRegistrations.Mailer do
   def send_message(message, user, relationships, team) do
     new()
     |> to(user.email)
-    |> from(@from)
+    |> from(message_from(message.from_name, message.from_address))
     |> subject("[#{phrase("email_title")}] #{message.subject}")
     |> text_body(message_text(message, user, relationships, team))
     |> html_body(message_html(message, user, relationships, team))
@@ -136,5 +136,21 @@ defmodule AdventureRegistrations.Mailer do
 
   defp email_layout do
     {AdventureRegistrationsWeb.EmailView, "#{adventure()}-layout.html"}
+  end
+
+  defp message_from(from_name, from_address) do
+    case from_address do
+      "" -> @from
+      nil -> @from
+      _ -> {from_name, from_address}
+    end
+  end
+
+  def message_from_string(message) do
+    case message.from_address do
+      "" -> nil
+      nil -> nil
+      _ -> "From: #{message.from_name} <#{message.from_address}>"
+    end
   end
 end
