@@ -50,7 +50,9 @@ export default class TeamOverviewsComponent extends Component {
         this.args.meetings.map((meeting) => ({
           id: meeting.get('waypoint.id'),
           title: meeting.get('waypoint.name'),
-          excerpt: this.devices.inExcerpt(meeting.get('waypoint.excerpt')),
+          excerpt: this.devices.trimmedInnerExcerpt(
+            meeting.get('waypoint.excerpt')
+          ),
         }))
       )
       .onConflict('id')

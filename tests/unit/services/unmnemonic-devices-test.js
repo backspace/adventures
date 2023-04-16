@@ -16,9 +16,12 @@ module('Unit | Service | unmnemonic-devices', function (hooks) {
     assert.equal(service.preExcerpt('an|excerpt|exists'), 'an');
   });
 
-  test('inExcerpt returns the text inside the excerpt', function (assert) {
+  test('trimmedInnerExcerpt returns the text inside the excerpt without punctuation', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
-    assert.equal(service.inExcerpt('an|excerpt|exists'), 'excerpt');
+    assert.equal(
+      service.trimmedInnerExcerpt('an|excerpt,.?!: but|exists'),
+      'excerpt but'
+    );
   });
 
   test('postExcerpt returns the text before the excerpt', function (assert) {
