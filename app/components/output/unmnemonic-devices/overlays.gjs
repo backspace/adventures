@@ -139,14 +139,12 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         drawZigzagBackground(doc, width, height);
       } else if (backgroundIndex === 1) {
         drawConcentricCirclesBackground(doc, width, height);
+      } else if (backgroundIndex === 2) {
+        drawSpiralBackground(doc, width, height);
+      } else if (backgroundIndex === 3) {
+        drawConcentricSquaresBackground(doc, width, height);
       } else if (backgroundIndex === 4) {
         drawConcentricStarsBackground(doc, width, height);
-      } else {
-        doc.image(this.args.assets[`background${backgroundIndex}`], 0, 0, {
-          cover: [width, height],
-          align: 'center',
-          valign: 'center',
-        });
       }
 
       doc.restore();
@@ -397,4 +395,73 @@ function drawStar(doc, centreX, centreY, innerRadius, outerRadius, starPoints) {
   }
 
   doc.path(path).closePath().stroke();
+}
+
+function drawSpiralBackground(doc, width, height) {
+  let numSpiralArms = 180;
+  let lineWidth = 2;
+  let maxRadius =
+    Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2)) + lineWidth;
+
+  // Choose a random starting point within a quarter of the page length from the center
+  let centreX = width / 2;
+  let centreY = height / 2;
+  let quarterLength = Math.min(centreX, centreY) / 2;
+  let startX = centreX + Math.random() * quarterLength - quarterLength / 2;
+  let startY = centreY + Math.random() * quarterLength - quarterLength / 2;
+
+  doc.lineWidth(lineWidth);
+
+  for (let i = 0; i < numSpiralArms; i++) {
+    let angleIncrement = (2 * Math.PI) / numSpiralArms;
+    let angle = i * angleIncrement;
+    let currentRadius = maxRadius;
+    let endX = startX + currentRadius * Math.cos(2 * Math.PI + angle);
+    let endY = startY + currentRadius * Math.sin(2 * Math.PI + angle);
+
+    let control1X =
+      startX + (currentRadius / 3) * Math.cos(Math.PI / 2 + angle);
+    let control1Y =
+      startY + (currentRadius / 3) * Math.sin(Math.PI / 2 + angle);
+    let control2X =
+      startX + ((2 * currentRadius) / 3) * Math.cos((3 * Math.PI) / 2 + angle);
+    let control2Y =
+      startY + ((2 * currentRadius) / 3) * Math.sin((3 * Math.PI) / 2 + angle);
+
+    let path = `M ${startX},${startY} C ${control1X},${control1Y} ${control2X},${control2Y} ${endX},${endY}`;
+    doc.path(path).stroke();
+  }
+}
+
+function drawConcentricSquaresBackground(doc, width, height) {
+  // Choose a random starting point within a quarter of the page length from the center
+  let centreX = width / 2;
+  let centreY = height / 2;
+  let quarterLength = Math.min(centreX, centreY) / 2;
+  let startX = centreX + Math.random() * quarterLength - quarterLength / 2;
+  let startY = centreY + Math.random() * quarterLength - quarterLength / 2;
+
+  let maxLength =
+    2 *
+    Math.max(
+      Math.sqrt(Math.pow(startX, 2) + Math.pow(startY, 2)),
+      Math.sqrt(Math.pow(width - startX, 2) + Math.pow(height - startY, 2))
+    );
+
+  let lineWidth = 2;
+  let squareSpacing = lineWidth * 4;
+  let numSquares = Math.ceil(maxLength / squareSpacing);
+
+  doc.lineWidth(lineWidth);
+
+  for (let i = 0; i < numSquares; i++) {
+    let sideLength = (i + 1) * squareSpacing;
+    let rotation = (i * Math.PI) / numSquares;
+
+    doc.save();
+    doc.translate(startX, startY);
+    doc.rotate((rotation * 180) / Math.PI);
+    doc.rect(-sideLength / 2, -sideLength / 2, sideLength, sideLength).stroke();
+    doc.restore();
+  }
 }
