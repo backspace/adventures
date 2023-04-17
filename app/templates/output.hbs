@@ -110,6 +110,9 @@
             <td>
               {{#if this.unmnemonicDevicesVrssql}}
                 <Output::UnmnemonicDevices::Vrssql
+                  @destinations={{this.model.destinations}}
+                  @regions={{this.model.regions}}
+                  @waypoints={{this.model.waypoints}}
                   @meetings={{this.model.meetings}}
                   @debug={{this.debug}}
                 />

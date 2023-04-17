@@ -22,9 +22,9 @@ export default class TeamOverviewsComponent extends Component {
   get regions() {
     return knex({ client: 'pg' })('unmnemonic_devices.regions')
       .insert(
-        this.args.meetings.map((meeting) => ({
-          id: meeting.get('destination.region.id'),
-          name: meeting.get('destination.region.name'),
+        this.args.regions.filterBy('isComplete').map((region) => ({
+          id: region.get('id'),
+          name: region.get('name'),
         }))
       )
       .onConflict('id')
@@ -34,10 +34,10 @@ export default class TeamOverviewsComponent extends Component {
   get destinations() {
     return knex({ client: 'pg' })('unmnemonic_devices.destinations')
       .insert(
-        this.args.meetings.map((meeting) => ({
-          id: meeting.get('destination.id'),
-          description: meeting.get('destination.description'),
-          region_id: meeting.get('destination.region.id'),
+        this.args.destinations.filterBy('isComplete').map((destination) => ({
+          id: destination.get('id'),
+          description: destination.get('description'),
+          region_id: destination.get('region.id'),
         }))
       )
       .onConflict('id')
@@ -47,12 +47,10 @@ export default class TeamOverviewsComponent extends Component {
   get books() {
     return knex({ client: 'pg' })('unmnemonic_devices.books')
       .insert(
-        this.args.meetings.map((meeting) => ({
-          id: meeting.get('waypoint.id'),
-          title: meeting.get('waypoint.name'),
-          excerpt: this.devices.trimmedInnerExcerpt(
-            meeting.get('waypoint.excerpt')
-          ),
+        this.args.waypoints.filterBy('isComplete').map((waypoint) => ({
+          id: waypoint.get('id'),
+          title: waypoint.get('name'),
+          excerpt: this.devices.trimmedInnerExcerpt(waypoint.get('excerpt')),
         }))
       )
       .onConflict('id')
