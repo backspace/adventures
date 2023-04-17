@@ -1,7 +1,11 @@
 window.addEventListener("DOMContentLoaded", () => {
-  document.querySelector("#pi").addEventListener("click", () => {
-    document.querySelector("#pi-dialog").showModal();
-  });
+  let pi = document.querySelector("#pi");
+
+  if (pi) {
+    pi.addEventListener("click", () => {
+      document.querySelector("#pi-dialog").showModal();
+    });
+  }
 
   let regenerateElement = document.querySelector("[data-test-regenerate]");
 
