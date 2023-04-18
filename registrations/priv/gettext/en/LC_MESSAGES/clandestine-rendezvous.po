@@ -24,3 +24,18 @@ msgstr "Do you have any accessibility needs we should know about when scheduling
 
 msgid "source_help"
 msgstr "How did you hear about us, supersecretly?"
+
+msgid "risk_aversion_label_1"
+msgstr "Go easy on me"
+
+msgid "risk_aversion_label_2"
+msgstr "Push me a little"
+
+msgid "risk_aversion_label_3"
+msgstr "Don’t hold back"
+
+msgid "risk_avoidance"
+msgstr "Maybe someone on the team you're meeting will feel more comfortable, or you can just find out the answers from other participants."
+
+msgid "risk_scope"
+msgstr "The following are beyond the scope of our secret society:"

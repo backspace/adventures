@@ -24,3 +24,18 @@ msgstr "Do you have any accessibility needs we should know about when researchin
 
 msgid "source_help"
 msgstr "How did you hear about our revolutionary product?"
+
+msgid "risk_aversion_label_1"
+msgstr "I’m just starting out"
+
+msgid "risk_aversion_label_2"
+msgstr "I can handle a bit of a challenge"
+
+msgid "risk_aversion_label_3"
+msgstr "I am ready to face my demons"
+
+msgid "risk_avoidance"
+msgstr "There will be other ways to get what you need."
+
+msgid "risk_scope"
+msgstr "Examples of risks beyond anything part of the demonstration:"

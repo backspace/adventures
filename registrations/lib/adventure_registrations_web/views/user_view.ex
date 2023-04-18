@@ -35,9 +35,9 @@ defmodule AdventureRegistrationsWeb.UserView do
 
   def risk_aversion_integer_to_string() do
     %{
-      1 => "Go easy on me",
-      2 => "Push me a little",
-      3 => "Don’t hold back"
+      1 => phrase("risk_aversion_label_1"),
+      2 => phrase("risk_aversion_label_2"),
+      3 => phrase("risk_aversion_label_3")
     }
   end
 
