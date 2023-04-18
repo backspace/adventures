@@ -18,6 +18,7 @@ let BACKGROUND_COUNT = 5;
 let OUTLINE_WIDTH = 4;
 let TEAM_FONT_SIZE = 14;
 let TEAM_GAP_SIZE = pagePadding;
+let EXCERPT_HEIGHT = 10;
 
 export default class UnmnemonicDevicesOverlaysComponent extends Component {
   @tracked allOverlays = true;
@@ -219,19 +220,45 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       let preExcerpt = this.devices.preExcerpt(excerpt),
         postExcerpt = this.devices.postExcerpt(excerpt);
 
-      doc.fontSize(10);
+      doc.fontSize(EXCERPT_HEIGHT);
+
+      let preExcerptWidth = doc.widthOfString(preExcerpt);
+      let postExcerptWidth = doc.widthOfString(postExcerpt);
+
+      let preExcerptX = 0,
+        preExcerptY = startY,
+        preExcerptAlign = 'right',
+        preExcerptWidthObject = { width: startX };
+
+      if (startX - preExcerptWidth < pagePadding) {
+        preExcerptX = 0;
+        preExcerptY -= EXCERPT_HEIGHT;
+        preExcerptAlign = 'right';
+        preExcerptWidthObject = { width: width - pagePadding };
+      }
+
+      let postExcerptX = end[0],
+        postExcerptY = end[1],
+        postExcerptAlign = 'left';
+
+      if (end[0] + postExcerptWidth > width - pagePadding) {
+        postExcerptX = pagePadding;
+        postExcerptY += EXCERPT_HEIGHT;
+        postExcerptAlign = 'left';
+      }
 
       doc
         .fillColor('black')
         .strokeColor('white')
         .lineWidth(OUTLINE_WIDTH)
-        .text(preExcerpt, 0, startY, {
-          align: 'right',
+        .text(preExcerpt, preExcerptX, preExcerptY, {
+          align: preExcerptAlign,
+          ...preExcerptWidthObject,
           fill: true,
           stroke: true,
-          width: startX,
         })
-        .text(postExcerpt, end[0], end[1], {
+        .text(postExcerpt, postExcerptX, postExcerptY, {
+          align: postExcerptAlign,
           stroke: true,
           fill: true,
         });
@@ -239,11 +266,13 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       doc
         .fillColor('black')
         .lineWidth(1)
-        .text(preExcerpt, 0, startY, {
-          align: 'right',
-          width: startX,
+        .text(preExcerpt, preExcerptX, preExcerptY, {
+          align: preExcerptAlign,
+          ...preExcerptWidthObject,
         })
-        .text(postExcerpt, end[0], end[1], {});
+        .text(postExcerpt, postExcerptX, postExcerptY, {
+          align: postExcerptAlign,
+        });
 
       if (team) {
         doc.fontSize(TEAM_FONT_SIZE);
