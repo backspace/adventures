@@ -25,6 +25,11 @@ export const TEAM_GAP_SIZE = PAGE_PADDING;
 export const EXCERPT_HEIGHT = 10;
 export const EXCERPT_GAP = 5;
 
+let OUTLINE_TEXT_ARGUMENTS = [
+  { lineWidth: OUTLINE_WIDTH, textOptions: { fill: true, stroke: true } },
+  { lineWidth: 1 },
+];
+
 let registrationPadding = PAGE_PADDING;
 let registrationLength = PAGE_PADDING;
 let registrationTotal = registrationPadding + registrationLength;
@@ -141,12 +146,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       }
 
       // Print text outlines and then text atop them
-      let excerptTextModifications = [
-        { lineWidth: OUTLINE_WIDTH, textOptions: { fill: true, stroke: true } },
-        { lineWidth: 1 },
-      ];
-
-      excerptTextModifications.forEach(({ lineWidth, textOptions }) => {
+      OUTLINE_TEXT_ARGUMENTS.forEach(({ lineWidth, textOptions }) => {
         doc
           .fillColor('black')
           .strokeColor('white')
@@ -308,38 +308,25 @@ function drawHeaderAndFooterText(
     upperRightText = page;
   }
 
-  doc
-    .fillColor('black')
-    .strokeColor('white')
-    .lineWidth(OUTLINE_WIDTH)
-    .text(upperLeftText, PAGE_PADDING, PAGE_PADDING, {
-      fill: true,
-      stroke: true,
-    })
-    .text(upperRightText, PAGE_PADDING, PAGE_PADDING, {
-      width: width - PAGE_PADDING * 2,
-      align: 'right',
-      fill: true,
-      stroke: true,
-    })
-    .text(
-      regionAndCall,
-      PAGE_PADDING,
-      height - doc.currentLineHeight() - PAGE_PADDING,
-      { stroke: true, fill: true }
-    );
-
-  doc
-    .fillColor('black')
-    .lineWidth(1)
-    .text(upperLeftText, PAGE_PADDING, PAGE_PADDING)
-    .text(upperRightText, PAGE_PADDING, PAGE_PADDING, {
-      width: width - PAGE_PADDING * 2,
-      align: 'right',
-    })
-    .text(
-      regionAndCall,
-      PAGE_PADDING,
-      height - doc.currentLineHeight() - PAGE_PADDING
-    );
+  // Draw string outlines in their respective corners and then the strings themselves
+  OUTLINE_TEXT_ARGUMENTS.forEach(({ lineWidth, textOptions }) => {
+    doc
+      .fillColor('black')
+      .strokeColor('white')
+      .lineWidth(lineWidth)
+      .text(upperLeftText, PAGE_PADDING, PAGE_PADDING, {
+        ...textOptions,
+      })
+      .text(upperRightText, PAGE_PADDING, PAGE_PADDING, {
+        width: width - PAGE_PADDING * 2,
+        align: 'right',
+        ...textOptions,
+      })
+      .text(
+        regionAndCall,
+        PAGE_PADDING,
+        height - doc.currentLineHeight() - PAGE_PADDING,
+        { ...textOptions }
+      );
+  });
 }
