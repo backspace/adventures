@@ -247,32 +247,27 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         postExcerptAlign = 'left';
       }
 
-      doc
-        .fillColor('black')
-        .strokeColor('white')
-        .lineWidth(OUTLINE_WIDTH)
-        .text(preExcerpt, preExcerptX, preExcerptY, {
-          align: preExcerptAlign,
-          ...preExcerptWidthObject,
-          fill: true,
-          stroke: true,
-        })
-        .text(postExcerpt, postExcerptX, postExcerptY, {
-          align: postExcerptAlign,
-          stroke: true,
-          fill: true,
-        });
+      // Print text outlines and then text atop them
+      let excerptTextModifications = [
+        { lineWidth: OUTLINE_WIDTH, textOptions: { fill: true, stroke: true } },
+        { lineWidth: 1 },
+      ];
 
-      doc
-        .fillColor('black')
-        .lineWidth(1)
-        .text(preExcerpt, preExcerptX, preExcerptY, {
-          align: preExcerptAlign,
-          ...preExcerptWidthObject,
-        })
-        .text(postExcerpt, postExcerptX, postExcerptY, {
-          align: postExcerptAlign,
-        });
+      excerptTextModifications.forEach(({ lineWidth, textOptions }) => {
+        doc
+          .fillColor('black')
+          .strokeColor('white')
+          .lineWidth(lineWidth)
+          .text(preExcerpt, preExcerptX, preExcerptY, {
+            align: preExcerptAlign,
+            ...preExcerptWidthObject,
+            ...textOptions,
+          })
+          .text(postExcerpt, postExcerptX, postExcerptY, {
+            align: postExcerptAlign,
+            ...textOptions,
+          });
+      });
 
       if (team) {
         doc.fontSize(TEAM_FONT_SIZE);
