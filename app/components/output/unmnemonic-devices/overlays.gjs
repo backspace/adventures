@@ -15,19 +15,19 @@ import {
 import blobStream from 'blob-stream';
 import PDFDocument from 'pdfkit';
 
-let pageMargin = 0.5 * 72;
-let pagePadding = 0.25 * 72;
+export const PAGE_MARGIN = 0.5 * 72;
+export const PAGE_PADDING = 0.25 * 72;
 
-let registrationPadding = pagePadding;
-let registrationLength = pagePadding;
+export const BACKGROUND_COUNT = 5;
+export const OUTLINE_WIDTH = 4;
+export const TEAM_FONT_SIZE = 14;
+export const TEAM_GAP_SIZE = PAGE_PADDING;
+export const EXCERPT_HEIGHT = 10;
+export const EXCERPT_GAP = 5;
+
+let registrationPadding = PAGE_PADDING;
+let registrationLength = PAGE_PADDING;
 let registrationTotal = registrationPadding + registrationLength;
-
-let BACKGROUND_COUNT = 5;
-let OUTLINE_WIDTH = 4;
-let TEAM_FONT_SIZE = 14;
-let TEAM_GAP_SIZE = pagePadding;
-let EXCERPT_HEIGHT = 10;
-let EXCERPT_GAP = 5;
 
 export default class UnmnemonicDevicesOverlaysComponent extends Component {
   @tracked allOverlays = true;
@@ -70,7 +70,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       }
 
       doc.save();
-      doc.translate(pageMargin, pageMargin);
+      doc.translate(PAGE_MARGIN, PAGE_MARGIN);
 
       let [width, height] = this.devices.parsedDimensions(dimensions);
 
@@ -175,35 +175,35 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         .fillColor('black')
         .strokeColor('white')
         .lineWidth(OUTLINE_WIDTH)
-        .text(upperLeftText, pagePadding, pagePadding, {
+        .text(upperLeftText, PAGE_PADDING, PAGE_PADDING, {
           fill: true,
           stroke: true,
         })
-        .text(upperRightText, pagePadding, pagePadding, {
-          width: width - pagePadding * 2,
+        .text(upperRightText, PAGE_PADDING, PAGE_PADDING, {
+          width: width - PAGE_PADDING * 2,
           align: 'right',
           fill: true,
           stroke: true,
         })
         .text(
           regionAndCall,
-          pagePadding,
-          height - doc.currentLineHeight() - pagePadding,
+          PAGE_PADDING,
+          height - doc.currentLineHeight() - PAGE_PADDING,
           { stroke: true, fill: true }
         );
 
       doc
         .fillColor('black')
         .lineWidth(1)
-        .text(upperLeftText, pagePadding, pagePadding)
-        .text(upperRightText, pagePadding, pagePadding, {
-          width: width - pagePadding * 2,
+        .text(upperLeftText, PAGE_PADDING, PAGE_PADDING)
+        .text(upperRightText, PAGE_PADDING, PAGE_PADDING, {
+          width: width - PAGE_PADDING * 2,
           align: 'right',
         })
         .text(
           regionAndCall,
-          pagePadding,
-          height - doc.currentLineHeight() - pagePadding
+          PAGE_PADDING,
+          height - doc.currentLineHeight() - PAGE_PADDING
         );
 
       doc.strokeColor('black');
@@ -239,19 +239,19 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         preExcerptAlign = 'right',
         preExcerptWidthObject = { width: startX - EXCERPT_GAP };
 
-      if (startX - preExcerptWidth < pagePadding) {
+      if (startX - preExcerptWidth < PAGE_PADDING) {
         preExcerptX = 0;
         preExcerptY -= EXCERPT_HEIGHT;
         preExcerptAlign = 'right';
-        preExcerptWidthObject = { width: width - pagePadding };
+        preExcerptWidthObject = { width: width - PAGE_PADDING };
       }
 
       let postExcerptX = end[0] + EXCERPT_GAP,
         postExcerptY = end[1],
         postExcerptAlign = 'left';
 
-      if (end[0] + postExcerptWidth > width - pagePadding) {
-        postExcerptX = pagePadding;
+      if (end[0] + postExcerptWidth > width - PAGE_PADDING) {
+        postExcerptX = PAGE_PADDING;
         postExcerptY += EXCERPT_HEIGHT;
         postExcerptAlign = 'left';
       }
@@ -284,7 +284,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
           .fillColor('black')
           .text(
             team.name,
-            pagePadding,
+            PAGE_PADDING,
             height + TEAM_GAP_SIZE - TEAM_FONT_SIZE
           );
       }
