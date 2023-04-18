@@ -75,136 +75,20 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       let [width, height] = this.devices.parsedDimensions(dimensions);
 
       let team = maybeTeamAndWaypoint.team;
-
-      doc.save();
-      doc.translate(
-        registrationLength + registrationPadding,
-        registrationLength + registrationPadding
-      );
-
-      doc.lineWidth(0.25);
-
-      // NW ver
-      doc
-        .moveTo(0, -registrationPadding)
-        .lineTo(0, -registrationTotal)
-        .stroke();
-
-      // NW hor
-      doc
-        .moveTo(-registrationPadding, 0)
-        .lineTo(-registrationTotal, 0)
-        .stroke();
-
-      // NE ver
-      doc
-        .moveTo(width, -registrationPadding)
-        .lineTo(width, -registrationTotal)
-        .stroke();
-
-      // NE hor
-      doc
-        .moveTo(width + registrationPadding, 0)
-        .lineTo(width + registrationTotal, 0)
-        .stroke();
-
       let teamBottomMargin = team ? TEAM_FONT_SIZE + TEAM_GAP_SIZE : 0;
 
-      doc.save();
-      doc.translate(0, teamBottomMargin);
-
-      // SW ver
-      doc
-        .moveTo(0, height + registrationPadding)
-        .lineTo(0, height + registrationTotal)
-        .stroke();
-
-      // SW hor
-      doc
-        .moveTo(-registrationPadding, height)
-        .lineTo(-registrationTotal, height)
-        .stroke();
-
-      // SE ver
-      doc
-        .moveTo(width, height + registrationPadding)
-        .lineTo(width, height + registrationTotal)
-        .stroke();
-
-      // SE hor
-      doc
-        .moveTo(width + registrationPadding, height)
-        .lineTo(width + registrationTotal, height)
-        .stroke();
-
-      // Maybe team margin
-      doc.restore();
-
-      doc.save();
-      doc.rect(0, 0, width, height).clip();
-
-      let backgroundIndex = index % BACKGROUND_COUNT;
-
-      if (backgroundIndex === 0) {
-        drawZigzagBackground(doc, width, height);
-      } else if (backgroundIndex === 1) {
-        drawConcentricCirclesBackground(doc, width, height);
-      } else if (backgroundIndex === 2) {
-        drawSpiralBackground(doc, width, height);
-      } else if (backgroundIndex === 3) {
-        drawConcentricSquaresBackground(doc, width, height);
-      } else if (backgroundIndex === 4) {
-        drawConcentricStarsBackground(doc, width, height);
-      }
-
-      doc.restore();
+      drawRegistrationMarks(doc, width, height, teamBottomMargin);
+      drawBackground(doc, width, height, index);
 
       doc.fontSize(14);
-
-      let upperLeftText, upperRightText;
-
-      if (page % 2 === 0) {
-        upperLeftText = page;
-        upperRightText = waypointName;
-      } else {
-        upperLeftText = waypointName;
-        upperRightText = page;
-      }
-
-      doc
-        .fillColor('black')
-        .strokeColor('white')
-        .lineWidth(OUTLINE_WIDTH)
-        .text(upperLeftText, PAGE_PADDING, PAGE_PADDING, {
-          fill: true,
-          stroke: true,
-        })
-        .text(upperRightText, PAGE_PADDING, PAGE_PADDING, {
-          width: width - PAGE_PADDING * 2,
-          align: 'right',
-          fill: true,
-          stroke: true,
-        })
-        .text(
-          regionAndCall,
-          PAGE_PADDING,
-          height - doc.currentLineHeight() - PAGE_PADDING,
-          { stroke: true, fill: true }
-        );
-
-      doc
-        .fillColor('black')
-        .lineWidth(1)
-        .text(upperLeftText, PAGE_PADDING, PAGE_PADDING)
-        .text(upperRightText, PAGE_PADDING, PAGE_PADDING, {
-          width: width - PAGE_PADDING * 2,
-          align: 'right',
-        })
-        .text(
-          regionAndCall,
-          PAGE_PADDING,
-          height - doc.currentLineHeight() - PAGE_PADDING
-        );
+      drawHeaderAndFooterText(
+        doc,
+        width,
+        height,
+        page,
+        waypointName,
+        regionAndCall
+      );
 
       doc.strokeColor('black');
 
@@ -325,4 +209,137 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       …
     {{/if}}
   </template>
+}
+
+function drawRegistrationMarks(doc, width, height, teamBottomMargin) {
+  doc.save();
+  doc.translate(
+    registrationLength + registrationPadding,
+    registrationLength + registrationPadding
+  );
+
+  doc.lineWidth(0.25);
+
+  // NW ver
+  doc.moveTo(0, -registrationPadding).lineTo(0, -registrationTotal).stroke();
+
+  // NW hor
+  doc.moveTo(-registrationPadding, 0).lineTo(-registrationTotal, 0).stroke();
+
+  // NE ver
+  doc
+    .moveTo(width, -registrationPadding)
+    .lineTo(width, -registrationTotal)
+    .stroke();
+
+  // NE hor
+  doc
+    .moveTo(width + registrationPadding, 0)
+    .lineTo(width + registrationTotal, 0)
+    .stroke();
+
+  doc.save();
+  doc.translate(0, teamBottomMargin);
+
+  // SW ver
+  doc
+    .moveTo(0, height + registrationPadding)
+    .lineTo(0, height + registrationTotal)
+    .stroke();
+
+  // SW hor
+  doc
+    .moveTo(-registrationPadding, height)
+    .lineTo(-registrationTotal, height)
+    .stroke();
+
+  // SE ver
+  doc
+    .moveTo(width, height + registrationPadding)
+    .lineTo(width, height + registrationTotal)
+    .stroke();
+
+  // SE hor
+  doc
+    .moveTo(width + registrationPadding, height)
+    .lineTo(width + registrationTotal, height)
+    .stroke();
+
+  // Maybe team margin
+  doc.restore();
+}
+
+function drawBackground(doc, width, height, pageIndex) {
+  doc.save();
+  doc.rect(0, 0, width, height).clip();
+
+  let backgroundIndex = pageIndex % BACKGROUND_COUNT;
+
+  if (backgroundIndex === 0) {
+    drawZigzagBackground(doc, width, height);
+  } else if (backgroundIndex === 1) {
+    drawConcentricCirclesBackground(doc, width, height);
+  } else if (backgroundIndex === 2) {
+    drawSpiralBackground(doc, width, height);
+  } else if (backgroundIndex === 3) {
+    drawConcentricSquaresBackground(doc, width, height);
+  } else if (backgroundIndex === 4) {
+    drawConcentricStarsBackground(doc, width, height);
+  }
+
+  doc.restore();
+}
+
+function drawHeaderAndFooterText(
+  doc,
+  width,
+  height,
+  page,
+  waypointName,
+  regionAndCall
+) {
+  let upperLeftText, upperRightText;
+
+  if (page % 2 === 0) {
+    upperLeftText = page;
+    upperRightText = waypointName;
+  } else {
+    upperLeftText = waypointName;
+    upperRightText = page;
+  }
+
+  doc
+    .fillColor('black')
+    .strokeColor('white')
+    .lineWidth(OUTLINE_WIDTH)
+    .text(upperLeftText, PAGE_PADDING, PAGE_PADDING, {
+      fill: true,
+      stroke: true,
+    })
+    .text(upperRightText, PAGE_PADDING, PAGE_PADDING, {
+      width: width - PAGE_PADDING * 2,
+      align: 'right',
+      fill: true,
+      stroke: true,
+    })
+    .text(
+      regionAndCall,
+      PAGE_PADDING,
+      height - doc.currentLineHeight() - PAGE_PADDING,
+      { stroke: true, fill: true }
+    );
+
+  doc
+    .fillColor('black')
+    .lineWidth(1)
+    .text(upperLeftText, PAGE_PADDING, PAGE_PADDING)
+    .text(upperRightText, PAGE_PADDING, PAGE_PADDING, {
+      width: width - PAGE_PADDING * 2,
+      align: 'right',
+    })
+    .text(
+      regionAndCall,
+      PAGE_PADDING,
+      height - doc.currentLineHeight() - PAGE_PADDING
+    );
 }
