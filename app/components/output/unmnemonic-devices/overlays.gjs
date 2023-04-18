@@ -19,6 +19,7 @@ let OUTLINE_WIDTH = 4;
 let TEAM_FONT_SIZE = 14;
 let TEAM_GAP_SIZE = pagePadding;
 let EXCERPT_HEIGHT = 10;
+let EXCERPT_GAP = 5;
 
 export default class UnmnemonicDevicesOverlaysComponent extends Component {
   @tracked allOverlays = true;
@@ -228,7 +229,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       let preExcerptX = 0,
         preExcerptY = startY,
         preExcerptAlign = 'right',
-        preExcerptWidthObject = { width: startX };
+        preExcerptWidthObject = { width: startX - EXCERPT_GAP };
 
       if (startX - preExcerptWidth < pagePadding) {
         preExcerptX = 0;
@@ -237,7 +238,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         preExcerptWidthObject = { width: width - pagePadding };
       }
 
-      let postExcerptX = end[0],
+      let postExcerptX = end[0] + EXCERPT_GAP,
         postExcerptY = end[1],
         postExcerptAlign = 'left';
 
