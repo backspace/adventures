@@ -94,6 +94,8 @@ jobs:
           --locked
       - name: Generate code coverage
         working-directory: unmnemonic_devices_vrs
-        run: cargo install cargo-tarpaulin && cargo tarpaulin --verbose --workspace
+        run: cargo install cargo-tarpaulin && cargo tarpaulin --verbose --workspace --out lcov --output-dir coverage
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost/postgres
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2.1.2
