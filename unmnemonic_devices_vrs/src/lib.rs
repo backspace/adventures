@@ -38,6 +38,10 @@ pub async fn app(db: PgPool) -> Router {
             "/recordings/prompts/:character_name",
             get(get_character_prompts),
         )
+        .route(
+            "/recordings/prompts/:character_name",
+            post(post_character_prompts),
+        )
         .route("/teams", get(get_teams))
         .route("/teams", post(post_teams))
         .route("/teams/:id", get(get_team))

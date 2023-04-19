@@ -49,3 +49,68 @@ async fn get_character_prompts_404s_for_unknown_character(db: PgPool) {
 
     assert_eq!(response.status(), http::StatusCode::NOT_FOUND);
 }
+
+#[sqlx::test(fixtures("schema", "teams"))]
+async fn post_character_prompts_redirects_to_prompt_path(db: PgPool) {
+    let app_address = spawn_app(db).await.address;
+
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Failed to construct request client");
+
+    // Twilio editorialises punctuation and always capitalises.
+    let body = "SpeechResult=Voicepass.";
+
+    let response = client
+        .post(&format!("{}/recordings/prompts/pure", &app_address))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_redirection());
+    assert_eq!(
+        response
+            .headers()
+            .get("Location")
+            .expect("Failed to extract Location header")
+            .to_str()
+            .unwrap(),
+        "/recordings/prompts/pure/voicepass"
+    );
+}
+
+#[sqlx::test(fixtures("schema", "teams"))]
+async fn post_character_prompts_redirects_to_get_character_prompts_when_unknown(db: PgPool) {
+    let app_address = spawn_app(db).await.address;
+
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Failed to construct request client");
+
+    let body = "SpeechResult=Prompty.";
+
+    let response = client
+        .post(&format!("{}/recordings/prompts/pure", &app_address))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+
+    assert_that(&document.find(Name("say")).next().unwrap().text())
+        .contains("Could not find a prompt for pure called prompty");
+
+    let redirect = document.find(Name("redirect")).next().unwrap();
+
+    assert_that(&redirect.text()).contains("/recordings/prompts/pure");
+    assert_eq!(redirect.attr("method").unwrap(), "GET");
+}
