@@ -70,7 +70,9 @@ CREATE TABLE public.messages (
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL,
     rendered_content text,
-    show_team boolean
+    show_team boolean,
+    from_name character varying(255),
+    from_address character varying(255)
 );
 
 
@@ -359,3 +361,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20230415020954);
 INSERT INTO public."schema_migrations" (version) VALUES (20230415180333);
 INSERT INTO public."schema_migrations" (version) VALUES (20230415180346);
 INSERT INTO public."schema_migrations" (version) VALUES (20230415180351);
+INSERT INTO public."schema_migrations" (version) VALUES (20230416192016);
