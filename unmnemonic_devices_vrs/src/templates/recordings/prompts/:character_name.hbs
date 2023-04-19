@@ -1,0 +1,10 @@
+<Response>
+  <Say>
+    Recording prompts for {{character_name}}
+  </Say>
+  <Gather timeout="2" input="speech" hints="{{#each prompt_names}}{{this}}, {{/each}}">
+    <Say>
+      What prompt do you want to record?
+    </Say>
+  </Gather>
+</Response>

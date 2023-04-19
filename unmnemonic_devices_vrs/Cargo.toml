@@ -18,6 +18,7 @@ handlebars = { version = "4", features = ["dir_source"] }
 http = "0.2.9"
 mime = "0.3.16"
 tokio = { version = "1.0", features = ["full"] }
+toml = "0.7.3"
 tower-http = { version = "0.4", features = ["trace"] }
 tracing = "0.1.35"
 tracing-subscriber = "0.3.14"
