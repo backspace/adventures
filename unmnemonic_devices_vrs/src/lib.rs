@@ -50,6 +50,10 @@ pub async fn app(db: PgPool) -> Router {
             "/recordings/prompts/:character_name/:prompt_name",
             post(post_character_prompt),
         )
+        .route(
+            "/recordings/prompts/:character_name/:prompt_name/decide",
+            post(post_character_prompt_decide),
+        )
         .route("/teams", get(get_teams))
         .route("/teams", post(post_teams))
         .route("/teams/:id", get(get_team))

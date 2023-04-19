@@ -1,5 +1,6 @@
 use crate::helpers::spawn_app;
 use select::{document::Document, predicate::Name};
+use serde::Serialize;
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
@@ -210,5 +211,175 @@ async fn post_character_prompt_plays_recording_and_gathers_decision(db: PgPool) 
             .attr("action")
             .unwrap(),
         &"/recordings/prompts/pure/voicepass/decide?recording_url=http%3A%2F%2Fexample.com%2Fvoicepass"
+    );
+}
+
+#[derive(sqlx::FromRow, Serialize)]
+pub struct RecordingUrl {
+    url: String,
+}
+
+#[sqlx::test(fixtures("schema"))]
+async fn post_character_prompt_decide_stores_recording_upon_keep(db: PgPool) {
+    let app_address = spawn_app(db.clone()).await.address;
+
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Failed to construct request client");
+
+    let body = "SpeechResult=Keep.";
+
+    let response = client
+        .post(&format!(
+            "{}/recordings/prompts/pure/voicepass/decide?recording_url=http://example.com/newvoicepass",
+            &app_address
+        ))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    let recording_url = sqlx::query_as::<_, RecordingUrl>(
+        r#"
+          SELECT
+            r.url
+          FROM
+            unmnemonic_devices.recordings r
+          WHERE
+            r.character_name = $1
+            AND r.prompt_name = $2
+        "#,
+    )
+    .bind("pure")
+    .bind("voicepass")
+    .fetch_one(&db)
+    .await;
+
+    assert_eq!(
+        recording_url.unwrap().url,
+        "http://example.com/newvoicepass"
+    );
+
+    assert!(response.status().is_redirection());
+    assert_eq!(
+        response
+            .headers()
+            .get("Location")
+            .expect("Failed to extract Location header")
+            .to_str()
+            .unwrap(),
+        "/recordings/prompts/pure"
+    );
+}
+
+#[sqlx::test(fixtures("schema", "recordings-prompts-pure-voicepass"))]
+async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
+    let app_address = spawn_app(db.clone()).await.address;
+
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Failed to construct request client");
+
+    let body = "SpeechResult=Keep.";
+
+    let response = client
+        .post(&format!(
+            "{}/recordings/prompts/pure/voicepass/decide?recording_url=http://example.com/newervoicepass",
+            &app_address
+        ))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    let recording_url = sqlx::query_as::<_, RecordingUrl>(
+        r#"
+          SELECT
+            r.url
+          FROM
+            unmnemonic_devices.recordings r
+          WHERE
+            r.character_name = $1
+            AND r.prompt_name = $2
+        "#,
+    )
+    .bind("pure")
+    .bind("voicepass")
+    .fetch_one(&db)
+    .await;
+
+    assert_eq!(
+        recording_url.unwrap().url,
+        "http://example.com/newervoicepass"
+    );
+
+    assert!(response.status().is_redirection());
+    assert_eq!(
+        response
+            .headers()
+            .get("Location")
+            .expect("Failed to extract Location header")
+            .to_str()
+            .unwrap(),
+        "/recordings/prompts/pure"
+    );
+}
+
+#[sqlx::test(fixtures("schema", "recordings-prompts-pure-voicepass"))]
+async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
+    let app_address = spawn_app(db.clone()).await.address;
+
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Failed to construct request client");
+
+    let body = "SpeechResult=Rerecord.";
+
+    let response = client
+        .post(&format!(
+            "{}/recordings/prompts/pure/voicepass/decide?recording_url=http://example.com/newervoicepass",
+            &app_address
+        ))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    let recording_url = sqlx::query_as::<_, RecordingUrl>(
+        r#"
+          SELECT
+            r.url
+          FROM
+            unmnemonic_devices.recordings r
+          WHERE
+            r.character_name = $1
+            AND r.prompt_name = $2
+        "#,
+    )
+    .bind("pure")
+    .bind("voicepass")
+    .fetch_one(&db)
+    .await;
+
+    assert_eq!(
+        recording_url.unwrap().url,
+        "http://example.com/old-voicepass"
+    );
+
+    assert!(response.status().is_redirection());
+    assert_eq!(
+        response
+            .headers()
+            .get("Location")
+            .expect("Failed to extract Location header")
+            .to_str()
+            .unwrap(),
+        "/recordings/prompts/pure/voicepass"
     );
 }

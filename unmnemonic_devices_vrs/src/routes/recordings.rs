@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     response::{IntoResponse, Redirect},
     Form,
 };
@@ -7,6 +7,7 @@ use axum_template::Key;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
+use uuid::Uuid;
 
 use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
@@ -145,4 +146,49 @@ pub async fn post_character_prompt(
             ),
         },
     )
+}
+
+#[derive(Deserialize)]
+pub struct DecideParams {
+    recording_url: String,
+}
+
+pub async fn post_character_prompt_decide(
+    Key(_key): Key,
+    Path((character_name, prompt_name)): Path<(String, String)>,
+    params: Query<DecideParams>,
+    State(state): State<AppState>,
+    Form(form): Form<TwilioForm>,
+) -> Redirect {
+    if form.speech_result == "Keep." {
+        let result = sqlx::query!(
+            r#"
+              INSERT INTO unmnemonic_devices.recordings (id, character_name, prompt_name, url)
+              VALUES ($1, $2, $3, $4)
+              ON CONFLICT (character_name, prompt_name)
+              DO UPDATE SET url = EXCLUDED.url
+            "#,
+            Uuid::new_v4(),
+            character_name,
+            prompt_name,
+            params.recording_url
+        )
+        .execute(&state.db)
+        .await;
+
+        if result.is_ok() {
+            Redirect::to(&format!("/recordings/prompts/{}", character_name))
+        } else {
+            // How to exercise this in tests?
+            Redirect::to(&format!(
+                "/recordings/prompts/{}/{}",
+                character_name, prompt_name
+            ))
+        }
+    } else {
+        Redirect::to(&format!(
+            "/recordings/prompts/{}/{}",
+            character_name, prompt_name
+        ))
+    }
 }

@@ -160,6 +160,23 @@ CREATE TABLE unmnemonic_devices.meetings (
 
 
 --
+-- Name: recordings; Type: TABLE; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE TABLE unmnemonic_devices.recordings (
+    id uuid NOT NULL,
+    type character varying(255),
+    region_id uuid,
+    destination_id uuid,
+    book_id uuid,
+    url character varying(255),
+    transcription text,
+    character_name character varying(255),
+    prompt_name character varying(255)
+);
+
+
+--
 -- Name: regions; Type: TABLE; Schema: unmnemonic_devices; Owner: -
 --
 
@@ -276,6 +293,14 @@ ALTER TABLE ONLY unmnemonic_devices.meetings
 
 
 --
+-- Name: recordings recordings_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.recordings
+    ADD CONSTRAINT recordings_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: regions regions_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
 --
 
@@ -303,6 +328,13 @@ CREATE INDEX databases_created_at ON _sqlx_test.databases USING btree (created_a
 --
 
 CREATE UNIQUE INDEX users_email_index ON public.users USING btree (email);
+
+
+--
+-- Name: recordings_character_name_prompt_name_index; Type: INDEX; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE UNIQUE INDEX recordings_character_name_prompt_name_index ON unmnemonic_devices.recordings USING btree (character_name, prompt_name);
 
 
 --
@@ -338,6 +370,30 @@ ALTER TABLE ONLY unmnemonic_devices.meetings
 
 
 --
+-- Name: recordings recordings_book_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.recordings
+    ADD CONSTRAINT recordings_book_id_fkey FOREIGN KEY (book_id) REFERENCES unmnemonic_devices.books(id);
+
+
+--
+-- Name: recordings recordings_destination_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.recordings
+    ADD CONSTRAINT recordings_destination_id_fkey FOREIGN KEY (destination_id) REFERENCES unmnemonic_devices.destinations(id);
+
+
+--
+-- Name: recordings recordings_region_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.recordings
+    ADD CONSTRAINT recordings_region_id_fkey FOREIGN KEY (region_id) REFERENCES unmnemonic_devices.regions(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -362,3 +418,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20230415180333);
 INSERT INTO public."schema_migrations" (version) VALUES (20230415180346);
 INSERT INTO public."schema_migrations" (version) VALUES (20230415180351);
 INSERT INTO public."schema_migrations" (version) VALUES (20230416192016);
+INSERT INTO public."schema_migrations" (version) VALUES (20230419025011);
