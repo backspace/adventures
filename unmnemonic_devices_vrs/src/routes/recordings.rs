@@ -5,17 +5,9 @@ use axum::{
 };
 use axum_template::Key;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::fs;
 use uuid::Uuid;
 
 use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
-
-#[derive(Debug, Deserialize)]
-struct Config {
-    #[serde(flatten)]
-    tables: HashMap<String, HashMap<String, String>>,
-}
 
 #[derive(Serialize)]
 pub struct CharacterPrompts {
@@ -28,11 +20,7 @@ pub async fn get_character_prompts(
     Path(character_name): Path<String>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    let content = fs::read_to_string("src/prompts.toml").expect("Failed to read the prompts file");
-
-    let config: Config = toml::from_str(&content).expect("Failed to parse the prompts file");
-
-    let character_prompts = config.tables.get(&character_name);
+    let character_prompts = state.prompts.tables.get(&character_name);
 
     if character_prompts.is_some() {
         RenderXml(
@@ -64,11 +52,7 @@ pub async fn post_character_prompts(
         .to_lowercase()
         .replace(&['?', '.', ','][..], "");
 
-    let content = fs::read_to_string("src/prompts.toml").expect("Failed to read the prompts file");
-
-    let config: Config = toml::from_str(&content).expect("Failed to parse the prompts file");
-
-    let character_prompts = config.tables.get(&character_name);
+    let character_prompts = state.prompts.tables.get(&character_name);
 
     let prompt = character_prompts.unwrap().get(&prompt_name);
 
@@ -101,11 +85,7 @@ pub async fn get_character_prompt(
     Path((character_name, prompt_name)): Path<(String, String)>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    let content = fs::read_to_string("src/prompts.toml").expect("Failed to read the prompts file");
-
-    let config: Config = toml::from_str(&content).expect("Failed to parse the prompts file");
-
-    let character_prompts = config.tables.get(&character_name);
+    let character_prompts = state.prompts.tables.get(&character_name);
     let prompt = character_prompts.unwrap().get(&prompt_name);
 
     if prompt.is_some() {

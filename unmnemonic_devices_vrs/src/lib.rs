@@ -8,7 +8,9 @@ use axum::{
 };
 use axum_template::engine::Engine;
 use handlebars::Handlebars;
+use serde::Deserialize;
 use sqlx::PgPool;
+use std::{collections::HashMap, fs};
 
 use crate::routes::*;
 
@@ -18,6 +20,13 @@ pub type AppEngine = Engine<Handlebars<'static>>;
 pub struct AppState {
     db: PgPool,
     engine: AppEngine,
+    prompts: Prompts,
+}
+
+#[derive(Clone, Deserialize)]
+struct Prompts {
+    #[serde(flatten)]
+    tables: HashMap<String, HashMap<String, String>>,
 }
 
 pub async fn app(db: PgPool) -> Router {
@@ -25,9 +34,16 @@ pub async fn app(db: PgPool) -> Router {
     hbs.register_templates_directory(".hbs", "src/templates")
         .expect("Failed to register templates directory");
 
+    let prompts_string =
+        fs::read_to_string("src/prompts.toml").expect("Failed to read the prompts file");
+
+    let prompts: Prompts =
+        toml::from_str(&prompts_string).expect("Failed to parse the prompts file");
+
     let shared_state = AppState {
         db,
         engine: Engine::from(hbs),
+        prompts,
     };
 
     Router::new()
