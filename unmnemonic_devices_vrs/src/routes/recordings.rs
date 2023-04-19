@@ -89,3 +89,27 @@ pub async fn post_character_prompts(
         .into_response()
     }
 }
+
+#[derive(Serialize)]
+pub struct CharacterPrompt {
+    prompt_name: String,
+}
+
+pub async fn get_character_prompt(
+    Key(key): Key,
+    Path((character_name, prompt_name)): Path<(String, String)>,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let content = fs::read_to_string("src/prompts.toml").expect("Failed to read the prompts file");
+
+    let config: Config = toml::from_str(&content).expect("Failed to parse the prompts file");
+
+    let character_prompts = config.tables.get(&character_name);
+    let prompt = character_prompts.unwrap().get(&prompt_name);
+
+    if prompt.is_some() {
+        RenderXml(key, state.engine, CharacterPrompt { prompt_name }).into_response()
+    } else {
+        Redirect::to(&format!("/recordings/prompts/{}", character_name)).into_response()
+    }
+}
