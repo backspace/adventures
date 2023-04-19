@@ -113,3 +113,36 @@ pub async fn get_character_prompt(
         Redirect::to(&format!("/recordings/prompts/{}", character_name)).into_response()
     }
 }
+
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct TwilioRecordingForm {
+    pub recording_url: String,
+}
+
+#[derive(Serialize)]
+pub struct ConfirmRecordingPrompt {
+    recording_url: String,
+    action: String,
+}
+
+pub async fn post_character_prompt(
+    Key(_key): Key,
+    Path((character_name, prompt_name)): Path<(String, String)>,
+    State(state): State<AppState>,
+    Form(form): Form<TwilioRecordingForm>,
+) -> impl IntoResponse {
+    RenderXml(
+        "/recordings/prompts/:character_name/:prompt_name/post",
+        state.engine,
+        ConfirmRecordingPrompt {
+            recording_url: form.recording_url.to_string(),
+            action: format!(
+                "/recordings/prompts/{}/{}/decide?recording_url={}",
+                character_name,
+                prompt_name,
+                urlencoding::encode(&form.recording_url)
+            ),
+        },
+    )
+}

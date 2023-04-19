@@ -172,3 +172,43 @@ async fn get_character_prompt_redirects_to_prompts_path_for_unknown_prompt(db: P
         "/recordings/prompts/pure"
     );
 }
+
+#[sqlx::test(fixtures("schema"))]
+async fn post_character_prompt_plays_recording_and_gathers_decision(db: PgPool) {
+    let app_address = spawn_app(db.clone()).await.address;
+
+    let client = reqwest::Client::new();
+
+    let body = "RecordingUrl=http://example.com/voicepass";
+
+    let response = client
+        .post(&format!(
+            "{}/recordings/prompts/pure/voicepass",
+            &app_address
+        ))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+
+    assert_eq!(
+        &document.find(Name("play")).next().unwrap().text(),
+        "http://example.com/voicepass"
+    );
+
+    assert_eq!(
+        &document
+            .find(Name("gather"))
+            .next()
+            .unwrap()
+            .attr("action")
+            .unwrap(),
+        &"/recordings/prompts/pure/voicepass/decide?recording_url=http%3A%2F%2Fexample.com%2Fvoicepass"
+    );
+}
