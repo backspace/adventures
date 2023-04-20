@@ -87,6 +87,38 @@ async fn get_character_prompts_404s_for_unknown_character(db: PgPool) {
     assert_eq!(response.status(), http::StatusCode::NOT_FOUND);
 }
 
+#[sqlx::test(fixtures("schema", "teams"))]
+async fn post_character_prompts_redirects_to_prompt_path(db: PgPool) {
+    let app_address = spawn_app(db).await.address;
+
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Failed to construct request client");
+
+    // Twilio editorialises punctuation and always capitalises.
+    let body = "SpeechResult=Voicepass.";
+
+    let response = client
+        .post(&format!("{}/recordings/prompts/testa", &app_address))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_redirection());
+    assert_eq!(
+        response
+            .headers()
+            .get("Location")
+            .expect("Failed to extract Location header")
+            .to_str()
+            .unwrap(),
+        "/recordings/prompts/testa/voicepass"
+    );
+}
+
 #[sqlx::test(fixtures(
     "schema",
     "recordings-prompts-testa-voicepass",
