@@ -33,12 +33,6 @@ pub async fn get_character_prompts(
         .await
         .unwrap();
 
-        println!(
-            "GET prompts… unrecorded prompt? {:?} is some? {}",
-            unrecorded_prompt_name_option,
-            unrecorded_prompt_name_option.is_some()
-        );
-
         RenderXml(
             key,
             state.engine,
