@@ -124,9 +124,7 @@ async fn post_character_prompts_redirects_to_prompt_path(db: PgPool) {
     "recordings-prompts-testa-voicepass",
     "recordings-prompts-testb-welcome"
 ))]
-async fn post_character_prompts_with_unrecorded_redirects_to_first_unrecorded_prompt_path(
-    db: PgPool,
-) {
+async fn post_character_prompts_with_unrecorded_redirects_to_unrecorded_path(db: PgPool) {
     let app_address = spawn_app(db).await.address;
 
     let client = reqwest::Client::builder()
@@ -140,6 +138,40 @@ async fn post_character_prompts_with_unrecorded_redirects_to_first_unrecorded_pr
         .post(&format!("{}/recordings/prompts/testa", &app_address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(body)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_redirection());
+    assert_eq!(
+        response
+            .headers()
+            .get("Location")
+            .expect("Failed to extract Location header")
+            .to_str()
+            .unwrap(),
+        "/recordings/prompts/testa/unrecorded"
+    );
+}
+
+#[sqlx::test(fixtures(
+    "schema",
+    "recordings-prompts-testa-voicepass",
+    "recordings-prompts-testb-welcome"
+))]
+async fn get_character_prompts_unrecorded_redirects_to_first_unrecorded_prompt_path(db: PgPool) {
+    let app_address = spawn_app(db).await.address;
+
+    let client = reqwest::Client::builder()
+        .redirect(reqwest::redirect::Policy::none())
+        .build()
+        .expect("Failed to construct request client");
+
+    let response = client
+        .get(&format!(
+            "{}/recordings/prompts/testa/unrecorded",
+            &app_address
+        ))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -163,27 +195,21 @@ async fn post_character_prompts_with_unrecorded_redirects_to_first_unrecorded_pr
     "recordings-prompts-testa-voicepass",
     "recordings-prompts-testb-welcome"
 ))]
-async fn post_character_prompts_with_unrecorded_redirects_to_prompt_select_when_no_unrecorded(
+async fn get_character_prompts_unrecorded_redirects_to_prompt_select_when_no_unrecorded(
     db: PgPool,
 ) {
     let app_address = spawn_app(db).await.address;
 
     let client = reqwest::Client::new();
 
-    let body = "SpeechResult=Unrecorded prompts.";
-
     let response = client
-        .post(&format!(
-            "{}/recordings/prompts/testb?unrecorded",
+        .get(&format!(
+            "{}/recordings/prompts/testb/unrecorded",
             &app_address
         ))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
         .send()
         .await
         .expect("Failed to execute request.");
-
-    println!("response status: {}", response.status());
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
@@ -479,7 +505,7 @@ async fn post_character_prompt_decide_forwards_unrecorded(db: PgPool) {
             .expect("Failed to extract Location header")
             .to_str()
             .unwrap(),
-        "/recordings/prompts/testa?unrecorded"
+        "/recordings/prompts/testa/unrecorded"
     );
 }
 

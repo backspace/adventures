@@ -59,6 +59,10 @@ pub async fn app(db: PgPool) -> Router {
             post(post_character_prompts),
         )
         .route(
+            "/recordings/prompts/:character_name/unrecorded",
+            get(get_unrecorded_character_prompt),
+        )
+        .route(
             "/recordings/prompts/:character_name/:prompt_name",
             get(get_character_prompt),
         )

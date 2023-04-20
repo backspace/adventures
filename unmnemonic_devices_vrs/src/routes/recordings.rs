@@ -66,39 +66,11 @@ pub async fn post_character_prompts(
 ) -> impl IntoResponse {
     let character_prompts = state.prompts.tables.get(&character_name);
     if form.speech_result == "Unrecorded prompts." {
-        let unrecorded_prompt_name_option = find_unrecorded_prompt(
-            state.db,
-            character_name.to_string(),
-            character_prompts.unwrap().keys(),
-        )
-        .await
-        .unwrap();
-
-        if unrecorded_prompt_name_option.is_some() {
-            RenderXml(
-                "/recordings/prompts/:character_name/unrecorded",
-                state.engine,
-                UnrecordedIntroduction {
-                    character_name: character_name.to_string(),
-                    redirect: format!(
-                        "/recordings/prompts/{}/{}?unrecorded",
-                        character_name,
-                        unrecorded_prompt_name_option.unwrap()
-                    ),
-                },
-            )
-            .into_response()
-        } else {
-            RenderXml(
-                "/recordings/prompts/:character_name/no-unrecorded",
-                state.engine,
-                UnrecordedIntroduction {
-                    character_name: character_name.to_string(),
-                    redirect: format!("/recordings/prompts/{}", character_name),
-                },
-            )
-            .into_response()
-        }
+        Redirect::to(&format!(
+            "/recordings/prompts/{}/unrecorded",
+            character_name
+        ))
+        .into_response()
     } else {
         let prompt_name = form
             .speech_result
@@ -124,6 +96,46 @@ pub async fn post_character_prompts(
             )
             .into_response()
         }
+    }
+}
+
+pub async fn get_unrecorded_character_prompt(
+    State(state): State<AppState>,
+    Path(character_name): Path<String>,
+) -> impl IntoResponse {
+    let character_prompts = state.prompts.tables.get(&character_name);
+    let unrecorded_prompt_name_option = find_unrecorded_prompt(
+        state.db,
+        character_name.to_string(),
+        character_prompts.unwrap().keys(),
+    )
+    .await
+    .unwrap();
+
+    if unrecorded_prompt_name_option.is_some() {
+        RenderXml(
+            "/recordings/prompts/:character_name/unrecorded",
+            state.engine,
+            UnrecordedIntroduction {
+                character_name: character_name.to_string(),
+                redirect: format!(
+                    "/recordings/prompts/{}/{}?unrecorded",
+                    character_name,
+                    unrecorded_prompt_name_option.unwrap()
+                ),
+            },
+        )
+        .into_response()
+    } else {
+        RenderXml(
+            "/recordings/prompts/:character_name/no-unrecorded",
+            state.engine,
+            UnrecordedIntroduction {
+                character_name: character_name.to_string(),
+                redirect: format!("/recordings/prompts/{}", character_name),
+            },
+        )
+        .into_response()
     }
 }
 
@@ -237,7 +249,7 @@ pub async fn post_character_prompt_decide(
                 "/recordings/prompts/{}{}",
                 character_name,
                 if params.unrecorded.is_some() {
-                    "?unrecorded"
+                    "/unrecorded"
                 } else {
                     ""
                 }
