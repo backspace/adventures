@@ -1,0 +1,24 @@
+INSERT INTO
+  "unmnemonic_devices"."recordings"(
+    "id",
+    "type",
+    "region_id",
+    "destination_id",
+    "book_id",
+    "url",
+    "transcription",
+    "character_name",
+    "prompt_name"
+  )
+VALUES
+  (
+    'a436fb55-10e8-4d48-8989-1758b3aeccfa',
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    'http://example.com/testonly-welcome',
+    NULL,
+    'testonly',
+    'welcome'
+  );

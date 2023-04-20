@@ -2,5 +2,5 @@
   <Say>
     Recording {{prompt_name}} prompt
   </Say>
-  <Record action="/recordings/prompts/pure/{{prompt_name}}" />
+  <Record action="/recordings/prompts/pure/{{prompt_name}}{{#if unrecorded_query_param }}?unrecorded{{/if}}" />
 </Response>
