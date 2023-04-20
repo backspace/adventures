@@ -11,7 +11,7 @@ async fn get_character_prompts_gathers_by_prompt_key(db: PgPool) {
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/recordings/prompts/pure", &app_address))
+        .get(&format!("{}/recordings/prompts/testa", &app_address))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -22,7 +22,7 @@ async fn get_character_prompts_gathers_by_prompt_key(db: PgPool) {
     let document = Document::from(response.text().await.unwrap().as_str());
 
     assert_that(&document.find(Name("say")).next().unwrap().text())
-        .contains("Recording prompts for pure");
+        .contains("Recording prompts for testa");
 
     assert_that(&document.find(Name("gather")).next().unwrap().text())
         .contains("Or say unrecorded prompts.");
@@ -40,7 +40,7 @@ async fn get_character_prompts_gathers_by_prompt_key(db: PgPool) {
     assert_that(gather_hints).contains("unrecorded prompts");
 }
 
-#[sqlx::test(fixtures("schema", "recordings-prompts-testonly-welcome"))]
+#[sqlx::test(fixtures("schema", "recordings-prompts-testb-welcome"))]
 async fn get_character_prompts_gathers_by_prompt_key_without_unrecorded_when_no_unrecorded(
     db: PgPool,
 ) {
@@ -49,7 +49,7 @@ async fn get_character_prompts_gathers_by_prompt_key_without_unrecorded_when_no_
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/recordings/prompts/testonly", &app_address))
+        .get(&format!("{}/recordings/prompts/testb", &app_address))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -60,7 +60,7 @@ async fn get_character_prompts_gathers_by_prompt_key_without_unrecorded_when_no_
     let document = Document::from(response.text().await.unwrap().as_str());
 
     assert_that(&document.find(Name("say")).next().unwrap().text())
-        .does_not_contain("Recording prompts for pure");
+        .does_not_contain("Recording prompts for testa");
 
     let gather_hints = &document
         .find(Name("gather"))
@@ -89,8 +89,8 @@ async fn get_character_prompts_404s_for_unknown_character(db: PgPool) {
 
 #[sqlx::test(fixtures(
     "schema",
-    "recordings-prompts-pure-voicepass",
-    "recordings-prompts-testonly-welcome"
+    "recordings-prompts-testa-voicepass",
+    "recordings-prompts-testb-welcome"
 ))]
 async fn post_character_prompts_with_unrecorded_redirects_to_first_unrecorded_prompt_path(
     db: PgPool,
@@ -105,7 +105,7 @@ async fn post_character_prompts_with_unrecorded_redirects_to_first_unrecorded_pr
     let body = "SpeechResult=Unrecorded prompts.";
 
     let response = client
-        .post(&format!("{}/recordings/prompts/pure", &app_address))
+        .post(&format!("{}/recordings/prompts/testa", &app_address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(body)
         .send()
@@ -118,18 +118,18 @@ async fn post_character_prompts_with_unrecorded_redirects_to_first_unrecorded_pr
     let document = Document::from(response.text().await.unwrap().as_str());
 
     assert_that(&document.find(Name("say")).next().unwrap().text())
-        .contains("Will cycle through unrecorded prompts for pure");
+        .contains("Will cycle through unrecorded prompts for testa");
 
     let redirect = document.find(Name("redirect")).next().unwrap();
 
-    assert_that(&redirect.text()).contains("/recordings/prompts/pure/welcome?unrecorded");
+    assert_that(&redirect.text()).contains("/recordings/prompts/testa/welcome?unrecorded");
     assert_eq!(redirect.attr("method").unwrap(), "GET");
 }
 
 #[sqlx::test(fixtures(
     "schema",
-    "recordings-prompts-pure-voicepass",
-    "recordings-prompts-testonly-welcome"
+    "recordings-prompts-testa-voicepass",
+    "recordings-prompts-testb-welcome"
 ))]
 async fn post_character_prompts_with_unrecorded_redirects_to_prompt_select_when_no_unrecorded(
     db: PgPool,
@@ -142,7 +142,7 @@ async fn post_character_prompts_with_unrecorded_redirects_to_prompt_select_when_
 
     let response = client
         .post(&format!(
-            "{}/recordings/prompts/testonly?unrecorded",
+            "{}/recordings/prompts/testb?unrecorded",
             &app_address
         ))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -159,11 +159,11 @@ async fn post_character_prompts_with_unrecorded_redirects_to_prompt_select_when_
     let document = Document::from(response.text().await.unwrap().as_str());
 
     assert_that(&document.find(Name("say")).next().unwrap().text())
-        .contains("All prompts for testonly are recorded");
+        .contains("All prompts for testb are recorded");
 
     let redirect = document.find(Name("redirect")).next().unwrap();
 
-    assert_that(&redirect.text()).contains("/recordings/prompts/testonly");
+    assert_that(&redirect.text()).contains("/recordings/prompts/testb");
     assert_eq!(redirect.attr("method").unwrap(), "GET");
 }
 
@@ -179,7 +179,7 @@ async fn post_character_prompts_redirects_to_get_character_prompts_when_unknown(
     let body = "SpeechResult=Prompty.";
 
     let response = client
-        .post(&format!("{}/recordings/prompts/pure", &app_address))
+        .post(&format!("{}/recordings/prompts/testa", &app_address))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(body)
         .send()
@@ -192,11 +192,11 @@ async fn post_character_prompts_redirects_to_get_character_prompts_when_unknown(
     let document = Document::from(response.text().await.unwrap().as_str());
 
     assert_that(&document.find(Name("say")).next().unwrap().text())
-        .contains("Could not find a prompt for pure called prompty");
+        .contains("Could not find a prompt for testa called prompty");
 
     let redirect = document.find(Name("redirect")).next().unwrap();
 
-    assert_that(&redirect.text()).contains("/recordings/prompts/pure");
+    assert_that(&redirect.text()).contains("/recordings/prompts/testa");
     assert_eq!(redirect.attr("method").unwrap(), "GET");
 }
 
@@ -208,7 +208,7 @@ async fn get_character_prompt_sets_up_recording(db: PgPool) {
 
     let response = client
         .get(&format!(
-            "{}/recordings/prompts/pure/voicepass",
+            "{}/recordings/prompts/testa/voicepass",
             &app_address
         ))
         .send()
@@ -227,7 +227,7 @@ async fn get_character_prompt_sets_up_recording(db: PgPool) {
 
     assert_eq!(
         record_element.attr("action").unwrap(),
-        "/recordings/prompts/pure/voicepass"
+        "/recordings/prompts/testa/voicepass"
     );
 }
 
@@ -239,7 +239,7 @@ async fn get_character_prompt_forwards_unrecorded(db: PgPool) {
 
     let response = client
         .get(&format!(
-            "{}/recordings/prompts/pure/voicepass?unrecorded",
+            "{}/recordings/prompts/testa/voicepass?unrecorded",
             &app_address
         ))
         .send()
@@ -252,7 +252,7 @@ async fn get_character_prompt_forwards_unrecorded(db: PgPool) {
 
     assert_eq!(
         record_element.attr("action").unwrap(),
-        "/recordings/prompts/pure/voicepass?unrecorded"
+        "/recordings/prompts/testa/voicepass?unrecorded"
     );
 }
 
@@ -266,7 +266,7 @@ async fn get_character_prompt_redirects_to_prompts_path_for_unknown_prompt(db: P
         .expect("Failed to construct request client");
 
     let response = client
-        .get(&format!("{}/recordings/prompts/pure/what", &app_address))
+        .get(&format!("{}/recordings/prompts/testa/what", &app_address))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -279,7 +279,7 @@ async fn get_character_prompt_redirects_to_prompts_path_for_unknown_prompt(db: P
             .expect("Failed to extract Location header")
             .to_str()
             .unwrap(),
-        "/recordings/prompts/pure"
+        "/recordings/prompts/testa"
     );
 }
 
@@ -293,7 +293,7 @@ async fn post_character_prompt_plays_recording_and_gathers_decision(db: PgPool) 
 
     let response = client
         .post(&format!(
-            "{}/recordings/prompts/pure/voicepass",
+            "{}/recordings/prompts/testa/voicepass",
             &app_address
         ))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -319,7 +319,7 @@ async fn post_character_prompt_plays_recording_and_gathers_decision(db: PgPool) 
             .unwrap()
             .attr("action")
             .unwrap(),
-        &"/recordings/prompts/pure/voicepass/decide?recording_url=http%3A%2F%2Fexample.com%2Fvoicepass"
+        &"/recordings/prompts/testa/voicepass/decide?recording_url=http%3A%2F%2Fexample.com%2Fvoicepass"
     );
 }
 
@@ -333,7 +333,7 @@ async fn post_character_prompt_forwards_unrecorded(db: PgPool) {
 
     let response = client
         .post(&format!(
-            "{}/recordings/prompts/pure/voicepass?unrecorded",
+            "{}/recordings/prompts/testa/voicepass?unrecorded",
             &app_address
         ))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -376,7 +376,7 @@ async fn post_character_prompt_decide_stores_recording_upon_keep(db: PgPool) {
 
     let response = client
         .post(&format!(
-            "{}/recordings/prompts/pure/voicepass/decide?recording_url=http://example.com/newvoicepass",
+            "{}/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass",
             &app_address
         ))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -396,7 +396,7 @@ async fn post_character_prompt_decide_stores_recording_upon_keep(db: PgPool) {
             AND r.prompt_name = $2
         "#,
     )
-    .bind("pure")
+    .bind("testa")
     .bind("voicepass")
     .fetch_one(&db)
     .await;
@@ -414,7 +414,7 @@ async fn post_character_prompt_decide_stores_recording_upon_keep(db: PgPool) {
             .expect("Failed to extract Location header")
             .to_str()
             .unwrap(),
-        "/recordings/prompts/pure"
+        "/recordings/prompts/testa"
     );
 }
 
@@ -431,7 +431,7 @@ async fn post_character_prompt_decide_forwards_unrecorded(db: PgPool) {
 
     let response = client
         .post(&format!(
-            "{}/recordings/prompts/pure/voicepass/decide?recording_url=http://example.com/newvoicepass&unrecorded",
+            "{}/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass&unrecorded",
             &app_address
         ))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -447,11 +447,11 @@ async fn post_character_prompt_decide_forwards_unrecorded(db: PgPool) {
             .expect("Failed to extract Location header")
             .to_str()
             .unwrap(),
-        "/recordings/prompts/pure?unrecorded"
+        "/recordings/prompts/testa?unrecorded"
     );
 }
 
-#[sqlx::test(fixtures("schema", "recordings-prompts-pure-voicepass"))]
+#[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
     let app_address = spawn_app(db.clone()).await.address;
 
@@ -464,7 +464,7 @@ async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
 
     let response = client
         .post(&format!(
-            "{}/recordings/prompts/pure/voicepass/decide?recording_url=http://example.com/newervoicepass",
+            "{}/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass",
             &app_address
         ))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -484,7 +484,7 @@ async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
             AND r.prompt_name = $2
         "#,
     )
-    .bind("pure")
+    .bind("testa")
     .bind("voicepass")
     .fetch_one(&db)
     .await;
@@ -502,11 +502,11 @@ async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
             .expect("Failed to extract Location header")
             .to_str()
             .unwrap(),
-        "/recordings/prompts/pure"
+        "/recordings/prompts/testa"
     );
 }
 
-#[sqlx::test(fixtures("schema", "recordings-prompts-pure-voicepass"))]
+#[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
     let app_address = spawn_app(db.clone()).await.address;
 
@@ -519,7 +519,7 @@ async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
 
     let response = client
         .post(&format!(
-            "{}/recordings/prompts/pure/voicepass/decide?recording_url=http://example.com/newervoicepass",
+            "{}/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass",
             &app_address
         ))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -539,7 +539,7 @@ async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
             AND r.prompt_name = $2
         "#,
     )
-    .bind("pure")
+    .bind("testa")
     .bind("voicepass")
     .fetch_one(&db)
     .await;
@@ -557,11 +557,11 @@ async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
             .expect("Failed to extract Location header")
             .to_str()
             .unwrap(),
-        "/recordings/prompts/pure/voicepass"
+        "/recordings/prompts/testa/voicepass"
     );
 }
 
-#[sqlx::test(fixtures("schema", "recordings-prompts-pure-voicepass"))]
+#[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_discards_and_forwards_unrecorded(db: PgPool) {
     let app_address = spawn_app(db.clone()).await.address;
 
@@ -574,7 +574,7 @@ async fn post_character_prompt_decide_discards_and_forwards_unrecorded(db: PgPoo
 
     let response = client
         .post(&format!(
-            "{}/recordings/prompts/pure/voicepass/decide?unrecorded&recording_url=http://example.com/newervoicepass",
+            "{}/recordings/prompts/testa/voicepass/decide?unrecorded&recording_url=http://example.com/newervoicepass",
             &app_address
         ))
         .header("Content-Type", "application/x-www-form-urlencoded")
@@ -590,6 +590,6 @@ async fn post_character_prompt_decide_discards_and_forwards_unrecorded(db: PgPoo
             .expect("Failed to extract Location header")
             .to_str()
             .unwrap(),
-        "/recordings/prompts/pure/voicepass?unrecorded"
+        "/recordings/prompts/testa/voicepass?unrecorded"
     );
 }

@@ -19,6 +19,6 @@ VALUES
     NULL,
     'http://example.com/old-voicepass',
     NULL,
-    'pure',
+    'testa',
     'voicepass'
   );

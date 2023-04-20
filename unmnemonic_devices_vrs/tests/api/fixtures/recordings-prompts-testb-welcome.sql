@@ -19,6 +19,6 @@ VALUES
     NULL,
     'http://example.com/testonly-welcome',
     NULL,
-    'testonly',
+    'testb',
     'welcome'
   );

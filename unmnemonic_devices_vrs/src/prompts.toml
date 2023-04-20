@@ -2,5 +2,9 @@
 welcome = "welcome to unmnemonic devices"
 voicepass = "what is your voice password?"
 
-[testonly]
+[testa]
+welcome = "welcome to unmnemonic devices"
+voicepass = "what is your voice password?"
+
+[testb]
 welcome = "welcome test"

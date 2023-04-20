@@ -135,6 +135,7 @@ pub async fn post_character_prompts(
 
 #[derive(Serialize)]
 pub struct CharacterPrompt {
+    character_name: String,
     prompt_name: String,
     unrecorded_query_param: bool,
 }
@@ -158,6 +159,7 @@ pub async fn get_character_prompt(
             key,
             state.engine,
             CharacterPrompt {
+                character_name,
                 prompt_name,
                 unrecorded_query_param: params.unrecorded.is_some(),
             },
