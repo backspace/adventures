@@ -1,6 +1,8 @@
 <Response>
-  <Say>
-    Will cycle through unrecorded prompts for {{character_name}}
-  </Say>
+  {{#unless skip_message}}
+    <Say>
+      Will cycle through unrecorded prompts for {{character_name}}
+    </Say>
+  {{/unless}}
   <Redirect method="GET">{{redirect}}</Redirect>
 </Response>

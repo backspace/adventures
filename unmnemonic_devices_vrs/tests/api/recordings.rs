@@ -195,6 +195,34 @@ async fn get_character_prompts_unrecorded_redirects_to_first_unrecorded_prompt_p
     "recordings-prompts-testa-voicepass",
     "recordings-prompts-testb-welcome"
 ))]
+async fn get_character_prompts_unrecorded_skips_message_with_unrecorded_param(db: PgPool) {
+    let app_address = spawn_app(db).await.address;
+
+    let client = reqwest::Client::new();
+
+    let response = client
+        .get(&format!(
+            "{}/recordings/prompts/testa/unrecorded?unrecorded",
+            &app_address
+        ))
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+
+    assert_that(&document.find(Name("response")).next().unwrap().text())
+        .does_not_contain("cycle through unrecorded");
+}
+
+#[sqlx::test(fixtures(
+    "schema",
+    "recordings-prompts-testa-voicepass",
+    "recordings-prompts-testb-welcome"
+))]
 async fn get_character_prompts_unrecorded_redirects_to_prompt_select_when_no_unrecorded(
     db: PgPool,
 ) {
@@ -505,7 +533,7 @@ async fn post_character_prompt_decide_forwards_unrecorded(db: PgPool) {
             .expect("Failed to extract Location header")
             .to_str()
             .unwrap(),
-        "/recordings/prompts/testa/unrecorded"
+        "/recordings/prompts/testa/unrecorded?unrecorded"
     );
 }
 

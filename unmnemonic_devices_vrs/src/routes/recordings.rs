@@ -55,6 +55,7 @@ pub struct PromptNotFound {
 
 #[derive(Serialize)]
 pub struct UnrecordedIntroduction {
+    skip_message: bool,
     character_name: String,
     redirect: String,
 }
@@ -102,6 +103,7 @@ pub async fn post_character_prompts(
 pub async fn get_unrecorded_character_prompt(
     State(state): State<AppState>,
     Path(character_name): Path<String>,
+    params: Query<MaybeRecordingParams>,
 ) -> impl IntoResponse {
     let character_prompts = state.prompts.tables.get(&character_name);
     let unrecorded_prompt_name_option = find_unrecorded_prompt(
@@ -117,6 +119,7 @@ pub async fn get_unrecorded_character_prompt(
             "/recordings/prompts/:character_name/unrecorded",
             state.engine,
             UnrecordedIntroduction {
+                skip_message: params.unrecorded.is_some(),
                 character_name: character_name.to_string(),
                 redirect: format!(
                     "/recordings/prompts/{}/{}?unrecorded",
@@ -131,6 +134,7 @@ pub async fn get_unrecorded_character_prompt(
             "/recordings/prompts/:character_name/no-unrecorded",
             state.engine,
             UnrecordedIntroduction {
+                skip_message: false,
                 character_name: character_name.to_string(),
                 redirect: format!("/recordings/prompts/{}", character_name),
             },
@@ -249,7 +253,7 @@ pub async fn post_character_prompt_decide(
                 "/recordings/prompts/{}{}",
                 character_name,
                 if params.unrecorded.is_some() {
-                    "/unrecorded"
+                    "/unrecorded?unrecorded"
                 } else {
                     ""
                 }
