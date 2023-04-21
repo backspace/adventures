@@ -184,6 +184,35 @@ function drawArrow(doc, waypointX, waypointY, destinationX, destinationY) {
   const arrowLength = 30;
   const arrowHeadSize = 7;
 
+  if (waypointX === destinationX && waypointY === destinationY) {
+    // If the waypoint and the destination are in the same region, draw a loop instead
+    const loopRadius = arrowLength / 2;
+    const startAngle = -Math.PI / 2;
+    const endAngle = startAngle + (3 * Math.PI) / 2;
+    doc
+      .arc(waypointX, waypointY - loopRadius, loopRadius, startAngle, endAngle)
+      .stroke();
+
+    const arrowHeadStartX = waypointX - loopRadius;
+    const arrowHeadOffsetY = -3;
+
+    const arrowHeadX1 =
+      arrowHeadStartX - (arrowHeadSize / 2) * Math.cos(Math.PI / 6);
+    const arrowHeadY1 =
+      waypointY - loopRadius + arrowHeadSize * Math.sin(Math.PI / 6);
+    const arrowHeadX2 =
+      arrowHeadStartX + (arrowHeadSize / 2) * Math.cos(Math.PI / 6);
+    const arrowHeadY2 =
+      waypointY - loopRadius + arrowHeadSize * Math.sin(Math.PI / 6);
+
+    doc
+      .moveTo(arrowHeadX1, arrowHeadOffsetY + arrowHeadY1)
+      .lineTo(arrowHeadStartX, arrowHeadOffsetY + waypointY - loopRadius)
+      .lineTo(arrowHeadX2, arrowHeadOffsetY + arrowHeadY2)
+      .fill();
+    return;
+  }
+
   const directionX = destinationX - waypointX;
   const directionY = destinationY - waypointY;
   const magnitude = Math.sqrt(
