@@ -1,20 +1,11 @@
-use crate::helpers::spawn_app;
+use crate::helpers::get;
 use select::{document::Document, predicate::Name};
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
 async fn meeting_show_names_region(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!(
-            "{}/meetings/DE805DAF-28E7-F7A9-8CB2-9806730B54E5",
-            &app_address
-        ))
-        .send()
+    let response = get(db, "/meetings/DE805DAF-28E7-F7A9-8CB2-9806730B54E5", false)
         .await
         .expect("Failed to execute request.");
 

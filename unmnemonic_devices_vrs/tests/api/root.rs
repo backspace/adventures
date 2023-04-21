@@ -1,4 +1,4 @@
-use crate::helpers::spawn_app;
+use crate::helpers::{get, post, RedirectTo};
 use chrono::Utc;
 use speculoos::prelude::*;
 use sqlx::PgPool;
@@ -18,13 +18,7 @@ async fn root_serves_prewelcome(db: PgPool) {
     .await
     .expect("Failed to insert settings row");
 
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!("{}/", &app_address))
-        .send()
+    let response = get(db, "/", false)
         .await
         .expect("Failed to execute request.");
 
@@ -49,13 +43,7 @@ async fn root_serves_welcome_when_begun(db: PgPool) {
     .await
     .expect("Failed to insert settings row");
 
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!("{}/", &app_address))
-        .send()
+    let response = get(db, "/", false)
         .await
         .expect("Failed to execute request.");
 
@@ -79,13 +67,7 @@ async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
     .await
     .expect("Failed to insert settings row");
 
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!("{}/?begun", &app_address))
-        .send()
+    let response = get(db, "/?begun", false)
         .await
         .expect("Failed to execute request.");
 
@@ -96,62 +78,20 @@ async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
 
 #[sqlx::test(fixtures("schema"))]
 async fn root_post_begun_redirects_to_root_begun(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
     let body = "SpeechResult=Begun.";
 
-    let response = client
-        .post(&format!("{}/", &app_address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
+    let response = post(db, "/", body, true)
         .await
-        .expect("Failed to execute request.");
-
-    assert!(response.status().is_redirection());
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/?begun"
-    );
+        .expect("Failed to execute response");
+    assert_that(&response).redirects_to("/?begun");
 }
 
 #[sqlx::test(fixtures("schema"))]
 async fn root_post_else_redirects_to_root(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
     let body = "SpeechResult=whatever";
 
-    let response = client
-        .post(&format!("{}/", &app_address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
+    let response = post(db, "/", body, true)
         .await
-        .expect("Failed to execute request.");
-
-    assert!(response.status().is_redirection());
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/"
-    );
+        .expect("Failed to execute response");
+    assert_that(&response).redirects_to("/");
 }

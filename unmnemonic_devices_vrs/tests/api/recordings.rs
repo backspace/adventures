@@ -1,4 +1,4 @@
-use crate::helpers::spawn_app;
+use crate::helpers::{get, post, RedirectTo};
 use select::{document::Document, predicate::Name};
 use serde::Serialize;
 use speculoos::prelude::*;
@@ -6,15 +6,9 @@ use sqlx::PgPool;
 
 #[sqlx::test(fixtures("schema"))]
 async fn get_character_prompts_gathers_by_prompt_key(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!("{}/recordings/prompts/testa", &app_address))
-        .send()
+    let response = get(db, "/recordings/prompts/testa", false)
         .await
-        .expect("Failed to execute request.");
+        .expect("Failed to execute request");
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
@@ -44,13 +38,7 @@ async fn get_character_prompts_gathers_by_prompt_key(db: PgPool) {
 async fn get_character_prompts_gathers_by_prompt_key_without_unrecorded_when_no_unrecorded(
     db: PgPool,
 ) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!("{}/recordings/prompts/testb", &app_address))
-        .send()
+    let response = get(db, "/recordings/prompts/testb", false)
         .await
         .expect("Failed to execute request.");
 
@@ -74,13 +62,7 @@ async fn get_character_prompts_gathers_by_prompt_key_without_unrecorded_when_no_
 
 #[sqlx::test(fixtures("schema"))]
 async fn get_character_prompts_404s_for_unknown_character(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!("{}/recordings/prompts/who", &app_address))
-        .send()
+    let response = get(db, "/recordings/prompts/who", false)
         .await
         .expect("Failed to execute request.");
 
@@ -89,34 +71,17 @@ async fn get_character_prompts_404s_for_unknown_character(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn post_character_prompts_redirects_to_prompt_path(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
+    let response = post(
+        db,
+        "/recordings/prompts/testa",
+        // Twilio editorialises punctuation and always capitalises.
+        "SpeechResult=Voicepass.",
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
 
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
-    // Twilio editorialises punctuation and always capitalises.
-    let body = "SpeechResult=Voicepass.";
-
-    let response = client
-        .post(&format!("{}/recordings/prompts/testa", &app_address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
-        .expect("Failed to execute request.");
-
-    assert!(response.status().is_redirection());
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/recordings/prompts/testa/voicepass"
-    );
+    assert_that(&response).redirects_to("/recordings/prompts/testa/voicepass");
 }
 
 #[sqlx::test(fixtures(
@@ -125,33 +90,13 @@ async fn post_character_prompts_redirects_to_prompt_path(db: PgPool) {
     "recordings-prompts-testb-welcome"
 ))]
 async fn post_character_prompts_with_unrecorded_redirects_to_unrecorded_path(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
     let body = "SpeechResult=Unrecorded prompts.";
 
-    let response = client
-        .post(&format!("{}/recordings/prompts/testa", &app_address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
+    let response = post(db, "/recordings/prompts/testa", body, true)
         .await
         .expect("Failed to execute request.");
 
-    assert!(response.status().is_redirection());
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/recordings/prompts/testa/unrecorded"
-    );
+    assert_that(&response).redirects_to("/recordings/prompts/testa/unrecorded");
 }
 
 #[sqlx::test(fixtures(
@@ -160,19 +105,7 @@ async fn post_character_prompts_with_unrecorded_redirects_to_unrecorded_path(db:
     "recordings-prompts-testb-welcome"
 ))]
 async fn get_character_prompts_unrecorded_redirects_to_first_unrecorded_prompt_path(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
-    let response = client
-        .get(&format!(
-            "{}/recordings/prompts/testa/unrecorded",
-            &app_address
-        ))
-        .send()
+    let response = get(db, "/recordings/prompts/testa/unrecorded", true)
         .await
         .expect("Failed to execute request.");
 
@@ -196,16 +129,7 @@ async fn get_character_prompts_unrecorded_redirects_to_first_unrecorded_prompt_p
     "recordings-prompts-testb-welcome"
 ))]
 async fn get_character_prompts_unrecorded_skips_message_with_unrecorded_param(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!(
-            "{}/recordings/prompts/testa/unrecorded?unrecorded",
-            &app_address
-        ))
-        .send()
+    let response = get(db, "/recordings/prompts/testa/unrecorded?unrecorded", false)
         .await
         .expect("Failed to execute request.");
 
@@ -226,16 +150,7 @@ async fn get_character_prompts_unrecorded_skips_message_with_unrecorded_param(db
 async fn get_character_prompts_unrecorded_redirects_to_prompt_select_when_no_unrecorded(
     db: PgPool,
 ) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!(
-            "{}/recordings/prompts/testb/unrecorded",
-            &app_address
-        ))
-        .send()
+    let response = get(db, "/recordings/prompts/testb/unrecorded", false)
         .await
         .expect("Failed to execute request.");
 
@@ -255,23 +170,11 @@ async fn get_character_prompts_unrecorded_redirects_to_prompt_select_when_no_unr
 
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn post_character_prompts_redirects_to_get_character_prompts_when_unknown(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
     let body = "SpeechResult=Prompty.";
 
-    let response = client
-        .post(&format!("{}/recordings/prompts/testa", &app_address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
+    let response = post(db, "/recordings/prompts/testa", body, true)
         .await
-        .expect("Failed to execute request.");
-
+        .expect("Failed to execute response");
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
 
@@ -288,16 +191,7 @@ async fn post_character_prompts_redirects_to_get_character_prompts_when_unknown(
 
 #[sqlx::test(fixtures("schema"))]
 async fn get_character_prompt_sets_up_recording(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!(
-            "{}/recordings/prompts/testa/voicepass",
-            &app_address
-        ))
-        .send()
+    let response = get(db, "/recordings/prompts/testa/voicepass", false)
         .await
         .expect("Failed to execute request.");
 
@@ -319,16 +213,7 @@ async fn get_character_prompt_sets_up_recording(db: PgPool) {
 
 #[sqlx::test(fixtures("schema"))]
 async fn get_character_prompt_forwards_unrecorded(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!(
-            "{}/recordings/prompts/testa/voicepass?unrecorded",
-            &app_address
-        ))
-        .send()
+    let response = get(db, "/recordings/prompts/testa/voicepass?unrecorded", false)
         .await
         .expect("Failed to execute request.");
 
@@ -344,49 +229,23 @@ async fn get_character_prompt_forwards_unrecorded(db: PgPool) {
 
 #[sqlx::test(fixtures("schema"))]
 async fn get_character_prompt_redirects_to_prompts_path_for_unknown_prompt(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
-    let response = client
-        .get(&format!("{}/recordings/prompts/testa/what", &app_address))
-        .send()
+    let response = get(db, "/recordings/prompts/testa/what", true)
         .await
         .expect("Failed to execute request.");
 
-    assert!(response.status().is_redirection());
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/recordings/prompts/testa"
-    );
+    assert_that(&response).redirects_to("/recordings/prompts/testa");
 }
 
 #[sqlx::test(fixtures("schema"))]
 async fn post_character_prompt_plays_recording_and_gathers_decision(db: PgPool) {
-    let app_address = spawn_app(db.clone()).await.address;
-
-    let client = reqwest::Client::new();
-
-    let body = "RecordingUrl=http://example.com/voicepass";
-
-    let response = client
-        .post(&format!(
-            "{}/recordings/prompts/testa/voicepass",
-            &app_address
-        ))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = post(
+        db,
+        "/recordings/prompts/testa/voicepass",
+        "RecordingUrl=http://example.com/voicepass",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
@@ -411,22 +270,14 @@ async fn post_character_prompt_plays_recording_and_gathers_decision(db: PgPool) 
 
 #[sqlx::test(fixtures("schema"))]
 async fn post_character_prompt_forwards_unrecorded(db: PgPool) {
-    let app_address = spawn_app(db.clone()).await.address;
-
-    let client = reqwest::Client::new();
-
-    let body = "RecordingUrl=http://example.com/voicepass";
-
-    let response = client
-        .post(&format!(
-            "{}/recordings/prompts/testa/voicepass?unrecorded",
-            &app_address
-        ))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = post(
+        db,
+        "/recordings/prompts/testa/voicepass?unrecorded",
+        "RecordingUrl=http://example.com/voicepass",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
@@ -451,25 +302,14 @@ pub struct RecordingUrl {
 
 #[sqlx::test(fixtures("schema"))]
 async fn post_character_prompt_decide_stores_recording_upon_keep(db: PgPool) {
-    let app_address = spawn_app(db.clone()).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
-    let body = "SpeechResult=Keep.";
-
-    let response = client
-        .post(&format!(
-            "{}/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass",
-            &app_address
-        ))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = post(
+        db.clone(),
+        "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass",
+        "SpeechResult=Keep.",
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
 
     let recording_url = sqlx::query_as::<_, RecordingUrl>(
         r#"
@@ -492,71 +332,20 @@ async fn post_character_prompt_decide_stores_recording_upon_keep(db: PgPool) {
         "http://example.com/newvoicepass"
     );
 
-    assert!(response.status().is_redirection());
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/recordings/prompts/testa"
-    );
+    assert_that(&response).redirects_to("/recordings/prompts/testa");
 }
 
 #[sqlx::test(fixtures("schema"))]
 async fn post_character_prompt_decide_forwards_unrecorded(db: PgPool) {
-    let app_address = spawn_app(db.clone()).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
-    let body = "SpeechResult=Keep.";
-
-    let response = client
-        .post(&format!(
-            "{}/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass&unrecorded",
-            &app_address
-        ))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
+    let response = post(db, "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass&unrecorded", "SpeechResult=Keep.", true)        .await
         .expect("Failed to execute request.");
 
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/recordings/prompts/testa/unrecorded?unrecorded"
-    );
+    assert_that(&response).redirects_to("/recordings/prompts/testa/unrecorded?unrecorded");
 }
 
 #[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
-    let app_address = spawn_app(db.clone()).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
-    let body = "SpeechResult=Keep.";
-
-    let response = client
-        .post(&format!(
-            "{}/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass",
-            &app_address
-        ))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
+    let response = post(db.clone(), "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass", "SpeechResult=Keep.", true)        .await
         .expect("Failed to execute request.");
 
     let recording_url = sqlx::query_as::<_, RecordingUrl>(
@@ -580,38 +369,12 @@ async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
         "http://example.com/newervoicepass"
     );
 
-    assert!(response.status().is_redirection());
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/recordings/prompts/testa"
-    );
+    assert_that(&response).redirects_to("/recordings/prompts/testa");
 }
 
 #[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
-    let app_address = spawn_app(db.clone()).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
-    let body = "SpeechResult=Rerecord.";
-
-    let response = client
-        .post(&format!(
-            "{}/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass",
-            &app_address
-        ))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
+    let response = post(db.clone(), "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass", "SpeechResult=Rerecord.", true)        .await
         .expect("Failed to execute request.");
 
     let recording_url = sqlx::query_as::<_, RecordingUrl>(
@@ -635,47 +398,13 @@ async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
         "http://example.com/old-voicepass"
     );
 
-    assert!(response.status().is_redirection());
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/recordings/prompts/testa/voicepass"
-    );
+    assert_that(&response).redirects_to("/recordings/prompts/testa/voicepass");
 }
 
 #[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_discards_and_forwards_unrecorded(db: PgPool) {
-    let app_address = spawn_app(db.clone()).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
-    let body = "SpeechResult=Rerecord.";
-
-    let response = client
-        .post(&format!(
-            "{}/recordings/prompts/testa/voicepass/decide?unrecorded&recording_url=http://example.com/newervoicepass",
-            &app_address
-        ))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
+    let response = post(db, "/recordings/prompts/testa/voicepass/decide?unrecorded&recording_url=http://example.com/newervoicepass", "SpeechResult=Rerecord.", true)        .await
         .expect("Failed to execute request.");
 
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/recordings/prompts/testa/voicepass?unrecorded"
-    );
+    assert_that(&response).redirects_to("/recordings/prompts/testa/voicepass?unrecorded");
 }

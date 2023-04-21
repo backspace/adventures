@@ -1,17 +1,11 @@
-use crate::helpers::spawn_app;
+use crate::helpers::{get, post, RedirectTo};
 use select::{document::Document, predicate::Name};
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn teams_show_gathers_team_voicepasses(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!("{}/teams", &app_address))
-        .send()
+    let response = get(db, "/teams", false)
         .await
         .expect("Failed to execute request.");
 
@@ -33,55 +27,22 @@ async fn teams_show_gathers_team_voicepasses(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn teams_post_redirects_to_found_voicepass_team(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
     // Twilio editorialises punctuation and always capitalises.
     let body = "SpeechResult=This is another, voicepass?";
 
-    let response = client
-        .post(&format!("{}/teams", &app_address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
+    let response = post(db, "/teams", body, true)
         .await
-        .expect("Failed to execute request.");
-
-    assert!(response.status().is_redirection());
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/teams/5f721b36-38bd-4504-a5aa-428e9447ab12"
-    );
+        .expect("Failed to execute response");
+    assert_that(&response).redirects_to("/teams/5f721b36-38bd-4504-a5aa-428e9447ab12");
 }
 
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn teams_post_renders_not_found_when_no_voicepass_matches(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
     let body = "SpeechResult=This voicepass does not exist.";
 
-    let response = client
-        .post(&format!("{}/teams", &app_address))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
+    let response = post(db, "/teams", body, true)
         .await
-        .expect("Failed to execute request.");
-
+        .expect("Failed to execute response");
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
 
@@ -94,16 +55,7 @@ async fn teams_post_renders_not_found_when_no_voicepass_matches(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
 async fn team_show_names_team_and_gathers_excerpts(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::new();
-
-    let response = client
-        .get(&format!(
-            "{}/teams/48e3bda7-db52-4c99-985f-337e266f7832",
-            &app_address
-        ))
-        .send()
+    let response = get(db, "/teams/48e3bda7-db52-4c99-985f-337e266f7832", false)
         .await
         .expect("Failed to execute request.");
 
@@ -128,60 +80,31 @@ async fn team_show_names_team_and_gathers_excerpts(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
 async fn team_post_redirects_to_found_excerpt_meeting(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
     // Twilio editorialises punctuation and always capitalises.
     let body = "SpeechResult=Abused or ignored.";
 
-    let response = client
-        .post(&format!(
-            "{}/teams/48e3bda7-db52-4c99-985f-337e266f7832",
-            &app_address
-        ))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = post(
+        db,
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832",
+        body,
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
 
-    assert!(response.status().is_redirection());
-    assert_eq!(
-        response
-            .headers()
-            .get("Location")
-            .expect("Failed to extract Location header")
-            .to_str()
-            .unwrap(),
-        "/meetings/2460cb8f-bd7f-4790-a2d8-86df38d5cbdc"
-    );
+    assert_that(&response).redirects_to("/meetings/2460cb8f-bd7f-4790-a2d8-86df38d5cbdc");
 }
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
 async fn team_post_renders_not_found_when_no_excerpt_matches(db: PgPool) {
-    let app_address = spawn_app(db).await.address;
-
-    let client = reqwest::Client::builder()
-        .redirect(reqwest::redirect::Policy::none())
-        .build()
-        .expect("Failed to construct request client");
-
-    let body = "SpeechResult=What does it all mean.";
-
-    let response = client
-        .post(&format!(
-            "{}/teams/48e3bda7-db52-4c99-985f-337e266f7832",
-            &app_address
-        ))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
-        .expect("Failed to execute request.");
+    let response = post(
+        db,
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832",
+        "SpeechResult=What does it all mean.",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
