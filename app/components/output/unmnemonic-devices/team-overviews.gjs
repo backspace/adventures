@@ -31,12 +31,6 @@ export default class TeamOverviewsComponent extends Component {
 
     let mapHighToLowRatio = lowMapBitmap.width / mapBitmap.width;
 
-    let mapOffsetX = 0;
-    let mapOffsetY = 10;
-
-    let mapClipTop = 50;
-    let mapClipLeft = 0;
-
     let mapTeamFontSize = 18;
     let mapMarkerFontSize = 12;
     let mapMarkerCircleRadius = 10;
@@ -46,95 +40,141 @@ export default class TeamOverviewsComponent extends Component {
 
     let margin = 0.5 * 72;
 
+    let innerWidthToMapHighRatio = (pageWidth - margin * 2) / mapBitmap.width;
+    let innerWidthToMapLowRatio = (pageWidth - margin * 2) / lowMapBitmap.width;
+
+    let mapWidthOnPage = pageWidth - margin * 2;
+    let mapHeightOnPage = (mapWidthOnPage * mapBitmap.height) / mapBitmap.width;
+
     this.args.teams.forEach((team, index) => {
       if (index > 0) {
         doc.addPage();
       }
 
+      drawMargins(doc, () => {
+        drawHeader(team);
+        drawMap();
+        drawMeetingPoints(team);
+        drawMeetingBlanks(team);
+      });
+    });
+
+    doc.end();
+
+    let blobUrl = await new Promise((resolve) => {
+      stream.on('finish', () => {
+        resolve(stream.toBlobURL('application/pdf'));
+      });
+    });
+
+    function drawHeader(team) {
       doc.save();
-      doc.translate(margin, margin);
-
-      if (!debug) {
-        doc.save();
-
-        doc.translate(0, mapTeamFontSize);
-
-        doc
-          .rect(0, 0, pageWidth - mapClipLeft, pageHeight / 2 - mapClipTop)
-          .clip();
-        doc.image(
-          'data:image/png;base64,' + map,
-          mapOffsetX - mapClipLeft,
-          mapOffsetY - mapClipTop,
-          { scale: mapHighToLowRatio }
-        );
-
-        doc.restore();
-      }
-
       doc.font(regular);
       doc.fontSize(mapTeamFontSize);
       doc.text(`${team.name}: ${team.identifier}`, 0, 0);
+      doc.restore();
+    }
 
+    function drawMap() {
+      doc.save();
+
+      {
+        doc.translate(0, mapTeamFontSize * 2);
+        doc.scale(innerWidthToMapHighRatio, innerWidthToMapHighRatio);
+
+        if (debug) {
+          doc.rect(0, 0, mapBitmap.width, mapBitmap.height).stroke();
+        } else {
+          doc.image('data:image/png;base64,' + map, 0, 0);
+        }
+      }
+
+      doc.restore();
+    }
+
+    function drawMeetingPoints(team) {
       doc.fontSize(mapMarkerFontSize);
 
       doc.save();
-      doc.translate(0, mapTeamFontSize);
 
-      team
-        .hasMany('meetings')
-        .value()
-        .sortBy('index')
-        .forEach((meeting, index) => {
-          const rendezvousLetter = String.fromCharCode(65 + index);
+      {
+        doc.translate(0, mapTeamFontSize);
 
-          const destination = meeting.belongsTo('destination').value();
-          const destinationRegion = destination.belongsTo('region').value();
+        team
+          .hasMany('meetings')
+          .value()
+          .sortBy('index')
+          .forEach((meeting, index) => {
+            const rendezvousLetter = String.fromCharCode(65 + index);
 
-          const destinationX =
-            destinationRegion.get('x') / 2 + mapOffsetX - mapClipLeft;
-          const destinationY =
-            destinationRegion.get('y') / 2 + mapOffsetY - mapClipTop;
+            const destination = meeting.belongsTo('destination').value();
+            const destinationRegion = destination.belongsTo('region').value();
 
-          doc.text(
-            `${rendezvousLetter}-D FIXPOS`,
-            destinationX - mapMarkerCircleRadius,
-            destinationY + mapMarkerFontSize,
+            const destinationX =
+              destinationRegion.get('x') * innerWidthToMapLowRatio;
+            const destinationY =
+              destinationRegion.get('y') * innerWidthToMapLowRatio;
+
+            doc.text(
+              `${rendezvousLetter}-D ${destinationRegion.name}`,
+              destinationX - mapMarkerCircleRadius,
+              destinationY + mapMarkerFontSize,
+              {
+                width: mapMarkerCircleRadius * 2,
+                align: 'center',
+              }
+            );
+
+            const waypoint = meeting.belongsTo('waypoint').value();
+            const waypointRegion = waypoint.belongsTo('region').value();
+
+            const waypointX = waypointRegion.x * innerWidthToMapLowRatio;
+            const waypointY = waypointRegion.y * innerWidthToMapLowRatio;
+
+            doc.save();
             {
-              width: mapMarkerCircleRadius * 2,
-              align: 'center',
+              doc
+                .circle(waypointX, waypointY, mapMarkerCircleRadius)
+                .fillOpacity(0.25)
+                .fillAndStroke('white', 'black');
             }
-          );
+            doc.restore();
 
-          const waypoint = meeting.belongsTo('waypoint').value();
-          const waypointRegion = waypoint.belongsTo('region').value();
+            drawArrow(doc, waypointX, waypointY, destinationX, destinationY);
 
-          const waypointX = waypointRegion.x / 2 + mapOffsetX - mapClipLeft;
-          const waypointY = waypointRegion.y / 2 + mapOffsetY - mapClipTop;
-
-          doc.save();
-          doc
-            .circle(waypointX, waypointY, mapMarkerCircleRadius)
-            .fillOpacity(0.25)
-            .fillAndStroke('white', 'black');
-          doc.restore();
-
-          drawArrow(doc, waypointX, waypointY, destinationX, destinationY);
-
-          doc.text(
-            `${rendezvousLetter}-W FIXPOS`,
-            waypointX - mapMarkerCircleRadius,
-            waypointY + mapMarkerFontSize,
-            {
-              width: mapMarkerCircleRadius * 2,
-              align: 'center',
-            }
-          );
-        });
+            doc.text(
+              `${rendezvousLetter}-W ${waypointRegion.name}`,
+              waypointX - mapMarkerCircleRadius,
+              waypointY + mapMarkerFontSize,
+              {
+                width: mapMarkerCircleRadius * 2,
+                align: 'center',
+              }
+            );
+          });
+      }
 
       doc.restore();
+    }
 
-      doc.translate(0, pageHeight / 2);
+    function drawMeetingBlanks(team) {
+      doc.save();
+      doc.translate(0, mapTeamFontSize * 4 + mapHeightOnPage);
+
+      if (debug) {
+        doc
+          .rect(
+            0,
+            0,
+            mapWidthOnPage,
+            pageHeight - mapTeamFontSize * 4 - pageMargin * 2 - mapHeightOnPage
+          )
+          .stroke();
+      }
+
+      // Hackish reset of text position, unsure why but without this text was floating in the container, or even below it.
+      doc.text('', 0, 0);
+      doc.moveUp();
 
       team
         .hasMany('meetings')
@@ -152,15 +192,7 @@ export default class TeamOverviewsComponent extends Component {
         });
 
       doc.restore();
-    });
-
-    doc.end();
-
-    let blobUrl = await new Promise((resolve) => {
-      stream.on('finish', () => {
-        resolve(stream.toBlobURL('application/pdf'));
-      });
-    });
+    }
 
     return blobUrl;
   });
@@ -177,6 +209,14 @@ export default class TeamOverviewsComponent extends Component {
       …
     {{/if}}
   </template>
+}
+
+function drawMargins(doc, callback) {
+  doc.save();
+  doc.translate(pageMargin, pageMargin);
+
+  callback();
+  doc.restore();
 }
 
 function drawArrow(doc, waypointX, waypointY, destinationX, destinationY) {
