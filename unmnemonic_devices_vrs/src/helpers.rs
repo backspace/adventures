@@ -42,11 +42,11 @@ pub async fn get_prompts(
     for character_and_prompt in character_and_prompts {
         let character_and_prompt = *character_and_prompt;
         if !results.contains_key(character_and_prompt) {
-            let (character_name, prompt_name) = character_and_prompt.split_once(".").unwrap();
+            let (character_name, prompt_name) = character_and_prompt.split_once('.').unwrap();
             let prompt_text = prompts.tables.get(character_name).unwrap().get(prompt_name);
 
             if let Some(prompt_text) = prompt_text {
-                let value = format!("<Say>{}</Say>", prompt_text.to_string());
+                let value = format!("<Say>{}</Say>", prompt_text);
                 results.insert(character_and_prompt.to_string(), value);
             } else {
                 return Err(format!("Missing prompt: {}", character_and_prompt));
