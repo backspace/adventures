@@ -17,8 +17,18 @@ module.exports = (env, options) => {
       ]
     },
     entry: {
-      'clandestine-rendezvous': glob.sync('./vendor/clandestine-rendezvous/**/*.js').concat(['./js/clandestine-rendezvous.js']),
-      'unmnemonic-devices': glob.sync('./vendor/unmnemonic-devices/**/*.js').concat(['./js/unmnemonic-devices.js']),
+      "clandestine-rendezvous": glob
+        .sync("./vendor/clandestine-rendezvous/**/*.js")
+        .concat(["./js/clandestine-rendezvous.js"]),
+      "clandestine-rendezvous-email": glob
+        .sync("./vendor/clandestine-rendezvous/**/*.js")
+        .concat(["./js/clandestine-rendezvous-email.js"]),
+      "unmnemonic-devices": glob
+        .sync("./vendor/unmnemonic-devices/**/*.js")
+        .concat(["./js/unmnemonic-devices.js"]),
+      "unmnemonic-devices-email": glob
+        .sync("./vendor/unmnemonic-devices/**/*.js")
+        .concat(["./js/unmnemonic-devices-email.js"]),
     },
     externals: [ 'foundation-sites' ],
     output: {
