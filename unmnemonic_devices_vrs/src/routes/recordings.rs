@@ -6,9 +6,10 @@ use axum::{
 use axum_template::Key;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use std::collections::HashMap;
 use uuid::Uuid;
 
-use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
+use crate::{helpers::get_prompts, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Serialize)]
 pub struct CharacterPrompts {
@@ -190,6 +191,7 @@ pub struct TwilioRecordingForm {
 pub struct ConfirmRecordingPrompt {
     recording_url: String,
     action: String,
+    prompts: HashMap<String, String>,
 }
 
 pub async fn post_character_prompt(
@@ -215,6 +217,13 @@ pub async fn post_character_prompt(
                     ""
                 }
             ),
+            prompts: get_prompts(
+                &["pure.prompt_sounds", "pure.prompt_action"],
+                state.db,
+                state.prompts,
+            )
+            .await
+            .expect("Unable to find prompts"),
         },
     )
 }

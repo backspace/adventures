@@ -6,8 +6,9 @@ use axum::{
 };
 use axum_template::Key;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-use crate::{render_xml::RenderXml, AppState};
+use crate::{helpers::get_prompts, render_xml::RenderXml, AppState};
 
 #[derive(Deserialize)]
 pub struct RootParams {
@@ -17,6 +18,12 @@ pub struct RootParams {
 #[derive(Serialize)]
 struct Settings {
     begun: bool,
+}
+
+#[derive(Serialize)]
+pub struct RootData {
+    begun: bool,
+    prompts: HashMap<String, String>,
 }
 
 pub async fn get_root(
@@ -32,8 +39,15 @@ pub async fn get_root(
     RenderXml(
         key,
         state.engine,
-        Settings {
+        RootData {
             begun: settings.begun.unwrap() || params.begun.is_some(),
+            prompts: get_prompts(
+                &["pure.welcome", "pure.monitoring"],
+                state.db,
+                state.prompts,
+            )
+            .await
+            .expect("Unable to get prompts"),
         },
     )
 }

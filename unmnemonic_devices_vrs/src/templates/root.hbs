@@ -1,5 +1,5 @@
 <Response>
-  Your call may be monitored for quality assurance and training purposes.
+  {{{lookup prompts "pure.monitoring"}}}
 
   {{#if begun}}
     <Say>
@@ -7,9 +7,7 @@
     </Say>
   {{else}}
     <Gather timeout="2" input="speech" hints="begun, jortle, tortle">
-      <Say>
-        Hello. Welcome to unmnemonic devices. Say something?
-      </Say>
+      {{{lookup prompts "pure.welcome"}}}
     </Gather>
     <Say>
       We didn't hear anything. Goodbye.

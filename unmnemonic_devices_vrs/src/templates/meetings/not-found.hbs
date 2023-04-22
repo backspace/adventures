@@ -1,6 +1,4 @@
 <Response>
-  <Say>
-    We couldn’t find that cathartic phrase.
-  </Say>
-  <Redirect method="GET">/teams/{{this}}</Redirect>
+  {{lookup prompts "pure.phrase_not_found"}}
+  <Redirect method="GET">/teams/{{team_id}}</Redirect>
 </Response>

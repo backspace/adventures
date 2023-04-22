@@ -1,3 +1,4 @@
+pub mod helpers;
 pub mod render_xml;
 pub mod routes;
 pub mod twilio_form;
@@ -24,7 +25,7 @@ pub struct AppState {
 }
 
 #[derive(Clone, Deserialize)]
-struct Prompts {
+pub struct Prompts {
     #[serde(flatten)]
     tables: HashMap<String, HashMap<String, String>>,
 }

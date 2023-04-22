@@ -6,12 +6,14 @@ use axum::{
 use axum_template::Key;
 use serde::Serialize;
 use sqlx::types::Uuid;
+use std::collections::HashMap;
 
-use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
+use crate::{helpers::get_prompts, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Serialize)]
 pub struct Teams {
     teams: Vec<Team>,
+    prompts: HashMap<String, String>,
 }
 
 #[derive(sqlx::FromRow, Serialize)]
@@ -28,7 +30,21 @@ pub async fn get_teams(Key(key): Key, State(state): State<AppState>) -> impl Int
         .await
         .expect("Failed to fetch team");
 
-    RenderXml(key, state.engine, Teams { teams })
+    RenderXml(
+        key,
+        state.engine,
+        Teams {
+            teams,
+            prompts: get_prompts(&["pure.voicepass", "pure.silence"], state.db, state.prompts)
+                .await
+                .expect("Unable to find prompts"),
+        },
+    )
+}
+
+#[derive(Serialize)]
+pub struct TeamNotFound {
+    prompts: HashMap<String, String>,
 }
 
 pub async fn post_teams(
@@ -50,7 +66,16 @@ pub async fn post_teams(
     if team.is_ok() {
         Redirect::to(&format!("/teams/{}", team.unwrap().id)).into_response()
     } else {
-        RenderXml("/teams/not-found", state.engine, ()).into_response()
+        RenderXml(
+            "/teams/not-found",
+            state.engine,
+            TeamNotFound {
+                prompts: get_prompts(&["pure.voicepass_not_found"], state.db, state.prompts)
+                    .await
+                    .expect("Unable to get prompts"),
+            },
+        )
+        .into_response()
     }
 }
 
@@ -89,6 +114,12 @@ pub struct MeetingId {
     id: Uuid,
 }
 
+#[derive(Serialize)]
+pub struct MeetingNotFound {
+    team_id: Uuid,
+    prompts: HashMap<String, String>,
+}
+
 pub async fn post_team(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
@@ -119,6 +150,16 @@ pub async fn post_team(
     if meeting_id.is_ok() {
         Redirect::to(&format!("/meetings/{}", meeting_id.unwrap().id)).into_response()
     } else {
-        RenderXml("/meetings/not-found", state.engine, id).into_response()
+        RenderXml(
+            "/meetings/not-found",
+            state.engine,
+            MeetingNotFound {
+                team_id: id,
+                prompts: get_prompts(&["pure.phrase_not_found"], state.db, state.prompts)
+                    .await
+                    .expect("Unable to get prompts"),
+            },
+        )
+        .into_response()
     }
 }

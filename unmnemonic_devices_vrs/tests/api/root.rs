@@ -1,4 +1,5 @@
 use crate::helpers::{get, post, RedirectTo};
+use select::{document::Document, predicate::Name};
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
@@ -11,6 +12,27 @@ async fn root_serves_prewelcome(db: PgPool) {
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
     assert_that(&response.text().await.unwrap()).contains("unmnemonic");
+}
+
+#[sqlx::test(fixtures("schema", "settings", "recordings-prompts-pure-monitoring"))]
+async fn root_serves_synthetic_disclaimer_when_no_recording(db: PgPool) {
+    let response = get(db, "/", false)
+        .await
+        .expect("Failed to execute request.");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+    assert_that(&document.find(Name("play")).next().unwrap().text())
+        .contains("http://example.com/monitoring");
+}
+
+#[sqlx::test(fixtures("schema", "settings"))]
+async fn root_serves_recorded_disclaimer_when_it_exists(db: PgPool) {
+    let response = get(db, "/", false)
+        .await
+        .expect("Failed to execute request.");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+    assert_that(&document.find(Name("say")).next().unwrap().text()).contains("quality assurance");
 }
 
 #[sqlx::test(fixtures("schema", "settings-begun"))]

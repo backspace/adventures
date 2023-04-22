@@ -1,7 +1,7 @@
 <Response>
   <Gather timeout="2" input="speech" hints="{{#each teams}}{{this.voicepass}}, {{/each}}">
-    <Say>What is your voice password?</Say>
+    {{lookup prompts "pure.voicepass"}}
   </Gather>
-  <Say>We didn't hear anything.</Say>
+  {{lookup prompts "pure.silence"}}
   <Redirect method="GET">/teams</Redirect>
 </Response>

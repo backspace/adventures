@@ -1,7 +1,7 @@
 <Response>
-  <Say>Here is how it sounds.</Say>
+  {{{lookup prompts "pure.prompt_sounds"}}}
   <Play>{{recording_url}}</Play>
   <Gather action="{{action}}" input="speech" hints="keep, rerecord">
-    <Say>Keep or rerecord?</Say>
+    {{{lookup prompts "pure.prompt_action"}}}
   </Gather>
 </Response>
