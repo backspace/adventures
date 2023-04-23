@@ -64,7 +64,7 @@ pub async fn post_teams(
     .await;
 
     if team.is_ok() {
-        Redirect::to(&format!("/teams/{}", team.unwrap().id)).into_response()
+        Redirect::to(&format!("/teams/{}/confirm", team.unwrap().id)).into_response()
     } else {
         RenderXml(
             "/teams/not-found",
@@ -76,6 +76,49 @@ pub async fn post_teams(
             },
         )
         .into_response()
+    }
+}
+
+#[derive(sqlx::FromRow, Serialize)]
+pub struct TeamVoicepass {
+    voicepass: String,
+}
+
+pub async fn get_confirm_team(
+    Key(key): Key,
+    Path(id): Path<Uuid>,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let maybe_result = sqlx::query!("SELECT voicepass FROM teams WHERE id = $1", id)
+        .fetch_one(&state.db)
+        .await;
+
+    // println!("result? {:?}", result);
+    if maybe_result.is_err() {
+        Redirect::to("/teams").into_response()
+    } else {
+        let result = maybe_result.unwrap();
+
+        if result.voicepass.is_some() {
+            RenderXml(
+                key,
+                state.engine,
+                TeamVoicepass {
+                    voicepass: result.voicepass.unwrap(),
+                },
+            )
+            .into_response()
+        } else {
+            Redirect::to("/teams").into_response()
+        }
+    }
+}
+
+pub async fn post_confirm_team(Path(id): Path<Uuid>, Form(form): Form<TwilioForm>) -> Redirect {
+    if form.speech_result == "Yes." {
+        Redirect::to(&format!("/teams/{}", id))
+    } else {
+        Redirect::to("/teams")
     }
 }
 

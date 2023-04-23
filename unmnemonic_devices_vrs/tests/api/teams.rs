@@ -26,14 +26,14 @@ async fn teams_show_gathers_team_voicepasses(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("schema", "teams"))]
-async fn teams_post_redirects_to_found_voicepass_team(db: PgPool) {
+async fn teams_post_redirects_to_found_voicepass_team_confirmation(db: PgPool) {
     // Twilio editorialises punctuation and always capitalises.
     let body = "SpeechResult=This is another, voicepass?";
 
     let response = post(db, "/teams", body, true)
         .await
         .expect("Failed to execute response");
-    assert_that(&response).redirects_to("/teams/5f721b36-38bd-4504-a5aa-428e9447ab12");
+    assert_that(&response).redirects_to("/teams/5f721b36-38bd-4504-a5aa-428e9447ab12/confirm");
 }
 
 #[sqlx::test(fixtures("schema", "teams"))]
@@ -51,6 +51,66 @@ async fn teams_post_renders_not_found_when_no_voicepass_matches(db: PgPool) {
 
     assert_that(&redirect.text()).contains("/teams");
     assert_eq!(redirect.attr("method").unwrap(), "GET");
+}
+
+#[sqlx::test(fixtures("schema", "teams"))]
+async fn team_get_confirm_gathers_voicepass_confirmation(db: PgPool) {
+    let response = get(
+        db,
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832/confirm",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+    let say = document.find(Name("say")).next().unwrap();
+
+    assert_that(&say.text()).contains("a voicepass");
+}
+
+#[sqlx::test(fixtures("schema"))]
+async fn team_get_confirm_redirects_to_show_teams_for_nonexistent_team(db: PgPool) {
+    let response = get(
+        db,
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832/confirm",
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert_that(&response).redirects_to("/teams");
+}
+
+#[sqlx::test(fixtures("schema", "teams"))]
+async fn team_post_confirm_redirects_to_team_show_on_yes(db: PgPool) {
+    let response = post(
+        db,
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832/confirm",
+        "SpeechResult=Yes.",
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert_that(&response).redirects_to("/teams/48e3bda7-db52-4c99-985f-337e266f7832");
+}
+
+#[sqlx::test(fixtures("schema", "teams"))]
+async fn team_post_confirm_redirects_to_teams_show_on_no(db: PgPool) {
+    let response = post(
+        db,
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832/confirm",
+        "SpeechResult=No.",
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert_that(&response).redirects_to("/teams");
 }
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
