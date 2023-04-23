@@ -50,6 +50,7 @@ pub async fn app(db: PgPool) -> Router {
     Router::new()
         .route("/", get(get_root))
         .route("/", post(post_root))
+        .route("/hangup", get(get_hangup))
         .route("/meetings/:id", get(get_meeting))
         .route("/meetings/:id", post(post_meeting))
         .route(

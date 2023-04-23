@@ -12,6 +12,8 @@ voicepass_not_found = "We couldn't find a team with that voicepass."
 prompt_sounds = "Here is how it sounds."
 prompt_action = "Keep or rerecord?"
 
+goodbye = "Good luck and goodbye!"
+
 [testa]
 welcome = "welcome to unmnemonic devices"
 voicepass = "what is your voice password?"
