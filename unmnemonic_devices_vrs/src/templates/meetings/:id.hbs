@@ -2,4 +2,7 @@
   <Say>
     Go to {{name}}. Find {{description}}.
   </Say>
+  <Gather timeout="2" input="speech" hints="repeat, record, end">
+    {{{lookup prompts "pure.repeat_record_end"}}}
+  </Gather>
 </Response>

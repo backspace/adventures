@@ -2,6 +2,7 @@
 monitoring = "Your call may be recorded for quality assurance and training purposes."
 welcome = "welcome to unmnemonic devices"
 voicepass = "what is your voice password?"
+repeat_record_end = "Repeat, record an encouraging message for others, or end?"
 
 silence = "We didn't hear anything."
 

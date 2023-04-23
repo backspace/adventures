@@ -1,17 +1,26 @@
 use axum::{
     extract::{Path, State},
-    response::IntoResponse,
+    response::{IntoResponse, Redirect},
+    Form,
 };
 use axum_template::Key;
 use serde::Serialize;
 use sqlx::types::Uuid;
+use std::collections::HashMap;
 
-use crate::{render_xml::RenderXml, AppState};
+use crate::{helpers::get_prompts, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct RegionAndDestination {
     name: String,
     description: String,
+}
+
+#[derive(Serialize)]
+pub struct MeetingTemplate {
+    name: String,
+    description: String,
+    prompts: HashMap<String, String>,
 }
 
 pub async fn get_meeting(
@@ -38,5 +47,23 @@ pub async fn get_meeting(
     .await
     .expect("Failed to fetch meeting");
 
-    RenderXml(key, state.engine, region_and_destination)
+    RenderXml(
+        key,
+        state.engine,
+        MeetingTemplate {
+            name: region_and_destination.name,
+            description: region_and_destination.description,
+            prompts: get_prompts(&["pure.repeat_record_end"], state.db, state.prompts)
+                .await
+                .expect("Unable to get prompts"),
+        },
+    )
+}
+
+pub async fn post_meeting(Path(id): Path<Uuid>, Form(form): Form<TwilioForm>) -> Redirect {
+    match form.speech_result.as_str() {
+        "Record." => Redirect::to("/voicemails/fixme"),
+        "End." => Redirect::to("/hangup"),
+        _ => Redirect::to(&format!("/meetings/{}", id)),
+    }
 }
