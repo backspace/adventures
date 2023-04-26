@@ -4,6 +4,8 @@ import { htmlSafe } from '@ember/template';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { ref } from 'ember-ref-bucket';
+import createRef from 'ember-ref-bucket/modifiers/create-ref';
+import { on } from '@ember/modifier';
 
 // FIXME not used but needed by Foundation??
 // eslint-disable-next-line
@@ -15,6 +17,10 @@ export default class MappableRegionComponent extends Component {
   @ref('Region') regionElement;
   @tracked originalPosition;
 
+  @tracked moving;
+  @tracked unsavedX;
+  @tracked unsavedY;
+
   get draggable() {
     if (this.args.draggable === false) {
       return false;
@@ -24,10 +30,14 @@ export default class MappableRegionComponent extends Component {
   }
 
   get style() {
-    return htmlSafe(
-      `top: ${Math.max(this.args.region.y, 0)}px;` +
-        `left: ${Math.max(this.args.region.x, 0)}px;`
-    );
+    if (this.moving && this.unsavedX && this.unsavedY) {
+      return htmlSafe(`top: ${this.unsavedY}px;` + `left: ${this.unsavedX}px;`);
+    } else {
+      return htmlSafe(
+        `top: ${Math.max(this.args.region.y, 0)}px;` +
+          `left: ${Math.max(this.args.region.x, 0)}px;`
+      );
+    }
   }
 
   get meetingIndex() {
@@ -84,16 +94,34 @@ export default class MappableRegionComponent extends Component {
   }
 
   @action
-  dragStart({ clientX, clientY, offsetX }) {
+  dragStart(e) {
     if (!this.draggable) {
       return;
     }
 
-    // Adding the offset removes a corresponding horizontal shift when dropping. Unclear why it doesn’t happen vertically.
+    let { clientX, clientY, offsetX } = e;
+
+    this.unsavedX = undefined;
+    this.unsavedY = undefined;
+
     this.originalPosition = {
-      x: clientX + offsetX,
+      x: clientX,
       y: clientY,
     };
+
+    this.moving = true;
+
+    document.addEventListener('mousemove', this.drag);
+  }
+
+  @action
+  drag({ clientX, clientY }) {
+    if (!this.draggable || !this.moving) {
+      return;
+    }
+
+    this.unsavedX = this.args.region.x + clientX - this.originalPosition.x;
+    this.unsavedY = this.args.region.y + clientY - this.originalPosition.y;
   }
 
   @action
@@ -108,6 +136,10 @@ export default class MappableRegionComponent extends Component {
     this.args.region.x = x + (clientX - this.originalPosition.x);
     this.args.region.y = y + (clientY - this.originalPosition.y);
 
+    this.moving = false;
+
+    document.removeEventListener('mousemove', this.drag);
+
     this.args.region.save();
   }
 
@@ -115,4 +147,38 @@ export default class MappableRegionComponent extends Component {
   click() {
     this.args.sidebarRegionElement?.scrollIntoView();
   }
+
+  <template>
+    {{! template-lint-disable no-inline-styles }}
+    {{! template-lint-disable no-invalid-interactive }}
+    <div
+      class='region
+        {{if @isHighlighted "highlighted"}}
+        {{if this.moving "moving"}}'
+      style={{this.style}}
+      {{on 'click' this.click}}
+      {{! template-lint-disable no-down-event-binding }}
+      {{on 'mousedown' this.dragStart}}
+      {{on 'mouseup' this.dragEnd}}
+      {{createRef 'Region'}}
+    >
+      <div class='name'>
+        {{@region.name}}
+      </div>
+
+      {{#if this.meetingIndex}}
+        <div class='meeting-index'>
+          {{this.meetingIndex}}
+        </div>
+      {{/if}}
+
+      {{#if this.waypointMeetingIndex}}
+        <div class='waypoint-meeting-index' data-test-waypoint-meeting-index>
+          {{this.waypointMeetingIndex}}W
+        </div>
+      {{/if}}
+
+      {{yield}}
+    </div>
+  </template>
 }

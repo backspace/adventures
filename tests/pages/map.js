@@ -55,12 +55,12 @@ export default PageObject.create({
       const jqueryElement = findElement(this, '.name');
       const position = jqueryElement.position();
 
-      await triggerEvent(jqueryElement[0], 'dragstart', {
+      await triggerEvent(jqueryElement[0], 'mousedown', {
         clientX: position.left,
         clientY: position.top,
         offsetX: 0,
       });
-      await triggerEvent(jqueryElement[0], 'dragend', {
+      await triggerEvent(jqueryElement[0], 'mouseup', {
         clientX: position.left + x,
         clientY: position.top + y,
       });

@@ -61,6 +61,8 @@ $region-length: 4rem;
 
     overflow: hidden;
 
+    user-select: none;
+
     .name {
       font-size: 33%;
     }
@@ -80,6 +82,10 @@ $region-length: 4rem;
 
     &.highlighted {
       background: lightgray;
+    }
+
+    &.moving {
+      z-index: 10;
     }
 
     &:after {
