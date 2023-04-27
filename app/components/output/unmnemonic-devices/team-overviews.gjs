@@ -98,7 +98,7 @@ export default class TeamOverviewsComponent extends Component {
       doc.save();
 
       {
-        doc.translate(0, mapTeamFontSize);
+        doc.translate(0, mapTeamFontSize * 2);
 
         team
           .hasMany('meetings')
