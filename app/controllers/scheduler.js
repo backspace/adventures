@@ -30,27 +30,36 @@ export default class SchedulerController extends Controller {
     );
   }
 
-  @computed('lastMeetingOffsets.[]', 'meeting.{destination.region.name,teams}')
+  @computed(
+    'lastMeetingOffsets.[]',
+    'meeting.destination.region.name',
+    'meeting.teams',
+    'puzzles.hasMeetingOffsets'
+  )
   get suggestedOffset() {
-    const maxOffset = Math.max(...this.lastMeetingOffsets, 0);
+    if (this.puzzles.hasMeetingOffsets) {
+      const maxOffset = Math.max(...this.lastMeetingOffsets, 0);
 
-    let timeFromLastRegion = 0;
+      let timeFromLastRegion = 0;
 
-    const newRegionName = this.get('meeting.destination.region.name');
-    const lastMeetingRegionNames = (this.get('meeting.teams') || [])
-      .map((team) =>
-        team.get('savedMeetings.lastObject.destination.region.name')
-      )
-      .filter((n) => !!n);
+      const newRegionName = this.get('meeting.destination.region.name');
+      const lastMeetingRegionNames = (this.get('meeting.teams') || [])
+        .map((team) =>
+          team.get('savedMeetings.lastObject.destination.region.name')
+        )
+        .filter((n) => !!n);
 
-    if (newRegionName && lastMeetingRegionNames.length > 0) {
-      const destinationDistances = lastMeetingRegionNames.map((name) =>
-        this.pathfinder.distance(newRegionName, name)
-      );
-      timeFromLastRegion = Math.max(...destinationDistances);
+      if (newRegionName && lastMeetingRegionNames.length > 0) {
+        const destinationDistances = lastMeetingRegionNames.map((name) =>
+          this.pathfinder.distance(newRegionName, name)
+        );
+        timeFromLastRegion = Math.max(...destinationDistances);
+      }
+
+      return maxOffset + timeFromLastRegion;
+    } else {
+      return 0;
     }
-
-    return maxOffset + timeFromLastRegion;
   }
 
   set suggestedOffset(value) {

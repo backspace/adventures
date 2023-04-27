@@ -24,7 +24,6 @@ module('Acceptance | scheduler', function (hooks) {
 
   hooks.beforeEach(async function () {
     store = this.owner.lookup('service:store');
-    const db = this.owner.lookup('adapter:application').get('db');
 
     portagePlace = store.createRecord('region', {
       name: 'Portage Place',
@@ -61,13 +60,6 @@ module('Acceptance | scheduler', function (hooks) {
       name: 'The Pyjama Gamers',
     });
 
-    const pathfinderData = {
-      _id: 'pathfinder-data',
-      data: {
-        'Portage Place|Eaton Centre': 5,
-      },
-    };
-
     let prairieTheatreExchange,
       globeCinemas,
       squeakyFloor,
@@ -81,7 +73,6 @@ module('Acceptance | scheduler', function (hooks) {
       superfans.save(),
       mayors.save(),
       pyjamaGamers.save(),
-      db.put(pathfinderData),
     ]);
     edmontonCourt = store.createRecord('destination', {
       region: portagePlace,
@@ -134,6 +125,17 @@ module('Acceptance | scheduler', function (hooks) {
   module('for Clandestine Rendezvous', function (hooks) {
     hooks.beforeEach(async function () {
       await withSetting(this.owner, 'clandestine-rendezvous');
+
+      const db = this.owner.lookup('adapter:application').get('db');
+
+      const pathfinderData = {
+        _id: 'pathfinder-data',
+        data: {
+          'Portage Place|Eaton Centre': 5,
+        },
+      };
+
+      await all([db.put(pathfinderData)]);
 
       await store
         .createRecord('meeting', {
@@ -454,7 +456,6 @@ module('Acceptance | scheduler', function (hooks) {
         .createRecord('meeting', {
           destination: edmontonCourt,
           waypoint: fourten,
-          offset: 15,
           teams: [superfans],
         })
         .save();
