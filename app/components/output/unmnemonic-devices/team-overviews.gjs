@@ -137,6 +137,10 @@ export default class TeamOverviewsComponent extends Component {
                 .circle(waypointX, waypointY, mapMarkerCircleRadius)
                 .fillOpacity(0.25)
                 .fillAndStroke('white', 'black');
+              doc
+                .circle(destinationX, destinationY, mapMarkerCircleRadius)
+                .fillOpacity(0.25)
+                .fillAndStroke('white', 'black');
             }
             doc.restore();
 
