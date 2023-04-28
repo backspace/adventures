@@ -1,7 +1,7 @@
 import { equal } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { isEmpty } from '@ember/utils';
-import { belongsTo, attr } from '@ember-data/model';
+import { belongsTo, hasMany, attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
 
@@ -72,6 +72,9 @@ export default class Waypoint extends Model {
 
   @belongsTo('region', { async: false })
   region;
+
+  @hasMany('meeting', { async: false })
+  meetings;
 
   @attr('createDate')
   createdAt;

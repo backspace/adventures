@@ -504,6 +504,11 @@ module('Acceptance | scheduler', function (hooks) {
       assert.equal(page.teams[0].averageRisk, '2');
 
       assert.equal(page.teams[1].count, '');
+
+      assert.equal(
+        page.waypointRegions[2].waypoints[0].meetingCountBorderWidth,
+        '2px'
+      );
     });
 
     test('hovering over a team shows its destinations and waypoints ordered on the map, its meetings, and teams it’s met', async function (assert) {
