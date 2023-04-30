@@ -14,10 +14,18 @@ export default class SchedulerWaypointComponent extends Component {
     );
   }
 
+  get isHighlighted() {
+    return this.args.highlightedTeam?.waypoints
+      .mapBy('id')
+      .includes(this.args.waypoint.id);
+  }
+
   <template>
     {{! template-lint-disable no-invalid-interactive }}
     <li
-      class='waypoint {{if @isSelected "selected"}}'
+      class='waypoint
+        {{if @isSelected "selected"}}
+        {{if this.isHighlighted "highlighted"}}'
       style={{this.style}}
       {{on 'click' this.select}}
       data-test-waypoint

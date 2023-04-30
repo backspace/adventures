@@ -38,6 +38,7 @@
                   @destination={{destination}}
                   @select={{action 'selectDestination'}}
                   @isSelected={{eq destination.id this.meeting.destination.id}}
+                  @highlightedTeam={{this.highlightedTeam}}
                 />
               {{/if}}
             {{/each}}
@@ -72,6 +73,7 @@
                     @waypoint={{waypoint}}
                     @select={{action 'selectWaypoint'}}
                     @isSelected={{eq waypoint.id this.meeting.waypoint.id}}
+                    @highlightedTeam={{this.highlightedTeam}}
                   />
                 {{/if}}
               {{/each}}

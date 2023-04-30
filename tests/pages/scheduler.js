@@ -107,6 +107,7 @@ export default PageObject.create({
       riskBorderOpacity: propertyColourOpacity('border-right-color'),
 
       isSelected: hasClass('selected'),
+      isHighlighted: hasClass('highlighted'),
 
       click: clickable(),
     }),
@@ -130,6 +131,7 @@ export default PageObject.create({
       meetingCountBorderWidth: propertyValue('border-top-width'),
 
       isSelected: hasClass('selected'),
+      isHighlighted: hasClass('highlighted'),
 
       click: clickable(),
     }),

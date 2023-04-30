@@ -30,6 +30,9 @@ export default class Team extends Model {
   @mapBy('meetings', 'destination')
   destinations;
 
+  @mapBy('meetings', 'waypoint')
+  waypoints;
+
   @filterBy('meetings', 'isNew', false)
   savedMeetings;
 

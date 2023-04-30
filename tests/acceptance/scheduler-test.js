@@ -290,6 +290,9 @@ module('Acceptance | scheduler', function (hooks) {
       assert.equal(page.teams[0].meetings[0].index, '0');
       assert.equal(page.teams[0].meetings[0].offset, '15');
 
+      assert.ok(page.regions[1].destinations[0].isHighlighted);
+      assert.notOk(page.regions[0].destinations[0].isHighlighted);
+
       assert.ok(
         page.teams[1].isHighlighted,
         'expected the met team to be highlighted'
@@ -521,6 +524,12 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.equal(page.teams[0].meetings.length, 1);
       assert.equal(page.teams[0].meetings[0].index, '0');
+
+      assert.ok(page.regions[1].destinations[0].isHighlighted);
+      assert.notOk(page.regions[0].destinations[0].isHighlighted);
+
+      assert.ok(page.waypointRegions[2].waypoints[0].isHighlighted);
+      assert.notOk(page.waypointRegions[0].waypoints[0].isHighlighted);
 
       assert.notOk(page.teams[1].isHighlighted);
       assert.notOk(page.teams[2].isHighlighted);
