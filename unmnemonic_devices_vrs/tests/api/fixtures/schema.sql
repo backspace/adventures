@@ -198,7 +198,9 @@ CREATE TABLE unmnemonic_devices.settings (
     ending boolean DEFAULT false,
     down boolean DEFAULT false,
     inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL
+    updated_at timestamp(0) without time zone NOT NULL,
+    day_before boolean DEFAULT false,
+    degrading boolean DEFAULT false
 );
 
 
@@ -419,3 +421,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20230415180346);
 INSERT INTO public."schema_migrations" (version) VALUES (20230415180351);
 INSERT INTO public."schema_migrations" (version) VALUES (20230416192016);
 INSERT INTO public."schema_migrations" (version) VALUES (20230419025011);
+INSERT INTO public."schema_migrations" (version) VALUES (20230508143302);
