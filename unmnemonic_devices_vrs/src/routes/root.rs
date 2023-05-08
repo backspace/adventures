@@ -8,7 +8,7 @@ use axum_template::Key;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::{helpers::get_prompts, render_xml::RenderXml, AppState};
+use crate::{helpers::get_prompts, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Deserialize)]
 pub struct RootParams {
@@ -57,13 +57,7 @@ pub async fn get_root(
     )
 }
 
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct RootForm {
-    speech_result: String,
-}
-
-pub async fn post_root(Form(form): Form<RootForm>) -> Redirect {
+pub async fn post_root(Form(form): Form<TwilioForm>) -> Redirect {
     if form.speech_result == "Begun." {
         Redirect::to("/?begun")
     } else {
