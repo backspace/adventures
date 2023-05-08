@@ -57,6 +57,28 @@ async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
     assert_that(&response.text().await.unwrap()).contains("Has it begun");
 }
 
+#[sqlx::test(fixtures("schema", "settings-ending"))]
+async fn root_serves_ending_when_ending(db: PgPool) {
+    let response = get(db, "/", false)
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+    assert_that(&response.text().await.unwrap()).contains("It is ending");
+}
+
+#[sqlx::test(fixtures("schema", "settings-down"))]
+async fn root_serves_down_when_down(db: PgPool) {
+    let response = get(db, "/", false)
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+    assert_that(&response.text().await.unwrap()).contains("It is down");
+}
+
 #[sqlx::test(fixtures("schema"))]
 async fn root_post_begun_redirects_to_root_begun(db: PgPool) {
     let body = "SpeechResult=Begun.";

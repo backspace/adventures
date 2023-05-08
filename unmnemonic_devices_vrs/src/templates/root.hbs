@@ -2,15 +2,27 @@
   {{{lookup prompts "pure.monitoring"}}}
 
   {{#if begun}}
-    <Say>
-      Has it begun?
-    </Say>
+    {{#if ending}}
+      <Say>
+        It is ending
+      </Say>
+    {{else}}
+      <Say>
+        Has it begun?
+      </Say>
+    {{/if}}
   {{else}}
-    <Gather timeout="2" input="speech" hints="begun, jortle, tortle">
-      {{{lookup prompts "pure.welcome"}}}
-    </Gather>
-    <Say>
-      We didn't hear anything. Goodbye.
-    </Say>
+    {{#if down}}
+      <Say>
+        It is down
+      </Say>
+    {{else}}
+      <Gather timeout="2" input="speech" hints="begun, jortle, tortle">
+        {{{lookup prompts "pure.welcome"}}}
+      </Gather>
+      <Say>
+        We didn't hear anything. Goodbye.
+      </Say>
+    {{/if}}
   {{/if}}
 </Response>

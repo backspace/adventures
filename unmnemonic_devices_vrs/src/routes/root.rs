@@ -23,6 +23,8 @@ struct Settings {
 #[derive(Serialize)]
 pub struct RootData {
     begun: bool,
+    down: bool,
+    ending: bool,
     prompts: HashMap<String, String>,
 }
 
@@ -31,16 +33,19 @@ pub async fn get_root(
     State(state): State<AppState>,
     params: Query<RootParams>,
 ) -> impl IntoResponse {
-    let settings = sqlx::query!("SELECT begun FROM unmnemonic_devices.settings LIMIT 1")
-        .fetch_one(&state.db)
-        .await
-        .expect("Failed to fetch settings");
+    let settings =
+        sqlx::query!("SELECT begun, down, ending FROM unmnemonic_devices.settings LIMIT 1")
+            .fetch_one(&state.db)
+            .await
+            .expect("Failed to fetch settings");
 
     RenderXml(
         key,
         state.engine,
         RootData {
             begun: settings.begun.unwrap() || params.begun.is_some(),
+            down: settings.down.unwrap(),
+            ending: settings.ending.unwrap(),
             prompts: get_prompts(
                 &["pure.welcome", "pure.monitoring"],
                 state.db,
