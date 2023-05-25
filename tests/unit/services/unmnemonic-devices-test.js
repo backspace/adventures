@@ -1,6 +1,6 @@
 import cmToPt from 'adventure-gathering/utils/cm-to-pt';
 import { setupTest } from 'ember-qunit';
-import { module, test, todo } from 'qunit';
+import { module, test } from 'qunit';
 
 module('Unit | Service | unmnemonic-devices', function (hooks) {
   setupTest(hooks);
@@ -172,11 +172,63 @@ module(
 module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
   setupTest(hooks);
 
-  todo('it parses outlines', function (assert) {
+  hooks.before((assert) => {
+    assert.outlineEqual = function (expectedOutline, actualOutline, message) {
+      let results = [];
+
+      let pairs = [
+        { name: 'end', pair: [expectedOutline.end, actualOutline.end] },
+        ...expectedOutline.points.map((point, index) => ({
+          name: `points[${index}]`,
+          pair: [point, actualOutline.points[index]],
+        })),
+      ];
+
+      pairs.forEach((pair) => {
+        let [expected, actual] = pair.pair;
+
+        let xMatches = close(expected[0], actual[0]);
+        let yMatches = close(expected[1], actual[1]);
+
+        if (xMatches && yMatches) {
+          results.push({
+            result: true,
+            message: `${message}: ${pair.name} matches`,
+          });
+        } else {
+          if (!xMatches) {
+            results.push({
+              result: false,
+              message: `${message}: ${pair.name} x ${expected[0]} ≠ ${actual[0]}`,
+            });
+          }
+
+          if (!yMatches) {
+            results.push({
+              result: false,
+              message: `${message}: ${pair.name} y ${expected[1]} ≠ ${actual[1]}`,
+            });
+          }
+        }
+      });
+
+      if (results.every((result) => result.result)) {
+        this.pushResult({
+          result: true,
+          message,
+        });
+      } else {
+        results.forEach((result) => this.pushResult(result));
+      }
+    };
+  });
+
+  test('it parses outlines', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
 
-    assert.deepEqual(
+    assert.outlineEqual(
       service.parsedOutline('(3.2,2.3),1.5,0.5'),
+
       {
         end: [cmToPt(3.2 + 1.5), cmToPt(2.3)],
         points: [
@@ -187,7 +239,12 @@ module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
           [cmToPt(3.2), cmToPt(2.3)],
         ],
       },
+
       'it closes the polygon'
     );
   });
 });
+
+function close(a, b) {
+  return Math.abs(a - b) < 0.00001;
+}
