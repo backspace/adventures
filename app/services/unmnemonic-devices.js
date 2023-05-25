@@ -86,6 +86,12 @@ export default class UnmnemonicDevicesService extends Service {
       return null;
     }
 
+    return outline
+      .split('|')
+      .every((singleOutline) => this.singleOutlineIsValid(singleOutline));
+  }
+
+  singleOutlineIsValid(outline) {
     let [start, displacements] = outline.substring(1).split('),');
 
     let [startX, startY] = start.split(',');
@@ -106,6 +112,12 @@ export default class UnmnemonicDevicesService extends Service {
   }
 
   parsedOutline(outline) {
+    return outline
+      .split('|')
+      .map((singleOutline) => this.singleParsedOutline(singleOutline));
+  }
+
+  singleParsedOutline(outline) {
     let [start, displacements] = outline.substring(1).split('),');
 
     let [startX, startY] = start.split(',').map((s) => cmToPt(parseFloat(s)));

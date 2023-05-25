@@ -139,6 +139,10 @@ module(
 
       assert.ok(service.outlineIsValid('(3.2,2.3),1.5,-0.5'));
 
+      assert.ok(
+        service.outlineIsValid('(3.2,2.3),1.5,-0.5|(3.2,2.3),1.5,-0.5')
+      );
+
       assert.notOk(service.outlineIsValid(null), 'outline must be present');
 
       assert.notOk(
@@ -226,9 +230,10 @@ module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
   test('it parses outlines', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
 
-    assert.outlineEqual(
-      service.parsedOutline('(3.2,2.3),1.5,0.5'),
+    let [p1, p2] = service.parsedOutline('(3.2,2.3),1.5,0.5|(3.2,2.3),1.5,0.5');
 
+    assert.outlineEqual(
+      p1,
       {
         end: [cmToPt(3.2 + 1.5), cmToPt(2.3)],
         points: [
@@ -239,9 +244,19 @@ module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
           [cmToPt(3.2), cmToPt(2.3)],
         ],
       },
-
       'it closes the polygon'
     );
+
+    assert.outlineEqual(p2, {
+      end: [cmToPt(3.2 + 1.5), cmToPt(2.3)],
+      points: [
+        [cmToPt(3.2), cmToPt(2.3)],
+        [cmToPt(3.2 + 1.5), cmToPt(2.3)],
+        [cmToPt(3.2 + 1.5), cmToPt(2.3 + 0.5)],
+        [cmToPt(3.2), cmToPt(2.3 + 0.5)],
+        [cmToPt(3.2), cmToPt(2.3)],
+      ],
+    });
   });
 });
 

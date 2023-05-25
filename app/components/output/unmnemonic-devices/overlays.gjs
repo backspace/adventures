@@ -67,7 +67,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       )}`;
       let waypointName = waypoint.get('name');
       let excerpt = waypoint.get('excerpt');
-      let outline = waypoint.get('outline');
+      let fullOutline = waypoint.get('outline');
       let page = waypoint.get('page');
 
       if (index > 0) {
@@ -97,69 +97,85 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
       doc.strokeColor('black');
 
-      let { end, points: outlinePoints } = this.devices.parsedOutline(outline);
+      let outlines = this.devices.parsedOutline(fullOutline);
 
-      let [startX, startY] = outlinePoints.shift();
+      outlines.forEach((outline, index) => {
+        let first = index == 0;
+        let last = index == outlines.length - 1;
 
-      doc.moveTo(startX, startY);
+        let { end, points: outlinePoints } = outline;
 
-      outlinePoints.forEach(([displacementX, displacementY]) => {
-        doc.lineTo(displacementX, displacementY);
-      });
+        let [startX, startY] = outlinePoints.shift();
 
-      doc.fillAndStroke('white', 'black');
+        doc.moveTo(startX, startY);
 
-      if (this.args.debug) {
-        doc.text(dimensions, 0, height);
-        doc.text(outline);
-        doc.text(excerpt);
-      }
+        outlinePoints.forEach(([displacementX, displacementY]) => {
+          doc.lineTo(displacementX, displacementY);
+        });
 
-      let preExcerpt = this.devices.preExcerpt(excerpt),
-        postExcerpt = this.devices.postExcerpt(excerpt);
+        doc.fillAndStroke('white', 'black');
 
-      doc.fontSize(EXCERPT_HEIGHT);
+        if (this.args.debug) {
+          doc.text(dimensions, 0, height);
+          doc.text(outline);
+          doc.text(excerpt);
+        }
 
-      let preExcerptWidth = doc.widthOfString(preExcerpt);
-      let postExcerptWidth = doc.widthOfString(postExcerpt);
+        let preExcerpt = this.devices.preExcerpt(excerpt),
+          postExcerpt = this.devices.postExcerpt(excerpt);
 
-      let preExcerptX = 0,
-        preExcerptY = startY,
-        preExcerptAlign = 'right',
-        preExcerptWidthObject = { width: startX - EXCERPT_GAP };
+        doc.fontSize(EXCERPT_HEIGHT);
 
-      if (startX - preExcerptWidth < PAGE_PADDING) {
-        preExcerptX = 0;
-        preExcerptY -= EXCERPT_HEIGHT;
-        preExcerptAlign = 'right';
-        preExcerptWidthObject = { width: width - PAGE_PADDING };
-      }
+        let preExcerptWidth = doc.widthOfString(preExcerpt);
+        let postExcerptWidth = doc.widthOfString(postExcerpt);
 
-      let postExcerptX = end[0] + EXCERPT_GAP,
-        postExcerptY = end[1],
-        postExcerptAlign = 'left';
+        let preExcerptX = 0,
+          preExcerptY = startY,
+          preExcerptAlign = 'right',
+          preExcerptWidthObject = { width: startX - EXCERPT_GAP };
 
-      if (end[0] + postExcerptWidth > width - PAGE_PADDING) {
-        postExcerptX = PAGE_PADDING;
-        postExcerptY += EXCERPT_HEIGHT;
-        postExcerptAlign = 'left';
-      }
+        if (startX - preExcerptWidth < PAGE_PADDING) {
+          preExcerptX = 0;
+          preExcerptY -= EXCERPT_HEIGHT;
+          preExcerptAlign = 'right';
+          preExcerptWidthObject = { width: width - PAGE_PADDING };
+        }
 
-      // Print text outlines and then text atop them
-      OUTLINE_TEXT_ARGUMENTS.forEach(({ lineWidth, textOptions }) => {
-        doc
-          .fillColor('black')
-          .strokeColor('white')
-          .lineWidth(lineWidth)
-          .text(preExcerpt, preExcerptX, preExcerptY, {
-            align: preExcerptAlign,
-            ...preExcerptWidthObject,
-            ...textOptions,
-          })
-          .text(postExcerpt, postExcerptX, postExcerptY, {
-            align: postExcerptAlign,
-            ...textOptions,
-          });
+        let postExcerptX = end[0] + EXCERPT_GAP,
+          postExcerptY = end[1],
+          postExcerptAlign = 'left';
+
+        if (end[0] + postExcerptWidth > width - PAGE_PADDING) {
+          postExcerptX = PAGE_PADDING;
+          postExcerptY += EXCERPT_HEIGHT;
+          postExcerptAlign = 'left';
+        }
+
+        // Print text outlines and then text atop them
+        OUTLINE_TEXT_ARGUMENTS.forEach(({ lineWidth, textOptions }) => {
+          if (first) {
+            doc
+              .fillColor('black')
+              .strokeColor('white')
+              .lineWidth(lineWidth)
+              .text(preExcerpt, preExcerptX, preExcerptY, {
+                align: preExcerptAlign,
+                ...preExcerptWidthObject,
+                ...textOptions,
+              });
+          }
+
+          if (last) {
+            doc
+              .fillColor('black')
+              .strokeColor('white')
+              .lineWidth(lineWidth)
+              .text(postExcerpt, postExcerptX, postExcerptY, {
+                align: postExcerptAlign,
+                ...textOptions,
+              });
+          }
+        });
       });
 
       if (team) {
