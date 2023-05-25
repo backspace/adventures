@@ -30,8 +30,8 @@ let OUTLINE_TEXT_ARGUMENTS = [
   { lineWidth: 1 },
 ];
 
-let registrationPadding = PAGE_PADDING;
-let registrationLength = PAGE_PADDING;
+let registrationPadding = PAGE_PADDING / 2;
+let registrationLength = PAGE_PADDING / 2;
 let registrationTotal = registrationPadding + registrationLength;
 
 export default class UnmnemonicDevicesOverlaysComponent extends Component {
