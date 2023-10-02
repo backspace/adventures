@@ -54,7 +54,7 @@ jobs:
         working-directory: registrations
       - run: npm run deploy --prefix assets
         working-directory: registrations
-      - uses: nanasess/setup-chromedriver@v1
+      - uses: nanasess/setup-chromedriver@v2
       - run: |
           export DISPLAY=:99
           chromedriver &
