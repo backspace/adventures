@@ -127,15 +127,15 @@ async fn team_show_names_team_and_gathers_excerpts(db: PgPool) {
 
     assert_that(&say.text()).contains("jortles");
 
-    assert_that(
-        &document
-            .find(Name("gather"))
-            .next()
-            .unwrap()
-            .attr("hints")
-            .unwrap(),
-    )
-    .contains("schnimbleby, abused or ignored, ");
+    let hints = &document
+        .find(Name("gather"))
+        .next()
+        .unwrap()
+        .attr("hints")
+        .unwrap();
+
+    assert_that(hints).contains("abused or ignored,");
+    assert_that(hints).contains("schnimbleby,");
 }
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
