@@ -6,4 +6,4 @@ This is a monorepo to support various adventures.
 * `unmnemonic_devices_vrs`: a Rust/Axum server for a Twilio-driven voice response system
 
 The [`gathering`](https://github.com/backspace/adventure-gathering) application
-will likely join migrate into here eventually.
+will likely migrate into here eventually.
