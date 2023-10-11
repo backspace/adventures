@@ -1,20 +1,20 @@
 use axum::Server;
 use sqlx::PgPool;
 use std::net::TcpListener;
-use unmnemonic_devices_vrs::app;
+use unmnemonic_devices_vrs::{app, InjectableServices};
 
 pub struct TestApp {
     pub address: String,
 }
 
-pub async fn spawn_app(db: PgPool) -> TestApp {
+pub async fn spawn_app(services: InjectableServices) -> TestApp {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);
 
     let server = Server::from_tcp(listener)
         .expect("Failed to listen")
-        .serve(app(db).await.into_make_service());
+        .serve(app(services).await.into_make_service());
     let _ = tokio::spawn(server);
 
     TestApp { address }
@@ -25,7 +25,24 @@ pub async fn get(
     path: &str,
     skip_redirects: bool,
 ) -> Result<reqwest::Response, reqwest::Error> {
-    let app_address = spawn_app(db).await.address;
+    get_with_twilio(
+        InjectableServices {
+            db,
+            // FIXME should this be a mock server that rejects everything
+            twilio_address: Some("https://api.twilio.com".to_string()),
+        },
+        path,
+        skip_redirects,
+    )
+    .await
+}
+
+pub async fn get_with_twilio(
+    services: InjectableServices,
+    path: &str,
+    skip_redirects: bool,
+) -> Result<reqwest::Response, reqwest::Error> {
+    let app_address = spawn_app(services).await.address;
     let client_builder = reqwest::Client::builder();
 
     let client = if skip_redirects {
@@ -45,7 +62,13 @@ pub async fn post(
     body: &str,
     skip_redirects: bool,
 ) -> Result<reqwest::Response, reqwest::Error> {
-    let app_address = spawn_app(db).await.address;
+    let app_address = spawn_app(InjectableServices {
+        db,
+        // FIXME same as above
+        twilio_address: Some("https://api.twilio.com".to_string()),
+    })
+    .await
+    .address;
     let client_builder = reqwest::Client::builder();
 
     let client = if skip_redirects {

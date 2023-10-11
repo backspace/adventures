@@ -2,7 +2,7 @@ use axum::Server;
 use sqlx::PgPool;
 use std::env;
 use std::net::{SocketAddr, TcpListener};
-use unmnemonic_devices_vrs::app;
+use unmnemonic_devices_vrs::{app, InjectableServices};
 
 #[tokio::main]
 async fn main() {
@@ -20,7 +20,15 @@ async fn main() {
 
     Server::from_tcp(listener)
         .expect("Failed to listen")
-        .serve(app(db).await.into_make_service())
+        .serve(
+            app(InjectableServices {
+                db,
+                // FIXME configify?
+                twilio_address: Some("https://api.twilio.com".to_string()),
+            })
+            .await
+            .into_make_service(),
+        )
         .await
         .expect("Failed to start server")
 }
