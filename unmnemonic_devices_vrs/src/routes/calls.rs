@@ -2,6 +2,7 @@ use axum::{extract::State, response::IntoResponse};
 use axum_template::{Key, RenderHtml};
 use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
+use std::env;
 
 use crate::AppState;
 
@@ -21,10 +22,10 @@ pub struct Call {
 }
 
 pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
-    // FIXME obvs!!
-    // Also can this use a generated client?
-    let account_sid = "FIXME";
-    let auth_token = "FIXME";
+    // FIXME can this use a generated client?
+    // FIXME this should fail early
+    let account_sid = env::var("TWILIO_ACCOUNT_SID").unwrap_or("FIXME".to_string());
+    let auth_token = env::var("TWILIO_AUTH_TOKEN").unwrap_or("FIXME".to_string());
 
     let basic_auth = format!("{}:{}", account_sid, auth_token);
     let auth_header_value = format!(
