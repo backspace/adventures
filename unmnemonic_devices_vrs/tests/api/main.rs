@@ -1,3 +1,4 @@
+mod calls;
 mod helpers;
 mod meetings;
 mod recordings;

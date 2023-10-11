@@ -17,9 +17,15 @@ use crate::routes::*;
 
 pub type AppEngine = Engine<Handlebars<'static>>;
 
+pub struct InjectableServices {
+    pub db: PgPool,
+    pub twilio_address: Option<String>,
+}
+
 #[derive(Clone)]
 pub struct AppState {
     db: PgPool,
+    twilio_address: String,
     engine: AppEngine,
     prompts: Prompts,
 }
@@ -30,7 +36,7 @@ pub struct Prompts {
     tables: HashMap<String, HashMap<String, String>>,
 }
 
-pub async fn app(db: PgPool) -> Router {
+pub async fn app(services: InjectableServices) -> Router {
     let mut hbs = Handlebars::new();
     hbs.register_templates_directory(".hbs", "src/templates")
         .expect("Failed to register templates directory");
@@ -42,7 +48,8 @@ pub async fn app(db: PgPool) -> Router {
         toml::from_str(&prompts_string).expect("Failed to parse the prompts file");
 
     let shared_state = AppState {
-        db,
+        db: services.db,
+        twilio_address: services.twilio_address.unwrap(),
         engine: Engine::from(hbs),
         prompts,
     };
@@ -83,6 +90,9 @@ pub async fn app(db: PgPool) -> Router {
         .route("/teams/:id", post(post_team))
         .route("/teams/:id/confirm", get(get_confirm_team))
         .route("/teams/:id/confirm", post(post_confirm_team))
+        //
+        // admin routes
+        .route("/calls", get(get_calls))
         .with_state(shared_state)
         .layer(tower_http::trace::TraceLayer::new_for_http())
 }
