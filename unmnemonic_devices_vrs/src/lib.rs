@@ -19,6 +19,7 @@ pub type AppEngine = Engine<Handlebars<'static>>;
 
 pub struct InjectableServices {
     pub db: PgPool,
+    // FIXME maybe not optional?
     pub twilio_address: Option<String>,
 }
 
