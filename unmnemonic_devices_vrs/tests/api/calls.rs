@@ -10,6 +10,8 @@ use unmnemonic_devices_vrs::InjectableServices;
 use wiremock::matchers::any;
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
+// FIXME this isn’t an API!
+
 #[sqlx::test()]
 async fn calls_list_when_empty(db: PgPool) {
     let mock_twilio = MockServer::start().await;
