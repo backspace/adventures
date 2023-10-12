@@ -2,6 +2,8 @@ use axum::Server;
 use sqlx::PgPool;
 use std::net::TcpListener;
 use unmnemonic_devices_vrs::{app, InjectableServices};
+use wiremock::matchers::any;
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
 pub struct TestApp {
     pub address: String,
@@ -25,11 +27,19 @@ pub async fn get(
     path: &str,
     skip_redirects: bool,
 ) -> Result<reqwest::Response, reqwest::Error> {
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(any())
+        .respond_with(ResponseTemplate::new(500))
+        .expect(0)
+        .named("Mock Twilio API")
+        .mount(&mock_twilio)
+        .await;
+
     get_with_twilio(
         InjectableServices {
             db,
-            // FIXME should this be a mock server that rejects everything
-            twilio_address: Some("https://api.twilio.com".to_string()),
+            twilio_address: Some(mock_twilio.uri()),
         },
         path,
         skip_redirects,
@@ -62,10 +72,18 @@ pub async fn post(
     body: &str,
     skip_redirects: bool,
 ) -> Result<reqwest::Response, reqwest::Error> {
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(any())
+        .respond_with(ResponseTemplate::new(500))
+        .expect(0)
+        .named("Mock Twilio API")
+        .mount(&mock_twilio)
+        .await;
+
     let app_address = spawn_app(InjectableServices {
         db,
-        // FIXME same as above
-        twilio_address: Some("https://api.twilio.com".to_string()),
+        twilio_address: Some(mock_twilio.uri()),
     })
     .await
     .address;
