@@ -36,7 +36,7 @@ pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl Int
     let client = reqwest::Client::new();
     let response = client
         .get(format!(
-            "{}/2010-04-01/Accounts/{}/Calls.json",
+            "{}/2010-04-01/Accounts/{}/Calls.json?Status=in-progress",
             state.twilio_address, account_sid
         ))
         .header("Authorization", auth_header_value)
