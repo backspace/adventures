@@ -19,8 +19,7 @@ pub type AppEngine = Engine<Handlebars<'static>>;
 
 pub struct InjectableServices {
     pub db: PgPool,
-    // FIXME maybe not optional?
-    pub twilio_address: Option<String>,
+    pub twilio_address: String,
 }
 
 #[derive(Clone)]
@@ -50,7 +49,7 @@ pub async fn app(services: InjectableServices) -> Router {
 
     let shared_state = AppState {
         db: services.db,
-        twilio_address: services.twilio_address.unwrap(),
+        twilio_address: services.twilio_address,
         engine: Engine::from(hbs),
         prompts,
     };

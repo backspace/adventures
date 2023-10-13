@@ -25,7 +25,7 @@ async fn calls_list_when_empty(db: PgPool) {
     let response = get_with_twilio(
         InjectableServices {
             db,
-            twilio_address: Some(mock_twilio.uri()),
+            twilio_address: mock_twilio.uri(),
         },
         "/calls",
         false,
@@ -63,7 +63,7 @@ async fn calls_list_with_calls(db: PgPool) {
     let response = get_with_twilio(
         InjectableServices {
             db,
-            twilio_address: Some(mock_twilio.uri()),
+            twilio_address: mock_twilio.uri(),
         },
         "/calls",
         false,
