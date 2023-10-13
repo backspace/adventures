@@ -39,7 +39,7 @@ pub async fn get(
     get_with_twilio(
         InjectableServices {
             db,
-            twilio_address: Some(mock_twilio.uri()),
+            twilio_address: mock_twilio.uri(),
         },
         path,
         skip_redirects,
@@ -83,7 +83,7 @@ pub async fn post(
 
     let app_address = spawn_app(InjectableServices {
         db,
-        twilio_address: Some(mock_twilio.uri()),
+        twilio_address: mock_twilio.uri(),
     })
     .await
     .address;

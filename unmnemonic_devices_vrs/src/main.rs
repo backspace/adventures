@@ -24,7 +24,7 @@ async fn main() {
             app(InjectableServices {
                 db,
                 // FIXME configify?
-                twilio_address: Some("https://api.twilio.com".to_string()),
+                twilio_address: "https://api.twilio.com".to_string(),
             })
             .await
             .into_make_service(),
