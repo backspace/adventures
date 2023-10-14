@@ -26,9 +26,10 @@ pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl Int
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
     let account_sid = config.twilio_account_sid.to_string();
-    let auth_token = config.twilio_auth_token.to_string();
+    let api_sid = config.twilio_api_key_sid.to_string();
+    let api_secret = config.twilio_api_key_secret.to_string();
 
-    let basic_auth = format!("{}:{}", account_sid, auth_token);
+    let basic_auth = format!("{}:{}", api_sid, api_secret);
     let auth_header_value = format!(
         "Basic {}",
         general_purpose::STANDARD_NO_PAD.encode(basic_auth)
