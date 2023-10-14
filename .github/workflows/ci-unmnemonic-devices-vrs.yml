@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Set up database
         run: psql -f unmnemonic_devices_vrs/tests/api/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.68.2
       - uses: Swatinem/rust-cache@v2
       - name: Run tests
         working-directory: unmnemonic_devices_vrs
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.68.2
         with:
           components: rustfmt
       - name: Enforce formatting
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Set up database
         run: psql -f unmnemonic_devices_vrs/tests/api/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.68.2
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
@@ -80,7 +80,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Set up database
         run: psql -f unmnemonic_devices_vrs/tests/api/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@1.68.2
       - name: Install postgresql-client
         run: sudo apt-get update && sudo apt-get install postgresql-client -y
       - uses: Swatinem/rust-cache@v2
@@ -94,7 +94,7 @@ jobs:
           --locked
       - name: Generate code coverage
         working-directory: unmnemonic_devices_vrs
-        run: cargo install cargo-tarpaulin && cargo tarpaulin --verbose --workspace --out lcov --output-dir coverage
+        run: cargo install cargo-tarpaulin@0.25.2 && cargo tarpaulin --verbose --workspace --out lcov --output-dir coverage
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost/postgres
       - name: Coveralls GitHub Action
