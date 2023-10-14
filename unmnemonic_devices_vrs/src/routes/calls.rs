@@ -10,6 +10,7 @@ use crate::AppState;
 #[derive(Debug, Deserialize)]
 struct TwilioCall {
     from: String,
+    start_time: String,
 }
 
 #[derive(Serialize)]
@@ -20,6 +21,7 @@ pub struct Calls {
 #[derive(sqlx::FromRow, Serialize)]
 pub struct Call {
     from: String,
+    start: String,
 }
 
 pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
@@ -57,6 +59,9 @@ pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl Int
                     from: serde_json::from_value::<TwilioCall>(call.clone())
                         .unwrap()
                         .from,
+                    start: serde_json::from_value::<TwilioCall>(call.clone())
+                        .unwrap()
+                        .start_time,
                 })
             })
             .collect::<Vec<Call>>()

@@ -54,7 +54,7 @@ async fn calls_list_with_calls(db: PgPool) {
 
     Mock::given(any())
         .respond_with(
-            ResponseTemplate::new(200).set_body_json(json!({"calls": [{"from": "+15145551212"}]})),
+            ResponseTemplate::new(200).set_body_json(json!({"calls": [{"from": "+15145551212", "start_time": "Tue, 03 Oct 2023 05:39:58 +0000"}]})),
         )
         .expect(1)
         .mount(&mock_twilio)
@@ -83,5 +83,6 @@ async fn calls_list_with_calls(db: PgPool) {
         .next()
         .unwrap();
 
+    assert_that(&row.text()).contains("Tue, 03 Oct 2023 05:39:58 +0000");
     assert_that(&row.text()).contains("+15145551212");
 }
