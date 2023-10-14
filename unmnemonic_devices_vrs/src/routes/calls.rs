@@ -54,15 +54,13 @@ pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl Int
     let calls = response["calls"].as_array().map(|calls| {
         calls
             .iter()
-            .filter_map(|call| {
-                Some(Call {
-                    from: serde_json::from_value::<TwilioCall>(call.clone())
-                        .unwrap()
-                        .from,
-                    start: serde_json::from_value::<TwilioCall>(call.clone())
-                        .unwrap()
-                        .start_time,
-                })
+            .map(|call| Call {
+                from: serde_json::from_value::<TwilioCall>(call.clone())
+                    .unwrap()
+                    .from,
+                start: serde_json::from_value::<TwilioCall>(call.clone())
+                    .unwrap()
+                    .start_time,
             })
             .collect::<Vec<Call>>()
     });
