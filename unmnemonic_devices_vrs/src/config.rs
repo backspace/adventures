@@ -1,3 +1,4 @@
+// Adapted from https://dev.to/bdhobare/managing-application-config-in-rust-23ai
 use std::collections::HashMap;
 
 #[derive(Debug, Default)]
