@@ -2,12 +2,15 @@ use axum::Server;
 use sqlx::PgPool;
 use std::env;
 use std::net::{SocketAddr, TcpListener};
+use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::{app, InjectableServices};
 
 #[tokio::main]
 async fn main() {
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
-    let db = PgPool::connect(&database_url).await.unwrap();
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+
+    let database_url = &env_config_provider.get_config().database_url;
+    let db = PgPool::connect(database_url).await.unwrap();
 
     let listener_address = "127.0.0.1:3000";
     let listener = TcpListener::bind(listener_address.parse::<SocketAddr>().unwrap()).unwrap();
