@@ -23,7 +23,6 @@ pub struct Call {
 }
 
 pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
-    // FIXME can this use a generated client?
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
     let account_sid = config.twilio_account_sid.to_string();
