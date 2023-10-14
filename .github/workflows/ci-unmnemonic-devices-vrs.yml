@@ -24,6 +24,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.68.2
       - uses: Swatinem/rust-cache@v2
       - name: Set up env
+        working-directory: unmnemonic_devices_vrs
         run: export $(cat .env.test | xargs)
       - name: Run tests
         working-directory: unmnemonic_devices_vrs
@@ -95,6 +96,7 @@ jobs:
           --no-default-features
           --locked
       - name: Set up env
+        working-directory: unmnemonic_devices_vrs
         run: export $(cat .env.test | xargs)
       - name: Generate code coverage
         working-directory: unmnemonic_devices_vrs
