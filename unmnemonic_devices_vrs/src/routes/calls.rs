@@ -1,8 +1,10 @@
 use axum::{extract::State, response::IntoResponse};
 use axum_template::{Key, RenderHtml};
-use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
 use std::env;
+
+use openapi::apis::api20100401_call_api::{list_call, ListCallParams};
+use openapi::apis::configuration::Configuration;
 
 use crate::config::{ConfigProvider, EnvVarProvider};
 use crate::AppState;
@@ -28,44 +30,53 @@ pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl Int
     let account_sid = config.twilio_account_sid.to_string();
     let auth_token = config.twilio_auth_token.to_string();
 
-    let basic_auth = format!("{}:{}", account_sid, auth_token);
-    let auth_header_value = format!(
-        "Basic {}",
-        general_purpose::STANDARD_NO_PAD.encode(basic_auth)
-    );
+    let twilio_config = Configuration {
+        basic_auth: Some((account_sid.clone(), Some(auth_token))),
+        ..Default::default()
+    };
 
-    let client = reqwest::Client::new();
-    let response = client
-        .get(format!(
-            "{}/2010-04-01/Accounts/{}/Calls.json?Status=in-progress",
-            state.twilio_address, account_sid
-        ))
-        .header("Authorization", auth_header_value)
-        .send()
-        .await
-        .unwrap()
-        .json::<serde_json::Value>()
-        .await
-        .unwrap();
-
-    let calls = response["calls"].as_array().map(|calls| {
-        calls
-            .iter()
-            .filter_map(|call| {
-                Some(Call {
-                    from: serde_json::from_value::<TwilioCall>(call.clone())
-                        .unwrap()
-                        .from,
-                })
-            })
-            .collect::<Vec<Call>>()
-    });
-
-    RenderHtml(
-        key.chars().skip(1).collect::<String>(),
-        state.engine,
-        Calls {
-            calls: calls.unwrap(),
+    let response = list_call(
+        &twilio_config,
+        ListCallParams {
+            account_sid: account_sid.clone(),
+            to: None,
+            from: None,
+            parent_call_sid: None,
+            status: None,
+            start_time: None,
+            start_time_less_than: None,
+            start_time_greater_than: None,
+            end_time: None,
+            end_time_less_than: None,
+            end_time_greater_than: None,
+            page_size: None,
+            page: None,
+            page_token: None,
         },
     )
+    .await;
+
+    match response {
+        Ok(result) => {
+            let calls = result
+                .calls
+                .unwrap()
+                .iter()
+                .map(|call| Call {
+                    from: call.from.clone().unwrap().unwrap(),
+                })
+                .collect::<Vec<Call>>();
+
+            RenderHtml(
+                key.chars().skip(1).collect::<String>(),
+                state.engine,
+                Calls { calls },
+            )
+        }
+        Err(error) => RenderHtml(
+            key.chars().skip(1).collect::<String>(),
+            state.engine,
+            Calls { calls: Vec::new() },
+        ),
+    };
 }
