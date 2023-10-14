@@ -23,6 +23,8 @@ jobs:
         run: psql -f unmnemonic_devices_vrs/tests/api/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
       - uses: dtolnay/rust-toolchain@1.68.2
       - uses: Swatinem/rust-cache@v2
+      - name: Set up env
+        run: export $(cat .env.test | xargs)
       - name: Run tests
         working-directory: unmnemonic_devices_vrs
         run: cargo test
@@ -92,6 +94,8 @@ jobs:
           --features ${{ env.SQLX_FEATURES }}
           --no-default-features
           --locked
+      - name: Set up env
+        run: export $(cat .env.test | xargs)
       - name: Generate code coverage
         working-directory: unmnemonic_devices_vrs
         run: cargo install cargo-tarpaulin@0.25.2 && cargo tarpaulin --verbose --workspace --out lcov --output-dir coverage
