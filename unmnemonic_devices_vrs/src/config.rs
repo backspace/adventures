@@ -5,6 +5,7 @@ pub struct Config {
     pub database_url: String,
     pub twilio_account_sid: String,
     pub twilio_auth_token: String,
+    pub twilio_url: String,
 }
 
 pub trait ConfigProvider {
@@ -28,6 +29,7 @@ impl EnvVarProvider {
                 .get("TWILIO_AUTH_TOKEN")
                 .expect("Missing Twilio auth token")
                 .to_string(),
+            twilio_url: "https://api.twilio.com".to_string(),
         };
 
         EnvVarProvider(config)
