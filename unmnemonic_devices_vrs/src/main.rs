@@ -8,8 +8,9 @@ use unmnemonic_devices_vrs::{app, InjectableServices};
 #[tokio::main]
 async fn main() {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
 
-    let database_url = &env_config_provider.get_config().database_url;
+    let database_url = &config.database_url;
     let db = PgPool::connect(database_url).await.unwrap();
 
     let listener_address = "127.0.0.1:3000";
@@ -26,8 +27,7 @@ async fn main() {
         .serve(
             app(InjectableServices {
                 db,
-                // FIXME configify?
-                twilio_address: "https://api.twilio.com".to_string(),
+                twilio_address: config.twilio_url.to_string(),
             })
             .await
             .into_make_service(),
