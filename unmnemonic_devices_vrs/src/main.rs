@@ -2,12 +2,16 @@ use axum::Server;
 use sqlx::PgPool;
 use std::env;
 use std::net::{SocketAddr, TcpListener};
-use unmnemonic_devices_vrs::app;
+use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
+use unmnemonic_devices_vrs::{app, InjectableServices};
 
 #[tokio::main]
 async fn main() {
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
-    let db = PgPool::connect(&database_url).await.unwrap();
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+
+    let database_url = &config.database_url;
+    let db = PgPool::connect(database_url).await.unwrap();
 
     let listener_address = "127.0.0.1:3000";
     let listener = TcpListener::bind(listener_address.parse::<SocketAddr>().unwrap()).unwrap();
@@ -20,7 +24,14 @@ async fn main() {
 
     Server::from_tcp(listener)
         .expect("Failed to listen")
-        .serve(app(db).await.into_make_service())
+        .serve(
+            app(InjectableServices {
+                db,
+                twilio_address: config.twilio_url.to_string(),
+            })
+            .await
+            .into_make_service(),
+        )
         .await
         .expect("Failed to start server")
 }

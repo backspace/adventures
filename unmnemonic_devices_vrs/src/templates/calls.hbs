@@ -1,0 +1,34 @@
+<html>
+  <body>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            start
+          </th>
+          <th>
+            from
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each calls}}
+          <tr>
+            <td>
+              {{this.start}}
+            </td>
+            <td>
+              {{this.from}}
+            </td>
+          </tr>
+        {{else}}
+          <tr>
+            <td>
+              no calls
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </body>
+</html>

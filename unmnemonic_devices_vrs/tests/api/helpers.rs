@@ -1,20 +1,22 @@
 use axum::Server;
 use sqlx::PgPool;
 use std::net::TcpListener;
-use unmnemonic_devices_vrs::app;
+use unmnemonic_devices_vrs::{app, InjectableServices};
+use wiremock::matchers::any;
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
 pub struct TestApp {
     pub address: String,
 }
 
-pub async fn spawn_app(db: PgPool) -> TestApp {
+pub async fn spawn_app(services: InjectableServices) -> TestApp {
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);
 
     let server = Server::from_tcp(listener)
         .expect("Failed to listen")
-        .serve(app(db).await.into_make_service());
+        .serve(app(services).await.into_make_service());
     let _ = tokio::spawn(server);
 
     TestApp { address }
@@ -25,7 +27,32 @@ pub async fn get(
     path: &str,
     skip_redirects: bool,
 ) -> Result<reqwest::Response, reqwest::Error> {
-    let app_address = spawn_app(db).await.address;
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(any())
+        .respond_with(ResponseTemplate::new(500))
+        .expect(0)
+        .named("Mock Twilio API")
+        .mount(&mock_twilio)
+        .await;
+
+    get_with_twilio(
+        InjectableServices {
+            db,
+            twilio_address: mock_twilio.uri(),
+        },
+        path,
+        skip_redirects,
+    )
+    .await
+}
+
+pub async fn get_with_twilio(
+    services: InjectableServices,
+    path: &str,
+    skip_redirects: bool,
+) -> Result<reqwest::Response, reqwest::Error> {
+    let app_address = spawn_app(services).await.address;
     let client_builder = reqwest::Client::builder();
 
     let client = if skip_redirects {
@@ -45,7 +72,21 @@ pub async fn post(
     body: &str,
     skip_redirects: bool,
 ) -> Result<reqwest::Response, reqwest::Error> {
-    let app_address = spawn_app(db).await.address;
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(any())
+        .respond_with(ResponseTemplate::new(500))
+        .expect(0)
+        .named("Mock Twilio API")
+        .mount(&mock_twilio)
+        .await;
+
+    let app_address = spawn_app(InjectableServices {
+        db,
+        twilio_address: mock_twilio.uri(),
+    })
+    .await
+    .address;
     let client_builder = reqwest::Client::builder();
 
     let client = if skip_redirects {
