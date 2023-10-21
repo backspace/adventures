@@ -20,9 +20,7 @@
       <Gather timeout="2" input="speech" hints="begun, jortle, tortle">
         {{{lookup prompts "pure.welcome"}}}
       </Gather>
-      <Say>
-        We didn't hear anything. Goodbye.
-      </Say>
+      {{> restart }}
     {{/if}}
   {{/if}}
 </Response>
