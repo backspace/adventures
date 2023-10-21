@@ -13,8 +13,8 @@ $(() => {
       .clone()
       .css({
         position: "absolute",
-        margin: "-3em",
-        padding: "3em",
+        margin: "-2em",
+        padding: "2em",
         opacity: 0,
       })
       .attr("aria-hidden", "true")
