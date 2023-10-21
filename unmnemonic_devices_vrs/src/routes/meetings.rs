@@ -6,9 +6,8 @@ use axum::{
 use axum_template::Key;
 use serde::Serialize;
 use sqlx::types::Uuid;
-use std::collections::HashMap;
 
-use crate::{helpers::get_prompts, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
+use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct RegionAndDestination {
@@ -20,7 +19,6 @@ pub struct RegionAndDestination {
 pub struct MeetingTemplate {
     name: String,
     description: String,
-    prompts: HashMap<String, String>,
 }
 
 pub async fn get_meeting(
@@ -50,12 +48,10 @@ pub async fn get_meeting(
     RenderXml(
         key,
         state.engine,
+        state.serialised_prompts,
         MeetingTemplate {
             name: region_and_destination.name,
             description: region_and_destination.description,
-            prompts: get_prompts(&["pure.repeat_record_end"], state.db, state.prompts)
-                .await
-                .expect("Unable to get prompts"),
         },
     )
 }

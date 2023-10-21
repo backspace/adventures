@@ -6,14 +6,12 @@ use axum::{
 use axum_template::Key;
 use serde::Serialize;
 use sqlx::types::Uuid;
-use std::collections::HashMap;
 
-use crate::{helpers::get_prompts, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
+use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Serialize)]
 pub struct Teams {
     teams: Vec<Team>,
-    prompts: HashMap<String, String>,
 }
 
 #[derive(sqlx::FromRow, Serialize)]
@@ -30,21 +28,7 @@ pub async fn get_teams(Key(key): Key, State(state): State<AppState>) -> impl Int
         .await
         .expect("Failed to fetch team");
 
-    RenderXml(
-        key,
-        state.engine,
-        Teams {
-            teams,
-            prompts: get_prompts(&["pure.voicepass", "pure.silence"], state.db, state.prompts)
-                .await
-                .expect("Unable to find prompts"),
-        },
-    )
-}
-
-#[derive(Serialize)]
-pub struct TeamNotFound {
-    prompts: HashMap<String, String>,
+    RenderXml(key, state.engine, state.serialised_prompts, Teams { teams })
 }
 
 pub async fn post_teams(
@@ -69,11 +53,8 @@ pub async fn post_teams(
         RenderXml(
             "/teams/not-found",
             state.engine,
-            TeamNotFound {
-                prompts: get_prompts(&["pure.voicepass_not_found"], state.db, state.prompts)
-                    .await
-                    .expect("Unable to get prompts"),
-            },
+            state.serialised_prompts,
+            (),
         )
         .into_response()
     }
@@ -103,6 +84,7 @@ pub async fn get_confirm_team(
             RenderXml(
                 key,
                 state.engine,
+                state.serialised_prompts,
                 TeamVoicepass {
                     voicepass: result.voicepass.unwrap(),
                 },
@@ -149,7 +131,7 @@ pub async fn get_team(
     .await
     .expect("Failed to fetch team");
 
-    RenderXml(key, state.engine, team)
+    RenderXml(key, state.engine, state.serialised_prompts, team)
 }
 
 #[derive(sqlx::FromRow, Serialize)]
@@ -160,7 +142,6 @@ pub struct MeetingId {
 #[derive(Serialize)]
 pub struct MeetingNotFound {
     team_id: Uuid,
-    prompts: HashMap<String, String>,
 }
 
 pub async fn post_team(
@@ -196,12 +177,8 @@ pub async fn post_team(
         RenderXml(
             "/meetings/not-found",
             state.engine,
-            MeetingNotFound {
-                team_id: id,
-                prompts: get_prompts(&["pure.phrase_not_found"], state.db, state.prompts)
-                    .await
-                    .expect("Unable to get prompts"),
-            },
+            state.serialised_prompts,
+            MeetingNotFound { team_id: id },
         )
         .into_response()
     }

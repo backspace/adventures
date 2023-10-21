@@ -1,3 +1,4 @@
+use crate::{WrappedPrompts, WrappedPromptsSerialisation};
 use axum::{
     body::{Bytes, Full},
     response::{IntoResponse, Response},
@@ -5,6 +6,7 @@ use axum::{
 use axum_template::TemplateEngine;
 use http::{header, HeaderValue};
 use serde::Serialize;
+use std::collections::HashMap;
 
 #[derive(Clone, Copy, Debug)]
 #[must_use]
@@ -33,16 +35,25 @@ impl<T> From<T> for Xml<T> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RenderXml<K, E, S>(pub K, pub E, pub S);
+pub struct RenderXml<K, E, P, S>(pub K, pub E, pub P, pub S);
 
-impl<K, E, S> IntoResponse for RenderXml<K, E, S>
+#[derive(Serialize)]
+struct DataWithPrompts<T: Serialize> {
+    prompts: HashMap<String, String>,
+
+    #[serde(flatten)]
+    existing_data: T,
+}
+
+impl<K, E, P, S> IntoResponse for RenderXml<K, E, P, S>
 where
     E: TemplateEngine,
     S: Serialize,
+    P: AsRef<str>,
     K: AsRef<str>,
 {
     fn into_response(self) -> axum::response::Response {
-        let RenderXml(key, engine, data) = self;
+        let RenderXml(key, engine, prompts, data) = self;
 
         // handlebars stores template paths with no leading slash but axum-template keys have one
         let mut adapted_key = String::from(key.as_ref());
@@ -53,7 +64,15 @@ where
             adapted_key = "root".to_string();
         }
 
-        let result = engine.render(adapted_key.as_ref(), data);
+        let wrapped_prompts = WrappedPrompts::deserialize_from_string(prompts.as_ref());
+
+        let result = engine.render(
+            adapted_key.as_ref(),
+            DataWithPrompts {
+                prompts: wrapped_prompts.prompts,
+                existing_data: data,
+            },
+        );
 
         match result {
             Ok(x) => Xml(x).into_response(),

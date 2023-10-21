@@ -12,7 +12,7 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 
 // FIXME this isn’t an API!
 
-#[sqlx::test()]
+#[sqlx::test(fixtures("schema"))]
 async fn calls_list_when_empty(db: PgPool) {
     let mock_twilio = MockServer::start().await;
 
@@ -48,7 +48,7 @@ async fn calls_list_when_empty(db: PgPool) {
     assert_that(&row.text()).contains("no calls");
 }
 
-#[sqlx::test()]
+#[sqlx::test(fixtures("schema"))]
 async fn calls_list_with_calls(db: PgPool) {
     let mock_twilio = MockServer::start().await;
 

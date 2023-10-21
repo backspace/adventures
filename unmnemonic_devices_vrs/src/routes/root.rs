@@ -6,9 +6,8 @@ use axum::{
 };
 use axum_template::Key;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
-use crate::{helpers::get_prompts, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
+use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Deserialize)]
 pub struct RootParams {
@@ -25,7 +24,6 @@ pub struct RootData {
     begun: bool,
     down: bool,
     ending: bool,
-    prompts: HashMap<String, String>,
 }
 
 pub async fn get_root(
@@ -42,17 +40,11 @@ pub async fn get_root(
     RenderXml(
         key,
         state.engine,
+        state.serialised_prompts,
         RootData {
             begun: settings.begun.unwrap() || params.begun.is_some(),
             down: settings.down.unwrap(),
             ending: settings.ending.unwrap(),
-            prompts: get_prompts(
-                &["pure.welcome", "pure.monitoring"],
-                state.db,
-                state.prompts,
-            )
-            .await
-            .expect("Unable to get prompts"),
         },
     )
 }

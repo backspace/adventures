@@ -6,10 +6,9 @@ use axum::{
 use axum_template::Key;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
-use std::collections::HashMap;
 use uuid::Uuid;
 
-use crate::{helpers::get_prompts, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
+use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Serialize)]
 pub struct CharacterPrompts {
@@ -37,6 +36,7 @@ pub async fn get_character_prompts(
         RenderXml(
             key,
             state.engine,
+            state.serialised_prompts,
             CharacterPrompts {
                 character_name,
                 prompt_names: Some(character_prompts.unwrap().keys().cloned().collect()),
@@ -91,6 +91,7 @@ pub async fn post_character_prompts(
             RenderXml(
                 "/recordings/prompts/:character_name/not-found",
                 state.engine,
+                state.serialised_prompts,
                 PromptNotFound {
                     character_name,
                     prompt_name,
@@ -119,6 +120,7 @@ pub async fn get_unrecorded_character_prompt(
         RenderXml(
             "/recordings/prompts/:character_name/unrecorded",
             state.engine,
+            state.serialised_prompts,
             UnrecordedIntroduction {
                 skip_message: params.unrecorded.is_some(),
                 character_name: character_name.to_string(),
@@ -134,6 +136,7 @@ pub async fn get_unrecorded_character_prompt(
         RenderXml(
             "/recordings/prompts/:character_name/no-unrecorded",
             state.engine,
+            state.serialised_prompts,
             UnrecordedIntroduction {
                 skip_message: false,
                 character_name: character_name.to_string(),
@@ -169,6 +172,7 @@ pub async fn get_character_prompt(
         RenderXml(
             key,
             state.engine,
+            state.serialised_prompts,
             CharacterPrompt {
                 character_name,
                 prompt_name,
@@ -191,7 +195,6 @@ pub struct TwilioRecordingForm {
 pub struct ConfirmRecordingPrompt {
     recording_url: String,
     action: String,
-    prompts: HashMap<String, String>,
 }
 
 pub async fn post_character_prompt(
@@ -204,6 +207,7 @@ pub async fn post_character_prompt(
     RenderXml(
         "/recordings/prompts/:character_name/:prompt_name/post",
         state.engine,
+        state.serialised_prompts,
         ConfirmRecordingPrompt {
             recording_url: form.recording_url.to_string(),
             action: format!(
@@ -217,13 +221,6 @@ pub async fn post_character_prompt(
                     ""
                 }
             ),
-            prompts: get_prompts(
-                &["pure.prompt_sounds", "pure.prompt_action"],
-                state.db,
-                state.prompts,
-            )
-            .await
-            .expect("Unable to find prompts"),
         },
     )
 }
