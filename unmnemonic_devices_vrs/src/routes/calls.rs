@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Form, State},
+    extract::{Form, Path, State},
     response::{IntoResponse, Response},
 };
 use axum_template::{Key, RenderHtml};
@@ -9,10 +9,12 @@ use serde::{Deserialize, Serialize};
 use std::env;
 
 use crate::config::{ConfigProvider, EnvVarProvider};
+use crate::render_xml::RenderXml;
 use crate::AppState;
 
 #[derive(Debug, Deserialize)]
 struct TwilioCall {
+    sid: String,
     from: String,
     start_time: String,
 }
@@ -24,6 +26,7 @@ pub struct Calls {
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct Call {
+    sid: String,
     from: String,
     start: String,
 }
@@ -59,6 +62,9 @@ pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl Int
         calls
             .iter()
             .map(|call| Call {
+                sid: serde_json::from_value::<TwilioCall>(call.clone())
+                    .unwrap()
+                    .sid,
                 from: serde_json::from_value::<TwilioCall>(call.clone())
                     .unwrap()
                     .from,
@@ -80,6 +86,7 @@ pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl Int
 
 #[derive(Deserialize)]
 pub struct CreateCallParams {
+    sid: String,
     to: String,
 }
 
@@ -102,33 +109,63 @@ pub async fn post_calls(
         general_purpose::STANDARD_NO_PAD.encode(basic_auth)
     );
 
-    let body = serde_urlencoded::to_string([
-        ("Url", root_url),
+    let conference_url = format!("{}conferences/{}", root_url, params.sid);
+
+    let create_call_body = serde_urlencoded::to_string([
         ("Method", "GET".to_string()),
+        ("Url", conference_url.clone()),
         ("To", params.to.to_string()),
         ("From", twilio_number),
     ])
-    .expect("Could not encode");
+    .expect("Could not encode call creation body");
 
     let client = reqwest::Client::new();
-    let response = client
+    let create_call_response = client
         .post(format!(
             "{}/2010-04-01/Accounts/{}/Calls.json",
             state.twilio_address, account_sid
         ))
-        .header("Authorization", auth_header_value)
+        .header("Authorization", auth_header_value.clone())
         .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(body)
+        .body(create_call_body)
         .send()
         .await;
 
-    if response.is_ok() {
-        let ok_response = response.unwrap();
+    if create_call_response.is_ok() {
+        let ok_create_call_response = create_call_response.unwrap();
 
-        if ok_response.status().is_success() {
-            StatusCode::NO_CONTENT.into_response()
+        if ok_create_call_response.status().is_success() {
+            let update_call_body = serde_urlencoded::to_string([
+                ("Method", "GET".to_string()),
+                ("Url", conference_url),
+            ])
+            .expect("Could not encode call update body");
+
+            let update_call_response = client
+                .post(format!(
+                    "{}/2010-04-01/Accounts/{}/Calls/{}.json",
+                    state.twilio_address, account_sid, params.sid
+                ))
+                .header("Authorization", auth_header_value)
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .body(update_call_body)
+                .send()
+                .await;
+
+            if update_call_response.is_ok() {
+                let ok_update_call_response = update_call_response.unwrap();
+
+                if ok_update_call_response.status().is_success() {
+                    StatusCode::NO_CONTENT.into_response()
+                } else {
+                    let response_body = ok_update_call_response.bytes().await.unwrap();
+                    (StatusCode::BAD_REQUEST, response_body).into_response()
+                }
+            } else {
+                StatusCode::BAD_REQUEST.into_response()
+            }
         } else {
-            let response_body = ok_response.bytes().await.unwrap();
+            let response_body = ok_create_call_response.bytes().await.unwrap();
             (StatusCode::BAD_REQUEST, response_body).into_response()
         }
     } else {
