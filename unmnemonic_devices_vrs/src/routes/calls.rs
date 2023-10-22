@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Form, Path, State},
+    extract::{Form, State},
     response::{IntoResponse, Response},
 };
 use axum_template::{Key, RenderHtml};
@@ -9,7 +9,6 @@ use serde::{Deserialize, Serialize};
 use std::env;
 
 use crate::config::{ConfigProvider, EnvVarProvider};
-use crate::render_xml::RenderXml;
 use crate::AppState;
 
 #[derive(Debug, Deserialize)]
