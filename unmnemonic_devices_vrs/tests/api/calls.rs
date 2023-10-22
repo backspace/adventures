@@ -238,10 +238,16 @@ async fn create_call_update_failure(db: PgPool) {
 
     assert!(response.status().is_client_error());
 
-    let response_json: serde_json::Value = response
-        .json()
-        .await
-        .expect("Failed to parse JSON response");
+    let response_text = response.text().await.expect("Unable to read response text");
+
+    let response_json: serde_json::Value =
+        serde_json::from_str(&response_text).unwrap_or_else(|_| {
+            panic!(
+                "Unable to read JSON from response text: `{}`",
+                response_text
+            )
+        });
+
     assert_eq!(
         response_json,
         json!({"code": 21201, "message": "No 'To' number is specified", "more_info": "https://www.twilio.com/docs/errors/21201", "status": 400})
