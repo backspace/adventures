@@ -1,5 +1,25 @@
 <html>
+  <head>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        numberField = document.querySelector('#number-field');
+        let storedNumber = localStorage.getItem('number');
+
+        if (storedNumber) {
+          numberField.value = storedNumber;
+        }
+
+        numberField.addEventListener('change', function (event) {
+          localStorage.setItem('number', numberField.value);
+        });
+      });
+    </script>
+  </head>
   <body>
+    <label>
+      your phone number
+      <input id="number-field" name="number" placeholder="+1-204-287-7433" />
+    </label>
     <table>
       <thead>
         <tr>
