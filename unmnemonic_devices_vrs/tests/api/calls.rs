@@ -7,7 +7,7 @@ use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::PgPool;
 use unmnemonic_devices_vrs::InjectableServices;
-use wiremock::matchers::any;
+use wiremock::matchers::{method, path_regex, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 // FIXME this isn’t an API!
@@ -16,7 +16,9 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 async fn calls_list_when_empty(db: PgPool) {
     let mock_twilio = MockServer::start().await;
 
-    Mock::given(any())
+    Mock::given(method("GET"))
+        .and(path_regex(r"^/2010-04-01/Accounts/.*/Calls.json$"))
+        .and(query_param("Status", "in-progress"))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({"calls": []})))
         .expect(1)
         .mount(&mock_twilio)
@@ -52,7 +54,9 @@ async fn calls_list_when_empty(db: PgPool) {
 async fn calls_list_with_calls(db: PgPool) {
     let mock_twilio = MockServer::start().await;
 
-    Mock::given(any())
+    Mock::given(method("GET"))
+        .and(path_regex(r"^/2010-04-01/Accounts/.*/Calls.json$"))
+        .and(query_param("Status", "in-progress"))
         .respond_with(
             ResponseTemplate::new(200).set_body_json(json!({"calls": [{"from": "+15145551212", "start_time": "Tue, 03 Oct 2023 05:39:58 +0000"}]})),
         )
