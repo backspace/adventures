@@ -123,6 +123,7 @@ pub async fn app(services: InjectableServices) -> Router {
         //
         // admin routes
         .route("/calls", get(get_calls))
+        .route("/calls", post(post_calls))
         .with_state(shared_state)
         .layer(tower_http::trace::TraceLayer::new_for_http())
 }

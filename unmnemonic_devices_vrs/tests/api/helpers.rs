@@ -81,12 +81,25 @@ pub async fn post(
         .mount(&mock_twilio)
         .await;
 
-    let app_address = spawn_app(InjectableServices {
-        db,
-        twilio_address: mock_twilio.uri(),
-    })
+    post_with_twilio(
+        InjectableServices {
+            db,
+            twilio_address: mock_twilio.uri(),
+        },
+        path,
+        body,
+        skip_redirects,
+    )
     .await
-    .address;
+}
+
+pub async fn post_with_twilio(
+    services: InjectableServices,
+    path: &str,
+    body: &str,
+    skip_redirects: bool,
+) -> Result<reqwest::Response, reqwest::Error> {
+    let app_address = spawn_app(services).await.address;
     let client_builder = reqwest::Client::builder();
 
     let client = if skip_redirects {

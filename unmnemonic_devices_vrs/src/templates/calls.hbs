@@ -12,7 +12,18 @@
         numberField.addEventListener('change', function (event) {
           localStorage.setItem('number', numberField.value);
         });
+
+        document.querySelectorAll('.call').forEach(function (button) {
+          button.addEventListener('click', call);
+        });
       });
+
+      function call(event) {
+        fetch(window.location.href, {
+          method: 'POST',
+          body: new URLSearchParams({to: numberField.value}),
+        });
+      }
     </script>
   </head>
   <body>
@@ -50,5 +61,8 @@
         {{/each}}
       </tbody>
     </table>
+    <button class="call">
+      Call
+    </button>
   </body>
 </html>

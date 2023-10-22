@@ -4,9 +4,11 @@ use std::collections::HashMap;
 #[derive(Debug, Default)]
 pub struct Config {
     pub database_url: String,
+    pub root_url: String,
     pub twilio_account_sid: String,
     pub twilio_api_key_sid: String,
     pub twilio_api_key_secret: String,
+    pub twilio_number: String,
     pub twilio_url: String,
 }
 
@@ -23,6 +25,7 @@ impl EnvVarProvider {
                 .get("DATABASE_URL")
                 .expect("Missing database URL")
                 .to_string(),
+            root_url: args.get("ROOT_URL").expect("Missing root URL").to_string(),
             twilio_account_sid: args
                 .get("TWILIO_ACCOUNT_SID")
                 .expect("Missing Twilio account SID")
@@ -34,6 +37,10 @@ impl EnvVarProvider {
             twilio_api_key_secret: args
                 .get("TWILIO_API_KEY_SECRET")
                 .expect("Missing Twilio API key secret")
+                .to_string(),
+            twilio_number: args
+                .get("TWILIO_NUMBER")
+                .expect("Missing Twilio number")
                 .to_string(),
             twilio_url: "https://api.twilio.com".to_string(),
         };
