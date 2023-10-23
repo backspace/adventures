@@ -69,6 +69,8 @@
               <label>
                 Team overviews?
                 <Input @type='checkbox' @checked={{this.unmnemonicDevicesTeamOverviews}} />
+                Low res map?
+                <Input @type='checkbox' @checked={{this.unmnemonicDevicesTeamOverviewsLowResMap}} />
               </label>
             </td>
             <td>
@@ -76,6 +78,7 @@
               <Output::UnmnemonicDevices::TeamOverviews
                 @teams={{this.model.teams}}
                 @assets={{this.model.assets}}
+                @lowRes={{this.unmnemonicDevicesTeamOverviewsLowResMap}}
                 @debug={{this.debug}}
               />
               {{/if}}

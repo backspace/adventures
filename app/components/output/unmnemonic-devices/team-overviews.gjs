@@ -15,6 +15,7 @@ export default class TeamOverviewsComponent extends Component {
 
   generator = trackedFunction(this, async () => {
     let debug = this.args.debug;
+    let lowRes = this.args.lowRes;
 
     let regular = this.args.assets.regular;
 
@@ -27,7 +28,8 @@ export default class TeamOverviewsComponent extends Component {
     let mapBitmap = await createImageBitmap(mapBlob);
     let lowMapBitmap = await createImageBitmap(lowMapBlob);
 
-    let map = await this.map.blobToBase64String(mapBlob);
+    let mapBase64String = await this.map.blobToBase64String(mapBlob);
+    let lowMapBase64String = await this.map.blobToBase64String(lowMapBlob);
 
     let mapHighToLowRatio = lowMapBitmap.width / mapBitmap.width;
 
@@ -78,14 +80,18 @@ export default class TeamOverviewsComponent extends Component {
     function drawMap() {
       doc.save();
 
+      let ratio = lowRes ? innerWidthToMapLowRatio : innerWidthToMapHighRatio;
+      let bitmap = lowRes ? lowMapBitmap : mapBitmap;
+      let base64String = lowRes ? lowMapBase64String : mapBase64String;
+
       {
         doc.translate(0, mapTeamFontSize * 2);
-        doc.scale(innerWidthToMapHighRatio, innerWidthToMapHighRatio);
+        doc.scale(ratio, ratio);
 
         if (debug) {
-          doc.rect(0, 0, mapBitmap.width, mapBitmap.height).stroke();
+          doc.rect(0, 0, bitmap.width, bitmap.height).stroke();
         } else {
-          doc.image('data:image/png;base64,' + map, 0, 0);
+          doc.image('data:image/png;base64,' + base64String, 0, 0);
         }
       }
 
