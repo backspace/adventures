@@ -134,6 +134,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "axum-macros"
+version = "0.3.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdca6a10ecad987bda04e95606ef85a5417dcaac1a78455242d72e031e2b6b62"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.7",
+]
+
+[[package]]
 name = "axum-template"
 version = "0.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2683,6 +2695,7 @@ name = "unmnemonic_devices_vrs"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "axum-macros",
  "axum-template",
  "base64 0.21.4",
  "chrono",

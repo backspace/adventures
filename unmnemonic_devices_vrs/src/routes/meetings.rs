@@ -21,6 +21,7 @@ pub struct MeetingTemplate {
     description: String,
 }
 
+#[axum_macros::debug_handler]
 pub async fn get_meeting(
     Key(key): Key,
     Path(id): Path<Uuid>,
@@ -56,6 +57,7 @@ pub async fn get_meeting(
     )
 }
 
+#[axum_macros::debug_handler]
 pub async fn post_meeting(Path(id): Path<Uuid>, Form(form): Form<TwilioForm>) -> Redirect {
     match form.speech_result.as_str() {
         "Record." => Redirect::to("/voicemails/fixme"),

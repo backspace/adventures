@@ -17,6 +17,7 @@ pub struct CharacterPrompts {
     add_unrecorded: bool,
 }
 
+#[axum_macros::debug_handler]
 pub async fn get_character_prompts(
     Key(key): Key,
     Path(character_name): Path<String>,
@@ -61,6 +62,7 @@ pub struct UnrecordedIntroduction {
     redirect: String,
 }
 
+#[axum_macros::debug_handler]
 pub async fn post_character_prompts(
     State(state): State<AppState>,
     Path(character_name): Path<String>,
@@ -102,6 +104,7 @@ pub async fn post_character_prompts(
     }
 }
 
+#[axum_macros::debug_handler]
 pub async fn get_unrecorded_character_prompt(
     State(state): State<AppState>,
     Path(character_name): Path<String>,
@@ -159,6 +162,7 @@ pub struct MaybeRecordingParams {
     unrecorded: Option<String>,
 }
 
+#[axum_macros::debug_handler]
 pub async fn get_character_prompt(
     Key(key): Key,
     Path((character_name, prompt_name)): Path<(String, String)>,
@@ -197,6 +201,7 @@ pub struct ConfirmRecordingPrompt {
     action: String,
 }
 
+#[axum_macros::debug_handler]
 pub async fn post_character_prompt(
     Key(_key): Key,
     Path((character_name, prompt_name)): Path<(String, String)>,
@@ -231,6 +236,7 @@ pub struct DecideParams {
     unrecorded: Option<String>,
 }
 
+#[axum_macros::debug_handler]
 pub async fn post_character_prompt_decide(
     Key(_key): Key,
     Path((character_name, prompt_name)): Path<(String, String)>,

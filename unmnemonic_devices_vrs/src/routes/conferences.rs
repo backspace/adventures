@@ -13,6 +13,7 @@ pub struct Conference {
     sid: String,
 }
 
+#[axum_macros::debug_handler]
 pub async fn get_conference(
     Key(key): Key,
     Path(sid): Path<String>,

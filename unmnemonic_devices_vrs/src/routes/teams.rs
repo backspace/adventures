@@ -22,6 +22,7 @@ pub struct Team {
     excerpts: Option<Vec<String>>,
 }
 
+#[axum_macros::debug_handler]
 pub async fn get_teams(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
     let teams = sqlx::query_as::<_, Team>("SELECT *, ARRAY[]::VARCHAR[] AS excerpts FROM teams")
         .fetch_all(&state.db)
@@ -31,6 +32,7 @@ pub async fn get_teams(Key(key): Key, State(state): State<AppState>) -> impl Int
     RenderXml(key, state.engine, state.serialised_prompts, Teams { teams })
 }
 
+#[axum_macros::debug_handler]
 pub async fn post_teams(
     State(state): State<AppState>,
     Form(form): Form<TwilioForm>,
@@ -65,6 +67,7 @@ pub struct TeamVoicepass {
     voicepass: String,
 }
 
+#[axum_macros::debug_handler]
 pub async fn get_confirm_team(
     Key(key): Key,
     Path(id): Path<Uuid>,
@@ -96,6 +99,7 @@ pub async fn get_confirm_team(
     }
 }
 
+#[axum_macros::debug_handler]
 pub async fn post_confirm_team(Path(id): Path<Uuid>, Form(form): Form<TwilioForm>) -> Redirect {
     if form.speech_result == "Yes." {
         Redirect::to(&format!("/teams/{}", id))
@@ -104,6 +108,7 @@ pub async fn post_confirm_team(Path(id): Path<Uuid>, Form(form): Form<TwilioForm
     }
 }
 
+#[axum_macros::debug_handler]
 pub async fn get_team(
     Key(key): Key,
     Path(id): Path<Uuid>,
@@ -144,6 +149,7 @@ pub struct MeetingNotFound {
     team_id: Uuid,
 }
 
+#[axum_macros::debug_handler]
 pub async fn post_team(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,

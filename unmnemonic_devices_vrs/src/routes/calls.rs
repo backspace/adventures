@@ -30,6 +30,7 @@ pub struct Call {
     start: String,
 }
 
+#[axum_macros::debug_handler]
 pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
@@ -89,6 +90,7 @@ pub struct CreateCallParams {
     to: String,
 }
 
+#[axum_macros::debug_handler]
 pub async fn post_calls(
     State(state): State<AppState>,
     Form(params): Form<CreateCallParams>,
