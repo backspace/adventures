@@ -20,14 +20,17 @@ pub struct Team {
     name: String,
     voicepass: String,
     excerpts: Option<Vec<String>>,
+    answers: Option<Vec<String>>,
 }
 
 #[axum_macros::debug_handler]
 pub async fn get_teams(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
-    let teams = sqlx::query_as::<_, Team>("SELECT *, ARRAY[]::VARCHAR[] AS excerpts FROM teams")
-        .fetch_all(&state.db)
-        .await
-        .expect("Failed to fetch team");
+    let teams = sqlx::query_as::<_, Team>(
+        "SELECT *, ARRAY[]::VARCHAR[] AS excerpts, ARRAY[]::VARCHAR[] AS answers FROM teams",
+    )
+    .fetch_all(&state.db)
+    .await
+    .expect("Failed to fetch team");
 
     RenderXml(key, state.engine, state.serialised_prompts, Teams { teams })
 }
@@ -43,7 +46,7 @@ pub async fn post_teams(
         .replace(&['?', '.', ','][..], "");
 
     let team = sqlx::query_as::<_, Team>(
-        "SELECT *, ARRAY[]::VARCHAR[] AS excerpts FROM teams WHERE voicepass = $1",
+        "SELECT *, ARRAY[]::VARCHAR[] AS excerpts, ARRAY[]::VARCHAR[] AS answers FROM teams WHERE voicepass = $1",
     )
     .bind(transformed_voicepass)
     .fetch_one(&state.db)
@@ -118,13 +121,16 @@ pub async fn get_team(
         r#"
             SELECT
               t.*,
-              ARRAY_AGG(b.excerpt) AS excerpts
+              ARRAY_AGG(b.excerpt) AS excerpts,
+              ARRAY_AGG(d.answer ORDER BY d.id) AS answers
             FROM
                 public.teams t
             LEFT JOIN
                 unmnemonic_devices.meetings m ON t.id = m.team_id
             LEFT JOIN
                 unmnemonic_devices.books b ON m.book_id = b.id
+            LEFT JOIN
+                unmnemonic_devices.destinations d ON m.destination_id = d.id
             WHERE
                 t.id = $1
             GROUP BY
@@ -147,6 +153,11 @@ pub struct MeetingId {
 #[derive(Serialize)]
 pub struct MeetingNotFound {
     team_id: Uuid,
+}
+
+#[derive(sqlx::FromRow, Serialize)]
+pub struct TeamCompletion {
+    answers: String,
 }
 
 #[axum_macros::debug_handler]
@@ -173,19 +184,51 @@ pub async fn post_team(
         "#,
     )
     .bind(id)
-    .bind(transformed_excerpt)
+    .bind(transformed_excerpt.clone())
     .fetch_one(&state.db)
     .await;
 
     if meeting_id.is_ok() {
         Redirect::to(&format!("/meetings/{}", meeting_id.unwrap().id)).into_response()
     } else {
-        RenderXml(
-            "/meetings/not-found",
-            state.engine,
-            state.serialised_prompts,
-            MeetingNotFound { team_id: id },
+        let completion = sqlx::query_as::<_, TeamCompletion>(
+            r#"
+            SELECT
+              STRING_AGG(d.answer, ' ' ORDER BY d.id) AS answers
+            FROM
+                public.teams t
+            LEFT JOIN
+                unmnemonic_devices.meetings m ON t.id = m.team_id
+            LEFT JOIN
+                unmnemonic_devices.destinations d ON m.destination_id = d.id
+            WHERE
+                t.id = $1
+            GROUP BY
+                t.id;
+          "#,
         )
-        .into_response()
+        .bind(id)
+        .fetch_one(&state.db)
+        .await
+        .expect("Failed to fetch team");
+
+        let speech_result_is_completion = transformed_excerpt == completion.answers;
+
+        if speech_result_is_completion {
+            Redirect::to(&format!("/teams/{}/complete", id)).into_response()
+        } else {
+            RenderXml(
+                "/meetings/not-found",
+                state.engine,
+                state.serialised_prompts,
+                MeetingNotFound { team_id: id },
+            )
+            .into_response()
+        }
     }
+}
+
+#[axum_macros::debug_handler]
+pub async fn get_complete_team(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
+    RenderXml(key, state.engine, state.serialised_prompts, ())
 }

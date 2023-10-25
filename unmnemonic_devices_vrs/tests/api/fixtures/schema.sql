@@ -143,7 +143,8 @@ CREATE TABLE unmnemonic_devices.books (
 CREATE TABLE unmnemonic_devices.destinations (
     id uuid NOT NULL,
     description character varying(255),
-    region_id uuid NOT NULL
+    region_id uuid NOT NULL,
+    answer character varying(255)
 );
 
 
@@ -424,3 +425,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20230416192016);
 INSERT INTO public."schema_migrations" (version) VALUES (20230419025011);
 INSERT INTO public."schema_migrations" (version) VALUES (20230508143302);
 INSERT INTO public."schema_migrations" (version) VALUES (20231025044059);
+INSERT INTO public."schema_migrations" (version) VALUES (20231025052751);

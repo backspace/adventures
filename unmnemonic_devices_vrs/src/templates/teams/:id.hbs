@@ -2,7 +2,7 @@
   <Say>
     Welcome, team {{name}}.
   </Say>
-  <Gather timeout="2" input="speech" hints="{{#each excerpts}}{{this}}, {{/each}}">
+  <Gather timeout="2" input="speech" hints="{{#each excerpts}}{{this}}, {{/each}}{{#each answers}}{{this}} {{/each}}">
     <Say>
       FIXME what is your cathartic phrase or the collation of the findings
       from your kinetic instructions?

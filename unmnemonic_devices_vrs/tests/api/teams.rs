@@ -114,7 +114,7 @@ async fn team_post_confirm_redirects_to_teams_show_on_no(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
-async fn team_show_names_team_and_gathers_excerpts(db: PgPool) {
+async fn team_show_names_team_and_gathers_excerpts_or_collation(db: PgPool) {
     let response = get(db, "/teams/48e3bda7-db52-4c99-985f-337e266f7832", false)
         .await
         .expect("Failed to execute request.");
@@ -136,6 +136,7 @@ async fn team_show_names_team_and_gathers_excerpts(db: PgPool) {
 
     assert_that(hints).contains("abused or ignored,");
     assert_that(hints).contains("schnimbleby,");
+    assert_that(hints).contains("another answer an answer");
 }
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
@@ -174,4 +175,21 @@ async fn team_post_renders_not_found_when_no_excerpt_matches(db: PgPool) {
 
     assert_that(&redirect.text()).contains("/teams/48e3bda7-db52-4c99-985f-337e266f7832");
     assert_eq!(redirect.attr("method").unwrap(), "GET");
+}
+
+#[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
+async fn team_post_redirects_to_completion(db: PgPool) {
+    // Twilio editorialises punctuation and always capitalises.
+    let body = "SpeechResult=Another answer an answer.";
+
+    let response = post(
+        db,
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832",
+        body,
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert_that(&response).redirects_to("/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete");
 }
