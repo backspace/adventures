@@ -3,6 +3,7 @@ use axum::{
     extract::FromRequestParts,
     http::{request::Parts, StatusCode},
 };
+use base64::{engine::general_purpose, Engine as _};
 use std::str::from_utf8;
 
 // Adapted from https://www.shuttle.rs/blog/2023/09/27/rust-vs-go-comparison#middleware-1
@@ -30,7 +31,9 @@ where
         if let Some(auth_header) = auth_header {
             if auth_header.starts_with("Basic ") {
                 let credentials = auth_header.trim_start_matches("Basic ");
-                let decoded = base64::decode(credentials).unwrap_or_default();
+                let decoded = general_purpose::STANDARD
+                    .decode(credentials)
+                    .expect("Unable to decode credentials");
                 let credential_str = from_utf8(&decoded).unwrap_or("");
 
                 // Our username and password are hardcoded here.
