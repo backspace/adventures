@@ -1,6 +1,9 @@
 use axum::Server;
+use base64::{engine::general_purpose, Engine as _};
 use sqlx::PgPool;
+use std::env;
 use std::net::TcpListener;
+use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::{app, InjectableServices};
 use wiremock::matchers::any;
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -52,6 +55,8 @@ pub async fn get_with_twilio(
     path: &str,
     skip_redirects: bool,
 ) -> Result<reqwest::Response, reqwest::Error> {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
     let app_address = spawn_app(services).await.address;
     let client_builder = reqwest::Client::builder();
 
@@ -63,7 +68,17 @@ pub async fn get_with_twilio(
         client_builder.build()?
     };
 
-    client.get(&format!("{}{}", app_address, path)).send().await
+    client
+        .get(&format!("{}{}", app_address, path))
+        .header(
+            "Authorization",
+            format!(
+                "Basic {}",
+                general_purpose::STANDARD.encode(config.auth.clone())
+            ),
+        )
+        .send()
+        .await
 }
 
 pub async fn post(
@@ -99,6 +114,8 @@ pub async fn post_with_twilio(
     body: &str,
     skip_redirects: bool,
 ) -> Result<reqwest::Response, reqwest::Error> {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
     let app_address = spawn_app(services).await.address;
     let client_builder = reqwest::Client::builder();
 
@@ -112,6 +129,13 @@ pub async fn post_with_twilio(
 
     client
         .post(&format!("{}{}", app_address, path))
+        .header(
+            "Authorization",
+            format!(
+                "Basic {}",
+                general_purpose::STANDARD.encode(config.auth.clone())
+            ),
+        )
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(body.to_string())
         .send()
