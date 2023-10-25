@@ -1,7 +1,13 @@
-use crate::helpers::{get, post, RedirectTo};
+use crate::helpers::{get, get_with_twilio, post, RedirectTo};
 use select::{document::Document, predicate::Name};
+use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::PgPool;
+use std::env;
+use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
+use unmnemonic_devices_vrs::InjectableServices;
+use wiremock::matchers::{body_string, method, path_regex};
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn teams_show_gathers_team_voicepasses(db: PgPool) {
@@ -192,4 +198,44 @@ async fn team_post_redirects_to_completion(db: PgPool) {
     .expect("Failed to execute request.");
 
     assert_that(&response).redirects_to("/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete");
+}
+
+#[sqlx::test(fixtures("schema", "teams"))]
+async fn team_get_complete_notifies_and_increments_listens(db: PgPool) {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+    let twilio_number = config.twilio_number.to_string();
+    let notification_number = config.notification_number.to_string();
+
+    let twilio_create_message_body = serde_urlencoded::to_string([
+        ("Body", &"FIXME ya party time".to_string()),
+        ("To", &notification_number),
+        ("From", &twilio_number),
+    ])
+    .expect("Could not encode message creation body");
+
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(method("POST"))
+        .and(path_regex(r"^/2010-04-01/Accounts/.*/Messages.json$"))
+        .and(body_string(twilio_create_message_body.to_string()))
+        .respond_with(ResponseTemplate::new(201).set_body_json(json!({})))
+        .expect(1)
+        .named("create message")
+        .mount(&mock_twilio)
+        .await;
+
+    let response = get_with_twilio(
+        InjectableServices {
+            db,
+            twilio_address: mock_twilio.uri(),
+        },
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
 }

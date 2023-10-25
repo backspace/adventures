@@ -4,9 +4,12 @@ use axum::{
     Form,
 };
 use axum_template::Key;
+use base64::{engine::general_purpose, Engine as _};
 use serde::Serialize;
 use sqlx::types::Uuid;
+use std::env;
 
+use crate::config::{ConfigProvider, EnvVarProvider};
 use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Serialize)]
@@ -230,5 +233,40 @@ pub async fn post_team(
 
 #[axum_macros::debug_handler]
 pub async fn get_complete_team(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+
+    let account_sid = config.twilio_account_sid.to_string();
+    let api_sid = config.twilio_api_key_sid.to_string();
+    let api_secret = config.twilio_api_key_secret.to_string();
+    let twilio_number = config.twilio_number.to_string();
+    let notification_number = config.notification_number.to_string();
+
+    let create_message_body = serde_urlencoded::to_string([
+        ("Body", "FIXME ya party time".to_string()),
+        ("To", notification_number),
+        ("From", twilio_number),
+    ])
+    .expect("Could not encode call creation body");
+
+    let basic_auth = format!("{}:{}", api_sid, api_secret);
+    let auth_header_value = format!(
+        "Basic {}",
+        general_purpose::STANDARD_NO_PAD.encode(basic_auth)
+    );
+
+    let client = reqwest::Client::new();
+    client
+        .post(format!(
+            "{}/2010-04-01/Accounts/{}/Messages.json",
+            state.twilio_address, account_sid
+        ))
+        .header("Authorization", auth_header_value.clone())
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(create_message_body)
+        .send()
+        .await
+        .ok();
+
     RenderXml(key, state.engine, state.serialised_prompts, ())
 }
