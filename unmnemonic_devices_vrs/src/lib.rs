@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod config;
 pub mod helpers;
 pub mod render_xml;

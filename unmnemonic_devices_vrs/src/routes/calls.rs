@@ -8,6 +8,7 @@ use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::env;
 
+use crate::auth::User;
 use crate::config::{ConfigProvider, EnvVarProvider};
 use crate::AppState;
 
@@ -31,7 +32,11 @@ pub struct Call {
 }
 
 #[axum_macros::debug_handler]
-pub async fn get_calls(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
+pub async fn get_calls(
+    Key(key): Key,
+    State(state): State<AppState>,
+    _user: User,
+) -> impl IntoResponse {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
     let account_sid = config.twilio_account_sid.to_string();

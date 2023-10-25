@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Default)]
 pub struct Config {
+    pub auth: String,
     pub database_url: String,
     pub root_url: String,
     pub twilio_account_sid: String,
@@ -21,6 +22,7 @@ pub struct EnvVarProvider(Config);
 impl EnvVarProvider {
     pub fn new(args: HashMap<String, String>) -> Self {
         let config = Config {
+            auth: args.get("AUTH").expect("Missing auth").to_string(),
             database_url: args
                 .get("DATABASE_URL")
                 .expect("Missing database URL")
