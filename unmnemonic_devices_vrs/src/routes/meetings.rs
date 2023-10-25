@@ -46,6 +46,21 @@ pub async fn get_meeting(
     .await
     .expect("Failed to fetch meeting");
 
+    sqlx::query!(
+        r#"
+      UPDATE
+        unmnemonic_devices.meetings
+      SET
+        listens = listens + 1
+      WHERE
+        id = $1;
+    "#,
+        id
+    )
+    .execute(&state.db)
+    .await
+    .ok();
+
     RenderXml(
         key,
         state.engine,

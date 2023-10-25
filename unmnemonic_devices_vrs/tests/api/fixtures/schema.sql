@@ -155,7 +155,8 @@ CREATE TABLE unmnemonic_devices.meetings (
     id uuid NOT NULL,
     book_id uuid NOT NULL,
     destination_id uuid NOT NULL,
-    team_id uuid NOT NULL
+    team_id uuid NOT NULL,
+    listens integer DEFAULT 0
 );
 
 
@@ -422,3 +423,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20230415180351);
 INSERT INTO public."schema_migrations" (version) VALUES (20230416192016);
 INSERT INTO public."schema_migrations" (version) VALUES (20230419025011);
 INSERT INTO public."schema_migrations" (version) VALUES (20230508143302);
+INSERT INTO public."schema_migrations" (version) VALUES (20231025044059);
