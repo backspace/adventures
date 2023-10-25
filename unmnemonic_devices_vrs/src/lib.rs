@@ -124,8 +124,8 @@ pub async fn app(services: InjectableServices) -> Router {
         .route("/teams/:id/confirm", post(post_confirm_team))
         //
         // admin routes
-        .route("/calls", get(get_calls))
-        .route("/calls", post(post_calls))
+        .route("/admin/calls", get(get_calls))
+        .route("/admin/calls", post(post_calls))
         .with_state(shared_state)
         .layer(tower_http::trace::TraceLayer::new_for_http())
 }

@@ -32,7 +32,7 @@ async fn calls_list_when_empty(db: PgPool) {
             db,
             twilio_address: mock_twilio.uri(),
         },
-        "/calls",
+        "/admin/calls",
         false,
     )
     .await
@@ -72,7 +72,7 @@ async fn calls_list_with_calls(db: PgPool) {
             db,
             twilio_address: mock_twilio.uri(),
         },
-        "/calls",
+        "/admin/calls",
         false,
     )
     .await
@@ -144,7 +144,7 @@ async fn create_call_success(db: PgPool) {
             db,
             twilio_address: mock_twilio.uri(),
         },
-        "/calls",
+        "/admin/calls",
         "to=NUMBER&sid=SID",
         false,
     )
@@ -171,7 +171,7 @@ async fn create_call_creation_failure(db: PgPool) {
             db,
             twilio_address: mock_twilio.uri(),
         },
-        "/calls",
+        "/admin/calls",
         "to=NUMBER&sid=SID",
         false,
     )
@@ -229,7 +229,7 @@ async fn create_call_update_failure(db: PgPool) {
             db,
             twilio_address: mock_twilio.uri(),
         },
-        "/calls",
+        "/admin/calls",
         "to=NUMBER&sid=SID",
         false,
     )
