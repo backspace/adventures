@@ -1,10 +1,11 @@
+use crate::config::{ConfigProvider, EnvVarProvider};
 use axum::{
     async_trait,
     extract::FromRequestParts,
     http::{request::Parts, StatusCode},
 };
 use base64::{engine::general_purpose, Engine as _};
-use std::str::from_utf8;
+use std::{env, str::from_utf8};
 
 // Adapted from https://www.shuttle.rs/blog/2023/09/27/rust-vs-go-comparison#middleware-1
 
@@ -23,6 +24,9 @@ where
     type Rejection = axum::http::Response<axum::body::Body>;
 
     async fn from_request_parts(parts: &mut Parts, _: &S) -> Result<Self, Self::Rejection> {
+        let env_config_provider = EnvVarProvider::new(env::vars().collect());
+        let config = &env_config_provider.get_config();
+
         let auth_header = parts
             .headers
             .get("Authorization")
@@ -38,7 +42,7 @@ where
 
                 // Our username and password are hardcoded here.
                 // In a real app, you'd want to read them from the environment.
-                if credential_str == "f:x" {
+                if credential_str == config.auth {
                     return Ok(User);
                 }
             }
