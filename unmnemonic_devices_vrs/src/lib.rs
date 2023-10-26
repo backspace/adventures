@@ -86,6 +86,8 @@ pub async fn app(services: InjectableServices) -> Router {
     };
 
     Router::new()
+        .route("/prerecord", get(get_prerecord))
+        .route("/record", get(get_record))
         .route("/", get(get_root))
         .route("/", post(post_root))
         .route("/conferences/:sid", get(get_conference))

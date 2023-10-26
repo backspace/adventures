@@ -1,5 +1,8 @@
 use crate::helpers::{get, post, RedirectTo};
-use select::{document::Document, predicate::Name};
+use select::{
+    document::Document,
+    predicate::{Descendant, Name},
+};
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
@@ -14,25 +17,42 @@ async fn root_serves_prewelcome(db: PgPool) {
     assert_that(&response.text().await.unwrap()).contains("unmnemonic");
 }
 
-#[sqlx::test(fixtures("schema", "settings", "recordings-prompts-pure-monitoring"))]
+#[sqlx::test(fixtures("schema", "settings"))]
 async fn root_serves_synthetic_disclaimer_when_no_recording(db: PgPool) {
     let response = get(db, "/", false)
         .await
         .expect("Failed to execute request.");
 
-    let document = Document::from(response.text().await.unwrap().as_str());
-    assert_that(&document.find(Name("play")).next().unwrap().text())
-        .contains("http://example.com/monitoring");
+    let text = response.text().await.unwrap();
+    let document = Document::from(text.as_str());
+
+    assert_that(
+        &document
+            .find(Descendant(Name("gather"), Name("say")))
+            .next()
+            .unwrap()
+            .text(),
+    )
+    .contains("welcome");
 }
 
-#[sqlx::test(fixtures("schema", "settings"))]
+#[sqlx::test(fixtures("schema", "settings", "recordings-prompts-pure-welcome"))]
 async fn root_serves_recorded_disclaimer_when_it_exists(db: PgPool) {
     let response = get(db, "/", false)
         .await
         .expect("Failed to execute request.");
 
-    let document = Document::from(response.text().await.unwrap().as_str());
-    assert_that(&document.find(Name("say")).next().unwrap().text()).contains("quality assurance");
+    let text = response.text().await.unwrap();
+    let document = Document::from(text.as_str());
+
+    assert_that(
+        &document
+            .find(Descendant(Name("gather"), Name("play")))
+            .next()
+            .unwrap()
+            .text(),
+    )
+    .contains("http://example.com/welcome");
 }
 
 #[sqlx::test(fixtures("schema", "settings-begun"))]

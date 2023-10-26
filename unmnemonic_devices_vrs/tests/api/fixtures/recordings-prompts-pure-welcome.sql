@@ -17,8 +17,8 @@ VALUES
     NULL,
     NULL,
     NULL,
-    'http://example.com/monitoring',
+    'http://example.com/welcome',
     NULL,
     'pure',
-    'monitoring'
+    'welcome'
   );
