@@ -20,11 +20,7 @@ impl<'de> Visitor<'de> for StringVisitor {
 }
 
 fn unsentence_string(input: &str) -> String {
-    let cleaned = input
-        .to_lowercase()
-        .chars()
-        .filter(|&c| c.is_alphanumeric() || c.is_whitespace())
-        .collect();
+    let cleaned = input.to_lowercase().replace(&['?', '.', ','][..], "");
 
     println!("SpeechResult=`{:?}`, speech_result=`{:?}`", input, cleaned);
 
