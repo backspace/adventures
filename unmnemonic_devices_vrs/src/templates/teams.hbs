@@ -1,5 +1,5 @@
 <Response>
-  <Gather timeout="2" input="speech" hints="{{#each teams}}{{this.voicepass}}, {{/each}}">
+  <Gather timeout="3" input="speech" hints="{{#each teams}}{{this.voicepass}}, {{/each}}">
     {{{lookup prompts "pure.voicepass"}}}
   </Gather>
   {{> restart }}
