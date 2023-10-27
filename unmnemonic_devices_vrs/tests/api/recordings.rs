@@ -403,7 +403,7 @@ async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_discards_and_forwards_unrecorded(db: PgPool) {
-    let response = post(db, "/recordings/prompts/testa/voicepass/decide?unrecorded&recording_url=http://example.com/newervoicepass", "SpeechResult=Rerecord.", true)        .await
+    let response = post(db, "/recordings/prompts/testa/voicepass/decide?unrecorded&recording_url=http://example.com/newervoicepass", "SpeechResult=Rerecord.", true).await
         .expect("Failed to execute request.");
 
     assert_that(&response).redirects_to("/recordings/prompts/testa/voicepass?unrecorded");
