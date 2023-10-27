@@ -11,8 +11,9 @@ use axum::{
 };
 use axum_template::engine::Engine;
 use handlebars::Handlebars;
+use helpers::get_all_prompts;
 use serde::Deserialize;
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
 use std::{collections::HashMap, fs};
 
 use crate::routes::*;
@@ -70,19 +71,14 @@ pub async fn app(services: InjectableServices) -> Router {
     let prompts: Prompts =
         toml::from_str(&prompts_string).expect("Failed to parse the prompts file");
 
-    let wrapped_prompts = get_all_prompts(&services.db, &prompts)
-        .await
-        .expect("could not load prompts from database");
+    let serialised_prompts = get_all_prompts(&services.db, &prompts).await;
 
     let shared_state = AppState {
         db: services.db,
         twilio_address: services.twilio_address,
         engine: Engine::from(hbs),
         prompts,
-        serialised_prompts: (WrappedPrompts {
-            prompts: wrapped_prompts,
-        })
-        .serialize_to_string(),
+        serialised_prompts,
     };
 
     Router::new()
@@ -131,49 +127,4 @@ pub async fn app(services: InjectableServices) -> Router {
         .route("/admin/calls", post(post_calls))
         .with_state(shared_state)
         .layer(tower_http::trace::TraceLayer::new_for_http())
-}
-
-pub async fn get_all_prompts(
-    db: &PgPool,
-    prompts: &Prompts,
-) -> Result<HashMap<String, String>, String> {
-    let query = r#"
-      SELECT character_name, prompt_name, url
-      FROM unmnemonic_devices.recordings
-      WHERE url IS NOT NULL
-      "#;
-
-    let rows = sqlx::query(query).fetch_all(db).await.unwrap();
-
-    let mut results = HashMap::new();
-    for row in rows {
-        let character_name: String = row.get("character_name");
-        let prompt_name: String = row.get("prompt_name");
-        let url: String = row.get("url");
-
-        let key = format!("{}.{}", character_name, prompt_name);
-        let prompt_text = prompts
-            .tables
-            .get(&character_name)
-            .unwrap()
-            .get(&prompt_name);
-        let value = format!("<!-- {:?} --><Play>{}</Play>", prompt_text, url);
-        results.insert(key, value);
-    }
-
-    for (character, prompts) in &prompts.tables {
-        for (prompt_name, value) in prompts {
-            let key = format!("{}.{}", character, prompt_name);
-
-            results.entry(key).or_insert_with(|| {
-                format!(
-                    "<!-- {:?} --><Say>{:?}</Say>",
-                    prompt_name,
-                    value.to_string()
-                )
-            });
-        }
-    }
-
-    Ok(results)
 }

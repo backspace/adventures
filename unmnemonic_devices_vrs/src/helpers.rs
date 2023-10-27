@@ -1,32 +1,18 @@
 use crate::Prompts;
+use crate::WrappedPrompts;
+use crate::WrappedPromptsSerialisation;
 use sqlx::PgPool;
 use sqlx::Row;
 use std::collections::HashMap;
 
-pub async fn get_prompts(
-    character_and_prompts: &[&str],
-    db: PgPool,
-    prompts: Prompts,
-) -> Result<HashMap<String, String>, String> {
-    let (character_names, prompt_names): (Vec<&str>, Vec<&str>) = character_and_prompts
-        .iter()
-        .map(|s| s.split_once('.').unwrap())
-        .unzip();
-
+pub async fn get_all_prompts(db: &PgPool, prompts: &Prompts) -> String {
     let query = r#"
-        SELECT character_name, prompt_name, url
-        FROM unmnemonic_devices.recordings
-        WHERE (character_name, prompt_name) IN (
-            SELECT * FROM UNNEST($1::text[], $2::text[])
-        ) AND url IS NOT NULL
-        "#;
+    SELECT character_name, prompt_name, url
+    FROM unmnemonic_devices.recordings
+    WHERE url IS NOT NULL
+    "#;
 
-    let rows = sqlx::query(query)
-        .bind(character_names)
-        .bind(prompt_names)
-        .fetch_all(&db)
-        .await
-        .unwrap();
+    let rows = sqlx::query(query).fetch_all(db).await.unwrap();
 
     let mut results = HashMap::new();
     for row in rows {
@@ -35,24 +21,28 @@ pub async fn get_prompts(
         let url: String = row.get("url");
 
         let key = format!("{}.{}", character_name, prompt_name);
-        let value = format!("<Play>{}</Play>", url);
+        let prompt_text = prompts
+            .tables
+            .get(&character_name)
+            .unwrap()
+            .get(&prompt_name);
+        let value = format!("<!-- {:?} --><Play>{}</Play>", prompt_text, url);
         results.insert(key, value);
     }
 
-    for character_and_prompt in character_and_prompts {
-        let character_and_prompt = *character_and_prompt;
-        if !results.contains_key(character_and_prompt) {
-            let (character_name, prompt_name) = character_and_prompt.split_once('.').unwrap();
-            let prompt_text = prompts.tables.get(character_name).unwrap().get(prompt_name);
+    for (character, prompts) in &prompts.tables {
+        for (prompt_name, value) in prompts {
+            let key = format!("{}.{}", character, prompt_name);
 
-            if let Some(prompt_text) = prompt_text {
-                let value = format!("<Say>{}</Say>", prompt_text);
-                results.insert(character_and_prompt.to_string(), value);
-            } else {
-                return Err(format!("Missing prompt: {}", character_and_prompt));
-            }
+            results.entry(key).or_insert_with(|| {
+                format!(
+                    "<!-- {:?} --><Say>{:?}</Say>",
+                    prompt_name,
+                    value.to_string()
+                )
+            });
         }
     }
 
-    Ok(results)
+    (WrappedPrompts { prompts: results }).serialize_to_string()
 }
