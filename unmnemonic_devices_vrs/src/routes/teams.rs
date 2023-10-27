@@ -35,7 +35,12 @@ pub async fn get_teams(Key(key): Key, State(state): State<AppState>) -> impl Int
     .await
     .expect("Failed to fetch team");
 
-    RenderXml(key, state.engine, state.serialised_prompts, Teams { teams })
+    RenderXml(
+        key,
+        state.engine,
+        state.mutable_prompts.lock().unwrap().to_string(),
+        Teams { teams },
+    )
 }
 
 #[axum_macros::debug_handler]
@@ -58,7 +63,7 @@ pub async fn post_teams(
         RenderXml(
             "/teams/not-found",
             state.engine,
-            state.serialised_prompts,
+            state.mutable_prompts.lock().unwrap().to_string(),
             (),
         )
         .into_response()
@@ -90,7 +95,7 @@ pub async fn get_confirm_team(
             RenderXml(
                 key,
                 state.engine,
-                state.serialised_prompts,
+                state.mutable_prompts.lock().unwrap().to_string(),
                 TeamVoicepass {
                     voicepass: result.voicepass.unwrap(),
                 },
@@ -142,7 +147,12 @@ pub async fn get_team(
     .await
     .expect("Failed to fetch team");
 
-    RenderXml(key, state.engine, state.serialised_prompts, team)
+    RenderXml(
+        key,
+        state.engine,
+        state.mutable_prompts.lock().unwrap().to_string(),
+        team,
+    )
 }
 
 #[derive(sqlx::FromRow, Serialize)]
@@ -217,7 +227,7 @@ pub async fn post_team(
             RenderXml(
                 "/meetings/not-found",
                 state.engine,
-                state.serialised_prompts,
+                state.mutable_prompts.lock().unwrap().to_string(),
                 MeetingNotFound { team_id: id },
             )
             .into_response()
@@ -262,5 +272,10 @@ pub async fn get_complete_team(Key(key): Key, State(state): State<AppState>) -> 
         .await
         .ok();
 
-    RenderXml(key, state.engine, state.serialised_prompts, ())
+    RenderXml(
+        key,
+        state.engine,
+        state.mutable_prompts.lock().unwrap().to_string(),
+        (),
+    )
 }

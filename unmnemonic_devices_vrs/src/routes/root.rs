@@ -24,7 +24,12 @@ struct Settings {
 
 #[axum_macros::debug_handler]
 pub async fn get_prerecord(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
-    RenderXml(key, state.engine, state.serialised_prompts, ())
+    RenderXml(
+        key,
+        state.engine,
+        state.mutable_prompts.lock().unwrap().to_string(),
+        (),
+    )
 }
 
 #[derive(Deserialize)]
@@ -65,7 +70,12 @@ pub async fn get_record(
         .await
         .ok();
 
-    RenderXml(key, state.engine, state.serialised_prompts, ())
+    RenderXml(
+        key,
+        state.engine,
+        state.mutable_prompts.lock().unwrap().to_string(),
+        (),
+    )
 }
 
 #[derive(Serialize)]
@@ -90,7 +100,7 @@ pub async fn get_root(
     RenderXml(
         key,
         state.engine,
-        state.serialised_prompts,
+        state.mutable_prompts.lock().unwrap().to_string(),
         RootData {
             begun: settings.begun.unwrap() || params.begun.is_some(),
             down: settings.down.unwrap(),

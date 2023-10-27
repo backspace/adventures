@@ -22,7 +22,7 @@ pub async fn get_conference(
     RenderXml(
         key,
         state.engine,
-        state.serialised_prompts,
+        state.mutable_prompts.lock().unwrap().to_string(),
         Conference { sid },
     )
 }

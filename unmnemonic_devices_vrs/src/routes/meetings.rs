@@ -64,7 +64,7 @@ pub async fn get_meeting(
     RenderXml(
         key,
         state.engine,
-        state.serialised_prompts,
+        state.mutable_prompts.lock().unwrap().to_string(),
         MeetingTemplate {
             name: region_and_destination.name,
             description: region_and_destination.description,

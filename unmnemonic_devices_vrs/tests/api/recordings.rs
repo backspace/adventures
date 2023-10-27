@@ -372,6 +372,49 @@ async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
     assert_that(&response).redirects_to("/recordings/prompts/testa");
 }
 
+#[ignore = "doesn’t actually exercise cache because each request starts a new server"]
+#[sqlx::test(fixtures("schema", "recordings-prompts-pure-monitoring"))]
+async fn post_character_prompt_decide_updates_cache_upon_keep(db: PgPool) {
+    post(
+        db.clone(),
+        "/recordings/prompts/pure/monitoring/decide?recording_url=http://example.com/newer-monitoring",
+        "SpeechResult=Keep.",
+        true,
+    )
+    .await
+    .expect("Failed to execute post decide request.");
+
+    let recording_url = sqlx::query_as::<_, RecordingUrl>(
+        r#"
+          SELECT
+            r.url
+          FROM
+            unmnemonic_devices.recordings r
+          WHERE
+            r.character_name = $1
+            AND r.prompt_name = $2
+        "#,
+    )
+    .bind("pure")
+    .bind("monitoring")
+    .fetch_one(&db)
+    .await;
+
+    assert_eq!(
+        recording_url.unwrap().url,
+        "http://example.com/newer-monitoring"
+    );
+
+    let get_prerecord_response = get(db.clone(), "/prerecord", true)
+        .await
+        .expect("Failed to execute get prompt request.");
+
+    let document = Document::from(get_prerecord_response.text().await.unwrap().as_str());
+
+    assert_that(&document.find(Name("play")).next().unwrap().text())
+        .contains("http://example.com/newer-monitoring");
+}
+
 #[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
     let response = post(db.clone(), "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass", "SpeechResult=Rerecord.", true)        .await

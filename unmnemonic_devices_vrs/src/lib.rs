@@ -14,6 +14,7 @@ use handlebars::Handlebars;
 use helpers::get_all_prompts;
 use serde::Deserialize;
 use sqlx::PgPool;
+use std::sync::{Arc, Mutex};
 use std::{collections::HashMap, fs};
 
 use crate::routes::*;
@@ -51,7 +52,7 @@ pub struct AppState {
     twilio_address: String,
     engine: AppEngine,
     prompts: Prompts,
-    serialised_prompts: String,
+    mutable_prompts: Arc<Mutex<String>>,
 }
 
 #[derive(Clone, Deserialize)]
@@ -78,7 +79,7 @@ pub async fn app(services: InjectableServices) -> Router {
         twilio_address: services.twilio_address,
         engine: Engine::from(hbs),
         prompts,
-        serialised_prompts,
+        mutable_prompts: Arc::new(Mutex::new(serialised_prompts)),
     };
 
     Router::new()
