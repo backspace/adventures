@@ -75,8 +75,8 @@ pub async fn get_meeting(
 #[axum_macros::debug_handler]
 pub async fn post_meeting(Path(id): Path<Uuid>, Form(form): Form<TwilioForm>) -> Redirect {
     match form.speech_result.as_str() {
-        "Record." => Redirect::to("/voicemails/fixme"),
-        "End." => Redirect::to("/hangup"),
+        "record" => Redirect::to("/voicemails/fixme"),
+        "end" => Redirect::to("/hangup"),
         _ => Redirect::to(&format!("/meetings/{}", id)),
     }
 }

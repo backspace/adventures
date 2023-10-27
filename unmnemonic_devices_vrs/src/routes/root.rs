@@ -101,7 +101,7 @@ pub async fn get_root(
 
 #[axum_macros::debug_handler]
 pub async fn post_root(Form(form): Form<TwilioForm>) -> Redirect {
-    if form.speech_result == "Begun." {
+    if form.speech_result == "begun" {
         Redirect::to("/?begun")
     } else {
         Redirect::to("/")

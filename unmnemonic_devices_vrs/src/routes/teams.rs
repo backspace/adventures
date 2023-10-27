@@ -43,15 +43,12 @@ pub async fn post_teams(
     State(state): State<AppState>,
     Form(form): Form<TwilioForm>,
 ) -> impl IntoResponse {
-    let transformed_voicepass = form
-        .speech_result
-        .to_lowercase()
-        .replace(&['?', '.', ','][..], "");
+    let voicepass = form.speech_result;
 
     let team = sqlx::query_as::<_, Team>(
         "SELECT *, ARRAY[]::VARCHAR[] AS excerpts, ARRAY[]::VARCHAR[] AS answers FROM teams WHERE voicepass = $1",
     )
-    .bind(transformed_voicepass)
+    .bind(voicepass)
     .fetch_one(&state.db)
     .await;
 
@@ -107,7 +104,7 @@ pub async fn get_confirm_team(
 
 #[axum_macros::debug_handler]
 pub async fn post_confirm_team(Path(id): Path<Uuid>, Form(form): Form<TwilioForm>) -> Redirect {
-    if form.speech_result == "Yes." {
+    if form.speech_result == "yes" {
         Redirect::to(&format!("/teams/{}", id))
     } else {
         Redirect::to("/teams")
@@ -169,10 +166,7 @@ pub async fn post_team(
     Path(id): Path<Uuid>,
     Form(form): Form<TwilioForm>,
 ) -> impl IntoResponse {
-    let transformed_excerpt = form
-        .speech_result
-        .to_lowercase()
-        .replace(&['?', '.', ','][..], "");
+    let excerpt = form.speech_result;
 
     let meeting_id = sqlx::query_as::<_, MeetingId>(
         r#"
@@ -187,7 +181,7 @@ pub async fn post_team(
         "#,
     )
     .bind(id)
-    .bind(transformed_excerpt.clone())
+    .bind(excerpt.clone())
     .fetch_one(&state.db)
     .await;
 
@@ -215,7 +209,7 @@ pub async fn post_team(
         .await
         .expect("Failed to fetch team");
 
-        let speech_result_is_completion = transformed_excerpt == completion.answers;
+        let speech_result_is_completion = excerpt == completion.answers;
 
         if speech_result_is_completion {
             Redirect::to(&format!("/teams/{}/complete", id)).into_response()

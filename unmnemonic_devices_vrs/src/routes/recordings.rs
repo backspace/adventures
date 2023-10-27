@@ -69,18 +69,14 @@ pub async fn post_character_prompts(
     Form(form): Form<TwilioForm>,
 ) -> impl IntoResponse {
     let character_prompts = state.prompts.tables.get(&character_name);
-    if form.speech_result == "Unrecorded prompts." {
+    if form.speech_result == "unrecorded prompts" {
         Redirect::to(&format!(
             "/recordings/prompts/{}/unrecorded",
             character_name
         ))
         .into_response()
     } else {
-        let prompt_name = form
-            .speech_result
-            .to_lowercase()
-            .replace(&['?', '.', ','][..], "");
-
+        let prompt_name = form.speech_result;
         let prompt = character_prompts.unwrap().get(&prompt_name);
 
         if prompt.is_some() {
@@ -244,7 +240,7 @@ pub async fn post_character_prompt_decide(
     State(state): State<AppState>,
     Form(form): Form<TwilioForm>,
 ) -> Redirect {
-    if form.speech_result == "Keep." {
+    if form.speech_result == "keep" {
         let result = sqlx::query!(
             r#"
               INSERT INTO unmnemonic_devices.recordings (id, character_name, prompt_name, url)
