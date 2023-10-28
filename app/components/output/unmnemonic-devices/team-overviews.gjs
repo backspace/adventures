@@ -124,11 +124,12 @@ export default class TeamOverviewsComponent extends Component {
 
             const destination = meeting.belongsTo('destination').value();
             const destinationRegion = destination.belongsTo('region').value();
+            const destinationAncestor = destinationRegion.ancestor;
 
             const destinationX =
-              destinationRegion.get('x') * innerWidthToMapLowRatio;
+              destinationAncestor.get('x') * innerWidthToMapLowRatio;
             const destinationY =
-              destinationRegion.get('y') * innerWidthToMapLowRatio;
+              destinationAncestor.get('y') * innerWidthToMapLowRatio;
 
             doc.text(
               `${rendezvousLetter}-D ${destinationRegion.name}`,
@@ -142,9 +143,10 @@ export default class TeamOverviewsComponent extends Component {
 
             const waypoint = meeting.belongsTo('waypoint').value();
             const waypointRegion = waypoint.belongsTo('region').value();
+            const waypointAncestor = waypointRegion.ancestor;
 
-            const waypointX = waypointRegion.x * innerWidthToMapLowRatio;
-            const waypointY = waypointRegion.y * innerWidthToMapLowRatio;
+            const waypointX = waypointAncestor.x * innerWidthToMapLowRatio;
+            const waypointY = waypointAncestor.y * innerWidthToMapLowRatio;
 
             doc.save();
             {

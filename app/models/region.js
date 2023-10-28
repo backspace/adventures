@@ -80,4 +80,15 @@ export default class Region extends Model {
       return 0;
     }
   }
+
+  @computed('parent')
+  get ancestor() {
+    let current = this;
+
+    while (current.belongsTo('parent').value()) {
+      current = current.belongsTo('parent').value();
+    }
+
+    return current;
+  }
 }
