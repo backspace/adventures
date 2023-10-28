@@ -19,7 +19,9 @@
         />
       </label>
       {{#each this.model as |region|}}
-        <MappableRegion @region={{region}} />
+        {{#unless region.parent}}
+          <MappableRegion @region={{region}} />
+        {{/unless}}
       {{/each}}
     </div>
   </div>

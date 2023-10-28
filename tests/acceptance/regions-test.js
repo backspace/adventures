@@ -207,6 +207,12 @@ module('Acceptance | regions', function (hooks) {
     await mapPage.regions[0].dragBy(90, 100);
     assert.equal(mapPage.regions[0].y, 110);
     assert.equal(mapPage.regions[0].x, 140);
+
+    assert.equal(
+      mapPage.regions.length,
+      2,
+      'expected nested regions to be hidden'
+    );
   });
 });
 
