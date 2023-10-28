@@ -10,10 +10,18 @@ export default class TeamOverviewsComponent extends Component {
 
   @service('unmnemonic-devices') devices;
 
-  get outputs() {
-    let getterNames = ['books', 'regions', 'destinations', 'meetings'];
+  getterNames = ['books', 'regions', 'destinations', 'meetings'];
 
-    return getterNames.map((getterName) => ({
+  get allQueries() {
+    return (
+      this.getterNames
+        .map((getterName) => this[getterName].toString())
+        .join(';\n\n') + ';\n'
+    );
+  }
+
+  get outputs() {
+    return this.getterNames.map((getterName) => ({
       name: getterName,
       query: this[getterName].toString(),
     }));
@@ -77,6 +85,14 @@ export default class TeamOverviewsComponent extends Component {
 
   <template>
     <table>
+      <tbody>
+        <tr>
+          <td colspan='2'><CopyButton
+              class='button'
+              @text={{this.allQueries}}
+            >Copy all</CopyButton></td>
+        </tr>
+      </tbody>
       <tbody>
         {{#each this.outputs as |output|}}
           <tr>
