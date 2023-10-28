@@ -14,17 +14,7 @@
       </thead>
       <tbody>
         {{#each this.regions as |region|}}
-          <tr class='region {{if region.isComplete "complete" "incomplete"}}'>
-            <td class='name'>
-              {{region.name}}
-            </td>
-            <td data-test-hours>{{region.hours}}</td>
-            <td>
-              <LinkTo @route='region' @model={{region}} class='edit'>
-                Edit
-              </LinkTo>
-            </td>
-          </tr>
+          <RegionRow @region={{region}} />
         {{/each}}
       </tbody>
     </table>

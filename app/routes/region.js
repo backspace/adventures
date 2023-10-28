@@ -11,12 +11,32 @@ export default class RegionRoute extends Route {
   @service
   router;
 
+  beforeModel() {
+    return this.store
+      .findAll('region')
+      .then((regions) => this.set('regions', regions));
+  }
+
+  setupController(controller, model) {
+    controller.set('model', model);
+    controller.set('regions', this.regions);
+  }
+
   @action
   save(model) {
-    model.save().then(() => {
-      this.lastRegion.setLastRegionId(model.id);
-      this.router.transitionTo('regions');
-    });
+    return model
+      .save()
+      .then(() => {
+        this.lastRegion.setLastRegionId(model.id);
+
+        return model.get('parent');
+      })
+      .then((parent) => {
+        return parent ? parent.save() : true;
+      })
+      .then(() => {
+        this.router.transitionTo('regions');
+      });
   }
 
   @action

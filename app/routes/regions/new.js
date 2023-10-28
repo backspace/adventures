@@ -12,4 +12,5 @@ export default class NewRoute extends RegionRoute {
   }
 
   templateName = 'region';
+  controllerName = 'region';
 }

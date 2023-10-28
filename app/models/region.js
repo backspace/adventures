@@ -1,6 +1,6 @@
 import { computed } from '@ember/object';
 import { inject as service } from '@ember/service';
-import { hasMany, attr } from '@ember-data/model';
+import { belongsTo, hasMany, attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
 
@@ -17,6 +17,12 @@ export default class Region extends Model {
 
   @attr('string')
   notes;
+
+  @belongsTo('region', { inverse: 'children', async: false })
+  parent;
+
+  @hasMany('region', { inverse: 'parent', async: false })
+  children;
 
   @hasMany('destination', { async: false })
   destinations;

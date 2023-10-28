@@ -2,6 +2,28 @@
   <div class='grid-x grid-padding-x'>
     <div class='small-12 cell'>
       <label>
+        Region
+        <select
+          onchange={{action 'setParent' value='target.value'}}
+          class='region'
+        >
+          <option></option>
+          {{#each this.sortedRegions as |region|}}
+            <option
+              value={{region.id}}
+              selected={{eq this.model.parent.id region.id}}
+              data-test-region-name={{region.name}}
+            >
+              {{region.name}}
+            </option>
+          {{/each}}
+        </select>
+      </label>
+    </div>
+  </div>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <label>
         Name
         <Input @value={{this.model.name}} class='name' />
       </label>

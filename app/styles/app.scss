@@ -40,6 +40,12 @@ tr.waypoint {
   &.meetings {
     border-right: 5px solid green;
   }
+
+  @for $i from 1 through 10 {
+    &.nesting-#{$i} td:first-child {
+      text-indent: 1rem * $i;
+    }
+  }
 }
 
 $region-length: 4rem;

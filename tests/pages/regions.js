@@ -7,6 +7,24 @@ import PageObject, {
   value,
   visitable,
 } from 'ember-cli-page-object';
+import { findOne } from 'ember-cli-page-object/extend';
+
+const nesting = function () {
+  return {
+    isDescriptor: true,
+
+    get() {
+      let nestingClass = Array.from(findOne(this).classList).find((klass) =>
+        klass.startsWith('nesting-')
+      );
+
+      if (nestingClass) {
+        let number = nestingClass.replace('nesting-', '');
+        return parseInt(number);
+      }
+    },
+  };
+};
 
 export default PageObject.create({
   visit: visitable('/regions'),
@@ -16,6 +34,7 @@ export default PageObject.create({
     name: text('.name'),
     hours: text('[data-test-hours]'),
     isIncomplete: hasClass('incomplete'),
+    nesting: nesting(),
 
     edit: clickable('.edit'),
   }),
