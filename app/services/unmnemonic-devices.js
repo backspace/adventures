@@ -69,6 +69,12 @@ export default class UnmnemonicDevicesService extends Service {
     return excerpt.split('|')[2];
   }
 
+  excerptWithBlanks(excerpt) {
+    return `${this.preExcerpt(excerpt)} ${this.trimmedInnerExcerpt(
+      excerpt
+    ).replace(/\w/g, '_')} ${this.postExcerpt(excerpt)}`;
+  }
+
   dimensionsIsValid(dimensions) {
     let parts = dimensions.split(',');
 

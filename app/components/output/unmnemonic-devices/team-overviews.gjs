@@ -37,6 +37,9 @@ export default class TeamOverviewsComponent extends Component {
     let mapMarkerFontSize = 12;
     let mapMarkerCircleRadius = 10;
 
+    let meetingHeadingFontSize = 14;
+    let meetingBodyFontSize = 12;
+
     let pageWidth = 8.5 * 72;
     let pageHeight = 11 * 72;
 
@@ -48,6 +51,8 @@ export default class TeamOverviewsComponent extends Component {
     let mapWidthOnPage = pageWidth - margin * 2;
     let mapHeightOnPage = (mapWidthOnPage * mapBitmap.height) / mapBitmap.width;
 
+    let devices = this.devices;
+
     this.args.teams.forEach((team, index) => {
       if (index > 0) {
         doc.addPage();
@@ -57,6 +62,10 @@ export default class TeamOverviewsComponent extends Component {
         drawHeader(team);
         drawMap();
         drawMeetingPoints(team);
+        drawExtras();
+
+        doc.addPage();
+
         drawMeetingBlanks(team);
       });
     });
@@ -167,7 +176,7 @@ export default class TeamOverviewsComponent extends Component {
       doc.restore();
     }
 
-    function drawMeetingBlanks(team) {
+    function drawExtras() {
       doc.save();
       doc.translate(0, mapTeamFontSize * 4 + mapHeightOnPage);
 
@@ -186,19 +195,102 @@ export default class TeamOverviewsComponent extends Component {
       doc.text('', 0, 0);
       doc.moveUp();
 
+      doc.text('Extras go here');
+
+      doc.restore();
+    }
+
+    function drawMeetingBlanks(team) {
+      doc.save();
+      doc.translate(pageMargin, pageMargin);
+
+      let meetingCount = team.hasMany('meetings').value().length;
+
+      let availableWidth = pageWidth - pageMargin * 2;
+      let availableHeight = pageHeight - pageMargin * 2;
+
+      let meetingHeight = availableHeight / meetingCount;
+      let meetingWidth = availableWidth;
+      let meetingHalfWidth = meetingWidth / 2;
+
+      let meetingHalfWithoutPadding = meetingHalfWidth - pagePadding;
+
       team
         .hasMany('meetings')
         .value()
         .sortBy('index')
-        .forEach((meeting) => {
+        .forEach((meeting, index) => {
+          doc.save();
+
+          doc.translate(0, index * meetingHeight);
+
+          doc.lineWidth(0.25);
+          doc.moveTo(0, 0).lineTo(availableWidth, 0).stroke();
+          doc
+            .moveTo(meetingHalfWidth, pagePadding)
+            .lineTo(meetingHalfWidth, meetingHeight - pagePadding)
+            .stroke();
+
           let waypoint = meeting.belongsTo('waypoint').value();
           let waypointRegion = waypoint.belongsTo('region').value();
 
-          let destination = meeting.belongsTo('destination').value();
+          // Draw waypoint
+          {
+            doc.save();
 
-          doc.text(
-            `Library ${waypointRegion.name}, book ${waypoint.name}, call in with phrase, destination mask ${destination.mask}`
-          );
+            doc.fontSize(meetingHeadingFontSize);
+            doc.text(waypointRegion.name, pagePadding, pagePadding, {
+              width: meetingHalfWithoutPadding,
+            });
+
+            doc.fontSize(meetingBodyFontSize);
+
+            let parent = waypointRegion.belongsTo('parent').value();
+
+            while (parent) {
+              doc.text(`In ${parent.name}. ${parent.notes}`);
+              parent = parent.belongsTo('parent').value();
+            }
+
+            doc.text(waypoint.call);
+            doc.text(' ');
+            doc.text(devices.excerptWithBlanks(waypoint.excerpt), {
+              width: meetingHalfWithoutPadding,
+            });
+
+            doc.restore();
+          }
+
+          let destination = meeting.belongsTo('destination').value();
+          let destinationRegion = destination.belongsTo('region').value();
+
+          // Draw destination
+          {
+            doc.save();
+            doc.translate(meetingHalfWidth + pagePadding, 0);
+
+            doc.fontSize(meetingHeadingFontSize);
+
+            let parent = destinationRegion.belongsTo('parent').value();
+
+            doc.text(destinationRegion.name, pagePadding, pagePadding, {
+              width: meetingHalfWithoutPadding,
+            });
+
+            doc.fontSize(meetingBodyFontSize);
+
+            while (parent) {
+              doc.text(`In ${parent.name}`);
+              parent = parent.belongsTo('parent').value();
+            }
+
+            doc.text(' ');
+            doc.text(destination.mask, { width: meetingHalfWithoutPadding });
+
+            doc.restore();
+          }
+
+          doc.restore();
         });
 
       doc.restore();
