@@ -71,4 +71,13 @@ export default class Region extends Model {
       return true;
     }
   }
+
+  @computed('parent.nesting')
+  get nesting() {
+    if (this.parent) {
+      return this.parent.nesting + 1;
+    } else {
+      return 0;
+    }
+  }
 }

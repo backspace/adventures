@@ -179,7 +179,7 @@ module('Acceptance | regions', function (hooks) {
     const id = destinationsPage.regionField.value;
     assert.equal(
       find(`option[value='${id}']`).innerHTML.trim(),
-      'Kisua Protectorate'
+      '--Kisua Protectorate'
     );
   });
 

@@ -20,6 +20,7 @@ module('Acceptance | destinations', function (hooks) {
     run(() => {
       const regionOne = store.createRecord('region');
       const regionTwo = store.createRecord('region');
+      const regionThree = store.createRecord('region');
 
       regionOne.set('name', 'There');
       regionTwo.set('name', 'Here');
@@ -52,6 +53,16 @@ module('Acceptance | destinations', function (hooks) {
         })
         .then(() => {
           return all([regionOne.save(), regionTwo.save()]);
+        })
+        .then(() => {
+          regionThree.setProperties({
+            parent: regionOne,
+            name: 'A region within here',
+          });
+          return regionThree.save();
+        })
+        .then(() => {
+          return regionOne.save();
         })
         .then(() => {
           done();
@@ -245,6 +256,13 @@ module('Acceptance | destinations', function (hooks) {
     await page.descriptionField.fill('Borderlands');
 
     await page.regionField.fillByText('There');
+
+    assert.deepEqual(page.regionField.options.mapBy('text'), [
+      '',
+      'Here',
+      'There',
+      '--A region within here',
+    ]);
 
     await page.save();
 

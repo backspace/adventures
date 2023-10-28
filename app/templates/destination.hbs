@@ -8,15 +8,7 @@
           class='region'
         >
           <option></option>
-          {{#each this.sortedRegions as |region|}}
-            <option
-              value={{region.id}}
-              selected={{eq this.model.region.id region.id}}
-              data-test-region-name={{region.name}}
-            >
-              {{region.name}}
-            </option>
-          {{/each}}
+          <RegionOptions @regions={{this.sortedRegions}} @selected={{this.model.region}} />
         </select>
       </label>
 

@@ -129,6 +129,7 @@ export default PageObject.create({
     text: selectText(),
     fillByText: fillSelectByText(),
     select: selectable(),
+    options: collection('option'),
   },
 
   statusFieldset: {
