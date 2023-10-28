@@ -111,6 +111,16 @@ export default class TeamOverviewsComponent extends Component {
       doc.fontSize(mapMarkerFontSize);
 
       doc.save();
+      const OUTLINE_WIDTH = 4;
+
+      let OUTLINE_TEXT_ARGUMENTS = [
+        {
+          lineWidth: OUTLINE_WIDTH,
+          strokeOpacity: 0.75,
+          textOptions: { fill: true, stroke: true },
+        },
+        { lineWidth: 1, strokeOpacity: 1 },
+      ];
 
       {
         doc.translate(0, mapTeamFontSize * 2);
@@ -122,6 +132,13 @@ export default class TeamOverviewsComponent extends Component {
           .forEach((meeting, index) => {
             const rendezvousLetter = String.fromCharCode(65 + index);
 
+            const waypoint = meeting.belongsTo('waypoint').value();
+            const waypointRegion = waypoint.belongsTo('region').value();
+            const waypointAncestor = waypointRegion.ancestor;
+
+            const waypointX = waypointAncestor.x * innerWidthToMapLowRatio;
+            const waypointY = waypointAncestor.y * innerWidthToMapLowRatio;
+
             const destination = meeting.belongsTo('destination').value();
             const destinationRegion = destination.belongsTo('region').value();
             const destinationAncestor = destinationRegion.ancestor;
@@ -130,23 +147,6 @@ export default class TeamOverviewsComponent extends Component {
               destinationAncestor.get('x') * innerWidthToMapLowRatio;
             const destinationY =
               destinationAncestor.get('y') * innerWidthToMapLowRatio;
-
-            doc.text(
-              `${rendezvousLetter}-D ${destinationRegion.name}`,
-              destinationX - mapMarkerCircleRadius,
-              destinationY + mapMarkerFontSize,
-              {
-                width: mapMarkerCircleRadius * 2,
-                align: 'center',
-              }
-            );
-
-            const waypoint = meeting.belongsTo('waypoint').value();
-            const waypointRegion = waypoint.belongsTo('region').value();
-            const waypointAncestor = waypointRegion.ancestor;
-
-            const waypointX = waypointAncestor.x * innerWidthToMapLowRatio;
-            const waypointY = waypointAncestor.y * innerWidthToMapLowRatio;
 
             doc.save();
             {
@@ -163,15 +163,78 @@ export default class TeamOverviewsComponent extends Component {
 
             drawArrow(doc, waypointX, waypointY, destinationX, destinationY);
 
-            doc.text(
-              `${rendezvousLetter}-W ${waypointRegion.name}`,
-              waypointX - mapMarkerCircleRadius,
-              waypointY + mapMarkerFontSize,
-              {
-                width: mapMarkerCircleRadius * 2,
-                align: 'center',
+            if (debug) {
+              doc.text(
+                `W ${waypointRegion.name}`,
+                waypointX - mapMarkerCircleRadius,
+                waypointY + mapMarkerFontSize,
+                {
+                  width: mapMarkerCircleRadius * 2,
+                  align: 'center',
+                }
+              );
+            }
+
+            doc.save();
+
+            // Print rendezvous letter with outline
+            OUTLINE_TEXT_ARGUMENTS.forEach(
+              ({ lineWidth, strokeOpacity, textOptions }) => {
+                doc
+                  .fillColor('black')
+                  .strokeColor('white')
+                  .strokeOpacity(strokeOpacity)
+                  .lineWidth(lineWidth)
+                  .text(
+                    rendezvousLetter,
+                    waypointX - mapMarkerCircleRadius,
+                    waypointY - mapMarkerFontSize / 2,
+                    {
+                      align: 'center',
+                      width: mapMarkerCircleRadius * 2,
+                      ...textOptions,
+                    }
+                  );
               }
             );
+
+            doc.restore();
+            if (debug) {
+              doc.text(
+                `D ${destinationRegion.name}`,
+                destinationX - mapMarkerCircleRadius,
+                destinationY + mapMarkerFontSize,
+                {
+                  width: mapMarkerCircleRadius * 2,
+                  align: 'center',
+                }
+              );
+            }
+
+            doc.save();
+
+            // Print rendezvous letter with outline
+            OUTLINE_TEXT_ARGUMENTS.forEach(
+              ({ lineWidth, strokeOpacity, textOptions }) => {
+                doc
+                  .fillColor('black')
+                  .strokeColor('white')
+                  .strokeOpacity(strokeOpacity)
+                  .lineWidth(lineWidth)
+                  .text(
+                    rendezvousLetter,
+                    destinationX - mapMarkerCircleRadius,
+                    destinationY - mapMarkerFontSize / 2,
+                    {
+                      align: 'center',
+                      width: mapMarkerCircleRadius * 2,
+                      ...textOptions,
+                    }
+                  );
+              }
+            );
+
+            doc.restore();
           });
       }
 
@@ -213,18 +276,26 @@ export default class TeamOverviewsComponent extends Component {
 
       let meetingHeight = availableHeight / meetingCount;
       let meetingWidth = availableWidth;
-      let meetingHalfWidth = meetingWidth / 2;
 
-      let meetingHalfWithoutPadding = meetingHalfWidth - pagePadding;
+      let meetingLabelWidth = meetingBodyFontSize;
+      let meetingHalfWidth =
+        (meetingWidth - meetingLabelWidth - pagePadding) / 2;
+
+      let meetingHalfWithoutPadding = meetingHalfWidth - pagePadding * 2;
 
       team
         .hasMany('meetings')
         .value()
         .sortBy('index')
         .forEach((meeting, index) => {
+          const rendezvousLetter = String.fromCharCode(65 + index);
+
           doc.save();
 
           doc.translate(0, index * meetingHeight);
+
+          doc.fontSize(meetingHeadingFontSize);
+          doc.text(rendezvousLetter, 0, pagePadding);
 
           doc.lineWidth(0.25);
           doc.moveTo(0, 0).lineTo(availableWidth, 0).stroke();
@@ -241,9 +312,14 @@ export default class TeamOverviewsComponent extends Component {
             doc.save();
 
             doc.fontSize(meetingHeadingFontSize);
-            doc.text(waypointRegion.name, pagePadding, pagePadding, {
-              width: meetingHalfWithoutPadding,
-            });
+            doc.text(
+              waypointRegion.name,
+              meetingLabelWidth + pagePadding,
+              pagePadding,
+              {
+                width: meetingHalfWithoutPadding,
+              }
+            );
 
             doc.fontSize(meetingBodyFontSize);
 
