@@ -351,7 +351,7 @@ export default class TeamOverviewsComponent extends Component {
 
             let parent = destinationRegion.belongsTo('parent').value();
 
-            doc.text(destinationRegion.name, pagePadding, pagePadding, {
+            doc.text(destinationRegion.name, 0, pagePadding, {
               width: meetingHalfWithoutPadding,
             });
 
