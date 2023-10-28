@@ -48,6 +48,10 @@ tr.waypoint {
   }
 }
 
+.errors {
+  background-color: $input-background-invalid;
+}
+
 $region-length: 4rem;
 
 .map {

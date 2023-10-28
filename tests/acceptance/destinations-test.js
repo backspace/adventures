@@ -175,6 +175,8 @@ module('Acceptance | destinations', function (hooks) {
       'property __ ___________ literature'
     );
 
+    assert.equal(page.errors.text, 'mask is invalid');
+
     await page.save();
     await waitUntil(() => page.destinations.length);
 
@@ -183,6 +185,8 @@ module('Acceptance | destinations', function (hooks) {
 
     await page.destinations[0].edit();
     await page.maskField.fill('property of ___________ __________');
+
+    assert.ok(page.errors.isHidden);
 
     await page.save();
     await waitUntil(() => page.destinations.length);

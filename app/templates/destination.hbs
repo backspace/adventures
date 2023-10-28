@@ -143,6 +143,15 @@
       </div>
     {{/if}}
   </div>
+
+  {{#if this.model.isIncomplete}}
+    <div class='grid-x grid-padding-x'>
+      <div class='small-12 cell'>
+        <p class='errors' data-test-errors>{{this.model.errorsString}}</p>
+      </div>
+    </div>
+  {{/if}}
+
   <div class='grid-x grid-padding-x'>
     <div class='expanded button-group'>
       <button

@@ -55,7 +55,7 @@ export default class Destination extends Model {
     'puzzles.implementation',
     'risk'
   )
-  get isComplete() {
+  get validationErrors() {
     const { description, answer, awesomeness, risk, maskIsValid } =
       this.getProperties(
         'description',
@@ -67,16 +67,35 @@ export default class Destination extends Model {
 
     const descriptionIsValid = this.get(
       'puzzles.implementation'
-    ).descriptionIsValid(description);
+    ).descriptionIsValid(description ?? 'FAKE');
 
-    return (
-      !isEmpty(description) &&
-      descriptionIsValid &&
-      !isEmpty(answer) &&
-      awesomeness > 0 &&
-      !isEmpty(risk) &&
-      maskIsValid
-    );
+    return {
+      'description is empty': isEmpty(description),
+      'description is invalid': !descriptionIsValid,
+      'answer does not exist': isEmpty(answer),
+      'awesomeness does not exist': isEmpty(awesomeness),
+      'risk does not exist': isEmpty(risk),
+      'mask is invalid': !maskIsValid,
+    };
+  }
+
+  @computed('validationErrors.@each.value')
+  get errorsString() {
+    let validationErrors = this.validationErrors;
+    return Object.keys(validationErrors)
+      .reduce((errors, key) => {
+        if (validationErrors[key]) {
+          errors.push(key);
+        }
+
+        return errors;
+      }, [])
+      .join(', ');
+  }
+
+  @computed('validationErrors.@each.keys')
+  get isComplete() {
+    return Object.values(this.validationErrors).every((error) => !error);
   }
 
   @not('isComplete')

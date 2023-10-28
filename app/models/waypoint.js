@@ -1,3 +1,4 @@
+import { computed } from '@ember/object';
 import { equal } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { isEmpty } from '@ember/utils';
@@ -40,7 +41,8 @@ export default class Waypoint extends Model {
   @attr('updateDate')
   updatedAt;
 
-  get isComplete() {
+  @computed('excerpt', 'dimensions', 'outline', 'puzzles.implementation')
+  get validationErrors() {
     const { excerpt, dimensions, outline } = this;
 
     const excerptIsValid = this.puzzles.implementation.excerptIsValid(excerpt);
@@ -50,14 +52,33 @@ export default class Waypoint extends Model {
 
     const outlineIsValid = this.puzzles.implementation.outlineIsValid(outline);
 
-    return (
-      !isEmpty(excerpt) &&
-      excerptIsValid &&
-      !isEmpty(dimensions) &&
-      dimensionsIsValid &&
-      !isEmpty(outline) &&
-      outlineIsValid
-    );
+    return {
+      'excerpt is empty': isEmpty(excerpt),
+      'excerpt is invalid': !excerptIsValid,
+      'dimensions is empty': isEmpty(dimensions),
+      'dimensions is invalid': !dimensionsIsValid,
+      'outline is empty': isEmpty(outline),
+      'outline is invalid': !outlineIsValid,
+    };
+  }
+
+  @computed('validationErrors.@each.value')
+  get errorsString() {
+    let validationErrors = this.validationErrors;
+    return Object.keys(validationErrors)
+      .reduce((errors, key) => {
+        if (validationErrors[key]) {
+          errors.push(key);
+        }
+
+        return errors;
+      }, [])
+      .join(', ');
+  }
+
+  @computed('validationErrors.@each.keys')
+  get isComplete() {
+    return Object.values(this.validationErrors).every((error) => !error);
   }
 
   get isIncomplete() {

@@ -141,6 +141,10 @@ export default PageObject.create({
     },
   },
 
+  errors: {
+    scope: '[data-test-errors]',
+  },
+
   save: clickable('.save'),
   cancel: clickable('.cancel'),
   delete: clickable('.delete'),

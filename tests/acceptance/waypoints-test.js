@@ -87,6 +87,24 @@ module('Acceptance | waypoints', function (hooks) {
     assert.ok(two.isIncomplete);
   });
 
+  test('validation errors show on the form', async function (assert) {
+    await homePage.visit();
+    await homePage.waypoints.click();
+
+    await page.waypoints[1].edit();
+
+    assert.equal(
+      page.errors.text,
+      'excerpt is empty, excerpt is invalid, dimensions is empty, dimensions is invalid, outline is empty, outline is invalid'
+    );
+
+    await page.cancel();
+
+    await page.waypoints[0].edit();
+
+    assert.ok(page.errors.isHidden);
+  });
+
   test('waypoint status doesn’t show when the feature flag is off', async function (assert) {
     await homePage.visit();
     await homePage.waypoints.click();

@@ -127,6 +127,10 @@ export default PageObject.create({
     },
   },
 
+  errors: {
+    scope: '[data-test-errors]',
+  },
+
   save: clickable('[data-test-save-button]'),
   cancel: clickable('[data-test-cancel-button]'),
   delete: clickable('[data-test-delete-button]'),
