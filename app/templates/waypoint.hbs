@@ -98,31 +98,33 @@
   {{/if}}
 
   <div class='grid-x grid-padding-x'>
-    <div class='expanded button-group'>
-      <button
-        class='save success button'
-        type='button'
-        data-test-save-button
-        {{action 'save' this.model}}
-      >
-        Save
-      </button>
-      <button
-        class='delete alert button'
-        type='button'
-        data-test-delete-button
-        {{action 'delete' this.model}}
-      >
-        Delete
-      </button>
-      <button
-        class='cancel warning button'
-        type='button'
-        data-test-cancel-button
-        {{action 'cancel' this.model}}
-      >
-        Cancel
-      </button>
+    <div class='small-12 cell'>
+      <div class='expanded button-group'>
+        <button
+          class='save success button'
+          type='button'
+          data-test-save-button
+          {{action 'save' this.model}}
+        >
+          Save
+        </button>
+        <button
+          class='delete alert button'
+          type='button'
+          data-test-delete-button
+          {{action 'delete' this.model}}
+        >
+          Delete
+        </button>
+        <button
+          class='cancel warning button'
+          type='button'
+          data-test-cancel-button
+          {{action 'cancel' this.model}}
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   </div>
 </div>
