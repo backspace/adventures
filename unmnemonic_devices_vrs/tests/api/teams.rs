@@ -9,7 +9,7 @@ use unmnemonic_devices_vrs::InjectableServices;
 use wiremock::matchers::{body_string, method, path_regex};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
-#[sqlx::test(fixtures("schema", "teams"))]
+#[sqlx::test(fixtures("schema", "teams", "teams-with-no-voicepass"))]
 async fn teams_show_gathers_team_voicepasses(db: PgPool) {
     let response = get(db, "/teams", false)
         .await

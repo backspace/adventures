@@ -29,7 +29,7 @@ pub struct Team {
 #[axum_macros::debug_handler]
 pub async fn get_teams(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
     let teams = sqlx::query_as::<_, Team>(
-        "SELECT *, ARRAY[]::VARCHAR[] AS excerpts, ARRAY[]::VARCHAR[] AS answers FROM teams",
+        "SELECT *, ARRAY[]::VARCHAR[] AS excerpts, ARRAY[]::VARCHAR[] AS answers FROM teams WHERE voicepass IS NOT NULL",
     )
     .fetch_all(&state.db)
     .await
