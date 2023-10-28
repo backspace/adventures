@@ -38,6 +38,10 @@ export default class TeamOverviewsComponent extends Component {
           id: destination.get('id'),
           description: destination.get('description'),
           region_id: destination.get('region.id'),
+          answer: this.devices.extractAnswer(
+            destination.answer,
+            destination.mask
+          ),
         }))
       )
       .onConflict('id')

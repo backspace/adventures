@@ -48,6 +48,19 @@ module('Unit | Service | unmnemonic-devices', function (hooks) {
       'expected a suggested mask entirely blanked with only one word'
     );
   });
+
+  test('it extracts answers', function (assert) {
+    const service = this.owner.lookup('service:unmnemonic-devices');
+
+    assert.equal(
+      service.extractAnswer('one two three', 'one ___ three'),
+      'two'
+    );
+
+    assert.throws(function () {
+      service.extractAnswer('one two three', 'o _ t');
+    });
+  });
 });
 
 module(
