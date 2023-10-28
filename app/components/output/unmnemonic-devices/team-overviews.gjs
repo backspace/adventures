@@ -128,7 +128,7 @@ export default class TeamOverviewsComponent extends Component {
         team
           .hasMany('meetings')
           .value()
-          .sortBy('index')
+          .sortBy('destination.id')
           .forEach((meeting, index) => {
             const rendezvousLetter = String.fromCharCode(65 + index);
 
@@ -286,7 +286,7 @@ export default class TeamOverviewsComponent extends Component {
       team
         .hasMany('meetings')
         .value()
-        .sortBy('index')
+        .sortBy('destination.id')
         .forEach((meeting, index) => {
           const rendezvousLetter = String.fromCharCode(65 + index);
 
