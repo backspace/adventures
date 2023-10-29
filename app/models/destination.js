@@ -53,15 +53,17 @@ export default class Destination extends Model {
     'description',
     'maskIsValid',
     'puzzles.implementation',
+    'region',
     'risk'
   )
   get validationErrors() {
-    const { description, answer, awesomeness, risk, maskIsValid } =
+    const { description, answer, awesomeness, region, risk, maskIsValid } =
       this.getProperties(
         'description',
         'answer',
         'awesomeness',
         'risk',
+        'region',
         'maskIsValid'
       );
 
@@ -74,6 +76,7 @@ export default class Destination extends Model {
       'description is invalid': !descriptionIsValid,
       'answer does not exist': isEmpty(answer),
       'awesomeness does not exist': isEmpty(awesomeness),
+      'region is empty': !region,
       'risk does not exist': isEmpty(risk),
       'mask is invalid': !maskIsValid,
     };
