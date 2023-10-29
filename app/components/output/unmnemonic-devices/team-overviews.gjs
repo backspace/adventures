@@ -332,9 +332,12 @@ export default class TeamOverviewsComponent extends Component {
 
             doc.text(waypoint.call);
             doc.text(' ');
-            doc.text(devices.excerptWithBlanks(waypoint.excerpt), {
-              width: meetingHalfWithoutPadding,
-            });
+            doc.text(
+              doubleBlanks(devices.excerptWithBlanks(waypoint.excerpt)),
+              {
+                width: meetingHalfWithoutPadding,
+              }
+            );
 
             doc.restore();
           }
@@ -363,7 +366,9 @@ export default class TeamOverviewsComponent extends Component {
             }
 
             doc.text(' ');
-            doc.text(destination.mask, { width: meetingHalfWithoutPadding });
+            doc.text(doubleBlanks(destination.mask), {
+              width: meetingHalfWithoutPadding,
+            });
 
             doc.restore();
           }
@@ -467,4 +472,8 @@ function drawArrow(doc, waypointX, waypointY, destinationX, destinationY) {
     .lineTo(headX, headY)
     .lineTo(arrowHeadX2, arrowHeadY2)
     .fill();
+}
+
+function doubleBlanks(s) {
+  return s.replace(/_/g, '__');
 }
