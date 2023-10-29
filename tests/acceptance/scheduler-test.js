@@ -407,8 +407,23 @@ module('Acceptance | scheduler', function (hooks) {
 
       await webb.save();
 
+      const completionWaypointProperties = {
+        call: 'call',
+        excerpt: 'x|y|z',
+        dimensions: '1,2',
+        outline: '(1,2),1,2',
+        page: '33',
+      };
+
       let fourten = store.createRecord('waypoint', {
         name: 'fourten',
+        region: webb,
+        status: 'available',
+        ...completionWaypointProperties,
+      });
+
+      let fourtwenty = store.createRecord('waypoint', {
+        name: 'fourtwenty',
         region: webb,
         status: 'available',
       });
@@ -417,30 +432,36 @@ module('Acceptance | scheduler', function (hooks) {
         name: 'Prairie Theatre Exchange',
         region: portagePlace,
         status: 'available',
+        ...completionWaypointProperties,
       });
 
       let globeCinemas = store.createRecord('waypoint', {
         region: portagePlace,
+        ...completionWaypointProperties,
       });
 
       let squeakyFloor = store.createRecord('waypoint', {
         region: eatonCentre,
         status: 'unavailable',
+        ...completionWaypointProperties,
       });
 
       let mrGreenjeans = store.createRecord('waypoint', {
         name: 'Mr. Greenjeans',
         region: eatonCentre,
         status: 'available',
+        ...completionWaypointProperties,
       });
 
       let sculpture = store.createRecord('waypoint', {
         region: circus,
         status: 'unavailable',
+        ...completionWaypointProperties,
       });
 
       await all([
         fourten.save(),
+        fourtwenty.save(),
         prairieTheatreExchange.save(),
         globeCinemas.save(),
         squeakyFloor.save(),

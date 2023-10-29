@@ -68,7 +68,7 @@
 
             <ul class='waypoints'>
               {{#each region.waypoints as |waypoint|}}
-                {{#if waypoint.isAvailable}}
+                {{#if (and waypoint.isAvailable waypoint.isComplete)}}
                   <SchedulerWaypoint
                     @waypoint={{waypoint}}
                     @select={{action 'selectWaypoint'}}
