@@ -1,0 +1,33 @@
+<html>
+  <body>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            name
+          </th>
+          <th>
+            voicepass
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each teams}}
+          <tr class="team">
+            <td>
+              {{name}}
+            </td>
+            <td>
+              {{voicepass}}
+            </td>
+            {{#each region_listens}}
+              <td>
+                {{this}}
+              </td>
+            {{/each}}
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </body>
+</html>
