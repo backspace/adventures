@@ -109,7 +109,7 @@ pub async fn get_confirm_team(
 
 #[axum_macros::debug_handler]
 pub async fn post_confirm_team(Path(id): Path<Uuid>, Form(form): Form<TwilioForm>) -> Redirect {
-    if form.speech_result == "yes" {
+    if form.speech_result.contains("yes") || form.speech_result.contains("yeah") {
         Redirect::to(&format!("/teams/{}", id))
     } else {
         Redirect::to("/teams")

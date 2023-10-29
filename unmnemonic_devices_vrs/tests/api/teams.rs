@@ -94,15 +94,26 @@ async fn team_get_confirm_redirects_to_show_teams_for_nonexistent_team(db: PgPoo
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn team_post_confirm_redirects_to_team_show_on_yes(db: PgPool) {
     let response = post(
-        db,
+        db.clone(),
         "/teams/48e3bda7-db52-4c99-985f-337e266f7832/confirm",
-        "SpeechResult=Yes.",
+        "SpeechResult=Yes. Yes.",
         true,
     )
     .await
     .expect("Failed to execute request.");
 
     assert_that(&response).redirects_to("/teams/48e3bda7-db52-4c99-985f-337e266f7832");
+
+    let yeah_response = post(
+        db,
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832/confirm",
+        "SpeechResult=Yeah.",
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert_that(&yeah_response).redirects_to("/teams/48e3bda7-db52-4c99-985f-337e266f7832");
 }
 
 #[sqlx::test(fixtures("schema", "teams"))]
