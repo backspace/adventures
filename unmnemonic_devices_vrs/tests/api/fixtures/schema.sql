@@ -31,6 +31,20 @@ CREATE SCHEMA unmnemonic_devices;
 
 
 --
+-- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
+
+
+--
 -- Name: database_ids; Type: SEQUENCE; Schema: _sqlx_test; Owner: -
 --
 
@@ -426,3 +440,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20230419025011);
 INSERT INTO public."schema_migrations" (version) VALUES (20230508143302);
 INSERT INTO public."schema_migrations" (version) VALUES (20231025044059);
 INSERT INTO public."schema_migrations" (version) VALUES (20231025052751);
+INSERT INTO public."schema_migrations" (version) VALUES (20231029032644);

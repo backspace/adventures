@@ -34,7 +34,7 @@ async fn teams_show_gathers_team_voicepasses(db: PgPool) {
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn teams_post_redirects_to_found_voicepass_team_confirmation(db: PgPool) {
     // Twilio editorialises punctuation and always capitalises.
-    let body = "SpeechResult=This is another, voicepass?";
+    let body = "SpeechResult=This is not another, voicepass?";
 
     let response = post(db, "/teams", body, true)
         .await
@@ -159,7 +159,7 @@ async fn team_show_names_team_and_gathers_excerpts_or_collation(db: PgPool) {
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
 async fn team_post_redirects_to_found_excerpt_meeting(db: PgPool) {
     // Twilio editorialises punctuation and always capitalises.
-    let body = "SpeechResult=Abused or ignored.";
+    let body = "SpeechResult=Abused and ignored.";
 
     let response = post(
         db,
@@ -200,7 +200,7 @@ async fn team_post_redirects_to_completion(db: PgPool) {
     let body = "SpeechResult=Another answer an answer.";
 
     let response = post(
-        db,
+        db.clone(),
         "/teams/48e3bda7-db52-4c99-985f-337e266f7832",
         body,
         true,
@@ -209,6 +209,20 @@ async fn team_post_redirects_to_completion(db: PgPool) {
     .expect("Failed to execute request.");
 
     assert_that(&response).redirects_to("/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete");
+
+    let fuzzy_body = "SpeechResult=another answer an ax answer an an answer.";
+
+    let fuzzy_response = post(
+        db,
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832",
+        fuzzy_body,
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert_that(&fuzzy_response)
+        .redirects_to("/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete");
 }
 
 #[sqlx::test(fixtures("schema", "teams"))]

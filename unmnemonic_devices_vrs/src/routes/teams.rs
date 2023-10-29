@@ -51,7 +51,7 @@ pub async fn post_teams(
     let voicepass = form.speech_result;
 
     let team = sqlx::query_as::<_, Team>(
-        "SELECT *, ARRAY[]::VARCHAR[] AS excerpts, ARRAY[]::VARCHAR[] AS answers FROM teams WHERE voicepass = $1",
+        "SELECT *, ARRAY[]::VARCHAR[] AS excerpts, ARRAY[]::VARCHAR[] AS answers FROM teams WHERE SIMILARITY(voicepass, $1) >= 0.65",
     )
     .bind(voicepass)
     .fetch_one(&state.db)
@@ -167,7 +167,7 @@ pub struct MeetingNotFound {
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct TeamCompletion {
-    answers: String,
+    matches: bool,
 }
 
 #[axum_macros::debug_handler]
@@ -187,7 +187,7 @@ pub async fn post_team(
             LEFT JOIN unmnemonic_devices.books b ON m.book_id = b.id
           WHERE
             m.team_id = $1
-            AND LOWER(b.excerpt) = $2
+            AND SIMILARITY(LOWER(b.excerpt), $2) >= 0.65
         "#,
     )
     .bind(id)
@@ -201,7 +201,7 @@ pub async fn post_team(
         let completion = sqlx::query_as::<_, TeamCompletion>(
             r#"
             SELECT
-              STRING_AGG(LOWER(d.answer), ' ' ORDER BY d.id) AS answers
+              SIMILARITY(STRING_AGG(LOWER(d.answer), ' ' ORDER BY d.id), $1) >= 0.65 AS matches
             FROM
                 public.teams t
             LEFT JOIN
@@ -209,19 +209,18 @@ pub async fn post_team(
             LEFT JOIN
                 unmnemonic_devices.destinations d ON m.destination_id = d.id
             WHERE
-                t.id = $1
+                t.id = $2
             GROUP BY
                 t.id;
           "#,
         )
+        .bind(excerpt)
         .bind(id)
         .fetch_one(&state.db)
         .await
         .expect("Failed to fetch team");
 
-        let speech_result_is_completion = excerpt == completion.answers;
-
-        if speech_result_is_completion {
+        if completion.matches {
             Redirect::to(&format!("/teams/{}/complete", id)).into_response()
         } else {
             RenderXml(
