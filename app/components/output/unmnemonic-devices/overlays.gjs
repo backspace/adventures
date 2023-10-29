@@ -83,7 +83,10 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       let teamBottomMargin = team ? TEAM_FONT_SIZE + TEAM_GAP_SIZE : 0;
 
       drawRegistrationMarks(doc, width, height, teamBottomMargin);
-      drawBackground(doc, width, height, index);
+
+      if (!this.args.debug) {
+        drawBackground(doc, width, height, index);
+      }
 
       doc.fontSize(14);
       drawHeaderAndFooterText(
