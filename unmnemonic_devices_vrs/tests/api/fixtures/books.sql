@@ -14,7 +14,7 @@ values
   (
     '3BD5D123-7389-0668-9F32-1EF96763E91C',
     'Victorian Architecture in England',
-    'abused or ignored'
+    'abused Or Ignored'
   ),
   (
     '89DCBA43-1DCB-52CA-A00C-9BD185D4A14C',

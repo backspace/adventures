@@ -126,8 +126,8 @@ pub async fn get_team(
         r#"
             SELECT
               t.*,
-              ARRAY_AGG(b.excerpt) AS excerpts,
-              ARRAY_AGG(d.answer ORDER BY d.id) AS answers
+              ARRAY_AGG(LOWER(b.excerpt)) AS excerpts,
+              ARRAY_AGG(LOWER(d.answer) ORDER BY d.id) AS answers
             FROM
                 public.teams t
             LEFT JOIN
@@ -187,7 +187,7 @@ pub async fn post_team(
             LEFT JOIN unmnemonic_devices.books b ON m.book_id = b.id
           WHERE
             m.team_id = $1
-            AND b.excerpt = $2
+            AND LOWER(b.excerpt) = $2
         "#,
     )
     .bind(id)
@@ -201,7 +201,7 @@ pub async fn post_team(
         let completion = sqlx::query_as::<_, TeamCompletion>(
             r#"
             SELECT
-              STRING_AGG(d.answer, ' ' ORDER BY d.id) AS answers
+              STRING_AGG(LOWER(d.answer), ' ' ORDER BY d.id) AS answers
             FROM
                 public.teams t
             LEFT JOIN
