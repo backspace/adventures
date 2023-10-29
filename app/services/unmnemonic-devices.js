@@ -54,7 +54,12 @@ export default class UnmnemonicDevicesService extends Service {
   }
 
   excerptIsValid(excerpt) {
-    return excerpt && excerpt.match(/\|/g).length === 2;
+    if (!excerpt) {
+      return false;
+    }
+
+    let pipeMatches = excerpt.match(/\|/g);
+    return pipeMatches && pipeMatches.length === 2;
   }
 
   preExcerpt(excerpt) {
@@ -76,6 +81,10 @@ export default class UnmnemonicDevicesService extends Service {
   }
 
   dimensionsIsValid(dimensions) {
+    if (!dimensions) {
+      return false;
+    }
+
     let parts = dimensions.split(',');
 
     if (parts.length !== 2) {
@@ -113,7 +122,15 @@ export default class UnmnemonicDevicesService extends Service {
 
     let [startX, startY] = start.split(',');
 
+    if (!startX || !startY) {
+      return false;
+    }
+
     if (!isFloat(startX, { min: 0 }) || !isFloat(startY, { min: 0 })) {
+      return false;
+    }
+
+    if (!displacements) {
       return false;
     }
 

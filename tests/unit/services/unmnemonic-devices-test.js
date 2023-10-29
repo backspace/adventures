@@ -83,6 +83,10 @@ module(
         'excerpt should have two pipes'
       );
 
+      assert.notOk(
+        service.excerptIsValid('x'),
+        'excerpt should have two pipes'
+      );
       assert.notOk(service.excerptIsValid(null), 'excerpt should exist');
     });
   }
@@ -122,6 +126,8 @@ module(
         service.dimensionsIsValid('13.1,0'),
         'both should be positive'
       );
+
+      assert.notOk(service.dimensionsIsValid(null), 'should exist');
     });
   }
 );
@@ -182,6 +188,21 @@ module(
         service.outlineIsValid('(0,2.3),1.5'),
         'there must be at least two displacement points'
       );
+
+      assert.notOk(
+        service.outlineIsValid('(0,2.3)'),
+        'there must be at least two displacement points'
+      );
+      assert.notOk(service.outlineIsValid('(0'), 'there must be a first point');
+      assert.notOk(
+        service.outlineIsValid('(0,1'),
+        'there must be a first point'
+      );
+      assert.notOk(
+        service.outlineIsValid('(0)'),
+        'there must be a first point'
+      );
+      assert.notOk(service.outlineIsValid(''), 'there must be a first point');
     });
   }
 );

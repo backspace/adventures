@@ -48,7 +48,7 @@ export default class Waypoint extends Model {
     const excerptIsValid = this.puzzles.implementation.excerptIsValid(excerpt);
 
     const dimensionsIsValid =
-      this.puzzles.implementation.outlineIsValid(outline);
+      this.puzzles.implementation.dimensionsIsValid(dimensions);
 
     const outlineIsValid = this.puzzles.implementation.outlineIsValid(outline);
 
