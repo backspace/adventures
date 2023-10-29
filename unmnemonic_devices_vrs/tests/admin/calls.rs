@@ -1,4 +1,7 @@
-use crate::helpers::{get_with_twilio, post_with_twilio};
+mod helpers {
+    include!("../helpers.rs");
+}
+use helpers::{get_with_twilio, post_with_twilio};
 
 use select::{
     document::Document,
@@ -12,8 +15,6 @@ use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::InjectableServices;
 use wiremock::matchers::{body_string, method, path_regex, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
-
-// FIXME this isn’t an API!
 
 #[sqlx::test(fixtures("schema"))]
 async fn calls_list_when_empty(db: PgPool) {

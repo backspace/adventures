@@ -1,4 +1,7 @@
-use crate::helpers::get;
+mod helpers {
+    include!("../helpers.rs");
+}
+use helpers::get;
 
 use select::{document::Document, predicate::Name};
 use sqlx::PgPool;
