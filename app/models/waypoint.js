@@ -41,9 +41,18 @@ export default class Waypoint extends Model {
   @attr('updateDate')
   updatedAt;
 
-  @computed('excerpt', 'dimensions', 'outline', 'puzzles.implementation')
+  @computed(
+    'call',
+    'excerpt',
+    'dimensions',
+    'outline',
+    'puzzles.implementation',
+    'page',
+    'name',
+    'region'
+  )
   get validationErrors() {
-    const { excerpt, dimensions, outline } = this;
+    const { call, excerpt, dimensions, name, page, outline, region } = this;
 
     const excerptIsValid = this.puzzles.implementation.excerptIsValid(excerpt);
 
@@ -53,12 +62,16 @@ export default class Waypoint extends Model {
     const outlineIsValid = this.puzzles.implementation.outlineIsValid(outline);
 
     return {
+      'call is empty': isEmpty(call),
+      'name is empty': isEmpty(name),
       'excerpt is empty': isEmpty(excerpt),
       'excerpt is invalid': !excerptIsValid,
       'dimensions is empty': isEmpty(dimensions),
       'dimensions is invalid': !dimensionsIsValid,
       'outline is empty': isEmpty(outline),
       'outline is invalid': !outlineIsValid,
+      'page is empty': isEmpty(page),
+      'region is empty': !region,
     };
   }
 
