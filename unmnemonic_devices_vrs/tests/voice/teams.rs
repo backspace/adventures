@@ -1,4 +1,8 @@
-use crate::helpers::{get, get_with_twilio, post, RedirectTo};
+mod helpers {
+    include!("../helpers.rs");
+}
+use helpers::{get, get_with_twilio, post, RedirectTo};
+
 use select::{document::Document, predicate::Name};
 use serde_json::json;
 use speculoos::prelude::*;
