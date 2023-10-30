@@ -8,6 +8,64 @@ use serde::Serialize;
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
+#[sqlx::test(fixtures("schema", "teams", "teams-with-no-voicepass"))]
+async fn get_prompts_gathers_by_character_name(db: PgPool) {
+    let response = get(db, "/recordings/prompts", false)
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+
+    let gather_hints = &document
+        .find(Name("gather"))
+        .next()
+        .unwrap()
+        .attr("hints")
+        .unwrap();
+
+    assert_that(gather_hints).contains("pure");
+    assert_that(gather_hints).contains("testa");
+    assert_that(gather_hints).contains("testb");
+}
+
+#[sqlx::test(fixtures("schema", "teams"))]
+async fn post_prompts_redirects_to_character_prompt_path(db: PgPool) {
+    let response = post(
+        db,
+        "/recordings/prompts",
+        // Twilio editorialises punctuation and always capitalises.
+        "SpeechResult=Pure.",
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert_that(&response).redirects_to("/recordings/prompts/pure");
+}
+
+#[sqlx::test(fixtures("schema", "teams"))]
+async fn post_prompt_says_when_character_not_found(db: PgPool) {
+    let response = post(
+        db,
+        "/recordings/prompts",
+        // Twilio editorialises punctuation and always capitalises.
+        "SpeechResult=Whatever.",
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+
+    assert_that(&document.find(Name("say")).next().unwrap().text()).contains("whatever");
+}
+
 #[sqlx::test(fixtures("schema"))]
 async fn get_character_prompts_gathers_by_prompt_key(db: PgPool) {
     let response = get(db, "/recordings/prompts/testa", false)

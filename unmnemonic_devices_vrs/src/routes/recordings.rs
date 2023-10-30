@@ -11,6 +11,60 @@ use uuid::Uuid;
 use crate::{helpers::get_all_prompts, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Serialize)]
+pub struct CharacterNames {
+    character_names: Vec<String>,
+}
+
+#[axum_macros::debug_handler]
+pub async fn get_prompts(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
+    RenderXml(
+        key,
+        state.engine,
+        state.mutable_prompts.lock().unwrap().to_string(),
+        CharacterNames {
+            character_names: state
+                .prompts
+                .tables
+                .keys()
+                .cloned()
+                .collect::<Vec<String>>(),
+        },
+    )
+}
+
+#[derive(Serialize)]
+pub struct CharacterNotFound {
+    speech_result: String,
+}
+
+#[axum_macros::debug_handler]
+pub async fn post_prompts(
+    State(state): State<AppState>,
+    Form(form): Form<TwilioForm>,
+) -> impl IntoResponse {
+    let character_names = state
+        .prompts
+        .tables
+        .keys()
+        .cloned()
+        .collect::<Vec<String>>();
+
+    if character_names.contains(&form.speech_result) {
+        Redirect::to(&format!("/recordings/prompts/{}", form.speech_result)).into_response()
+    } else {
+        RenderXml(
+            "/recordings/prompts/not-found",
+            state.engine,
+            state.mutable_prompts.lock().unwrap().to_string(),
+            CharacterNotFound {
+                speech_result: form.speech_result,
+            },
+        )
+        .into_response()
+    }
+}
+
+#[derive(Serialize)]
 pub struct CharacterPrompts {
     character_name: String,
     prompt_names: Option<Vec<String>>,

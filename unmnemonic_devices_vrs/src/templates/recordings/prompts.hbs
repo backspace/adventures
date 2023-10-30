@@ -1,0 +1,6 @@
+<Response>
+  <Gather timeout="3" input="speech" hints="{{#each character_names}}{{this}}, {{/each}}">
+    {{{lookup prompts "pure.character_name"}}}
+  </Gather>
+  {{> restart }}
+</Response>
