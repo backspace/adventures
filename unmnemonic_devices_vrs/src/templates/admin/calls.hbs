@@ -1,5 +1,10 @@
 <html>
   <head>
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         numberField = document.querySelector('#number-field');
@@ -13,8 +18,14 @@
           localStorage.setItem('number', numberField.value);
         });
 
+        let strippedNumber = storedNumber.replace(/[\\\+-]/g, '');
+
         document.querySelectorAll('.call').forEach(function (row) {
-          row.insertAdjacentHTML('beforeend', `<button onclick="call(event)">Call</button>`);
+          if (row.innerHTML.includes(strippedNumber)) {
+            row.classList.add('hidden');
+          } else {
+            row.insertAdjacentHTML('beforeend', `<button onclick="call(event)">Call</button>`);
+          }
         });
       });
 
