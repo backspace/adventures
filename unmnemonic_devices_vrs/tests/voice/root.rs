@@ -114,6 +114,16 @@ async fn root_post_begun_redirects_to_root_begun(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("schema"))]
+async fn root_post_recordings_redirects_to_root_begun(db: PgPool) {
+    let body = "SpeechResult=Recordings.";
+
+    let response = post(db, "/", body, true)
+        .await
+        .expect("Failed to execute response");
+    assert_that(&response).redirects_to("/recordings");
+}
+
+#[sqlx::test(fixtures("schema"))]
 async fn root_post_else_redirects_to_root(db: PgPool) {
     let body = "SpeechResult=whatever";
 

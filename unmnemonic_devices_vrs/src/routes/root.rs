@@ -113,6 +113,8 @@ pub async fn get_root(
 pub async fn post_root(Form(form): Form<TwilioForm>) -> Redirect {
     if form.speech_result == "begun" {
         Redirect::to("/?begun")
+    } else if form.speech_result == "recordings" {
+        Redirect::to("/recordings")
     } else {
         Redirect::to("/")
     }

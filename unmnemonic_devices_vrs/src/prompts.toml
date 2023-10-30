@@ -9,6 +9,8 @@ silence = "We didn't hear anything."
 phrase_not_found = "We couldn't find that cathartic phrase."
 voicepass_not_found = "We couldn't find a team with that voicepass."
 
+recordings = "What do you want to record? Prompts, regions, destinations"
+
 character_name = "What character are you reading for?"
 character_not_found = "Could not find that character. We heard this:"
 
