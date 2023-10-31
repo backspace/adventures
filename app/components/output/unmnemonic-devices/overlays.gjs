@@ -16,7 +16,7 @@ import blobStream from 'blob-stream';
 import PDFDocument from 'pdfkit';
 
 export const PAGE_MARGIN = 0.5 * 72;
-export const PAGE_PADDING = 0.25 * 72;
+export const PAGE_PADDING = 0.2 * 72;
 
 export const BACKGROUND_COUNT = 5;
 export const OUTLINE_WIDTH = 4;
