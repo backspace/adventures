@@ -31,7 +31,7 @@ export default class AnswersComponent extends Component {
 
       doc.text(team.users);
       doc.text(team.notes);
-      doc.text(`voicepass FIXME: ${team.identifier}`);
+      doc.text(`voicepass: ${team.identifier}`);
 
       doc.text(' ');
 
