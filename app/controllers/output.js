@@ -6,6 +6,7 @@ import classic from 'ember-classic-decorator';
 export default class OutputController extends Controller {
   queryParams = [
     'debug',
+    'unmnemonicDevicesAnswers',
     'unmnemonicDevicesOverlays',
     'unmnemonicDevicesTeamOverviews',
     'unmnemonicDevicesTeamOverviewsLowResMap',
@@ -15,6 +16,7 @@ export default class OutputController extends Controller {
 
   @tracked debug = false;
 
+  @tracked unmnemonicDevicesAnswers = false;
   @tracked unmnemonicDevicesOverlays = false;
   @tracked unmnemonicDevicesTeamOverviews = false;
   @tracked unmnemonicDevicesTeamOverviewsLowResMap = true;

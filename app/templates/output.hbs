@@ -122,6 +122,24 @@
               {{/if}}
             </td>
           </tr>
+
+          <tr>
+            <td>
+              <label>
+                Answers?
+                <Input @type='checkbox' @checked={{this.unmnemonicDevicesAnswers}} />
+              </label>
+            </td>
+            <td>
+              {{#if this.unmnemonicDevicesAnswers}}
+                <Output::UnmnemonicDevices::Answers
+                  @teams={{this.model.teams}}
+                  @assets={{this.model.assets}}
+                  @debug={{this.debug}}
+                />
+              {{/if}}
+            </td>
+          </tr>
         {{/if}}
       </tbody>
     </table>
