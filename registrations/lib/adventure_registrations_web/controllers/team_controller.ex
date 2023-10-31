@@ -33,15 +33,22 @@ defmodule AdventureRegistrationsWeb.TeamController do
             end)
             |> Enum.join(", ")
 
+          team_attributes = %{
+            name: team.name,
+            riskAversion: team.risk_aversion,
+            notes: team.notes,
+            users: team_emails
+          }
+
+          team_attributes =
+            if Application.get_env(:adventure_registrations, :adventure) == "unmnemonic-devices",
+              do: Map.put(team_attributes, :identifier, team.voicepass),
+              else: team_attributes
+
           %{
             type: "teams",
             id: team.id,
-            attributes: %{
-              name: team.name,
-              riskAversion: team.risk_aversion,
-              notes: team.notes,
-              users: team_emails
-            }
+            attributes: team_attributes
           }
         end)
     })

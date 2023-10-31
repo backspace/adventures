@@ -200,4 +200,42 @@ defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Admin do
     navigate_to("/settings")
     assert Nav.error_text() == "Who are you?"
   end
+
+  test "admin can view team JSON that includes voicepasses" do
+    a = insert(:user, email: "a@example.com")
+    b = insert(:user, email: "b@example.com")
+
+    team =
+      insert(:team,
+        name: "A team",
+        risk_aversion: 2,
+        notes: "Some notes",
+        voicepass: "A voicepass",
+        user_ids: [a.id, b.id]
+      )
+
+    insert(:octavia, admin: true)
+
+    navigate_to("/")
+    Login.login_as("octavia.butler@example.com", "Xenogenesis")
+
+    navigate_to("/api/teams")
+    json = Floki.find(page_source(), "pre") |> Floki.text() |> Jason.decode!()
+
+    assert json == %{
+             "data" => [
+               %{
+                 "type" => "teams",
+                 "id" => team.id,
+                 "attributes" => %{
+                   "name" => "A team",
+                   "identifier" => "A voicepass",
+                   "notes" => "Some notes",
+                   "users" => "a@example.com, b@example.com",
+                   "riskAversion" => 2
+                 }
+               }
+             ]
+           }
+  end
 end
