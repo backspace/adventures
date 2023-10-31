@@ -278,3 +278,16 @@ pub async fn get_complete_team(Key(key): Key, State(state): State<AppState>) -> 
         (),
     )
 }
+
+#[axum_macros::debug_handler]
+pub async fn post_complete_team(Path(id): Path<Uuid>, Form(form): Form<TwilioForm>) -> Redirect {
+    if form.speech_result == "repeat" {
+        Redirect::to(&format!("/teams/{}/complete", id))
+    } else if form.speech_result == "record" {
+        Redirect::to("/voicemails/fixme")
+    } else if form.speech_result == "end" {
+        Redirect::to("/hangup")
+    } else {
+        Redirect::to("/")
+    }
+}

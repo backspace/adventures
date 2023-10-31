@@ -19,6 +19,9 @@ prompt_action = "Keep or rerecord?"
 
 goodbye = "Good luck and goodbye!"
 
+[remember]
+ending = "Placeholder for ending message."
+
 [testa]
 welcome = "welcome to unmnemonic devices"
 voicepass = "what is your voice password?"

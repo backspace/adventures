@@ -268,3 +268,27 @@ async fn team_get_complete_notifies_and_increments_listens(db: PgPool) {
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
 }
+
+#[sqlx::test(fixtures("schema", "teams"))]
+async fn team_post_complete_redirects(db: PgPool) {
+    for (speech_result, redirect) in [
+        (
+            "Repeat.",
+            "/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete",
+        ),
+        ("Record.", "/voicemails/fixme"),
+        ("End.", "/hangup"),
+    ] {
+        let response = post(
+            db.clone(),
+            "/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete",
+            // Twilio editorialises punctuation and always capitalises.
+            &format!("SpeechResult={}", speech_result),
+            true,
+        )
+        .await
+        .expect("Failed to execute request.");
+
+        assert_that(&response).redirects_to(redirect);
+    }
+}

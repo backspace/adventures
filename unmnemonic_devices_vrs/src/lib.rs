@@ -126,6 +126,7 @@ pub async fn app(services: InjectableServices) -> Router {
         .route("/teams/:id/confirm", get(get_confirm_team))
         .route("/teams/:id/confirm", post(post_confirm_team))
         .route("/teams/:id/complete", get(get_complete_team))
+        .route("/teams/:id/complete", post(post_complete_team))
         //
         // admin routes
         .route("/admin/calls", get(get_calls))
