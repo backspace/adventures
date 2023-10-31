@@ -107,6 +107,11 @@ summary {
   color: white;
 }
 
+a {
+  position: relative;
+  z-index: 5; // Move above moving erasure
+}
+
 #pi {
   font-family: Arial, Helvetica, "Helvetica Neue";
   position: fixed;
