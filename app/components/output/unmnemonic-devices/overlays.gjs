@@ -118,12 +118,6 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
         doc.fillAndStroke('white', 'black');
 
-        if (this.args.debug) {
-          doc.text(dimensions, 0, height);
-          doc.text(outline);
-          doc.text(excerpt);
-        }
-
         let preExcerpt = this.devices.preExcerpt(excerpt),
           postExcerpt = this.devices.postExcerpt(excerpt);
 
@@ -180,6 +174,20 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
           }
         });
       });
+
+      if (this.args.debug) {
+        doc.save();
+        doc.fontSize(8);
+        doc.text(dimensions);
+        doc.text(fullOutline);
+        doc.text(excerpt);
+
+        outlines.forEach((outline, index) => {
+          doc.text(JSON.stringify(outline));
+        });
+
+        doc.restore();
+      }
 
       if (team) {
         doc.fontSize(TEAM_FONT_SIZE);
