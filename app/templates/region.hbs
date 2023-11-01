@@ -2,6 +2,19 @@
   <div class='grid-x grid-padding-x'>
     <div class='small-12 cell'>
       <label>
+        Name
+        <Input @value={{this.model.name}} class='name' />
+      </label>
+
+      <label>
+        Notes
+        <Textarea @value={{this.model.notes}} class='notes' rows={{4}} />
+      </label>
+    </div>
+  </div>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <label>
         Region
         <select
           onchange={{action 'setParent' value='target.value'}}
@@ -10,19 +23,6 @@
           <option></option>
           <RegionOptions @regions={{this.sortedRegions}} @selected={{this.model.parent}} />
         </select>
-      </label>
-    </div>
-  </div>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <label>
-        Name
-        <Input @value={{this.model.name}} class='name' />
-      </label>
-
-      <label>
-        Notes
-        <Textarea @value={{this.model.notes}} class='notes' rows={{4}} />
       </label>
     </div>
   </div>
