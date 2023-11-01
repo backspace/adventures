@@ -237,7 +237,7 @@ async fn team_get_complete_notifies_and_increments_listens(db: PgPool) {
     let notification_number = config.notification_number.to_string();
 
     let twilio_create_message_body = serde_urlencoded::to_string([
-        ("Body", &"FIXME ya party time".to_string()),
+        ("Body", &"Team jortles has completed".to_string()),
         ("To", &notification_number),
         ("From", &twilio_number),
     ])

@@ -235,7 +235,30 @@ pub async fn post_team(
 }
 
 #[axum_macros::debug_handler]
-pub async fn get_complete_team(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
+pub async fn get_complete_team(
+    Path(id): Path<Uuid>,
+    Key(key): Key,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let team = sqlx::query_as::<_, Team>(
+        r#"
+      SELECT
+          t.*,
+          ARRAY[]::VARCHAR[] AS excerpts,
+          ARRAY[]::VARCHAR[] AS answers
+      FROM
+          public.teams t
+      WHERE
+          t.id = $1
+      GROUP BY
+          t.id;
+      "#,
+    )
+    .bind(id)
+    .fetch_one(&state.db)
+    .await
+    .expect("Failed to fetch team");
+
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
 
@@ -246,7 +269,10 @@ pub async fn get_complete_team(Key(key): Key, State(state): State<AppState>) -> 
     let notification_number = config.notification_number.to_string();
 
     let create_message_body = serde_urlencoded::to_string([
-        ("Body", "FIXME ya party time".to_string()),
+        (
+            "Body",
+            format!("Team {} has completed", team.name).to_string(),
+        ),
         ("To", notification_number),
         ("From", twilio_number),
     ])
