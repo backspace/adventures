@@ -55,7 +55,7 @@ async fn meeting_post_redirects_to_voicemails_get_on_record(db: PgPool) {
     .await
     .expect("Failed to execute request.");
 
-    assert_that(&response).redirects_to("/voicemails/fixme");
+    assert_that(&response).redirects_to("/voicemails/remember");
 }
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]

@@ -19,8 +19,14 @@ prompt_action = "Keep or rerecord?"
 
 goodbye = "Good luck and goodbye!"
 
+voicemail_complete = "Thank you for your message."
+
+[knut]
+voicemail = "Hello, you’ve reached knut, please leave me a message."
+
 [remember]
 ending = "Placeholder for ending message."
+voicemail = "Don’t give in to their lies! Let us know how you’re resisting."
 
 [testa]
 welcome = "welcome to unmnemonic devices"

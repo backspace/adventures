@@ -40,3 +40,9 @@ pub struct TwilioForm {
     #[serde(deserialize_with = "deserialise_twilio_speech_result")]
     pub speech_result: String,
 }
+
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct TwilioRecordingForm {
+    pub recording_url: String,
+}

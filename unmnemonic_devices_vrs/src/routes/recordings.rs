@@ -8,7 +8,12 @@ use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::{helpers::get_all_prompts, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
+use crate::{
+    helpers::get_all_prompts,
+    render_xml::RenderXml,
+    twilio_form::{TwilioForm, TwilioRecordingForm},
+    AppState,
+};
 
 #[axum_macros::debug_handler]
 pub async fn get_recordings(Key(key): Key, State(state): State<AppState>) -> impl IntoResponse {
@@ -260,12 +265,6 @@ pub async fn get_character_prompt(
     } else {
         Redirect::to(&format!("/recordings/prompts/{}", character_name)).into_response()
     }
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct TwilioRecordingForm {
-    pub recording_url: String,
 }
 
 #[derive(Serialize)]
