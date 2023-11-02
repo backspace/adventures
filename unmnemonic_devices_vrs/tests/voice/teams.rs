@@ -321,6 +321,7 @@ async fn team_post_complete_redirects(db: PgPool) {
             "/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete",
         ),
         ("Record.", "/voicemails/remember"),
+        ("Recording an encouraging.", "/voicemails/remember"),
         ("End.", "/hangup"),
     ] {
         let response = post(

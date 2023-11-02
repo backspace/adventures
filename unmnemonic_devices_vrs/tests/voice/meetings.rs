@@ -49,7 +49,7 @@ async fn meeting_post_redirects_to_voicemails_get_on_record(db: PgPool) {
     let response = post(
         db,
         "/meetings/DE805DAF-28E7-F7A9-8CB2-9806730B54E5",
-        "SpeechResult=Record.",
+        "SpeechResult=Record an encouraging.",
         true,
     )
     .await

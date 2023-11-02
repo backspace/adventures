@@ -343,7 +343,7 @@ pub async fn get_complete_team(
 pub async fn post_complete_team(Path(id): Path<Uuid>, Form(form): Form<TwilioForm>) -> Redirect {
     if form.speech_result == "repeat" {
         Redirect::to(&format!("/teams/{}/complete", id))
-    } else if form.speech_result == "record" {
+    } else if form.speech_result.contains("record") {
         Redirect::to("/voicemails/remember")
     } else if form.speech_result == "end" {
         Redirect::to("/hangup")
