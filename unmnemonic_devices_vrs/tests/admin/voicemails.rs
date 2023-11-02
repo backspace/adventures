@@ -1,7 +1,7 @@
 mod helpers {
     include!("../helpers.rs");
 }
-use helpers::get;
+use helpers::{get, post};
 
 use select::{
     document::Document,
@@ -9,6 +9,7 @@ use select::{
 };
 use speculoos::prelude::*;
 use sqlx::PgPool;
+use uuid::{uuid, Uuid};
 
 #[sqlx::test(fixtures("schema", "recordings-prompts-pure-welcome", "recordings-voicemails"))]
 async fn teams_list(db: PgPool) {
@@ -41,6 +42,10 @@ async fn teams_list(db: PgPool) {
             .unwrap(),
         &"http://example.com/voicemail-old"
     );
+    assert_eq!(
+        &first_unapproved_row.attr("data-id").unwrap(),
+        &"4a578222-9a0e-48f0-a023-2be7d873849f"
+    );
 
     let first_row = document
         .find(Descendant(Name("tbody"), Name("tr")))
@@ -61,4 +66,36 @@ async fn teams_list(db: PgPool) {
         .last()
         .unwrap();
     assert_that(&rejected_row.text()).contains("rejected");
+}
+
+#[sqlx::test(fixtures("schema", "recordings-voicemails"))]
+async fn update_voicemails(db: PgPool) {
+    let voicemail_id = uuid!("af9a306a-6913-4d83-90c4-f595ae020503");
+
+    for (approved_string, approved_value) in [
+        ("approved=true", Some(true)),
+        ("approved=false", Some(false)),
+        ("", None),
+    ] {
+        let response = post(
+            db.clone(),
+            &format!("/admin/voicemails/{}", voicemail_id),
+            approved_string,
+            true,
+        )
+        .await
+        .expect("Failed to execute request.");
+
+        assert!(response.status().is_success());
+
+        let voicemail_approved_query = sqlx::query!(
+            "SELECT approved FROM unmnemonic_devices.recordings WHERE id = $1",
+            voicemail_id
+        )
+        .fetch_one(&db)
+        .await
+        .expect("Failed to fetch voicemail approved");
+
+        assert_eq!(voicemail_approved_query.approved, approved_value);
+    }
 }

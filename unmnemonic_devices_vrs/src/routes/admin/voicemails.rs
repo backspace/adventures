@@ -1,9 +1,11 @@
 use axum::{
-    extract::{Form, State},
+    extract::{Form, Path, State},
     response::{IntoResponse, Response},
 };
 use axum_template::{Key, RenderHtml};
+use http::StatusCode;
 use serde::{Deserialize, Serialize};
+use sqlx::types::Uuid;
 use std::env;
 
 use crate::auth::User;
@@ -17,6 +19,7 @@ pub struct Voicemails {
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct Voicemail {
+    id: Uuid,
     character_name: String,
     url: String,
     approved: Option<bool>,
@@ -49,4 +52,35 @@ pub async fn get_admin_voicemails(
         state.engine,
         Voicemails { voicemails },
     )
+}
+
+#[derive(Deserialize)]
+pub struct UpdateRecordingParams {
+    approved: Option<bool>,
+}
+
+#[axum_macros::debug_handler]
+pub async fn post_admin_voicemail(
+    Path(id): Path<Uuid>,
+    State(state): State<AppState>,
+    Form(params): Form<UpdateRecordingParams>,
+) -> Response {
+    println!("approved? {:?}", params.approved);
+    sqlx::query!(
+        r#"
+UPDATE
+  unmnemonic_devices.recordings
+SET
+  approved = $1
+WHERE
+  id = $2;
+"#,
+        params.approved,
+        id
+    )
+    .execute(&state.db)
+    .await
+    .ok();
+
+    StatusCode::NO_CONTENT.into_response()
 }
