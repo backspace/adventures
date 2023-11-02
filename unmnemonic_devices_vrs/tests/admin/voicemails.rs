@@ -25,7 +25,7 @@ async fn teams_list(db: PgPool) {
     let document = Document::from(response.text().await.unwrap().as_str());
     let row_count = document.find(Descendant(Name("tbody"), Name("tr"))).count();
 
-    assert_eq!(row_count, 5);
+    assert_eq!(row_count, 6);
 
     let first_unapproved_row = document
         .find(Name("tr").and(Class("unapproved")))
@@ -56,17 +56,9 @@ async fn teams_list(db: PgPool) {
         &"http://example.com/voicemail-old"
     );
 
-    let first_approved_row = document
-        .find(Name("tr").and(Class("approved")))
-        .next()
+    let rejected_row = document
+        .find(Name("tr").and(Class("unapproved")))
+        .last()
         .unwrap();
-    assert_eq!(
-        &first_approved_row
-            .find(Name("audio"))
-            .next()
-            .unwrap()
-            .attr("src")
-            .unwrap(),
-        &"http://example.com/old-approved"
-    );
+    assert_that(&rejected_row.text()).contains("rejected");
 }

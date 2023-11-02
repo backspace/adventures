@@ -19,7 +19,7 @@ pub struct Voicemails {
 pub struct Voicemail {
     character_name: String,
     url: String,
-    approved: bool,
+    approved: Option<bool>,
 }
 
 #[axum_macros::debug_handler]

@@ -77,4 +77,17 @@ VALUES
     'da66d949-72cf-4047-8365-8f5999b435bb',
     true,
     '2023-11-01 20:49:17.188764'
+  ),
+  (
+    'a79bc610-2fe3-4bb0-94ae-b7671d26f440',
+    'voicemail',
+    NULL,
+    NULL,
+    NULL,
+    'http://example.com/rejected',
+    NULL,
+    'rejected',
+    'a79bc610-2fe3-4bb0-94ae-b7671d26f440',
+    NULL,
+    '2023-11-01 20:49:17.188764'
   );
