@@ -291,6 +291,28 @@ async fn team_get_complete_notifies_and_increments_listens(db: PgPool) {
     assert_eq!(listens.listens.unwrap(), 1);
 }
 
+#[sqlx::test(fixtures("schema", "teams", "teams-progress"))]
+async fn team_get_complete_does_not_repeat_notify(db: PgPool) {
+    let response = get(
+        db.clone(),
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let listens =
+        sqlx::query!("SELECT listens from teams WHERE id = '48e3bda7-db52-4c99-985f-337e266f7832'")
+            .fetch_one(&db)
+            .await
+            .expect("Failed to fetch meeting listens");
+
+    assert_eq!(listens.listens.unwrap(), 3);
+}
+
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn team_post_complete_redirects(db: PgPool) {
     for (speech_result, redirect) in [

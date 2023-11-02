@@ -24,6 +24,7 @@ pub struct Team {
     voicepass: String,
     excerpts: Option<Vec<String>>,
     answers: Option<Vec<String>>,
+    listens: i32,
 }
 
 #[axum_macros::debug_handler]
@@ -256,21 +257,6 @@ pub async fn get_complete_team(
     Key(key): Key,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    sqlx::query!(
-        r#"
-        UPDATE
-          public.teams
-        SET
-          listens = listens + 1
-        WHERE
-          id = $1;
-        "#,
-        id
-    )
-    .execute(&state.db)
-    .await
-    .ok();
-
     let team = sqlx::query_as::<_, Team>(
         r#"
       SELECT
@@ -290,43 +276,60 @@ pub async fn get_complete_team(
     .await
     .expect("Failed to fetch team");
 
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    if team.listens == 0 {
+        let env_config_provider = EnvVarProvider::new(env::vars().collect());
+        let config = &env_config_provider.get_config();
 
-    let account_sid = config.twilio_account_sid.to_string();
-    let api_sid = config.twilio_api_key_sid.to_string();
-    let api_secret = config.twilio_api_key_secret.to_string();
-    let twilio_number = config.twilio_number.to_string();
-    let notification_number = config.notification_number.to_string();
+        let account_sid = config.twilio_account_sid.to_string();
+        let api_sid = config.twilio_api_key_sid.to_string();
+        let api_secret = config.twilio_api_key_secret.to_string();
+        let twilio_number = config.twilio_number.to_string();
+        let notification_number = config.notification_number.to_string();
 
-    let create_message_body = serde_urlencoded::to_string([
-        (
-            "Body",
-            format!("Team {} has completed", team.name).to_string(),
-        ),
-        ("To", notification_number),
-        ("From", twilio_number),
-    ])
-    .expect("Could not encode call creation body");
+        let create_message_body = serde_urlencoded::to_string([
+            (
+                "Body",
+                format!("Team {} has completed", team.name).to_string(),
+            ),
+            ("To", notification_number),
+            ("From", twilio_number),
+        ])
+        .expect("Could not encode call creation body");
 
-    let basic_auth = format!("{}:{}", api_sid, api_secret);
-    let auth_header_value = format!(
-        "Basic {}",
-        general_purpose::STANDARD_NO_PAD.encode(basic_auth)
-    );
+        let basic_auth = format!("{}:{}", api_sid, api_secret);
+        let auth_header_value = format!(
+            "Basic {}",
+            general_purpose::STANDARD_NO_PAD.encode(basic_auth)
+        );
 
-    let client = reqwest::Client::new();
-    client
-        .post(format!(
-            "{}/2010-04-01/Accounts/{}/Messages.json",
-            state.twilio_address, account_sid
-        ))
-        .header("Authorization", auth_header_value.clone())
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .body(create_message_body)
-        .send()
-        .await
-        .ok();
+        let client = reqwest::Client::new();
+        client
+            .post(format!(
+                "{}/2010-04-01/Accounts/{}/Messages.json",
+                state.twilio_address, account_sid
+            ))
+            .header("Authorization", auth_header_value.clone())
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(create_message_body)
+            .send()
+            .await
+            .ok();
+    }
+
+    sqlx::query!(
+        r#"
+    UPDATE
+      public.teams
+    SET
+      listens = listens + 1
+    WHERE
+      id = $1;
+    "#,
+        id
+    )
+    .execute(&state.db)
+    .await
+    .ok();
 
     RenderXml(
         key,
