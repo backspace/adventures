@@ -1,79 +1,75 @@
-<html>
-  <head>
-    <style>
-      .hidden {
-        display: none;
+{{#> admin/layout }}
+  <label>
+    your phone number
+    <input id="number-field" name="number" placeholder="+1-204-287-7433" />
+  </label>
+  <table>
+    <thead>
+      <tr>
+        <th>
+          start
+        </th>
+        <th>
+          from
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each calls}}
+        <tr class="call" data-sid="{{this.sid}}">
+          <td>
+            {{this.start}}
+          </td>
+          <td>
+            {{this.from}}
+          </td>
+        </tr>
+      {{else}}
+        <tr>
+          <td>
+            no calls
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      numberField = document.querySelector('#number-field');
+      let storedNumber = localStorage.getItem('number');
+
+      if (storedNumber) {
+        numberField.value = storedNumber;
       }
-    </style>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        numberField = document.querySelector('#number-field');
-        let storedNumber = localStorage.getItem('number');
 
-        if (storedNumber) {
-          numberField.value = storedNumber;
-        }
-
-        numberField.addEventListener('change', function (event) {
-          localStorage.setItem('number', numberField.value);
-        });
-
-        let strippedNumber = storedNumber.replace(/[\\\+-]/g, '');
-
-        document.querySelectorAll('.call').forEach(function (row) {
-          if (row.innerHTML.includes(strippedNumber)) {
-            row.classList.add('hidden');
-          } else {
-            row.insertAdjacentHTML('beforeend', `<button onclick="call(event)">Call</button>`);
-          }
-        });
+      numberField.addEventListener('change', function (event) {
+        localStorage.setItem('number', numberField.value);
       });
 
-      function call(event) {
-        fetch(window.location.href, {
-          method: 'POST',
-          body: new URLSearchParams({
-            sid: event.target.parentElement.dataset['sid'],
-            to: numberField.value
-          }),
-        });
-      }
-    </script>
-  </head>
-  <body>
-    <label>
-      your phone number
-      <input id="number-field" name="number" placeholder="+1-204-287-7433" />
-    </label>
-    <table>
-      <thead>
-        <tr>
-          <th>
-            start
-          </th>
-          <th>
-            from
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each calls}}
-          <tr class="call" data-sid="{{this.sid}}">
-            <td>
-              {{this.start}}
-            </td>
-            <td>
-              {{this.from}}
-            </td>
-          </tr>
-        {{else}}
-          <tr>
-            <td>
-              no calls
-            </td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  </body>
-</html>
+      let strippedNumber = storedNumber.replace(/[\\\+-]/g, '');
+
+      document.querySelectorAll('.call').forEach(function (row) {
+        if (row.innerHTML.includes(strippedNumber)) {
+          row.classList.add('hidden');
+        } else {
+          row.insertAdjacentHTML('beforeend', `<button onclick="call(event)">Call</button>`);
+        }
+      });
+    });
+
+    function call(event) {
+      fetch(window.location.href, {
+        method: 'POST',
+        body: new URLSearchParams({
+          sid: event.target.parentElement.dataset['sid'],
+          to: numberField.value
+        }),
+      });
+    }
+  </script>
+{{/admin/layout}}

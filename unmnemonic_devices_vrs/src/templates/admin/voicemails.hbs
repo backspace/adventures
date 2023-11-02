@@ -1,68 +1,64 @@
-<html>
-  <head>
-    <style>
-      .approved {
-        opacity: 0.7;
-      }
+{{#> admin/layout}}
+  <table>
+    <thead>
+      <tr>
+        <th>
+          character name
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each voicemails}}
+        <tr class="{{#if approved}}approved{{else}}unapproved{{/if}}" data-id="{{id}}">
+          <td>
+            {{character_name}}
+          </td>
+          <td>
+            <audio controls src="{{url}}"></audio>
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  <style>
+    .approved {
+      opacity: 0.7;
+    }
 
-      .unapproved + .approved td {
-        border-top: 5px solid black;
-      }
-    </style>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('tbody tr').forEach(function (row) {
-          if (row.classList.contains('unapproved')) {
-            insertButton(row, 'Approve', true);
-          } else {
-            insertButton(row, 'Unapprove', false);
-          }
-
-          insertButton(row, 'Reject', '');
-        });
-      });
-
-      function updateApproval(id, approvedArg) {
-        let searchParams = {};
-
-        if (approvedArg) {
-          searchParams.approved = approvedArg;
+    .unapproved + .approved td {
+      border-top: 5px solid black;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('tbody tr').forEach(function (row) {
+        if (row.classList.contains('unapproved')) {
+          insertButton(row, 'Approve', true);
+        } else {
+          insertButton(row, 'Unapprove', false);
         }
 
-        fetch(`${window.location.href}/${id}`, {
-          method: 'POST',
-          body: new URLSearchParams(searchParams),
-        }).then(() => {
-          window.location.reload();
-        });
+        insertButton(row, 'Reject', '');
+      });
+    });
+
+    function updateApproval(id, approvedArg) {
+      let searchParams = {};
+
+      if (approvedArg) {
+        searchParams.approved = approvedArg;
       }
 
-      function insertButton(row, label, approvedArg) {
-        row.insertAdjacentHTML('beforeend', `<td><button onclick="updateApproval('${row.dataset.id}', '${approvedArg}')">${label}</button></td>`);
-      }
-    </script>
-  </head>
-  <body>
-    <table>
-      <thead>
-        <tr>
-          <th>
-            character name
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each voicemails}}
-          <tr class="{{#if approved}}approved{{else}}unapproved{{/if}}" data-id="{{id}}">
-            <td>
-              {{character_name}}
-            </td>
-            <td>
-              <audio controls src="{{url}}"></audio>
-            </td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  </body>
-</html>
+      fetch(`${window.location.href}/${id}`, {
+        method: 'POST',
+        body: new URLSearchParams(searchParams),
+      }).then(() => {
+        window.location.reload();
+      });
+    }
+
+    function insertButton(row, label, approvedArg) {
+      row.insertAdjacentHTML('beforeend', `<td><button onclick="updateApproval('${row.dataset.id}', '${approvedArg}')">${label}</button></td>`);
+    }
+  </script>
+{{/admin/layout}}

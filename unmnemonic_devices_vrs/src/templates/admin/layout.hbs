@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <title>unmnemonic devices</title>
+    <style>
+      nav ul {
+        margin-bottom: 1rem;
+        list-style-type: none;
+        padding: 0;
+        display: flex;
+        gap: 1rem;
+      }
+
+      nav .active {
+        font-weight: bold;
+      }
+    </style>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('nav a').forEach(function (link) {
+          if (window.location.pathname.endsWith(link.innerText)) {
+            link.classList.add('active');
+          }
+        });
+      });
+    </script>
+  </head>
+  <body>
+    {{> admin/nav}}
+    {{> @partial-block }}
+  </body>
+</html>

@@ -1,40 +1,36 @@
-<html>
-  <head>
-    <style>
-      .team.complete {
-        background-color: pink;
-      }
-    </style>
-  </head>
-  <body>
-    <table>
-      <thead>
-        <tr>
-          <th>
-            name
-          </th>
-          <th>
-            voicepass
-          </th>
+{{#> admin/layout }}
+  <table>
+    <thead>
+      <tr>
+        <th>
+          name
+        </th>
+        <th>
+          voicepass
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each teams}}
+        <tr class="team {{#if complete}}complete{{else}}incomplete{{/if}}">
+          <td>
+            {{name}}
+          </td>
+          <td>
+            {{voicepass}}
+          </td>
+          {{#each region_listens}}
+            <td>
+              {{this}}
+            </td>
+          {{/each}}
         </tr>
-      </thead>
-      <tbody>
-        {{#each teams}}
-          <tr class="team {{#if complete}}complete{{else}}incomplete{{/if}}">
-            <td>
-              {{name}}
-            </td>
-            <td>
-              {{voicepass}}
-            </td>
-            {{#each region_listens}}
-              <td>
-                {{this}}
-              </td>
-            {{/each}}
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  </body>
-</html>
+      {{/each}}
+    </tbody>
+  </table>
+  <style>
+    .team.complete {
+      background-color: pink;
+    }
+  </style>
+{{/admin/layout}}
