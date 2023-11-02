@@ -120,6 +120,20 @@ async fn team_post_confirm_redirects_to_team_show_on_yes(db: PgPool) {
     assert_that(&yeah_response).redirects_to("/teams/48e3bda7-db52-4c99-985f-337e266f7832");
 }
 
+#[sqlx::test(fixtures("schema", "teams", "teams-progress"))]
+async fn team_post_confirm_redirects_to_team_complete_on_yes_when_team_is_complete(db: PgPool) {
+    let response = post(
+        db.clone(),
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832/confirm",
+        "SpeechResult=Yes. Yes.",
+        true,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert_that(&response).redirects_to("/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete");
+}
+
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn team_post_confirm_redirects_to_teams_show_on_no(db: PgPool) {
     let response = post(
@@ -256,7 +270,7 @@ async fn team_get_complete_notifies_and_increments_listens(db: PgPool) {
 
     let response = get_with_twilio(
         InjectableServices {
-            db,
+            db: db.clone(),
             twilio_address: mock_twilio.uri(),
         },
         "/teams/48e3bda7-db52-4c99-985f-337e266f7832/complete",
@@ -267,6 +281,14 @@ async fn team_get_complete_notifies_and_increments_listens(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let listens =
+        sqlx::query!("SELECT listens from teams WHERE id = '48e3bda7-db52-4c99-985f-337e266f7832'")
+            .fetch_one(&db)
+            .await
+            .expect("Failed to fetch meeting listens");
+
+    assert_eq!(listens.listens.unwrap(), 1);
 }
 
 #[sqlx::test(fixtures("schema", "teams"))]

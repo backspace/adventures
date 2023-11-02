@@ -112,7 +112,8 @@ CREATE TABLE public.teams (
     user_ids uuid[] DEFAULT ARRAY[]::uuid[],
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL,
-    voicepass character varying(255)
+    voicepass character varying(255),
+    listens integer DEFAULT 0
 );
 
 
@@ -441,3 +442,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20230508143302);
 INSERT INTO public."schema_migrations" (version) VALUES (20231025044059);
 INSERT INTO public."schema_migrations" (version) VALUES (20231025052751);
 INSERT INTO public."schema_migrations" (version) VALUES (20231029032644);
+INSERT INTO public."schema_migrations" (version) VALUES (20231102005345);

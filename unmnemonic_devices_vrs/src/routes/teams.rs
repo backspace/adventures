@@ -108,9 +108,25 @@ pub async fn get_confirm_team(
 }
 
 #[axum_macros::debug_handler]
-pub async fn post_confirm_team(Path(id): Path<Uuid>, Form(form): Form<TwilioForm>) -> Redirect {
+pub async fn post_confirm_team(
+    Path(id): Path<Uuid>,
+    State(state): State<AppState>,
+    Form(form): Form<TwilioForm>,
+) -> Redirect {
     if form.speech_result.contains("yes") || form.speech_result.contains("yeah") {
-        Redirect::to(&format!("/teams/{}", id))
+        let completion_query = sqlx::query!(
+            "SELECT listens > 0 AS complete FROM teams WHERE id = $1",
+            id
+        )
+        .fetch_one(&state.db)
+        .await
+        .expect("Failed to fetch team listens");
+
+        if completion_query.complete.unwrap() {
+            Redirect::to(&format!("/teams/{}/complete", id))
+        } else {
+            Redirect::to(&format!("/teams/{}", id))
+        }
     } else {
         Redirect::to("/teams")
     }
@@ -240,6 +256,21 @@ pub async fn get_complete_team(
     Key(key): Key,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
+    sqlx::query!(
+        r#"
+        UPDATE
+          public.teams
+        SET
+          listens = listens + 1
+        WHERE
+          id = $1;
+        "#,
+        id
+    )
+    .execute(&state.db)
+    .await
+    .ok();
+
     let team = sqlx::query_as::<_, Team>(
         r#"
       SELECT
