@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <style>
+      .approved {
+        opacity: 0.7;
+      }
+
+      .unapproved + .approved td {
+        border-top: 5px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            character name
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each voicemails}}
+          <tr class="{{#if approved}}approved{{else}}unapproved{{/if}}">
+            <td>
+              {{character_name}}
+            </td>
+            <td>
+              <audio controls src="{{url}}"></audio>
+            </td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </body>
+</html>

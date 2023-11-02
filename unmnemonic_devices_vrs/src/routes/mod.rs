@@ -9,6 +9,7 @@ mod voicemails;
 
 pub use admin::calls::*;
 pub use admin::teams::*;
+pub use admin::voicemails::*;
 
 pub use conferences::*;
 pub use meetings::*;

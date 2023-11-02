@@ -189,7 +189,10 @@ CREATE TABLE unmnemonic_devices.recordings (
     url character varying(255),
     transcription text,
     character_name character varying(255),
-    prompt_name character varying(255)
+    prompt_name character varying(255),
+    approved boolean DEFAULT false,
+    team_listen_ids uuid[] DEFAULT ARRAY[]::uuid[],
+    created_at timestamp(0) without time zone DEFAULT '2023-11-01 20:49:17.188764'::timestamp without time zone
 );
 
 
@@ -443,3 +446,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231025044059);
 INSERT INTO public."schema_migrations" (version) VALUES (20231025052751);
 INSERT INTO public."schema_migrations" (version) VALUES (20231029032644);
 INSERT INTO public."schema_migrations" (version) VALUES (20231102005345);
+INSERT INTO public."schema_migrations" (version) VALUES (20231102013852);
