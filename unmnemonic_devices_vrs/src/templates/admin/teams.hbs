@@ -1,4 +1,11 @@
 <html>
+  <head>
+    <style>
+      .team.complete {
+        background-color: pink;
+      }
+    </style>
+  </head>
   <body>
     <table>
       <thead>
@@ -13,7 +20,7 @@
       </thead>
       <tbody>
         {{#each teams}}
-          <tr class="team">
+          <tr class="team {{#if complete}}complete{{else}}incomplete{{/if}}">
             <td>
               {{name}}
             </td>

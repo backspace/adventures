@@ -20,6 +20,7 @@ pub struct Team {
     name: String,
     voicepass: String,
     region_listens: Vec<String>,
+    complete: bool,
 }
 
 #[axum_macros::debug_handler]
@@ -33,10 +34,12 @@ pub async fn get_admin_teams(
             SELECT
                 t.name AS name,
                 t.voicepass AS voicepass,
+                complete,
                 ARRAY_AGG(region_listens ORDER BY region_listens) AS region_listens
             FROM (
                 SELECT
                     t.name,
+                    t.listens > 0 as complete,
                     t.voicepass,
                     r.name || ': ' || COALESCE(SUM(m.listens), 0) AS region_listens
                 FROM
@@ -45,10 +48,10 @@ pub async fn get_admin_teams(
                 LEFT JOIN unmnemonic_devices.destinations d ON m.destination_id = d.id
                 LEFT JOIN unmnemonic_devices.regions r ON d.region_id = r.id
                 GROUP BY
-                    t.name, t.voicepass, r.name
+                    t.name, complete, t.voicepass, r.name
             ) t
             GROUP BY
-                t.name, t.voicepass
+                t.name, complete, t.voicepass
             ORDER BY
                 t.name;
         "#,

@@ -5,7 +5,7 @@ use helpers::get;
 
 use select::{
     document::Document,
-    predicate::{Class, Descendant, Name},
+    predicate::{Class, Descendant, Name, Predicate},
 };
 use speculoos::prelude::*;
 use sqlx::PgPool;
@@ -13,6 +13,7 @@ use sqlx::PgPool;
 #[sqlx::test(fixtures(
     "schema",
     "teams",
+    "teams-progress",
     "regions",
     "books",
     "destinations",
@@ -31,13 +32,23 @@ async fn teams_list(db: PgPool) {
     );
 
     let document = Document::from(response.text().await.unwrap().as_str());
-    let row = document
-        .find(Descendant(Name("tbody"), Class("team")))
+    let complete_row = document
+        .find(Descendant(
+            Name("tbody"),
+            Class("team").and(Class("complete")),
+        ))
         .next()
         .unwrap();
 
-    assert_that(&row.text()).contains("jortles");
-    assert_that(&row.text()).contains("a voicepass");
-    assert_that(&row.text()).contains("Cornish Library: 0");
-    assert_that(&row.text()).contains("LI: 2");
+    assert_that(&complete_row.text()).contains("jortles");
+    assert_that(&complete_row.text()).contains("a voicepass");
+    assert_that(&complete_row.text()).contains("Cornish Library: 0");
+    assert_that(&complete_row.text()).contains("LI: 2");
+
+    let incomplete_row = document
+        .find(Class("team").and(Class("incomplete")))
+        .next()
+        .unwrap();
+
+    assert_that(&incomplete_row.text()).contains("tortles");
 }
