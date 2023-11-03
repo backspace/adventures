@@ -1,12 +1,18 @@
 mod helpers {
     include!("../helpers.rs");
 }
-use helpers::{get, post, RedirectTo};
+use helpers::{get, post_with_twilio, RedirectTo};
 
 use select::{document::Document, predicate::Name};
 use serde::Serialize;
+use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::PgPool;
+use std::env;
+use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
+use unmnemonic_devices_vrs::InjectableServices;
+use wiremock::matchers::{body_string, method, path_regex};
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
 #[sqlx::test(fixtures("schema"))]
 async fn get_voicemail_pure_sets_up_recording(db: PgPool) {
@@ -30,9 +36,35 @@ pub struct RecordingUrl {
 }
 
 #[sqlx::test(fixtures("schema"))]
-async fn post_voicemail_stores_voicemail(db: PgPool) {
-    let response = post(
-        db.clone(),
+async fn post_voicemail_stores_voicemail_and_notifies(db: PgPool) {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+    let twilio_number = config.twilio_number.to_string();
+    let notification_number = config.notification_number.to_string();
+
+    let twilio_create_message_body = serde_urlencoded::to_string([
+        ("Body", &"There is a new voicemail for knut".to_string()),
+        ("To", &notification_number),
+        ("From", &twilio_number),
+    ])
+    .expect("Could not encode message creation body");
+
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(method("POST"))
+        .and(path_regex(r"^/2010-04-01/Accounts/.*/Messages.json$"))
+        .and(body_string(twilio_create_message_body.to_string()))
+        .respond_with(ResponseTemplate::new(201).set_body_json(json!({})))
+        .expect(1)
+        .named("create message")
+        .mount(&mock_twilio)
+        .await;
+
+    let response = post_with_twilio(
+        InjectableServices {
+            db: db.clone(),
+            twilio_address: mock_twilio.uri(),
+        },
         "/voicemails/knut",
         "RecordingUrl=http://example.com/voicemail",
         false,
