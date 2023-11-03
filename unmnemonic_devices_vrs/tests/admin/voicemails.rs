@@ -12,7 +12,7 @@ use sqlx::PgPool;
 use uuid::uuid;
 
 #[sqlx::test(fixtures("schema", "recordings-prompts-pure-welcome", "recordings-voicemails"))]
-async fn teams_list(db: PgPool) {
+async fn list_voicemails(db: PgPool) {
     let response = get(db, "/admin/voicemails", false)
         .await
         .expect("Failed to execute request.");
