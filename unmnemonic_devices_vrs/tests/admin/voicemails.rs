@@ -9,7 +9,7 @@ use select::{
 };
 use speculoos::prelude::*;
 use sqlx::PgPool;
-use uuid::{uuid, Uuid};
+use uuid::uuid;
 
 #[sqlx::test(fixtures("schema", "recordings-prompts-pure-welcome", "recordings-voicemails"))]
 async fn teams_list(db: PgPool) {

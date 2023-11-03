@@ -6,10 +6,8 @@ use axum_template::{Key, RenderHtml};
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
 use sqlx::types::Uuid;
-use std::env;
 
 use crate::auth::User;
-use crate::config::{ConfigProvider, EnvVarProvider};
 use crate::AppState;
 
 #[derive(Serialize)]

@@ -1,12 +1,11 @@
 use axum::{
-    extract::{Path, Query, State},
+    extract::{Path, State},
     response::{IntoResponse, Redirect},
     Form,
 };
 use axum_template::Key;
 use base64::{engine::general_purpose, Engine as _};
-use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use serde::Serialize;
 use std::env;
 use uuid::Uuid;
 

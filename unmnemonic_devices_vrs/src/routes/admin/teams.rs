@@ -1,13 +1,8 @@
-use axum::{
-    extract::{Form, State},
-    response::{IntoResponse, Response},
-};
+use axum::{extract::State, response::IntoResponse};
 use axum_template::{Key, RenderHtml};
-use serde::{Deserialize, Serialize};
-use std::env;
+use serde::Serialize;
 
 use crate::auth::User;
-use crate::config::{ConfigProvider, EnvVarProvider};
 use crate::AppState;
 
 #[derive(Serialize)]
