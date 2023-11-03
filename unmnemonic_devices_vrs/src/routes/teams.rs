@@ -294,7 +294,7 @@ pub async fn get_complete_team(
             ("To", notification_number),
             ("From", twilio_number),
         ])
-        .expect("Could not encode call creation body");
+        .expect("Could not encode completion message creation body");
 
         let basic_auth = format!("{}:{}", api_sid, api_secret);
         let auth_header_value = format!(
