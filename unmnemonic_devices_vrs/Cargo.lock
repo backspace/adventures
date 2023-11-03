@@ -768,6 +768,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "handlebars-concat"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4d7f4fb2ed27a5dbf49a7a6928cadf981eacd68db44bf96f4ce0730af762b529"
+dependencies = [
+ "handlebars",
+ "serde_json",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2722,6 +2732,7 @@ dependencies = [
  "base64 0.21.4",
  "chrono",
  "handlebars",
+ "handlebars-concat",
  "http",
  "mime",
  "reqwest",

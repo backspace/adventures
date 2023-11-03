@@ -11,6 +11,7 @@ use axum::{
 };
 use axum_template::engine::Engine;
 use handlebars::Handlebars;
+use handlebars_concat::HandlebarsConcat;
 use helpers::get_all_prompts;
 use serde::Deserialize;
 use sqlx::PgPool;
@@ -65,6 +66,7 @@ pub async fn app(services: InjectableServices) -> Router {
     let mut hbs = Handlebars::new();
     hbs.register_templates_directory(".hbs", "src/templates")
         .expect("Failed to register templates directory");
+    hbs.register_helper("concat", Box::new(HandlebarsConcat));
 
     let prompts_string =
         fs::read_to_string("src/prompts.toml").expect("Failed to read the prompts file");
