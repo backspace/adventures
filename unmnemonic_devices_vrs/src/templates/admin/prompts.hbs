@@ -1,0 +1,20 @@
+{{#> admin/layout}}
+  {{#each prompts as |value character_name|}}
+    <h2>{{character_name}}</h2>
+    <table data-character="{{character_name}}">
+      <tbody>
+        {{#each value as |prompt_text_and_maybe_url prompt_name|}}
+          <tr>
+            <td><code>{{prompt_name}}</code></td>
+            <td>{{prompt_text_and_maybe_url.[0]}}</td>
+            {{#if prompt_text_and_maybe_url.[1]}}
+              <td><audio controls src="{{prompt_text_and_maybe_url.[1]}}"></audio></td>
+            {{else}}
+              <td>⚠️</td>
+            {{/if}}
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{/each}}
+{{/admin/layout}}
