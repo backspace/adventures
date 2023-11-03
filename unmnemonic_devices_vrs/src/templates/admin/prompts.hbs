@@ -1,6 +1,6 @@
 {{#> admin/layout}}
   {{#each prompts as |value character_name|}}
-    <h2>{{character_name}}</h2>
+    <h2 data-character="{{character_name}}">{{character_name}}</h2>
     <table data-character="{{character_name}}">
       <tbody>
         {{#each value as |prompt_text_and_maybe_url prompt_name|}}
@@ -17,4 +17,27 @@
       </tbody>
     </table>
   {{/each}}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('table[data-character]').forEach(function(table) {
+        let header = document.querySelector(`h2[data-character='${table.dataset.character}']`);
+
+        header.insertAdjacentHTML('beforeend', `<button onclick="playAllFor('${table.dataset.character}')">Play all</button>`);
+      });
+    });
+
+    // Adapted from https://stackoverflow.com/a/69305053/760389
+    async function playAllFor(character) {
+      let sounds = document.querySelectorAll(`table[data-character='${character}'] audio`);
+
+      for (let sound of sounds) {
+        let ended = new Promise(resolve =>
+          sound.addEventListener("ended", resolve, {once: true})
+        );
+
+        sound.play();
+        await ended;
+      }
+    }
+  </script>
 {{/admin/layout}}
