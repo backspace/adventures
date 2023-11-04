@@ -15,8 +15,9 @@
         It is down
       </Say>
     {{else}}
-      <Gather timeout="3" input="speech" hints="begun, recordings, jortle, tortle">
+      <Gather timeout="3" input="speech" hints="begun, recordings, {{#each character_names}}{{this}}, {{/each}}">
         {{{lookup prompts "pure.welcome"}}}
+        {{{lookup prompts "pure.voicemail_gather"}}}
       </Gather>
       {{> restart }}
     {{/if}}

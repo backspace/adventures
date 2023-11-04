@@ -1,6 +1,9 @@
 [pure]
 monitoring = "Your call may be recorded for quality assurance and training purposes."
 welcome = "welcome to unmnemonic devices"
+
+voicemail_gather = "Leave a message for someone by saying their name."
+
 voicepass = "what is your voice password?"
 repeat_record_end = "Repeat, record an encouraging message for others, or end?"
 

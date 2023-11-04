@@ -22,7 +22,7 @@ async fn root_serves_prewelcome(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("schema", "settings"))]
-async fn root_serves_synthetic_disclaimer_when_no_recording(db: PgPool) {
+async fn root_serves_synthetic_disclaimer_when_no_recording_and_hints_character_names(db: PgPool) {
     let response = get(db, "/", false)
         .await
         .expect("Failed to execute request.");
@@ -38,6 +38,19 @@ async fn root_serves_synthetic_disclaimer_when_no_recording(db: PgPool) {
             .text(),
     )
     .contains("welcome");
+
+    let gather_hints = &document
+        .find(Name("gather"))
+        .next()
+        .unwrap()
+        .attr("hints")
+        .unwrap();
+
+    assert_that(gather_hints).contains("knut");
+    assert_that(gather_hints).contains("pure");
+    assert_that(gather_hints).contains("remember");
+    assert_that(gather_hints).contains("testa");
+    assert_that(gather_hints).contains("testb");
 }
 
 #[sqlx::test(fixtures("schema", "settings", "recordings-prompts-pure-welcome"))]
@@ -104,31 +117,25 @@ async fn root_serves_down_when_down(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("schema"))]
-async fn root_post_begun_redirects_to_root_begun(db: PgPool) {
-    let body = "SpeechResult=Begun.";
-
-    let response = post(db, "/", body, true)
+async fn post_recordings_redirects(db: PgPool) {
+    for (speech_result, redirect) in [
+        ("Begun.", "/?begun"),
+        ("Recordings.", "/recordings"),
+        ("Knut.", "/voicemails/knut"),
+        ("Pure.", "/voicemails/pure"),
+        ("Remember.", "/voicemails/remember"),
+        ("whatever.", "/"),
+    ] {
+        let response = post(
+            db.clone(),
+            "/",
+            // Twilio editorialises punctuation and always capitalises.
+            &format!("SpeechResult={}", speech_result),
+            true,
+        )
         .await
-        .expect("Failed to execute response");
-    assert_that(&response).redirects_to("/?begun");
-}
+        .expect("Failed to execute request.");
 
-#[sqlx::test(fixtures("schema"))]
-async fn root_post_recordings_redirects_to_root_begun(db: PgPool) {
-    let body = "SpeechResult=Recordings.";
-
-    let response = post(db, "/", body, true)
-        .await
-        .expect("Failed to execute response");
-    assert_that(&response).redirects_to("/recordings");
-}
-
-#[sqlx::test(fixtures("schema"))]
-async fn root_post_else_redirects_to_root(db: PgPool) {
-    let body = "SpeechResult=whatever";
-
-    let response = post(db, "/", body, true)
-        .await
-        .expect("Failed to execute response");
-    assert_that(&response).redirects_to("/");
+        assert_that(&response).redirects_to(redirect);
+    }
 }

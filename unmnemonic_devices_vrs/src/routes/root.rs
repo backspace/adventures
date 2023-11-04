@@ -83,6 +83,7 @@ pub struct RootData {
     begun: bool,
     down: bool,
     ending: bool,
+    character_names: Vec<String>,
 }
 
 #[axum_macros::debug_handler]
@@ -105,13 +106,28 @@ pub async fn get_root(
             begun: settings.begun.unwrap() || params.begun.is_some(),
             down: settings.down.unwrap(),
             ending: settings.ending.unwrap(),
+            character_names: state
+                .prompts
+                .tables
+                .keys()
+                .cloned()
+                .collect::<Vec<String>>(),
         },
     )
 }
 
 #[axum_macros::debug_handler]
-pub async fn post_root(Form(form): Form<TwilioForm>) -> Redirect {
-    if form.speech_result == "begun" {
+pub async fn post_root(State(state): State<AppState>, Form(form): Form<TwilioForm>) -> Redirect {
+    let character_names = state
+        .prompts
+        .tables
+        .keys()
+        .cloned()
+        .collect::<Vec<String>>();
+
+    if character_names.contains(&form.speech_result) {
+        Redirect::to(&format!("/voicemails/{}", form.speech_result))
+    } else if form.speech_result == "begun" {
         Redirect::to("/?begun")
     } else if form.speech_result == "recordings" {
         Redirect::to("/recordings")
