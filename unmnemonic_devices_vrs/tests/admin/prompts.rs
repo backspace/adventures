@@ -11,7 +11,7 @@ use speculoos::prelude::*;
 use sqlx::PgPool;
 
 #[sqlx::test(fixtures("schema"))]
-async fn list_prompts(db: PgPool) {
+async fn list_prompts_without_test_ones(db: PgPool) {
     let response = get(db, "/admin/prompts", false)
         .await
         .expect("Failed to execute request.");
@@ -25,15 +25,15 @@ async fn list_prompts(db: PgPool) {
     let document = Document::from(response.text().await.unwrap().as_str());
 
     let table_count = document.find(Name("table")).count();
-    assert_eq!(table_count, 5);
+    assert_eq!(table_count, 3);
 
     let audio_count = document.find(Name("audio")).count();
     assert_eq!(audio_count, 0);
 
-    let testa_prompt_count = document
-        .find(Attr("data-character", "testa").descendant(Name("tr")))
+    let remember_prompt_count = document
+        .find(Attr("data-character", "remember").descendant(Name("tr")))
         .count();
-    assert_eq!(testa_prompt_count, 2);
+    assert_eq!(remember_prompt_count, 2);
 
     let knut_prompt_row = document
         .find(

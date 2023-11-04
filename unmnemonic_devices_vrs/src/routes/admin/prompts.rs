@@ -43,18 +43,22 @@ pub async fn get_admin_prompts(
     > = HashMap::new();
 
     for (character, prompts) in state.prompts.tables.iter() {
-        let mut character_name_to_prompt_and_maybe_url: HashMap<String, (String, Option<String>)> =
-            HashMap::new();
+        if !character.starts_with("test") {
+            let mut character_name_to_prompt_and_maybe_url: HashMap<
+                String,
+                (String, Option<String>),
+            > = HashMap::new();
 
-        for (prompt_name, prompt_string) in prompts.clone().iter() {
-            let key = format!("{}.{}", character, prompt_name);
-            let url = namespaced_prompt_to_url.get(&key).cloned();
-            character_name_to_prompt_and_maybe_url
-                .insert(prompt_name.clone(), (prompt_string.clone(), url));
+            for (prompt_name, prompt_string) in prompts.clone().iter() {
+                let key = format!("{}.{}", character, prompt_name);
+                let url = namespaced_prompt_to_url.get(&key).cloned();
+                character_name_to_prompt_and_maybe_url
+                    .insert(prompt_name.clone(), (prompt_string.clone(), url));
+            }
+
+            character_prompts_with_urls
+                .insert(character.clone(), character_name_to_prompt_and_maybe_url);
         }
-
-        character_prompts_with_urls
-            .insert(character.clone(), character_name_to_prompt_and_maybe_url);
     }
 
     RenderHtml(
