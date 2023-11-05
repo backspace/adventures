@@ -9,11 +9,7 @@ use std::{env, str::from_utf8};
 
 // Adapted from https://www.shuttle.rs/blog/2023/09/27/rust-vs-go-comparison#middleware-1
 
-// A user that is authorized to access the stats endpoint.
-//
-// No fields are required, we just need to know that the user is authorized. In
-// a production application you would probably want to have some kind of user
-// ID or similar here.
+// A user that is authorized to access admin routes.
 pub struct User;
 
 #[async_trait]
