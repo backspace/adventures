@@ -5,7 +5,7 @@ defmodule AdventureRegistrations.Repo.Migrations.AddUnmnemonicDevicesRecordingsA
     alter table("recordings", prefix: "unmnemonic_devices") do
       add(:approved, :boolean, default: false)
       add(:team_listen_ids, {:array, :uuid}, default: [])
-      add(:created_at, :utc_datetime, default: "now()")
+      add(:created_at, :utc_datetime, default: fragment("now()"))
     end
   end
 end

@@ -6,7 +6,7 @@ defmodule AdventureRegistrations.Repo.Migrations.CreateUnmnemonicDevicesCalls do
       add(:id, :string, primary_key: true)
       add(:number, :string)
       add(:team_id, references("teams", prefix: "public", type: :uuid))
-      add(:created_at, :utc_datetime, default: "now()")
+      add(:created_at, :utc_datetime, default: fragment("now()"))
     end
   end
 end

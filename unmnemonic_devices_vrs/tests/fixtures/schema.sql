@@ -160,7 +160,7 @@ CREATE TABLE unmnemonic_devices.calls (
     id character varying(255) NOT NULL,
     number character varying(255),
     team_id uuid,
-    created_at timestamp(0) without time zone DEFAULT '2023-11-05 07:53:15.141355'::timestamp without time zone
+    created_at timestamp(0) without time zone DEFAULT now()
 );
 
 
@@ -205,7 +205,7 @@ CREATE TABLE unmnemonic_devices.recordings (
     prompt_name character varying(255),
     approved boolean DEFAULT false,
     team_listen_ids uuid[] DEFAULT ARRAY[]::uuid[],
-    created_at timestamp(0) without time zone DEFAULT '2023-11-01 20:49:17.188764'::timestamp without time zone,
+    created_at timestamp(0) without time zone DEFAULT now(),
     call_id character varying(255)
 );
 
