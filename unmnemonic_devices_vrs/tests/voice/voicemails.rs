@@ -1,7 +1,7 @@
 mod helpers {
     include!("../helpers.rs");
 }
-use helpers::{get, post, post_with_twilio, RedirectTo};
+use helpers::{get, post, post_with_twilio};
 
 use select::{document::Document, predicate::Name};
 use serde::Serialize;
