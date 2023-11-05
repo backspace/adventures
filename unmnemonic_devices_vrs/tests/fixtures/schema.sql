@@ -158,7 +158,8 @@ CREATE TABLE unmnemonic_devices.books (
 CREATE TABLE unmnemonic_devices.calls (
     id character varying(255) NOT NULL,
     number character varying(255),
-    team_id uuid
+    team_id uuid,
+    created_at timestamp(0) without time zone DEFAULT '2023-11-05 07:53:15.141355'::timestamp without time zone
 );
 
 
