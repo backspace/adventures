@@ -20,7 +20,7 @@
             {{voicepass}}
           </td>
           {{#each region_listens}}
-            <td>
+            <td data-listens>
               {{this}}
             </td>
           {{/each}}
@@ -29,8 +29,28 @@
     </tbody>
   </table>
   <style>
+    td {
+      padding: 0.5rem;
+    }
+
+    td.listened {
+      background-color: pink;
+    }
+
     .team.complete {
       background-color: pink;
     }
   </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('[data-listens]').forEach(function (listensCell) {
+        let [location, listensString] = listensCell.innerHTML.split(': ');
+        let listens = parseInt(listensString);
+
+        if (listens) {
+          listensCell.classList.add('listened');
+        }
+      });
+    });
+  </script>
 {{/admin/layout}}
