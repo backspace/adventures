@@ -283,6 +283,8 @@ export default class TeamOverviewsComponent extends Component {
 
       let meetingHalfWithoutPadding = meetingHalfWidth - pagePadding * 2;
 
+      let meetingPadding = pagePadding / 2;
+
       team
         .hasMany('meetings')
         .value()
@@ -295,13 +297,13 @@ export default class TeamOverviewsComponent extends Component {
           doc.translate(0, index * meetingHeight);
 
           doc.fontSize(meetingHeadingFontSize);
-          doc.text(rendezvousLetter, 0, pagePadding);
+          doc.text(rendezvousLetter, 0, meetingPadding);
 
           doc.lineWidth(0.25);
           doc.moveTo(0, 0).lineTo(availableWidth, 0).stroke();
           doc
-            .moveTo(meetingHalfWidth, pagePadding)
-            .lineTo(meetingHalfWidth, meetingHeight - pagePadding)
+            .moveTo(meetingHalfWidth, meetingPadding)
+            .lineTo(meetingHalfWidth, meetingHeight - meetingPadding)
             .stroke();
 
           let waypoint = meeting.belongsTo('waypoint').value();
@@ -314,8 +316,8 @@ export default class TeamOverviewsComponent extends Component {
             doc.fontSize(meetingHeadingFontSize);
             doc.text(
               waypointRegion.name,
-              meetingLabelWidth + pagePadding,
-              pagePadding,
+              meetingLabelWidth + meetingPadding,
+              meetingPadding,
               {
                 width: meetingHalfWithoutPadding,
               }
@@ -326,12 +328,20 @@ export default class TeamOverviewsComponent extends Component {
             let parent = waypointRegion.belongsTo('parent').value();
 
             while (parent) {
-              doc.text(`In ${parent.name}. ${parent.notes}`);
+              doc.text(
+                `In ${parent.name}${parent.hours ? `, ${parent.hours}` : ''}. ${
+                  parent.notes
+                }`
+              );
               parent = parent.belongsTo('parent').value();
             }
 
             doc.text(waypoint.call);
-            doc.text(' ');
+
+            doc.fontSize(meetingBodyFontSize / 2);
+            doc.moveDown();
+            doc.fontSize(meetingBodyFontSize);
+
             doc.text(
               doubleBlanks(devices.excerptWithBlanks(waypoint.excerpt)),
               {
@@ -348,24 +358,29 @@ export default class TeamOverviewsComponent extends Component {
           // Draw destination
           {
             doc.save();
-            doc.translate(meetingHalfWidth + pagePadding, 0);
+            doc.translate(meetingHalfWidth + meetingPadding, 0);
 
             doc.fontSize(meetingHeadingFontSize);
 
             let parent = destinationRegion.belongsTo('parent').value();
 
-            doc.text(destinationRegion.name, 0, pagePadding, {
+            doc.text(destinationRegion.name, 0, meetingPadding, {
               width: meetingHalfWithoutPadding,
             });
 
             doc.fontSize(meetingBodyFontSize);
 
             while (parent) {
-              doc.text(`In ${parent.name}`);
+              doc.text(
+                `In ${parent.name}${parent.hours ? `, ${parent.hours}` : ''}`
+              );
               parent = parent.belongsTo('parent').value();
             }
 
-            doc.text(' ');
+            doc.fontSize(meetingBodyFontSize / 2);
+            doc.moveDown();
+            doc.fontSize(meetingBodyFontSize);
+
             doc.text(doubleBlanks(destination.mask), {
               width: meetingHalfWithoutPadding,
             });
