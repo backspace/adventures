@@ -1,11 +1,11 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     response::{IntoResponse, Redirect},
     Form,
 };
 use axum_template::Key;
 use base64::{engine::general_purpose, Engine as _};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::types::Uuid;
 use std::env;
 
@@ -132,12 +132,35 @@ pub async fn post_confirm_team(
     }
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct TwilioParams {
+    call_sid: String,
+}
+
 #[axum_macros::debug_handler]
 pub async fn get_team(
     Key(key): Key,
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
+    params: Query<TwilioParams>,
 ) -> impl IntoResponse {
+    sqlx::query!(
+        r#"
+          UPDATE
+            unmnemonic_devices.calls
+          SET
+            team_id = $2
+          WHERE
+            id = $1;
+        "#,
+        params.call_sid,
+        id
+    )
+    .execute(&state.db)
+    .await
+    .ok();
+
     let team = sqlx::query_as::<_, Team>(
         r#"
             SELECT

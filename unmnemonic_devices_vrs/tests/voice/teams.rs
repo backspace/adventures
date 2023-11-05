@@ -4,9 +4,10 @@ mod helpers {
 use helpers::{get, get_with_twilio, post, RedirectTo};
 
 use select::{document::Document, predicate::Name};
+use serde::Serialize;
 use serde_json::json;
 use speculoos::prelude::*;
-use sqlx::PgPool;
+use sqlx::{types::Uuid, PgPool};
 use std::env;
 use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::InjectableServices;
@@ -148,11 +149,30 @@ async fn team_post_confirm_redirects_to_teams_show_on_no(db: PgPool) {
     assert_that(&response).redirects_to("/teams");
 }
 
-#[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
-async fn team_show_names_team_and_gathers_excerpts_or_collation(db: PgPool) {
-    let response = get(db, "/teams/48e3bda7-db52-4c99-985f-337e266f7832", false)
-        .await
-        .expect("Failed to execute request.");
+#[derive(sqlx::FromRow, Serialize)]
+pub struct CallRecord {
+    team_id: Uuid,
+}
+
+#[sqlx::test(fixtures(
+    "schema",
+    "teams",
+    "books",
+    "regions",
+    "destinations",
+    "meetings",
+    "calls"
+))]
+async fn team_show_names_team_and_gathers_excerpts_or_collation_and_records_team_in_call(
+    db: PgPool,
+) {
+    let response = get(
+        db.clone(),
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832?CallSid=xyz",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
@@ -172,6 +192,26 @@ async fn team_show_names_team_and_gathers_excerpts_or_collation(db: PgPool) {
     assert_that(hints).contains("abused or ignored,");
     assert_that(hints).contains("schnimbleby,");
     assert_that(hints).contains("another answer an answer");
+
+    let call = sqlx::query_as::<_, CallRecord>(
+        r#"
+          SELECT
+            team_id
+          FROM
+            unmnemonic_devices.calls
+          WHERE
+            id = $1
+        "#,
+    )
+    .bind("xyz")
+    .fetch_one(&db)
+    .await
+    .unwrap();
+
+    assert_eq!(
+        call.team_id,
+        uuid::uuid!("48e3bda7-db52-4c99-985f-337e266f7832")
+    );
 }
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
