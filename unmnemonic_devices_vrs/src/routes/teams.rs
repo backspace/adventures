@@ -86,7 +86,6 @@ pub async fn get_confirm_team(
         .fetch_one(&state.db)
         .await;
 
-    // println!("result? {:?}", result);
     if maybe_result.is_err() {
         Redirect::to("/teams").into_response()
     } else {
