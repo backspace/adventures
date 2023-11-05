@@ -11,7 +11,7 @@ path = "src/main.rs"
 name = "unmnemonic_devices_vrs"
 
 [dependencies]
-axum = "0.6"
+axum = { version = "0.6", features = ["tracing"] }
 axum-template = { version = "0.15", features = ["handlebars"] }
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 handlebars = { version = "4", features = ["dir_source"] }
@@ -22,7 +22,7 @@ tokio = { version = "1.0", features = ["full"] }
 toml = "0.7.3"
 tower-http = { version = "0.4", features = ["trace"] }
 tracing = "0.1.35"
-tracing-subscriber = "0.3.14"
+tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 select = "0.6"
 serde = { version = "1.0.138", features = ["derive"] }
 serde_json = "1.0"
