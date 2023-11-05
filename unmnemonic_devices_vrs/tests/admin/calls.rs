@@ -54,8 +54,8 @@ async fn calls_list_when_empty(db: PgPool) {
     assert_that(&row.text()).contains("no calls");
 }
 
-#[sqlx::test(fixtures("schema"))]
-async fn calls_list_with_calls(db: PgPool) {
+#[sqlx::test(fixtures("schema", "teams", "calls-teams"))]
+async fn calls_list_with_calls_and_teams(db: PgPool) {
     let mock_twilio = MockServer::start().await;
 
     Mock::given(method("GET"))
@@ -98,6 +98,7 @@ async fn calls_list_with_calls(db: PgPool) {
     );
     assert_that(&row.text()).contains("Tue, 03 Oct 2023 05:39:58 +0000");
     assert_that(&row.text()).contains("+15145551212");
+    assert_that(&row.text()).contains("tortles");
 }
 
 #[sqlx::test(fixtures("schema"))]

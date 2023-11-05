@@ -6,7 +6,7 @@ use axum_template::{Key, RenderHtml};
 use base64::{engine::general_purpose, Engine as _};
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
-use std::env;
+use std::{collections::HashMap, env};
 
 use crate::auth::User;
 use crate::config::{ConfigProvider, EnvVarProvider};
@@ -29,6 +29,13 @@ pub struct Call {
     sid: String,
     from: String,
     start: String,
+    team_name: Option<String>,
+}
+
+#[derive(sqlx::FromRow, Serialize)]
+pub struct CallWithTeam {
+    call_id: String,
+    team_name: String,
 }
 
 #[axum_macros::debug_handler]
@@ -63,7 +70,7 @@ pub async fn get_calls(
         .await
         .unwrap();
 
-    let calls = response["calls"].as_array().map(|calls| {
+    let mut active_calls = response["calls"].as_array().map(|calls| {
         calls
             .iter()
             .map(|call| Call {
@@ -76,15 +83,44 @@ pub async fn get_calls(
                 start: serde_json::from_value::<TwilioCall>(call.clone())
                     .unwrap()
                     .start_time,
+                team_name: None,
             })
             .collect::<Vec<Call>>()
     });
+
+    let active_call_ids: Vec<String> = active_calls.as_ref().map_or(vec![], |calls| {
+        calls.iter().map(|call| call.sid.clone()).collect()
+    });
+
+    let call_teams = sqlx::query_as::<_, CallWithTeam>(
+        "
+          SELECT c.id as call_id, t.name as team_name
+          FROM unmnemonic_devices.calls c
+          JOIN teams t ON c.team_id = t.id
+          WHERE c.id = ANY($1)
+        ",
+    )
+    .bind(active_call_ids)
+    .fetch_all(&state.db)
+    .await
+    .expect("Unable to fetch call teams");
+
+    let call_to_team_name: HashMap<String, String> = call_teams
+        .into_iter()
+        .map(|ct| (ct.call_id, ct.team_name))
+        .collect();
+
+    for mut call in active_calls.as_mut().unwrap() {
+        if let Some(team_name) = call_to_team_name.get(&call.sid) {
+            call.team_name = Some(team_name.clone());
+        }
+    }
 
     RenderHtml(
         key.chars().skip(1).collect::<String>(),
         state.engine,
         Calls {
-            calls: calls.unwrap(),
+            calls: active_calls.unwrap(),
         },
     )
 }
