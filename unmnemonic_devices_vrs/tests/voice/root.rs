@@ -47,6 +47,19 @@ async fn root_serves_prewelcome_and_stores_call(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("schema", "settings"))]
+async fn root_ignores_duplicate_call_sid(db: PgPool) {
+    let response = get(
+        db.clone(),
+        "/?CallSid=xyz&Caller=2040000000&CallSid=abc",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+}
+
+#[sqlx::test(fixtures("schema", "settings"))]
 async fn root_serves_synthetic_disclaimer_when_no_recording_and_hints_character_names(db: PgPool) {
     let response = get(db, "/", false)
         .await

@@ -6,6 +6,7 @@ use axum::{
 use axum_template::Key;
 use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
+use serde_querystring_axum::QueryString;
 use sqlx::types::Uuid;
 use std::env;
 
@@ -143,7 +144,7 @@ pub async fn get_team(
     Key(key): Key,
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
-    params: Query<TwilioParams>,
+    params: QueryString<TwilioParams>,
 ) -> impl IntoResponse {
     sqlx::query!(
         r#"

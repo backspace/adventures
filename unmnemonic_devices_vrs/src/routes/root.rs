@@ -7,6 +7,7 @@ use axum::{
 use axum_template::Key;
 use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
+use serde_querystring_axum::QueryString;
 use std::env;
 
 use crate::config::{ConfigProvider, EnvVarProvider};
@@ -94,7 +95,7 @@ pub struct RootData {
 pub async fn get_root(
     Key(key): Key,
     State(state): State<AppState>,
-    params: Query<RootParams>,
+    params: QueryString<RootParams>,
 ) -> impl IntoResponse {
     sqlx::query!(
         r#"
