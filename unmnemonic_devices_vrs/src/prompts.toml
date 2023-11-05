@@ -28,8 +28,12 @@ voicemail_complete = "Thank you for your message."
 voicemail = "Hello, you’ve reached knut, please leave me a message."
 
 [remember]
-ending = "Placeholder for ending message."
+voicepass = "Who are you? We need your voicepass to know we can trust you."
+voicepass_success = "Thank you for being willing to remember."
+voicepass_not_found = "We have never heard of you."
+
 voicemail = "Don’t give in to their lies! Let us know how you’re resisting."
+ending = "Placeholder for ending message."
 
 [testa]
 welcome = "welcome to unmnemonic devices"

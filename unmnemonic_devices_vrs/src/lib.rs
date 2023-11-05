@@ -134,6 +134,14 @@ pub async fn app(services: InjectableServices) -> Router {
             "/voicemails/:character_name",
             post(post_character_voicemail),
         )
+        .route(
+            "/voicemails/remember/confirm",
+            get(get_voicemails_remember_confirm),
+        )
+        .route(
+            "/voicemails/remember/confirm",
+            post(post_voicemails_remember_confirm),
+        )
         //
         // admin routes
         .route("/admin/calls", get(get_calls))

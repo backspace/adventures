@@ -118,20 +118,24 @@ pub async fn get_root(
 
 #[axum_macros::debug_handler]
 pub async fn post_root(State(state): State<AppState>, Form(form): Form<TwilioForm>) -> Redirect {
-    let character_names = state
-        .prompts
-        .tables
-        .keys()
-        .cloned()
-        .collect::<Vec<String>>();
-
-    if character_names.contains(&form.speech_result) {
-        Redirect::to(&format!("/voicemails/{}", form.speech_result))
-    } else if form.speech_result == "begun" {
-        Redirect::to("/?begun")
-    } else if form.speech_result == "recordings" {
-        Redirect::to("/recordings")
+    if form.speech_result == "remember" {
+        Redirect::to("/voicemails/remember/confirm")
     } else {
-        Redirect::to("/")
+        let character_names = state
+            .prompts
+            .tables
+            .keys()
+            .cloned()
+            .collect::<Vec<String>>();
+
+        if character_names.contains(&form.speech_result) {
+            Redirect::to(&format!("/voicemails/{}", form.speech_result))
+        } else if form.speech_result == "begun" {
+            Redirect::to("/?begun")
+        } else if form.speech_result == "recordings" {
+            Redirect::to("/recordings")
+        } else {
+            Redirect::to("/")
+        }
     }
 }

@@ -123,7 +123,7 @@ async fn post_recordings_redirects(db: PgPool) {
         ("Recordings.", "/recordings"),
         ("Knut.", "/voicemails/knut"),
         ("Pure.", "/voicemails/pure"),
-        ("Remember.", "/voicemails/remember"),
+        ("Remember.", "/voicemails/remember/confirm"),
         ("whatever.", "/"),
     ] {
         let response = post(

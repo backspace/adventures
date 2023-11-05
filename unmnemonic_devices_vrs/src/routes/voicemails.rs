@@ -10,7 +10,11 @@ use std::env;
 use uuid::Uuid;
 
 use crate::config::{ConfigProvider, EnvVarProvider};
-use crate::{render_xml::RenderXml, twilio_form::TwilioRecordingForm, AppState};
+use crate::{
+    render_xml::RenderXml,
+    twilio_form::{TwilioForm, TwilioRecordingForm},
+    AppState,
+};
 
 #[derive(Serialize)]
 pub struct CharacterVoicemail {
@@ -106,5 +110,114 @@ pub async fn post_character_voicemail(
         .into_response()
     } else {
         Redirect::to("/hangup").into_response()
+    }
+}
+
+#[derive(Serialize)]
+pub struct UserVoicepasses {
+    voicepasses: Vec<UserVoicepass>,
+}
+
+#[derive(sqlx::FromRow, Serialize)]
+pub struct UserVoicepass {
+    voicepass: String,
+}
+
+#[axum_macros::debug_handler]
+pub async fn get_voicemails_remember_confirm(
+    Key(key): Key,
+    State(state): State<AppState>,
+) -> impl IntoResponse {
+    let user_voicepasses = sqlx::query_as::<_, UserVoicepass>(
+        "SELECT voicepass FROM users WHERE voicepass IS NOT NULL",
+    )
+    .fetch_all(&state.db)
+    .await
+    .expect("Failed to fetch users");
+
+    RenderXml(
+        key,
+        state.engine,
+        state.mutable_prompts.lock().unwrap().to_string(),
+        UserVoicepasses {
+            voicepasses: user_voicepasses,
+        },
+    )
+}
+
+#[derive(sqlx::FromRow, Serialize)]
+pub struct UserEmail {
+    id: Uuid,
+    email: String,
+}
+
+#[axum_macros::debug_handler]
+pub async fn post_voicemails_remember_confirm(
+    State(state): State<AppState>,
+    Form(form): Form<TwilioForm>,
+) -> impl IntoResponse {
+    let voicepass = form.speech_result;
+
+    let user = sqlx::query_as::<_, UserEmail>(
+        "SELECT id, email FROM users WHERE SIMILARITY(voicepass, $1) >= 0.75",
+    )
+    .bind(voicepass)
+    .fetch_one(&state.db)
+    .await;
+
+    if user.is_ok() {
+        let env_config_provider = EnvVarProvider::new(env::vars().collect());
+        let config = &env_config_provider.get_config();
+
+        let account_sid = config.twilio_account_sid.to_string();
+        let api_sid = config.twilio_api_key_sid.to_string();
+        let api_secret = config.twilio_api_key_secret.to_string();
+        let twilio_number = config.twilio_number.to_string();
+        let notification_number = config.notification_number.to_string();
+
+        let create_message_body = serde_urlencoded::to_string([
+            (
+                "Body",
+                format!("User {} has remembered", user.unwrap().email),
+            ),
+            ("To", notification_number),
+            ("From", twilio_number),
+        ])
+        .expect("Could not encode completion message creation body");
+
+        let basic_auth = format!("{}:{}", api_sid, api_secret);
+        let auth_header_value = format!(
+            "Basic {}",
+            general_purpose::STANDARD_NO_PAD.encode(basic_auth)
+        );
+
+        let client = reqwest::Client::new();
+        client
+            .post(format!(
+                "{}/2010-04-01/Accounts/{}/Messages.json",
+                state.twilio_address, account_sid
+            ))
+            .header("Authorization", auth_header_value.clone())
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(create_message_body)
+            .send()
+            .await
+            .ok();
+
+        RenderXml(
+            "/voicemails/remember/confirm-success",
+            state.engine,
+            state.mutable_prompts.lock().unwrap().to_string(),
+            (),
+        )
+        .into_response()
+    } else {
+        RenderXml(
+            "/voicemails/remember/confirm-not-found",
+            state.engine,
+            state.mutable_prompts.lock().unwrap().to_string(),
+            (),
+        )
+        .into_response()
     }
 }
