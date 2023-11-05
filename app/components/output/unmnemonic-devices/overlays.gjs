@@ -36,6 +36,7 @@ let registrationTotal = registrationPadding + registrationLength;
 
 export default class UnmnemonicDevicesOverlaysComponent extends Component {
   @tracked allOverlays = true;
+  @tracked excludeAvailable = false;
 
   @service('unmnemonic-devices') devices;
 
@@ -49,6 +50,13 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
     if (this.allOverlays) {
       waypointsToGenerate = this.args.waypoints.filterBy('isComplete');
+
+      if (this.excludeAvailable) {
+        waypointsToGenerate = waypointsToGenerate.rejectBy(
+          'status',
+          'available'
+        );
+      }
     } else {
       waypointsToGenerate = this.args.teams.reduce((waypoints, team) => {
         team.meetings.forEach((meeting) =>
@@ -228,6 +236,13 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       All overlays instead of per-team?
       <Input @type='checkbox' @checked={{this.allOverlays}} />
     </label>
+
+    {{#if this.allOverlays}}
+      <label>
+        Exclude available?
+        <Input @type='checkbox' @checked={{this.excludeAvailable}} />
+      </label>
+    {{/if}}
 
     {{#if this.src}}
       <iframe title='embedded-unmnemonic-devices-overlays' src={{this.src}}>
