@@ -136,7 +136,8 @@ CREATE TABLE public.users (
     comments text,
     source text,
     attending boolean,
-    voicepass character varying(255)
+    voicepass character varying(255),
+    remembered integer DEFAULT 0
 );
 
 
@@ -479,3 +480,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231102005345);
 INSERT INTO public."schema_migrations" (version) VALUES (20231102013852);
 INSERT INTO public."schema_migrations" (version) VALUES (20231104170543);
 INSERT INTO public."schema_migrations" (version) VALUES (20231105032326);
+INSERT INTO public."schema_migrations" (version) VALUES (20231105153232);

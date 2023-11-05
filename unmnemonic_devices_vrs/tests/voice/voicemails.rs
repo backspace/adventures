@@ -150,7 +150,7 @@ async fn post_voicemails_remember_confirm_updates_user_notifies_and_redirects(db
 
     let response = post_with_twilio(
         InjectableServices {
-            db,
+            db: db.clone(),
             twilio_address: mock_twilio.uri(),
         },
         "/voicemails/remember/confirm",
@@ -164,6 +164,14 @@ async fn post_voicemails_remember_confirm_updates_user_notifies_and_redirects(db
     let document = Document::from(text.as_str());
 
     assert_that(&document.find(Name("say")).next().unwrap().text()).contains("being willing");
+
+    let remembered = sqlx::query!(
+        "SELECT remembered from users WHERE id = '7d907360-f19e-4518-ae58-23eef4e8281f'"
+    )
+    .fetch_one(&db)
+    .await
+    .expect("Failed to fetch user remembered");
+    assert_eq!(remembered.remembered.unwrap(), 1);
 }
 
 #[sqlx::test(fixtures("schema", "users-with-no-voicepass"))]

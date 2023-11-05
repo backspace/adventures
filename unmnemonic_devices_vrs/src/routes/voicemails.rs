@@ -178,7 +178,7 @@ pub async fn post_voicemails_remember_confirm(
         let create_message_body = serde_urlencoded::to_string([
             (
                 "Body",
-                format!("User {} has remembered", user.unwrap().email),
+                format!("User {} has remembered", user.as_ref().unwrap().email),
             ),
             ("To", notification_number),
             ("From", twilio_number),
@@ -203,6 +203,21 @@ pub async fn post_voicemails_remember_confirm(
             .send()
             .await
             .ok();
+
+        sqlx::query!(
+            r#"
+              UPDATE
+                public.users
+              SET
+                remembered = remembered + 1
+              WHERE
+                id = $1;
+            "#,
+            user.unwrap().id
+        )
+        .execute(&state.db)
+        .await
+        .ok();
 
         RenderXml(
             "/voicemails/remember/confirm-success",
