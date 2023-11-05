@@ -7,18 +7,43 @@ use select::{
     document::Document,
     predicate::{Descendant, Name},
 };
+use serde::Serialize;
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
+#[derive(sqlx::FromRow, Serialize)]
+pub struct CallRecord {
+    id: String,
+    number: String,
+}
+
 #[sqlx::test(fixtures("schema", "settings"))]
-async fn root_serves_prewelcome(db: PgPool) {
-    let response = get(db, "/", false)
+async fn root_serves_prewelcome_and_stores_call(db: PgPool) {
+    let response = get(db.clone(), "/?CallSid=xyz&Caller=2040000000", false)
         .await
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
     assert_that(&response.text().await.unwrap()).contains("unmnemonic");
+
+    let call = sqlx::query_as::<_, CallRecord>(
+        r#"
+      SELECT
+        id, number
+      FROM
+        unmnemonic_devices.calls
+      WHERE
+        id = $1
+    "#,
+    )
+    .bind("xyz")
+    .fetch_one(&db)
+    .await
+    .unwrap();
+
+    assert_eq!(call.id, "xyz");
+    assert_eq!(call.number, "2040000000");
 }
 
 #[sqlx::test(fixtures("schema", "settings"))]

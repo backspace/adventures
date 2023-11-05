@@ -152,6 +152,17 @@ CREATE TABLE unmnemonic_devices.books (
 
 
 --
+-- Name: calls; Type: TABLE; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE TABLE unmnemonic_devices.calls (
+    id character varying(255) NOT NULL,
+    number character varying(255),
+    team_id uuid
+);
+
+
+--
 -- Name: destinations; Type: TABLE; Schema: unmnemonic_devices; Owner: -
 --
 
@@ -301,6 +312,14 @@ ALTER TABLE ONLY unmnemonic_devices.books
 
 
 --
+-- Name: calls calls_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.calls
+    ADD CONSTRAINT calls_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: destinations destinations_pkey; Type: CONSTRAINT; Schema: unmnemonic_devices; Owner: -
 --
 
@@ -359,6 +378,14 @@ CREATE UNIQUE INDEX users_email_index ON public.users USING btree (email);
 --
 
 CREATE UNIQUE INDEX recordings_character_name_prompt_name_index ON unmnemonic_devices.recordings USING btree (character_name, prompt_name);
+
+
+--
+-- Name: calls calls_team_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.calls
+    ADD CONSTRAINT calls_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(id);
 
 
 --
@@ -450,3 +477,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231029032644);
 INSERT INTO public."schema_migrations" (version) VALUES (20231102005345);
 INSERT INTO public."schema_migrations" (version) VALUES (20231102013852);
 INSERT INTO public."schema_migrations" (version) VALUES (20231104170543);
+INSERT INTO public."schema_migrations" (version) VALUES (20231105032326);

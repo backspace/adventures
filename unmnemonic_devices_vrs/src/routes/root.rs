@@ -15,6 +15,10 @@ use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 #[derive(Deserialize)]
 pub struct RootParams {
     begun: Option<String>,
+    #[serde(rename = "CallSid")]
+    call_sid: Option<String>,
+    #[serde(rename = "Caller")]
+    caller: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -92,6 +96,18 @@ pub async fn get_root(
     State(state): State<AppState>,
     params: Query<RootParams>,
 ) -> impl IntoResponse {
+    sqlx::query!(
+        r#"
+          INSERT INTO unmnemonic_devices.calls (id, number)
+          VALUES ($1, $2)
+        "#,
+        params.call_sid,
+        params.caller,
+    )
+    .execute(&state.db)
+    .await
+    .ok();
+
     let settings =
         sqlx::query!("SELECT begun, down, ending FROM unmnemonic_devices.settings LIMIT 1")
             .fetch_one(&state.db)
