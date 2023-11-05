@@ -32,7 +32,7 @@ export default class TeamOverviewsComponent extends Component {
       .insert(
         this.args.regions.filterBy('isComplete').map((region) => ({
           id: region.get('id'),
-          name: region.get('name'),
+          name: this.stripString(region.get('name')),
         }))
       )
       .onConflict('id')
@@ -44,8 +44,8 @@ export default class TeamOverviewsComponent extends Component {
       .insert(
         this.args.destinations.filterBy('isComplete').map((destination) => ({
           id: destination.get('id'),
-          description: destination.get('description'),
-          region_id: destination.get('region.id'),
+          description: this.stripString(destination.get('description')),
+          region_id: this.stripString(destination.get('region.id')),
           answer: this.devices.extractAnswer(
             destination.answer,
             destination.mask
@@ -61,8 +61,10 @@ export default class TeamOverviewsComponent extends Component {
       .insert(
         this.args.waypoints.filterBy('isComplete').map((waypoint) => ({
           id: waypoint.get('id'),
-          title: waypoint.get('name'),
-          excerpt: this.devices.trimmedInnerExcerpt(waypoint.get('excerpt')),
+          title: this.stripString(waypoint.get('name')),
+          excerpt: this.stripString(
+            this.devices.trimmedInnerExcerpt(waypoint.get('excerpt'))
+          ),
         }))
       )
       .onConflict('id')
@@ -81,6 +83,10 @@ export default class TeamOverviewsComponent extends Component {
       )
       .onConflict(['id'])
       .merge();
+  }
+
+  stripString(s) {
+    return s.replace(/’/g, "'").replace(/[”“]/g, '"');
   }
 
   <template>
