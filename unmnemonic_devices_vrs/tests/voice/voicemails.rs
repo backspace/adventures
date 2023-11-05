@@ -31,11 +31,12 @@ async fn get_voicemail_pure_sets_up_recording(db: PgPool) {
 }
 
 #[derive(sqlx::FromRow, Serialize)]
-pub struct RecordingUrl {
+pub struct Recording {
     url: String,
+    call_id: String,
 }
 
-#[sqlx::test(fixtures("schema"))]
+#[sqlx::test(fixtures("schema", "calls"))]
 async fn post_voicemail_stores_voicemail_and_notifies(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
@@ -66,16 +67,16 @@ async fn post_voicemail_stores_voicemail_and_notifies(db: PgPool) {
             twilio_address: mock_twilio.uri(),
         },
         "/voicemails/knut",
-        "RecordingUrl=http://example.com/voicemail",
+        "RecordingUrl=http://example.com/voicemail&CallSid=xyz",
         false,
     )
     .await
     .expect("Failed to execute request.");
 
-    let recording_url = sqlx::query_as::<_, RecordingUrl>(
+    let recording = sqlx::query_as::<_, Recording>(
         r#"
         SELECT
-          r.url
+          r.url, r.call_id
         FROM
           unmnemonic_devices.recordings r
         WHERE
@@ -88,7 +89,11 @@ async fn post_voicemail_stores_voicemail_and_notifies(db: PgPool) {
     .fetch_one(&db)
     .await;
 
-    assert_eq!(recording_url.unwrap().url, "http://example.com/voicemail");
+    assert_eq!(
+        recording.as_ref().unwrap().url,
+        "http://example.com/voicemail"
+    );
+    assert_eq!(recording.unwrap().call_id, "xyz");
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");

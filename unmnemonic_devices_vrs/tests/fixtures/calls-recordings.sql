@@ -1,6 +1,5 @@
 INSERT INTO
   unmnemonic_devices.calls (id)
 VALUES
-  ('xyz'),
-  ('ANOTHER_SID'),
+  ('AN_SID_THAT_EXISTED'),
   ('HMM_SID');

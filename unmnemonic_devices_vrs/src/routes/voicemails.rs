@@ -50,17 +50,20 @@ pub async fn post_character_voicemail(
     let uuid = Uuid::new_v4();
     let result = sqlx::query!(
         r#"
-              INSERT INTO unmnemonic_devices.recordings (id, character_name, prompt_name, type, url)
-              VALUES ($1, $2, $3, $4, $5)
+              INSERT INTO unmnemonic_devices.recordings (id, character_name, prompt_name, type, url, call_id)
+              VALUES ($1, $2, $3, $4, $5, $6)
             "#,
         uuid.clone(),
         character_name,
         uuid.to_string(),
         "voicemail",
-        form.recording_url
+        form.recording_url,
+        form.call_sid
     )
     .execute(&state.db)
     .await;
+
+    println!("result? {:?}", result);
 
     if result.is_ok() {
         let env_config_provider = EnvVarProvider::new(env::vars().collect());

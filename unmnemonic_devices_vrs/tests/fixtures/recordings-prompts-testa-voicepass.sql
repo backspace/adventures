@@ -8,7 +8,8 @@ INSERT INTO
     "url",
     "transcription",
     "character_name",
-    "prompt_name"
+    "prompt_name",
+    "call_id"
   )
 VALUES
   (
@@ -20,5 +21,6 @@ VALUES
     'http://example.com/old-voicepass',
     NULL,
     'testa',
-    'voicepass'
+    'voicepass',
+    'AN_SID_THAT_EXISTED'
   );

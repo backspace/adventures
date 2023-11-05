@@ -205,7 +205,8 @@ CREATE TABLE unmnemonic_devices.recordings (
     prompt_name character varying(255),
     approved boolean DEFAULT false,
     team_listen_ids uuid[] DEFAULT ARRAY[]::uuid[],
-    created_at timestamp(0) without time zone DEFAULT '2023-11-01 20:49:17.188764'::timestamp without time zone
+    created_at timestamp(0) without time zone DEFAULT '2023-11-01 20:49:17.188764'::timestamp without time zone,
+    call_id character varying(255)
 );
 
 
@@ -431,6 +432,14 @@ ALTER TABLE ONLY unmnemonic_devices.recordings
 
 
 --
+-- Name: recordings recordings_call_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.recordings
+    ADD CONSTRAINT recordings_call_id_fkey FOREIGN KEY (call_id) REFERENCES unmnemonic_devices.calls(id);
+
+
+--
 -- Name: recordings recordings_destination_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
 --
 
@@ -481,3 +490,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231102013852);
 INSERT INTO public."schema_migrations" (version) VALUES (20231104170543);
 INSERT INTO public."schema_migrations" (version) VALUES (20231105032326);
 INSERT INTO public."schema_migrations" (version) VALUES (20231105153232);
+INSERT INTO public."schema_migrations" (version) VALUES (20231105160034);

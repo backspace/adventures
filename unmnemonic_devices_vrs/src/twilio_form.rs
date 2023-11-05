@@ -39,10 +39,12 @@ where
 pub struct TwilioForm {
     #[serde(deserialize_with = "deserialise_twilio_speech_result")]
     pub speech_result: String,
+    pub call_sid: Option<String>,
 }
 
 #[derive(Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct TwilioRecordingForm {
     pub recording_url: String,
+    pub call_sid: String,
 }

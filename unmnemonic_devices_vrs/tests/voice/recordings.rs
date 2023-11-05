@@ -169,6 +169,7 @@ async fn post_character_prompts_redirects_to_prompt_path(db: PgPool) {
 
 #[sqlx::test(fixtures(
     "schema",
+    "calls-recordings",
     "recordings-prompts-testa-voicepass",
     "recordings-prompts-testb-welcome"
 ))]
@@ -184,6 +185,7 @@ async fn post_character_prompts_with_unrecorded_redirects_to_unrecorded_path(db:
 
 #[sqlx::test(fixtures(
     "schema",
+    "calls-recordings",
     "recordings-prompts-testa-voicepass",
     "recordings-prompts-testb-welcome"
 ))]
@@ -208,6 +210,7 @@ async fn get_character_prompts_unrecorded_redirects_to_first_unrecorded_prompt_p
 
 #[sqlx::test(fixtures(
     "schema",
+    "calls-recordings",
     "recordings-prompts-testa-voicepass",
     "recordings-prompts-testb-welcome"
 ))]
@@ -227,6 +230,7 @@ async fn get_character_prompts_unrecorded_skips_message_with_unrecorded_param(db
 
 #[sqlx::test(fixtures(
     "schema",
+    "calls-recordings",
     "recordings-prompts-testa-voicepass",
     "recordings-prompts-testb-welcome"
 ))]
@@ -324,7 +328,7 @@ async fn post_character_prompt_plays_recording_and_gathers_decision(db: PgPool) 
     let response = post(
         db,
         "/recordings/prompts/testa/voicepass",
-        "RecordingUrl=http://example.com/voicepass",
+        "RecordingUrl=http://example.com/voicepass&CallSid=AN_SID",
         false,
     )
     .await
@@ -356,7 +360,7 @@ async fn post_character_prompt_forwards_unrecorded(db: PgPool) {
     let response = post(
         db,
         "/recordings/prompts/testa/voicepass?unrecorded",
-        "RecordingUrl=http://example.com/voicepass",
+        "RecordingUrl=http://example.com/voicepass&CallSid=IGNORED",
         false,
     )
     .await
@@ -379,25 +383,26 @@ async fn post_character_prompt_forwards_unrecorded(db: PgPool) {
 }
 
 #[derive(sqlx::FromRow, Serialize)]
-pub struct RecordingUrl {
+pub struct Recording {
     url: String,
+    call_id: String,
 }
 
-#[sqlx::test(fixtures("schema"))]
+#[sqlx::test(fixtures("schema", "calls"))]
 async fn post_character_prompt_decide_stores_recording_upon_keep(db: PgPool) {
     let response = post(
         db.clone(),
         "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass",
-        "SpeechResult=Keep.",
+        "SpeechResult=Keep.&CallSid=ANOTHER_SID",
         true,
     )
     .await
     .expect("Failed to execute request.");
 
-    let recording_url = sqlx::query_as::<_, RecordingUrl>(
+    let recording_url = sqlx::query_as::<_, Recording>(
         r#"
           SELECT
-            r.url
+            r.url, r.call_id
           FROM
             unmnemonic_devices.recordings r
           WHERE
@@ -411,30 +416,31 @@ async fn post_character_prompt_decide_stores_recording_upon_keep(db: PgPool) {
     .await;
 
     assert_eq!(
-        recording_url.unwrap().url,
+        recording_url.as_ref().unwrap().url,
         "http://example.com/newvoicepass"
     );
+    assert_eq!(recording_url.unwrap().call_id, "ANOTHER_SID");
 
     assert_that(&response).redirects_to("/recordings/prompts/testa");
 }
 
-#[sqlx::test(fixtures("schema"))]
+#[sqlx::test(fixtures("schema", "calls"))]
 async fn post_character_prompt_decide_forwards_unrecorded(db: PgPool) {
-    let response = post(db, "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass&unrecorded", "SpeechResult=Keep.", true)        .await
+    let response = post(db, "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass&unrecorded", "SpeechResult=Keep.&CallSid=HMM_SID", true)        .await
         .expect("Failed to execute request.");
 
     assert_that(&response).redirects_to("/recordings/prompts/testa/unrecorded?unrecorded");
 }
 
-#[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
+#[sqlx::test(fixtures("schema", "calls-recordings", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
-    let response = post(db.clone(), "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass", "SpeechResult=Keep.", true)        .await
+    let response = post(db.clone(), "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass", "SpeechResult=Keep.&CallSid=HMM_SID", true)        .await
         .expect("Failed to execute request.");
 
-    let recording_url = sqlx::query_as::<_, RecordingUrl>(
+    let recording_url = sqlx::query_as::<_, Recording>(
         r#"
           SELECT
-            r.url
+            r.url, r.call_id
           FROM
             unmnemonic_devices.recordings r
           WHERE
@@ -448,9 +454,10 @@ async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
     .await;
 
     assert_eq!(
-        recording_url.unwrap().url,
+        recording_url.as_ref().unwrap().url,
         "http://example.com/newervoicepass"
     );
+    assert_eq!(recording_url.unwrap().call_id, "HMM_SID");
 
     assert_that(&response).redirects_to("/recordings/prompts/testa");
 }
@@ -467,7 +474,7 @@ async fn post_character_prompt_decide_updates_cache_upon_keep(db: PgPool) {
     .await
     .expect("Failed to execute post decide request.");
 
-    let recording_url = sqlx::query_as::<_, RecordingUrl>(
+    let recording_url = sqlx::query_as::<_, Recording>(
         r#"
           SELECT
             r.url
@@ -498,15 +505,15 @@ async fn post_character_prompt_decide_updates_cache_upon_keep(db: PgPool) {
         .contains("http://example.com/newer-monitoring");
 }
 
-#[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
+#[sqlx::test(fixtures("schema", "calls-recordings", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
-    let response = post(db.clone(), "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass", "SpeechResult=Rerecord.", true)        .await
+    let response = post(db.clone(), "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass", "SpeechResult=Rerecord.&CallSid=HMM_SID", true)        .await
         .expect("Failed to execute request.");
 
-    let recording_url = sqlx::query_as::<_, RecordingUrl>(
+    let recording_url = sqlx::query_as::<_, Recording>(
         r#"
           SELECT
-            r.url
+            r.url, r.call_id
           FROM
             unmnemonic_devices.recordings r
           WHERE
@@ -527,9 +534,9 @@ async fn post_character_prompt_decide_discards_upon_rerecord(db: PgPool) {
     assert_that(&response).redirects_to("/recordings/prompts/testa/voicepass");
 }
 
-#[sqlx::test(fixtures("schema", "recordings-prompts-testa-voicepass"))]
+#[sqlx::test(fixtures("schema", "calls-recordings", "recordings-prompts-testa-voicepass"))]
 async fn post_character_prompt_decide_discards_and_forwards_unrecorded(db: PgPool) {
-    let response = post(db, "/recordings/prompts/testa/voicepass/decide?unrecorded&recording_url=http://example.com/newervoicepass", "SpeechResult=Rerecord.", true).await
+    let response = post(db, "/recordings/prompts/testa/voicepass/decide?unrecorded&recording_url=http://example.com/newervoicepass", "SpeechResult=Rerecord.&CallSid=HMM_SID", true).await
         .expect("Failed to execute request.");
 
     assert_that(&response).redirects_to("/recordings/prompts/testa/voicepass?unrecorded");

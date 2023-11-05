@@ -319,15 +319,16 @@ pub async fn post_character_prompt_decide(
     if form.speech_result == "keep" {
         let result = sqlx::query!(
             r#"
-              INSERT INTO unmnemonic_devices.recordings (id, character_name, prompt_name, url)
-              VALUES ($1, $2, $3, $4)
+              INSERT INTO unmnemonic_devices.recordings (id, character_name, prompt_name, url, call_id)
+              VALUES ($1, $2, $3, $4, $5)
               ON CONFLICT (character_name, prompt_name)
-              DO UPDATE SET url = EXCLUDED.url
+              DO UPDATE SET url = EXCLUDED.url, call_id = EXCLUDED.call_id
             "#,
             Uuid::new_v4(),
             character_name,
             prompt_name,
-            params.recording_url
+            params.recording_url,
+            form.call_sid.unwrap()
         )
         .execute(&state.db)
         .await;
