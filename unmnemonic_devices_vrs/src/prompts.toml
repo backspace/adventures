@@ -1,5 +1,7 @@
 [pure]
 monitoring = "Your call may be recorded for quality assurance and training purposes."
+chromatin = "Thank you for calling Chromatin."
+
 welcome = "welcome to unmnemonic devices"
 
 voicemail_gather = "Leave a message for someone by saying their name."

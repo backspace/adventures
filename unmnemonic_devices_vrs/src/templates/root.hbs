@@ -6,7 +6,7 @@
       </Say>
     {{else}}
       <Say>
-        Has it begun?
+        {{{lookup prompts "pure.welcome"}}}
       </Say>
       <Redirect method="GET">/teams</Redirect>
     {{/if}}
@@ -17,7 +17,7 @@
       </Say>
     {{else}}
       <Gather timeout="3" input="speech" hints="begun, recordings, {{#each character_names}}{{this}}, {{/each}}">
-        {{{lookup prompts "pure.welcome"}}}
+        {{{lookup prompts "pure.chromatin"}}}}
         {{{lookup prompts "pure.voicemail_gather"}}}
       </Gather>
       {{> restart }}

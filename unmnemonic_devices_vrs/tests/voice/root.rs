@@ -25,7 +25,7 @@ async fn root_serves_prewelcome_and_stores_call(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert_that(&response.text().await.unwrap()).contains("unmnemonic");
+    assert_that(&response.text().await.unwrap()).contains("chromatin");
 
     let call = sqlx::query_as::<_, CallRecord>(
         r#"
@@ -75,7 +75,7 @@ async fn root_serves_synthetic_disclaimer_when_no_recording_and_hints_character_
             .unwrap()
             .text(),
     )
-    .contains("welcome");
+    .contains("Chromatin");
 
     let gather_hints = &document
         .find(Name("gather"))
@@ -91,7 +91,7 @@ async fn root_serves_synthetic_disclaimer_when_no_recording_and_hints_character_
     assert_that(gather_hints).contains("testb");
 }
 
-#[sqlx::test(fixtures("schema", "settings", "recordings-prompts-pure-welcome"))]
+#[sqlx::test(fixtures("schema", "settings", "recordings-prompts-pure-chromatin"))]
 async fn root_serves_recorded_disclaimer_when_it_exists(db: PgPool) {
     let response = get(db, "/", false)
         .await
@@ -107,7 +107,7 @@ async fn root_serves_recorded_disclaimer_when_it_exists(db: PgPool) {
             .unwrap()
             .text(),
     )
-    .contains("http://example.com/welcome");
+    .contains("http://example.com/chromatin");
 }
 
 #[sqlx::test(fixtures("schema", "settings-begun"))]
@@ -118,7 +118,7 @@ async fn root_serves_welcome_when_begun(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert_that(&response.text().await.unwrap()).contains("Has it begun");
+    assert_that(&response.text().await.unwrap()).contains("welcome to unmnemonic");
 }
 
 #[sqlx::test(fixtures("schema", "settings"))]
@@ -129,7 +129,7 @@ async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert_that(&response.text().await.unwrap()).contains("Has it begun");
+    assert_that(&response.text().await.unwrap()).contains("welcome to unmnemonic");
 }
 
 #[sqlx::test(fixtures("schema", "settings-ending"))]
