@@ -90,7 +90,10 @@ defmodule AdventureRegistrationsWeb.MessageController do
     message = Repo.get!(Message, id)
 
     conn
-    |> put_layout({AdventureRegistrationsWeb.EmailView, "layout.html"})
+    |> put_layout(
+      {AdventureRegistrationsWeb.EmailView,
+       "#{Application.get_env(:adventure_registrations, :adventure)}-layout.html"}
+    )
     |> render("preview.html", message: message)
   end
 end
