@@ -59,6 +59,48 @@ defmodule AdventureRegistrations.Integration.Messages do
     assert String.contains?(empty_email.text_body, "You haven’t filled in any details!")
   end
 
+  test "a message can be sent to just the logged-in user" do
+    insert(:admin,
+      email: "admin@example.com",
+      crypted_password: Bcrypt.hash_pwd_salt("admin")
+    )
+
+    insert(:user,
+      email: "user@example.com",
+      team_emails: "teammate@example.com",
+      proposed_team_name: "Jorts"
+    )
+
+    insert(:user,
+      email: "teammate@example.com",
+      team_emails: "user@example.com",
+      proposed_team_name: "Jants"
+    )
+
+    insert(:user, email: "empty@example.com")
+
+    navigate_to("/")
+
+    Login.login_as("admin@example.com", "admin")
+    Nav.edit_messages()
+
+    Messages.new_message()
+
+    Messages.fill_subject("A Subject!")
+    Messages.fill_content("This is the content.")
+    Messages.check_ready()
+    Messages.save()
+
+    Messages.send_to_me()
+
+    assert Nav.info_text() == "Message was sent"
+
+    [email] = AdventureRegistrations.SwooshHelper.sent_email()
+    assert email.to == [{"", "admin@example.com"}]
+    assert email.from == {"", "b@events.chromatin.ca"}
+    assert email.subject == "[rendezvous] A Subject!"
+  end
+
   test "message sender name/address can be overridden" do
     insert(:admin,
       email: "admin@example.com",
@@ -137,7 +179,13 @@ defmodule AdventureRegistrations.Integration.Messages do
   end
 
   test "the backlog of existing messages is sent to a new registrant after the welcome" do
-    insert(:message, subject: "Subject one", content: "Content one", from_name: "Yes", from_address: "yes@example.com")
+    insert(:message,
+      subject: "Subject one",
+      content: "Content one",
+      from_name: "Yes",
+      from_address: "yes@example.com"
+    )
+
     insert(:message, subject: "Subject two", content: "Content two")
     insert(:not_ready_message, subject: "Not ready", content: "Not ready")
 

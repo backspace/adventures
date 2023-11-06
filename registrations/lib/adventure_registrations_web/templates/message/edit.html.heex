@@ -8,10 +8,14 @@
 </div>
 <div class='row card'>
   <div class='small-12 columns'>
-    <%= button("Send", to: Routes.message_path(@conn, :deliver, @message), class: "button send") %>
+    <%= button("Send", to: Routes.message_path(@conn, :deliver, @message, %{ me: false }), class: "button send") %>
 
     <%= link "Preview", to: Routes.message_path(@conn, :preview, @message) %>
 
     <%= link "Back", to: Routes.message_path(@conn, :index) %>
+  </div>
+  <div class='small-12 columns'>
+    <hr>
+    <%= button("Send to me", to: Routes.message_path(@conn, :deliver, @message, %{ me: true }), class: "button send_to_me") %>
   </div>
 </div>

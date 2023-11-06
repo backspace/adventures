@@ -36,4 +36,8 @@ defmodule AdventureRegistrations.Pages.Messages do
   def send do
     click({:css, ".button.send"})
   end
+
+  def send_to_me do
+    click({:css, ".button.send_to_me"})
+  end
 end

@@ -63,9 +63,14 @@ defmodule AdventureRegistrationsWeb.MessageController do
     |> redirect(to: Routes.message_path(conn, :index))
   end
 
-  def deliver(conn, %{"id" => id}) do
+  def deliver(conn, %{"id" => id, "me" => me}) do
     message = Repo.get!(Message, id)
-    users = Repo.all(AdventureRegistrationsWeb.User)
+
+    users =
+      if me == "true",
+        do: [conn.assigns[:current_user_object]],
+        else: Repo.all(AdventureRegistrationsWeb.User)
+
     teams = Repo.all(AdventureRegistrationsWeb.Team)
 
     Enum.each(users, fn user ->
