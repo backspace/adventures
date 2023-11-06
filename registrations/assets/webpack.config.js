@@ -52,10 +52,19 @@ module.exports = (env, options) => {
             MiniCssExtractPlugin.loader,
             "css-loader",
             {
+              loader: "string-replace-loader",
+              options: {
+                search: '@charset "UTF-8";',
+                replace: "",
+                flags: "g",
+              },
+            },
+            {
               loader: "sass-loader",
               options: {
                 sassOptions: {
                   includePaths: [path.resolve(__dirname, "node_modules")],
+                  outputStyle: "expanded",
                 },
               },
             },

@@ -139,3 +139,13 @@ a {
 .alert-danger.alert::before {
   content: '❗️ ';
 }
+
+/* Why doesn’t the email scss work */
+body.email {
+  color: white;
+
+  .title {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+}

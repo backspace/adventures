@@ -103,6 +103,7 @@ defmodule AdventureRegistrations.Mailer do
         layout: email_layout()
       }
     )
+    |> Premailex.to_inline_css()
   end
 
   defp welcome_text do
@@ -117,6 +118,7 @@ defmodule AdventureRegistrations.Mailer do
       team: team,
       layout: email_layout()
     })
+    |> Premailex.to_inline_css()
   end
 
   defp message_text(message, user, relationships, team) do
@@ -128,6 +130,7 @@ defmodule AdventureRegistrations.Mailer do
       messages: messages,
       layout: email_layout()
     })
+    |> Premailex.to_inline_css()
   end
 
   defp backlog_text(messages) do
