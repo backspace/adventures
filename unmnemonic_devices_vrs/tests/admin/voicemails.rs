@@ -11,7 +11,15 @@ use speculoos::prelude::*;
 use sqlx::PgPool;
 use uuid::uuid;
 
-#[sqlx::test(fixtures("schema", "recordings-prompts-pure-welcome", "recordings-voicemails"))]
+#[sqlx::test(fixtures(
+    "schema",
+    "recordings-prompts-pure-welcome",
+    "recordings-voicemails",
+    "teams",
+    "calls",
+    "calls-teams",
+    "recordings-to-team-call"
+))]
 async fn list_voicemails(db: PgPool) {
     let response = get(db, "/admin/voicemails", false)
         .await
@@ -60,6 +68,8 @@ async fn list_voicemails(db: PgPool) {
             .unwrap(),
         &"http://example.com/voicemail-old"
     );
+
+    assert_that(&first_row.text()).contains("tortles");
 
     let rejected_row = document
         .find(Name("tr").and(Class("unapproved")))

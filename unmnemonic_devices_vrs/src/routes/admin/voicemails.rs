@@ -21,6 +21,7 @@ pub struct Voicemail {
     character_name: String,
     url: String,
     approved: Option<bool>,
+    team_name: Option<String>,
 }
 
 #[axum_macros::debug_handler]
@@ -32,9 +33,14 @@ pub async fn get_admin_voicemails(
     let voicemails = sqlx::query_as::<_, Voicemail>(
         r#"
           SELECT
-            *
+            r.*,
+            t.name as team_name
           FROM
-            unmnemonic_devices.recordings
+            unmnemonic_devices.recordings r
+          LEFT JOIN
+            unmnemonic_devices.calls c ON r.call_id = c.id
+          LEFT JOIN
+            public.teams t ON c.team_id = t.id
           WHERE
             type = 'voicemail'
           ORDER BY
