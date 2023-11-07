@@ -35,7 +35,7 @@ voicepass_success = "Thank you for being willing to remember."
 voicepass_not_found = "We have never heard of you."
 silence = "We didn't hear anything."
 
-voicemail = "Don't give in to their lies! Let us know how you're resisting."
+voicemail = "Placeholder for shifting remember message."
 ending = "Placeholder for ending message."
 
 [testa]
