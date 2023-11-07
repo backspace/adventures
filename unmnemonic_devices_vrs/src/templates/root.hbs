@@ -5,9 +5,7 @@
         It is ending
       </Say>
     {{else}}
-      <Say>
-        {{{lookup prompts "pure.welcome"}}}
-      </Say>
+      {{{lookup prompts "pure.welcome"}}}
       <Redirect method="GET">/teams</Redirect>
     {{/if}}
   {{else}}
