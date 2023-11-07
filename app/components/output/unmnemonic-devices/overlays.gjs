@@ -59,9 +59,18 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       }
     } else {
       waypointsToGenerate = this.args.teams.reduce((waypoints, team) => {
-        team.meetings.forEach((meeting) =>
-          waypoints.push({ team, waypoint: meeting.get('waypoint') })
-        );
+        team
+          .hasMany('meetings')
+          .value()
+          .sortBy('destination.id')
+          .forEach((meeting, index) => {
+            waypoints.push({
+              team,
+              waypoint: meeting.get('waypoint'),
+              identifierForMeeting: this.devices.identifierForMeeting(index),
+            });
+          });
+
         return waypoints;
       }, []);
     }
@@ -103,7 +112,8 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         height,
         page,
         waypointName,
-        regionAndCall
+        regionAndCall,
+        maybeTeamAndWaypoint.identifierForMeeting
       );
 
       doc.strokeColor('black');
@@ -338,7 +348,8 @@ function drawHeaderAndFooterText(
   height,
   page,
   waypointName,
-  regionAndCall
+  regionAndCall,
+  identifier
 ) {
   let upperLeftText, upperRightText;
 
@@ -369,6 +380,12 @@ function drawHeaderAndFooterText(
         PAGE_PADDING,
         height - doc.currentLineHeight() - PAGE_PADDING,
         { ...textOptions }
+      )
+      .text(
+        identifier || '',
+        PAGE_PADDING,
+        height - doc.currentLineHeight() - PAGE_PADDING,
+        { width: width - PAGE_PADDING * 2, align: 'right', ...textOptions }
       );
   });
 }
