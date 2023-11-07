@@ -1,9 +1,8 @@
 <Response>
   {{#if begun}}
     {{#if ending}}
-      <Say>
-        It is ending
-      </Say>
+      {{{lookup prompts "remember.ending"}}}
+      <Redirect method="GET" />
     {{else}}
       {{{lookup prompts "pure.welcome"}}}
       <Redirect method="GET">/teams</Redirect>
