@@ -21,6 +21,10 @@ export default class UnmnemonicDevicesService extends Service {
     return true;
   }
 
+  identifierForMeeting(index) {
+    return '¶Ø÷þ§'[index];
+  }
+
   suggestedMask(answer) {
     let answerWords = answer.split(' ');
     let answerIsSingleWord = answerWords.length === 1;

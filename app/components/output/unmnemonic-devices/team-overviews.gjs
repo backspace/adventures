@@ -14,6 +14,8 @@ export default class TeamOverviewsComponent extends Component {
   @service('unmnemonic-devices') devices;
 
   generator = trackedFunction(this, async () => {
+    let identifierForMeeting = this.devices.identifierForMeeting;
+
     let debug = this.args.debug;
     let lowRes = this.args.lowRes;
 
@@ -130,7 +132,7 @@ export default class TeamOverviewsComponent extends Component {
           .value()
           .sortBy('destination.id')
           .forEach((meeting, index) => {
-            const rendezvousLetter = String.fromCharCode(65 + index);
+            const rendezvousLetter = identifierForMeeting(index);
 
             const waypoint = meeting.belongsTo('waypoint').value();
             const waypointRegion = waypoint.belongsTo('region').value();
@@ -290,7 +292,7 @@ export default class TeamOverviewsComponent extends Component {
         .value()
         .sortBy('destination.id')
         .forEach((meeting, index) => {
-          const rendezvousLetter = String.fromCharCode(65 + index);
+          const rendezvousLetter = identifierForMeeting(index);
 
           doc.save();
 
