@@ -27,14 +27,15 @@ goodbye = "Good luck and goodbye!"
 voicemail_complete = "Thank you for your message."
 
 [knut]
-voicemail = "Hello, you’ve reached knut, please leave me a message."
+voicemail = "Hello, you've reached knut, please leave me a message."
 
 [remember]
 voicepass = "Who are you? We need your voicepass to know we can trust you."
 voicepass_success = "Thank you for being willing to remember."
 voicepass_not_found = "We have never heard of you."
+silence = "We didn't hear anything."
 
-voicemail = "Don’t give in to their lies! Let us know how you’re resisting."
+voicemail = "Don't give in to their lies! Let us know how you're resisting."
 ending = "Placeholder for ending message."
 
 [testa]
