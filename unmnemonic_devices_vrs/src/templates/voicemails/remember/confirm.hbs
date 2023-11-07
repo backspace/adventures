@@ -2,5 +2,6 @@
   <Gather timeout="3" input="speech" hints="{{#each voicepasses}}{{this.voicepass}}, {{/each}}">
     {{{lookup prompts "remember.voicepass"}}}
   </Gather>
-  {{> restart }}
+  {{{lookup prompts "remember.silence"}}}
+  <Redirect method="GET" />
 </Response>
