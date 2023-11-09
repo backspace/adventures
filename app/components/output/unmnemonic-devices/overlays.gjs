@@ -19,14 +19,15 @@ export const PAGE_MARGIN = 0.5 * 72;
 export const PAGE_PADDING = 0.2 * 72;
 
 export const BACKGROUND_COUNT = 5;
-export const OUTLINE_WIDTH = 4;
+export const TEXT_OUTLINE_WIDTH = 4;
 export const TEAM_FONT_SIZE = 14;
 export const TEAM_GAP_SIZE = PAGE_PADDING;
 export const EXCERPT_HEIGHT = 10;
 export const EXCERPT_GAP = 5;
+export const OUTLINE_LINE_WIDTH = 0.25;
 
 let OUTLINE_TEXT_ARGUMENTS = [
-  { lineWidth: OUTLINE_WIDTH, textOptions: { fill: true, stroke: true } },
+  { lineWidth: TEXT_OUTLINE_WIDTH, textOptions: { fill: true, stroke: true } },
   { lineWidth: 1 },
 ];
 
@@ -134,6 +135,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
           doc.lineTo(displacementX, displacementY);
         });
 
+        doc.lineWidth(OUTLINE_LINE_WIDTH);
         doc.fillAndStroke('white', 'black');
 
         let preExcerpt = this.devices.preExcerpt(excerpt),
