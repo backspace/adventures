@@ -140,7 +140,7 @@ async fn root_serves_ending_when_ending(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert_that(&response.text().await.unwrap()).contains("It is ending");
+    assert_that(&response.text().await.unwrap()).contains("Placeholder for ending message");
 }
 
 #[sqlx::test(fixtures("schema", "settings-down"))]
