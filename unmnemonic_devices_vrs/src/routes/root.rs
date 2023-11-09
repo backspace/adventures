@@ -25,6 +25,7 @@ pub struct RootParams {
 #[derive(Serialize)]
 struct Settings {
     begun: bool,
+    override_message: Option<String>,
 }
 
 #[axum_macros::debug_handler]
@@ -88,6 +89,7 @@ pub struct RootData {
     begun: bool,
     down: bool,
     ending: bool,
+    override_message: Option<String>,
     character_names: Vec<String>,
 }
 
@@ -110,7 +112,7 @@ pub async fn get_root(
     .ok();
 
     let settings =
-        sqlx::query!("SELECT begun, down, ending FROM unmnemonic_devices.settings LIMIT 1")
+        sqlx::query!("SELECT begun, down, ending, override as override_message FROM unmnemonic_devices.settings LIMIT 1")
             .fetch_one(&state.db)
             .await
             .expect("Failed to fetch settings");
@@ -123,6 +125,7 @@ pub async fn get_root(
             begun: settings.begun.unwrap() || params.begun.is_some(),
             down: settings.down.unwrap(),
             ending: settings.ending.unwrap(),
+            override_message: settings.override_message,
             character_names: state
                 .prompts
                 .tables

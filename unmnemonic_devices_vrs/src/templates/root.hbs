@@ -1,4 +1,7 @@
 <Response>
+  {{#if override_message}}
+    <Say>{{override_message}}</Say>
+  {{/if}}
   {{#if begun}}
     {{#if ending}}
       {{{lookup prompts "remember.ending"}}}

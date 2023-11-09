@@ -59,6 +59,17 @@ async fn root_ignores_duplicate_call_sid(db: PgPool) {
     assert!(response.status().is_success());
 }
 
+#[sqlx::test(fixtures("schema", "settings-override"))]
+async fn root_plays_override_when_it_exists(db: PgPool) {
+    let response = get(db.clone(), "/?CallSid=xyz&Caller=2040000000", false)
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+    assert_that(&response.text().await.unwrap()).contains("this is an override");
+}
+
 #[sqlx::test(fixtures("schema", "settings"))]
 async fn root_serves_synthetic_disclaimer_when_no_recording_and_hints_character_names(db: PgPool) {
     let response = get(db, "/", false)
