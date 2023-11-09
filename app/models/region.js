@@ -91,4 +91,48 @@ export default class Region extends Model {
 
     return current;
   }
+
+  @computed('destinations.@each.status', 'children.@each.survey')
+  get survey() {
+    let availableCount = 0;
+    let unavailableCount = 0;
+    let unknownCount = 0;
+
+    this.hasMany('destinations')
+      .value()
+      .forEach((d) => {
+        if (d.status === 'available') {
+          availableCount++;
+        } else if (d.status === 'unavailable') {
+          unavailableCount++;
+        } else {
+          unknownCount++;
+        }
+      });
+
+    (this.hasMany('children').value() || []).forEach((c) => {
+      let childSurvey = c.survey;
+
+      availableCount += childSurvey.availableCount;
+      unavailableCount += childSurvey.unavailableCount;
+      unknownCount += childSurvey.unknownCount;
+    });
+
+    return {
+      availableCount,
+      unavailableCount,
+      unknownCount,
+    };
+  }
+
+  @computed(
+    'children.@each.survey',
+    'destinations.@each.status',
+    'name',
+    'survey'
+  )
+  get surveyString() {
+    let survey = this.survey;
+    return `D ?${survey.unknownCount} ✓${survey.availableCount} ✘${survey.unavailableCount}`;
+  }
 }

@@ -20,7 +20,7 @@
       </label>
       {{#each this.model as |region|}}
         {{#unless region.parent}}
-          <MappableRegion @region={{region}} />
+          <MappableRegion @region={{region}} @survey={{true}} />
         {{/unless}}
       {{/each}}
     </div>

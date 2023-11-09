@@ -166,6 +166,12 @@ export default class MappableRegionComponent extends Component {
         {{@region.name}}
       </div>
 
+      {{#if @survey}}
+        <div class='survey'>
+          {{@region.surveyString}}
+        </div>
+      {{/if}}
+
       {{#if this.meetingIndex}}
         <div class='meeting-index'>
           {{this.meetingIndex}}
