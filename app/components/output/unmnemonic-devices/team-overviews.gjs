@@ -41,6 +41,7 @@ export default class TeamOverviewsComponent extends Component {
 
     let meetingHeadingFontSize = 14;
     let meetingBodyFontSize = 12;
+    let creditFontSize = 9;
 
     let pageWidth = 8.5 * 72;
     let pageHeight = 11 * 72;
@@ -351,6 +352,12 @@ export default class TeamOverviewsComponent extends Component {
               }
             );
 
+            if (waypoint.credit) {
+              doc.fontSize(creditFontSize);
+              doc.moveDown();
+              doc.text(`Credit: ${waypoint.credit}`);
+            }
+
             doc.restore();
           }
 
@@ -386,6 +393,12 @@ export default class TeamOverviewsComponent extends Component {
             doc.text(doubleBlanks(destination.mask), {
               width: meetingHalfWithoutPadding,
             });
+
+            if (destination.credit) {
+              doc.fontSize(creditFontSize);
+              doc.moveDown();
+              doc.text(`Credit: ${destination.credit}`);
+            }
 
             doc.restore();
           }
