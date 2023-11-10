@@ -4,6 +4,7 @@
       <th></th>
       <th>ID</th>
       <th>Email</th>
+      <th></th>
       <th>A?</th>
       <th>Risk</th>
       <th>Accessibility</th>
@@ -20,6 +21,7 @@
         <td><%= i %></td>
         <td><%= user.id %></td>
         <td class='email'><%= user.email %></td>
+        <td><%= user.voicepass %></td>
         <td class='attending'><%= symbol_for_boolean(user.attending) %></td>
         <td class='risk-aversion'><%= user.risk_aversion %></td>
         <td class='accessibility'><%= user.accessibility %></td>
