@@ -1,0 +1,27 @@
+{{#> admin/layout}}
+  <table>
+    <thead>
+      <tr>
+        <th>name</th>
+        <th>
+          voice id
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each regions}}
+        <tr data-id="{{id}}">
+          <td>
+            {{name}}
+          </td>
+          <td>{{lookup ../region_id_to_readable_id id}}</td>
+          {{#if url}}
+            <td><audio controls src="{{url}}"></audio></td>
+          {{else}}
+            <td>⚠️</td>
+          {{/if}}
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+{{/admin/layout}}

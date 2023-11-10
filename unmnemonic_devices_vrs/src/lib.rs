@@ -153,6 +153,7 @@ pub async fn app(services: InjectableServices) -> Router {
         // admin routes
         .route("/admin/calls", get(get_calls))
         .route("/admin/calls", post(post_calls))
+        .route("/admin/regions", get(get_admin_regions))
         .route("/admin/teams", get(get_admin_teams))
         .route("/admin/prompts", get(get_admin_prompts))
         .route("/admin/voicemails", get(get_admin_voicemails))

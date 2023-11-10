@@ -9,7 +9,12 @@ pub async fn get_all_prompts(db: &PgPool, prompts: &Prompts) -> String {
     let query = r#"
     SELECT character_name, prompt_name, url
     FROM unmnemonic_devices.recordings
-    WHERE url IS NOT NULL AND type IS NULL
+    WHERE
+      url IS NOT NULL
+      AND
+      type IS NULL
+      AND
+      region_id IS NULL
     "#;
 
     let rows = sqlx::query(query).fetch_all(db).await.unwrap();
