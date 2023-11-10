@@ -216,7 +216,8 @@ CREATE TABLE unmnemonic_devices.recordings (
 
 CREATE TABLE unmnemonic_devices.regions (
     id uuid NOT NULL,
-    name character varying(255)
+    name character varying(255),
+    created_at timestamp(0) without time zone DEFAULT now()
 );
 
 
@@ -491,3 +492,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231104170543);
 INSERT INTO public."schema_migrations" (version) VALUES (20231105032326);
 INSERT INTO public."schema_migrations" (version) VALUES (20231105153232);
 INSERT INTO public."schema_migrations" (version) VALUES (20231105160034);
+INSERT INTO public."schema_migrations" (version) VALUES (20231110024646);
