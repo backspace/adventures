@@ -2,19 +2,17 @@
   <table>
     <thead>
       <tr>
+        <th>id</th>
         <th>name</th>
-        <th>
-          voice id
-        </th>
       </tr>
     </thead>
     <tbody>
       {{#each regions}}
         <tr data-id="{{id}}">
+          <td>{{synthetic_id}}</td>
           <td>
             {{name}}
           </td>
-          <td>{{lookup ../region_id_to_readable_id id}}</td>
           {{#if url}}
             <td><audio controls src="{{url}}"></audio></td>
           {{else}}

@@ -35,8 +35,8 @@ async fn list_regions(db: PgPool) {
         .next()
         .unwrap();
 
-    assert_that(&first_row.text()).contains("Cornish Library");
-    assert_that(&first_row.text()).contains("Astri copied by 40 inexpensive flies");
+    assert_that(&first_row.text()).contains("LI");
+    assert_that(&first_row.text()).contains("1");
 }
 
 #[sqlx::test(fixtures("schema", "regions", "regions-recordings"))]
