@@ -128,6 +128,15 @@ pub async fn app(services: InjectableServices) -> Router {
             "/recordings/prompts/:character_name/:prompt_name/decide",
             post(post_character_prompt_decide),
         )
+        .route("/recordings/regions", get(get_recording_regions))
+        .route("/recordings/regions", post(post_recording_regions))
+        .route("/recordings/regions/unrecorded", get(get_unrecorded_region))
+        .route("/recordings/regions/:id", get(get_recording_region))
+        .route("/recordings/regions/:id", post(post_recording_region))
+        .route(
+            "/recordings/regions/:id/decide",
+            post(post_recording_region_decide),
+        )
         .route("/teams", get(get_teams))
         .route("/teams", post(post_teams))
         .route("/teams/:id", get(get_team))

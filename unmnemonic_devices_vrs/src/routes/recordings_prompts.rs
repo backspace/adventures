@@ -9,7 +9,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
-    helpers::get_all_prompts,
+    helpers::{get_all_prompts, MaybeRecordingParams},
     render_xml::RenderXml,
     twilio_form::{TwilioForm, TwilioRecordingForm},
     AppState,
@@ -210,11 +210,6 @@ pub struct CharacterPrompt {
     character_name: String,
     prompt_name: String,
     unrecorded_query_param: bool,
-}
-
-#[derive(Deserialize)]
-pub struct MaybeRecordingParams {
-    unrecorded: Option<String>,
 }
 
 #[axum_macros::debug_handler]

@@ -1,0 +1,6 @@
+<Response>
+  <Gather timeout="3" input="speech" hints="{{#each regions}}{{synthetic_id}}, {{/each}}{{#if add_unrecorded}} unrecorded{{/if}}">
+    <Say>What region do you want to record{{#if add_unrecorded}}, or say unrecorded{{/if}}?</Say>
+  </Gather>
+  {{> restart }}
+</Response>

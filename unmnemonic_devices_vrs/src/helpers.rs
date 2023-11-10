@@ -1,6 +1,7 @@
 use crate::Prompts;
 use crate::WrappedPrompts;
 use crate::WrappedPromptsSerialisation;
+use serde::Deserialize;
 use sqlx::PgPool;
 use sqlx::Row;
 use std::collections::HashMap;
@@ -50,4 +51,9 @@ pub async fn get_all_prompts(db: &PgPool, prompts: &Prompts) -> String {
     }
 
     (WrappedPrompts { prompts: results }).serialize_to_string()
+}
+
+#[derive(Deserialize)]
+pub struct MaybeRecordingParams {
+    pub unrecorded: Option<String>,
 }

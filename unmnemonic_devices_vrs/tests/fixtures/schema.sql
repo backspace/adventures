@@ -206,7 +206,8 @@ CREATE TABLE unmnemonic_devices.recordings (
     approved boolean DEFAULT false,
     team_listen_ids uuid[] DEFAULT ARRAY[]::uuid[],
     created_at timestamp(0) without time zone DEFAULT now(),
-    call_id character varying(255)
+    call_id character varying(255),
+    team_id uuid
 );
 
 
@@ -378,10 +379,38 @@ CREATE UNIQUE INDEX users_email_index ON public.users USING btree (email);
 
 
 --
+-- Name: recordings_book_id_index; Type: INDEX; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE UNIQUE INDEX recordings_book_id_index ON unmnemonic_devices.recordings USING btree (book_id);
+
+
+--
 -- Name: recordings_character_name_prompt_name_index; Type: INDEX; Schema: unmnemonic_devices; Owner: -
 --
 
 CREATE UNIQUE INDEX recordings_character_name_prompt_name_index ON unmnemonic_devices.recordings USING btree (character_name, prompt_name);
+
+
+--
+-- Name: recordings_destination_id_index; Type: INDEX; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE UNIQUE INDEX recordings_destination_id_index ON unmnemonic_devices.recordings USING btree (destination_id);
+
+
+--
+-- Name: recordings_region_id_index; Type: INDEX; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE UNIQUE INDEX recordings_region_id_index ON unmnemonic_devices.recordings USING btree (region_id);
+
+
+--
+-- Name: recordings_team_id_index; Type: INDEX; Schema: unmnemonic_devices; Owner: -
+--
+
+CREATE UNIQUE INDEX recordings_team_id_index ON unmnemonic_devices.recordings USING btree (team_id);
 
 
 --
@@ -457,6 +486,14 @@ ALTER TABLE ONLY unmnemonic_devices.recordings
 
 
 --
+-- Name: recordings recordings_team_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
+--
+
+ALTER TABLE ONLY unmnemonic_devices.recordings
+    ADD CONSTRAINT recordings_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -493,3 +530,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231105032326);
 INSERT INTO public."schema_migrations" (version) VALUES (20231105153232);
 INSERT INTO public."schema_migrations" (version) VALUES (20231105160034);
 INSERT INTO public."schema_migrations" (version) VALUES (20231110024646);
+INSERT INTO public."schema_migrations" (version) VALUES (20231110062026);
