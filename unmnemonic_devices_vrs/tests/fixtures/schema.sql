@@ -148,7 +148,8 @@ CREATE TABLE public.users (
 CREATE TABLE unmnemonic_devices.books (
     id uuid NOT NULL,
     excerpt character varying(255),
-    title character varying(255)
+    title character varying(255),
+    created_at timestamp(0) without time zone DEFAULT now()
 );
 
 
@@ -172,7 +173,8 @@ CREATE TABLE unmnemonic_devices.destinations (
     id uuid NOT NULL,
     description character varying(255),
     region_id uuid NOT NULL,
-    answer character varying(255)
+    answer character varying(255),
+    created_at timestamp(0) without time zone DEFAULT now()
 );
 
 
@@ -531,3 +533,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231105153232);
 INSERT INTO public."schema_migrations" (version) VALUES (20231105160034);
 INSERT INTO public."schema_migrations" (version) VALUES (20231110024646);
 INSERT INTO public."schema_migrations" (version) VALUES (20231110062026);
+INSERT INTO public."schema_migrations" (version) VALUES (20231111171443);
