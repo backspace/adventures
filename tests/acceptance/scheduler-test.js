@@ -44,7 +44,7 @@ module('Acceptance | scheduler', function (hooks) {
     });
 
     superfans = store.createRecord('team', {
-      name: 'Leave It to Beaver superfans',
+      name: 'Leave It to Beaver superfans this is a much longer team name now to exercise truncation',
       users: 'june@example.com, eddie@example.com',
       notes: 'Here is a note',
       riskAversion: 3,
@@ -239,7 +239,7 @@ module('Acceptance | scheduler', function (hooks) {
       await page.visit();
 
       const superfans = page.teams[0];
-      assert.equal(superfans.name, 'Leave It to Beaver superfans');
+      assert.equal(superfans.name, 'Leave It to Beaver superfans this is a…');
       assert.equal(superfans.riskAversionColour, 'red');
       assert.equal(
         superfans.usersAndNotes,
@@ -309,7 +309,10 @@ module('Acceptance | scheduler', function (hooks) {
       await page.teams[0].hover();
       await page.teams[0].meetings[0].click();
       assert.equal(page.meeting.destination, 'Edmonton Court');
-      assert.equal(page.meeting.teams[0].value, 'Leave It to Beaver superfans');
+      assert.equal(
+        page.meeting.teams[0].value,
+        'Leave It to Beaver superfans this is a…'
+      );
       assert.equal(page.meeting.teams[1].value, 'Mayors');
     });
 
@@ -325,7 +328,7 @@ module('Acceptance | scheduler', function (hooks) {
         assert.equal(page.meeting.destination, 'Prairie Theatre Exchange');
         assert.equal(
           page.meeting.teams[0].value,
-          'Leave It to Beaver superfans'
+          'Leave It to Beaver superfans this is a…'
         );
         assert.equal(page.meeting.teams[1].value, 'Mayors');
         assert.notOk(
@@ -563,7 +566,10 @@ module('Acceptance | scheduler', function (hooks) {
       await page.teams[0].meetings[0].click();
       assert.equal(page.meeting.destination, 'Edmonton Court');
       assert.equal(page.meeting.waypoint, 'fourten');
-      assert.equal(page.meeting.teams[0].value, 'Leave It to Beaver superfans');
+      assert.equal(
+        page.meeting.teams[0].value,
+        'Leave It to Beaver superfans this is a…'
+      );
     });
 
     test('a new meeting can be scheduled and resets the form when saved', async function (assert) {
@@ -576,7 +582,10 @@ module('Acceptance | scheduler', function (hooks) {
       assert.equal(page.meeting.destination, 'Prairie Theatre Exchange');
       assert.equal(page.meeting.waypoint, 'fourten');
 
-      assert.equal(page.meeting.teams[0].value, 'Leave It to Beaver superfans');
+      assert.equal(
+        page.meeting.teams[0].value,
+        'Leave It to Beaver superfans this is a…'
+      );
       assert.notOk(
         page.meeting.isForbidden,
         'expected meeting not be forbidden'

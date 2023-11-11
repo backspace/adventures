@@ -85,7 +85,7 @@ export default class TeamOverviewsComponent extends Component {
       doc.save();
       doc.font(regular);
       doc.fontSize(mapTeamFontSize);
-      doc.text(`${team.name}: ${team.identifier}`, 0, 0);
+      doc.text(`${team.truncatedName}: ${team.identifier}`, 0, 0);
       doc.restore();
     }
 

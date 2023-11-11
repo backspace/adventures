@@ -76,4 +76,16 @@ export default class Team extends Model {
 
   @attr('updateDate')
   updatedAt;
+
+  @computed('name')
+  get truncatedName() {
+    let limit = 40;
+    let text = this.name;
+
+    if (limit >= text.length) {
+      return text;
+    }
+
+    return `${text.substring(0, text.lastIndexOf(' ', limit))}…`;
+  }
 }

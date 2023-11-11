@@ -11,7 +11,7 @@
 >
   {{! template-lint-disable no-invalid-interactive }}
   <div onclick={{action 'select'}}>
-    <span class='name'>{{@team.name}}</span>
+    <span class='name'>{{@team.truncatedName}}</span>
     <span class='count'>{{this.count}}</span>
 
     <div>

@@ -214,7 +214,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         doc
           .fillColor('black')
           .text(
-            team.name,
+            team.truncatedName,
             PAGE_PADDING,
             height + TEAM_GAP_SIZE - TEAM_FONT_SIZE
           );
