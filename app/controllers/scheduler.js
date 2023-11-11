@@ -134,7 +134,7 @@ export default class SchedulerController extends Controller {
   }
 
   @action mouseEnterRegion(region) {
-    this.set('highlightedRegion', region);
+    this.set('highlightedRegion', region.ancestor);
   }
 
   @action mouseLeaveRegion() {

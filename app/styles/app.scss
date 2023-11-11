@@ -92,6 +92,8 @@ $region-length: 4rem;
     .waypoint-meeting-index {
       margin-top: 50%;
       font-size: 250%;
+      position: absolute;
+      top: 0;
     }
 
     &.highlighted {

@@ -35,9 +35,16 @@ export default class Region extends Model {
     return this.destinations.mapBy('meetings').flat();
   }
 
-  @computed('allMeetings.length', 'destinations.@each.meetings', 'name')
+  @computed(
+    'allMeetings.length',
+    'destinations.@each.meetings',
+    'name',
+    'children'
+  )
   get meetingCount() {
-    return this.get('allMeetings.length');
+    return this.children.reduce((sum, child) => {
+      return sum + child.meetingCount;
+    }, this.get('allMeetings.length'));
   }
 
   @attr('number')

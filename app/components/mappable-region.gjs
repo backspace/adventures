@@ -41,18 +41,19 @@ export default class MappableRegionComponent extends Component {
   }
 
   get meetingIndex() {
-    const regionId = this.args.region.id;
+    const regionId = this.args.region.ancestor.id;
     const highlightedTeam = this.args.highlightedTeam;
 
     if (highlightedTeam) {
-      const meetingRegionIds = highlightedTeam
+      const meetingAncestorRegionIds = highlightedTeam
         .hasMany('meetings')
         .value()
         .rejectBy('isNew')
         .map((meeting) => meeting.belongsTo('destination').value())
         .map((destination) => destination.belongsTo('region').value())
-        .mapBy('id');
-      const index = meetingRegionIds.indexOf(regionId);
+        .mapBy('ancestor.id');
+
+      const index = meetingAncestorRegionIds.indexOf(regionId);
 
       if (index > -1) {
         return index + 1;
@@ -69,19 +70,20 @@ export default class MappableRegionComponent extends Component {
       return undefined;
     }
 
-    const regionId = this.args.region.id;
+    const regionId = this.args.region.ancestor.id;
     const highlightedTeam = this.args.highlightedTeam;
 
     if (highlightedTeam) {
-      const waypointMeetingRegionIds = highlightedTeam
+      const waypointMeetingAncestorRegionIds = highlightedTeam
         .hasMany('meetings')
         .value()
         .rejectBy('isNew')
         .filterBy('waypoint')
         .map((meeting) => meeting.belongsTo('waypoint').value())
         .map((waypoint) => waypoint.belongsTo('region').value())
-        .mapBy('id');
-      const index = waypointMeetingRegionIds.indexOf(regionId);
+        .mapBy('ancestor.id');
+
+      const index = waypointMeetingAncestorRegionIds.indexOf(regionId);
 
       if (index > -1) {
         return index + 1;

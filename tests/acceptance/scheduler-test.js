@@ -404,11 +404,18 @@ module('Acceptance | scheduler', function (hooks) {
       let webb = store.createRecord('region', {
         name: 'PP Megacomplex',
         accessibility: 'Aggressive security',
-        x: 200,
-        y: 200,
+        parent: portagePlace,
+      });
+
+      let portagePlaceThirdFloor = store.createRecord('region', {
+        name: 'Third floor',
+        parent: portagePlace,
       });
 
       await webb.save();
+      await portagePlaceThirdFloor.save();
+
+      await portagePlace.save();
 
       const completionWaypointProperties = {
         call: 'call',
@@ -433,7 +440,7 @@ module('Acceptance | scheduler', function (hooks) {
 
       let prairieTheatreExchange = store.createRecord('waypoint', {
         name: 'Prairie Theatre Exchange',
-        region: portagePlace,
+        region: portagePlaceThirdFloor,
         status: 'available',
         ...completionWaypointProperties,
       });
@@ -512,6 +519,8 @@ module('Acceptance | scheduler', function (hooks) {
         3,
         'only regions with available waypoints should be listed'
       );
+
+      await this.pauseTest();
       const region = page.waypointRegions[2];
 
       assert.equal(region.name, 'PP Megacomplex');
@@ -521,6 +530,15 @@ module('Acceptance | scheduler', function (hooks) {
       const waypoints = region.waypoints[0];
 
       assert.equal(waypoints.name, 'fourten');
+    });
+
+    test('a nested region does not show on the map', async function (assert) {
+      await page.visit();
+
+      assert.equal(page.map.regions.length, 2);
+      // await this.pauseTest();
+      // assert.equal(region.x, 50);
+      // assert.equal(region.y, 60);
     });
 
     test('an existing meeting is shown in the teams and destination', async function (assert) {
