@@ -2,7 +2,6 @@ import PageObject, {
   attribute,
   clickable,
   collection,
-  fillable,
   findElement,
   hasClass,
   isHidden,
