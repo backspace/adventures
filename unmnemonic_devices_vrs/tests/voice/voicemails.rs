@@ -1,7 +1,7 @@
 mod helpers {
     include!("../helpers.rs");
 }
-use helpers::{get, post, post_with_twilio};
+use helpers::{get, post_with_twilio};
 
 use select::{document::Document, predicate::Name};
 use serde::Serialize;
@@ -180,12 +180,49 @@ async fn post_voicemails_remember_confirm_updates_user_notifies_and_redirects(db
 }
 
 #[sqlx::test(fixtures("schema", "users-with-no-voicepass"))]
-async fn post_voicemails_remember_confirm_errors_when_unrecognised_and_redirects(db: PgPool) {
+async fn post_voicemails_remember_confirm_errors_when_unrecognised_notifies_and_redirects(
+    db: PgPool,
+) {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+    let twilio_number = config.twilio_number.to_string();
+    let notification_number = config.notification_number.to_string();
+
+    let twilio_create_message_body = serde_urlencoded::to_string([
+        (
+            "Body",
+            &"Failed to confirm remember: this voicepass does not exist".to_string(),
+        ),
+        ("To", &notification_number),
+        ("From", &twilio_number),
+    ])
+    .expect("Could not encode message creation body");
+
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(method("POST"))
+        .and(path_regex(r"^/2010-04-01/Accounts/.*/Messages.json$"))
+        .and(body_string(twilio_create_message_body.to_string()))
+        .respond_with(ResponseTemplate::new(201).set_body_json(json!({})))
+        .expect(1)
+        .named("create message")
+        .mount(&mock_twilio)
+        .await;
+
     let body = "SpeechResult=This voicepass does not exist.";
 
-    let response = post(db, "/voicemails/remember/confirm", body, true)
-        .await
-        .expect("Failed to execute response");
+    let response = post_with_twilio(
+        InjectableServices {
+            db: db.clone(),
+            twilio_address: mock_twilio.uri(),
+        },
+        "/voicemails/remember/confirm",
+        body,
+        true,
+    )
+    .await
+    .expect("Failed to execute response");
+
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
 
