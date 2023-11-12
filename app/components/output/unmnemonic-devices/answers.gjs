@@ -24,7 +24,7 @@ export default class AnswersComponent extends Component {
 
       doc.fontSize(18);
 
-      doc.text(`${team.name}`);
+      doc.text(`${team.truncatedName}`);
       doc.text(' ');
 
       doc.fontSize(14);
