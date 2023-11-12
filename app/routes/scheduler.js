@@ -69,7 +69,7 @@ export default class SchedulerRoute extends Route {
       waypoints: this.store.findAll('waypoint'),
       teams: this.store.findAll('team'),
       map: this.map.getURL('image'),
-      ancestorRegionContainers,
+      ancestorRegionContainers: ancestorRegionContainers.sortBy('region.name'),
     });
   }
 }
