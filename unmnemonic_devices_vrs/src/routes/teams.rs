@@ -139,6 +139,18 @@ pub struct TwilioParams {
     call_sid: String,
 }
 
+#[derive(Serialize)]
+pub struct TeamAndMaybeEncouraging {
+    team: Team,
+    maybe_encouraging: Option<Recording>,
+}
+
+#[derive(sqlx::FromRow, Serialize)]
+pub struct Recording {
+    id: Uuid,
+    url: String,
+}
+
 #[axum_macros::debug_handler]
 pub async fn get_team(
     Key(key): Key,
@@ -187,11 +199,55 @@ pub async fn get_team(
     .await
     .expect("Failed to fetch team");
 
+    let encouraging_recording = sqlx::query_as::<_, Recording>(
+        r#"
+            SELECT
+                r.id, r.url
+            FROM
+                unmnemonic_devices.recordings r
+            LEFT JOIN
+                unmnemonic_devices.calls c ON r.call_id = c.id
+            WHERE
+                r.approved AND
+                r.type = 'voicemail' AND
+                r.character_name = 'remember' AND
+                ARRAY_LENGTH(r.team_listen_ids, 1) IS NULL AND
+                (c.id IS NULL OR c.team_id != $1)
+            ORDER BY r.created_at
+            LIMIT 1
+        "#,
+    )
+    .bind(id)
+    .fetch_optional(&state.db)
+    .await
+    .expect("Failed to fetch recordings");
+
+    if encouraging_recording.as_ref().is_some() {
+        sqlx::query!(
+            r#"
+              UPDATE
+                unmnemonic_devices.recordings
+              SET
+                team_listen_ids = ARRAY_APPEND(team_listen_ids, $1)
+              WHERE
+                id = $2;
+            "#,
+            id,
+            encouraging_recording.as_ref().unwrap().id
+        )
+        .execute(&state.db)
+        .await
+        .ok();
+    }
+
     RenderXml(
         key,
         state.engine,
         state.mutable_prompts.lock().unwrap().to_string(),
-        team,
+        TeamAndMaybeEncouraging {
+            team,
+            maybe_encouraging: encouraging_recording,
+        },
     )
 }
 

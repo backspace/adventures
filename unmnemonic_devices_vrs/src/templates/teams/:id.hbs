@@ -1,8 +1,12 @@
 <Response>
-  <!-- {{voicepass}} -->
-  <Gather timeout="3" input="speech" hints="{{#each excerpts}}{{this}}, {{/each}}{{#each answers}}{{this}} {{/each}}">
+  {{#if maybe_encouraging}}
+    {{{lookup prompts "pure.encouraging"}}}
+    <Play>{{maybe_encouraging.url}}</Play>
+  {{/if}}
+  <!-- {{team.voicepass}} -->
+  <Gather timeout="3" input="speech" hints="{{#each team.excerpts}}{{this}}, {{/each}}{{#each team.answers}}{{this}} {{/each}}">
     <Say>
-      Welcome, team {{name}}.
+      Welcome, team {{team.name}}.
       FIXME what is your cathartic phrase or the collation of the findings
       from your kinetic instructions?
     </Say>

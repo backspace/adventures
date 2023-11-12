@@ -216,6 +216,129 @@ async fn team_show_names_team_and_gathers_excerpts_or_collation_and_records_team
     assert_eq!(call.path, "/teams/48e3bda7-db52-4c99-985f-337e266f7832")
 }
 
+#[sqlx::test(fixtures(
+    "schema",
+    "teams",
+    "books",
+    "regions",
+    "destinations",
+    "meetings",
+    "calls",
+    "recordings-encouraging"
+))]
+async fn team_show_consumes_encouraging_message(db: PgPool) {
+    let response = get(
+        db.clone(),
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832?CallSid=xyz",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+
+    let say = document.find(Name("say")).next().unwrap();
+    assert_that(&say.text()).contains("encouraging");
+
+    let play = document.find(Name("play")).next().unwrap();
+    assert_that(&play.text()).contains("http://example.com/encouraging");
+
+    let listens = sqlx::query!("SELECT team_listen_ids from unmnemonic_devices.recordings WHERE id = '975f5bc8-b527-4445-ad42-cddbd01fc216'").fetch_one(&db).await.expect("Failed to fetch recording listens");
+
+    assert_eq!(
+        listens.team_listen_ids.unwrap(),
+        vec![uuid::uuid!("48e3bda7-db52-4c99-985f-337e266f7832")]
+    );
+}
+
+#[sqlx::test(fixtures(
+    "schema",
+    "teams",
+    "books",
+    "regions",
+    "destinations",
+    "meetings",
+    "calls",
+    "recordings-encouraging",
+    "recordings-encouraging-listened"
+))]
+async fn team_show_does_not_consume_consumed_message(db: PgPool) {
+    let response = get(
+        db.clone(),
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832?CallSid=xyz",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+    let say = document.find(Name("say")).next().unwrap();
+
+    assert_that(&say.text()).does_not_contain("encouraging");
+}
+
+#[sqlx::test(fixtures(
+    "schema",
+    "teams",
+    "books",
+    "regions",
+    "destinations",
+    "meetings",
+    "calls",
+    "recordings-encouraging-unapproved"
+))]
+async fn team_show_does_not_consume_unapproved_message(db: PgPool) {
+    let response = get(
+        db.clone(),
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832?CallSid=xyz",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+    let say = document.find(Name("say")).next().unwrap();
+
+    assert_that(&say.text()).does_not_contain("encouraging");
+}
+
+#[sqlx::test(fixtures(
+    "schema",
+    "teams",
+    "books",
+    "regions",
+    "destinations",
+    "meetings",
+    "calls",
+    "recordings-encouraging",
+    "recordings-encouraging-listened"
+))]
+async fn team_show_does_not_consume_own_recording(db: PgPool) {
+    let response = get(
+        db.clone(),
+        "/teams/48e3bda7-db52-4c99-985f-337e266f7832?CallSid=xyz",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+    let say = document.find(Name("say")).next().unwrap();
+
+    assert_that(&say.text()).does_not_contain("encouraging");
+}
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
 async fn team_post_redirects_to_found_excerpt_meeting(db: PgPool) {
     // Twilio editorialises punctuation and always capitalises.

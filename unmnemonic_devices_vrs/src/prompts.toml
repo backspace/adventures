@@ -9,6 +9,8 @@ voicemail_gather = "Leave a message for someone by saying their name."
 voicepass = "what is your voice password?"
 repeat_record_end = "Repeat, record an encouraging message for others, or end?"
 
+encouraging = "Here as an encouraging message from another team."
+
 silence = "We didn't hear anything."
 
 phrase_not_found = "We couldn't find that cathartic phrase."
