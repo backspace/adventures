@@ -48,7 +48,11 @@ async fn list_prompts_without_test_ones(db: PgPool) {
     assert_that(&knut_prompt_row.text()).contains("⚠️");
 }
 
-#[sqlx::test(fixtures("schema", "recordings-prompts-pure-monitoring"))]
+#[sqlx::test(fixtures(
+    "schema",
+    "recordings-prompts-pure-monitoring",
+    "recordings-everything"
+))]
 async fn list_prompts_with_audio(db: PgPool) {
     let response = get(db, "/admin/prompts", false)
         .await

@@ -14,11 +14,9 @@ pub async fn get_all_prompts(db: &PgPool, prompts: &Prompts) -> String {
     SELECT character_name, prompt_name, url
     FROM unmnemonic_devices.recordings
     WHERE
+      character_name IS NOT NULL AND
+      prompt_name IS NOT NULL AND
       url IS NOT NULL
-      AND
-      type IS NULL
-      AND
-      region_id IS NULL
     "#;
 
     let rows = sqlx::query(query).fetch_all(db).await.unwrap();
@@ -30,13 +28,23 @@ pub async fn get_all_prompts(db: &PgPool, prompts: &Prompts) -> String {
         let url: String = row.get("url");
 
         let key = format!("{}.{}", character_name, prompt_name);
-        let prompt_text = prompts
-            .tables
-            .get(&character_name)
-            .unwrap()
-            .get(&prompt_name);
-        let value = format!("<!-- {:?} --><Play>{}</Play>", prompt_text, url);
-        results.insert(key, value);
+
+        let is_prompt = prompts.tables.contains_key(&character_name)
+            && prompts
+                .tables
+                .get(&character_name)
+                .unwrap()
+                .contains_key(&prompt_name);
+
+        if is_prompt {
+            let prompt_text = prompts
+                .tables
+                .get(&character_name)
+                .unwrap()
+                .get(&prompt_name);
+            let value = format!("<!-- {:?} --><Play>{}</Play>", prompt_text, url);
+            results.insert(key, value);
+        }
     }
 
     for (character, prompts) in &prompts.tables {

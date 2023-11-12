@@ -21,7 +21,15 @@ pub async fn get_admin_prompts(
     let query = r#"
       SELECT character_name, prompt_name, url
       FROM unmnemonic_devices.recordings
-      WHERE url IS NOT NULL AND type IS NULL
+      WHERE
+        character_name IS NOT NULL AND
+        prompt_name IS NOT NULL AND
+        url IS NOT NULL AND
+        type IS NULL AND
+        region_id IS NULL AND
+        destination_id IS NULL AND
+        book_id IS NULL AND
+        team_id IS NULL
       "#;
 
     let rows = sqlx::query(query).fetch_all(&state.db).await.unwrap();
