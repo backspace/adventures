@@ -12,6 +12,12 @@
             {{else}}
               <td>⚠️</td>
             {{/if}}
+            <td>
+              <form action='/admin/prompts/{{character_name}}/{{prompt_name}}' method='POST'>
+                <input name='url' type='url' placeholder='URL' />
+                <button type='submit'>replace</button>
+              </form>
+            </td>
           </tr>
         {{/each}}
       </tbody>

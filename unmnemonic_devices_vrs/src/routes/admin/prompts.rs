@@ -1,10 +1,16 @@
-use axum::{extract::State, response::IntoResponse};
+use axum::{
+    extract::{Path, State},
+    response::{IntoResponse, Redirect},
+    Form,
+};
 use axum_template::{Key, RenderHtml};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::Row;
 use std::collections::HashMap;
+use uuid::Uuid;
 
 use crate::auth::User;
+use crate::helpers::get_all_prompts;
 use crate::AppState;
 
 #[derive(Serialize)]
@@ -76,4 +82,40 @@ pub async fn get_admin_prompts(
             prompts: character_prompts_with_urls,
         },
     )
+}
+
+#[derive(Deserialize)]
+pub struct PromptForm {
+    url: String,
+}
+
+#[axum_macros::debug_handler]
+pub async fn post_admin_prompt(
+    Key(_key): Key,
+    Path((character_name, prompt_name)): Path<(String, String)>,
+    State(state): State<AppState>,
+    _user: User,
+    Form(form): Form<PromptForm>,
+) -> Redirect {
+    sqlx::query!(
+        r#"
+          INSERT INTO unmnemonic_devices.recordings (id, character_name, prompt_name, url)
+          VALUES ($1, $2, $3, $4)
+          ON CONFLICT (character_name, prompt_name)
+          DO UPDATE SET url = EXCLUDED.url, call_id = EXCLUDED.call_id
+        "#,
+        Uuid::new_v4(),
+        character_name,
+        prompt_name,
+        form.url,
+    )
+    .execute(&state.db)
+    .await
+    .ok();
+
+    // Update wrapped prompts in AppState
+    let new_wrapped_prompts = get_all_prompts(&state.db, &state.prompts).await;
+    *state.mutable_prompts.lock().unwrap() = new_wrapped_prompts;
+
+    Redirect::to("/admin/prompts")
 }

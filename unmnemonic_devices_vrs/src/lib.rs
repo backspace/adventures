@@ -170,6 +170,10 @@ pub async fn app(services: InjectableServices) -> Router {
         .route("/admin/regions", get(get_admin_regions))
         .route("/admin/teams", get(get_admin_teams))
         .route("/admin/prompts", get(get_admin_prompts))
+        .route(
+            "/admin/prompts/:character_name/:prompt_name",
+            post(post_admin_prompt),
+        )
         .route("/admin/voicemails", get(get_admin_voicemails))
         .route("/admin/voicemails/:id", post(post_admin_voicemail))
         .with_state(shared_state)

@@ -1,12 +1,13 @@
 mod helpers {
     include!("../helpers.rs");
 }
-use helpers::get;
+use helpers::{get, post};
 
 use select::{
     document::Document,
     predicate::{Attr, Name, Predicate},
 };
+use serde::Serialize;
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
@@ -62,4 +63,42 @@ async fn list_prompts_with_audio(db: PgPool) {
 
     let audio_count = document.find(Name("audio")).count();
     assert_eq!(audio_count, 1);
+}
+
+#[derive(sqlx::FromRow, Serialize)]
+pub struct Recording {
+    url: String,
+}
+
+#[sqlx::test(fixtures("schema", "recordings-prompts-pure-monitoring"))]
+async fn post_prompt_replaces(db: PgPool) {
+    post(
+        db.clone(),
+        "/admin/prompts/pure/monitoring",
+        "url=http://example.com/replaced-monitoring",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    let recording_url = sqlx::query_as::<_, Recording>(
+        r#"
+          SELECT
+            r.url
+          FROM
+            unmnemonic_devices.recordings r
+          WHERE
+            r.character_name = $1
+            AND r.prompt_name = $2
+        "#,
+    )
+    .bind("pure")
+    .bind("monitoring")
+    .fetch_one(&db)
+    .await;
+
+    assert_eq!(
+        recording_url.as_ref().unwrap().url,
+        "http://example.com/replaced-monitoring"
+    );
 }
