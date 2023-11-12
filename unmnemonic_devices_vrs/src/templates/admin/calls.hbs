@@ -13,6 +13,7 @@
           from
         </th>
         <th>team</th>
+        <th>path</th>
       </tr>
     </thead>
     <tbody>
@@ -24,7 +25,10 @@
           <td>
             {{this.from}}
           </td>
-          <td>{{this.team_name}}</td>
+          {{#with (lookup ../call_sid_to_call_record this.sid)}}
+            <td>{{team_name}}</td>
+            <td>{{call_path}}</td>
+          {{/with}}
         </tr>
       {{else}}
         <tr>

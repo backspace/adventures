@@ -22,6 +22,7 @@ struct TwilioCall {
 #[derive(Serialize)]
 pub struct Calls {
     calls: Vec<Call>,
+    call_sid_to_call_record: HashMap<String, CallWithTeam>,
 }
 
 #[derive(sqlx::FromRow, Serialize)]
@@ -29,13 +30,13 @@ pub struct Call {
     sid: String,
     from: String,
     start: String,
-    team_name: Option<String>,
 }
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct CallWithTeam {
     call_id: String,
-    team_name: String,
+    team_name: Option<String>,
+    call_path: Option<String>,
 }
 
 #[axum_macros::debug_handler]
@@ -70,7 +71,7 @@ pub async fn get_calls(
         .await
         .unwrap();
 
-    let mut active_calls = response["calls"].as_array().map(|calls| {
+    let active_calls = response["calls"].as_array().map(|calls| {
         calls
             .iter()
             .map(|call| Call {
@@ -83,7 +84,6 @@ pub async fn get_calls(
                 start: serde_json::from_value::<TwilioCall>(call.clone())
                     .unwrap()
                     .start_time,
-                team_name: None,
             })
             .collect::<Vec<Call>>()
     });
@@ -94,9 +94,9 @@ pub async fn get_calls(
 
     let call_teams = sqlx::query_as::<_, CallWithTeam>(
         "
-          SELECT c.id as call_id, t.name as team_name
+          SELECT c.id as call_id, c.path as call_path, t.name as team_name
           FROM unmnemonic_devices.calls c
-          JOIN teams t ON c.team_id = t.id
+          LEFT JOIN teams t ON c.team_id = t.id
           WHERE c.id = ANY($1)
         ",
     )
@@ -105,22 +105,15 @@ pub async fn get_calls(
     .await
     .expect("Unable to fetch call teams");
 
-    let call_to_team_name: HashMap<String, String> = call_teams
-        .into_iter()
-        .map(|ct| (ct.call_id, ct.team_name))
-        .collect();
-
-    for mut call in active_calls.as_mut().unwrap() {
-        if let Some(team_name) = call_to_team_name.get(&call.sid) {
-            call.team_name = Some(team_name.clone());
-        }
-    }
-
     RenderHtml(
         key.chars().skip(1).collect::<String>(),
         state.engine,
         Calls {
             calls: active_calls.unwrap(),
+            call_sid_to_call_record: call_teams
+                .into_iter()
+                .map(|ct| (ct.call_id.clone(), ct))
+                .collect(),
         },
     )
 }

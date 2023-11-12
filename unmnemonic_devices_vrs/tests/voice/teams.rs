@@ -152,6 +152,7 @@ async fn team_post_confirm_redirects_to_teams_show_on_no(db: PgPool) {
 #[derive(sqlx::FromRow, Serialize)]
 pub struct CallRecord {
     team_id: Uuid,
+    path: String,
 }
 
 #[sqlx::test(fixtures(
@@ -196,7 +197,7 @@ async fn team_show_names_team_and_gathers_excerpts_or_collation_and_records_team
     let call = sqlx::query_as::<_, CallRecord>(
         r#"
           SELECT
-            team_id
+            team_id, path
           FROM
             unmnemonic_devices.calls
           WHERE
@@ -212,6 +213,7 @@ async fn team_show_names_team_and_gathers_excerpts_or_collation_and_records_team
         call.team_id,
         uuid::uuid!("48e3bda7-db52-4c99-985f-337e266f7832")
     );
+    assert_eq!(call.path, "/teams/48e3bda7-db52-4c99-985f-337e266f7832")
 }
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]

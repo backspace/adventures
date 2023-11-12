@@ -9,6 +9,7 @@ use axum::{
     body::Bytes,
     extract::MatchedPath,
     http::{HeaderMap, Request},
+    middleware,
     response::Response,
     routing::{get, post},
     Router,
@@ -16,7 +17,7 @@ use axum::{
 use axum_template::engine::Engine;
 use handlebars::Handlebars;
 use handlebars_concat::HandlebarsConcat;
-use helpers::get_all_prompts;
+use helpers::{get_all_prompts, store_call_path_middleware};
 use serde::Deserialize;
 use sqlx::PgPool;
 use std::sync::{Arc, Mutex};
@@ -158,6 +159,10 @@ pub async fn app(services: InjectableServices) -> Router {
             "/voicemails/remember/confirm",
             post(post_voicemails_remember_confirm),
         )
+        .layer(middleware::from_fn_with_state(
+            shared_state.clone(),
+            store_call_path_middleware,
+        ))
         //
         // admin routes
         .route("/admin/calls", get(get_calls))

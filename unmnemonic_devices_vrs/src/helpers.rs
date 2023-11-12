@@ -1,6 +1,9 @@
+use crate::AppState;
 use crate::Prompts;
 use crate::WrappedPrompts;
 use crate::WrappedPromptsSerialisation;
+use axum::response::Response;
+use axum::{extract::State, http::StatusCode, middleware::Next};
 use serde::Deserialize;
 use sqlx::PgPool;
 use sqlx::Row;
@@ -56,4 +59,41 @@ pub async fn get_all_prompts(db: &PgPool, prompts: &Prompts) -> String {
 #[derive(Deserialize)]
 pub struct MaybeRecordingParams {
     pub unrecorded: Option<String>,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "PascalCase")]
+struct CallParams {
+    call_sid: Option<String>,
+}
+
+pub async fn store_call_path_middleware<B>(
+    State(state): State<AppState>,
+    req: axum::http::Request<B>,
+    next: Next<B>,
+) -> Result<Response, StatusCode> {
+    if req.method() == axum::http::Method::GET {
+        if let Some(query) = req.uri().query() {
+            if let Ok(call_params) = serde_urlencoded::from_str::<CallParams>(query) {
+                if let Some(call_sid) = call_params.call_sid {
+                    let db = &state.db;
+                    let path = req.uri().path().to_string();
+
+                    sqlx::query!(
+                        "
+                        UPDATE unmnemonic_devices.calls
+                        SET path = $1 WHERE id = $2
+                        ",
+                        path,
+                        call_sid
+                    )
+                    .execute(db)
+                    .await
+                    .ok();
+                }
+            }
+        }
+    }
+
+    Ok(next.run(req).await)
 }

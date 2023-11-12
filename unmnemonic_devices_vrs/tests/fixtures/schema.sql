@@ -161,7 +161,8 @@ CREATE TABLE unmnemonic_devices.calls (
     id character varying(255) NOT NULL,
     number character varying(255),
     team_id uuid,
-    created_at timestamp(0) without time zone DEFAULT now()
+    created_at timestamp(0) without time zone DEFAULT now(),
+    path character varying(255)
 );
 
 
@@ -534,3 +535,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231105160034);
 INSERT INTO public."schema_migrations" (version) VALUES (20231110024646);
 INSERT INTO public."schema_migrations" (version) VALUES (20231110062026);
 INSERT INTO public."schema_migrations" (version) VALUES (20231111171443);
+INSERT INTO public."schema_migrations" (version) VALUES (20231112020314);
