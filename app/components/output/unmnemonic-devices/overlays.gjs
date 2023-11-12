@@ -15,7 +15,7 @@ import {
 import blobStream from 'blob-stream';
 import PDFDocument from 'pdfkit';
 
-export const PAGE_MARGIN = 0.5 * 72;
+export const PAGE_MARGIN = 0.3 * 72;
 export const PAGE_PADDING = 0.2 * 72;
 
 export const BACKGROUND_COUNT = 5;
@@ -216,7 +216,8 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
           .text(
             team.truncatedName,
             PAGE_PADDING,
-            height + TEAM_GAP_SIZE - TEAM_FONT_SIZE
+            height + TEAM_GAP_SIZE - TEAM_FONT_SIZE / 2,
+            { lineBreak: false }
           );
       }
 
