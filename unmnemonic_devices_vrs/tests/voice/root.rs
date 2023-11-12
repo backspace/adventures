@@ -1,15 +1,21 @@
 mod helpers {
     include!("../helpers.rs");
 }
-use helpers::{get, post, RedirectTo};
+use helpers::{get, get_with_twilio, post, RedirectTo};
 
 use select::{
     document::Document,
     predicate::{Descendant, Name},
 };
 use serde::Serialize;
+use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::PgPool;
+use std::env;
+use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
+use unmnemonic_devices_vrs::InjectableServices;
+use wiremock::matchers::{body_string, method, path_regex};
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct CallRecord {
@@ -122,14 +128,61 @@ async fn root_serves_recorded_disclaimer_when_it_exists(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("schema", "settings-begun"))]
-async fn root_serves_welcome_when_begun(db: PgPool) {
-    let response = get(db, "/", false)
-        .await
-        .expect("Failed to execute request.");
+async fn root_serves_welcome_and_notifies_supervisor_when_begun(db: PgPool) {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+    let twilio_number = config.twilio_number.to_string();
+    let supervisor_number = config.supervisor_number.to_string();
+
+    let twilio_create_message_body = serde_urlencoded::to_string([
+        ("Body", &"New call from 2040000000".to_string()),
+        ("To", &supervisor_number),
+        ("From", &twilio_number),
+    ])
+    .expect("Could not encode message creation body");
+
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(method("POST"))
+        .and(path_regex(r"^/2010-04-01/Accounts/.*/Messages.json$"))
+        .and(body_string(twilio_create_message_body.to_string()))
+        .respond_with(ResponseTemplate::new(201).set_body_json(json!({})))
+        .expect(1)
+        .named("create message")
+        .mount(&mock_twilio)
+        .await;
+
+    let response = get_with_twilio(
+        InjectableServices {
+            db: db.clone(),
+            twilio_address: mock_twilio.uri(),
+        },
+        "/?Caller=2040000000",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
     assert_that(&response.text().await.unwrap()).contains("welcome to unmnemonic");
+}
+
+#[sqlx::test(fixtures("schema", "settings-begun"))]
+async fn root_serves_welcome_and_does_not_notify_self_call_when_begun(db: PgPool) {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+    let supervisor_number = config.supervisor_number.to_string();
+
+    let response = get(
+        db,
+        &format!("/?Caller={}", urlencoding::encode(&supervisor_number)),
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
 }
 
 #[sqlx::test(fixtures("schema", "settings"))]

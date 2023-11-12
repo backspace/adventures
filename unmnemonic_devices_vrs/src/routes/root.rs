@@ -117,6 +117,52 @@ pub async fn get_root(
             .await
             .expect("Failed to fetch settings");
 
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+    let supervisor_number = config.supervisor_number.to_string();
+
+    let caller_is_supervisor =
+        params.caller.clone().unwrap_or("NOTHING".to_string()) == supervisor_number;
+
+    let notify_supervisor =
+        settings.begun.unwrap() && !settings.ending.unwrap() && !caller_is_supervisor;
+
+    if notify_supervisor {
+        let account_sid = config.twilio_account_sid.to_string();
+        let api_sid = config.twilio_api_key_sid.to_string();
+        let api_secret = config.twilio_api_key_secret.to_string();
+        let twilio_number = config.twilio_number.to_string();
+
+        let create_message_body = serde_urlencoded::to_string([
+            (
+                "Body",
+                format!("New call from {}", params.caller.clone().unwrap()),
+            ),
+            ("To", supervisor_number),
+            ("From", twilio_number),
+        ])
+        .expect("Could not encode meeting message creation body");
+
+        let basic_auth = format!("{}:{}", api_sid, api_secret);
+        let auth_header_value = format!(
+            "Basic {}",
+            general_purpose::STANDARD_NO_PAD.encode(basic_auth)
+        );
+
+        let client = reqwest::Client::new();
+        client
+            .post(format!(
+                "{}/2010-04-01/Accounts/{}/Messages.json",
+                state.twilio_address, account_sid
+            ))
+            .header("Authorization", auth_header_value.clone())
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(create_message_body)
+            .send()
+            .await
+            .ok();
+    }
+
     RenderXml(
         key,
         state.engine,

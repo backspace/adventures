@@ -6,6 +6,7 @@ pub struct Config {
     pub auth: String,
     pub database_url: String,
     pub notification_number: String,
+    pub supervisor_number: String,
     pub root_url: String,
     pub twilio_account_sid: String,
     pub twilio_api_key_sid: String,
@@ -31,6 +32,10 @@ impl EnvVarProvider {
             notification_number: args
                 .get("NOTIFICATION_NUMBER")
                 .expect("Missing notification number")
+                .to_string(),
+            supervisor_number: args
+                .get("SUPERVISOR_NUMBER")
+                .expect("Missing supervisor number")
                 .to_string(),
             root_url: args.get("ROOT_URL").expect("Missing root URL").to_string(),
             twilio_account_sid: args
