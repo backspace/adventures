@@ -7,7 +7,9 @@
       {{{lookup prompts "remember.ending"}}}
       <Redirect method="GET" />
     {{else}}
-      {{{lookup prompts "pure.welcome"}}}
+      <Gather timeout="1" input="speech" hints="recordings">
+        {{{lookup prompts "pure.welcome"}}}
+      </Gather>
       <Redirect method="GET">/teams</Redirect>
     {{/if}}
   {{else}}

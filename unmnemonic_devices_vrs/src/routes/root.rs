@@ -214,7 +214,19 @@ pub async fn get_root(
 
 #[axum_macros::debug_handler]
 pub async fn post_root(State(state): State<AppState>, Form(form): Form<TwilioForm>) -> Redirect {
-    if form.speech_result == "remember" {
+    let settings =
+        sqlx::query!("SELECT begun, down, ending, override as override_message FROM unmnemonic_devices.settings LIMIT 1")
+            .fetch_optional(&state.db)
+            .await
+            .expect("Failed to fetch settings");
+
+    if settings.is_some() && settings.unwrap().begun.is_some() {
+        if form.speech_result == "recordings" {
+            Redirect::to("/recordings")
+        } else {
+            Redirect::to("/teams")
+        }
+    } else if form.speech_result == "remember" {
         Redirect::to("/voicemails/remember/confirm")
     } else {
         let character_names = state

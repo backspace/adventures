@@ -125,7 +125,9 @@ async fn root_plays_override_when_it_exists(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("schema", "settings"))]
-async fn root_serves_synthetic_disclaimer_when_no_recording_and_hints_character_names(db: PgPool) {
+async fn root_serves_synthetic_disclaimer_when_no_recording_and_hints_character_names_and_recordings(
+    db: PgPool,
+) {
     let response = get(db, "/", false)
         .await
         .expect("Failed to execute request.");
@@ -154,6 +156,7 @@ async fn root_serves_synthetic_disclaimer_when_no_recording_and_hints_character_
     assert_that(gather_hints).contains("remember");
     assert_that(gather_hints).contains("testa");
     assert_that(gather_hints).contains("testb");
+    assert_that(gather_hints).contains("recordings");
 }
 
 #[sqlx::test(fixtures("schema", "settings", "recordings-prompts-pure-chromatin"))]
@@ -176,7 +179,9 @@ async fn root_serves_recorded_disclaimer_when_it_exists(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("schema", "settings-begun"))]
-async fn root_serves_welcome_and_notifies_supervisor_when_begun(db: PgPool) {
+async fn root_serves_welcome_and_notifies_supervisor_and_still_gathers_recordings_when_begun(
+    db: PgPool,
+) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
     let twilio_number = config.twilio_number.to_string();
@@ -213,7 +218,27 @@ async fn root_serves_welcome_and_notifies_supervisor_when_begun(db: PgPool) {
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert_that(&response.text().await.unwrap()).contains("welcome to unmnemonic");
+
+    let text = response.text().await.unwrap();
+    let document = Document::from(text.as_str());
+
+    assert_that(
+        &document
+            .find(Descendant(Name("gather"), Name("say")))
+            .next()
+            .unwrap()
+            .text(),
+    )
+    .contains("welcome to unmnemonic");
+
+    let gather_hints = &document
+        .find(Name("gather"))
+        .next()
+        .unwrap()
+        .attr("hints")
+        .unwrap();
+
+    assert_that(gather_hints).contains("recordings");
 }
 
 #[sqlx::test(fixtures("schema", "settings-begun"))]
@@ -275,6 +300,27 @@ async fn post_recordings_redirects(db: PgPool) {
         ("Pure.", "/voicemails/pure"),
         ("Remember.", "/voicemails/remember/confirm"),
         ("whatever.", "/"),
+    ] {
+        let response = post(
+            db.clone(),
+            "/",
+            // Twilio editorialises punctuation and always capitalises.
+            &format!("SpeechResult={}", speech_result),
+            true,
+        )
+        .await
+        .expect("Failed to execute request.");
+
+        assert_that(&response).redirects_to(redirect);
+    }
+}
+
+#[sqlx::test(fixtures("schema", "settings-begun"))]
+async fn post_unknown_redirects_to_teams_when_begun(db: PgPool) {
+    for (speech_result, redirect) in [
+        ("Begun.", "/teams"),
+        ("Recordings.", "/recordings"),
+        ("whatever.", "/teams"),
     ] {
         let response = post(
             db.clone(),
