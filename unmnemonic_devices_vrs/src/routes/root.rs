@@ -120,19 +120,34 @@ pub async fn get_root(
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
     let supervisor_number = config.supervisor_number.to_string();
+    let notification_number = config.notification_number.to_string();
 
+    let caller_is_notification =
+        params.caller.clone().unwrap_or("NOTHING".to_string()) == notification_number;
     let caller_is_supervisor =
         params.caller.clone().unwrap_or("NOTHING".to_string()) == supervisor_number;
 
     let notify_supervisor =
         settings.begun.unwrap() && !settings.ending.unwrap() && !caller_is_supervisor;
+    let notify_notification = params.caller.is_some()
+        && !settings.begun.unwrap()
+        && !caller_is_supervisor
+        && !caller_is_notification;
 
-    if notify_supervisor {
-        let account_sid = config.twilio_account_sid.to_string();
-        let api_sid = config.twilio_api_key_sid.to_string();
-        let api_secret = config.twilio_api_key_secret.to_string();
-        let twilio_number = config.twilio_number.to_string();
+    let account_sid = config.twilio_account_sid.to_string();
+    let api_sid = config.twilio_api_key_sid.to_string();
+    let api_secret = config.twilio_api_key_secret.to_string();
+    let twilio_number = config.twilio_number.to_string();
 
+    let client = reqwest::Client::new();
+
+    let basic_auth = format!("{}:{}", api_sid, api_secret);
+    let auth_header_value = format!(
+        "Basic {}",
+        general_purpose::STANDARD_NO_PAD.encode(basic_auth)
+    );
+
+    if notify_notification {
         let create_message_body = serde_urlencoded::to_string([
             (
                 "Body",
@@ -143,13 +158,28 @@ pub async fn get_root(
         ])
         .expect("Could not encode meeting message creation body");
 
-        let basic_auth = format!("{}:{}", api_sid, api_secret);
-        let auth_header_value = format!(
-            "Basic {}",
-            general_purpose::STANDARD_NO_PAD.encode(basic_auth)
-        );
+        client
+            .post(format!(
+                "{}/2010-04-01/Accounts/{}/Messages.json",
+                state.twilio_address, account_sid
+            ))
+            .header("Authorization", auth_header_value.clone())
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .body(create_message_body)
+            .send()
+            .await
+            .ok();
+    } else if notify_supervisor {
+        let create_message_body = serde_urlencoded::to_string([
+            (
+                "Body",
+                format!("New call from {}", params.caller.clone().unwrap()),
+            ),
+            ("To", supervisor_number),
+            ("From", twilio_number),
+        ])
+        .expect("Could not encode meeting message creation body");
 
-        let client = reqwest::Client::new();
         client
             .post(format!(
                 "{}/2010-04-01/Accounts/{}/Messages.json",

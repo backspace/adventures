@@ -24,10 +24,40 @@ pub struct CallRecord {
 }
 
 #[sqlx::test(fixtures("schema", "settings"))]
-async fn root_serves_prewelcome_and_stores_call(db: PgPool) {
-    let response = get(db.clone(), "/?CallSid=xyz&Caller=2040000000", false)
-        .await
-        .expect("Failed to execute request.");
+async fn root_serves_prewelcome_notifies_and_stores_call(db: PgPool) {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+    let twilio_number = config.twilio_number.to_string();
+    let notification_number = config.notification_number.to_string();
+
+    let twilio_create_message_body = serde_urlencoded::to_string([
+        ("Body", &"New call from 2040000000".to_string()),
+        ("To", &notification_number),
+        ("From", &twilio_number),
+    ])
+    .expect("Could not encode message creation body");
+
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(method("POST"))
+        .and(path_regex(r"^/2010-04-01/Accounts/.*/Messages.json$"))
+        .and(body_string(twilio_create_message_body.to_string()))
+        .respond_with(ResponseTemplate::new(201).set_body_json(json!({})))
+        .expect(1)
+        .named("create message")
+        .mount(&mock_twilio)
+        .await;
+
+    let response = get_with_twilio(
+        InjectableServices {
+            db: db.clone(),
+            twilio_address: mock_twilio.uri(),
+        },
+        "/?CallSid=xyz&Caller=2040000000",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
@@ -54,9 +84,16 @@ async fn root_serves_prewelcome_and_stores_call(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "settings"))]
 async fn root_ignores_duplicate_call_sid(db: PgPool) {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+    let notification_number = config.notification_number.to_string();
+
     let response = get(
         db.clone(),
-        "/?CallSid=xyz&Caller=2040000000&CallSid=abc",
+        &format!(
+            "/?CallSid=xyz&Caller={}&CallSid=abc",
+            urlencoding::encode(&notification_number)
+        ),
         false,
     )
     .await
@@ -67,9 +104,20 @@ async fn root_ignores_duplicate_call_sid(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "settings-override"))]
 async fn root_plays_override_when_it_exists(db: PgPool) {
-    let response = get(db.clone(), "/?CallSid=xyz&Caller=2040000000", false)
-        .await
-        .expect("Failed to execute request.");
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+    let notification_number = config.notification_number.to_string();
+
+    let response = get(
+        db.clone(),
+        &format!(
+            "/?CallSid=xyz&Caller={}",
+            urlencoding::encode(&notification_number),
+        ),
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
