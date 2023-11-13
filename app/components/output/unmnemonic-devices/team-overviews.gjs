@@ -322,24 +322,15 @@ export default class TeamOverviewsComponent extends Component {
               meetingLabelWidth + meetingPadding,
               meetingPadding,
               {
-                width: meetingHalfWithoutPadding,
+                width: meetingHalfWithoutPadding - meetingPadding,
               }
             );
 
             doc.fontSize(meetingBodyFontSize);
 
-            let parent = waypointRegion.belongsTo('parent').value();
-
-            while (parent) {
-              doc.text(
-                `In ${parent.name}${parent.hours ? `, ${parent.hours}` : ''}. ${
-                  parent.notes
-                }`
-              );
-              parent = parent.belongsTo('parent').value();
-            }
-
             doc.text(waypoint.call);
+
+            printRegionNotesAndParents(doc, waypointRegion);
 
             doc.fontSize(meetingBodyFontSize / 2);
             doc.moveDown();
@@ -348,7 +339,7 @@ export default class TeamOverviewsComponent extends Component {
             doc.text(
               doubleBlanks(devices.excerptWithBlanks(waypoint.excerpt)),
               {
-                width: meetingHalfWithoutPadding,
+                width: meetingHalfWithoutPadding - meetingPadding,
               }
             );
 
@@ -379,12 +370,7 @@ export default class TeamOverviewsComponent extends Component {
 
             doc.fontSize(meetingBodyFontSize);
 
-            while (parent) {
-              doc.text(
-                `In ${parent.name}${parent.hours ? `, ${parent.hours}` : ''}`
-              );
-              parent = parent.belongsTo('parent').value();
-            }
+            printRegionNotesAndParents(doc, destinationRegion);
 
             doc.fontSize(meetingBodyFontSize / 2);
             doc.moveDown();
@@ -506,4 +492,21 @@ function drawArrow(doc, waypointX, waypointY, destinationX, destinationY) {
 
 function doubleBlanks(s) {
   return s.replace(/_/g, '__');
+}
+
+function printRegionNotesAndParents(doc, region) {
+  if (region.notes || region.hours) {
+    doc.text(`${region.hours ? `${region.hours}. ` : ''}${region.notes ?? ''}`);
+  }
+
+  let parent = region.belongsTo('parent').value();
+
+  while (parent) {
+    doc.text(
+      `In ${parent.name}${parent.hours ? `, ${parent.hours}` : ''}. ${
+        parent.notes ?? ''
+      }`
+    );
+    parent = parent.belongsTo('parent').value();
+  }
 }
