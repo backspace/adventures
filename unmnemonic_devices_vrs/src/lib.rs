@@ -129,14 +129,14 @@ pub async fn app(services: InjectableServices) -> Router {
             "/recordings/prompts/:character_name/:prompt_name/decide",
             post(post_character_prompt_decide),
         )
-        .route("/recordings/regions", get(get_recording_regions))
-        .route("/recordings/regions", post(post_recording_regions))
-        .route("/recordings/regions/unrecorded", get(get_unrecorded_region))
-        .route("/recordings/regions/:id", get(get_recording_region))
-        .route("/recordings/regions/:id", post(post_recording_region))
+        .route("/recordings/:object", get(get_recording_objects))
+        .route("/recordings/:object", post(post_recording_objects))
+        .route("/recordings/:object/unrecorded", get(get_unrecorded_object))
+        .route("/recordings/:object/:id", get(get_recording_object))
+        .route("/recordings/:object/:id", post(post_recording_object))
         .route(
-            "/recordings/regions/:id/decide",
-            post(post_recording_region_decide),
+            "/recordings/:object/:id/decide",
+            post(post_recording_object_decide),
         )
         .route("/teams", get(get_teams))
         .route("/teams", post(post_teams))
@@ -167,6 +167,7 @@ pub async fn app(services: InjectableServices) -> Router {
         // admin routes
         .route("/admin/calls", get(get_calls))
         .route("/admin/calls", post(post_calls))
+        .route("/admin/destinations", get(get_admin_destinations))
         .route("/admin/regions", get(get_admin_regions))
         .route("/admin/teams", get(get_admin_teams))
         .route("/admin/prompts", get(get_admin_prompts))

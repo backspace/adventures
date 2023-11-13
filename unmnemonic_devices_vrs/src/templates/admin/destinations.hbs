@@ -1,0 +1,25 @@
+{{#> admin/layout}}
+  <table>
+    <thead>
+      <tr>
+        <th>id</th>
+        <th>name</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each destinations}}
+        <tr data-id="{{id}}">
+          <td>{{synthetic_id}}</td>
+          <td>
+            {{description}}
+          </td>
+          {{#if url}}
+            <td><audio controls src="{{url}}"></audio></td>
+          {{else}}
+            <td>⚠️</td>
+          {{/if}}
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+{{/admin/layout}}

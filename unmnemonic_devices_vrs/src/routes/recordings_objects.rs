@@ -5,7 +5,7 @@ use axum::{
 };
 use axum_template::Key;
 use serde::{Deserialize, Serialize};
-use sqlx::{types::Uuid, PgPool};
+use sqlx::{types::Uuid, PgPool, Row};
 
 use crate::{
     helpers::MaybeRecordingParams,
@@ -15,87 +15,104 @@ use crate::{
 };
 
 #[derive(Debug, Serialize)]
-pub struct Regions {
-    regions: Vec<Region>,
+pub struct Objects {
+    objects: Vec<ObjectIdentifiers>,
+    singular_type: String,
     add_unrecorded: bool,
 }
 
 #[derive(Debug, sqlx::FromRow, Serialize)]
-pub struct Region {
+pub struct ObjectIdentifiers {
     id: Uuid,
     synthetic_id: i64,
 }
 
 #[axum_macros::debug_handler]
-pub async fn get_recording_regions(
+pub async fn get_recording_objects(
     Key(key): Key,
+    Path(object): Path<String>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    let regions = sqlx::query_as::<_, Region>(
+    let objects = sqlx::query_as::<_, ObjectIdentifiers>(&format!(
         r#"
-        SELECT id, ROW_NUMBER() OVER (ORDER BY created_at ASC) AS synthetic_id
-        FROM unmnemonic_devices.regions
-        ORDER BY created_at
-      "#,
-    )
+          SELECT id, ROW_NUMBER() OVER (ORDER BY created_at ASC) AS synthetic_id
+          FROM unmnemonic_devices.{}
+          ORDER BY created_at
+        "#,
+        object.clone()
+    ))
     .fetch_all(&state.db)
     .await
-    .expect("Failed to fetch regions");
+    .expect("Failed to fetch objects");
 
-    let unrecorded_region = find_unrecorded_region(state.db).await;
+    let unrecorded_region = find_unrecorded_object(state.db, object.clone()).await;
+
+    let mut singular = object.clone();
+    singular.pop();
 
     RenderXml(
         key,
         state.engine,
         state.mutable_prompts.lock().unwrap().to_string(),
-        Regions {
-            regions,
-            add_unrecorded: unrecorded_region.is_ok() && unrecorded_region.unwrap().is_some(),
+        Objects {
+            objects,
+            singular_type: singular,
+            add_unrecorded: unrecorded_region.is_some(),
         },
     )
 }
 
 #[derive(Serialize)]
-pub struct RegionNotFound {
+pub struct ObjectNotFound {
     id: String,
+    object_type: String,
+    singular_type: String,
 }
 
 #[axum_macros::debug_handler]
-pub async fn post_recording_regions(
+pub async fn post_recording_objects(
+    Path(object): Path<String>,
     State(state): State<AppState>,
     Form(form): Form<TwilioForm>,
 ) -> impl IntoResponse {
     if form.speech_result == "unrecorded" {
-        Redirect::to("/recordings/regions/unrecorded").into_response()
+        Redirect::to(&format!("/recordings/{}/unrecorded", object.clone())).into_response()
     } else {
-        let region_id = sqlx::query_as::<_, Region>(
+        let object_id = sqlx::query_as::<_, ObjectIdentifiers>(&format!(
             r#"
-              WITH ordered_regions AS (
+              WITH ordered_objects AS (
                 SELECT
                   ROW_NUMBER() OVER (ORDER BY created_at ASC) AS synthetic_id,
                   id
                 FROM
-                  unmnemonic_devices.regions
+                  unmnemonic_devices.{}
               )
               SELECT id, synthetic_id
-              FROM ordered_regions
+              FROM ordered_objects
               WHERE synthetic_id = CAST($1 AS BIGINT);
             "#,
-        )
+            object.clone(),
+        ))
         .bind(form.speech_result.clone())
         .fetch_optional(&state.db)
         .await
         .expect("Failed to fetch regions");
 
-        if region_id.is_some() {
-            Redirect::to(&format!("/recordings/regions/{}", region_id.unwrap().id)).into_response()
+        if object_id.is_some() {
+            Redirect::to(&format!("/recordings/{}/{}", object, object_id.unwrap().id))
+                .into_response()
         } else {
+            let mut singular = object.clone();
+            singular.pop();
+
             RenderXml(
-                "/recordings/regions/not-found",
+                "/recordings/:object/not-found",
                 state.engine,
                 state.mutable_prompts.lock().unwrap().to_string(),
-                RegionNotFound {
+                ObjectNotFound {
                     id: form.speech_result,
+                    object_type: object,
+                    singular_type: singular,
                 },
             )
             .into_response()
@@ -105,37 +122,42 @@ pub async fn post_recording_regions(
 
 #[derive(Serialize)]
 pub struct UnrecordedIntroduction {
+    object_type: String,
     skip_message: bool,
     redirect: String,
 }
 
 #[axum_macros::debug_handler]
-pub async fn get_unrecorded_region(
+pub async fn get_unrecorded_object(
     State(state): State<AppState>,
+    Path(object): Path<String>,
     params: Query<MaybeRecordingParams>,
 ) -> impl IntoResponse {
-    let unrecorded_region = find_unrecorded_region(state.db).await;
+    let unrecorded_region = find_unrecorded_object(state.db, object.clone()).await;
 
-    if unrecorded_region.is_ok() && unrecorded_region.as_ref().unwrap().is_some() {
+    if unrecorded_region.is_some() {
         RenderXml(
-            "/recordings/regions/unrecorded",
+            "/recordings/:object/unrecorded",
             state.engine,
             state.mutable_prompts.lock().unwrap().to_string(),
             UnrecordedIntroduction {
+                object_type: object.clone(),
                 skip_message: params.unrecorded.is_some(),
                 redirect: format!(
-                    "/recordings/regions/{}?unrecorded",
-                    unrecorded_region.as_ref().unwrap().as_ref().unwrap().id
+                    "/recordings/{}/{}?unrecorded",
+                    object,
+                    unrecorded_region.as_ref().unwrap().id
                 ),
             },
         )
         .into_response()
     } else {
         RenderXml(
-            "/recordings/regions/no-unrecorded",
+            "/recordings/:object/no-unrecorded",
             state.engine,
             state.mutable_prompts.lock().unwrap().to_string(),
             UnrecordedIntroduction {
+                object_type: object,
                 skip_message: false,
                 redirect: "/recordings/".to_string(),
             },
@@ -146,39 +168,42 @@ pub async fn get_unrecorded_region(
 
 #[derive(Serialize)]
 pub struct GetRecording {
-    region: Region,
+    singular_type: String,
+    object: ObjectIdentifiers,
     action: String,
 }
 
 #[axum_macros::debug_handler]
-pub async fn get_recording_region(
+pub async fn get_recording_object(
     Key(key): Key,
-    Path(id): Path<Uuid>,
+    Path((object, id)): Path<(String, Uuid)>,
     params: Query<MaybeRecordingParams>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    let region = sqlx::query_as::<_, Region>(
+    let row = sqlx::query(&format!(
         r#"
-          WITH ordered_regions AS (
+          WITH ordered_objects AS (
             SELECT
               ROW_NUMBER() OVER (ORDER BY created_at ASC) AS synthetic_id,
               id
             FROM
-              unmnemonic_devices.regions
+              unmnemonic_devices.{}
           )
           SELECT id, synthetic_id
-          FROM ordered_regions
+          FROM ordered_objects
           WHERE id = $1;
         "#,
-    )
+        object
+    ))
     .bind(id)
     .fetch_one(&state.db)
     .await
-    .expect("Failed to fetch region");
+    .expect("Failed to fetch object");
 
     let action = format!(
-        "/recordings/regions/{}{}",
-        region.id,
+        "/recordings/{}/{}{}",
+        object,
+        row.get::<Uuid, &str>("id"),
         if params.unrecorded.is_some() {
             "?unrecorded"
         } else {
@@ -186,11 +211,21 @@ pub async fn get_recording_region(
         }
     );
 
+    let mut singular = object.clone();
+    singular.pop();
+
     RenderXml(
         key,
         state.engine,
         state.mutable_prompts.lock().unwrap().to_string(),
-        GetRecording { region, action },
+        GetRecording {
+            singular_type: singular,
+            object: ObjectIdentifiers {
+                id: row.get("id"),
+                synthetic_id: row.get("synthetic_id"),
+            },
+            action,
+        },
     )
     .into_response()
 }
@@ -202,8 +237,8 @@ pub struct ConfirmRecordingPrompt {
 }
 
 #[axum_macros::debug_handler]
-pub async fn post_recording_region(
-    Path(id): Path<Uuid>,
+pub async fn post_recording_object(
+    Path((object, id)): Path<(String, Uuid)>,
     State(state): State<AppState>,
     params: Query<MaybeRecordingParams>,
     Form(form): Form<TwilioRecordingForm>,
@@ -215,7 +250,8 @@ pub async fn post_recording_region(
         ConfirmRecordingPrompt {
             recording_url: form.recording_url.to_string(),
             action: format!(
-                "/recordings/regions/{}/decide?recording_url={}{}",
+                "/recordings/{}/{}/decide?recording_url={}{}",
+                object,
                 id,
                 urlencoding::encode(&form.recording_url),
                 if params.unrecorded.is_some() {
@@ -235,32 +271,41 @@ pub struct DecideParams {
 }
 
 #[axum_macros::debug_handler]
-pub async fn post_recording_region_decide(
+pub async fn post_recording_object_decide(
     Key(_key): Key,
-    Path(id): Path<Uuid>,
+    Path((object, id)): Path<(String, Uuid)>,
     params: Query<DecideParams>,
     State(state): State<AppState>,
     Form(form): Form<TwilioForm>,
 ) -> impl IntoResponse {
+    let mut singular = object.clone();
+    singular.pop();
+
+    let id_field = format!("{}_id", singular);
+
     if form.speech_result == "keep" {
-        let result = sqlx::query!(
+        let result = sqlx::query(&format!(
             r#"
-              INSERT INTO unmnemonic_devices.recordings (id, region_id, url, call_id)
+              INSERT INTO unmnemonic_devices.recordings (id, {}, url, call_id)
               VALUES ($1, $2, $3, $4)
-              ON CONFLICT (region_id)
+              ON CONFLICT ({})
               DO UPDATE SET url = EXCLUDED.url, call_id = EXCLUDED.call_id
             "#,
-            Uuid::new_v4(),
-            id,
-            params.recording_url,
-            form.call_sid.unwrap()
-        )
+            id_field, id_field
+        ))
+        .bind(Uuid::new_v4())
+        .bind(id)
+        .bind(params.recording_url.clone())
+        .bind(form.call_sid.unwrap())
         .execute(&state.db)
         .await;
 
+        println!("result?? {:?}", result);
+
         if result.is_ok() {
             Redirect::to(&format!(
-                "/recordings/regions{}",
+                "/recordings/{}{}",
+                object,
                 if params.unrecorded.is_some() {
                     "/unrecorded?unrecorded"
                 } else {
@@ -270,7 +315,8 @@ pub async fn post_recording_region_decide(
         } else {
             // How to exercise this in tests?
             Redirect::to(&format!(
-                "/recordings/regions/{}/{}",
+                "/recordings/{}/{}/{}",
+                object,
                 id,
                 if params.unrecorded.is_some() {
                     "?unrecorded"
@@ -281,7 +327,8 @@ pub async fn post_recording_region_decide(
         }
     } else {
         Redirect::to(&format!(
-            "/recordings/regions/{}{}",
+            "/recordings/{}/{}{}",
+            object,
             id,
             if params.unrecorded.is_some() {
                 "?unrecorded"
@@ -292,21 +339,37 @@ pub async fn post_recording_region_decide(
     }
 }
 
-async fn find_unrecorded_region(db: PgPool) -> Result<Option<Region>, sqlx::Error> {
-    sqlx::query_as::<_, Region>(
+async fn find_unrecorded_object(db: PgPool, object: String) -> Option<ObjectIdentifiers> {
+    let mut singular = object.clone();
+    singular.pop();
+
+    let id: String = format!("{}_id", singular);
+
+    let result = sqlx::query(&format!(
         r#"
-      SELECT id, CAST(0 AS BIGINT) as synthetic_id
-      FROM unmnemonic_devices.regions
-      WHERE
-        id NOT IN (
-          SELECT region_id
-          FROM unmnemonic_devices.recordings
-          WHERE region_id IS NOT NULL
-        )
-      ORDER BY created_at
-      LIMIT 1
-    "#,
-    )
+          SELECT id, CAST(0 AS BIGINT) as synthetic_id
+          FROM unmnemonic_devices.{}
+          WHERE
+            id NOT IN (
+              SELECT {}
+              FROM unmnemonic_devices.recordings
+              WHERE {} IS NOT NULL
+            )
+          ORDER BY created_at
+          LIMIT 1
+        "#,
+        object, id, id
+    ))
     .fetch_optional(&db)
-    .await
+    .await;
+
+    if result.is_ok() && result.as_ref().unwrap().is_some() {
+        let row = result.unwrap().unwrap();
+        Some(ObjectIdentifiers {
+            id: row.get("id"),
+            synthetic_id: row.get("synthetic_id"),
+        })
+    } else {
+        None
+    }
 }
