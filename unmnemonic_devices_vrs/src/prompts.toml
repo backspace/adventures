@@ -38,6 +38,8 @@ voicepass_not_found = "We have never heard of you."
 silence = "We didn't hear anything."
 
 voicemail = "Placeholder for shifting remember message."
+
+ending_early = "Chromatin didn't have much of an ending planned for this as you're supposed to wander off in a blissful daze, wholly ignorant of any continuing strife around you. So much for that idea."
 ending = "Placeholder for ending message."
 
 [testa]
