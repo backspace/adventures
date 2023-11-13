@@ -142,4 +142,9 @@ export default class Region extends Model {
     let survey = this.survey;
     return `D ?${survey.unknownCount} ✓${survey.availableCount} ✘${survey.unavailableCount}`;
   }
+
+  @computed('survey.unknownCount')
+  get surveyIncomplete() {
+    return this.survey && this.survey.unknownCount > 0;
+  }
 }

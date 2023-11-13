@@ -104,6 +104,10 @@ $region-length: 4rem;
       z-index: 10;
     }
 
+    &.incomplete {
+      background: rgba(255, 194, 204, 0.5);
+    }
+
     &:after {
       content: ' ';
       position: absolute;
