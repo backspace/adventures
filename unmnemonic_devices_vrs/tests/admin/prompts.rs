@@ -34,7 +34,7 @@ async fn list_prompts_without_test_ones(db: PgPool) {
     let remember_prompt_count = document
         .find(Attr("data-character", "remember").descendant(Name("tr")))
         .count();
-    assert_eq!(remember_prompt_count, 6);
+    assert_eq!(remember_prompt_count, 7);
 
     let knut_prompt_row = document
         .find(
