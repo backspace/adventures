@@ -28,6 +28,31 @@
       {{/each}}
     </tbody>
   </table>
+  <h3>voicepass recordings</h3>
+  <table data-test-recordings>
+    <thead>
+      <tr>
+        <th>id</th>
+        <th>voicepass</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each team_recordings}}
+        <tr data-id="{{id}}">
+          <td>{{synthetic_id}}</td>
+          <td>
+            {{voicepass}}
+          </td>
+          {{#if url}}
+            <td><audio controls src="{{url}}"></audio></td>
+          {{else}}
+            <td>⚠️</td>
+          {{/if}}
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
   <style>
     td {
       padding: 0.5rem;

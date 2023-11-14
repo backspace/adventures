@@ -21,10 +21,12 @@ pub async fn get_recordings(Key(key): Key, State(state): State<AppState>) -> imp
 pub async fn post_recordings(Form(form): Form<TwilioForm>) -> Redirect {
     if form.speech_result == "prompts" {
         Redirect::to("/recordings/prompts")
-    } else if form.speech_result == "regions" {
-        Redirect::to("/recordings/regions")
     } else if form.speech_result == "destinations" {
         Redirect::to("/recordings/destinations")
+    } else if form.speech_result == "regions" {
+        Redirect::to("/recordings/regions")
+    } else if form.speech_result == "teams" {
+        Redirect::to("/recordings/teams")
     } else {
         Redirect::to("/")
     }

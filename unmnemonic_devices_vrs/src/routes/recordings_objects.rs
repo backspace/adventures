@@ -14,6 +14,22 @@ use crate::{
     AppState,
 };
 
+fn schema_for_object(object: &str) -> &'static str {
+    if object == "teams" {
+        "public"
+    } else {
+        "unmnemonic_devices"
+    }
+}
+
+fn sort_field_for_object(object: &str) -> &'static str {
+    if object == "teams" {
+        "inserted_at"
+    } else {
+        "created_at"
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct Objects {
     objects: Vec<ObjectIdentifiers>,
@@ -35,11 +51,14 @@ pub async fn get_recording_objects(
 ) -> impl IntoResponse {
     let objects = sqlx::query_as::<_, ObjectIdentifiers>(&format!(
         r#"
-          SELECT id, ROW_NUMBER() OVER (ORDER BY created_at ASC) AS synthetic_id
-          FROM unmnemonic_devices.{}
-          ORDER BY created_at
+          SELECT id, ROW_NUMBER() OVER (ORDER BY {} ASC) AS synthetic_id
+          FROM {}.{}
+          ORDER BY {}
         "#,
-        object.clone()
+        sort_field_for_object(&object),
+        schema_for_object(&object),
+        object.clone(),
+        sort_field_for_object(&object)
     ))
     .fetch_all(&state.db)
     .await
@@ -82,15 +101,17 @@ pub async fn post_recording_objects(
             r#"
               WITH ordered_objects AS (
                 SELECT
-                  ROW_NUMBER() OVER (ORDER BY created_at ASC) AS synthetic_id,
+                  ROW_NUMBER() OVER (ORDER BY {} ASC) AS synthetic_id,
                   id
                 FROM
-                  unmnemonic_devices.{}
+                  {}.{}
               )
               SELECT id, synthetic_id
               FROM ordered_objects
               WHERE synthetic_id = CAST($1 AS BIGINT);
             "#,
+            sort_field_for_object(&object),
+            schema_for_object(&object),
             object.clone(),
         ))
         .bind(form.speech_result.clone())
@@ -184,15 +205,17 @@ pub async fn get_recording_object(
         r#"
           WITH ordered_objects AS (
             SELECT
-              ROW_NUMBER() OVER (ORDER BY created_at ASC) AS synthetic_id,
+              ROW_NUMBER() OVER (ORDER BY {} ASC) AS synthetic_id,
               id
             FROM
-              unmnemonic_devices.{}
+              {}.{}
           )
           SELECT id, synthetic_id
           FROM ordered_objects
           WHERE id = $1;
         "#,
+        sort_field_for_object(&object),
+        schema_for_object(&object),
         object
     ))
     .bind(id)
@@ -348,17 +371,21 @@ async fn find_unrecorded_object(db: PgPool, object: String) -> Option<ObjectIden
     let result = sqlx::query(&format!(
         r#"
           SELECT id, CAST(0 AS BIGINT) as synthetic_id
-          FROM unmnemonic_devices.{}
+          FROM {}.{}
           WHERE
             id NOT IN (
               SELECT {}
               FROM unmnemonic_devices.recordings
               WHERE {} IS NOT NULL
             )
-          ORDER BY created_at
+          ORDER BY {}
           LIMIT 1
         "#,
-        object, id, id
+        schema_for_object(&object),
+        object,
+        id,
+        id,
+        sort_field_for_object(&object)
     ))
     .fetch_optional(&db)
     .await;

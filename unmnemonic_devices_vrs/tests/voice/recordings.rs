@@ -10,8 +10,9 @@ use sqlx::PgPool;
 async fn post_recordings_redirects(db: PgPool) {
     for (speech_result, redirect) in [
         ("Prompts.", "/recordings/prompts"),
-        ("Regions.", "/recordings/regions"),
         ("Destinations.", "/recordings/destinations"),
+        ("Regions.", "/recordings/regions"),
+        ("Teams.", "/recordings/teams"),
     ] {
         let response = post(
             db.clone(),

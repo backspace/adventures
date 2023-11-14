@@ -1,6 +1,7 @@
 use axum::{extract::State, response::IntoResponse};
 use axum_template::{Key, RenderHtml};
 use serde::Serialize;
+use sqlx::types::Uuid;
 
 use crate::auth::User;
 use crate::AppState;
@@ -8,14 +9,23 @@ use crate::AppState;
 #[derive(Serialize)]
 pub struct Teams {
     teams: Vec<Team>,
+    team_recordings: Vec<TeamRecording>,
 }
 
 #[derive(sqlx::FromRow, Serialize)]
 pub struct Team {
     name: String,
     voicepass: String,
-    region_listens: Vec<String>,
+    region_listens: Option<Vec<Option<String>>>,
     complete: bool,
+}
+
+#[derive(Debug, sqlx::FromRow, Serialize)]
+pub struct TeamRecording {
+    id: Uuid,
+    synthetic_id: i64,
+    voicepass: String,
+    url: Option<String>,
 }
 
 #[axum_macros::debug_handler]
@@ -55,9 +65,29 @@ pub async fn get_admin_teams(
     .await
     .expect("Failed to fetch teams");
 
+    let team_recordings = sqlx::query_as::<_, TeamRecording>(
+        r#"
+        SELECT
+          t.id,
+          t.voicepass,
+          ROW_NUMBER() OVER (ORDER BY t.inserted_at ASC) AS synthetic_id,
+          rec.url
+        FROM public.teams t
+        LEFT JOIN
+            unmnemonic_devices.recordings rec ON t.id = rec.team_id
+        ORDER BY t.inserted_at
+      "#,
+    )
+    .fetch_all(&state.db)
+    .await
+    .expect("Failed to fetch team recordings");
+
     RenderHtml(
         key.chars().skip(1).collect::<String>(),
         state.engine,
-        Teams { teams },
+        Teams {
+            teams,
+            team_recordings,
+        },
     )
 }
