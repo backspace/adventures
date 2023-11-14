@@ -1,10 +1,8 @@
 mod helpers {
     include!("../helpers.rs");
 }
-use helpers::{get, post, RedirectTo};
+use helpers::{post, RedirectTo};
 
-use select::{document::Document, predicate::Name};
-use serde::Serialize;
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
