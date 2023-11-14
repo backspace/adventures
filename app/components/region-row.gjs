@@ -22,6 +22,7 @@ export default class RegionRow extends Component {
       <td class='name'>
         {{@region.name}}
       </td>
+      <td>{{@region.notes}}</td>
       <td data-test-hours>{{@region.hours}}</td>
       <td>
         <LinkTo @route='region' @model={{@region}} class='edit'>
