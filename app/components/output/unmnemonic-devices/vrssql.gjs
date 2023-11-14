@@ -43,16 +43,19 @@ export default class TeamOverviewsComponent extends Component {
   get destinations() {
     return knex({ client: 'pg' })('unmnemonic_devices.destinations')
       .insert(
-        this.args.destinations.filterBy('isComplete').map((destination) => ({
-          id: destination.get('id'),
-          description: this.stripString(destination.get('description')),
-          region_id: this.stripString(destination.get('region.id')),
-          answer: this.devices.extractAnswer(
-            destination.answer,
-            destination.mask
-          ),
-          created_at: destination.get('createdAt').toISOString(),
-        }))
+        this.args.destinations
+          .filterBy('isComplete')
+          .filterBy('isAvailable')
+          .map((destination) => ({
+            id: destination.get('id'),
+            description: this.stripString(destination.get('description')),
+            region_id: this.stripString(destination.get('region.id')),
+            answer: this.devices.extractAnswer(
+              destination.answer,
+              destination.mask
+            ),
+            created_at: destination.get('createdAt').toISOString(),
+          }))
       )
       .onConflict('id')
       .merge();
