@@ -291,7 +291,7 @@ async fn root_serves_down_when_down(db: PgPool) {
     assert_that(&response.text().await.unwrap()).contains("It is down");
 }
 
-#[sqlx::test(fixtures("schema"))]
+#[sqlx::test(fixtures("schema", "settings"))]
 async fn post_recordings_redirects(db: PgPool) {
     for (speech_result, redirect) in [
         ("Begun.", "/?begun"),

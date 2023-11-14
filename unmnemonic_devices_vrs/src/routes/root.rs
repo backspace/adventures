@@ -220,7 +220,10 @@ pub async fn post_root(State(state): State<AppState>, Form(form): Form<TwilioFor
             .await
             .expect("Failed to fetch settings");
 
-    if settings.is_some() && settings.unwrap().begun.is_some() {
+    if settings.is_some()
+        && settings.as_ref().unwrap().begun.is_some()
+        && settings.unwrap().begun.unwrap()
+    {
         if form.speech_result == "recordings" {
             Redirect::to("/recordings")
         } else {
