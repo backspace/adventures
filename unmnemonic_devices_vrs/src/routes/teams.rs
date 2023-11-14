@@ -75,6 +75,7 @@ pub async fn post_teams(
 #[derive(sqlx::FromRow, Serialize)]
 pub struct TeamVoicepass {
     voicepass: String,
+    voicepass_url: Option<String>,
 }
 
 #[axum_macros::debug_handler]
@@ -83,9 +84,20 @@ pub async fn get_confirm_team(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    let maybe_result = sqlx::query!("SELECT voicepass FROM teams WHERE id = $1", id)
-        .fetch_one(&state.db)
-        .await;
+    let maybe_result = sqlx::query!(
+        r#"
+            SELECT
+              voicepass, url
+            FROM
+              public.teams
+            LEFT JOIN
+              unmnemonic_devices.recordings r ON r.team_id = teams.id
+            WHERE teams.id = $1
+        "#,
+        id
+    )
+    .fetch_one(&state.db)
+    .await;
 
     if maybe_result.is_err() {
         Redirect::to("/teams").into_response()
@@ -99,6 +111,7 @@ pub async fn get_confirm_team(
                 state.mutable_prompts.lock().unwrap().to_string(),
                 TeamVoicepass {
                     voicepass: result.voicepass.unwrap(),
+                    voicepass_url: result.url,
                 },
             )
             .into_response()

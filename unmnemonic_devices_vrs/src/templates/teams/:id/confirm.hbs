@@ -1,9 +1,13 @@
 <Response>
   <Gather timeout="3" input="speech" hints="yes, no">
-    <Say>
-      {{voicepass}}
-      Is this correct?
-    </Say>
+    {{#if voicepass_url}}
+      <Play>{{voicepass_url}}</Play>
+    {{else}}
+      <Say>
+        {{voicepass}}
+      </Say>
+    {{/if}}
+    {{{lookup prompts "pure.voicepass_confirm"}}}
   </Gather>
   {{> restart }}
 </Response>
