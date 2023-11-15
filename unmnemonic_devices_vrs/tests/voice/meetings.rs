@@ -71,6 +71,37 @@ async fn meeting_show_names_region_increments_listens_and_notifies(db: PgPool) {
     "regions",
     "destinations",
     "meetings",
+    "meetings-progress",
+    "meetings-recordings",
+))]
+async fn meeting_show_includes_recordings_when_available(db: PgPool) {
+    let response = get(
+        db.clone(),
+        "/meetings/2460cb8f-bd7f-4790-a2d8-86df38d5cbdc",
+        false,
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+
+    let document = Document::from(response.text().await.unwrap().as_str());
+    let mut plays = document.find(Name("play"));
+
+    let region_play = plays.next().unwrap();
+    assert_that(&region_play.text()).contains("http://example.com/region-recording");
+
+    let destination_play = plays.next().unwrap();
+    assert_that(&destination_play.text()).contains("http://example.com/destination-recording");
+}
+
+#[sqlx::test(fixtures(
+    "schema",
+    "teams",
+    "books",
+    "regions",
+    "destinations",
+    "meetings",
     "meetings-progress"
 ))]
 async fn meeting_show_skips_notifications_on_subsequent_listens(db: PgPool) {

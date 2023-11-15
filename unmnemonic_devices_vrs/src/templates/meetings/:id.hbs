@@ -1,7 +1,16 @@
 <Response>
-  <Say>
-    Go to {{name}}. Find {{description}}.
-  </Say>
+  {{#if name_recording}}
+    <!-- {{name}} -->
+    <Play>{{name_recording}}</Play>
+  {{else}}
+    <Say>{{name}}</Say>
+  {{/if}}
+  {{#if description_recording}}
+    <!-- {{description}} -->
+    <Play>{{description_recording}}</Play>
+  {{else}}
+    <Say>{{description}}</Say>
+  {{/if}}
   <Pause />
   <Gather timeout="3" input="speech" hints="repeat, record, end">
     {{{lookup prompts "pure.repeat_record_end"}}}

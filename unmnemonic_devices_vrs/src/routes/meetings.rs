@@ -16,7 +16,9 @@ use std::env;
 pub struct Meeting {
     team_name: String,
     region_name: String,
+    region_recording_url: Option<String>,
     description: String,
+    destination_recording_url: Option<String>,
     book_title: String,
     unlistened: bool,
 }
@@ -25,6 +27,8 @@ pub struct Meeting {
 pub struct MeetingTemplate {
     name: String,
     description: String,
+    name_recording: Option<String>,
+    description_recording: Option<String>,
 }
 
 #[axum_macros::debug_handler]
@@ -36,7 +40,13 @@ pub async fn get_meeting(
     let meeting = sqlx::query_as::<_, Meeting>(
         r#"
           SELECT
-            t.name as team_name, b.title as book_title, r.name as region_name, d.description, m.listens = 0 as unlistened
+            t.name as team_name,
+            b.title as book_title,
+            r.name as region_name,
+            d.description,
+            m.listens = 0 as unlistened,
+            rr.url as region_recording_url,
+            dr.url as destination_recording_url
           FROM
               unmnemonic_devices.meetings m
           LEFT JOIN
@@ -47,6 +57,10 @@ pub async fn get_meeting(
               unmnemonic_devices.regions r ON d.region_id = r.id
           LEFT JOIN
               public.teams t ON m.team_id = t.id
+          LEFT JOIN
+              unmnemonic_devices.recordings rr ON rr.region_id = r.id
+          LEFT JOIN
+              unmnemonic_devices.recordings dr ON dr.destination_id = d.id
           WHERE
               m.id = $1;
         "#,
@@ -121,6 +135,8 @@ pub async fn get_meeting(
         MeetingTemplate {
             name: meeting.region_name,
             description: meeting.description,
+            name_recording: meeting.region_recording_url,
+            description_recording: meeting.destination_recording_url,
         },
     )
 }
