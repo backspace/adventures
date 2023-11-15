@@ -63,7 +63,7 @@ pub async fn get_record(
     );
 
     let client = reqwest::Client::new();
-    client
+    let result = client
         .post(format!(
             "{}/2010-04-01/Accounts/{}/Calls/{}/Recordings.json",
             state.twilio_address, account_sid, params.call_sid
@@ -73,8 +73,9 @@ pub async fn get_record(
         .await
         .unwrap()
         .json::<serde_json::Value>()
-        .await
-        .ok();
+        .await;
+
+    println!("Recording request result {:?}", result);
 
     RenderXml(
         key,
