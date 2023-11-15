@@ -38,6 +38,7 @@ export default class TeamOverviewsComponent extends Component {
     let mapTeamFontSize = 18;
     let mapMarkerFontSize = 12;
     let mapMarkerCircleRadius = 10;
+    let MAP_MARKER_Y_TWEAK = -1;
 
     let meetingHeadingFontSize = 14;
     let meetingBodyFontSize = 12;
@@ -170,7 +171,7 @@ export default class TeamOverviewsComponent extends Component {
               doc.text(
                 `W ${waypointRegion.name}`,
                 waypointX - mapMarkerCircleRadius,
-                waypointY + mapMarkerFontSize,
+                waypointY + mapMarkerFontSize / 2,
                 {
                   width: mapMarkerCircleRadius * 2,
                   align: 'center',
@@ -191,7 +192,7 @@ export default class TeamOverviewsComponent extends Component {
                   .text(
                     rendezvousLetter,
                     waypointX - mapMarkerCircleRadius,
-                    waypointY - mapMarkerFontSize / 2,
+                    waypointY + MAP_MARKER_Y_TWEAK - mapMarkerFontSize / 2,
                     {
                       align: 'center',
                       width: mapMarkerCircleRadius * 2,
@@ -227,7 +228,7 @@ export default class TeamOverviewsComponent extends Component {
                   .text(
                     rendezvousLetter,
                     destinationX - mapMarkerCircleRadius,
-                    destinationY - mapMarkerFontSize / 2,
+                    destinationY + MAP_MARKER_Y_TWEAK - mapMarkerFontSize / 2,
                     {
                       align: 'center',
                       width: mapMarkerCircleRadius * 2,
