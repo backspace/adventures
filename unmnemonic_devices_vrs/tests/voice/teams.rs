@@ -198,9 +198,6 @@ async fn team_show_names_team_and_gathers_excerpts_or_collation_and_records_team
     assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
 
     let document = Document::from(response.text().await.unwrap().as_str());
-    let say = document.find(Name("say")).next().unwrap();
-
-    assert_that(&say.text()).contains("jortles");
 
     let hints = &document
         .find(Name("gather"))

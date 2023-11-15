@@ -9,6 +9,8 @@ voicemail_gather = "Leave a message for someone by saying their name."
 voicepass = "what is your voice password?"
 voicepass_confirm = "Is this correct?"
 
+excerpt_gather = "Confirmed. What is your cathartic phrase or the collation of the findings from your kinetic instructions?"
+
 repeat_record_end = "Repeat, record an encouraging message for others, or end?"
 
 encouraging = "Here as an encouraging message from another team."
