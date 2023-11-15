@@ -46,6 +46,24 @@ export default class UnmnemonicDevicesService extends Service {
     return this.txtbeyond.maskIsValid(answer, mask);
   }
 
+  preAnswer(answer, mask) {
+    if (!this.maskIsValid(answer, mask)) {
+      throw Error(`'${mask}' is not a valid mask for '${answer}'`);
+    }
+
+    let maskStart = mask.indexOf('_');
+    return answer.substring(0, maskStart);
+  }
+
+  postAnswer(answer, mask) {
+    if (!this.maskIsValid(answer, mask)) {
+      throw Error(`'${mask}' is not a valid mask for '${answer}'`);
+    }
+
+    let maskEnd = mask.lastIndexOf('_');
+    return answer.substring(maskEnd + 1);
+  }
+
   extractAnswer(answer, mask) {
     if (!this.maskIsValid(answer, mask)) {
       throw Error(`'${mask}' is not a valid mask for '${answer}'`);

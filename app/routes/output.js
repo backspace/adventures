@@ -41,7 +41,7 @@ export default class OutputRoute extends Route {
     } else if (this.get('features.unmnemonicDevices')) {
       fontPaths = [
         fetch('/fonts/unmnemonic-regular.ttf'),
-        fetch('/fonts/unmnemonic-regular.ttf'),
+        fetch('/fonts/unmnemonic-bold.ttf'),
         fetch('/fonts/unmnemonic-regular.ttf'),
       ];
     } else {

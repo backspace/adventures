@@ -22,12 +22,12 @@ export default class AnswersComponent extends Component {
         doc.addPage();
       }
 
-      doc.fontSize(18);
+      doc.fontSize(14);
 
-      doc.text(`${team.truncatedName}`);
+      doc.text(`${team.truncatedName}`, 50, 50);
       doc.text(' ');
 
-      doc.fontSize(14);
+      doc.fontSize(12);
 
       doc.text(team.users);
       doc.text(team.notes);
@@ -35,11 +35,12 @@ export default class AnswersComponent extends Component {
 
       doc.text(' ');
 
-      doc.fontSize(11);
+      doc.fontSize(10);
 
       team
         .hasMany('meetings')
         .value()
+        .sortBy('destination.id')
         .forEach((meeting) => {
           let waypoint = meeting.belongsTo('waypoint').value();
           let waypointRegion = waypoint.belongsTo('region').value();
@@ -47,13 +48,42 @@ export default class AnswersComponent extends Component {
           let destination = meeting.belongsTo('destination').value();
           let destinationRegion = destination.belongsTo('region').value();
 
+          let fullExcerpt = waypoint.excerpt;
+          let preExcerpt = this.devices.preExcerpt(fullExcerpt);
+          let innerExcerpt = this.devices.trimmedInnerExcerpt(fullExcerpt);
+          let postExcerpt = this.devices.postExcerpt(fullExcerpt);
+
           doc.text(waypointRegion.name);
-          doc.text(`${waypoint.name}: ${waypoint.excerpt}`);
+          doc.text(`${waypoint.name} (${waypoint.call})`);
+          doc.moveDown();
+
+          doc
+            .text(`${preExcerpt} | `, { continued: true })
+            .font(this.args.assets.bold)
+            .text(innerExcerpt, { continued: true })
+            .font(this.args.assets.regular)
+            .text(` | ${postExcerpt}`);
 
           doc.text(' ');
 
+          let answer = destination.answer;
+          let mask = destination.mask;
+
+          let preAnswer = this.devices.preAnswer(answer, mask);
+          let answerOnly = this.devices.extractAnswer(answer, mask);
+          let postAnswer = this.devices.postAnswer(answer, mask);
+
           doc.text(destinationRegion.name);
-          doc.text(`${destination.description}: ${destination.answer}`);
+          doc.moveDown();
+
+          doc
+            .text(`${destination.description}: ${preAnswer}`, {
+              continued: true,
+            })
+            .font(this.args.assets.bold)
+            .text(answerOnly, { continued: true })
+            .font(this.args.assets.regular)
+            .text(postAnswer);
 
           doc.text(' ');
           doc.text('-------');
