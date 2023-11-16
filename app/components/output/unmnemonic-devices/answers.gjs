@@ -17,7 +17,7 @@ export default class AnswersComponent extends Component {
     let doc = new PDFDocument({ layout: 'portrait', font: regular });
     let stream = doc.pipe(blobStream());
 
-    this.args.teams.forEach((team, index) => {
+    this.args.teams.sortBy('createdAt').forEach((team, index) => {
       if (index > 0) {
         doc.addPage();
       }
