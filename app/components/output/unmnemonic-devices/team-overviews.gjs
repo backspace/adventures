@@ -57,7 +57,7 @@ export default class TeamOverviewsComponent extends Component {
 
     let devices = this.devices;
 
-    this.args.teams.forEach((team, index) => {
+    this.args.teams.sortBy('createdAt').forEach((team, index) => {
       if (index > 0) {
         doc.addPage();
       }
