@@ -335,7 +335,11 @@ export default class TeamOverviewsComponent extends Component {
 
             doc.text(waypoint.call);
 
-            printRegionNotesAndParents(doc, waypointRegion);
+            printRegionNotesAndParents(
+              doc,
+              waypointRegion,
+              meetingHalfWithoutPadding - meetingPadding
+            );
 
             doc.fontSize(meetingBodyFontSize / 2);
             doc.moveDown();
@@ -375,7 +379,11 @@ export default class TeamOverviewsComponent extends Component {
 
             doc.fontSize(meetingBodyFontSize);
 
-            printRegionNotesAndParents(doc, destinationRegion);
+            printRegionNotesAndParents(
+              doc,
+              destinationRegion,
+              meetingHalfWithoutPadding
+            );
 
             doc.fontSize(meetingBodyFontSize / 2);
             doc.moveDown();
@@ -499,9 +507,12 @@ function doubleBlanks(s) {
   return s.replace(/_/g, '__');
 }
 
-function printRegionNotesAndParents(doc, region) {
+function printRegionNotesAndParents(doc, region, width) {
   if (region.notes || region.hours) {
-    doc.text(`${region.hours ? `${region.hours}. ` : ''}${region.notes ?? ''}`);
+    doc.text(
+      `${region.hours ? `${region.hours}. ` : ''}${region.notes ?? ''}`,
+      { width }
+    );
   }
 
   let parent = region.belongsTo('parent').value();
@@ -510,7 +521,8 @@ function printRegionNotesAndParents(doc, region) {
     doc.text(
       `In ${parent.name}${parent.hours ? `, ${parent.hours}` : ''}. ${
         parent.notes ?? ''
-      }`
+      }`,
+      { width }
     );
     parent = parent.belongsTo('parent').value();
   }
