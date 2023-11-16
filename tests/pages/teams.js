@@ -1,4 +1,5 @@
 import PageObject, {
+  attribute,
   clickable,
   collection,
   fillable,
@@ -10,6 +11,7 @@ export default PageObject.create({
   visit: visitable('/teams'),
 
   teams: collection('[data-test-team]', {
+    id: attribute('data-test-team-id', 'tr'),
     name: text('.name'),
     users: text('.users'),
     notes: text('.notes'),

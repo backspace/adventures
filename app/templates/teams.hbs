@@ -26,9 +26,9 @@
             </th>
           </tr>
         </thead>
-        {{#each this.model as |team|}}
+        {{#each this.sortedTeams as |team|}}
           <tbody data-test-team>
-            <tr>
+            <tr data-test-team-id={{team.id}}>
               <td class='name'>
                 {{team.name}}
               </td>

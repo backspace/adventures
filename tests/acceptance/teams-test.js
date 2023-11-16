@@ -10,6 +10,8 @@ import withSetting from '../helpers/with-setting';
 
 import page from '../pages/teams';
 
+let teamOne, teamTwo;
+
 module('Acceptance | teams', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
@@ -19,8 +21,8 @@ module('Acceptance | teams', function (hooks) {
     const done = assert.async();
 
     run(() => {
-      const teamOne = store.createRecord('team');
-      const teamTwo = store.createRecord('team');
+      teamOne = store.createRecord('team');
+      teamTwo = store.createRecord('team');
 
       teamOne.setProperties({
         name: 'Team 1',
@@ -57,7 +59,7 @@ module('Acceptance | teams', function (hooks) {
     assert.equal(page.teams[1].phones, '2040000000: 4, 5140000000: 5');
   });
 
-  test('teams can be overwritten with JSON input', async function (assert) {
+  test('teams can be added and updated with JSON input', async function (assert) {
     await page.visit();
 
     await page.enterJSON(`
@@ -65,7 +67,7 @@ module('Acceptance | teams', function (hooks) {
         "data": [
           {
             "type": "teams",
-            "id": 100,
+            "id": "${teamOne.id}",
             "attributes": {
               "name": "jorts",
               "users": "jorts@example.com, jants@example.com",
@@ -78,7 +80,7 @@ module('Acceptance | teams', function (hooks) {
           },
           {
             "type": "teams",
-            "id": 200,
+            "id": "daa14876-7bb7-486c-8ed5-5287156a430b",
             "attributes": {
               "name": "jants",
               "riskAversion": 2
@@ -90,21 +92,30 @@ module('Acceptance | teams', function (hooks) {
 
     await page.save();
 
-    // TODO why is this needed now?
-    await waitUntil(() => page.teams.length == 2);
+    assert.equal(page.teams.length, 3, 'expected three teams to be listed');
 
-    assert.equal(page.teams.length, 2, 'expected two teams to be listed');
-
-    assert.equal(page.teams[0].name, 'jorts');
-    assert.equal(page.teams[0].users, 'jorts@example.com, jants@example.com');
-    assert.equal(page.teams[0].phones, '2041231234: 5.75');
-    assert.equal(page.teams[0].notes, 'some notes');
+    assert.equal(page.teams[0].name, 'jants');
+    assert.equal(
+      page.teams[0].id,
+      'daa14876-7bb7-486c-8ed5-5287156a430b',
+      'expected newly-specified id to be used'
+    );
     assert.equal(page.teams[0].riskAversion, '2');
 
-    assert.notOk(page.teams[0].identifier.isVisible);
-
-    assert.equal(page.teams[1].name, 'jants');
+    assert.equal(page.teams[1].name, 'jorts');
+    assert.equal(
+      page.teams[1].id,
+      teamOne.id,
+      'expected existing id to be preserved'
+    );
+    assert.equal(page.teams[1].users, 'jorts@example.com, jants@example.com');
+    assert.equal(page.teams[1].phones, '2041231234: 5.75');
+    assert.equal(page.teams[1].notes, 'some notes');
     assert.equal(page.teams[1].riskAversion, '2');
+
+    assert.notOk(page.teams[1].identifier.isVisible);
+
+    assert.equal(page.teams[2].name, 'Team 2');
   });
 
   test('teams can have identifiers for unmnemonic devices', async function (assert) {
@@ -133,9 +144,6 @@ module('Acceptance | teams', function (hooks) {
     `);
 
     await page.save();
-
-    // TODO why is this needed now?
-    await waitUntil(() => page.teams.length == 1);
 
     assert.equal(page.teams[0].name, 'jorts');
     assert.equal(page.teams[0].identifier.text, 'i wont do what you tell me');

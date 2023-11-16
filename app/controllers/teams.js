@@ -9,23 +9,53 @@ export default class TeamsController extends Controller {
   @service puzzles;
   @service store;
 
+  get sortedTeams() {
+    return this.model.sortBy('name');
+  }
+
   @action
-  save() {
+  async save() {
     const { data: teams } = JSON.parse(this.teamsJSON);
 
-    all(
-      this.model.map((model) => {
-        return model.reload().then((reloaded) => reloaded.destroyRecord());
-      })
-    ).then(() => {
-      const teamRecords = teams.map(({ attributes }) => {
-        const teamRecord = this.store.createRecord('team');
-        teamRecord.setProperties(attributes);
+    let saves = [];
+    let updatedModels = [];
 
-        return teamRecord.save();
-      });
+    teams.forEach((incomingTeam) => {
+      let existingTeam = this.model.find(
+        (existing) => existing.id === incomingTeam.id
+      );
 
-      return all(teamRecords);
+      if (existingTeam) {
+        console.log(
+          `updating team ${existingTeam.id}, name was ${existingTeam.name} and becomes ${incomingTeam.attributes.name}`
+        );
+
+        existingTeam.setProperties(incomingTeam.attributes);
+        updatedModels.push(existingTeam);
+        saves.push(existingTeam.save());
+      } else {
+        console.log('new incoming team', incomingTeam.attributes);
+
+        let newTeam = this.store.createRecord('team', {
+          id: incomingTeam.id,
+          ...incomingTeam.attributes,
+        });
+        saves.push(newTeam.save());
+      }
     });
+
+    let unchangedTeams = this.model.filter(
+      (existingTeam) => !updatedModels.includes(existingTeam)
+    );
+
+    if (unchangedTeams) {
+      console.log(
+        `found these unchanged teams, is it expected? ${unchangedTeams.mapBy(
+          'name'
+        )}`
+      );
+    }
+
+    await all(saves);
   }
 }

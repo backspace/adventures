@@ -6,7 +6,7 @@ import classic from 'ember-classic-decorator';
 export default class TeamsRoute extends Route {
   @service store;
 
-  model() {
-    return this.store.findAll('team');
+  async model() {
+    return await this.store.findAll('team');
   }
 }
