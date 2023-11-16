@@ -30,6 +30,10 @@ export default class SchedulerController extends Controller {
     );
   }
 
+  get teams() {
+    return this.model.teams.sortBy('createdAt');
+  }
+
   @computed(
     'lastMeetingOffsets.[]',
     'meeting.destination.region.name',
