@@ -86,7 +86,11 @@ export default class TeamOverviewsComponent extends Component {
       doc.save();
       doc.font(regular);
       doc.fontSize(mapTeamFontSize);
-      doc.text(`${team.truncatedName}, voicepass: ${team.identifier}`, 0, 0);
+      doc.text(team.truncatedName, 0, 0);
+
+      doc
+        .fontSize(meetingHeadingFontSize)
+        .text(`voicepass: ${team.identifier}`);
       doc.restore();
     }
 
@@ -98,7 +102,7 @@ export default class TeamOverviewsComponent extends Component {
       let base64String = lowRes ? lowMapBase64String : mapBase64String;
 
       {
-        doc.translate(0, mapTeamFontSize * 2);
+        doc.translate(0, mapTeamFontSize * 3);
         doc.scale(ratio, ratio);
 
         if (debug) {
