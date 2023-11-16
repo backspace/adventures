@@ -443,6 +443,10 @@ function drawArrow(doc, waypointX, waypointY, destinationX, destinationY) {
     const loopRadius = arrowLength / 2;
     const startAngle = -Math.PI / 2;
     const endAngle = startAngle + (3 * Math.PI) / 2;
+
+    doc.save();
+    doc.translate(0, loopRadius);
+
     doc
       .arc(waypointX, waypointY - loopRadius, loopRadius, startAngle, endAngle)
       .stroke();
@@ -464,6 +468,8 @@ function drawArrow(doc, waypointX, waypointY, destinationX, destinationY) {
       .lineTo(arrowHeadStartX, arrowHeadOffsetY + waypointY - loopRadius)
       .lineTo(arrowHeadX2, arrowHeadOffsetY + arrowHeadY2)
       .fill();
+
+    doc.restore();
     return;
   }
 
