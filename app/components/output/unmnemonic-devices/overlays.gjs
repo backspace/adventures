@@ -18,7 +18,8 @@ import PDFDocument from 'pdfkit';
 export const PAGE_MARGIN = 0.3 * 72;
 export const PAGE_PADDING = 0.2 * 72;
 
-export const BACKGROUND_COUNT = 5;
+// Removing concentric squares, seems reminiscent of troubled imagery!
+export const BACKGROUND_COUNT = 5 - 1;
 export const TEXT_OUTLINE_WIDTH = 4;
 export const TEAM_FONT_SIZE = 14;
 export const TEAM_GAP_SIZE = PAGE_PADDING;
@@ -337,8 +338,6 @@ function drawBackground(doc, width, height, pageIndex) {
   } else if (backgroundIndex === 2) {
     drawSpiralBackground(doc, width, height);
   } else if (backgroundIndex === 3) {
-    drawConcentricSquaresBackground(doc, width, height);
-  } else if (backgroundIndex === 4) {
     drawConcentricStarsBackground(doc, width, height);
   }
 
