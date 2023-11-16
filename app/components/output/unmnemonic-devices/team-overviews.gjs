@@ -268,7 +268,7 @@ export default class TeamOverviewsComponent extends Component {
       doc.text('', 0, 0);
       doc.moveUp();
 
-      doc.text('Extras go here');
+      // doc.text('Extras go here');
 
       doc.restore();
     }
