@@ -24,13 +24,6 @@ export default class RegionContainerDestinations extends Component {
       : this.args.container.hasWaypoints;
   }
 
-  get list() {
-    return;
-    return this.isDestinations
-      ? this.args.container.destinations
-      : this.args.container.waypoints;
-  }
-
   <template>
     {{#if this.hasItems}}
       <li
