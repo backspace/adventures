@@ -12,7 +12,7 @@ async fn main() {
     let config = &env_config_provider.get_config();
 
     let database_url = &config.database_url;
-    let db = PgPool::connect(database_url).await.unwrap();
+    let db = PgPool::connect(database_url.as_str()).await.unwrap();
 
     let listener_address = "127.0.0.1:3000";
     let listener = TcpListener::bind(listener_address.parse::<SocketAddr>().unwrap()).unwrap();

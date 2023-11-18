@@ -1,13 +1,14 @@
 // Adapted from https://dev.to/bdhobare/managing-application-config-in-rust-23ai
 use std::collections::HashMap;
+use url::Url;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Config {
     pub auth: String,
-    pub database_url: String,
+    pub database_url: Url,
     pub notification_number: String,
     pub supervisor_number: String,
-    pub root_url: String,
+    pub root_url: Url,
     pub twilio_account_sid: String,
     pub twilio_api_key_sid: String,
     pub twilio_api_key_secret: String,
@@ -25,10 +26,8 @@ impl EnvVarProvider {
     pub fn new(args: HashMap<String, String>) -> Self {
         let config = Config {
             auth: args.get("AUTH").expect("Missing auth").to_string(),
-            database_url: args
-                .get("DATABASE_URL")
-                .expect("Missing database URL")
-                .to_string(),
+            database_url: Url::parse(args.get("DATABASE_URL").expect("Missing database URL"))
+                .expect("Unable to parse DATABASE_URL as a URL"),
             notification_number: args
                 .get("NOTIFICATION_NUMBER")
                 .expect("Missing notification number")
@@ -37,7 +36,8 @@ impl EnvVarProvider {
                 .get("SUPERVISOR_NUMBER")
                 .expect("Missing supervisor number")
                 .to_string(),
-            root_url: args.get("ROOT_URL").expect("Missing root URL").to_string(),
+            root_url: Url::parse(args.get("ROOT_URL").expect("Missing root URL"))
+                .expect("Unable to parse ROOT_URL as a URL"),
             twilio_account_sid: args
                 .get("TWILIO_ACCOUNT_SID")
                 .expect("Missing Twilio account SID")
