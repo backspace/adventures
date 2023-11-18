@@ -54,7 +54,9 @@ export default class AnswersComponent extends Component {
           let postExcerpt = this.devices.postExcerpt(fullExcerpt);
 
           doc.text(waypointRegion.name);
-          doc.text(`${waypoint.name} (${waypoint.call})`);
+          doc.text(
+            `${waypoint.name} (${waypoint.call}, page ${waypoint.page})`
+          );
           doc.moveDown();
 
           doc
