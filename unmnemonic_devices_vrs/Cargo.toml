@@ -27,7 +27,7 @@ select = "0.6"
 serde = { version = "1.0.138", features = ["derive"] }
 serde_json = "1.0"
 serde_urlencoded = "0.7.1"
-sqlx = { version = "0.7.0-alpha.2", features = [
+sqlx = { version = "0.7.2", features = [
   "chrono",
   "migrate",
   "postgres",
