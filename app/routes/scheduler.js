@@ -14,11 +14,16 @@ export default class SchedulerRoute extends Route {
   async model() {
     await this.store.findAll('region');
 
-    let destinations = (await this.store.findAll('destination')).filterBy(
-      'isAvailable'
-    );
-    let waypoints = (await this.store.findAll('waypoint')).filterBy(
-      'isAvailable'
+    let destinations = (await this.store.findAll('destination'))
+      .filterBy('isAvailable')
+      .filterBy('isComplete');
+    let waypoints = (await this.store.findAll('waypoint'))
+      .filterBy('isAvailable')
+      .filterBy('isComplete');
+
+    let pte = waypoints.findBy('name', 'Prairie Theatre Exchange');
+    console.log(
+      `does waypoints include? ${pte}, is complete? ${pte?.isComplete}`
     );
 
     let typeToList = {

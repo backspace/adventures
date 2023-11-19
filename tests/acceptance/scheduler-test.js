@@ -16,7 +16,9 @@ module('Acceptance | scheduler', function (hooks) {
 
   let store,
     portagePlace,
-    eatonCentre,
+    eatonPlace,
+    eatonPlaceFirstFloor,
+    eatonPlaceFoodCourt,
     circus,
     edmontonCourt,
     superfans,
@@ -33,8 +35,8 @@ module('Acceptance | scheduler', function (hooks) {
       y: 60,
     });
 
-    eatonCentre = store.createRecord('region', {
-      name: 'Eaton Centre',
+    eatonPlace = store.createRecord('region', {
+      name: 'Eaton Place',
       x: 100,
       y: 100,
     });
@@ -68,12 +70,28 @@ module('Acceptance | scheduler', function (hooks) {
 
     await all([
       portagePlace.save(),
-      eatonCentre.save(),
+      eatonPlace.save(),
       circus.save(),
       superfans.save(),
       mayors.save(),
       pyjamaGamers.save(),
     ]);
+
+    eatonPlaceFoodCourt = store.createRecord('region', {
+      name: 'Food Court',
+      parent: eatonPlace,
+    });
+
+    eatonPlaceFirstFloor = store.createRecord('region', {
+      name: 'First Floor',
+      parent: eatonPlace,
+    });
+
+    await eatonPlaceFoodCourt.save();
+    await eatonPlaceFirstFloor.save();
+
+    await eatonPlace.save();
+
     edmontonCourt = store.createRecord('destination', {
       region: portagePlace,
       description: 'Edmonton Court',
@@ -81,6 +99,8 @@ module('Acceptance | scheduler', function (hooks) {
       awesomeness: 3,
       risk: 2,
       status: 'available',
+      answer: '1234',
+      mask: '1_34',
     });
 
     prairieTheatreExchange = store.createRecord('destination', {
@@ -89,6 +109,8 @@ module('Acceptance | scheduler', function (hooks) {
       risk: 1,
       region: portagePlace,
       status: 'available',
+      answer: '1234',
+      mask: '1_34',
     });
 
     globeCinemas = store.createRecord('destination', {
@@ -96,14 +118,18 @@ module('Acceptance | scheduler', function (hooks) {
     });
 
     squeakyFloor = store.createRecord('destination', {
-      region: eatonCentre,
+      region: eatonPlace,
       status: 'unavailable',
     });
 
     mrGreenjeans = store.createRecord('destination', {
       description: 'Mr. Greenjeans',
-      region: eatonCentre,
+      region: eatonPlaceFirstFloor,
       status: 'available',
+      awesomeness: 2,
+      risk: 3,
+      answer: '1234',
+      mask: '1_34',
     });
 
     sculpture = store.createRecord('destination', {
@@ -119,7 +145,11 @@ module('Acceptance | scheduler', function (hooks) {
       mrGreenjeans.save(),
       sculpture.save(),
     ]);
-    await all([portagePlace.save(), eatonCentre.save(), circus.save()]);
+    await all([
+      portagePlace.save(),
+      eatonPlaceFirstFloor.save(),
+      circus.save(),
+    ]);
   });
 
   module('for Clandestine Rendezvous', function (hooks) {
@@ -131,7 +161,7 @@ module('Acceptance | scheduler', function (hooks) {
       const pathfinderData = {
         _id: 'pathfinder-data',
         data: {
-          'Portage Place|Eaton Centre': 5,
+          'Portage Place|Eaton Place': 5,
         },
       };
 
@@ -147,24 +177,38 @@ module('Acceptance | scheduler', function (hooks) {
       await all([edmontonCourt.save(), superfans.save(), mayors.save()]);
     });
 
-    test('available destinations are grouped by region', async function (assert) {
+    test('available destinations are grouped by nested regions', async function (assert) {
       await page.visit();
 
       assert.ok(page.waypointsContainer.isHidden);
 
       assert.equal(
-        page.regions.length,
-        2,
-        'only regions with available destinations should be listed'
+        page.destinationRegions.length,
+        3,
+        'only regions with available destinations and their parents should be listed'
       );
-      const region = page.regions[1];
+      const eatonPlace = page.destinationRegions[0];
 
-      assert.equal(region.name, 'Portage Place');
-      assert.equal(region.accessibility, 'Aggressive security');
-      assert.equal(region.notes, 'Downtown revitalisation!');
+      assert.equal(eatonPlace.name, 'Eaton Place');
+      assert.equal(eatonPlace.regions.length, 1);
 
-      assert.equal(region.destinations.length, 2);
-      const destination = region.destinations[0];
+      const eatonPlaceFirstFloor = page.destinationRegions[1];
+
+      assert.equal(eatonPlaceFirstFloor.name, 'First Floor');
+      assert.equal(eatonPlaceFirstFloor.regions.length, 0);
+
+      const greenjeans = eatonPlaceFirstFloor.destinations[0];
+
+      assert.equal(greenjeans.description, 'Mr. Greenjeans');
+
+      const portagePlace = page.destinationRegions[2];
+
+      assert.equal(portagePlace.name, 'Portage Place');
+      assert.equal(portagePlace.accessibility, 'Aggressive security');
+      assert.equal(portagePlace.notes, 'Downtown revitalisation!');
+
+      assert.equal(portagePlace.destinations.length, 2);
+      const destination = portagePlace.destinations[0];
 
       assert.equal(destination.description, 'Edmonton Court');
       assert.equal(destination.qualities, 'A3 R2');
@@ -178,20 +222,25 @@ module('Acceptance | scheduler', function (hooks) {
     test('regions with available destinations are displayed on the map and highlight when hovered in the column', async function (assert) {
       await page.visit();
 
-      const region = page.map.regions[1];
+      const eatonPlace = page.map.regions.findOneBy('name', 'Eaton Place');
 
-      assert.equal(region.x, 50);
-      assert.equal(region.y, 60);
+      assert.equal(eatonPlace.x, 100);
+      assert.equal(eatonPlace.y, 100);
       assert.notOk(
-        region.isHighlighted,
-        'expected region not to be highlighted'
+        eatonPlace.isHighlighted,
+        'expected Eaton Place not to be highlighted'
       );
-      await page.regions[1].hover();
-      assert.ok(region.isHighlighted, 'expected region to be highlighted');
-      await page.regions[1].exit();
+
+      await page.destinationRegions[1].hover();
+      assert.ok(
+        eatonPlace.isHighlighted,
+        'expected Eaton Place to be highlighted'
+      );
+
+      await page.destinationRegions[1].exit();
       assert.notOk(
-        region.isHighlighted,
-        'expected region not to be highlighted'
+        eatonPlace.isHighlighted,
+        'expected Eaton Place not to be highlighted'
       );
     });
 
@@ -201,6 +250,10 @@ module('Acceptance | scheduler', function (hooks) {
       await destinationsPage.visit();
       await destinationsPage.new();
       await destinationsPage.descriptionField.fill('Fountain');
+      await destinationsPage.answerField.fill('1234');
+      await destinationsPage.maskField.fill('1__4');
+      await destinationsPage.awesomenessField.fill('1');
+      await destinationsPage.riskField.fill('2');
 
       const portagePlaceOption = find(
         `option[data-test-region-name="Portage Place"]`
@@ -212,13 +265,14 @@ module('Acceptance | scheduler', function (hooks) {
 
       await destinationsPage.save();
 
-      await waitUntil(() => destinationsPage.destinations.length);
+      await waitUntil(() => destinationsPage.destinations.length === 7);
       assert.equal(destinationsPage.destinations[0].region, 'Portage Place');
+
       await destinationsPage.destinations[0].status.click();
 
       await page.visit();
 
-      const region = page.regions[1];
+      const region = page.destinationRegions.findOneBy('name', 'Portage Place');
       assert.equal(region.destinations.length, 3);
     });
 
@@ -274,7 +328,7 @@ module('Acceptance | scheduler', function (hooks) {
         // FIXME the border is currently 2*meetingCount because the style property
         // was somehow overwritten?
         assert.equal(
-          page.regions[1].destinations[0].meetingCountBorderWidth,
+          page.destinationRegions[1].destinations[0].meetingCountBorderWidth,
           '2px'
         );
       }
@@ -290,8 +344,8 @@ module('Acceptance | scheduler', function (hooks) {
       assert.equal(page.teams[0].meetings[0].index, '0');
       assert.equal(page.teams[0].meetings[0].offset, '15');
 
-      assert.ok(page.regions[1].destinations[0].isHighlighted);
-      assert.notOk(page.regions[0].destinations[0].isHighlighted);
+      assert.ok(page.destinationRegions[2].destinations[0].isHighlighted);
+      assert.notOk(page.destinationRegions[0].destinations[0].isHighlighted);
 
       assert.ok(
         page.teams[1].isHighlighted,
@@ -321,7 +375,7 @@ module('Acceptance | scheduler', function (hooks) {
       async function (assert) {
         await page.visit();
 
-        await page.regions[1].destinations[1].click();
+        await page.destinationRegions[1].destinations[1].click();
         await page.teams[1].click();
         await page.teams[0].click();
 
@@ -338,8 +392,8 @@ module('Acceptance | scheduler', function (hooks) {
         assert.equal(page.meeting.index, '1');
         assert.equal(page.meeting.offset.value, '15');
 
-        assert.ok(page.regions[1].destinations[1].isSelected);
-        assert.notOk(page.regions[1].destinations[0].isSelected);
+        assert.ok(page.destinationRegions[1].destinations[1].isSelected);
+        assert.notOk(page.destinationRegions[1].destinations[0].isSelected);
 
         assert.equal(page.map.regions[1].count, '2');
 
@@ -356,7 +410,7 @@ module('Acceptance | scheduler', function (hooks) {
         assert.equal(page.teams[1].count, '••');
 
         assert.equal(
-          page.regions[1].destinations[1].meetingCountBorderWidth,
+          page.destinationRegions[1].destinations[1].meetingCountBorderWidth,
           '2px'
         );
 
@@ -366,7 +420,7 @@ module('Acceptance | scheduler', function (hooks) {
           'expected no set teams after saving'
         );
 
-        await page.regions[0].destinations[0].click();
+        await page.destinationRegions[0].destinations[0].click();
         await page.teams[1].click();
         await page.teams[0].click();
 
@@ -377,7 +431,7 @@ module('Acceptance | scheduler', function (hooks) {
     test('scheduling a meeting between teams with different meeting counts is impossible', async function (assert) {
       await page.visit();
 
-      await page.regions[1].destinations[1].click();
+      await page.destinationRegions[2].destinations[1].click();
       await page.teams[1].click();
       await page.teams[2].click();
 
@@ -451,14 +505,14 @@ module('Acceptance | scheduler', function (hooks) {
       });
 
       let squeakyFloor = store.createRecord('waypoint', {
-        region: eatonCentre,
+        region: eatonPlace,
         status: 'unavailable',
         ...completionWaypointProperties,
       });
 
       let mrGreenjeans = store.createRecord('waypoint', {
         name: 'Mr. Greenjeans',
-        region: eatonCentre,
+        region: eatonPlace,
         status: 'available',
         ...completionWaypointProperties,
       });
@@ -481,7 +535,8 @@ module('Acceptance | scheduler', function (hooks) {
 
       await all([
         portagePlace.save(),
-        eatonCentre.save(),
+        portagePlaceThirdFloor.save(),
+        eatonPlace.save(),
         circus.save(),
         webb.save(),
       ]);
@@ -509,18 +564,17 @@ module('Acceptance | scheduler', function (hooks) {
       assert.ok(page.meeting.offset.isHidden);
     });
 
-    test('available waypoints are grouped by region', async function (assert) {
+    test('available waypoints are grouped by nested regions', async function (assert) {
       await page.visit();
 
       assert.ok(page.waypointsContainer.isVisible);
 
       assert.equal(
         page.waypointRegions.length,
-        3,
+        4,
         'only regions with available waypoints should be listed'
       );
 
-      await this.pauseTest();
       const region = page.waypointRegions[2];
 
       assert.equal(region.name, 'PP Megacomplex');
@@ -530,15 +584,19 @@ module('Acceptance | scheduler', function (hooks) {
       const waypoints = region.waypoints[0];
 
       assert.equal(waypoints.name, 'fourten');
+
+      const portagePlaceRegion = page.waypointRegions[1];
+      assert.equal(
+        portagePlaceRegion.regions.length,
+        2,
+        'expected Portage Place to have two children'
+      );
     });
 
     test('a nested region does not show on the map', async function (assert) {
       await page.visit();
 
       assert.equal(page.map.regions.length, 2);
-      // await this.pauseTest();
-      // assert.equal(region.x, 50);
-      // assert.equal(region.y, 60);
     });
 
     test('an existing meeting is shown in the teams and destination', async function (assert) {
@@ -562,13 +620,13 @@ module('Acceptance | scheduler', function (hooks) {
       await page.teams[0].hover();
 
       assert.equal(page.map.regions[1].meetingIndex, '1');
-      assert.equal(page.map.regions[2].waypointMeetingIndex, '1W');
+      assert.equal(page.map.regions[1].waypointMeetingIndex, '1W');
 
       assert.equal(page.teams[0].meetings.length, 1);
       assert.equal(page.teams[0].meetings[0].index, '0');
 
-      assert.ok(page.regions[1].destinations[0].isHighlighted);
-      assert.notOk(page.regions[0].destinations[0].isHighlighted);
+      assert.ok(page.destinationRegions[2].destinations[0].isHighlighted);
+      assert.notOk(page.destinationRegions[0].destinations[0].isHighlighted);
 
       assert.ok(page.waypointRegions[2].waypoints[0].isHighlighted);
       assert.notOk(page.waypointRegions[0].waypoints[0].isHighlighted);
@@ -593,7 +651,7 @@ module('Acceptance | scheduler', function (hooks) {
     test('a new meeting can be scheduled and resets the form when saved', async function (assert) {
       await page.visit();
 
-      await page.regions[1].destinations[1].click();
+      await page.destinationRegions[2].destinations[1].click();
       await page.waypointRegions[2].waypoints[0].click();
       await page.teams[0].click();
 
@@ -610,8 +668,8 @@ module('Acceptance | scheduler', function (hooks) {
       );
       assert.equal(page.meeting.index, '1');
 
-      assert.ok(page.regions[1].destinations[1].isSelected);
-      assert.notOk(page.regions[1].destinations[0].isSelected);
+      assert.ok(page.destinationRegions[2].destinations[1].isSelected);
+      assert.notOk(page.destinationRegions[1].destinations[0].isSelected);
 
       assert.ok(page.waypointRegions[2].waypoints[0].isSelected);
       assert.notOk(page.waypointRegions[0].waypoints[0].isSelected);
@@ -630,7 +688,7 @@ module('Acceptance | scheduler', function (hooks) {
 
       // FIXME destination and waypoint meeting count borders
       // assert.equal(
-      //   page.regions[1].destinations[1].meetingCountBorderWidth,
+      //   page.destinationRegions[1].destinations[1].meetingCountBorderWidth,
       //   '2px'
       // );
 
@@ -646,7 +704,7 @@ module('Acceptance | scheduler', function (hooks) {
     test('selecting a second team for a meeting does nothing', async function (assert) {
       await page.visit();
 
-      await page.regions[1].destinations[1].click();
+      await page.destinationRegions[2].destinations[1].click();
       await page.waypointRegions[2].waypoints[0].click();
       await page.teams[0].click();
 

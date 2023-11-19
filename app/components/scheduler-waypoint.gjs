@@ -29,6 +29,7 @@ export default class SchedulerWaypointComponent extends Component {
       style={{this.style}}
       {{on 'click' this.select}}
       data-test-waypoint
+      ...attributes
     >
       <div data-test-name>{{@waypoint.name}}</div>
     </li>

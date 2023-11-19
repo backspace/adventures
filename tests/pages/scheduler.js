@@ -88,53 +88,63 @@ const selectText = function (selector) {
 export default PageObject.create({
   visit: visitable('/scheduler'),
 
-  regions: collection('[data-test-regions-destinations] li.region', {
-    name: text('.name'),
-    accessibility: text('[data-test-accessibility]'),
-    notes: attribute('title'),
+  destinationRegions: collection(
+    '[data-test-regions-destinations] [data-test-scheduler-column-region]',
+    {
+      name: text('> .name'),
+      accessibility: text('[data-test-accessibility]'),
+      notes: attribute('title'),
 
-    hover: triggerable('mouseenter'),
-    exit: triggerable('mouseleave'),
+      hover: triggerable('mouseenter'),
+      exit: triggerable('mouseleave'),
 
-    destinations: collection('.destination', {
-      description: text('.description'),
-      qualities: attribute('title'),
-      accessibility: text('.accessibility'),
+      destinations: collection('[data-test-scheduler-destination]', {
+        description: text('.description'),
+        qualities: attribute('title'),
+        accessibility: text('.accessibility'),
 
-      meetingCountBorderWidth: propertyValue('border-top-width'),
-      awesomenessBorderOpacity: propertyColourOpacity('border-left-color'),
-      riskBorderOpacity: propertyColourOpacity('border-right-color'),
+        meetingCountBorderWidth: propertyValue('border-top-width'),
+        awesomenessBorderOpacity: propertyColourOpacity('border-left-color'),
+        riskBorderOpacity: propertyColourOpacity('border-right-color'),
 
-      isSelected: hasClass('selected'),
-      isHighlighted: hasClass('highlighted'),
+        isSelected: hasClass('selected'),
+        isHighlighted: hasClass('highlighted'),
 
-      click: clickable(),
-    }),
-  }),
+        click: clickable(),
+      }),
+
+      regions: collection('[data-test-scheduler-column-region]'),
+    }
+  ),
 
   waypointsContainer: {
     scope: '[data-test-waypoint-regions]',
   },
 
-  waypointRegions: collection('[data-test-waypoint-regions] li.region', {
-    name: text('.name'),
-    accessibility: text('[data-test-accessibility]'),
-    notes: attribute('title'),
+  waypointRegions: collection(
+    '[data-test-waypoint-regions] [data-test-scheduler-column-region]',
+    {
+      name: text('> .name'),
+      accessibility: text('[data-test-accessibility]'),
+      notes: attribute('title'),
 
-    hover: triggerable('mouseenter'),
-    exit: triggerable('mouseleave'),
+      hover: triggerable('mouseenter'),
+      exit: triggerable('mouseleave'),
 
-    waypoints: collection('[data-test-waypoint]', {
-      name: text('[data-test-name]'),
+      waypoints: collection('[data-test-waypoint]', {
+        name: text('[data-test-name]'),
 
-      meetingCountBorderWidth: propertyValue('border-top-width'),
+        meetingCountBorderWidth: propertyValue('border-top-width'),
 
-      isSelected: hasClass('selected'),
-      isHighlighted: hasClass('highlighted'),
+        isSelected: hasClass('selected'),
+        isHighlighted: hasClass('highlighted'),
 
-      click: clickable(),
-    }),
-  }),
+        click: clickable(),
+      }),
+
+      regions: collection('[data-test-scheduler-column-region]'),
+    }
+  ),
 
   teams: collection('.team', {
     name: text('.name'),
@@ -166,6 +176,8 @@ export default PageObject.create({
     regions: collection('.region', {
       x: x(),
       y: y(),
+
+      name: text('.name'),
 
       meetingIndex: text('.meeting-index'),
       waypointMeetingIndex: text('[data-test-waypoint-meeting-index]'),

@@ -28,6 +28,7 @@ export default class RegionContainerDestinations extends Component {
     {{#if this.hasItems}}
       <li
         class='region'
+        data-test-scheduler-column-region
         id='{{if this.isDestinations "" "waypoint-"}}region-{{this.region.id}}'
         title={{this.region.notes}}
         {{on 'mouseenter' (fn @mouseEnterRegion this.region)}}
@@ -47,6 +48,7 @@ export default class RegionContainerDestinations extends Component {
             {{#each @container.destinations as |destination|}}
               {{#if destination.isAvailable}}
                 <SchedulerDestination
+                  data-test-scheduler-destination
                   @destination={{destination}}
                   @select={{@select}}
                   @isSelected={{eq destination.id @meeting.destination.id}}
@@ -58,14 +60,13 @@ export default class RegionContainerDestinations extends Component {
         {{else}}
           <ul class='waypoints'>
             {{#each @container.waypoints as |waypoint|}}
-              {{#if (and waypoint.isAvailable waypoint.isComplete)}}
-                <SchedulerWaypoint
-                  @waypoint={{waypoint}}
-                  @select={{@select}}
-                  @isSelected={{eq waypoint.id @meeting.waypoint.id}}
-                  @highlightedTeam={{@highlightedTeam}}
-                />
-              {{/if}}
+              <SchedulerWaypoint
+                data-test-scheduler-waypoint
+                @waypoint={{waypoint}}
+                @select={{@select}}
+                @isSelected={{eq waypoint.id @meeting.waypoint.id}}
+                @highlightedTeam={{@highlightedTeam}}
+              />
             {{/each}}
           </ul>
         {{/if}}

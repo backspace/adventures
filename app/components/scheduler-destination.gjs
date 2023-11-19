@@ -38,6 +38,7 @@ export default class SchedulerDestinationComponent extends Component {
       title='A{{@destination.awesomeness}} R{{@destination.risk}}'
       style={{this.style}}
       {{on 'click' this.select}}
+      ...attributes
     >
       <div class='description'>{{@destination.description}}</div>
 
