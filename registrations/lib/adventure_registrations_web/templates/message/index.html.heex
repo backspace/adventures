@@ -17,7 +17,7 @@
     <%= for message <- @messages do %>
         <tr>
           <td><%= message.subject %></td>
-          <td><%= message.content %></td>
+          <td title={message.content}><%= truncate(message.content) %></td>
           <td><%= message.ready %></td>
           <td><%= message.postmarked_at %></td>
 
