@@ -20,7 +20,7 @@
     "postinstall": "patch-package",
     "lint:js:fix": "eslint . --fix",
     "start": "ember serve",
-    "test": "npm-run-all lint test:*",
+    "test": "npm-run-all -c lint test:*",
     "test:ember": "ember test"
   },
   "devDependencies": {
