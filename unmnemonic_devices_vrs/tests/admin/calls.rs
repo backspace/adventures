@@ -106,13 +106,13 @@ async fn calls_list_with_calls_and_teams_and_paths(db: PgPool) {
 async fn create_call_success(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
 
     let twilio_call_create_body = serde_urlencoded::to_string([
         ("Method", &"GET".to_string()),
         ("Url", &format!("{}conferences/SID", config.root_url)),
         ("To", &"NUMBER".to_string()),
-        ("From", &twilio_number),
+        ("From", &vrs_number),
     ])
     .expect("Could not encode call creation body");
 
@@ -197,7 +197,7 @@ async fn create_call_creation_failure(db: PgPool) {
 async fn create_call_update_failure(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
 
     let mock_twilio = MockServer::start().await;
     let twilio_json_response = json!({"code": 21201, "message": "No 'To' number is specified", "more_info": "https://www.twilio.com/docs/errors/21201", "status": 400});
@@ -206,7 +206,7 @@ async fn create_call_update_failure(db: PgPool) {
         ("Method", "GET"),
         ("Url", &format!("{}conferences/SID", config.root_url)),
         ("To", "NUMBER"),
-        ("From", &twilio_number),
+        ("From", &vrs_number),
     ])
     .expect("Could not encode call creation body");
 

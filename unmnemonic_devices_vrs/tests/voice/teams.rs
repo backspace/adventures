@@ -428,13 +428,13 @@ async fn team_post_redirects_to_completion(db: PgPool) {
 async fn team_get_complete_notifies_and_increments_listens(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
     let notification_number = config.notification_number.to_string();
 
     let twilio_create_message_body = serde_urlencoded::to_string([
         ("Body", &"Team jortles has completed".to_string()),
         ("To", &notification_number),
-        ("From", &twilio_number),
+        ("From", &vrs_number),
     ])
     .expect("Could not encode message creation body");
 

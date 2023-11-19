@@ -135,7 +135,7 @@ pub async fn post_calls(
     let api_sid = config.twilio_api_key_sid.to_string();
     let api_secret = config.twilio_api_key_secret.to_string();
 
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
     let root_url = config.root_url.to_string();
 
     let basic_auth = format!("{}:{}", api_sid, api_secret);
@@ -150,7 +150,7 @@ pub async fn post_calls(
         ("Method", "GET".to_string()),
         ("Url", conference_url.clone()),
         ("To", params.to.to_string()),
-        ("From", twilio_number),
+        ("From", vrs_number),
     ])
     .expect("Could not encode call creation body");
 

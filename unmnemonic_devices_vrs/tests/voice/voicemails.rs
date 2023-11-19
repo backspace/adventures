@@ -40,13 +40,13 @@ pub struct Recording {
 async fn post_voicemail_stores_voicemail_and_notifies(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
     let notification_number = config.notification_number.to_string();
 
     let twilio_create_message_body = serde_urlencoded::to_string([
         ("Body", &"There is a new voicemail for knut".to_string()),
         ("To", &notification_number),
-        ("From", &twilio_number),
+        ("From", &vrs_number),
     ])
     .expect("Could not encode message creation body");
 
@@ -130,13 +130,13 @@ async fn get_voicemails_remember_confirm_gathers_user_voicepass(db: PgPool) {
 async fn post_voicemails_remember_confirm_updates_user_notifies_and_redirects(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
     let notification_number = config.notification_number.to_string();
 
     let twilio_create_message_body = serde_urlencoded::to_string([
         ("Body", &"User one@example.com has remembered".to_string()),
         ("To", &notification_number),
-        ("From", &twilio_number),
+        ("From", &vrs_number),
     ])
     .expect("Could not encode message creation body");
 
@@ -185,7 +185,7 @@ async fn post_voicemails_remember_confirm_errors_when_unrecognised_notifies_and_
 ) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
     let notification_number = config.notification_number.to_string();
 
     let twilio_create_message_body = serde_urlencoded::to_string([
@@ -194,7 +194,7 @@ async fn post_voicemails_remember_confirm_errors_when_unrecognised_notifies_and_
             &"Failed to confirm remember: this voicepass does not exist".to_string(),
         ),
         ("To", &notification_number),
-        ("From", &twilio_number),
+        ("From", &vrs_number),
     ])
     .expect("Could not encode message creation body");
 

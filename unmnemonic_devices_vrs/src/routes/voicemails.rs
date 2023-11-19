@@ -72,7 +72,7 @@ pub async fn post_character_voicemail(
         let account_sid = config.twilio_account_sid.to_string();
         let api_sid = config.twilio_api_key_sid.to_string();
         let api_secret = config.twilio_api_key_secret.to_string();
-        let twilio_number = config.twilio_number.to_string();
+        let vrs_number = config.vrs_number.to_string();
         let notification_number = config.notification_number.to_string();
 
         let create_message_body = serde_urlencoded::to_string([
@@ -81,7 +81,7 @@ pub async fn post_character_voicemail(
                 format!("There is a new voicemail for {}", character_name),
             ),
             ("To", notification_number),
-            ("From", twilio_number),
+            ("From", vrs_number),
         ])
         .expect("Could not encode voicemail creation message body");
 
@@ -174,7 +174,7 @@ pub async fn post_voicemails_remember_confirm(
     let account_sid = config.twilio_account_sid.to_string();
     let api_sid = config.twilio_api_key_sid.to_string();
     let api_secret = config.twilio_api_key_secret.to_string();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
     let notification_number = config.notification_number.to_string();
 
     let basic_auth = format!("{}:{}", api_sid, api_secret);
@@ -192,7 +192,7 @@ pub async fn post_voicemails_remember_confirm(
                 format!("User {} has remembered", user.as_ref().unwrap().email),
             ),
             ("To", notification_number),
-            ("From", twilio_number),
+            ("From", vrs_number),
         ])
         .expect("Could not encode completion message creation body");
 
@@ -234,7 +234,7 @@ pub async fn post_voicemails_remember_confirm(
         let create_message_body = serde_urlencoded::to_string([
             ("Body", format!("Failed to confirm remember: {}", voicepass)),
             ("To", notification_number),
-            ("From", twilio_number),
+            ("From", vrs_number),
         ])
         .expect("Could not encode failure message creation body");
 

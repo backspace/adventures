@@ -16,7 +16,7 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 async fn meeting_show_names_region_increments_listens_and_notifies(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
     let notification_number = config.notification_number.to_string();
 
     let twilio_create_message_body = serde_urlencoded::to_string([
@@ -25,7 +25,7 @@ async fn meeting_show_names_region_increments_listens_and_notifies(db: PgPool) {
             &"Team: jortles\nBook: A Book Title\nDest: Cornish Library".to_string(),
         ),
         ("To", &notification_number),
-        ("From", &twilio_number),
+        ("From", &vrs_number),
     ])
     .expect("Could not encode message creation body");
 

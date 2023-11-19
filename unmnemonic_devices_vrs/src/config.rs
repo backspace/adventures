@@ -12,7 +12,7 @@ pub struct Config {
     pub twilio_account_sid: String,
     pub twilio_api_key_sid: String,
     pub twilio_api_key_secret: String,
-    pub twilio_number: String,
+    pub vrs_number: String,
     pub twilio_url: String,
 }
 
@@ -50,8 +50,8 @@ impl EnvVarProvider {
                 .get("TWILIO_API_KEY_SECRET")
                 .expect("Missing Twilio API key secret")
                 .to_string(),
-            twilio_number: args
-                .get("TWILIO_NUMBER")
+            vrs_number: args
+                .get("VRS_NUMBER")
                 .expect("Missing Twilio number")
                 .to_string(),
             twilio_url: "https://api.twilio.com".to_string(),

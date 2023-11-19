@@ -138,7 +138,7 @@ pub async fn get_root(
     let account_sid = config.twilio_account_sid.to_string();
     let api_sid = config.twilio_api_key_sid.to_string();
     let api_secret = config.twilio_api_key_secret.to_string();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
 
     let client = reqwest::Client::new();
 
@@ -155,7 +155,7 @@ pub async fn get_root(
                 format!("New call from {}", params.caller.clone().unwrap()),
             ),
             ("To", supervisor_number),
-            ("From", twilio_number),
+            ("From", vrs_number),
         ])
         .expect("Could not encode meeting message creation body");
 
@@ -177,7 +177,7 @@ pub async fn get_root(
                 format!("New call from {}", params.caller.clone().unwrap()),
             ),
             ("To", supervisor_number),
-            ("From", twilio_number),
+            ("From", vrs_number),
         ])
         .expect("Could not encode meeting message creation body");
 

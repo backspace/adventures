@@ -27,13 +27,13 @@ pub struct CallRecord {
 async fn root_serves_prewelcome_notifies_and_stores_call(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
     let notification_number = config.notification_number.to_string();
 
     let twilio_create_message_body = serde_urlencoded::to_string([
         ("Body", &"New call from 2040000000".to_string()),
         ("To", &notification_number),
-        ("From", &twilio_number),
+        ("From", &vrs_number),
     ])
     .expect("Could not encode message creation body");
 
@@ -184,13 +184,13 @@ async fn root_serves_welcome_and_notifies_supervisor_and_still_gathers_recording
 ) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let twilio_number = config.twilio_number.to_string();
+    let vrs_number = config.vrs_number.to_string();
     let supervisor_number = config.supervisor_number.to_string();
 
     let twilio_create_message_body = serde_urlencoded::to_string([
         ("Body", &"New call from 2040000000".to_string()),
         ("To", &supervisor_number),
-        ("From", &twilio_number),
+        ("From", &vrs_number),
     ])
     .expect("Could not encode message creation body");
 
