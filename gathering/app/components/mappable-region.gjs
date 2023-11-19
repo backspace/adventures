@@ -136,8 +136,8 @@ export default class MappableRegionComponent extends Component {
     const x = this.args.region.x;
     const y = this.args.region.y;
 
-    this.args.region.x = x + (clientX - this.originalPosition.x);
-    this.args.region.y = y + (clientY - this.originalPosition.y);
+    this.args.region.x = Math.max(0, x + (clientX - this.originalPosition.x));
+    this.args.region.y = Math.max(0, y + (clientY - this.originalPosition.y));
 
     this.moving = false;
 

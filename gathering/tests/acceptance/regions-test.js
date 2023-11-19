@@ -1,5 +1,11 @@
 import { run } from '@ember/runloop';
-import { find, triggerEvent, waitFor, waitUntil } from '@ember/test-helpers';
+import {
+  find,
+  settled,
+  triggerEvent,
+  waitFor,
+  waitUntil,
+} from '@ember/test-helpers';
 
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
@@ -40,7 +46,7 @@ module('Acceptance | regions', function (hooks) {
       });
       fixtureTwo.setProperties({
         name: 'Kisua',
-        x: -100,
+        x: 1,
         y: 1000,
         updatedAt: new Date(2020, 0, 1),
       });
@@ -77,6 +83,12 @@ module('Acceptance | regions', function (hooks) {
           });
 
           return fixtureFour.save();
+        })
+        .then(() => {
+          return fixtureThree.save();
+        })
+        .then(() => {
+          return fixtureOne.save();
         })
         .then(() => done());
     });
@@ -187,7 +199,7 @@ module('Acceptance | regions', function (hooks) {
     await page.visit();
     await page.regions[0].edit();
     await page.delete();
-    await waitUntil(() => page.regions.length);
+    await waitUntil(() => page.regions.length === 3);
 
     assert.equal(page.regions.length, 3);
   });
@@ -196,23 +208,37 @@ module('Acceptance | regions', function (hooks) {
     await page.visit();
     await page.visitMap();
 
-    assert.equal(mapPage.regions[0].name, 'Gujaareh');
-    assert.equal(mapPage.regions[0].y, 10);
-    assert.equal(mapPage.regions[0].x, 50);
-
-    assert.equal(mapPage.regions[1].name, 'Kisua');
-    assert.equal(mapPage.regions[1].y, 1000);
-    assert.equal(mapPage.regions[1].x, 0);
-
-    await mapPage.regions[0].dragBy(90, 100);
-    assert.equal(mapPage.regions[0].y, 110);
-    assert.equal(mapPage.regions[0].x, 140);
-
     assert.equal(
       mapPage.regions.length,
       2,
       'expected nested regions to be hidden'
     );
+
+    let gujaareh = mapPage.regions[0];
+    let kisua = mapPage.regions[1];
+
+    assert.equal(gujaareh.name, 'Gujaareh');
+    assert.equal(gujaareh.y, 10);
+    assert.equal(gujaareh.x, 50);
+
+    assert.equal(kisua.name, 'Kisua');
+    assert.equal(kisua.y, 1000);
+    assert.equal(kisua.x, 1);
+
+    await gujaareh.dragBy(90, 100);
+    await settled();
+    assert.equal(gujaareh.y, 110);
+    assert.equal(gujaareh.x, 140);
+
+    await gujaareh.dragBy(-200, -200);
+    await settled();
+    assert.equal(gujaareh.y, 0);
+    assert.equal(gujaareh.x, 0);
+
+    await gujaareh.dragBy(10, 10);
+    await settled();
+    assert.equal(gujaareh.y, 10);
+    assert.equal(gujaareh.x, 10);
   });
 });
 
