@@ -95,7 +95,7 @@ module('Acceptance | waypoints', function (hooks) {
 
     assert.equal(
       page.errors.text,
-      'excerpt is empty, excerpt is invalid, dimensions is empty, dimensions is invalid, outline is empty, outline is invalid'
+      'excerpt is empty, excerpt is invalid, dimensions is empty, dimensions is invalid, outline is empty, outline is invalid, page is empty'
     );
 
     await page.cancel();

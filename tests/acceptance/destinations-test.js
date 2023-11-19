@@ -169,6 +169,7 @@ module('Acceptance | destinations', function (hooks) {
     await page.answerField.fill('property of comparative literature');
     await page.awesomenessField.fill(10);
     await page.riskField.fill(5);
+    await page.regionField.fillByText('There');
 
     assert.equal(
       page.suggestedMaskButton.label,
