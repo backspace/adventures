@@ -21,11 +21,6 @@ export default class SchedulerRoute extends Route {
       .filterBy('isAvailable')
       .filterBy('isComplete');
 
-    let pte = waypoints.findBy('name', 'Prairie Theatre Exchange');
-    console.log(
-      `does waypoints include? ${pte}, is complete? ${pte?.isComplete}`
-    );
-
     let typeToList = {
       waypoints,
       destinations,
