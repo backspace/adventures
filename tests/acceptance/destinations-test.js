@@ -118,6 +118,7 @@ module('Acceptance | destinations', function (hooks) {
     assert.equal(page.destinations[1].status.value, '✘');
 
     await page.destinations[0].status.click();
+    await waitUntil(() => page.destinations[0].status.value === '✘');
     assert.equal(page.destinations[0].status.value, '✘');
 
     await page.destinations[0].status.click();
