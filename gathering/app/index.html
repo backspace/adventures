@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Gathering</title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <script type="text/javascript">
+      window.NODE_DEBUG = false;
+      window.process = window.process || {
+        browser: true,
+        env: {},
+        nextTick: (f) => setTimeout(f, 0),
+      };
+      window.global = window;
+    </script>
+
+    {{content-for "head"}}
+
+    <link rel="manifest" href="{{rootURL}}manifest.webmanifest" />
+    <meta name="msapplication-config" content="{{rootURL}}browserconfig.xml" />
+
+    <link integrity="" rel="stylesheet" href="{{rootURL}}assets/vendor.css" />
+    <link
+      integrity=""
+      rel="stylesheet"
+      href="{{rootURL}}assets/adventure-gathering.css"
+    />
+
+    {{content-for "head-footer"}}
+  </head>
+  <body>
+    {{content-for "body"}}
+
+    <script src="/assets/vendor.js"></script>
+    <script src="/assets/adventure-gathering.js"></script>
+
+    {{content-for "body-footer"}}
+  </body>
+</html>

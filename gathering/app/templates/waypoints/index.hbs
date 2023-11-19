@@ -1,0 +1,35 @@
+<div class='row'>
+  <div class='small-12 columns'>
+    <table>
+      <thead>
+        <tr>
+          {{#if (feature-flag 'destination-status')}}
+            <th></th>
+          {{/if}}
+          {{! template-lint-disable no-invalid-interactive }}
+          <th class='region' onclick={{action 'toggleSort'}}>
+            <span class='secondary label'>
+              Region
+            </span>
+          </th>
+          <th>
+            Name
+          </th>
+          <th>
+            Author
+          </th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each this.waypoints as |waypoint|}}
+          <WaypointRow @waypoint={{waypoint}} />
+        {{/each}}
+      </tbody>
+    </table>
+
+    <LinkTo @route='waypoints.new' data-test-waypoints-new>
+      New
+    </LinkTo>
+  </div>
+</div>

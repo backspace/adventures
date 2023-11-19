@@ -1,0 +1,28 @@
+<div class='grid-x'>
+  <div class='small-12 cell'>
+    <div class='map'>
+      <img src={{this.mapSrc}} alt='map' />
+
+      <label>
+        Map
+        <input
+          id='map'
+          type='file'
+          onchange={{action 'saveAttachment' 'image' 'mapSrc'}}
+        />
+      </label>
+      <label>
+        High-res map
+        <input
+          type='file'
+          onchange={{action 'saveAttachment' 'high' 'highMapSrc'}}
+        />
+      </label>
+      {{#each this.model as |region|}}
+        {{#unless region.parent}}
+          <MappableRegion @region={{region}} @survey={{true}} />
+        {{/unless}}
+      {{/each}}
+    </div>
+  </div>
+</div>

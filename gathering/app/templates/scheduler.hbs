@@ -1,0 +1,147 @@
+<div id='scheduler' class={{if this.puzzles.implementation.hasWaypoints 'has-waypoints'}}>
+  <div class='map'>
+    <img src={{this.model.map}} alt='map' />
+    {{#each this.model.ancestorRegionContainers as |regionContainer|}}
+      {{#let regionContainer.region as |region|}}
+        <MappableRegion
+          @region={{region}}
+          @draggable={{false}}
+          @isHighlighted={{eq this.highlightedRegion region.ancestor}}
+          @highlightedTeam={{this.highlightedTeam}}
+          @sidebarRegionElement={{ref-to (concat 'region-' region.id)}}
+        >
+          <div class='count'>{{region.meetingCount}}</div>
+        </MappableRegion>
+      {{/let}}
+    {{/each}}
+  </div>
+
+  <ul class='regions' data-test-regions-destinations>
+    {{#each this.model.ancestorRegionContainers as |region|}}
+      <Scheduler::RegionContainerDestinations
+        @container={{region}}
+        @type='destination'
+        @mouseEnterRegion={{this.mouseEnterRegion}}
+        @mouseLeaveRegion={{this.mouseLeaveRegion}}
+        @select={{action 'selectDestination'}}
+        @meeting={{this.meeting}}
+        @highlightedTeam={{this.highlightedTeam}}
+      />
+    {{/each}}
+  </ul>
+
+  {{#if this.puzzles.implementation.hasWaypoints}}
+    <ul class='waypoint-regions' data-test-waypoint-regions>
+      {{#each this.model.ancestorRegionContainers as |region|}}
+        <Scheduler::RegionContainerDestinations
+          @container={{region}}
+          @type='waypoint'
+          @mouseEnterRegion={{this.mouseEnterRegion}}
+          @mouseLeaveRegion={{this.mouseLeaveRegion}}
+          @select={{action 'selectWaypoint'}}
+          @meeting={{this.meeting}}
+          @highlightedTeam={{this.highlightedTeam}}
+        />
+      {{/each}}
+    </ul>
+  {{/if}}
+
+  <ul class='teams'>
+    {{#each this.teams as |team|}}
+      <SchedulerTeam
+        @team={{team}}
+        @highlightedTeam={{this.highlightedTeam}}
+        @meeting={{this.meeting}}
+        @isAhead={{gte team.meetings.length this.highestMeetingCount}}
+        @editMeeting={{action 'editMeeting'}}
+        @select={{action 'selectTeam'}}
+        @enter={{action 'mouseEnterTeam'}}
+        @leave={{action 'mouseLeaveTeam'}}
+      />
+    {{/each}}
+  </ul>
+
+  <div class='meeting-form {{if this.meeting.isForbidden "forbidden"}}'>
+    {{#if this.puzzles.implementation.hasWaypoints}}
+      <div class='row'>
+        <label for='waypoint-select'>W</label>
+        <select id='waypoint-select' class='waypoint'>
+          <option></option>
+          {{#each this.model.waypoints as |waypoint|}}
+            {{#if waypoint.isAvailable}}
+              <option
+                value={{waypoint.id}}
+                selected={{eq this.meeting.waypoint.id waypoint.id}}
+              >{{waypoint.name}}</option>
+            {{/if}}
+          {{/each}}
+        </select>
+      </div>
+    {{/if}}
+
+    <div class='row'>
+      <label for='destination-select'>D</label>
+      <select id='destination-select' class='destination'>
+        <option></option>
+        {{#each this.model.destinations as |destination|}}
+          {{#if destination.isAvailable}}
+            <option
+              value={{destination.id}}
+              selected={{eq this.meeting.destination.id destination.id}}
+            >{{destination.description}}</option>
+          {{/if}}
+        {{/each}}
+      </select>
+    </div>
+
+    {{#each this.meeting.sortedTeams as |meetingTeam index|}}
+      <div class='row'>
+        <label for={{concat 'team-select-' index}}>T{{index}}</label>
+        <select id={{concat 'team-select-' index}} class='team'>
+          {{#each this.model.teams as |team|}}
+            <option
+              value={{team.id}}
+              selected={{eq meetingTeam.id team.id}}
+            >{{team.truncatedName}}</option>
+          {{/each}}
+        </select>
+      </div>
+    {{/each}}
+
+    <div class='row'>
+      <label for='index-input'>I</label>
+      <Input
+        @value={{this.meeting.index}}
+        id='index-input'
+        class='index'
+      />
+    </div>
+
+    {{#if this.puzzles.implementation.hasMeetingOffsets}}
+      <div class='row'>
+        <label for='offset-input'>O</label>
+        <Input
+          @value={{this.suggestedOffset}}
+          id='offset-input'
+          class='offset'
+          data-test-offset-input
+        />
+      </div>
+    {{/if}}
+
+    {{#unless this.meeting.isForbidden}}
+      <button
+        type='button'
+        class='save button tiny success'
+        onclick={{action 'saveMeeting'}}
+      >Save</button>
+      <button
+        type='button'
+        class='reset button tiny alert'
+        onclick={{action 'resetMeeting'}}
+      >Reset</button>
+    {{/unless}}
+  </div>
+
+  <LinkTo @route='index' class='home'>⌂</LinkTo>
+</div>

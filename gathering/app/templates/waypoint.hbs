@@ -1,0 +1,130 @@
+<div class='grid-container'>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <label>
+        Region
+        <select
+          onchange={{action 'setRegion' value='target.value'}}
+          data-test-region
+        >
+          <option></option>
+          <RegionOptions @regions={{this.sortedRegions}} @selected={{this.model.region}} />
+        </select>
+      </label>
+
+      <label>
+        Name
+        <Input @value={{this.model.name}} data-test-name-field />
+      </label>
+    </div>
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    <div class='small-6 cell'>
+      <label>
+        Author
+        <Input @value={{this.model.author}} data-test-author-field />
+      </label>
+    </div>
+    <div class='small-6 cell'>
+      <label>
+        Call
+        <Input @value={{this.model.call}} data-test-call-field />
+      </label>
+    </div>
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <label>
+        Excerpt
+        <Textarea @value={{this.model.excerpt}} data-test-excerpt-field />
+      </label>
+    </div>
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    <div class='small-9 cell'>
+      <label>
+        Page dimensions
+        <Input @value={{this.model.dimensions}} data-test-dimensions-field />
+      </label>
+    </div>
+    <div class='small-3 cell'>
+      <label>
+        Page number
+        <Input @value={{this.model.page}} data-test-page-field />
+      </label>
+    </div>
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <label>
+        Outline
+        <Input @value={{this.model.outline}} data-test-outline-field />
+      </label>
+    </div>
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    <div class='small-6 cell'>
+      <label>
+        Credit
+        <Input @value={{this.model.credit}} data-test-credit-field />
+      </label>
+    </div>
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    {{#if (feature-flag 'destination-status')}}
+      <div class='small-4 cell'>
+        <fieldset class='status'>
+          <legend>Status</legend>
+          <RadioButton @value='available' @groupValue={{this.model.status}} @class='available' @changed={{fn (mut this.model.status) 'available'}}> ✓</RadioButton>
+          <RadioButton @value='unavailable' @groupValue={{this.model.status}} @class='unavailable' @changed={{fn (mut this.model.status) 'unavailable'}}> ✘</RadioButton>
+          <RadioButton @value='unknown' @groupValue={{this.model.status}} @class='unknown' @changed={{fn (mut this.model.status) 'unknown'}}> ?</RadioButton>
+        </fieldset>
+      </div>
+    {{/if}}
+  </div>
+
+  {{#if this.model.isIncomplete}}
+    <div class='grid-x grid-padding-x'>
+      <div class='small-12 cell'>
+        <p class='errors' data-test-errors>{{this.model.errorsString}}</p>
+      </div>
+    </div>
+  {{/if}}
+
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <div class='expanded button-group'>
+        <button
+          class='save success button'
+          type='button'
+          data-test-save-button
+          {{action 'save' this.model}}
+        >
+          Save
+        </button>
+        <button
+          class='delete alert button'
+          type='button'
+          data-test-delete-button
+          {{action 'delete' this.model}}
+        >
+          Delete
+        </button>
+        <button
+          class='cancel warning button'
+          type='button'
+          data-test-cancel-button
+          {{action 'cancel' this.model}}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

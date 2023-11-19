@@ -1,0 +1,108 @@
+<div class='grid-container'>
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      <div class='input-group'>
+        <span for='url' class='input-group-label'>
+          DB
+        </span>
+        <Input
+          id='url'
+          @type='url'
+          @value={{this.destination}}
+          class='destination input-group-field'
+        />
+        <div class='input-group-button'>
+          <button
+            type='button'
+            onclick={{perform this.sync}}
+            class='sync button primary'
+          >
+            {{#if this.syncTask.isRunning}}
+              …
+            {{else}}
+              Sync
+            {{/if}}
+          </button>
+        </div>
+      </div>
+
+      <ul class='databases'>
+        {{#each this.databases as |database|}}
+          <li class='database'>
+            <a href='#' {{action 'setDestination' database}}>
+              {{database}}
+            </a>
+          </li>
+        {{/each}}
+      </ul>
+
+      {{#if this.result}}
+        <table>
+          <thead>
+            <th></th>
+            <th>
+              read
+            </th>
+            <th>
+              written
+            </th>
+            <th>
+              write failures
+            </th>
+            <th>
+              errors
+            </th>
+          </thead>
+          <tbody>
+            <tr class='push'>
+              <td>
+                push
+              </td>
+              <td class='read'>
+                {{this.result.push.docs_read}}
+              </td>
+              <td class='written'>
+                {{this.result.push.docs_written}}
+              </td>
+              <td class='write-failures'>
+                {{this.result.push.doc_write_failures}}
+              </td>
+              <td data-test-errors>
+                {{this.result.push.errors}}
+              </td>
+            </tr>
+            <tr class='pull'>
+              <td>
+                pull
+              </td>
+              <td class='read'>
+                {{this.result.pull.docs_read}}
+              </td>
+              <td class='written'>
+                {{this.result.pull.docs_written}}
+              </td>
+              <td class='write-failures'>
+                {{this.result.pull.doc_write_failures}}
+              </td>
+              <td data-test-errors>
+                {{this.result.pull.errors}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      {{else if this.error}}
+        Error:
+        <code>
+          {{this.error}}
+        </code>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class='grid-x grid-padding-x'>
+    <div class='small-12 cell'>
+      Version:
+      {{this.version}}
+    </div>
+  </div>
+</div>

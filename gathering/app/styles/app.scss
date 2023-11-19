@@ -1,0 +1,348 @@
+@import 'settings';
+@import 'foundation';
+@include foundation-everything;
+
+td {
+  vertical-align: top;
+}
+
+body.draglessness {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.undraggable {
+  touch-action: none;
+}
+
+.top-bar ul li.pair {
+  a {
+    display: inline-block;
+  }
+
+  a:first-child {
+    padding-right: 0;
+  }
+
+  a:last-child {
+    padding-left: 0.35rem;
+  }
+}
+
+tr.destination,
+tr.region,
+tr.waypoint {
+  &.incomplete {
+    border-left: 5px solid red;
+  }
+
+  &.meetings {
+    border-right: 5px solid green;
+  }
+
+  @for $i from 1 through 10 {
+    &.nesting-#{$i} td:first-child {
+      text-indent: 1rem * $i;
+    }
+  }
+}
+
+.errors {
+  background-color: $input-background-invalid;
+}
+
+$region-length: 4rem;
+
+.map {
+  position: relative;
+
+  .region {
+    position: absolute;
+
+    width: $region-length;
+    height: $region-length;
+
+    margin-left: -$region-length/2;
+    margin-top: -$region-length/2;
+
+    border: 1px solid black;
+    background-color: rgba(255, 255, 255, 0.5);
+
+    overflow: hidden;
+
+    user-select: none;
+
+    .name {
+      font-size: 33%;
+    }
+
+    .survey {
+      font-size: 20%;
+    }
+
+    .meeting-index,
+    .waypoint-meeting-index {
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      font-size: 500%;
+    }
+
+    .waypoint-meeting-index {
+      margin-top: 50%;
+      font-size: 250%;
+      position: absolute;
+      top: 0;
+    }
+
+    &.highlighted {
+      background: lightgray;
+    }
+
+    &.moving {
+      z-index: 10;
+    }
+
+    &.incomplete {
+      background: rgba(255, 194, 204, 0.5);
+    }
+
+    &:after {
+      content: ' ';
+      position: absolute;
+      top: 50%;
+      left: calc(50% - 2px);
+      border: 1px solid black;
+    }
+  }
+}
+
+$column-width: 6rem;
+
+#scheduler {
+  position: absolute;
+
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: white;
+
+  display: grid;
+
+  grid-template-columns: auto $column-width $column-width;
+  grid-template-areas:
+    'map teams destinations'
+    'map form form';
+
+  &.has-waypoints {
+    grid-template-columns: auto $column-width $column-width $column-width;
+    grid-template-areas:
+      'map teams waypoints destinations'
+      'map form form form';
+  }
+
+  font-family: Silkscreen;
+  font-size: 8px;
+
+  * {
+    line-height: 1;
+  }
+
+  .teams,
+  .regions,
+  .waypoint-regions {
+    overflow-y: scroll;
+
+    width: $column-width;
+
+    padding: 0 0 8rem 0;
+    margin: 0;
+    list-style-type: none;
+
+    li {
+      border: 1px solid black;
+      border-top: 0;
+
+      padding: 2px 3px;
+
+      &.selected {
+        background: lightgray;
+      }
+
+      &.highlighted {
+        background: paleturquoise;
+      }
+
+      &.ahead {
+        opacity: 0.5;
+      }
+    }
+  }
+
+  .teams {
+    grid-area: teams;
+
+    li {
+      border-right: 0;
+
+      &[data-risk-aversion='1'] {
+        border-right: 5px solid green;
+      }
+
+      &[data-risk-aversion='2'] {
+        border-right: 5px solid darkorange;
+      }
+
+      &[data-risk-aversion='3'] {
+        border-right: 5px solid red;
+      }
+    }
+  }
+
+  .waypoint-regions {
+    grid-area: waypoints;
+  }
+
+  .regions {
+    grid-area: destinations;
+  }
+
+  .regions,
+  .waypoint-regions {
+    > li {
+      background: black;
+      color: white;
+
+      padding: 0;
+
+      font-weight: bold;
+
+      .name, .accessibility {
+        padding: 2px 3px;
+      }
+
+      .accessibility {
+        font-weight: normal;
+        border-top: 1px solid #bbb;
+      }
+  }
+
+    .destinations,
+    .waypoints {
+      margin: 0;
+      background: white;
+
+      li {
+        border-width: 0 0 1px 0;
+        color: black;
+        font-weight: normal;
+
+        border-top-style: solid;
+        border-top-color: lime;
+
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+
+        .accessibility {
+          border-top: 1px solid #bbb;
+        }
+      }
+    }
+  }
+
+  .meeting-form {
+    grid-area: form;
+
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 1)
+    );
+
+    .row {
+      display: flex;
+
+      label {
+        width: 2em;
+      }
+    }
+
+    select,
+    input {
+      font-size: inherit;
+      padding: 0;
+      margin: 0;
+      height: auto;
+    }
+
+    &.forbidden {
+      background: red;
+    }
+  }
+
+  .map {
+    img {
+      opacity: 0.33;
+    }
+
+    .region {
+      .count {
+        position: absolute;
+        font-size: 200%;
+        bottom: 0;
+        right: 0;
+      }
+    }
+  }
+
+  a.home {
+    position: fixed;
+    left: 0;
+    top: 0;
+
+    padding: 4px;
+    font-size: 16px;
+  }
+}
+
+fieldset {
+  label {
+    display: inline;
+
+    input[type='radio'] {
+      margin-right: 0.25rem;
+      margin-left: 1rem;
+    }
+
+    &:first-of-type input[type='radio'] {
+      margin-left: 0;
+    }
+  }
+}
+
+table.teams {
+  .new {
+    background-color: yellow;
+  }
+
+  .changed {
+    background-color: lime;
+  }
+
+  .new .changed {
+    background-color: inherit;
+  }
+}
+
+iframe {
+  width: calc(50% - 3px);
+  height: 40rem;
+}
+
+.nokia-string-slice {
+  padding: 5rem;
+}

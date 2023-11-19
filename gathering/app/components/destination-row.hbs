@@ -1,0 +1,23 @@
+<tr
+  class='destination
+    {{if @destination.isIncomplete "incomplete"}}
+    {{if this.hasMeetings "meetings"}}'
+>
+  {{! template-lint-disable no-invalid-interactive }}
+  {{#if (feature-flag 'destination-status')}}<td
+      class='status'
+      onclick={{action 'toggleStatus'}}
+    >{{this.status}}</td>{{/if}}
+  <td class='region'>{{@destination.region.name}}</td>
+  <td class='description'>{{@destination.description}}</td>
+  <td class='answer'>{{@destination.answer}}</td>
+  <td class='mask show-for-medium'>{{@destination.mask}}</td>
+  <td class='awesomeness'>{{@destination.awesomeness}}</td>
+  <td class='risk'>{{@destination.risk}}</td>
+  <td class='scheduled'>{{if @destination.meetings '✓'}}</td>
+  <td><LinkTo
+      @route='destination'
+      @model={{@destination}}
+      class='edit'
+    >Edit</LinkTo></td>
+</tr>

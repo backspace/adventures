@@ -1,0 +1,40 @@
+<div class='grid-x'>
+  <div class='small-12 cell'>
+    <table>
+      <thead>
+        <tr>
+          <th>
+            Name
+          </th>
+          <th>
+            Notes
+          </th>
+          <th>
+            Hours
+          </th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each this.regions as |region|}}
+          <RegionRow @region={{region}} />
+        {{/each}}
+      </tbody>
+    </table>
+
+    <LinkTo @route='regions.new' class='new'>
+      New
+    </LinkTo>
+  </div>
+</div>
+<div class='grid-x'>
+  <div class='small-12 cell'>
+    <br />
+    <LinkTo @route='regions.map' class='map'>
+      Map
+    </LinkTo>
+    <br />
+    <br />
+    <br />
+  </div>
+</div>
