@@ -324,6 +324,20 @@ fieldset {
   }
 }
 
+table.teams {
+  .new {
+    background-color: yellow;
+  }
+
+  .changed {
+    background-color: lime;
+  }
+
+  .new .changed {
+    background-color: inherit;
+  }
+}
+
 iframe {
   width: calc(50% - 3px);
   height: 40rem;

@@ -50,17 +50,19 @@ module('Acceptance | teams', function (hooks) {
 
     assert.equal(page.teams.length, 2, 'expected two teams to be listed');
 
-    assert.equal(page.teams[0].name, 'Team 1');
-    assert.equal(page.teams[0].riskAversion, '3');
-    assert.equal(page.teams[0].phones, '2045551212: 5.5');
+    assert.equal(page.teams[0].name.text, 'Team 1');
+    assert.equal(page.teams[0].riskAversion.text, '3');
+    assert.equal(page.teams[0].phones.text, '2045551212: 5.5');
 
-    assert.equal(page.teams[1].name, 'Team 2');
-    assert.equal(page.teams[1].riskAversion, '1');
-    assert.equal(page.teams[1].phones, '2040000000: 4, 5140000000: 5');
+    assert.equal(page.teams[1].name.text, 'Team 2');
+    assert.equal(page.teams[1].riskAversion.text, '1');
+    assert.equal(page.teams[1].phones.text, '2040000000: 4, 5140000000: 5');
   });
 
   test('teams can be added and updated with JSON input', async function (assert) {
     await page.visit();
+
+    assert.ok(page.save.isDisabled);
 
     await page.enterJSON(`
       {
@@ -90,32 +92,59 @@ module('Acceptance | teams', function (hooks) {
       }
     `);
 
-    await page.save();
+    await page.update.click();
 
     assert.equal(page.teams.length, 3, 'expected three teams to be listed');
+    assert.notOk(page.save.isDisabled);
 
-    assert.equal(page.teams[0].name, 'jants');
+    assert.ok(page.teams[0].isNew);
+    assert.notOk(page.teams[0].hasChanges);
+
+    assert.equal(page.teams[0].name.text, 'jants');
     assert.equal(
       page.teams[0].id,
       'daa14876-7bb7-486c-8ed5-5287156a430b',
       'expected newly-specified id to be used'
     );
-    assert.equal(page.teams[0].riskAversion, '2');
+    assert.equal(page.teams[0].riskAversion.text, '2');
 
-    assert.equal(page.teams[1].name, 'jorts');
+    assert.ok(page.teams[1].hasChanges);
+
+    assert.ok(page.teams[1].name.isChanged);
+    assert.equal(page.teams[1].name.text, 'jorts');
+    assert.equal(page.teams[1].originalName, 'Team 1');
+
     assert.equal(
       page.teams[1].id,
       teamOne.id,
       'expected existing id to be preserved'
     );
-    assert.equal(page.teams[1].users, 'jorts@example.com, jants@example.com');
-    assert.equal(page.teams[1].phones, '2041231234: 5.75');
-    assert.equal(page.teams[1].notes, 'some notes');
-    assert.equal(page.teams[1].riskAversion, '2');
+
+    assert.ok(page.teams[1].users.isChanged);
+    assert.equal(
+      page.teams[1].users.text,
+      'jorts@example.com, jants@example.com'
+    );
+
+    assert.ok(page.teams[1].phones.isChanged);
+    assert.equal(page.teams[1].phones.text, '2041231234: 5.75');
+
+    assert.ok(page.teams[1].notes.isChanged);
+    assert.equal(page.teams[1].notes.text, 'some notes');
+
+    assert.ok(page.teams[1].riskAversion.isChanged);
+    assert.equal(page.teams[1].riskAversion.text, '2');
 
     assert.notOk(page.teams[1].identifier.isVisible);
 
-    assert.equal(page.teams[2].name, 'Team 2');
+    assert.equal(page.teams[2].name.text, 'Team 2');
+
+    await page.save.click();
+
+    assert.notOk(page.teams[0].isNew);
+    assert.notOk(page.teams[1].hasChanges);
+
+    assert.ok(page.save.isDisabled);
   });
 
   test('teams can have identifiers for unmnemonic devices', async function (assert) {
@@ -143,9 +172,10 @@ module('Acceptance | teams', function (hooks) {
       }
     `);
 
-    await page.save();
+    await page.update.click();
+    await page.save.click();
 
-    assert.equal(page.teams[0].name, 'jorts');
+    assert.equal(page.teams[0].name.text, 'jorts');
     assert.equal(page.teams[0].identifier.text, 'i wont do what you tell me');
   });
 });

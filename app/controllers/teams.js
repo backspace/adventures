@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
+import { tracked } from '@glimmer/tracking';
 import classic from 'ember-classic-decorator';
 import { all } from 'rsvp';
 
@@ -9,16 +10,23 @@ export default class TeamsController extends Controller {
   @service puzzles;
   @service store;
 
+  @tracked modelsToSave;
+
   get sortedTeams() {
-    return this.model.sortBy('name');
+    if (this.modelsToSave?.length) {
+      return this.model
+        .sortBy('name')
+        .map((team) => ({ current: team, changes: team.changedAttributes() }));
+    } else {
+      return this.model.sortBy('name').map((team) => ({ current: team }));
+    }
   }
 
   @action
-  async save() {
+  async update() {
     const { data: teams } = JSON.parse(this.teamsJSON);
 
-    let saves = [];
-    let updatedModels = [];
+    let modelsToSave = [];
 
     teams.forEach((incomingTeam) => {
       let existingTeam = this.model.find(
@@ -26,36 +34,23 @@ export default class TeamsController extends Controller {
       );
 
       if (existingTeam) {
-        console.log(
-          `updating team ${existingTeam.id}, name was ${existingTeam.name} and becomes ${incomingTeam.attributes.name}`
-        );
-
         existingTeam.setProperties(incomingTeam.attributes);
-        updatedModels.push(existingTeam);
-        saves.push(existingTeam.save());
+        modelsToSave.push(existingTeam);
       } else {
-        console.log('new incoming team', incomingTeam.attributes);
-
         let newTeam = this.store.createRecord('team', {
           id: incomingTeam.id,
           ...incomingTeam.attributes,
         });
-        saves.push(newTeam.save());
+
+        modelsToSave.push(newTeam);
       }
     });
 
-    let unchangedTeams = this.model.filter(
-      (existingTeam) => !updatedModels.includes(existingTeam)
-    );
+    this.modelsToSave = modelsToSave;
+  }
 
-    if (unchangedTeams) {
-      console.log(
-        `found these unchanged teams, is it expected? ${unchangedTeams.mapBy(
-          'name'
-        )}`
-      );
-    }
-
-    await all(saves);
+  @action async save() {
+    await all(this.modelsToSave.map((model) => model.save()));
+    this.modelsToSave = [];
   }
 }

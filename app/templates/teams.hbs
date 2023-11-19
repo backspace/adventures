@@ -2,11 +2,12 @@
   <div class='grid-x grid-padding-x'>
     <div class='small-12 cell'>
       <Textarea aria-label='teams JSON' @value={{this.teamsJSON}} rows={{4}} />
-      <button class='save success button' type='button' {{action 'save'}}>
+      <button class='button' type='button' {{on 'click' this.update}} data-test-update>Update</button>
+      <button class='save success button' type='button' disabled={{not this.modelsToSave}} {{action 'save'}} data-test-save>
         Save
       </button>
 
-      <table>
+      <table class='teams'>
         <thead>
           <tr>
             <th>
@@ -26,25 +27,35 @@
             </th>
           </tr>
         </thead>
-        {{#each this.sortedTeams as |team|}}
+        {{#each this.sortedTeams as |teamAndChanges|}}
           <tbody data-test-team>
-            <tr data-test-team-id={{team.id}}>
-              <td class='name'>
-                {{team.name}}
-              </td>
-              <td class='users'>
-                {{team.users}}
-              </td>
-              <td class='phones'>
-                {{team.phonesString}}
-              </td>
-              <td class='risk-aversion'>
-                {{team.riskAversion}}
-              </td>
-              <td class='notes'>
-                {{team.notes}}
-              </td>
-            </tr>
+            {{#let teamAndChanges.current as |team|}}
+              <tr class='{{if team.isNew 'new'}}' data-test-team-id={{team.id}}>
+                <td class="{{if teamAndChanges.changes.name 'changed'}}" data-test-name>
+                  {{team.name}}
+                </td>
+                <td class="{{if teamAndChanges.changes.users 'changed'}}" data-test-users>
+                  {{team.users}}
+                </td>
+                <td class="{{if teamAndChanges.changes.phones 'changed'}}" data-test-phones>
+                  {{team.phonesString}}
+                </td>
+                <td class="{{if teamAndChanges.changes.riskAversion 'changed'}}" data-test-risk-aversion>
+                  {{team.riskAversion}}
+                </td>
+                <td class="{{if teamAndChanges.changes.notes 'changed'}}" data-test-notes>
+                  {{team.notes}}
+                </td>
+              </tr>
+              {{#if (and teamAndChanges.changes (not team.isNew))}}
+                <tr data-test-changes data-test-original-team-id={{team.id}}>
+                  <td data-test-original-name>{{teamAndChanges.changes.name.[0]}}</td>
+                  <td data-test-original-users>{{teamAndChanges.changes.users.[0]}}</td>
+                  <td data-test-original-phones>{{teamAndChanges.changes.phones.[0]}}</td>
+                  <td data-test-original-risk-aversion>{{teamAndChanges.changes.riskAversion.[0]}}</td>
+                  <td data-test-original-notes>{{teamAndChanges.changes.notes.[0]}}</td>
+                </tr>
+              {{/if}}
             {{#if this.puzzles.implementation.hasTeamIdentifiers}}
               <tr data-test-identifier>
                 <td></td>
@@ -53,6 +64,7 @@
                 </td>
               </tr>
             {{/if}}
+            {{/let}}
           </tbody>
         {{/each}}
       </table>
