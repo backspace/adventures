@@ -3,6 +3,7 @@ import { tracked } from '@glimmer/tracking';
 import { inject as service } from '@ember/service';
 import { trackedFunction } from 'ember-resources/util/function';
 import { Input } from '@ember/component';
+import Loading from 'adventure-gathering/components/loading';
 
 import {
   drawZigzagBackground,
@@ -262,7 +263,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       <iframe title='embedded-unmnemonic-devices-overlays' src={{this.src}}>
       </iframe>
     {{else}}
-      …
+      <Loading />
     {{/if}}
   </template>
 }

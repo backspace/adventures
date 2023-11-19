@@ -2,6 +2,7 @@ import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { trackedFunction } from 'ember-resources/util/function';
 import { inject as service } from '@ember/service';
+import Loading from 'adventure-gathering/components/loading';
 
 import blobStream from 'blob-stream';
 import PDFDocument from 'pdfkit';
@@ -420,7 +421,7 @@ export default class TeamOverviewsComponent extends Component {
       <iframe title='team-overviews' src={{this.src}}>
       </iframe>
     {{else}}
-      …
+      <Loading />
     {{/if}}
   </template>
 }
