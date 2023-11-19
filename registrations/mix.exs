@@ -49,7 +49,7 @@ defmodule AdventureRegistrations.Mixfile do
       {:swoosh, "~> 1.9"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
-      {:premailex, "~> 0.3.17"},
+      {:premailex, "~> 0.3.19"},
       {:jason, "~> 1.0"},
       {:ex_cldr, "~> 2.33"},
       {:ex_cldr_numbers, "~> 2.28"},
