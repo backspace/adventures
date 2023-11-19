@@ -25,7 +25,7 @@
         <td class='attending'><%= symbol_for_boolean(user.attending) %></td>
         <td class='risk-aversion'><%= user.risk_aversion %></td>
         <td class='accessibility'><%= user.accessibility %></td>
-        <td class='proposed-team-name'><%= user.proposed_team_name %></td>
+        <td class='proposed-team-name' title={user.proposed_team_name}><%= truncate(user.proposed_team_name) %></td>
         <td class='team-emails'><%= user.team_emails %></td>
         <td class='source'><%= user.source %></td>
         <td class='comments'><%= user.comments %></td>

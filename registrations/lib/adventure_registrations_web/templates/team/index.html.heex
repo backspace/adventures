@@ -21,7 +21,7 @@
     <tr>
       <td><%= i + 1 %></td>
       <td><%= team.id %></td>
-      <td class='name'><%= team.name %></td>
+      <td title={team.name} class='name'><%=truncate(team.name) %></td>
       <td class='risk-aversion'><%= team.risk_aversion %></td>
       <td><%= team.notes %></td>
       <%= if is_unmnemonic_devices() do %>
