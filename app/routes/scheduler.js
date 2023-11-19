@@ -1,8 +1,7 @@
 import Route from '@ember/routing/route';
 import { inject as service } from '@ember/service';
-import { isPresent } from '@ember/utils';
 import classic from 'ember-classic-decorator';
-import { hash, all } from 'rsvp';
+import { hash } from 'rsvp';
 
 @classic
 export default class SchedulerRoute extends Route {
