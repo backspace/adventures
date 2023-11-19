@@ -30,12 +30,12 @@ pub async fn get_admin_destinations(
           SELECT
             d.id,
             d.description,
-            ROW_NUMBER() OVER (ORDER BY d.created_at ASC) AS synthetic_id,
+            ROW_NUMBER() OVER (ORDER BY d.inserted_at ASC) AS synthetic_id,
             rec.url
           FROM unmnemonic_devices.destinations d
           LEFT JOIN
               unmnemonic_devices.recordings rec ON d.id = rec.destination_id
-          ORDER BY d.created_at
+          ORDER BY d.inserted_at
         "#,
     )
     .fetch_all(&state.db)

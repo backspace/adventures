@@ -226,7 +226,7 @@ pub async fn get_team(
                 r.character_name = 'remember' AND
                 ARRAY_LENGTH(r.team_listen_ids, 1) IS NULL AND
                 (c.id IS NULL OR c.team_id != $1)
-            ORDER BY r.created_at
+            ORDER BY r.inserted_at
             LIMIT 1
         "#,
     )

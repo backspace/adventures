@@ -6,7 +6,7 @@ INSERT INTO
     "character_name",
     "prompt_name",
     "approved",
-    "created_at"
+    "inserted_at"
   )
 VALUES
   (

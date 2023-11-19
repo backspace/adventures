@@ -30,12 +30,12 @@ pub async fn get_admin_regions(
           SELECT
             reg.id,
             reg.name,
-            ROW_NUMBER() OVER (ORDER BY reg.created_at ASC) AS synthetic_id,
+            ROW_NUMBER() OVER (ORDER BY reg.inserted_at ASC) AS synthetic_id,
             rec.url
           FROM unmnemonic_devices.regions reg
           LEFT JOIN
               unmnemonic_devices.recordings rec ON reg.id = rec.region_id
-          ORDER BY reg.created_at
+          ORDER BY reg.inserted_at
         "#,
     )
     .fetch_all(&state.db)

@@ -67,7 +67,7 @@ SET default_table_access_method = heap;
 CREATE TABLE _sqlx_test.databases (
     db_name text NOT NULL,
     test_path text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    inserted_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -149,7 +149,7 @@ CREATE TABLE unmnemonic_devices.books (
     id uuid NOT NULL,
     excerpt character varying(255),
     title character varying(255),
-    created_at timestamp(0) without time zone DEFAULT now()
+    inserted_at timestamp(0) without time zone DEFAULT now()
 );
 
 
@@ -161,7 +161,7 @@ CREATE TABLE unmnemonic_devices.calls (
     id character varying(255) NOT NULL,
     number character varying(255),
     team_id uuid,
-    created_at timestamp(0) without time zone DEFAULT now(),
+    inserted_at timestamp(0) without time zone DEFAULT now(),
     path character varying(255)
 );
 
@@ -175,7 +175,7 @@ CREATE TABLE unmnemonic_devices.destinations (
     description character varying(255),
     region_id uuid NOT NULL,
     answer character varying(255),
-    created_at timestamp(0) without time zone DEFAULT now()
+    inserted_at timestamp(0) without time zone DEFAULT now()
 );
 
 
@@ -208,7 +208,7 @@ CREATE TABLE unmnemonic_devices.recordings (
     prompt_name character varying(255),
     approved boolean DEFAULT false,
     team_listen_ids uuid[] DEFAULT ARRAY[]::uuid[],
-    created_at timestamp(0) without time zone DEFAULT now(),
+    inserted_at timestamp(0) without time zone DEFAULT now(),
     call_id character varying(255),
     team_id uuid
 );
@@ -221,7 +221,7 @@ CREATE TABLE unmnemonic_devices.recordings (
 CREATE TABLE unmnemonic_devices.regions (
     id uuid NOT NULL,
     name character varying(255),
-    created_at timestamp(0) without time zone DEFAULT now()
+    inserted_at timestamp(0) without time zone DEFAULT now()
 );
 
 
@@ -368,10 +368,10 @@ ALTER TABLE ONLY unmnemonic_devices.settings
 
 
 --
--- Name: databases_created_at; Type: INDEX; Schema: _sqlx_test; Owner: -
+-- Name: databases_inserted_at; Type: INDEX; Schema: _sqlx_test; Owner: -
 --
 
-CREATE INDEX databases_created_at ON _sqlx_test.databases USING btree (created_at);
+CREATE INDEX databases_inserted_at ON _sqlx_test.databases USING btree (inserted_at);
 
 
 --

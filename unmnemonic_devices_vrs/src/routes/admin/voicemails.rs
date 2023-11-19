@@ -44,7 +44,7 @@ pub async fn get_admin_voicemails(
           WHERE
             type = 'voicemail'
           ORDER BY
-            approved ASC, created_at
+            approved ASC, inserted_at
       "#,
     )
     .fetch_all(&state.db)

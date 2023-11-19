@@ -3,11 +3,11 @@ defmodule AdventureRegistrations.Repo.Migrations.AddUnmnemonicDevicesMoreCreated
 
   def change do
     alter table("books", prefix: "unmnemonic_devices") do
-      add(:created_at, :utc_datetime, default: fragment("now()"))
+      add(:inserted_at, :utc_datetime, default: fragment("now()"))
     end
 
     alter table("destinations", prefix: "unmnemonic_devices") do
-      add(:created_at, :utc_datetime, default: fragment("now()"))
+      add(:inserted_at, :utc_datetime, default: fragment("now()"))
     end
   end
 end
