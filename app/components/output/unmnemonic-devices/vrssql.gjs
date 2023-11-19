@@ -33,7 +33,7 @@ export default class TeamOverviewsComponent extends Component {
         this.args.regions.filterBy('isComplete').map((region) => ({
           id: region.get('id'),
           name: this.stripString(region.get('name')),
-          created_at: region.get('createdAt').toISOString(),
+          inserted_at: region.get('createdAt').toISOString(),
         }))
       )
       .onConflict('id')
@@ -54,7 +54,7 @@ export default class TeamOverviewsComponent extends Component {
               destination.answer,
               destination.mask
             ),
-            created_at: destination.get('createdAt').toISOString(),
+            inserted_at: destination.get('createdAt').toISOString(),
           }))
       )
       .onConflict('id')
@@ -70,7 +70,7 @@ export default class TeamOverviewsComponent extends Component {
           excerpt: this.stripString(
             this.devices.trimmedInnerExcerpt(waypoint.get('excerpt'))
           ),
-          created_at: waypoint.get('createdAt').toISOString(),
+          inserted_at: waypoint.get('createdAt').toISOString(),
         }))
       )
       .onConflict('id')
