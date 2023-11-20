@@ -8,7 +8,8 @@
         <Input
           id='url'
           @type='url'
-          @value={{this.destination}}
+          @value={{or this.destination this.sortedDatabases.firstObject}}
+          {{on 'change' this.handleDestinationInput}}
           class='destination input-group-field'
         />
         <div class='input-group-button'>
@@ -27,9 +28,9 @@
       </div>
 
       <ul class='databases'>
-        {{#each this.databases as |database|}}
+        {{#each this.sortedDatabases as |database|}}
           <li class='database'>
-            <a href='#' {{action 'setDestination' database}}>
+            <a href='#' {{on 'click' (fn this.setDestination database)}}>
               {{database}}
             </a>
           </li>

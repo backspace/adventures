@@ -1,16 +1,12 @@
-import PageObject, {
-  clickable,
-  collection,
-  fillable,
-  text,
-  value,
-} from 'ember-cli-page-object';
+import PageObject, { clickable, collection, text } from 'ember-cli-page-object';
 
 export default PageObject.create({
   visit: clickable('a.sync'),
 
-  enterDestination: fillable('input.destination'),
-  destinationValue: value('input.destination'),
+  destination: {
+    scope: 'input.destination',
+  },
+
   sync: clickable('button.sync'),
 
   databases: collection('.databases .database', {

@@ -25,7 +25,12 @@ export default class SyncController extends Controller {
 
   version = config.APP.version;
 
+  get sortedDatabases() {
+    return Array.from(this.databases.filter((d) => d)).toReversed();
+  }
+
   @task(function* () {
+    this.databases.removeObject(this.destination);
     this.databases.addObject(this.destination);
 
     const sourceDb = getOwner(this).lookup('adapter:application').get('db');
@@ -54,6 +59,11 @@ export default class SyncController extends Controller {
       });
   })
   sync;
+
+  @action
+  handleDestinationInput(event) {
+    this.destination = event.target.value;
+  }
 
   @action
   setDestination(destination) {
