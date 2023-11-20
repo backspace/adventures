@@ -129,7 +129,9 @@ defmodule AdventureRegistrations.Integration.Admin do
                    "name" => "A team",
                    "notes" => "Some notes",
                    "users" => "a@example.com, b@example.com",
-                   "riskAversion" => 2
+                   "riskAversion" => 2,
+                   "createdAt" => NaiveDateTime.to_iso8601(team.inserted_at),
+                   "updatedAt" => NaiveDateTime.to_iso8601(team.updated_at)
                  }
                }
              ]
@@ -232,7 +234,9 @@ defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Admin do
                    "identifier" => "A voicepass",
                    "notes" => "Some notes",
                    "users" => "a@example.com, b@example.com",
-                   "riskAversion" => 2
+                   "riskAversion" => 2,
+                   "createdAt" => NaiveDateTime.to_iso8601(team.inserted_at),
+                   "updatedAt" => NaiveDateTime.to_iso8601(team.updated_at)
                  }
                }
              ]

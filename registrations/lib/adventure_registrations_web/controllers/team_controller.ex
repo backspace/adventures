@@ -37,7 +37,9 @@ defmodule AdventureRegistrationsWeb.TeamController do
             name: team.name,
             riskAversion: team.risk_aversion,
             notes: team.notes,
-            users: team_emails
+            users: team_emails,
+            createdAt: team.inserted_at,
+            updatedAt: team.updated_at
           }
 
           team_attributes =
