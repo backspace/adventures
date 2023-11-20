@@ -28,7 +28,7 @@ module('Acceptance | sync', function (hooks) {
   });
 
   // I had these as separate tests but localStorage was bleeding through… ugh
-  test('can sync with another database, syncs are remembered and can be returned to', async function (assert) {
+  test('can sync with another database, syncs are remembered and can be returned to and removed', async function (assert) {
     localStorage.clear();
     localStorage.setItem('storage:databases', JSON.stringify(['old-db', null]));
 
@@ -65,5 +65,9 @@ module('Acceptance | sync', function (hooks) {
     await page.databases[1].click();
 
     assert.equal(page.destination.value, 'sync-db');
+
+    await page.databases[2].remove();
+
+    assert.equal(page.databases.length, 2);
   });
 });

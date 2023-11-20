@@ -10,8 +10,9 @@ export default PageObject.create({
   sync: clickable('button.sync'),
 
   databases: collection('.databases .database', {
-    name: text(),
+    name: text('a'),
     click: clickable('a'),
+    remove: clickable('[data-test-remove]'),
   }),
 
   push: {

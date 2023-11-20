@@ -69,4 +69,9 @@ export default class SyncController extends Controller {
   setDestination(destination) {
     this.destination = destination;
   }
+
+  @action
+  removeDestination(destination) {
+    this.databases.removeObject(destination);
+  }
 }
