@@ -26,7 +26,7 @@ async fn list_prompts_without_test_ones(db: PgPool) {
     let document = Document::from(response.text().await.unwrap().as_str());
 
     let table_count = document.find(Name("table")).count();
-    assert_eq!(table_count, 3);
+    assert_eq!(table_count, 4);
 
     let audio_count = document.find(Name("audio")).count();
     assert_eq!(audio_count, 0);

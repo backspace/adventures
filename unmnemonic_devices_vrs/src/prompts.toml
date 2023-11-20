@@ -46,6 +46,9 @@ voicemail = "Placeholder for shifting remember message."
 ending_early = "Chromatin didn't have much of an ending planned for this as you're supposed to wander off in a blissful daze, wholly ignorant of any continuing strife around you. So much for that idea."
 ending = "Placeholder for ending message."
 
+[other]
+ending_early_sound = "Placeholder for ending early sound."
+
 [testa]
 welcome = "welcome to unmnemonic devices"
 voicepass = "what is your voice password?"
