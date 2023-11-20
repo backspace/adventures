@@ -116,6 +116,11 @@ export default class Destination extends Model {
   @hasMany('meeting', { async: false })
   meetings;
 
+  @computed('meetings.{length,@each.destination}')
+  get meetingCount() {
+    return this.meetings.length;
+  }
+
   @attr('createDate')
   createdAt;
 

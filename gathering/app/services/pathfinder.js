@@ -51,6 +51,10 @@ export default Service.extend({
   }),
 
   distance(regionA, regionB) {
+    if (regionA === regionB) {
+      return 0;
+    }
+
     const graph = this.graph;
 
     const regionAIndex = this.regionToIndex(regionA);

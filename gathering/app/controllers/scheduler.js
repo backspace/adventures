@@ -38,24 +38,32 @@ export default class SchedulerController extends Controller {
     'lastMeetingOffsets.[]',
     'meeting.destination.region.name',
     'meeting.teams',
-    'puzzles.hasMeetingOffsets'
+    'puzzles.hasMeetingOffsets',
+    'puzzles.implementation.hasMeetingOffsets'
   )
   get suggestedOffset() {
-    if (this.puzzles.hasMeetingOffsets) {
+    if (this.puzzles.implementation.hasMeetingOffsets) {
       const maxOffset = Math.max(...this.lastMeetingOffsets, 0);
 
       let timeFromLastRegion = 0;
 
-      const newRegionName = this.get('meeting.destination.region.name');
+      const newRegion = this.get('meeting.destination.region');
+
+      if (!newRegion) {
+        return 0;
+      }
+
+      const newRegionAncestorName = newRegion.ancestor.name;
+
       const lastMeetingRegionNames = (this.get('meeting.teams') || [])
         .map((team) =>
           team.get('savedMeetings.lastObject.destination.region.name')
         )
         .filter((n) => !!n);
 
-      if (newRegionName && lastMeetingRegionNames.length > 0) {
+      if (newRegionAncestorName && lastMeetingRegionNames.length > 0) {
         const destinationDistances = lastMeetingRegionNames.map((name) =>
-          this.pathfinder.distance(newRegionName, name)
+          this.pathfinder.distance(newRegionAncestorName, name)
         );
         timeFromLastRegion = Math.max(...destinationDistances);
       }

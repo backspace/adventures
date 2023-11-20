@@ -30,21 +30,18 @@ export default class Region extends Model {
   @hasMany('waypoint', { async: false })
   waypoints;
 
-  @computed('destinations.@each.meetings')
-  get allMeetings() {
-    return this.destinations.mapBy('meetings').flat();
-  }
-
-  @computed(
-    'allMeetings.length',
-    'destinations.@each.meetings',
-    'name',
-    'children'
-  )
+  @computed('destinations.@each.meetingCount', 'children.@each.meetingCount')
   get meetingCount() {
+    let destinationMeetingCount = this.destinations.reduce(
+      (sum, destination) => {
+        return sum + destination.meetingCount;
+      },
+      0
+    );
+
     return this.children.reduce((sum, child) => {
       return sum + child.meetingCount;
-    }, this.get('allMeetings.length'));
+    }, destinationMeetingCount);
   }
 
   @attr('number')
