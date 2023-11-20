@@ -128,7 +128,7 @@ module('Acceptance | regions', function (hooks) {
     assert.notOk(page.regions[3].isIncomplete, 'expected Kisua to be complete');
   });
 
-  test('a region can be created, will appear at the top of the list, and be the default for a new destination', async function (assert) {
+  test('a region can be created, will appear in alphabetic order, and be the default for a new destination', async function (assert) {
     await page.visit();
 
     await page.new();
@@ -137,8 +137,8 @@ module('Acceptance | regions', function (hooks) {
     await page.save();
     await waitUntil(() => page.regions.length);
 
-    assert.equal(page.regions[0].name, 'Jellevy');
-    assert.equal(page.regions[0].hours, 'Never');
+    assert.equal(page.regions[3].name, 'Jellevy');
+    assert.equal(page.regions[3].hours, 'Never');
 
     await destinationsPage.visit();
     await destinationsPage.new();
@@ -162,14 +162,14 @@ module('Acceptance | regions', function (hooks) {
     await page.save();
     await waitUntil(() => page.regions.length);
 
-    const region = page.regions[0];
+    const region = page.regions[1];
     assert.equal(region.name, 'Occupied Gujaareh');
 
-    await page.regions[0].edit();
+    await page.regions[1].edit();
     await page.nameField.fill('Gujaareh Protectorate');
     await page.cancel();
 
-    assert.equal(page.regions[0].name, 'Occupied Gujaareh');
+    assert.equal(page.regions[1].name, 'Occupied Gujaareh');
   });
 
   test('an edited region is the default for a new destination', async function (assert) {
@@ -180,7 +180,7 @@ module('Acceptance | regions', function (hooks) {
     await page.save();
     await waitUntil(() => page.regions.length);
 
-    await page.regions[2].edit();
+    await page.regions[1].edit();
     await page.nameField.fill('Kisua Protectorate');
     await page.save();
 
