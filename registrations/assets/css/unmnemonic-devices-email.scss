@@ -5,6 +5,7 @@ $global-font-size: 120%;
 
 body.email {
   color: #fffff0;
+  background: #010101;
 
   .title {
     position: relative;
@@ -12,7 +13,6 @@ body.email {
   }
 
   p, h1, h2, h3 {
-    color: #fffff0;
-
+    color: #fffff0 !important;
   }
 }
