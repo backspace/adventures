@@ -139,12 +139,3 @@ a {
 .alert-danger.alert::before {
   content: '❗️ ';
 }
-
-body.email {
-  color: white;
-
-  .title {
-    position: relative;
-    margin-bottom: 2rem;
-  }
-}

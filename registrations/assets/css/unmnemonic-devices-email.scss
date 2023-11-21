@@ -2,3 +2,17 @@ $global-width: 960px;
 $global-font-size: 120%;
 
 @import 'unmnemonic-devices';
+
+body.email {
+  color: #fffff0;
+
+  .title {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+
+  p, h1, h2, h3 {
+    color: #fffff0;
+
+  }
+}

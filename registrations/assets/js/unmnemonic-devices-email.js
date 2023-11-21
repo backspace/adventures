@@ -1,1 +1,1 @@
-import "../css/unmnemonic-devices.scss";
+import "../css/unmnemonic-devices-email.scss";

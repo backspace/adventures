@@ -1,1 +1,1 @@
-import "../css/clandestine-rendezvous.scss";
+import "../css/clandestine-rendezvous-email.scss";
