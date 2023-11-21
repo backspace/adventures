@@ -47,6 +47,7 @@ defmodule AdventureRegistrationsWeb.Router do
     put("/reset/:token", ResetController, :update)
 
     resources("/messages", MessageController)
+    post("/messages/send-backlog", MessageController, :deliver_backlog)
     post("/messages/:id/send", MessageController, :deliver)
     get("/messages/:id/preview", MessageController, :preview)
 

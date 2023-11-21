@@ -86,6 +86,25 @@ defmodule AdventureRegistrationsWeb.MessageController do
     |> redirect(to: Routes.message_path(conn, :index))
   end
 
+  def deliver_backlog(conn, _params) do
+    messages =
+      AdventureRegistrations.Repo.all(
+        from(m in AdventureRegistrationsWeb.Message,
+          where: m.ready == true,
+          select: m,
+          order_by: :postmarked_at
+        )
+      )
+
+    unless Enum.empty?(messages) do
+      AdventureRegistrations.Mailer.send_backlog(messages, conn.assigns[:current_user_object])
+    end
+
+    conn
+    |> put_flash(:info, "Message was sent")
+    |> redirect(to: Routes.message_path(conn, :index))
+  end
+
   def preview(conn, %{"id" => id}) do
     message = Repo.get!(Message, id)
 

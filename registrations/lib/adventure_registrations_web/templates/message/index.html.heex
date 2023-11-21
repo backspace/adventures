@@ -32,4 +32,7 @@
 
     <%= link "New message", to: Routes.message_path(@conn, :new), class: "new-message" %>
   </div>
+  <div class='small-12 columns'>
+    <%= button("Send backlog to me", to: Routes.message_path(@conn, :deliver_backlog), class: "button") %>
+  </div>
 </div>
