@@ -26,7 +26,7 @@ character_name = "What character are you reading for?"
 character_not_found = "Could not find that character. We heard this:"
 
 prompt_sounds = "Here is how it sounds."
-prompt_action = "Keep or rerecord?"
+prompt_action = "Save or rerecord?"
 
 goodbye = "Good luck and goodbye!"
 

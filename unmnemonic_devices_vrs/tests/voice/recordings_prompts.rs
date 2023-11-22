@@ -366,11 +366,11 @@ pub struct Recording {
 }
 
 #[sqlx::test(fixtures("schema", "calls"))]
-async fn post_character_prompt_decide_stores_recording_upon_keep(db: PgPool) {
+async fn post_character_prompt_decide_stores_recording_upon_save(db: PgPool) {
     let response = post(
         db.clone(),
         "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass",
-        "SpeechResult=Keep.&CallSid=ANOTHER_SID",
+        "SpeechResult=Save.&CallSid=ANOTHER_SID",
         true,
     )
     .await
@@ -403,15 +403,15 @@ async fn post_character_prompt_decide_stores_recording_upon_keep(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "calls"))]
 async fn post_character_prompt_decide_forwards_unrecorded(db: PgPool) {
-    let response = post(db, "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass&unrecorded", "SpeechResult=Keep.&CallSid=HMM_SID", true)        .await
+    let response = post(db, "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newvoicepass&unrecorded", "SpeechResult=Save.&CallSid=HMM_SID", true)        .await
       .expect("Failed to execute request.");
 
     assert_that(&response).redirects_to("/recordings/prompts/testa/unrecorded?unrecorded");
 }
 
 #[sqlx::test(fixtures("schema", "calls-recordings", "recordings-prompts-testa-voicepass"))]
-async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
-    let response = post(db.clone(), "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass", "SpeechResult=Keep.&CallSid=HMM_SID", true)        .await
+async fn post_character_prompt_decide_updates_recording_upon_save(db: PgPool) {
+    let response = post(db.clone(), "/recordings/prompts/testa/voicepass/decide?recording_url=http://example.com/newervoicepass", "SpeechResult=Save.&CallSid=HMM_SID", true)        .await
       .expect("Failed to execute request.");
 
     let recording_url = sqlx::query_as::<_, Recording>(
@@ -441,11 +441,11 @@ async fn post_character_prompt_decide_updates_recording_upon_keep(db: PgPool) {
 
 #[ignore = "doesn’t actually exercise cache because each request starts a new server"]
 #[sqlx::test(fixtures("schema", "recordings-prompts-pure-monitoring"))]
-async fn post_character_prompt_decide_updates_cache_upon_keep(db: PgPool) {
+async fn post_character_prompt_decide_updates_cache_upon_save(db: PgPool) {
     post(
       db.clone(),
       "/recordings/prompts/pure/monitoring/decide?recording_url=http://example.com/newer-monitoring",
-      "SpeechResult=Keep.",
+      "SpeechResult=Save.",
       true,
   )
   .await

@@ -288,7 +288,7 @@ pub async fn post_character_prompt_decide(
     State(state): State<AppState>,
     Form(form): Form<TwilioForm>,
 ) -> Redirect {
-    if form.speech_result == "keep" {
+    if form.speech_result == "save" {
         let result = sqlx::query!(
             r#"
               INSERT INTO unmnemonic_devices.recordings (id, character_name, prompt_name, url, call_id)

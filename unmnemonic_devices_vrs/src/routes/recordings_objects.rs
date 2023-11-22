@@ -294,7 +294,7 @@ pub async fn post_recording_object_decide(
 
     let id_field = format!("{}_id", singular);
 
-    if form.speech_result == "keep" {
+    if form.speech_result == "save" {
         let result = sqlx::query(&format!(
             r#"
               INSERT INTO unmnemonic_devices.recordings (id, {}, url, call_id)

@@ -1,7 +1,7 @@
 <Response>
   {{{lookup prompts "pure.prompt_sounds"}}}
   <Play>{{recording_url}}</Play>
-  <Gather timeout="3" action="{{action}}" input="speech" hints="keep, rerecord">
+  <Gather timeout="3" action="{{action}}" input="speech" hints="save, rerecord">
     {{{lookup prompts "pure.prompt_action"}}}
   </Gather>
   {{> restart }}

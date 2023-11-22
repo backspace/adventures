@@ -236,11 +236,11 @@ pub struct Recording {
 }
 
 #[sqlx::test(fixtures("schema", "regions", "calls"))]
-async fn post_recording_region_decide_stores_recording_upon_keep(db: PgPool) {
+async fn post_recording_region_decide_stores_recording_upon_save(db: PgPool) {
     let response = post(
         db.clone(),
         "/recordings/regions/D62514A8-ED66-A272-9D83-BC696BC6852A/decide?recording_url=http://example.com/new-cornish-recording",
-        "SpeechResult=Keep.&CallSid=ANOTHER_SID",
+        "SpeechResult=Save.&CallSid=ANOTHER_SID",
         true,
     )
     .await
@@ -271,7 +271,7 @@ async fn post_recording_region_decide_stores_recording_upon_keep(db: PgPool) {
     let unrecorded_response = post(
       db.clone(),
       "/recordings/regions/D62514A8-ED66-A272-9D83-BC696BC6852A/decide?recording_url=http://example.com/new-cornish-recording&unrecorded",
-      "SpeechResult=Keep.&CallSid=ANOTHER_SID",
+      "SpeechResult=Save.&CallSid=ANOTHER_SID",
       true,
   )
   .await
