@@ -1,7 +1,5 @@
-mod helpers {
-    include!("../helpers.rs");
-}
-use helpers::{get, post};
+use crate::common;
+use common::helpers::{get, post};
 
 use select::{
     document::Document,

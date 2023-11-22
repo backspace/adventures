@@ -1,3 +1,5 @@
+#[path = "../common.rs"]
+mod common;
 mod conferences;
 mod meetings;
 mod recordings;

@@ -1,7 +1,5 @@
-mod helpers {
-    include!("../helpers.rs");
-}
-use helpers::get;
+use crate::common;
+use common::helpers::get;
 
 use select::{document::Document, predicate::Name};
 use sqlx::PgPool;

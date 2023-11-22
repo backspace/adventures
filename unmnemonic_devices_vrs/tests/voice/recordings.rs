@@ -1,7 +1,5 @@
-mod helpers {
-    include!("../helpers.rs");
-}
-use helpers::{post, RedirectTo};
+use crate::common;
+use common::helpers::{post, RedirectTo};
 
 use speculoos::prelude::*;
 use sqlx::PgPool;

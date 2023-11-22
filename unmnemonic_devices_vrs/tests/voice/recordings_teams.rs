@@ -1,7 +1,5 @@
-mod helpers {
-    include!("../helpers.rs");
-}
-use helpers::{get, post, RedirectTo};
+use crate::common;
+use common::helpers::{get, post, RedirectTo};
 
 use select::{document::Document, predicate::Name};
 use serde::Serialize;
