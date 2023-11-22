@@ -21,6 +21,10 @@ defmodule AdventureRegistrations.Pages.Messages do
     fill_field({:id, "message_content"}, content)
   end
 
+  def fill_postmarked_at(date) do
+    execute_script("document.querySelector('#message_postmarked_at').value = arguments[0]", [date])
+  end
+
   def check_ready do
     click({:id, "message_ready"})
   end
@@ -35,6 +39,10 @@ defmodule AdventureRegistrations.Pages.Messages do
 
   def send do
     click({:css, ".button.send"})
+  end
+
+  def dismiss_alert do
+    accept_dialog()
   end
 
   def send_to_me do

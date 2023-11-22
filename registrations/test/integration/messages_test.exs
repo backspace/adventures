@@ -40,10 +40,12 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     Messages.fill_subject("A Subject!")
     Messages.fill_content("This is the content.")
+    Messages.fill_postmarked_at("2010-01-01")
     Messages.check_ready()
     Messages.save()
 
     Messages.send()
+    Messages.dismiss_alert()
 
     assert Nav.info_text() == "Message was sent"
 
@@ -88,6 +90,7 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     Messages.fill_subject("A Subject!")
     Messages.fill_content("This is the content.")
+    Messages.fill_postmarked_at("2010-01-01")
     Messages.check_ready()
     Messages.save()
 
@@ -119,11 +122,13 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     Messages.fill_from_name("Knut")
     Messages.fill_from_address("knut@example.com")
+    Messages.fill_postmarked_at("2010-01-01")
 
     Messages.check_ready()
     Messages.save()
 
     Messages.send()
+    Messages.dismiss_alert()
 
     assert Nav.info_text() == "Message was sent"
 
@@ -162,11 +167,15 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     Messages.fill_subject("A Subject!")
     Messages.fill_content("ya")
+    Messages.fill_postmarked_at("2010-01-01")
     Messages.check_ready()
     Messages.check_show_team()
     Messages.save()
 
     Messages.send()
+    Messages.dismiss_alert()
+
+    assert Nav.info_text() == "Message was sent"
 
     [has_no_team_email, _, has_team_email, _] = AdventureRegistrations.SwooshHelper.sent_email()
 
