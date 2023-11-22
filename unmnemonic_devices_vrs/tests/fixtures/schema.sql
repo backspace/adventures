@@ -67,7 +67,7 @@ SET default_table_access_method = heap;
 CREATE TABLE _sqlx_test.databases (
     db_name text NOT NULL,
     test_path text NOT NULL,
-    inserted_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -106,7 +106,7 @@ CREATE TABLE public.schema_migrations (
 
 CREATE TABLE public.teams (
     id uuid NOT NULL,
-    name character varying(255),
+    name text,
     risk_aversion integer,
     notes text,
     user_ids uuid[] DEFAULT ARRAY[]::uuid[],
@@ -368,10 +368,10 @@ ALTER TABLE ONLY unmnemonic_devices.settings
 
 
 --
--- Name: databases_inserted_at; Type: INDEX; Schema: _sqlx_test; Owner: -
+-- Name: databases_created_at; Type: INDEX; Schema: _sqlx_test; Owner: -
 --
 
-CREATE INDEX databases_inserted_at ON _sqlx_test.databases USING btree (inserted_at);
+CREATE INDEX databases_created_at ON _sqlx_test.databases USING btree (created_at);
 
 
 --
