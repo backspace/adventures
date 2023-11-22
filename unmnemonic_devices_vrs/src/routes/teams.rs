@@ -379,10 +379,7 @@ pub async fn get_complete_team(
         let notification_number = config.notification_number.to_string();
 
         let create_message_body = serde_urlencoded::to_string([
-            (
-                "Body",
-                format!("Team {} has completed", team.name).to_string(),
-            ),
+            ("Body", format!("Team {} has completed", team.name)),
             ("To", notification_number),
             ("From", vrs_number),
         ])
