@@ -1,5 +1,5 @@
 import Controller from '@ember/controller';
-import { computed, action } from '@ember/object';
+import { action, computed, get, set } from '@ember/object';
 import { mapBy, max } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
@@ -83,7 +83,11 @@ export default class SchedulerController extends Controller {
       this.meeting = this.store.createRecord('meeting');
     }
 
-    this.set('meeting.destination', destination);
+    if (get(this, 'meeting.destination.id') === destination.id) {
+      set(this, 'meeting.destination', undefined);
+    } else {
+      set(this, 'meeting.destination', destination);
+    }
   }
 
   @action selectWaypoint(waypoint) {
@@ -91,12 +95,21 @@ export default class SchedulerController extends Controller {
       this.meeting = this.store.createRecord('meeting');
     }
 
-    this.meeting.waypoint = waypoint;
+    if (get(this, 'meeting.waypoint.id') === waypoint.id) {
+      set(this, 'meeting.waypoint', undefined);
+    } else {
+      set(this, 'meeting.waypoint', waypoint);
+    }
   }
 
   @action selectTeam(team) {
     if (!this.meeting) {
       this.set('meeting', this.store.createRecord('meeting'));
+    }
+
+    if (this.get('meeting.teams').includes(team)) {
+      this.get('meeting.teams').removeObject(team);
+      return;
     }
 
     if (

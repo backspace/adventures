@@ -420,6 +420,27 @@ module('Acceptance | scheduler', function (hooks) {
       assert.equal(page.meeting.offset.value, '23');
     });
 
+    test('meeting components can be unselected', async function (assert) {
+      await page.visit();
+
+      await page.destinationRegions[2].destinations[1].click();
+      await page.teams[1].click();
+      await page.teams[0].click();
+
+      await page.destinationRegions[2].destinations[1].click();
+      await page.teams[1].click();
+      await page.teams[0].click();
+
+      assert.equal(page.meeting.destination, '');
+      assert.equal(page.meeting.teams[0].value, '');
+
+      assert.notOk(page.destinationRegions[2].destinations[1].isSelected);
+      assert.notOk(page.destinationRegions[2].destinations[0].isSelected);
+
+      assert.notOk(page.teams[1].isSelected);
+      assert.notOk(page.teams[0].isSelected);
+    });
+
     test('scheduling a meeting between teams with different meeting counts is impossible', async function (assert) {
       await page.visit();
 
@@ -690,6 +711,23 @@ module('Acceptance | scheduler', function (hooks) {
         0,
         'expected no set teams after saving'
       );
+    });
+
+    test('meeting components can be unselected', async function (assert) {
+      await page.visit();
+
+      await page.destinationRegions[2].destinations[1].click();
+      await page.waypointRegions[2].waypoints[0].click();
+      await page.teams[0].click();
+
+      await page.destinationRegions[2].destinations[1].click();
+      await page.waypointRegions[2].waypoints[0].click();
+      await page.teams[0].click();
+
+      assert.equal(page.meeting.destination, '');
+      assert.equal(page.meeting.waypoint, '');
+
+      assert.equal(page.meeting.teams[0].value, '');
     });
 
     test('selecting a second team for a meeting does nothing', async function (assert) {
