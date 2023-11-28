@@ -11,7 +11,7 @@ defmodule AdventureRegistrations.Mailer do
   def send_welcome_email(email) do
     new()
     |> to(email)
-    |> from(@from)
+    |> from(adventure_from())
     |> subject("[#{phrase("email_title")}] Welcome!")
     |> html_body(welcome_html())
     |> text_body(welcome_text())
@@ -20,8 +20,8 @@ defmodule AdventureRegistrations.Mailer do
 
   def send_question(attributes) do
     new()
-    |> to("b@events.chromatin.ca")
-    |> from(@from)
+    |> to(adventure_from())
+    |> from(adventure_from())
     |> subject(
       "Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}"
     )
@@ -31,8 +31,8 @@ defmodule AdventureRegistrations.Mailer do
 
   def send_user_changes(user, changes) do
     new()
-    |> to(@from)
-    |> from(@from)
+    |> to(adventure_from())
+    |> from(adventure_from())
     |> subject("#{user.email} details changed: #{Enum.join(Map.keys(changes), ", ")}")
     |> text_body(inspect(changes))
     |> deliver
@@ -40,8 +40,8 @@ defmodule AdventureRegistrations.Mailer do
 
   def send_user_deletion(user) do
     new()
-    |> to(@from)
-    |> from(@from)
+    |> to(adventure_from())
+    |> from(adventure_from())
     |> subject("#{user.email} deleted their account")
     |> text_body(inspect(user))
     |> deliver
@@ -49,8 +49,8 @@ defmodule AdventureRegistrations.Mailer do
 
   def send_registration(user) do
     new()
-    |> to(@from)
-    |> from(@from)
+    |> to(adventure_from())
+    |> from(adventure_from())
     |> subject("#{user.email} registered")
     |> text_body("Yes")
     |> deliver
@@ -75,7 +75,7 @@ defmodule AdventureRegistrations.Mailer do
 
     new()
     |> to(user.email)
-    |> from(@from)
+    |> from(adventure_from())
     |> subject("[#{phrase("email_title")}] #{subject}")
     |> text_body(backlog_text(messages))
     |> html_body(backlog_html(messages))
@@ -87,7 +87,7 @@ defmodule AdventureRegistrations.Mailer do
   def send_password_reset(user) do
     new()
     |> to(user.email)
-    |> from(@from)
+    |> from(adventure_from())
     |> subject("[#{phrase("email_title")}] Password reset")
     |> html_body(
       "Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link</a>"
@@ -146,6 +146,14 @@ defmodule AdventureRegistrations.Mailer do
       "" -> @from
       nil -> @from
       _ -> {from_name, from_address}
+    end
+  end
+
+  defp adventure_from() do
+    if AdventureRegistrationsWeb.SharedHelpers.is_unmnemonic_devices() do
+      "knut@chromatin.ca"
+    else
+      @from
     end
   end
 

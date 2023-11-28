@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Integration.Registrations do
+defmodule AdventureRegistrations.Integration.ClandestineRendezvous.Registrations do
   use AdventureRegistrationsWeb.ConnCase
   use AdventureRegistrations.SwooshHelper
   use AdventureRegistrations.ResetRegistrationClosed
@@ -238,5 +238,46 @@ defmodule AdventureRegistrations.Integration.Registrations do
 
     assert Nav.error_text() ==
              "You may change your details but it’s too late to guarantee the changes can be integrated"
+  end
+end
+
+defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Registrations do
+  use AdventureRegistrationsWeb.ConnCase
+  use AdventureRegistrations.SwooshHelper
+  use AdventureRegistrations.ResetRegistrationClosed
+  use AdventureRegistrations.UnmnemonicDevices
+
+  alias AdventureRegistrations.Pages.Register
+  alias AdventureRegistrations.Pages.Nav
+
+  # Import Hound helpers
+  use Hound.Helpers
+
+  # Start a Hound session
+  hound_session()
+
+  def set_window_to_show_account do
+    set_window_size(current_window_handle(), 720, 450)
+  end
+
+  test "registering sends email from and to a different address" do
+    set_window_to_show_account()
+
+    navigate_to("/")
+    Nav.register_link().click
+
+    Register.fill_email("samuel.delaney@example.com")
+    Register.fill_password("nestofspiders")
+    Register.submit()
+
+    [welcome_email, admin_email] = AdventureRegistrations.SwooshHelper.sent_email()
+
+    assert admin_email.to == [{"", "knut@chromatin.ca"}]
+    assert admin_email.from == {"", "knut@chromatin.ca"}
+    assert admin_email.subject == "samuel.delaney@example.com registered"
+
+    assert welcome_email.to == [{"", "samuel.delaney@example.com"}]
+    assert welcome_email.from == {"", "knut@chromatin.ca"}
+    assert welcome_email.subject == "[unmnemonic] Welcome!"
   end
 end
