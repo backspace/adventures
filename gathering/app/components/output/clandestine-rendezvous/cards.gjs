@@ -1,28 +1,24 @@
-import Component from '@ember/component';
 import { alias } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
-import { tagName } from '@ember-decorators/component';
+import Component from '@glimmer/component';
+import Loading from 'adventure-gathering/components/loading';
+import { get } from '@ember/object';
 
 import config from 'adventure-gathering/config/environment';
 
 import blobStream from 'blob-stream';
-import classic from 'ember-classic-decorator';
+import { trackedFunction } from 'ember-resources/util/function';
 
 import moment from 'moment';
 import PDFDocument from 'pdfkit';
 
-@classic
-@tagName('span')
-export default class clandestineRendezvousCardsComponent extends Component {
-  rendering = true;
+export default class ClandestineRendezvousCardsComponent extends Component {
+  generator = trackedFunction(this, async () => {
+    const debug = this.args.debug;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    const debug = this.debug;
-
-    const header = this.get('assets.header');
-    const bold = this.get('assets.bold');
-    const regular = this.get('assets.regular');
+    const header = this.args.assets.header;
+    const bold = this.args.assets.bold;
+    const regular = this.args.assets.regular;
 
     const doc = new PDFDocument({ layout: 'portrait', font: regular });
     const stream = doc.pipe(blobStream());
@@ -259,18 +255,21 @@ export default class clandestineRendezvousCardsComponent extends Component {
 
     doc.end();
 
-    stream.on('finish', () => {
-      this.src = stream.toBlobURL('application/pdf');
-      this.set('rendering', false);
+    let blobUrl = await new Promise((resolve) => {
+      stream.on('finish', () => {
+        resolve(stream.toBlobURL('application/pdf'));
+      });
     });
-  }
+
+    return blobUrl;
+  });
 
   _padMask(mask) {
     return mask.replace(/_/g, ' __ ').replace(/^ */, '');
   }
 
   _rendezvousCards() {
-    return this.teams.reduce((cards, team) => {
+    return this.args.teams.reduce((cards, team) => {
       return cards.concat(
         team
           .hasMany('meetings')
@@ -282,9 +281,6 @@ export default class clandestineRendezvousCardsComponent extends Component {
       );
     }, []);
   }
-
-  @alias('settings.goal')
-  goal;
 
   @service
   puzzles;
@@ -304,7 +300,7 @@ export default class clandestineRendezvousCardsComponent extends Component {
     const answer = destination.get('answer');
     const mask = destination.get('mask');
 
-    const goalLetter = this.goal[index];
+    const goalLetter = get(this.args.settings, 'goal')[index];
     const goalDigit = parseInt(goalLetter);
 
     const chosenBlankIndex = this.puzzles.implementation.chooseBlankIndex({
@@ -353,4 +349,17 @@ export default class clandestineRendezvousCardsComponent extends Component {
       .add(rendezvousInterval * index, 'minutes')
       .format('h:mma');
   }
+
+  get src() {
+    return this.generator.value ?? undefined;
+  }
+
+  <template>
+    {{#if this.src}}
+      <iframe title='embedded-rendezvous-cards' src={{this.src}}>
+      </iframe>
+    {{else}}
+      <Loading />
+    {{/if}}
+  </template>
 }

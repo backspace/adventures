@@ -1,31 +1,27 @@
-import Component from '@ember/component';
-import { tagName } from '@ember-decorators/component';
+import Component from '@glimmer/component';
+import { trackedFunction } from 'ember-resources/util/function';
+import Loading from 'adventure-gathering/components/loading';
 
 import config from 'adventure-gathering/config/environment';
 
 import blobStream from 'blob-stream';
-import classic from 'ember-classic-decorator';
 
 import moment from 'moment';
 import PDFDocument from 'pdfkit';
 
-@classic
-@tagName('span')
 export default class ClandestineRendezvousAnswersComponent extends Component {
   rendering = true;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
+  generator = trackedFunction(this, async () => {
     const doc = new PDFDocument({
       layout: 'portrait',
-      font: this.get('assets.header'),
     });
     const stream = doc.pipe(blobStream());
 
-    const meetings = this.meetings;
+    const meetings = this.args.meetings;
     const meetingIndices = meetings.mapBy('index').uniq().sort();
 
-    this.teams.forEach((team) => {
+    this.args.teams.forEach((team) => {
       doc.text(
         `${team.get('name')}: ${team.get('riskAversion')}, ${team.get('users')}`
       );
@@ -72,11 +68,14 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
 
     doc.end();
 
-    stream.on('finish', () => {
-      this.src = stream.toBlobURL('application/pdf');
-      this.set('rendering', false);
+    let blobUrl = await new Promise((resolve) => {
+      stream.on('finish', () => {
+        resolve(stream.toBlobURL('application/pdf'));
+      });
     });
-  }
+
+    return blobUrl;
+  });
 
   // FIXME these are copied from the card component
 
@@ -91,4 +90,17 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
       .add(rendezvousInterval * index, 'minutes')
       .format('h:mma');
   }
+
+  get src() {
+    return this.generator.value ?? undefined;
+  }
+
+  <template>
+    {{#if this.src}}
+      <iframe title='embedded-rendezvous-answers' src={{this.src}}>
+      </iframe>
+    {{else}}
+      <Loading />
+    {{/if}}
+  </template>
 }

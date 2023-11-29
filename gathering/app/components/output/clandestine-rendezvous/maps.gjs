@@ -1,26 +1,24 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 import { inject as service } from '@ember/service';
-import { tagName } from '@ember-decorators/component';
 import blobStream from 'blob-stream';
 import classic from 'ember-classic-decorator';
 import { trackedFunction } from 'ember-resources/util/function';
+import Loading from 'adventure-gathering/components/loading';
 
 import PDFDocument from 'pdfkit';
 
-@classic
-@tagName('span')
-export default class clandestineRendezvousMapsComponent extends Component {
+export default class ClandestineRendezvousMapsComponent extends Component {
   @service
   map;
 
   generator = trackedFunction(this, async () => {
-    const debug = this.debug;
+    const debug = this.args.debug;
 
-    const header = this.get('assets.header');
+    const header = this.args.assets.header;
     const doc = new PDFDocument({ layout: 'portrait', font: header });
     const stream = doc.pipe(blobStream());
 
-    const mapBlob = this.get('assets.map');
+    const mapBlob = this.args.assets.map;
     const map = await this.map.blobToBase64String(mapBlob);
 
     const mapOffsetX = 0;
@@ -37,7 +35,7 @@ export default class clandestineRendezvousMapsComponent extends Component {
 
     const margin = 0.5 * 72;
 
-    this.teams.forEach((team, index) => {
+    this.args.teams.forEach((team, index) => {
       if (index > 0 && index % 2 === 0) {
         doc.addPage();
       }
@@ -129,4 +127,13 @@ export default class clandestineRendezvousMapsComponent extends Component {
   get src() {
     return this.generator.value ?? undefined;
   }
+
+  <template>
+    {{#if this.src}}
+      <iframe title='embedded-rendezvous-maps' src={{this.src}}>
+      </iframe>
+    {{else}}
+      <Loading />
+    {{/if}}
+  </template>
 }
