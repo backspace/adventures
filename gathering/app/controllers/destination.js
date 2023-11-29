@@ -1,20 +1,68 @@
 import Controller from '@ember/controller';
-import { sort } from '@ember/object/computed';
+import { action } from '@ember/object';
+import { inject as service } from '@ember/service';
 
-export default Controller.extend({
-  regionSort: Object.freeze(['name']),
+export default class DestinationController extends Controller {
+  @service
+  lastRegion;
 
-  sortedRegions: sort('regions', 'regionSort'),
+  @service
+  router;
 
-  actions: {
-    setRegion(regionId) {
-      const region = this.regions.findBy('id', regionId);
-      this.model.set('region', region);
-    },
+  get sortedRegions() {
+    return this.regions.sortBy('name');
+  }
 
-    setMaskToSuggestion() {
-      const model = this.model;
-      model.set('mask', model.get('suggestedMask'));
-    },
-  },
-});
+  @action
+  setRegion(event) {
+    console.log('setregion', event.target.value);
+    const regionId = event.target.value;
+    const region = this.regions.findBy('id', regionId);
+    this.model.set('region', region);
+  }
+
+  @action
+  setMaskToSuggestion() {
+    const model = this.model;
+    model.set('mask', model.get('suggestedMask'));
+  }
+
+  @action
+  save(model) {
+    model
+      .save()
+      .then(() => {
+        return model.get('region');
+      })
+      .then((region) => {
+        if (region) {
+          this.lastRegion.setLastRegionId(region.id);
+        }
+
+        return region ? region.save() : true;
+      })
+      .then(() => {
+        this.router.transitionTo('destinations');
+      });
+  }
+
+  @action
+  cancel(model) {
+    model.rollbackAttributes();
+    this.router.transitionTo('destinations');
+  }
+
+  @action
+  delete(model) {
+    // This is an unfortunate workaround to address test errors of this form:
+    // Attempted to handle event `pushedData` on … while in state root.deleted.inFlight
+    model
+      .reload()
+      .then((reloaded) => {
+        return reloaded.destroyRecord();
+      })
+      .then(() => {
+        this.router.transitionTo('destinations');
+      });
+  }
+}

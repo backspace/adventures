@@ -4,7 +4,7 @@
       <label>
         Region
         <select
-          onchange={{action 'setRegion' value='target.value'}}
+          {{on 'change' this.setRegion}}
           data-test-region
         >
           <option></option>
@@ -104,7 +104,7 @@
           class='save success button'
           type='button'
           data-test-save-button
-          {{action 'save' this.model}}
+          {{on 'click' (fn this.save this.model)}}
         >
           Save
         </button>
@@ -112,7 +112,7 @@
           class='delete alert button'
           type='button'
           data-test-delete-button
-          {{action 'delete' this.model}}
+          {{on 'click' (fn this.delete this.model)}}
         >
           Delete
         </button>
@@ -120,7 +120,7 @@
           class='cancel warning button'
           type='button'
           data-test-cancel-button
-          {{action 'cancel' this.model}}
+          {{on 'click' (fn this.cancel this.model)}}
         >
           Cancel
         </button>

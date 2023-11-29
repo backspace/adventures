@@ -6,11 +6,10 @@
           {{#if (feature-flag 'destination-status')}}
             <th></th>
           {{/if}}
-          {{! template-lint-disable no-invalid-interactive }}
-          <th class='region' onclick={{action 'toggleSort'}}>
-            <span class='secondary label'>
+          <th>
+            <button {{on 'click' this.toggleSort}} class='secondary label' type='button' data-test-header-region>
               Region
-            </span>
+            </button>
           </th>
           <th>
             Description
@@ -21,18 +20,18 @@
           <th class='show-for-medium'>
             Mask
           </th>
-          <th class='awesomeness' onclick={{action 'toggleAwesomenessSort'}}>
-            <span class='secondary label'>
+          <th>
+            <button class='secondary label' type='button' {{on 'click' this.toggleAwesomenessSort}} data-test-header-awesomeness>
               A
-            </span>
+            </button>
           </th>
           <th>
             R
           </th>
-          <th class='scheduled' onclick={{action 'toggleScheduledSort'}}>
-            <span class='secondary label'>
+          <th>
+            <button class='secondary label' type='button' {{on 'click' this.toggleScheduledSort}} data-test-header-scheduler>
               S?
-            </span>
+            </button>
           </th>
           <th></th>
         </tr>

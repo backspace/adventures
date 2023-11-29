@@ -1,13 +1,13 @@
 <tr
   class='destination
-    {{if @destination.isIncomplete "incomplete"}}
-    {{if this.hasMeetings "meetings"}}'
+    {{if @destination.isIncomplete 'incomplete'}}
+    {{if this.hasMeetings 'meetings'}}'
 >
-  {{! template-lint-disable no-invalid-interactive }}
-  {{#if (feature-flag 'destination-status')}}<td
-      class='status'
-      onclick={{action 'toggleStatus'}}
-    >{{this.status}}</td>{{/if}}
+  {{#if (feature-flag 'destination-status')}}
+    <td>
+      <button class='status' type='button' {{on 'click' this.toggleStatus}}>{{this.status}}</button>
+    </td>
+  {{/if}}
   <td class='region'>{{@destination.region.name}}</td>
   <td class='description'>{{@destination.description}}</td>
   <td class='answer'>{{@destination.answer}}</td>

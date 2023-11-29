@@ -1,3 +1,4 @@
+import { fillIn } from '@ember/test-helpers';
 import PageObject, {
   clickable,
   collection,
@@ -33,7 +34,7 @@ const fillSelectByText = function (selector) {
     value(text) {
       const selectElement = findElement(this, selector);
       const id = selectElement.find(`option:contains('${text}')`).attr('value');
-      findElement(this, selector).val(id).trigger('change');
+      return fillIn(selectElement[0], id);
     },
   };
 };

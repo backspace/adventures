@@ -1,43 +1,46 @@
 import Controller from '@ember/controller';
+import { action, set } from '@ember/object';
 import { sort } from '@ember/object/computed';
+import { tracked } from '@glimmer/tracking';
 
-export default Controller.extend({
-  sorting: Object.freeze(['updatedAt:desc']),
-  defaultSort: true,
+export default class DestinationsIndexController extends Controller {
+  @tracked sorting = Object.freeze(['updatedAt:desc']);
+  @tracked defaultSort = true;
 
-  destinations: sort('model', 'sorting'),
+  @sort('model', 'sorting') destinations;
 
-  actions: {
-    toggleSort() {
-      this.set('defaultSort', !this.defaultSort);
+  @action
+  toggleSort() {
+    set(this, 'defaultSort', !this.defaultSort);
 
-      if (this.defaultSort) {
-        this.set('sorting', ['updatedAt:desc']);
-      } else {
-        this.set('sorting', ['region.name:asc', 'createdAt:desc']);
-      }
-    },
+    if (this.defaultSort) {
+      set(this, 'sorting', ['updatedAt:desc']);
+    } else {
+      set(this, 'sorting', ['region.name:asc', 'createdAt:desc']);
+    }
+  }
 
-    // FIXME this should be generalised, obvs
-    toggleAwesomenessSort() {
-      this.set('defaultSort', !this.defaultSort);
+  // FIXME this should be generalised, obvs
+  @action
+  toggleAwesomenessSort() {
+    set(this, 'defaultSort', !this.defaultSort);
 
-      if (this.defaultSort) {
-        this.set('sorting', ['updatedAt:desc']);
-      } else {
-        this.set('sorting', ['awesomeness', 'createdAt:desc']);
-      }
-    },
+    if (this.defaultSort) {
+      set(this, 'sorting', ['updatedAt:desc']);
+    } else {
+      set(this, 'sorting', ['awesomeness', 'createdAt:desc']);
+    }
+  }
 
-    // FIXME this should be generalised, obvs
-    toggleScheduledSort() {
-      this.set('defaultSort', !this.defaultSort);
+  // FIXME this should be generalised, obvs
+  @action
+  toggleScheduledSort() {
+    set(this, 'defaultSort', !this.defaultSort);
 
-      if (this.defaultSort) {
-        this.set('sorting', ['updatedAt:desc']);
-      } else {
-        this.set('sorting', ['meetings.length', 'createdAt:desc']);
-      }
-    },
-  },
-});
+    if (this.defaultSort) {
+      set(this, 'sorting', ['updatedAt:desc']);
+    } else {
+      set(this, 'sorting', ['meetings.length', 'createdAt:desc']);
+    }
+  }
+}

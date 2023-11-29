@@ -1,16 +1,16 @@
 {{! template-lint-disable no-invalid-interactive }}
 <li
   class='team
-    {{if this.isSelected "selected"}}
-    {{if this.hasMetHighlightedTeam "highlighted"}}
-    {{if @isAhead "ahead"}}'
+    {{if this.isSelected 'selected'}}
+    {{if this.hasMetHighlightedTeam 'highlighted'}}
+    {{if @isAhead 'ahead'}}'
   title={{this.usersAndNotes}}
   {{on 'mouseenter' this.handleMouseEnter}}
   {{on 'mouseleave' this.handleMouseLeave}}
   data-risk-aversion={{@team.riskAversion}}
 >
   {{! template-lint-disable no-invalid-interactive }}
-  <div onclick={{action 'select'}}>
+  <div {{on 'click' this.select}}>
     <span class='name'>{{@team.truncatedName}}</span>
     <span class='count'>{{this.count}}</span>
 
@@ -23,7 +23,7 @@
   {{#if this.showMeetings}}
     <ul>
       {{#each @team.meetings as |meeting index|}}
-        <li class='meeting' onclick={{action 'editMeeting' meeting}}><span
+        <li class='meeting' {{on 'click' (fn this.editMeeting meeting)}}><span
             class='index'
           >{{index}}</span>:
           <span class='offset'>{{meeting.offset}}</span></li>

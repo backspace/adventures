@@ -1,15 +1,61 @@
 import Controller from '@ember/controller';
-import { sort } from '@ember/object/computed';
+import { action } from '@ember/object';
+import { inject as service } from '@ember/service';
 
-export default Controller.extend({
-  regionSort: Object.freeze(['name']),
+export default class WaypointController extends Controller {
+  @service
+  lastRegion;
 
-  sortedRegions: sort('regions', 'regionSort'),
+  @service
+  router;
 
-  actions: {
-    setRegion(regionId) {
-      const region = this.regions.findBy('id', regionId);
-      this.model.set('region', region);
-    },
-  },
-});
+  get sortedRegions() {
+    return this.regions.sortBy('name');
+  }
+
+  @action
+  setRegion(event) {
+    const regionId = event.target.value;
+    const region = this.regions.findBy('id', regionId);
+    this.model.set('region', region);
+  }
+
+  @action
+  save(model) {
+    model
+      .save()
+      .then(() => {
+        return model.get('region');
+      })
+      .then((region) => {
+        if (region) {
+          this.lastRegion.setLastRegionId(region.id);
+        }
+
+        return region ? region.save() : true;
+      })
+      .then(() => {
+        this.router.transitionTo('waypoints');
+      });
+  }
+
+  @action
+  cancel(model) {
+    model.rollbackAttributes();
+    this.router.transitionTo('waypoints');
+  }
+
+  @action
+  delete(model) {
+    // This is an unfortunate workaround to address test errors of this form:
+    // Attempted to handle event `pushedData` on … while in state root.deleted.inFlight
+    model
+      .reload()
+      .then((reloaded) => {
+        return reloaded.destroyRecord();
+      })
+      .then(() => {
+        this.router.transitionTo('waypoints');
+      });
+  }
+}

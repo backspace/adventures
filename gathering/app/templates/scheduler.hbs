@@ -23,7 +23,7 @@
         @type='destination'
         @mouseEnterRegion={{this.mouseEnterRegion}}
         @mouseLeaveRegion={{this.mouseLeaveRegion}}
-        @select={{action 'selectDestination'}}
+        @select={{this.selectDestination}}
         @meeting={{this.meeting}}
         @highlightedTeam={{this.highlightedTeam}}
       />
@@ -38,7 +38,7 @@
           @type='waypoint'
           @mouseEnterRegion={{this.mouseEnterRegion}}
           @mouseLeaveRegion={{this.mouseLeaveRegion}}
-          @select={{action 'selectWaypoint'}}
+          @select={{this.selectWaypoint}}
           @meeting={{this.meeting}}
           @highlightedTeam={{this.highlightedTeam}}
         />
@@ -53,15 +53,15 @@
         @highlightedTeam={{this.highlightedTeam}}
         @meeting={{this.meeting}}
         @isAhead={{gte team.meetings.length this.highestMeetingCount}}
-        @editMeeting={{action 'editMeeting'}}
-        @select={{action 'selectTeam'}}
-        @enter={{action 'mouseEnterTeam'}}
-        @leave={{action 'mouseLeaveTeam'}}
+        @editMeeting={{this.editMeeting}}
+        @select={{this.selectTeam}}
+        @enter={{this.mouseEnterTeam}}
+        @leave={{this.mouseLeaveTeam}}
       />
     {{/each}}
   </ul>
 
-  <div class='meeting-form {{if this.meeting.isForbidden "forbidden"}}'>
+  <div class='meeting-form {{if this.meeting.isForbidden 'forbidden'}}'>
     {{#if this.puzzles.implementation.hasWaypoints}}
       <div class='row'>
         <label for='waypoint-select'>W</label>
@@ -133,12 +133,12 @@
       <button
         type='button'
         class='save button tiny success'
-        onclick={{action 'saveMeeting'}}
+        onclick={{this.saveMeeting}}
       >Save</button>
       <button
         type='button'
         class='reset button tiny alert'
-        onclick={{action 'resetMeeting'}}
+        onclick={{this.resetMeeting}}
       >Reset</button>
     {{/unless}}
   </div>

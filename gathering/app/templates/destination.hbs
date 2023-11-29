@@ -4,7 +4,7 @@
       <label>
         Region
         <select
-          onchange={{action 'setRegion' value='target.value'}}
+          {{on 'change' this.setRegion}}
           class='region'
         >
           <option></option>
@@ -41,7 +41,7 @@
                 <button
                   type='button'
                   class='suggested-mask button default'
-                  {{action 'setMaskToSuggestion'}}
+                  {{on 'click' this.setMaskToSuggestion}}
                 >
                   {{this.model.suggestedMask}}
                 </button>
@@ -158,21 +158,21 @@
         <button
           class='save success button'
           type='button'
-          {{action 'save' this.model}}
+          {{on 'click' (fn this.save this.model)}}
         >
           Save
         </button>
         <button
           class='delete alert button'
           type='button'
-          {{action 'delete' this.model}}
+          {{on 'click' (fn this.delete this.model)}}
         >
           Delete
         </button>
         <button
           class='cancel warning button'
           type='button'
-          {{action 'cancel' this.model}}
+          {{on 'click' (fn this.cancel this.model)}}
         >
           Cancel
         </button>

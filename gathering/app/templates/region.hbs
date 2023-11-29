@@ -17,7 +17,7 @@
       <label>
         Region
         <select
-          onchange={{action 'setParent' value='target.value'}}
+          {{on 'change' this.setParent}}
           class='region'
         >
           <option></option>
@@ -48,21 +48,21 @@
         <button
           class='save success button'
           type='button'
-          {{action 'save' this.model}}
+          {{on 'click' (fn this.save this.model)}}
         >
           Save
         </button>
         <button
           class='delete alert button'
           type='button'
-          {{action 'delete' this.model}}
+          {{on 'click' (fn this.delete this.model)}}
         >
           Delete
         </button>
         <button
           class='cancel warning button'
           type='button'
-          {{action 'cancel' this.model}}
+          {{on 'click' (fn this.cancel this.model)}}
         >
           Cancel
         </button>
