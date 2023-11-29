@@ -1,21 +1,20 @@
 import Controller from '@ember/controller';
-import { sort } from '@ember/object/computed';
+import { action } from '@ember/object';
+import { tracked } from '@glimmer/tracking';
 
-export default Controller.extend({
-  sorting: Object.freeze(['updatedAt:desc']),
-  defaultSort: true,
+export default class WaypointIndexController extends Controller {
+  @tracked defaultSort = true;
 
-  waypoints: sort('model', 'sorting'),
+  get waypoints() {
+    if (this.defaultSort) {
+      return [...this.model.sortBy('updatedAt')].reverse();
+    } else {
+      return this.model.sortBy('region.name', 'createdAt');
+    }
+  }
 
-  actions: {
-    toggleSort() {
-      this.set('defaultSort', !this.defaultSort);
-
-      if (this.defaultSort) {
-        this.set('sorting', ['updatedAt:desc']);
-      } else {
-        this.set('sorting', ['region.name:asc', 'createdAt:desc']);
-      }
-    },
-  },
-});
+  @action
+  toggleSort() {
+    this.defaultSort = !this.defaultSort;
+  }
+}

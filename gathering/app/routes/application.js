@@ -19,7 +19,9 @@ export default class ApplicationRoute extends Route {
     try {
       let pathfinderData = await pouch.get('pathfinder-data');
       this.pathfinder.set('data', pathfinderData);
-    } catch (e) {}
+    } catch (_e) {
+      // Do nothing
+    }
 
     return this.settings.syncFeatures();
   }

@@ -1,3 +1,4 @@
+/* eslint-disable ember/no-get */
 import Controller from '@ember/controller';
 import { action, computed, get, set } from '@ember/object';
 import { mapBy, max } from '@ember/object/computed';
@@ -25,7 +26,7 @@ export default class SchedulerController extends Controller {
 
   @computed('meeting.teams.@each.meetings')
   get lastMeetingOffsets() {
-    return (this.get('meeting.teams') || []).map(
+    return (get(this, 'meeting.teams') || []).map(
       (team) => team.get('savedMeetings.lastObject.offset') || 0
     );
   }
@@ -36,10 +37,8 @@ export default class SchedulerController extends Controller {
 
   @computed(
     'lastMeetingOffsets.[]',
-    'meeting.destination.region.name',
-    'meeting.teams',
-    'puzzles.hasMeetingOffsets',
-    'puzzles.implementation.hasMeetingOffsets'
+    'meeting.{destination.region.name,teams}',
+    'puzzles.{hasMeetingOffsets,implementation.hasMeetingOffsets}'
   )
   get suggestedOffset() {
     if (this.puzzles.implementation.hasMeetingOffsets) {
@@ -47,7 +46,7 @@ export default class SchedulerController extends Controller {
 
       let timeFromLastRegion = 0;
 
-      const newRegion = this.get('meeting.destination.region');
+      const newRegion = get(this, 'meeting.destination.region');
 
       if (!newRegion) {
         return 0;
@@ -55,7 +54,7 @@ export default class SchedulerController extends Controller {
 
       const newRegionAncestorName = newRegion.ancestor.name;
 
-      const lastMeetingRegionNames = (this.get('meeting.teams') || [])
+      const lastMeetingRegionNames = (get(this, 'meeting.teams') || [])
         .map((team) =>
           team.get('savedMeetings.lastObject.destination.region.name')
         )
@@ -74,9 +73,7 @@ export default class SchedulerController extends Controller {
     }
   }
 
-  set suggestedOffset(value) {
-    return value;
-  }
+  set suggestedOffset(_value) {}
 
   @action selectDestination(destination) {
     if (!this.meeting) {
@@ -104,11 +101,11 @@ export default class SchedulerController extends Controller {
 
   @action selectTeam(team) {
     if (!this.meeting) {
-      this.set('meeting', this.store.createRecord('meeting'));
+      set(this, 'meeting', this.store.createRecord('meeting'));
     }
 
-    if (this.get('meeting.teams').includes(team)) {
-      this.get('meeting.teams').removeObject(team);
+    if (get(this, 'meeting.teams').includes(team)) {
+      get(this, 'meeting.teams').removeObject(team);
       return;
     }
 
@@ -120,8 +117,8 @@ export default class SchedulerController extends Controller {
       return;
     }
 
-    this.set('meeting.index', team.get('meetings.length'));
-    this.get('meeting.teams').pushObject(team);
+    set(this, 'meeting.index', team.get('meetings.length'));
+    get(this, 'meeting.teams').pushObject(team);
   }
 
   @action saveMeeting() {
@@ -138,14 +135,14 @@ export default class SchedulerController extends Controller {
         return all([destination.save(), ...teams.map((team) => team.save())]);
       })
       .then(() => {
-        this.set('meeting', this.store.createRecord('meeting'));
+        set(this, 'meeting', this.store.createRecord('meeting'));
       });
   }
 
   @action resetMeeting() {
     this.meeting.rollbackAttributes();
 
-    this.set('meeting', this.store.createRecord('meeting'));
+    set(this, 'meeting', this.store.createRecord('meeting'));
   }
 
   @action editMeeting(meeting) {
@@ -155,22 +152,22 @@ export default class SchedulerController extends Controller {
       existingMeeting.rollbackAttributes();
     }
 
-    this.set('meeting', meeting);
+    set(this, 'meeting', meeting);
   }
 
   @action mouseEnterRegion(region) {
-    this.set('highlightedRegion', region.ancestor);
+    set(this, 'highlightedRegion', region.ancestor);
   }
 
   @action mouseLeaveRegion() {
-    this.set('highlightedRegion', undefined);
+    set(this, 'highlightedRegion', undefined);
   }
 
   @action mouseEnterTeam(team) {
-    this.set('highlightedTeam', team);
+    set(this, 'highlightedTeam', team);
   }
 
   @action mouseLeaveTeam() {
-    this.set('highlightedTeam', undefined);
+    set(this, 'highlightedTeam', undefined);
   }
 }

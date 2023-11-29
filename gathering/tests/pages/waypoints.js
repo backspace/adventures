@@ -41,7 +41,7 @@ const fillSelectByText = function (selector) {
 
 export default PageObject.create({
   headerRegion: {
-    scope: 'th.region',
+    scope: '[data-test-header-region]',
     click: clickable(),
   },
 

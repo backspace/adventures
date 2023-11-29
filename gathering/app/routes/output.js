@@ -26,18 +26,21 @@ export default class OutputRoute extends Route {
   async model() {
     let fontPaths;
 
+    // eslint-disable-next-line ember/no-get
     if (this.get('features.clandestineRendezvous')) {
       fontPaths = [
         fetch('/fonts/blackout.ttf'),
         fetch('/fonts/Oswald-Bold.ttf'),
         fetch('/fonts/Oswald-Regular.ttf'),
       ];
+      // eslint-disable-next-line ember/no-get
     } else if (this.get('features.txtbeyond')) {
       fontPaths = [
         fetch('/fonts/nokiafc22.ttf'),
         fetch('/fonts/Arvo-Bold.ttf'),
         fetch('/fonts/Arvo-Regular.ttf'),
       ];
+      // eslint-disable-next-line ember/no-get
     } else if (this.get('features.unmnemonicDevices')) {
       fontPaths = [
         fetch('/fonts/unmnemonic-regular.ttf'),

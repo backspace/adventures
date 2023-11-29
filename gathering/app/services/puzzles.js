@@ -1,8 +1,6 @@
-import { computed } from '@ember/object';
+import { get } from '@ember/object';
 import Service, { inject as service } from '@ember/service';
-import classic from 'ember-classic-decorator';
 
-@classic
 export default class PuzzlesService extends Service {
   @service
   clandestineRendezvous;
@@ -16,11 +14,12 @@ export default class PuzzlesService extends Service {
   @service
   features;
 
-  @computed('features.{clandestine-rendezvous,txtbeyond,unmnemonicDevices}')
   get implementation() {
-    if (this.get('features.txtbeyond')) {
+    // eslint-disable-next-line ember/no-get
+    if (get(this, 'features.txtbeyond')) {
       return this.txtbeyond;
-    } else if (this.features.get('unmnemonicDevices')) {
+      // eslint-disable-next-line ember/no-get
+    } else if (get(this, 'features.unmnemonicDevices')) {
       return this.unmnemonicDevices;
     } else {
       // FIXME this only assumes a default because not all tests are flagged

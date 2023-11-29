@@ -30,6 +30,7 @@ export default class Destination extends Model {
   get suggestedMask() {
     const answer = this.answer || '';
 
+    // eslint-disable-next-line ember/no-get
     return this.get('puzzles.implementation').suggestedMask(answer);
   }
 
@@ -38,6 +39,7 @@ export default class Destination extends Model {
     const answer = this.answer || '';
     const mask = this.mask || '';
 
+    // eslint-disable-next-line ember/no-get
     return this.get('puzzles.implementation').maskIsValid(answer, mask);
   }
 
@@ -58,15 +60,9 @@ export default class Destination extends Model {
   )
   get validationErrors() {
     const { description, answer, awesomeness, region, risk, maskIsValid } =
-      this.getProperties(
-        'description',
-        'answer',
-        'awesomeness',
-        'risk',
-        'region',
-        'maskIsValid'
-      );
+      this;
 
+    // eslint-disable-next-line ember/no-get
     const descriptionIsValid = this.get(
       'puzzles.implementation'
     ).descriptionIsValid(description ?? 'FAKE');

@@ -1,5 +1,4 @@
 import { run } from '@ember/runloop';
-import { waitUntil } from '@ember/test-helpers';
 
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';

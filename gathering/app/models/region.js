@@ -69,6 +69,7 @@ export default class Region extends Model {
 
   @computed('features.txtbeyond', 'hasPaths')
   get isComplete() {
+    // eslint-disable-next-line ember/no-get
     if (this.get('features.txtbeyond')) {
       return this.hasPaths;
     } else {

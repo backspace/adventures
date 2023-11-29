@@ -1,11 +1,7 @@
 import Controller from '@ember/controller';
-import { filter, sort } from '@ember/object/computed';
 
-export default Controller.extend({
-  sorting: Object.freeze(['name']),
-  sortedRegions: sort('model', 'sorting'),
-
-  regions: filter('sortedRegions', function (region) {
-    return !region.get('parent');
-  }),
-});
+export default class RegionsIndexController extends Controller {
+  get regions() {
+    return this.model.sortBy('name').filter((region) => !region.get('parent'));
+  }
+}

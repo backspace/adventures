@@ -1,32 +1,38 @@
-import { computed } from '@ember/object';
+// eslint-disable-next-line ember/no-computed-properties-in-native-classes
+import { computed, get } from '@ember/object';
 import Service, { inject as service } from '@ember/service';
 
 import jsgraphs from 'js-graph-algorithms';
 
-export default Service.extend({
-  store: service(),
+export default class PathfinderService extends Service {
+  @service store;
 
-  data: Object.freeze({
+  data = Object.freeze({
     data: {},
-  }),
+  });
 
-  regions: computed('data.{_rev,data}', function () {
-    return Object.keys(this.get('data.data'))
+  @computed('data.{_rev,data}')
+  get regions() {
+    // eslint-disable-next-line ember/no-get
+    return Object.keys(get(this, 'data.data'))
       .reduce((regions, key) => regions.concat(key.split('|')), [])
       .uniq();
-  }),
+  }
 
   hasRegion(regionName) {
     return this.regions.includes(regionName);
-  },
+  }
 
-  graph: computed('data.{_rev,data}', 'regions.length', function () {
-    const graph = new jsgraphs.WeightedDiGraph(this.get('regions.length'));
+  @computed('data.{_rev,data}', 'regions.length')
+  get graph() {
+    // eslint-disable-next-line ember/no-get
+    const graph = new jsgraphs.WeightedDiGraph(get(this, 'regions.length'));
 
     const regionToIndex = {};
     let regionIndex = 0;
 
-    Object.entries(this.get('data.data')).forEach(([regions, distance]) => {
+    // eslint-disable-next-line ember/no-get
+    Object.entries(get(this, 'data.data')).forEach(([regions, distance]) => {
       const [dataA, dataB] = regions.split('|');
 
       [dataA, dataB].forEach((region) => {
@@ -48,7 +54,7 @@ export default Service.extend({
 
     window.graph = graph;
     return graph;
-  }),
+  }
 
   distance(regionA, regionB) {
     if (regionA === regionB) {
@@ -63,7 +69,7 @@ export default Service.extend({
     const dijkstra = new jsgraphs.Dijkstra(graph, regionAIndex);
 
     return dijkstra.distanceTo(regionBIndex);
-  },
+  }
 
   regionToIndex(region) {
     const graph = this.graph;
@@ -71,5 +77,5 @@ export default Service.extend({
     return Object.keys(graph.nodeInfo).find(
       (key) => graph.nodeInfo[key].label === region
     );
-  },
-});
+  }
+}

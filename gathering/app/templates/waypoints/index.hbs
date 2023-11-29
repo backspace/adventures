@@ -6,11 +6,10 @@
           {{#if (feature-flag 'destination-status')}}
             <th></th>
           {{/if}}
-          {{! template-lint-disable no-invalid-interactive }}
-          <th class='region' onclick={{this.toggleSort}}>
-            <span class='secondary label'>
+          <th>
+            <button class='secondary label' type='button' {{on 'click' this.toggleSort}} data-test-header-region>
               Region
-            </span>
+            </button>
           </th>
           <th>
             Name
