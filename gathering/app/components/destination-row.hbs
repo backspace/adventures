@@ -1,7 +1,7 @@
 <tr
   class='destination
-    {{if @destination.isIncomplete "incomplete"}}
-    {{if this.hasMeetings "meetings"}}'
+    {{if @destination.isIncomplete 'incomplete'}}
+    {{if this.hasMeetings 'meetings'}}'
 >
   {{#if (feature-flag 'destination-status')}}
     <td>
