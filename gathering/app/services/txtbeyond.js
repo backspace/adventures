@@ -4,6 +4,8 @@ import { all } from 'rsvp';
 
 @classic
 export default class TxtbeyondService extends Service {
+  name = 'txtbeyond';
+
   suggestedMask(answer) {
     return answer
       .split(' ')

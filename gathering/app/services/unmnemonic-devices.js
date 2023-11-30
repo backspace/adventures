@@ -5,6 +5,8 @@ import isFloat from 'validator/lib/isFloat';
 export default class UnmnemonicDevicesService extends Service {
   @service txtbeyond;
 
+  name = 'unmnemonic devices';
+
   hasWaypoints() {
     return true;
   }
