@@ -27,6 +27,7 @@ module.exports = function (defaults) {
             stream: require.resolve('stream-browserify'),
             timers: require.resolve('timers-browserify'),
             tty: require.resolve('tty-browserify'),
+            url: false,
             util: require.resolve('util'),
             zlib: require.resolve('browserify-zlib'),
           },
