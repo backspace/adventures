@@ -1,6 +1,12 @@
 'use strict';
 
-module.exports = {
+const fs = require('fs');
+
+const TapReporter = require('testem/lib/reporters/tap_reporter');
+const XunitReporter = require('testem/lib/reporters/xunit_reporter');
+const MultiReporter = require('testem-multi-reporter');
+
+const config = {
   test_page: 'tests/index.html?hidepassed',
   disable_watching: true,
   launch_in_ci: ['Chrome'],
@@ -21,3 +27,28 @@ module.exports = {
     },
   },
 };
+
+if (process.env.CI) {
+  fs.mkdirSync('../junit');
+
+  const reporters = [
+    {
+      ReporterClass: TapReporter,
+      args: [false, null, { get: () => false }],
+    },
+    {
+      ReporterClass: XunitReporter,
+      args: [
+        false,
+        fs.createWriteStream('../junit/host.xml'),
+        { get: () => false },
+      ],
+    },
+  ];
+
+  const multiReporter = new MultiReporter({ reporters });
+
+  config.reporter = multiReporter;
+}
+
+module.exports = config;
