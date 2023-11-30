@@ -15,7 +15,7 @@ function createDb() {
   assert('emberPouch.localDb must be set', !isEmpty(localDb));
 
   if (Ember.testing) {
-    localDb += new Date().getMilliseconds();
+    localDb += `${new Date().getTime()}-${performance.now()}`;
   }
 
   let db = new PouchDB(localDb, config.emberPouch.options);
