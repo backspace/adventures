@@ -18,7 +18,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up database
         run: psql -f unmnemonic_devices_vrs/tests/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
       - uses: dtolnay/rust-toolchain@1.68.2
@@ -33,7 +33,7 @@ jobs:
     name: Rustfmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@1.68.2
         with:
           components: rustfmt
@@ -51,7 +51,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up database
         run: psql -f unmnemonic_devices_vrs/tests/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
       - uses: dtolnay/rust-toolchain@1.68.2
@@ -77,7 +77,7 @@ jobs:
           - 5432:5432
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up database
         run: psql -f unmnemonic_devices_vrs/tests/fixtures/schema.sql postgres://postgres:postgres@localhost:5432/postgres
       - uses: dtolnay/rust-toolchain@1.68.2
