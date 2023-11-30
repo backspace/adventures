@@ -184,7 +184,7 @@ module('Acceptance | regions', function (hooks) {
 
   test('a region can be deleted', async function (assert) {
     await page.visit();
-    await page.regions[0].edit();
+    await page.regions[3].edit();
     await page.delete();
     await waitUntil(() => page.regions.length === 3);
 
