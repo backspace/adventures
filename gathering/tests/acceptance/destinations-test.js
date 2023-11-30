@@ -1,9 +1,7 @@
-import { run } from '@ember/runloop';
 import { visit, waitUntil } from '@ember/test-helpers';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
-import { all } from 'rsvp';
 
 import withSetting from '../helpers/with-setting';
 
@@ -13,62 +11,58 @@ module('Acceptance | destinations', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
-  hooks.beforeEach(function (assert) {
+  hooks.beforeEach(async function () {
     const store = this.owner.lookup('service:store');
-    const done = assert.async();
 
-    run(() => {
-      const regionOne = store.createRecord('region');
-      const regionTwo = store.createRecord('region');
-      const regionThree = store.createRecord('region');
+    const regionOne = store.createRecord('region');
+    const regionTwo = store.createRecord('region');
+    const regionThree = store.createRecord('region');
 
-      regionOne.set('name', 'There');
-      regionTwo.set('name', 'Here');
+    regionOne.set('name', 'There');
+    regionTwo.set('name', 'Here');
 
-      all([regionOne.save(), regionTwo.save()])
-        .then(() => {
-          const fixtureOne = store.createRecord('destination');
-          const fixtureTwo = store.createRecord('destination');
+    await regionOne.save();
+    await regionTwo.save();
 
-          fixtureOne.setProperties({
-            description: 'Ina-Karekh',
-            accessibility: 'You might need help',
-            awesomeness: 9,
-            risk: 6,
-            answer: 'ABC123',
-            mask: 'ABC__3',
-            credit: 'greatnesses',
-            status: 'unavailable',
+    const fixtureOne = store.createRecord('destination');
 
-            region: regionOne,
-          });
-
-          fixtureTwo.setProperties({
-            description: 'Hona-Karekh',
-            status: 'available',
-            region: regionTwo,
-            awesomeness: 1,
-          });
-
-          return all([fixtureTwo.save(), fixtureOne.save()]);
-        })
-        .then(() => {
-          return all([regionOne.save(), regionTwo.save()]);
-        })
-        .then(() => {
-          regionThree.setProperties({
-            parent: regionOne,
-            name: 'A region within here',
-          });
-          return regionThree.save();
-        })
-        .then(() => {
-          return regionOne.save();
-        })
-        .then(() => {
-          done();
-        });
+    fixtureOne.setProperties({
+      description: 'Hona-Karekh',
+      status: 'available',
+      region: regionTwo,
+      awesomeness: 1,
     });
+
+    await fixtureOne.save();
+
+    const fixtureTwo = store.createRecord('destination');
+
+    fixtureTwo.setProperties({
+      description: 'Ina-Karekh',
+      accessibility: 'You might need help',
+      awesomeness: 9,
+      risk: 6,
+      answer: 'ABC123',
+      mask: 'ABC__3',
+      credit: 'greatnesses',
+      status: 'unavailable',
+
+      region: regionOne,
+    });
+
+    await fixtureTwo.save();
+
+    await regionOne.save();
+    await regionTwo.save();
+
+    regionThree.setProperties({
+      parent: regionOne,
+      name: 'A region within here',
+    });
+
+    await regionThree.save();
+
+    await regionOne.save();
   });
 
   test('existing destinations are listed and can be sorted by region or awesomeness', async function (assert) {

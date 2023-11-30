@@ -1,9 +1,6 @@
-import { run } from '@ember/runloop';
-
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
-import { all } from 'rsvp';
 
 import withSetting from '../helpers/with-setting';
 
@@ -15,33 +12,29 @@ module('Acceptance | teams', function (hooks) {
   setupApplicationTest(hooks);
   clearDatabase(hooks);
 
-  hooks.beforeEach(function (assert) {
+  hooks.beforeEach(async function () {
     const store = this.owner.lookup('service:store');
-    const done = assert.async();
 
-    run(() => {
-      teamOne = store.createRecord('team');
-      teamTwo = store.createRecord('team');
+    teamOne = store.createRecord('team');
+    teamTwo = store.createRecord('team');
 
-      teamOne.setProperties({
-        name: 'Team 1',
-        riskAversion: 3,
-        phones: [{ number: '2045551212', displaySize: '5.5' }],
-      });
-
-      teamTwo.setProperties({
-        name: 'Team 2',
-        riskAversion: 1,
-        phones: [
-          { number: '2040000000', displaySize: '4' },
-          { number: '5140000000', displaySize: '5' },
-        ],
-      });
-
-      all([teamOne.save(), teamTwo.save()]).then(() => {
-        done();
-      });
+    teamOne.setProperties({
+      name: 'Team 1',
+      riskAversion: 3,
+      phones: [{ number: '2045551212', displaySize: '5.5' }],
     });
+
+    teamTwo.setProperties({
+      name: 'Team 2',
+      riskAversion: 1,
+      phones: [
+        { number: '2040000000', displaySize: '4' },
+        { number: '5140000000', displaySize: '5' },
+      ],
+    });
+
+    await teamOne.save();
+    await teamTwo.save();
   });
 
   test('existing teams are listed', async function (assert) {

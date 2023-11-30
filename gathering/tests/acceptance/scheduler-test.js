@@ -3,7 +3,6 @@ import { find, waitUntil } from '@ember/test-helpers';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
-import { all } from 'rsvp';
 
 import withSetting from '../helpers/with-setting';
 
@@ -68,14 +67,12 @@ module('Acceptance | scheduler', function (hooks) {
       mrGreenjeans,
       sculpture;
 
-    await all([
-      portagePlace.save(),
-      eatonPlace.save(),
-      circus.save(),
-      superfans.save(),
-      mayors.save(),
-      pyjamaGamers.save(),
-    ]);
+    await portagePlace.save();
+    await eatonPlace.save();
+    await circus.save();
+    await superfans.save();
+    await mayors.save();
+    await pyjamaGamers.save();
 
     eatonPlaceFoodCourt = store.createRecord('region', {
       name: 'Food Court',
@@ -137,19 +134,16 @@ module('Acceptance | scheduler', function (hooks) {
       status: 'unavailable',
     });
 
-    await all([
-      edmontonCourt.save(),
-      prairieTheatreExchange.save(),
-      globeCinemas.save(),
-      squeakyFloor.save(),
-      mrGreenjeans.save(),
-      sculpture.save(),
-    ]);
-    await all([
-      portagePlace.save(),
-      eatonPlaceFirstFloor.save(),
-      circus.save(),
-    ]);
+    await edmontonCourt.save();
+    await prairieTheatreExchange.save();
+    await globeCinemas.save();
+    await squeakyFloor.save();
+    await mrGreenjeans.save();
+    await sculpture.save();
+
+    await portagePlace.save();
+    await eatonPlaceFirstFloor.save();
+    await circus.save();
   });
 
   module('for Clandestine Rendezvous', function (hooks) {
@@ -165,7 +159,7 @@ module('Acceptance | scheduler', function (hooks) {
         },
       };
 
-      await all([db.put(pathfinderData)]);
+      await db.put(pathfinderData);
 
       await store
         .createRecord('meeting', {
@@ -174,7 +168,10 @@ module('Acceptance | scheduler', function (hooks) {
           teams: [superfans, mayors],
         })
         .save();
-      await all([edmontonCourt.save(), superfans.save(), mayors.save()]);
+
+      await edmontonCourt.save();
+      await superfans.save();
+      await mayors.save();
     });
 
     test('available destinations are grouped by nested regions', async function (assert) {
@@ -536,23 +533,19 @@ module('Acceptance | scheduler', function (hooks) {
         ...completionWaypointProperties,
       });
 
-      await all([
-        fourten.save(),
-        fourtwenty.save(),
-        prairieTheatreExchange.save(),
-        globeCinemas.save(),
-        squeakyFloor.save(),
-        mrGreenjeans.save(),
-        sculpture.save(),
-      ]);
+      await fourten.save();
+      await fourtwenty.save();
+      await prairieTheatreExchange.save();
+      await globeCinemas.save();
+      await squeakyFloor.save();
+      await mrGreenjeans.save();
+      await sculpture.save();
 
-      await all([
-        portagePlace.save(),
-        portagePlaceThirdFloor.save(),
-        eatonPlace.save(),
-        circus.save(),
-        webb.save(),
-      ]);
+      await portagePlace.save();
+      await portagePlaceThirdFloor.save();
+      await eatonPlace.save();
+      await circus.save();
+      await webb.save();
 
       await store
         .createRecord('meeting', {
@@ -562,13 +555,11 @@ module('Acceptance | scheduler', function (hooks) {
         })
         .save();
 
-      await all([
-        edmontonCourt.save(),
-        webb.save(),
-        fourten.save(),
-        superfans.save(),
-        mayors.save(),
-      ]);
+      await edmontonCourt.save();
+      await webb.save();
+      await fourten.save();
+      await superfans.save();
+      await mayors.save();
     });
 
     test('the offset field is hidden', async function (assert) {

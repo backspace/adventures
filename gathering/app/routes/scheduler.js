@@ -63,10 +63,12 @@ export default class SchedulerRoute extends Route {
       });
     });
 
+    let teams = this.store.findAll('team');
+
     return hash({
-      destinations: this.store.findAll('destination'),
-      waypoints: this.store.findAll('waypoint'),
-      teams: this.store.findAll('team'),
+      destinations,
+      waypoints,
+      teams,
       map: this.map.getURL('image'),
       ancestorRegionContainers: ancestorRegionContainers.sortBy('region.name'),
     });

@@ -1,4 +1,3 @@
-import { run } from '@ember/runloop';
 import Service, { inject as service } from '@ember/service';
 import classic from 'ember-classic-decorator';
 
