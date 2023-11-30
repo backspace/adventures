@@ -1,6 +1,6 @@
 name: AdventureRegistrations checks
 
-on: push
+on: [push, pull_request]
 
 jobs:
   mix-test:
@@ -22,7 +22,7 @@ jobs:
         with:
           access_token: ${{ github.token }}
       - name: Checkout Github repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Sets up an Erlang/OTP environment
         uses: erlef/setup-beam@v1
         with:
@@ -43,7 +43,7 @@ jobs:
           mix local.hex --force
           mix deps.get
           mix deps.compile
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version-file: "registrations/assets/package.json"
           cache: "npm"
@@ -65,5 +65,5 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
-          check_name: "test results"
+          check_name: "Registrations test results"
           files: registrations/_build/test/lib/adventure_registrations/test-junit-report.xml

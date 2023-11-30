@@ -119,6 +119,8 @@
     "qunit-dom": "^1.6.0",
     "relational-pouch": "^4.0.4",
     "stream-browserify": "^3.0.0",
+    "testem": "^3.11.0",
+    "testem-multi-reporter": "^1.2.0",
     "timers-browserify": "^2.0.12",
     "tinycolor2": "^1.5.2",
     "transform-loader": "^0.2.4",

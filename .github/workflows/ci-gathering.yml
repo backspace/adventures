@@ -1,11 +1,10 @@
 name: Gathering checks
 
-on:
-  push:
-    branches:
-      - main
-      - master
-  pull_request: {}
+on: [push, pull_request]
+
+permissions:
+  checks: write
+  pull-requests: write
 
 jobs:
   lint:
@@ -13,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 16.x
           cache: npm
@@ -35,9 +34,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Install Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 16.x
           cache: npm
@@ -48,3 +47,9 @@ jobs:
       - name: Run Tests
         run: npm test
         working-directory: gathering
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2.9.0
+        if: always()
+        with:
+          check_name: "Gathering test results"
+          junit_files: junit/host.xml
