@@ -10,43 +10,36 @@ export default class SettingsService extends Service {
   @service
   store;
 
-  modelPromise() {
+  async modelPromise() {
     const store = this.store;
     const pouch = store.adapterFor('settings').db;
 
-    // FIXME this is a hideous workaround for https://github.com/emberjs/data/issues/2150
-    // It’ll break if the ember-pouch record ID mapping changes
-    return pouch
-      .get('settings_2_settings')
-      .then(() => {
-        return run(() => store.findRecord('settings', 'settings'));
-      })
-      .catch(() => {
-        return run(() => store.createRecord('settings', { id: 'settings' }));
-      });
+    try {
+      await pouch.get('settings_2_settings');
+      return store.findRecord('settings', 'settings');
+    } catch (e) {
+      let settings = store.createRecord('settings', { id: 'settings' });
+      return settings.save();
+    }
   }
 
-  syncFeatures() {
-    return this.modelPromise().then((settings) => {
-      const features = this.features;
+  async syncFeatures() {
+    const settings = await this.modelPromise();
+    const features = this.features;
 
-      // FIXME why is this needed?
-      run(() => {
-        [
-          'destinationStatus',
-          'clandestineRendezvous',
-          'txtbeyond',
-          'unmnemonicDevices',
-        ].forEach((setting) => {
-          if (settings.get(setting)) {
-            features.enable(setting);
-          } else {
-            features.disable(setting);
-          }
-        });
-
-        return settings.save();
-      });
+    [
+      'destinationStatus',
+      'clandestineRendezvous',
+      'txtbeyond',
+      'unmnemonicDevices',
+    ].forEach((setting) => {
+      if (settings.get(setting)) {
+        features.enable(setting);
+      } else {
+        features.disable(setting);
+      }
     });
+
+    return settings.save();
   }
 }
