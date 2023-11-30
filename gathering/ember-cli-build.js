@@ -5,7 +5,7 @@ const nodeSass = require('node-sass');
 const webpack = require('webpack');
 
 module.exports = function (defaults) {
-  let app = new EmberApp(defaults, {
+  const app = new EmberApp(defaults, {
     autoImport: {
       webpack: {
         plugins: [
