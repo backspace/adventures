@@ -1,8 +1,11 @@
 import Route from '@ember/routing/route';
+import { inject as service } from '@ember/service';
 import classic from 'ember-classic-decorator';
 
 @classic
 export default class RegionRoute extends Route {
+  @service store;
+
   beforeModel() {
     return this.store
       .findAll('region')
