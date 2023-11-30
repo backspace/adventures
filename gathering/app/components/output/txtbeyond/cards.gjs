@@ -1,28 +1,30 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 import { alias } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { tagName } from '@ember-decorators/component';
 
 import config from 'adventure-gathering/config/environment';
+import { trackedFunction } from 'ember-resources/util/function';
+import Loading from 'adventure-gathering/components/loading';
 
 import blobStream from 'blob-stream';
-import classic from 'ember-classic-decorator';
 
 import moment from 'moment';
 import PDFDocument from 'pdfkit';
 
-@classic
-@tagName('span')
 export default class TxtbeyondCardsComponent extends Component {
-  rendering = true;
+  @service
+  puzzles;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
+  @service
+  txtbeyond;
+
+  generator = trackedFunction(this, async () => {
     const debug = this.debug;
 
-    const header = this.get('assets.header');
-    const bold = this.get('assets.bold');
-    const regular = this.get('assets.regular');
+    const header = this.args.assets.header;
+    const bold = this.args.assets.bold;
+    const regular = this.args.assets.regular;
 
     const doc = new PDFDocument({ layout: 'portrait', font: regular });
     const stream = doc.pipe(blobStream());
@@ -213,10 +215,17 @@ export default class TxtbeyondCardsComponent extends Component {
 
     doc.end();
 
-    stream.on('finish', () => {
-      this.src = stream.toBlobURL('application/pdf');
-      this.set('rendering', false);
+    let blobUrl = await new Promise((resolve) => {
+      stream.on('finish', () => {
+        resolve(stream.toBlobURL('application/pdf'));
+      });
     });
+
+    return blobUrl;
+  });
+
+  get src() {
+    return this.generator.value ?? undefined;
   }
 
   _padMask(mask) {
@@ -224,7 +233,7 @@ export default class TxtbeyondCardsComponent extends Component {
   }
 
   _rendezvousCards() {
-    return this.teams.reduce((cards, team) => {
+    return this.args.teams.reduce((cards, team) => {
       return cards.concat(
         team
           .hasMany('meetings')
@@ -236,15 +245,6 @@ export default class TxtbeyondCardsComponent extends Component {
       );
     }, []);
   }
-
-  @alias('settings.goal')
-  goal;
-
-  @service
-  puzzles;
-
-  @service
-  txtbeyond;
 
   _rendezvousCardDataForTeamMeeting(team, meeting) {
     const destination = meeting.belongsTo('destination').value();
@@ -261,14 +261,14 @@ export default class TxtbeyondCardsComponent extends Component {
     const answer = destination.get('answer');
     const mask = destination.get('mask');
 
-    // const goalLetter = this.get('goal')[index];
+    // const goalLetter = this.args.goal')[inde;
     // const goalDigit = parseInt(goalLetter);
 
-    // const chosenBlankIndex = this.get('puzzles').chooseBlankIndex({answer, mask, goalDigit});
+    // const chosenBlankIndex = this.args.puzzles').chooseBlankIndex({answer, mask, goalDigit;
     //
     // const answerDigit = parseInt(answer[chosenBlankIndex]);
     //
-    // const teamDigitsForAnswerAndGoalDigits = this.get('puzzles').teamDigitsForAnswerAndGoalDigits({teams, goalDigit, answerDigit});
+    // const teamDigitsForAnswerAndGoalDigits = this.args.puzzles').teamDigitsForAnswerAndGoalDigits({teams, goalDigit, answerDigit;
 
     return {
       team,
@@ -301,4 +301,13 @@ export default class TxtbeyondCardsComponent extends Component {
       .add(rendezvousInterval * index, 'minutes')
       .format('h:mma');
   }
+
+  <template>
+    {{#if this.src}}
+      <iframe title='embedded-txtbeyond-cards' src={{this.src}}>
+      </iframe>
+    {{else}}
+      <Loading />
+    {{/if}}
+  </template>
 }

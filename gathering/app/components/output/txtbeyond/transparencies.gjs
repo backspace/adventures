@@ -1,6 +1,5 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
 import { inject as service } from '@ember/service';
-import { tagName } from '@ember-decorators/component';
 
 import {
   pixelLength,
@@ -10,7 +9,8 @@ import {
   pointDimensionsForDisplay,
 } from 'adventure-gathering/utils/nokia-font';
 import blobStream from 'blob-stream';
-import classic from 'ember-classic-decorator';
+import { trackedFunction } from 'ember-resources/util/function';
+import Loading from 'adventure-gathering/components/loading';
 
 import MaxRectsPackerPackage from 'maxrects-packer';
 import PDFDocument from 'pdfkit';
@@ -19,17 +19,12 @@ const fontSize = 12;
 const lineGap = 8;
 const margin = 8;
 
-@classic
-@tagName('span')
 export default class TxtbeyondTransparenciesComponent extends Component {
-  rendering = true;
-
   @service
   txtbeyond;
 
-  didInsertElement() {
-    super.didInsertElement(...arguments);
-    const debug = this.debug;
+  generator = trackedFunction(this, async () => {
+    const debug = this.args.debug;
 
     const doc = new PDFDocument({ layout: 'landscape' });
     const stream = doc.pipe(blobStream());
@@ -41,7 +36,7 @@ export default class TxtbeyondTransparenciesComponent extends Component {
 
     const boxes = [];
 
-    this.teams.forEach((team) => {
+    this.args.teams.forEach((team) => {
       team.get('meetings').forEach((meeting) => {
         this.txtbeyond
           .descriptionMasks(meeting.get('destination.description'))
@@ -73,10 +68,17 @@ export default class TxtbeyondTransparenciesComponent extends Component {
 
     doc.end();
 
-    stream.on('finish', () => {
-      this.src = stream.toBlobURL('application/pdf');
-      this.set('rendering', false);
+    let blobUrl = await new Promise((resolve) => {
+      stream.on('finish', () => {
+        resolve(stream.toBlobURL('application/pdf'));
+      });
     });
+
+    return blobUrl;
+  });
+
+  get src() {
+    return this.generator.value ?? undefined;
   }
 
   _buildTransparency(team, meeting, mask) {
@@ -118,8 +120,8 @@ export default class TxtbeyondTransparenciesComponent extends Component {
     },
     debug
   ) {
-    const header = this.get('assets.header');
-    const regular = this.get('assets.regular');
+    const header = this.args.assets.header;
+    const regular = this.args.assets.regular;
 
     const adjustedPixelLength = pointDimensions.pointsPerPixel;
 
@@ -214,4 +216,13 @@ export default class TxtbeyondTransparenciesComponent extends Component {
         .find((phone) => phone.number === number).displaySize
     );
   }
+
+  <template>
+    {{#if this.src}}
+      <iframe title='embedded-txtbeyond-transparencies' src={{this.src}}>
+      </iframe>
+    {{else}}
+      <Loading />
+    {{/if}}
+  </template>
 }
