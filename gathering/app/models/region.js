@@ -24,10 +24,10 @@ export default class Region extends Model {
   @hasMany('region', { inverse: 'parent', async: false })
   children;
 
-  @hasMany('destination', { async: false })
+  @hasMany('destination', { inverse: 'region', async: false })
   destinations;
 
-  @hasMany('waypoint', { async: false })
+  @hasMany('waypoint', { inverse: 'region', async: false })
   waypoints;
 
   @computed('destinations.@each.meetingCount', 'children.@each.meetingCount')

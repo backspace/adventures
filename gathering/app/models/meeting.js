@@ -4,10 +4,10 @@ import { hasMany, belongsTo, attr } from '@ember-data/model';
 import Model from 'ember-pouch/model';
 
 export default Model.extend({
-  destination: belongsTo('destination'),
-  waypoint: belongsTo('waypoint'),
+  destination: belongsTo('destination', { inverse: 'meetings', async: false }),
+  waypoint: belongsTo('waypoint', { inverse: 'meetings', async: false }),
 
-  teams: hasMany('team', { async: false }),
+  teams: hasMany('team', { inverse: 'meetings', async: false }),
 
   sortedTeams: sort('teams', 'teamSort'),
   teamSort: Object.freeze(['name']),

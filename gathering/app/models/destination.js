@@ -106,10 +106,10 @@ export default class Destination extends Model {
   @equal('status', 'available')
   isAvailable;
 
-  @belongsTo('region', { async: false })
+  @belongsTo('region', { inverse: 'destinations', async: false })
   region;
 
-  @hasMany('meeting', { async: false })
+  @hasMany('meeting', { inverse: 'destination', async: false })
   meetings;
 
   @computed('meetings.{length,@each.destination}')

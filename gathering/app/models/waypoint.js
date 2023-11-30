@@ -8,7 +8,7 @@ import Model from 'ember-pouch/model';
 
 @classic
 export default class Waypoint extends Model {
-  @belongsTo('region', { async: false })
+  @belongsTo('region', { inverse: 'waypoints', async: false })
   region;
 
   @attr('string')
@@ -104,17 +104,8 @@ export default class Waypoint extends Model {
   @equal('status', 'available')
   isAvailable;
 
-  @belongsTo('region', { async: false })
-  region;
-
-  @hasMany('meeting', { async: false })
+  @hasMany('meeting', { inverse: 'waypoint', async: false })
   meetings;
-
-  @attr('createDate')
-  createdAt;
-
-  @attr('updateDate')
-  updatedAt;
 
   @service
   puzzles;

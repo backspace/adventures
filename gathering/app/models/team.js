@@ -24,7 +24,7 @@ export default class Team extends Model {
   @attr()
   phones;
 
-  @hasMany('meeting', { async: false })
+  @hasMany('meeting', { inverse: 'teams', async: false })
   meetings;
 
   @mapBy('meetings', 'destination')
