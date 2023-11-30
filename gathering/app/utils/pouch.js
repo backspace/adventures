@@ -1,5 +1,6 @@
 import HttpPouch from 'pouchdb-adapter-http';
 import indexeddb from 'pouchdb-adapter-indexeddb';
+import MemoryAdapter from 'pouchdb-adapter-memory';
 import PouchDB from 'pouchdb-core';
 import PouchDBDebug from 'pouchdb-debug';
 import PouchDBFind from 'pouchdb-find';
@@ -14,6 +15,7 @@ PouchDB.plugin(PouchDBDebug)
   .plugin(PouchDBFind)
   .plugin(PouchDBRelational)
   .plugin(indexeddb)
+  .plugin(MemoryAdapter)
   .plugin(HttpPouch)
   .plugin(mapreduce)
   .plugin(replication);
