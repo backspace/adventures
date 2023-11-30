@@ -1,4 +1,7 @@
-<div id='scheduler' class={{if this.puzzles.implementation.hasWaypoints 'has-waypoints'}}>
+<div
+  id='scheduler'
+  class={{if this.puzzles.implementation.hasWaypoints 'has-waypoints'}}
+>
   <div class='map'>
     <img src={{this.model.map}} alt='map' />
     {{#each this.model.ancestorRegionContainers as |regionContainer|}}
@@ -61,7 +64,7 @@
     {{/each}}
   </ul>
 
-  <div class='meeting-form {{if this.meeting.isForbidden 'forbidden'}}'>
+  <div class='meeting-form {{if this.meeting.isForbidden "forbidden"}}'>
     {{#if this.puzzles.implementation.hasWaypoints}}
       <div class='row'>
         <label for='waypoint-select'>W</label>
@@ -110,11 +113,7 @@
 
     <div class='row'>
       <label for='index-input'>I</label>
-      <Input
-        @value={{this.meeting.index}}
-        id='index-input'
-        class='index'
-      />
+      <Input @value={{this.meeting.index}} id='index-input' class='index' />
     </div>
 
     {{#if this.puzzles.implementation.hasMeetingOffsets}}

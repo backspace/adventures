@@ -33,7 +33,12 @@
             <a href='#' {{on 'click' (fn this.setDestination database)}}>
               {{database}}
             </a>
-            <button class='button tiny hollow secondary' type='button' {{on 'click' (fn this.removeDestination database)}} data-test-remove>✘</button>
+            <button
+              class='button tiny hollow secondary'
+              type='button'
+              {{on 'click' (fn this.removeDestination database)}}
+              data-test-remove
+            >✘</button>
           </li>
         {{/each}}
       </ul>

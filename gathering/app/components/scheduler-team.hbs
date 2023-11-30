@@ -1,9 +1,9 @@
 {{! template-lint-disable no-invalid-interactive }}
 <li
   class='team
-    {{if this.isSelected 'selected'}}
-    {{if this.hasMetHighlightedTeam 'highlighted'}}
-    {{if @isAhead 'ahead'}}'
+    {{if this.isSelected "selected"}}
+    {{if this.hasMetHighlightedTeam "highlighted"}}
+    {{if @isAhead "ahead"}}'
   title={{this.usersAndNotes}}
   {{on 'mouseenter' this.handleMouseEnter}}
   {{on 'mouseleave' this.handleMouseLeave}}

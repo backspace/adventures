@@ -50,7 +50,10 @@
             <td>
               <label>
                 Overlays?
-                <Input @type='checkbox' @checked={{this.unmnemonicDevicesOverlays}} />
+                <Input
+                  @type='checkbox'
+                  @checked={{this.unmnemonicDevicesOverlays}}
+                />
               </label>
             </td>
             <td>
@@ -69,19 +72,25 @@
             <td>
               <label>
                 Team overviews?
-                <Input @type='checkbox' @checked={{this.unmnemonicDevicesTeamOverviews}} />
+                <Input
+                  @type='checkbox'
+                  @checked={{this.unmnemonicDevicesTeamOverviews}}
+                />
                 Low res map?
-                <Input @type='checkbox' @checked={{this.unmnemonicDevicesTeamOverviewsLowResMap}} />
+                <Input
+                  @type='checkbox'
+                  @checked={{this.unmnemonicDevicesTeamOverviewsLowResMap}}
+                />
               </label>
             </td>
             <td>
               {{#if this.unmnemonicDevicesTeamOverviews}}
-              <Output::UnmnemonicDevices::TeamOverviews
-                @teams={{this.model.teams}}
-                @assets={{this.model.assets}}
-                @lowRes={{this.unmnemonicDevicesTeamOverviewsLowResMap}}
-                @debug={{this.debug}}
-              />
+                <Output::UnmnemonicDevices::TeamOverviews
+                  @teams={{this.model.teams}}
+                  @assets={{this.model.assets}}
+                  @lowRes={{this.unmnemonicDevicesTeamOverviewsLowResMap}}
+                  @debug={{this.debug}}
+                />
               {{/if}}
             </td>
           </tr>
@@ -90,7 +99,10 @@
             <td>
               <label>
                 Verification?
-                <Input @type='checkbox' @checked={{this.unmnemonicDevicesVerification}} />
+                <Input
+                  @type='checkbox'
+                  @checked={{this.unmnemonicDevicesVerification}}
+                />
               </label>
             </td>
             <td>
@@ -108,7 +120,10 @@
             <td>
               <label>
                 VRS SQL?
-                <Input @type='checkbox' @checked={{this.unmnemonicDevicesVrssql}} />
+                <Input
+                  @type='checkbox'
+                  @checked={{this.unmnemonicDevicesVrssql}}
+                />
               </label>
             </td>
             <td>
@@ -128,7 +143,10 @@
             <td>
               <label>
                 Answers?
-                <Input @type='checkbox' @checked={{this.unmnemonicDevicesAnswers}} />
+                <Input
+                  @type='checkbox'
+                  @checked={{this.unmnemonicDevicesAnswers}}
+                />
               </label>
             </td>
             <td>

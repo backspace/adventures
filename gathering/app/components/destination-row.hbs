@@ -1,11 +1,15 @@
 <tr
   class='destination
-    {{if @destination.isIncomplete 'incomplete'}}
-    {{if this.hasMeetings 'meetings'}}'
+    {{if @destination.isIncomplete "incomplete"}}
+    {{if this.hasMeetings "meetings"}}'
 >
   {{#if (feature-flag 'destination-status')}}
     <td>
-      <button class='status' type='button' {{on 'click' this.toggleStatus}}>{{this.status}}</button>
+      <button
+        class='status'
+        type='button'
+        {{on 'click' this.toggleStatus}}
+      >{{this.status}}</button>
     </td>
   {{/if}}
   <td class='region'>{{@destination.region.name}}</td>

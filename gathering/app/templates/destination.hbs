@@ -3,12 +3,12 @@
     <div class='small-12 cell'>
       <label>
         Region
-        <select
-          {{on 'change' this.setRegion}}
-          class='region'
-        >
+        <select {{on 'change' this.setRegion}} class='region'>
           <option></option>
-          <RegionOptions @regions={{this.sortedRegions}} @selected={{this.model.region}} />
+          <RegionOptions
+            @regions={{this.sortedRegions}}
+            @selected={{this.model.region}}
+          />
         </select>
       </label>
 
@@ -31,25 +31,25 @@
       </label>
     </div>
 
-      <div class='small-12 cell'>
-        <label>
-          Mask
-          <div class='input-group'>
-            <Input @value={{this.model.mask}} class='mask input-group-field' />
-            {{#if this.model.suggestedMask}}
-              <div class='input-group-button'>
-                <button
-                  type='button'
-                  class='suggested-mask button default'
-                  {{on 'click' this.setMaskToSuggestion}}
-                >
-                  {{this.model.suggestedMask}}
-                </button>
-              </div>
-            {{/if}}
-          </div>
-        </label>
-      </div>
+    <div class='small-12 cell'>
+      <label>
+        Mask
+        <div class='input-group'>
+          <Input @value={{this.model.mask}} class='mask input-group-field' />
+          {{#if this.model.suggestedMask}}
+            <div class='input-group-button'>
+              <button
+                type='button'
+                class='suggested-mask button default'
+                {{on 'click' this.setMaskToSuggestion}}
+              >
+                {{this.model.suggestedMask}}
+              </button>
+            </div>
+          {{/if}}
+        </div>
+      </label>
+    </div>
   </div>
 
   <div class='grid-x grid-padding-x'>

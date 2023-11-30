@@ -221,7 +221,8 @@ $column-width: 6rem;
 
       font-weight: bold;
 
-      .name, .accessibility {
+      .name,
+      .accessibility {
         padding: 2px 3px;
       }
 
@@ -229,7 +230,7 @@ $column-width: 6rem;
         font-weight: normal;
         border-top: 1px solid #bbb;
       }
-  }
+    }
 
     .destinations,
     .waypoints {

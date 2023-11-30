@@ -16,12 +16,12 @@
     <div class='small-12 cell'>
       <label>
         Region
-        <select
-          {{on 'change' this.setParent}}
-          class='region'
-        >
+        <select {{on 'change' this.setParent}} class='region'>
           <option></option>
-          <RegionOptions @regions={{this.sortedRegions}} @selected={{this.model.parent}} />
+          <RegionOptions
+            @regions={{this.sortedRegions}}
+            @selected={{this.model.parent}}
+          />
         </select>
       </label>
     </div>
@@ -38,7 +38,10 @@
     <div class='small-12 cell'>
       <label>
         Accessibility
-        <Textarea @value={{this.model.accessibility}} data-test-accessibility-field />
+        <Textarea
+          @value={{this.model.accessibility}}
+          data-test-accessibility-field
+        />
       </label>
     </div>
   </div>
