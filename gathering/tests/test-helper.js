@@ -15,4 +15,4 @@ PouchDB.plugin(MemoryAdapter);
 
 setup(QUnit.assert);
 
-start();
+start({ setupTestIsolationValidation: true });
