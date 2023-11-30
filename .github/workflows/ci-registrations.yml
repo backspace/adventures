@@ -65,5 +65,5 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
-          check_name: "test results"
+          check_name: "Registrations test results"
           files: registrations/_build/test/lib/adventure_registrations/test-junit-report.xml
