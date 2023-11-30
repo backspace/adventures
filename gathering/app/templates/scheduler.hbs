@@ -119,8 +119,10 @@
     {{#if this.puzzles.implementation.hasMeetingOffsets}}
       <div class='row'>
         <label for='offset-input'>O</label>
-        <Input
-          @value={{this.suggestedOffset}}
+        <input
+          type='text'
+          value={{this.meetingOffset}}
+          {{on 'input' this.setMeetingOffsetOverride}}
           id='offset-input'
           class='offset'
           data-test-offset-input

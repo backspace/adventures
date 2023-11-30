@@ -1,17 +1,25 @@
 /* eslint-disable ember/no-get */
 import Controller from '@ember/controller';
-import { action, computed, get, set } from '@ember/object';
-import { mapBy, max } from '@ember/object/computed';
+import { action, get, set } from '@ember/object';
 import { inject as service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
 import { all } from 'rsvp';
 
 export default class SchedulerController extends Controller {
   @tracked meeting;
+  @tracked meetingOffsetOverride;
 
-  @mapBy('model.teams', 'meetings') teamMeetings;
-  @mapBy('teamMeetings', 'length') meetingCounts;
-  @max('meetingCounts') highestMeetingCount;
+  get teamMeetings() {
+    return this.model.teams.mapBy('meetings');
+  }
+
+  get meetingCounts() {
+    return this.teamMeetings.mapBy('length');
+  }
+
+  get highestMeetingCount() {
+    return Math.max(...this.meetingCounts);
+  }
 
   @service pathfinder;
   @service puzzles;
@@ -24,7 +32,6 @@ export default class SchedulerController extends Controller {
     ].uniqBy('id');
   }
 
-  @computed('meeting.teams.@each.meetings')
   get lastMeetingOffsets() {
     return (get(this, 'meeting.teams') || []).map(
       (team) => team.get('savedMeetings.lastObject.offset') || 0
@@ -35,11 +42,6 @@ export default class SchedulerController extends Controller {
     return this.model.teams.sortBy('createdAt');
   }
 
-  @computed(
-    'lastMeetingOffsets.[]',
-    'meeting.{destination.region.name,teams}',
-    'puzzles.{hasMeetingOffsets,implementation.hasMeetingOffsets}'
-  )
   get suggestedOffset() {
     if (this.puzzles.implementation.hasMeetingOffsets) {
       const maxOffset = Math.max(...this.lastMeetingOffsets, 0);
@@ -73,7 +75,13 @@ export default class SchedulerController extends Controller {
     }
   }
 
-  set suggestedOffset(_value) {}
+  get meetingOffset() {
+    return this.meetingOffsetOverride ?? this.suggestedOffset;
+  }
+
+  @action setMeetingOffsetOverride(event) {
+    this.meetingOffsetOverride = event.target.value;
+  }
 
   @action selectDestination(destination) {
     if (!this.meeting) {
@@ -124,7 +132,7 @@ export default class SchedulerController extends Controller {
   @action saveMeeting() {
     const meeting = this.meeting;
 
-    meeting.set('offset', this.suggestedOffset);
+    meeting.set('offset', this.meetingOffset);
 
     meeting
       .save()
@@ -136,6 +144,7 @@ export default class SchedulerController extends Controller {
       })
       .then(() => {
         set(this, 'meeting', this.store.createRecord('meeting'));
+        this.meetingOffsetOverride = undefined;
       });
   }
 

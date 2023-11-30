@@ -47,6 +47,7 @@ module('Acceptance | destinations', function (hooks) {
             description: 'Hona-Karekh',
             status: 'available',
             region: regionTwo,
+            awesomeness: 1,
           });
 
           return all([fixtureTwo.save(), fixtureOne.save()]);
