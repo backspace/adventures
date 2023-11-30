@@ -2,13 +2,18 @@ import Component from '@ember/component';
 import { inject as service } from '@ember/service';
 import { tagName } from '@ember-decorators/component';
 
+import {
+  pixelLength,
+  drawnLength,
+  drawString,
+  registrationLength,
+  pointDimensionsForDisplay,
+} from 'adventure-gathering/utils/nokia-font';
 import blobStream from 'blob-stream';
 import classic from 'ember-classic-decorator';
 
 import MaxRectsPackerPackage from 'maxrects-packer';
 import PDFDocument from 'pdfkit';
-
-// import { pixelLength, drawnLength, drawString, registrationLength, pointDimensionsForDisplay } from 'nokia-font/utils/nokia-font';
 
 const fontSize = 12;
 const lineGap = 8;
