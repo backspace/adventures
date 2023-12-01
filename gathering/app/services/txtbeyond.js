@@ -111,7 +111,9 @@ export default class TxtbeyondService extends Service {
   }
 
   _incrementTeamPhoneMeetingCount(team, number) {
-    const foundPhone = (team.get('phones') || []).findBy('number', number);
+    const foundPhone = (team.get('phones') || []).find(
+      (p) => p.number === number
+    );
 
     if (!foundPhone) {
       throw new Error(`Unable to find number ${number} under team ${team.id}!`);

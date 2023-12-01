@@ -17,7 +17,7 @@ export default class DestinationController extends Controller {
   @action
   setRegion(event) {
     const regionId = event.target.value;
-    const region = this.regions.findBy('id', regionId);
+    const region = this.regions.find((r) => r.id === regionId);
     this.model.set('region', region);
   }
 
