@@ -1,6 +1,7 @@
-import Component from '@glimmer/component';
 import { inject as service } from '@ember/service';
+import Component from '@glimmer/component';
 
+import Loading from 'adventure-gathering/components/loading';
 import {
   pixelLength,
   drawnLength,
@@ -10,7 +11,6 @@ import {
 } from 'adventure-gathering/utils/nokia-font';
 import blobStream from 'blob-stream';
 import { trackedFunction } from 'ember-resources/util/function';
-import Loading from 'adventure-gathering/components/loading';
 
 import MaxRectsPackerPackage from 'maxrects-packer';
 import PDFDocument from 'pdfkit';

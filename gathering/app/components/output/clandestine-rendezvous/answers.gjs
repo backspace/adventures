@@ -1,10 +1,10 @@
 import Component from '@glimmer/component';
-import { trackedFunction } from 'ember-resources/util/function';
 import Loading from 'adventure-gathering/components/loading';
 
 import config from 'adventure-gathering/config/environment';
 
 import blobStream from 'blob-stream';
+import { trackedFunction } from 'ember-resources/util/function';
 
 import moment from 'moment';
 import PDFDocument from 'pdfkit';

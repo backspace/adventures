@@ -1,7 +1,7 @@
-import Component from '@glimmer/component';
-import { action } from '@ember/object';
 import { on } from '@ember/modifier';
+import { action } from '@ember/object';
 import { htmlSafe } from '@ember/template';
+import Component from '@glimmer/component';
 
 export default class SchedulerDestinationComponent extends Component {
   get style() {

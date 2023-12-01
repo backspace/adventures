@@ -3,8 +3,8 @@ import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
 import classic from 'ember-classic-decorator';
-import { all } from 'rsvp';
 import sortBy from 'lodash.sortby';
+import { all } from 'rsvp';
 
 @classic
 export default class TeamsController extends Controller {

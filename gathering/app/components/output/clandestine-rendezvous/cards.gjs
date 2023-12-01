@@ -1,17 +1,17 @@
+import { get } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import Loading from 'adventure-gathering/components/loading';
-import { get } from '@ember/object';
 
 import config from 'adventure-gathering/config/environment';
 
 import blobStream from 'blob-stream';
 import { trackedFunction } from 'ember-resources/util/function';
 
+import sortBy from 'lodash.sortby';
 import moment from 'moment';
 import PDFDocument from 'pdfkit';
-import sortBy from 'lodash.sortby';
 
 export default class ClandestineRendezvousCardsComponent extends Component {
   generator = trackedFunction(this, async () => {
@@ -302,7 +302,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
     const answer = destination.get('answer');
     const mask = destination.get('mask');
 
-    const goalLetter = get(this.args.settings, 'goal')[index];
+    const goalLetter = this.args.settings.goal[index];
     const goalDigit = parseInt(goalLetter);
 
     const chosenBlankIndex = this.puzzles.implementation.chooseBlankIndex({

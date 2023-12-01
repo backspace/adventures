@@ -1,13 +1,12 @@
-import Component from '@glimmer/component';
-import { action } from '@ember/object';
+import { fn, concat } from '@ember/helper';
 import { on } from '@ember/modifier';
-import { fn } from '@ember/helper';
-import { concat } from '@ember/helper';
+import { action } from '@ember/object';
 import { htmlSafe } from '@ember/template';
-import { and, eq } from 'ember-truth-helpers';
-import createRef from 'ember-ref-bucket/modifiers/create-ref';
+import Component from '@glimmer/component';
 import SchedulerDestination from 'adventure-gathering/components/scheduler-destination';
 import SchedulerWaypoint from 'adventure-gathering/components/scheduler-waypoint';
+import createRef from 'ember-ref-bucket/modifiers/create-ref';
+import { and, eq } from 'ember-truth-helpers';
 
 export default class RegionContainerDestinations extends Component {
   get region() {

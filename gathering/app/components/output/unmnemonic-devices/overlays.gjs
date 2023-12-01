@@ -1,9 +1,12 @@
+import { Input } from '@ember/component';
+import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import { inject as service } from '@ember/service';
-import { trackedFunction } from 'ember-resources/util/function';
-import { Input } from '@ember/component';
 import Loading from 'adventure-gathering/components/loading';
+import blobStream from 'blob-stream';
+import { trackedFunction } from 'ember-resources/util/function';
+
+import PDFDocument from 'pdfkit';
 
 import {
   drawZigzagBackground,
@@ -12,9 +15,6 @@ import {
   drawConcentricSquaresBackground,
   drawConcentricStarsBackground,
 } from './overlay-backgrounds';
-
-import blobStream from 'blob-stream';
-import PDFDocument from 'pdfkit';
 
 export const PAGE_MARGIN = 0.3 * 72;
 export const PAGE_PADDING = 0.2 * 72;

@@ -1,7 +1,7 @@
 import { sort } from '@ember/object/computed';
 import { hasMany, belongsTo, attr } from '@ember-data/model';
-import Model from 'ember-pouch/model';
 import classic from 'ember-classic-decorator';
+import Model from 'ember-pouch/model';
 
 @classic
 export default class Meeting extends Model {

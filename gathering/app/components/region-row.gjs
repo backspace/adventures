@@ -1,8 +1,8 @@
-import Component from '@glimmer/component';
-import { action } from '@ember/object';
 import { on } from '@ember/modifier';
-import { htmlSafe } from '@ember/template';
+import { action } from '@ember/object';
 import { LinkTo } from '@ember/routing';
+import { htmlSafe } from '@ember/template';
+import Component from '@glimmer/component';
 
 export default class RegionRow extends Component {
   get nesting() {

@@ -1,9 +1,9 @@
+import { concat } from '@ember/helper';
+import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import { inject as service } from '@ember/service';
 import CopyButton from 'ember-cli-clipboard/components/copy-button';
 import knex from 'knex';
-import { concat } from '@ember/helper';
 
 export default class TeamOverviewsComponent extends Component {
   @tracked src;
