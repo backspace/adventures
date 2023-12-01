@@ -49,7 +49,7 @@ export default class MappableRegionComponent extends Component {
       const meetingAncestorRegionIds = highlightedTeam
         .hasMany('meetings')
         .value()
-        .reject((m) => m.isNew)
+        .filter((m) => !m.isNew)
         .map((meeting) => meeting.belongsTo('destination').value())
         .map((destination) => destination.belongsTo('region').value())
         .mapBy('ancestor.id');
@@ -78,8 +78,7 @@ export default class MappableRegionComponent extends Component {
       const waypointMeetingAncestorRegionIds = highlightedTeam
         .hasMany('meetings')
         .value()
-        .reject((m) => m.isNew)
-        .filter((m) => m.waypoint)
+        .filter((m) => !m.isNew && m.waypoint)
         .map((meeting) => meeting.belongsTo('waypoint').value())
         .map((waypoint) => waypoint.belongsTo('region').value())
         .mapBy('ancestor.id');

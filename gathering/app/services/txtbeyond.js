@@ -69,7 +69,7 @@ export default class TxtbeyondService extends Service {
     }, {});
 
     meetings
-      .reject((m) => m.number)
+      .filter((m) => !m.number)
       .forEach((meeting) => {
         const phones = meeting.get('teams').reduce((phones, team) => {
           return phones.concat(team.get('phones'));

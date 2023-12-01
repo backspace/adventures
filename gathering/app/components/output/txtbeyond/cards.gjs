@@ -256,7 +256,7 @@ export default class TxtbeyondCardsComponent extends Component {
     // const rendezvousLetter = String.fromCharCode(65 + index);
     // const rendezvousTime = this._getRendezvousTimeForIndex(index);
 
-    const otherTeams = teams.reject((t) => t.id == team.id);
+    const otherTeams = teams.filter((t) => t.id !== team.id);
     const otherTeamName = otherTeams.mapBy('name');
 
     const answer = destination.get('answer');
