@@ -113,7 +113,8 @@ export default class SchedulerController extends Controller {
     }
 
     if (get(this, 'meeting.teams').includes(team)) {
-      get(this, 'meeting.teams').removeObject(team);
+      let index = get(this, 'meeting.teams').indexOf(team);
+      get(this, 'meeting.teams').splice(index, 1);
       return;
     }
 
