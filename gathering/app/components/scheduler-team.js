@@ -32,7 +32,7 @@ export default class SchedulerTeamComponent extends Component {
 
     const teamMeetings = team.hasMany('meetings').value();
 
-    return teamMeetings.any(
+    return teamMeetings.some(
       (meeting) =>
         meeting.hasMany('teams').ids().indexOf(highlightedTeam.id) > -1
     );

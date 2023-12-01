@@ -88,7 +88,7 @@ class RegionContainer {
 
   has(type) {
     return (
-      this[type].length > 0 || this.children.any((child) => child.has(type))
+      this[type].length > 0 || this.children.some((child) => child.has(type))
     );
   }
 
