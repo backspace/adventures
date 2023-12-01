@@ -1,5 +1,6 @@
 import Service from '@ember/service';
 import classic from 'ember-classic-decorator';
+import sortBy from 'lodash.sortby';
 
 @classic
 export default class ClandestineRendezvousService extends Service {
@@ -46,7 +47,7 @@ export default class ClandestineRendezvousService extends Service {
     if (teams.length === 1) {
       map.set(teams[0], difference);
     } else {
-      const sortedTeams = teams.sortBy('name');
+      const sortedTeams = sortBy(teams, ['name']);
 
       map.set(sortedTeams[0], Math.ceil(difference / 2));
       map.set(sortedTeams[1], Math.floor(difference / 2));

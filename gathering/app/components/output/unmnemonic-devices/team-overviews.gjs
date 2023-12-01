@@ -58,22 +58,25 @@ export default class TeamOverviewsComponent extends Component {
 
     let devices = this.devices;
 
-    this.args.teams.sortBy('createdAt').forEach((team, index) => {
-      if (index > 0) {
-        doc.addPage();
-      }
+    this.args.teams
+      .slice()
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .forEach((team, index) => {
+        if (index > 0) {
+          doc.addPage();
+        }
 
-      drawMargins(doc, () => {
-        drawHeader(team);
-        drawMap();
-        drawMeetingPoints(team);
-        drawExtras();
+        drawMargins(doc, () => {
+          drawHeader(team);
+          drawMap();
+          drawMeetingPoints(team);
+          drawExtras();
 
-        doc.addPage();
+          doc.addPage();
 
-        drawMeetingBlanks(team);
+          drawMeetingBlanks(team);
+        });
       });
-    });
 
     doc.end();
 
@@ -137,7 +140,8 @@ export default class TeamOverviewsComponent extends Component {
         team
           .hasMany('meetings')
           .value()
-          .sortBy('destination.id')
+          .slice()
+          .sort((a, b) => a.destination.id - b.destination.id)
           .forEach((meeting, index) => {
             const rendezvousLetter = identifierForMeeting(index);
 
@@ -297,7 +301,8 @@ export default class TeamOverviewsComponent extends Component {
       team
         .hasMany('meetings')
         .value()
-        .sortBy('destination.id')
+        .slice()
+        .sort((a, b) => a.destination.id - b.destination.id)
         .forEach((meeting, index) => {
           const rendezvousLetter = identifierForMeeting(index);
 

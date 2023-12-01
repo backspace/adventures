@@ -39,7 +39,7 @@ export default class SchedulerController extends Controller {
   }
 
   get teams() {
-    return this.model.teams.sortBy('createdAt');
+    return this.model.teams.slice().sort((a, b) => a.createdAt - b.createdAt);
   }
 
   get suggestedOffset() {

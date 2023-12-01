@@ -238,7 +238,8 @@ export default class TxtbeyondCardsComponent extends Component {
         team
           .hasMany('meetings')
           .value()
-          .sortBy('index')
+          .slice()
+          .sort((a, b) => a.index - b.index)
           .map((meeting, index) => {
             return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
           })

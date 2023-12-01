@@ -1,15 +1,16 @@
 import Controller from '@ember/controller';
 import { action } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
+import orderBy from 'lodash.orderby';
 
 export default class WaypointIndexController extends Controller {
   @tracked defaultSort = true;
 
   get waypoints() {
     if (this.defaultSort) {
-      return [...this.model.sortBy('updatedAt')].reverse();
+      return orderBy(this.model, ['updatedAt'], ['desc']);
     } else {
-      return this.model.sortBy('region.name', 'createdAt');
+      return orderBy(this.model, ['region.name', 'createdAt'], ['asc', 'asc']);
     }
   }
 

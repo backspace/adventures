@@ -73,7 +73,8 @@ export default class ClandestineRendezvousMapsComponent extends Component {
       team
         .hasMany('meetings')
         .value()
-        .sortBy('index')
+        .slice()
+        .sort((a, b) => a.index - b.index)
         .forEach((meeting, index) => {
           const destination = meeting.belongsTo('destination').value();
           const region = destination.belongsTo('region').value();

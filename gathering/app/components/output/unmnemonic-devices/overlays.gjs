@@ -65,7 +65,8 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         team
           .hasMany('meetings')
           .value()
-          .sortBy('destination.id')
+          .slice()
+          .sort((a, b) => a.destination.id - b.destination.id)
           .forEach((meeting, index) => {
             waypoints.push({
               team,

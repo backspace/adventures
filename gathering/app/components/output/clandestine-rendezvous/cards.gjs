@@ -11,6 +11,7 @@ import { trackedFunction } from 'ember-resources/util/function';
 
 import moment from 'moment';
 import PDFDocument from 'pdfkit';
+import sortBy from 'lodash.sortby';
 
 export default class ClandestineRendezvousCardsComponent extends Component {
   generator = trackedFunction(this, async () => {
@@ -167,7 +168,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
           label: `from ${cardData.otherTeamName}`,
         };
 
-        const sortedTeams = [cardData.team, otherTeam].sortBy('name');
+        const sortedTeams = sortBy([cardData.team, otherTeam], ['name']);
 
         if (sortedTeams[0] === cardData.team) {
           rows.push(myRow);
@@ -274,7 +275,8 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         team
           .hasMany('meetings')
           .value()
-          .sortBy('index')
+          .slice()
+          .sort((a, b) => a.index - b.index)
           .map((meeting, index) => {
             return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
           })
