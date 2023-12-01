@@ -38,7 +38,7 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
 
       doc.moveDown();
 
-      const meetingsWithIndex = meetings.filterBy('index', index);
+      const meetingsWithIndex = meetings.filter((m) => m.index === index);
 
       doc.text(
         meetingsWithIndex

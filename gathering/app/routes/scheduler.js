@@ -14,12 +14,12 @@ export default class SchedulerRoute extends Route {
   async model() {
     await this.store.findAll('region');
 
-    let destinations = (await this.store.findAll('destination'))
-      .filterBy('isAvailable')
-      .filterBy('isComplete');
-    let waypoints = (await this.store.findAll('waypoint'))
-      .filterBy('isAvailable')
-      .filterBy('isComplete');
+    let destinations = (await this.store.findAll('destination')).filter(
+      (d) => d.isAvailable && d.isComplete
+    );
+    let waypoints = (await this.store.findAll('waypoint')).filter(
+      (w) => w.isAvailable && w.isComplete
+    );
 
     let typeToList = {
       waypoints,

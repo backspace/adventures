@@ -1,4 +1,4 @@
-import { mapBy, filterBy } from '@ember/object/computed';
+import { mapBy } from '@ember/object/computed';
 import { hasMany, attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
@@ -32,8 +32,9 @@ export default class Team extends Model {
   @mapBy('meetings', 'waypoint')
   waypoints;
 
-  @filterBy('meetings', 'isNew', false)
-  savedMeetings;
+  get savedMeetings() {
+    return this.meetings.filter((m) => !m.isNew);
+  }
 
   get averageAwesomeness() {
     const awesomenesses = this.meetings

@@ -52,7 +52,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
     let waypointsToGenerate;
 
     if (this.allOverlays) {
-      waypointsToGenerate = this.args.waypoints.filterBy('isComplete');
+      waypointsToGenerate = this.args.waypoints.filter((w) => w.isComplete);
 
       if (this.excludeAvailable) {
         waypointsToGenerate = waypointsToGenerate.rejectBy(

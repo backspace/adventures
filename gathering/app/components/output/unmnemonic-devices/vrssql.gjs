@@ -30,11 +30,13 @@ export default class TeamOverviewsComponent extends Component {
   get regions() {
     return knex({ client: 'pg' })('unmnemonic_devices.regions')
       .insert(
-        this.args.regions.filterBy('isComplete').map((region) => ({
-          id: region.get('id'),
-          name: this.stripString(region.get('name')),
-          inserted_at: region.get('createdAt').toISOString(),
-        }))
+        this.args.regions
+          .filter((r) => r.isComplete)
+          .map((region) => ({
+            id: region.get('id'),
+            name: this.stripString(region.get('name')),
+            inserted_at: region.get('createdAt').toISOString(),
+          }))
       )
       .onConflict('id')
       .merge();
@@ -44,8 +46,7 @@ export default class TeamOverviewsComponent extends Component {
     return knex({ client: 'pg' })('unmnemonic_devices.destinations')
       .insert(
         this.args.destinations
-          .filterBy('isComplete')
-          .filterBy('isAvailable')
+          .filter((d) => d.isComplete && d.isAvailable)
           .map((destination) => ({
             id: destination.get('id'),
             description: this.stripString(destination.get('description')),
@@ -64,14 +65,16 @@ export default class TeamOverviewsComponent extends Component {
   get books() {
     return knex({ client: 'pg' })('unmnemonic_devices.books')
       .insert(
-        this.args.waypoints.filterBy('isComplete').map((waypoint) => ({
-          id: waypoint.get('id'),
-          title: this.stripString(waypoint.get('name')),
-          excerpt: this.stripString(
-            this.devices.trimmedInnerExcerpt(waypoint.get('excerpt'))
-          ),
-          inserted_at: waypoint.get('createdAt').toISOString(),
-        }))
+        this.args.waypoints
+          .filter((w) => w.isComplete)
+          .map((waypoint) => ({
+            id: waypoint.get('id'),
+            title: this.stripString(waypoint.get('name')),
+            excerpt: this.stripString(
+              this.devices.trimmedInnerExcerpt(waypoint.get('excerpt'))
+            ),
+            inserted_at: waypoint.get('createdAt').toISOString(),
+          }))
       )
       .onConflict('id')
       .merge();
