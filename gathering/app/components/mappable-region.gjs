@@ -160,7 +160,7 @@ export default class MappableRegionComponent extends Component {
         {{if this.moving "moving"}}'
       style={{this.style}}
       {{on 'click' this.click}}
-      {{! template-lint-disable no-down-event-binding }}
+      {{! template-lint-disable no-pointer-down-event-binding }}
       {{on 'mousedown' this.dragStart}}
       {{on 'mouseup' this.dragEnd}}
       {{createRef 'Region'}}
