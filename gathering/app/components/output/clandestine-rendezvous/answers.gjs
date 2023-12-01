@@ -19,7 +19,10 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
     const stream = doc.pipe(blobStream());
 
     const meetings = this.args.meetings;
-    const meetingIndices = meetings.mapBy('index').uniq().sort();
+    const meetingIndices = meetings
+      .map((m) => m.index)
+      .uniq()
+      .sort();
 
     this.args.teams.forEach((team) => {
       doc.text(
@@ -46,7 +49,7 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
             const teamNames = meeting
               .hasMany('teams')
               .value()
-              .mapBy('name')
+              .map((t) => t.name)
               .sort()
               .join(', ');
 

@@ -51,8 +51,9 @@ export default class MappableRegionComponent extends Component {
         .value()
         .filter((m) => !m.isNew)
         .map((meeting) => meeting.belongsTo('destination').value())
-        .map((destination) => destination.belongsTo('region').value())
-        .mapBy('ancestor.id');
+        .map(
+          (destination) => destination.belongsTo('region').value().ancestor.id
+        );
 
       const index = meetingAncestorRegionIds.indexOf(regionId);
 
@@ -80,8 +81,7 @@ export default class MappableRegionComponent extends Component {
         .value()
         .filter((m) => !m.isNew && m.waypoint)
         .map((meeting) => meeting.belongsTo('waypoint').value())
-        .map((waypoint) => waypoint.belongsTo('region').value())
-        .mapBy('ancestor.id');
+        .map((waypoint) => waypoint.belongsTo('region').value().ancestor.id);
 
       const index = waypointMeetingAncestorRegionIds.indexOf(regionId);
 

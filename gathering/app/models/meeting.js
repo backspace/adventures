@@ -21,7 +21,7 @@ export default class Meeting extends Model {
 
   get isForbidden() {
     const teams = this.teams;
-    const meetingCounts = teams.mapBy('meetings.length');
+    const meetingCounts = teams.map((t) => t.meetings.length);
 
     return meetingCounts.uniq().length !== 1;
   }

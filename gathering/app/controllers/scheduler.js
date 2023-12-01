@@ -10,11 +10,11 @@ export default class SchedulerController extends Controller {
   @tracked meetingOffsetOverride;
 
   get teamMeetings() {
-    return this.model.teams.mapBy('meetings');
+    return this.model.teams.map((t) => t.meetings);
   }
 
   get meetingCounts() {
-    return this.teamMeetings.mapBy('length');
+    return this.teamMeetings.map((tm) => tm.length);
   }
 
   get highestMeetingCount() {

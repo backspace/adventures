@@ -20,7 +20,7 @@ export default class SchedulerDestinationComponent extends Component {
 
   get isHighlighted() {
     return this.args.highlightedTeam?.destinations
-      .mapBy('id')
+      .map((d) => d.id)
       .includes(this.args.destination.id);
   }
 

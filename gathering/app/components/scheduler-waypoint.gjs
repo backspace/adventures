@@ -16,7 +16,7 @@ export default class SchedulerWaypointComponent extends Component {
 
   get isHighlighted() {
     return this.args.highlightedTeam?.waypoints
-      .mapBy('id')
+      .map((t) => t.id)
       .includes(this.args.waypoint.id);
   }
 

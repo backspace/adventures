@@ -1,4 +1,3 @@
-import { mapBy } from '@ember/object/computed';
 import { hasMany, attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
@@ -26,11 +25,13 @@ export default class Team extends Model {
   @hasMany('meeting', { inverse: 'teams', async: false })
   meetings;
 
-  @mapBy('meetings', 'destination')
-  destinations;
+  get destinations() {
+    return this.meetings.map((m) => m.destination);
+  }
 
-  @mapBy('meetings', 'waypoint')
-  waypoints;
+  get waypoints() {
+    return this.meetings.map((m) => m.waypoint);
+  }
 
   get savedMeetings() {
     return this.meetings.filter((m) => !m.isNew);
@@ -38,9 +39,9 @@ export default class Team extends Model {
 
   get averageAwesomeness() {
     const awesomenesses = this.meetings
-      .mapBy('destination')
+      .map((m) => m.destination)
       .filter((d) => d)
-      .mapBy('awesomeness')
+      .map((d) => d.awesomeness)
       .filter((a) => a);
 
     if (awesomenesses.length > 0) {
@@ -54,9 +55,9 @@ export default class Team extends Model {
 
   get averageRisk() {
     const risks = this.meetings
-      .mapBy('destination')
+      .map((m) => m.destination)
       .filter((d) => d)
-      .mapBy('risk')
+      .map((d) => d.risk)
       .filter((r) => r);
 
     if (risks.length > 0) {
