@@ -126,7 +126,7 @@ export default class SchedulerController extends Controller {
     }
 
     set(this, 'meeting.index', team.get('meetings.length'));
-    get(this, 'meeting.teams').pushObject(team);
+    get(this, 'meeting.teams').push(team);
   }
 
   @action saveMeeting() {
