@@ -77,19 +77,19 @@
                 <tr data-test-changes data-test-original-team-id={{team.id}}>
                   <td
                     data-test-original-name
-                  >{{teamAndChanges.changes.name.firstObject}}</td>
+                  >{{teamAndChanges.changes.name.[0]}}</td>
                   <td
                     data-test-original-users
-                  >{{teamAndChanges.changes.users.firstObject}}</td>
+                  >{{teamAndChanges.changes.users.[0]}}</td>
                   <td
                     data-test-original-phones
-                  >{{teamAndChanges.changes.phones.firstObject}}</td>
+                  >{{teamAndChanges.changes.phones.[0]}}</td>
                   <td
                     data-test-original-risk-aversion
-                  >{{teamAndChanges.changes.riskAversion.firstObject}}</td>
+                  >{{teamAndChanges.changes.riskAversion.[0]}}</td>
                   <td
                     data-test-original-notes
-                  >{{teamAndChanges.changes.notes.firstObject}}</td>
+                  >{{teamAndChanges.changes.notes.[0]}}</td>
                 </tr>
               {{/if}}
               {{#if this.puzzles.implementation.hasTeamIdentifiers}}
