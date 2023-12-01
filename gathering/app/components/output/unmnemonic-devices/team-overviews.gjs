@@ -1,6 +1,5 @@
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
 import Loading from 'adventure-gathering/components/loading';
 
 import blobStream from 'blob-stream';
@@ -33,8 +32,6 @@ export default class TeamOverviewsComponent extends Component {
 
     let mapBase64String = await this.map.blobToBase64String(mapBlob);
     let lowMapBase64String = await this.map.blobToBase64String(lowMapBlob);
-
-    let mapHighToLowRatio = lowMapBitmap.width / mapBitmap.width;
 
     let mapTeamFontSize = 18;
     let mapMarkerFontSize = 12;
@@ -376,8 +373,6 @@ export default class TeamOverviewsComponent extends Component {
             doc.translate(meetingHalfWidth + meetingPadding, 0);
 
             doc.fontSize(meetingHeadingFontSize);
-
-            let parent = destinationRegion.belongsTo('parent').value();
 
             doc.text(destinationRegion.name, 0, meetingPadding, {
               width: meetingHalfWithoutPadding,

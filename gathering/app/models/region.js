@@ -1,4 +1,3 @@
-import { computed } from '@ember/object';
 import { inject as service } from '@ember/service';
 import { belongsTo, hasMany, attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';

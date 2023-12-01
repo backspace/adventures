@@ -27,7 +27,7 @@ module('service:pathfinder', 'Unit | Service | pathfinder', function (hooks) {
 
     pathfinder.set('data', data);
 
-    assert.equal(pathfinder.distance('A', 'C'), 5);
-    assert.equal(pathfinder.distance('D', 'B'), 7);
+    assert.strictEqual(pathfinder.distance('A', 'C'), 5);
+    assert.strictEqual(pathfinder.distance('D', 'B'), 7);
   });
 });

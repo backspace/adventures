@@ -1,6 +1,4 @@
-import { alias } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
-import { tagName } from '@ember-decorators/component';
 import Component from '@glimmer/component';
 
 import Loading from 'adventure-gathering/components/loading';

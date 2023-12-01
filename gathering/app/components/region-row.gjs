@@ -1,7 +1,4 @@
-import { on } from '@ember/modifier';
-import { action } from '@ember/object';
 import { LinkTo } from '@ember/routing';
-import { htmlSafe } from '@ember/template';
 import Component from '@glimmer/component';
 
 export default class RegionRow extends Component {

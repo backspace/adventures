@@ -7,12 +7,12 @@ module('Unit | Service | txtbeyond', function (hooks) {
   test('it suggests masks', function (assert) {
     const service = this.owner.lookup('service:txtbeyond');
 
-    assert.equal(
+    assert.strictEqual(
       service.suggestedMask('one two three'),
       'one ___ three',
       'expected a suggested mask with the middle word blanked'
     );
-    assert.equal(
+    assert.strictEqual(
       service.suggestedMask('one'),
       '___',
       'expected a suggested mask entirely blanked with only one word'
@@ -65,11 +65,11 @@ module('Unit | Service | txtbeyond', function (hooks) {
   test('it removes masks from descriptions', function (assert) {
     const service = this.owner.lookup('service:txtbeyond');
 
-    assert.equal(
+    assert.strictEqual(
       service.maskedDescription('this is ~masked~'),
       'this is ______'
     );
-    assert.equal(
+    assert.strictEqual(
       service.maskedDescription('~is~ this ~masked~'),
       '__ this ______'
     );
@@ -87,28 +87,28 @@ module('Unit | Service | txtbeyond', function (hooks) {
   test('it converts team names into Twitter usernames', function (assert) {
     const service = this.owner.lookup('service:txtbeyond');
 
-    assert.equal(service.twitterName('abc'), 'abc');
-    assert.equal(
+    assert.strictEqual(service.twitterName('abc'), 'abc');
+    assert.strictEqual(
       service.twitterName('ABC'),
       'abc',
       'expected the username to be downcased'
     );
-    assert.equal(
+    assert.strictEqual(
       service.twitterName('abc  def'),
       'abc_def',
       'expected groups of spaces to become underscores'
     );
-    assert.equal(
+    assert.strictEqual(
       service.twitterName('abc\tdef'),
       'abc_def',
       'expected tabs to become underscores'
     );
-    assert.equal(
+    assert.strictEqual(
       service.twitterName('1234567890123456'),
       '123456789012345',
       'expected the name to be truncated at 15 characters'
     );
-    assert.equal(
+    assert.strictEqual(
       service.twitterName('something@etc!!!yes'),
       'somethingetcyes',
       'expected symbols to be removed'

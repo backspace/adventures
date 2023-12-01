@@ -13,12 +13,12 @@ module('Unit | Service | unmnemonic-devices', function (hooks) {
 
   test('preExcerpt returns the text before the excerpt', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
-    assert.equal(service.preExcerpt('an|excerpt|exists'), 'an');
+    assert.strictEqual(service.preExcerpt('an|excerpt|exists'), 'an');
   });
 
   test('trimmedInnerExcerpt returns the text inside the excerpt without punctuation', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
-    assert.equal(
+    assert.strictEqual(
       service.trimmedInnerExcerpt('an|excerpt,.?!: but|exists'),
       'excerpt but'
     );
@@ -26,23 +26,23 @@ module('Unit | Service | unmnemonic-devices', function (hooks) {
 
   test('postExcerpt returns the text before the excerpt', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
-    assert.equal(service.postExcerpt('an|excerpt|exists'), 'exists');
+    assert.strictEqual(service.postExcerpt('an|excerpt|exists'), 'exists');
   });
 
   test('it suggests masks', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
 
-    assert.equal(
+    assert.strictEqual(
       service.suggestedMask('one two three'),
       'one ___ three',
       'expected a suggested mask with the middle word blanked'
     );
-    assert.equal(
+    assert.strictEqual(
       service.suggestedMask('one two three four'),
       'one ___ _____ four',
       'expected a suggested mask with the middle words blanked'
     );
-    assert.equal(
+    assert.strictEqual(
       service.suggestedMask('one'),
       '___',
       'expected a suggested mask entirely blanked with only one word'
@@ -52,7 +52,7 @@ module('Unit | Service | unmnemonic-devices', function (hooks) {
   test('it extracts answers', function (assert) {
     const service = this.owner.lookup('service:unmnemonic-devices');
 
-    assert.equal(
+    assert.strictEqual(
       service.extractAnswer('one two three', 'one ___ three'),
       'two'
     );

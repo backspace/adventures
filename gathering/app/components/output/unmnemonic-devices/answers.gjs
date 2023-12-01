@@ -1,6 +1,5 @@
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
 import Loading from 'adventure-gathering/components/loading';
 
 import blobStream from 'blob-stream';
@@ -11,8 +10,6 @@ export default class AnswersComponent extends Component {
   @service('unmnemonic-devices') devices;
 
   generator = trackedFunction(this, async () => {
-    let debug = this.args.debug;
-
     let regular = this.args.assets.regular;
 
     let doc = new PDFDocument({ layout: 'portrait', font: regular });

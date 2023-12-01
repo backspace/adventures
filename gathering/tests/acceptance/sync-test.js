@@ -35,9 +35,9 @@ module('Acceptance | sync', function (hooks) {
     await visit('/');
     await page.visit();
 
-    assert.equal(page.databases.length, 1);
-    assert.equal(page.databases[0].name, 'old-db');
-    assert.equal(page.destination.value, 'old-db');
+    assert.strictEqual(page.databases.length, 1);
+    assert.strictEqual(page.databases[0].name, 'old-db');
+    assert.strictEqual(page.destination.value, 'old-db');
 
     await page.destination.fillIn('sync-db');
     await page.sync();
@@ -45,29 +45,29 @@ module('Acceptance | sync', function (hooks) {
     const syncController = this.owner.lookup('controller:sync');
     await syncController.get('syncPromise');
 
-    assert.equal(page.push.read, '2');
-    assert.equal(page.push.written, '2');
-    assert.equal(page.push.writeFailures, '0');
+    assert.strictEqual(page.push.read, '2');
+    assert.strictEqual(page.push.written, '2');
+    assert.strictEqual(page.push.writeFailures, '0');
 
-    assert.equal(page.pull.read, '0');
-    assert.equal(page.pull.written, '0');
-    assert.equal(page.pull.writeFailures, '0');
+    assert.strictEqual(page.pull.read, '0');
+    assert.strictEqual(page.pull.written, '0');
+    assert.strictEqual(page.pull.writeFailures, '0');
 
-    assert.equal(page.databases.length, 2);
+    assert.strictEqual(page.databases.length, 2);
 
     await page.destination.fillIn('other-sync');
     await page.sync();
 
-    assert.equal(page.databases.length, 3);
-    assert.equal(page.databases[0].name, 'other-sync');
-    assert.equal(page.databases[1].name, 'sync-db');
+    assert.strictEqual(page.databases.length, 3);
+    assert.strictEqual(page.databases[0].name, 'other-sync');
+    assert.strictEqual(page.databases[1].name, 'sync-db');
 
     await page.databases[1].click();
 
-    assert.equal(page.destination.value, 'sync-db');
+    assert.strictEqual(page.destination.value, 'sync-db');
 
     await page.databases[2].remove();
 
-    assert.equal(page.databases.length, 2);
+    assert.strictEqual(page.databases.length, 2);
   });
 });

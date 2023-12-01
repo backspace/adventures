@@ -101,7 +101,7 @@ export default class MappableRegionComponent extends Component {
       return;
     }
 
-    let { clientX, clientY, offsetX } = e;
+    let { clientX, clientY } = e;
 
     this.unsavedX = undefined;
     this.unsavedY = undefined;

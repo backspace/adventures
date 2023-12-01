@@ -12,7 +12,6 @@ import {
   drawZigzagBackground,
   drawConcentricCirclesBackground,
   drawSpiralBackground,
-  drawConcentricSquaresBackground,
   drawConcentricStarsBackground,
 } from './overlay-backgrounds';
 
@@ -204,7 +203,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         doc.text(fullOutline);
         doc.text(excerpt);
 
-        outlines.forEach((outline, index) => {
+        outlines.forEach((outline) => {
           doc.text(JSON.stringify(outline));
         });
 

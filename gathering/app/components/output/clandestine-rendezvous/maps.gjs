@@ -2,7 +2,6 @@ import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import Loading from 'adventure-gathering/components/loading';
 import blobStream from 'blob-stream';
-import classic from 'ember-classic-decorator';
 import { trackedFunction } from 'ember-resources/util/function';
 
 import PDFDocument from 'pdfkit';

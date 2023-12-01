@@ -75,15 +75,15 @@ module('Acceptance | waypoints', function (hooks) {
     await homePage.waypoints.click();
 
     let one = page.waypoints[0];
-    assert.equal(one.name, 'The Shadowed Sun');
-    assert.equal(one.author, 'N. K. Jemisin');
-    assert.equal(one.region, 'Harvey Smith');
+    assert.strictEqual(one.name, 'The Shadowed Sun');
+    assert.strictEqual(one.author, 'N. K. Jemisin');
+    assert.strictEqual(one.region, 'Harvey Smith');
     assert.notOk(one.isIncomplete);
 
     let two = page.waypoints[1];
-    assert.equal(two.name, 'The Killing Moon');
-    assert.equal(two.author, 'N. K. Jemisin');
-    assert.equal(two.region, 'Henderson');
+    assert.strictEqual(two.name, 'The Killing Moon');
+    assert.strictEqual(two.author, 'N. K. Jemisin');
+    assert.strictEqual(two.region, 'Henderson');
     assert.ok(two.isIncomplete);
   });
 
@@ -93,7 +93,7 @@ module('Acceptance | waypoints', function (hooks) {
 
     await page.waypoints[1].edit();
 
-    assert.equal(
+    assert.strictEqual(
       page.errors.text,
       'excerpt is empty, excerpt is invalid, dimensions is empty, dimensions is invalid, outline is empty, outline is invalid, page is empty'
     );
@@ -123,16 +123,16 @@ module('Acceptance | waypoints', function (hooks) {
     // Sort by region, otherwise waypoints will jump around
     await page.headerRegion.click();
 
-    assert.equal(page.waypoints[0].status.value, '✓');
-    assert.equal(page.waypoints[1].status.value, '✘');
+    assert.strictEqual(page.waypoints[0].status.value, '✓');
+    assert.strictEqual(page.waypoints[1].status.value, '✘');
 
     await page.waypoints[0].status.click();
-    assert.equal(page.waypoints[0].status.value, '✘');
+    assert.strictEqual(page.waypoints[0].status.value, '✘');
 
     await page.waypoints[0].status.click();
     // TODO why does this help?
     await waitUntil(() => page.waypoints[0].status.value === '?');
-    assert.equal(page.waypoints[0].status.value, '?');
+    assert.strictEqual(page.waypoints[0].status.value, '?');
   });
 
   test('a waypoint can be created and will appear at the top of the list', async function (assert) {
@@ -147,8 +147,8 @@ module('Acceptance | waypoints', function (hooks) {
     await page.save();
     await waitUntil(() => page.waypoints.length);
 
-    assert.equal(page.waypoints[0].name, 'A Half-Built Garden');
-    assert.equal(page.waypoints[0].author, 'Ruthanna Emrys');
+    assert.strictEqual(page.waypoints[0].name, 'A Half-Built Garden');
+    assert.strictEqual(page.waypoints[0].author, 'Ruthanna Emrys');
   });
 
   test('the status fieldset doesn’t show when the feature isn’t on', async function (assert) {
@@ -169,18 +169,18 @@ module('Acceptance | waypoints', function (hooks) {
     await homePage.waypoints.click();
     await page.waypoints[0].edit();
 
-    assert.equal(page.nameField.value, 'The Shadowed Sun');
-    assert.equal(page.authorField.value, 'N. K. Jemisin');
-    assert.equal(page.callField.value, 'FICTION SCI JEMISIN');
-    assert.equal(page.creditField.value, 'greatnesses');
+    assert.strictEqual(page.nameField.value, 'The Shadowed Sun');
+    assert.strictEqual(page.authorField.value, 'N. K. Jemisin');
+    assert.strictEqual(page.callField.value, 'FICTION SCI JEMISIN');
+    assert.strictEqual(page.creditField.value, 'greatnesses');
 
-    assert.equal(
+    assert.strictEqual(
       page.excerptField.value,
       'on the|relations between pleasure and death,|which'
     );
-    assert.equal(page.pageField.value, '24');
-    assert.equal(page.dimensionsField.value, '12,18.1');
-    assert.equal(
+    assert.strictEqual(page.pageField.value, '24');
+    assert.strictEqual(page.dimensionsField.value, '12,18.1');
+    assert.strictEqual(
       page.outlineField.value,
       '(7.3,10.6),3.6,.35,-3.1,.35,-1.5,-.35,1'
     );
@@ -200,27 +200,27 @@ module('Acceptance | waypoints', function (hooks) {
     await waitUntil(() => page.waypoints.length);
 
     let edited = page.waypoints[0];
-    assert.equal(edited.name, 'The Fifth Season');
-    assert.equal(edited.author, 'NK');
-    assert.equal(edited.status.value, '✓');
+    assert.strictEqual(edited.name, 'The Fifth Season');
+    assert.strictEqual(edited.author, 'NK');
+    assert.strictEqual(edited.status.value, '✓');
 
     await page.waypoints[0].edit();
 
-    assert.equal(page.callField.value, '978-0-356-50819-1');
-    assert.equal(page.creditField.value, 'excellences');
+    assert.strictEqual(page.callField.value, '978-0-356-50819-1');
+    assert.strictEqual(page.creditField.value, 'excellences');
 
-    assert.equal(
+    assert.strictEqual(
       page.excerptField.value,
       'activity|as it is absent of air.|Buildings'
     );
-    assert.equal(page.pageField.value, '276');
-    assert.equal(page.dimensionsField.value, '12.1,16.4');
-    assert.equal(page.outlineField.value, '(2.2,1.5),1.8,.25');
+    assert.strictEqual(page.pageField.value, '276');
+    assert.strictEqual(page.dimensionsField.value, '12.1,16.4');
+    assert.strictEqual(page.outlineField.value, '(2.2,1.5),1.8,.25');
 
     await page.nameField.fill('The Obelisk Gate');
     await page.cancel();
 
-    assert.equal(page.waypoints[0].name, 'The Fifth Season');
+    assert.strictEqual(page.waypoints[0].name, 'The Fifth Season');
   });
 
   test('a new waypoint defaults to the same region as the previously-created one', async function (assert) {
@@ -235,6 +235,6 @@ module('Acceptance | waypoints', function (hooks) {
 
     await page.new();
 
-    assert.equal(page.regionField.text, 'Henderson');
+    assert.strictEqual(page.regionField.text, 'Henderson');
   });
 });

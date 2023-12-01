@@ -84,19 +84,19 @@ module('Acceptance | regions', function (hooks) {
   test('existing regions are listed', async function (assert) {
     await page.visit();
 
-    assert.equal(page.regions.length, 4);
+    assert.strictEqual(page.regions.length, 4);
 
-    assert.equal(page.regions[0].name, 'Gujaareh');
-    assert.equal(page.regions[0].nesting, 0);
-    assert.equal(page.regions[0].hours, 'Closes at 8am');
+    assert.strictEqual(page.regions[0].name, 'Gujaareh');
+    assert.strictEqual(page.regions[0].nesting, 0);
+    assert.strictEqual(page.regions[0].hours, 'Closes at 8am');
 
-    assert.equal(page.regions[1].name, 'Temple');
-    assert.equal(page.regions[1].nesting, 1);
+    assert.strictEqual(page.regions[1].name, 'Temple');
+    assert.strictEqual(page.regions[1].nesting, 1);
 
-    assert.equal(page.regions[2].name, 'Room');
-    assert.equal(page.regions[2].nesting, 2);
+    assert.strictEqual(page.regions[2].name, 'Room');
+    assert.strictEqual(page.regions[2].nesting, 2);
 
-    assert.equal(page.regions[3].name, 'Kisua');
+    assert.strictEqual(page.regions[3].name, 'Kisua');
 
     assert.notOk(
       page.regions[0].isIncomplete,
@@ -124,15 +124,18 @@ module('Acceptance | regions', function (hooks) {
     await page.save();
     await waitUntil(() => page.regions.length);
 
-    assert.equal(page.regions[3].name, 'Jellevy');
-    assert.equal(page.regions[3].hours, 'Never');
+    assert.strictEqual(page.regions[3].name, 'Jellevy');
+    assert.strictEqual(page.regions[3].hours, 'Never');
 
     await destinationsPage.visit();
     await destinationsPage.new();
 
     // FIXME this is an unpleasant way to find the label of the selected value
     const id = destinationsPage.regionField.value;
-    assert.equal(find(`option[value='${id}']`).innerHTML.trim(), 'Jellevy');
+    assert.strictEqual(
+      find(`option[value='${id}']`).innerHTML.trim(),
+      'Jellevy'
+    );
   });
 
   test('a region can be edited and edits can be cancelled', async function (assert) {
@@ -140,23 +143,23 @@ module('Acceptance | regions', function (hooks) {
 
     await page.regions[0].edit();
 
-    assert.equal(page.nameField.value, 'Gujaareh');
-    assert.equal(page.hoursField.value, 'Closes at 8am');
-    assert.equal(page.accessibilityField.value, 'Unlikely');
-    assert.equal(page.notesField.value, 'City of Dreams');
+    assert.strictEqual(page.nameField.value, 'Gujaareh');
+    assert.strictEqual(page.hoursField.value, 'Closes at 8am');
+    assert.strictEqual(page.accessibilityField.value, 'Unlikely');
+    assert.strictEqual(page.notesField.value, 'City of Dreams');
 
     await page.nameField.fill('Occupied Gujaareh');
     await page.save();
     await waitUntil(() => page.regions.length);
 
     const region = page.regions[1];
-    assert.equal(region.name, 'Occupied Gujaareh');
+    assert.strictEqual(region.name, 'Occupied Gujaareh');
 
     await page.regions[1].edit();
     await page.nameField.fill('Gujaareh Protectorate');
     await page.cancel();
 
-    assert.equal(page.regions[1].name, 'Occupied Gujaareh');
+    assert.strictEqual(page.regions[1].name, 'Occupied Gujaareh');
   });
 
   test('an edited region is the default for a new destination', async function (assert) {
@@ -176,7 +179,7 @@ module('Acceptance | regions', function (hooks) {
 
     // FIXME see above
     const id = destinationsPage.regionField.value;
-    assert.equal(
+    assert.strictEqual(
       find(`option[value='${id}']`).innerHTML.trim(),
       '--Kisua Protectorate'
     );
@@ -188,14 +191,14 @@ module('Acceptance | regions', function (hooks) {
     await page.delete();
     await waitUntil(() => page.regions.length === 3);
 
-    assert.equal(page.regions.length, 3);
+    assert.strictEqual(page.regions.length, 3);
   });
 
   test('the regions can be arranged on a map', async function (assert) {
     await page.visit();
     await page.visitMap();
 
-    assert.equal(
+    assert.strictEqual(
       mapPage.regions.length,
       2,
       'expected nested regions to be hidden'
@@ -204,28 +207,28 @@ module('Acceptance | regions', function (hooks) {
     let gujaareh = mapPage.regions[0];
     let kisua = mapPage.regions[1];
 
-    assert.equal(gujaareh.name, 'Gujaareh');
-    assert.equal(gujaareh.y, 10);
-    assert.equal(gujaareh.x, 50);
+    assert.strictEqual(gujaareh.name, 'Gujaareh');
+    assert.strictEqual(gujaareh.y, 10);
+    assert.strictEqual(gujaareh.x, 50);
 
-    assert.equal(kisua.name, 'Kisua');
-    assert.equal(kisua.y, 1000);
-    assert.equal(kisua.x, 1);
+    assert.strictEqual(kisua.name, 'Kisua');
+    assert.strictEqual(kisua.y, 1000);
+    assert.strictEqual(kisua.x, 1);
 
     await gujaareh.dragBy(90, 100);
     await settled();
-    assert.equal(gujaareh.y, 110);
-    assert.equal(gujaareh.x, 140);
+    assert.strictEqual(gujaareh.y, 110);
+    assert.strictEqual(gujaareh.x, 140);
 
     await gujaareh.dragBy(-200, -200);
     await settled();
-    assert.equal(gujaareh.y, 0);
-    assert.equal(gujaareh.x, 0);
+    assert.strictEqual(gujaareh.y, 0);
+    assert.strictEqual(gujaareh.x, 0);
 
     await gujaareh.dragBy(10, 10);
     await settled();
-    assert.equal(gujaareh.y, 10);
-    assert.equal(gujaareh.x, 10);
+    assert.strictEqual(gujaareh.y, 10);
+    assert.strictEqual(gujaareh.x, 10);
   });
 });
 
