@@ -8,7 +8,7 @@
         <Input
           id='url'
           @type='url'
-          @value={{or this.destination this.sortedDatabases.[0]}}
+          @value={{or this.destination (get this.sortedDatabases '0')}}
           {{on 'change' this.handleDestinationInput}}
           class='destination input-group-field'
         />
