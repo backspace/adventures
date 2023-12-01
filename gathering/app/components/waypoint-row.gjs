@@ -7,7 +7,7 @@ import featureFlag from 'ember-feature-flags/helpers/feature-flag';
 export default class WaypointRowComponent extends Component {
   <template>
     <tr
-      class='waypoint {{if @waypoint.isIncomplete "incomplete"}}'
+      class='waypoint {{if @waypoint.isIncomplete 'incomplete'}}'
       data-test-waypoint
     >
       {{! template-lint-disable no-invalid-interactive }}

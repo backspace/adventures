@@ -13,7 +13,7 @@ export default class RegionRow extends Component {
   <template>
     <tr
       class='region
-        {{if @region.isComplete "complete" "incomplete"}}
+        {{if @region.isComplete 'complete' 'incomplete'}}
         nesting-{{this.nesting}}'
     >
       <td class='name'>

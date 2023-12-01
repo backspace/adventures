@@ -26,7 +26,7 @@ export default class RegionContainerDestinations extends Component {
       <li
         class='region'
         data-test-scheduler-column-region
-        id='{{if this.isDestinations "" "waypoint-"}}region-{{this.region.id}}'
+        id='{{if this.isDestinations '' 'waypoint-'}}region-{{this.region.id}}'
         title={{this.region.notes}}
         {{on 'mouseenter' (fn @mouseEnterRegion this.region)}}
         {{on 'mouseleave' @mouseLeaveRegion}}

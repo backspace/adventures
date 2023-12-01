@@ -155,9 +155,9 @@ export default class MappableRegionComponent extends Component {
     {{! template-lint-disable no-invalid-interactive }}
     <div
       class='region
-        {{if @isHighlighted "highlighted"}}
-        {{if (and @survey @region.surveyIncomplete) "incomplete"}}
-        {{if this.moving "moving"}}'
+        {{if @isHighlighted 'highlighted'}}
+        {{if (and @survey @region.surveyIncomplete) 'incomplete'}}
+        {{if this.moving 'moving'}}'
       style={{this.style}}
       {{on 'click' this.click}}
       {{! template-lint-disable no-pointer-down-event-binding }}
