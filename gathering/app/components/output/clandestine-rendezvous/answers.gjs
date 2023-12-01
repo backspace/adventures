@@ -6,9 +6,9 @@ import config from 'adventure-gathering/config/environment';
 import blobStream from 'blob-stream';
 import { trackedFunction } from 'ember-resources/util/function';
 
+import uniq from 'lodash.uniq';
 import moment from 'moment';
 import PDFDocument from 'pdfkit';
-import uniq from 'lodash.uniq';
 
 export default class ClandestineRendezvousAnswersComponent extends Component {
   rendering = true;
