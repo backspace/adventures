@@ -31,6 +31,7 @@ module('Acceptance | destinations', function (hooks) {
       status: 'available',
       region: regionTwo,
       awesomeness: 1,
+      updatedAt: new Date(2020, 0, 1),
     });
 
     await fixtureOne.save();

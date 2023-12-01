@@ -30,7 +30,6 @@ export default class Region extends Model {
   @hasMany('waypoint', { inverse: 'region', async: false })
   waypoints;
 
-  @computed('destinations.@each.meetingCount', 'children.@each.meetingCount')
   get meetingCount() {
     let destinationMeetingCount = this.destinations.reduce(
       (sum, destination) => {
@@ -62,12 +61,10 @@ export default class Region extends Model {
   @service
   pathfinder;
 
-  @computed('name', 'pathfinder.regions.[]')
   get hasPaths() {
     return this.pathfinder.hasRegion(this.name);
   }
 
-  @computed('features.txtbeyond', 'hasPaths')
   get isComplete() {
     // eslint-disable-next-line ember/no-get
     if (this.get('features.txtbeyond')) {
@@ -77,7 +74,6 @@ export default class Region extends Model {
     }
   }
 
-  @computed('parent.nesting')
   get nesting() {
     if (this.parent) {
       return this.parent.nesting + 1;
@@ -86,7 +82,6 @@ export default class Region extends Model {
     }
   }
 
-  @computed('parent')
   get ancestor() {
     let current = this;
 
@@ -97,7 +92,6 @@ export default class Region extends Model {
     return current;
   }
 
-  @computed('destinations.@each.status', 'children.@each.survey')
   get survey() {
     let availableCount = 0;
     let unavailableCount = 0;
@@ -130,18 +124,11 @@ export default class Region extends Model {
     };
   }
 
-  @computed(
-    'children.@each.survey',
-    'destinations.@each.status',
-    'name',
-    'survey'
-  )
   get surveyString() {
     let survey = this.survey;
     return `D ?${survey.unknownCount} ✓${survey.availableCount} ✘${survey.unavailableCount}`;
   }
 
-  @computed('survey.unknownCount')
   get surveyIncomplete() {
     return this.survey && this.survey.unknownCount > 0;
   }

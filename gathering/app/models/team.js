@@ -1,4 +1,3 @@
-import { computed } from '@ember/object';
 import { mapBy, filterBy } from '@ember/object/computed';
 import { hasMany, attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';
@@ -36,9 +35,10 @@ export default class Team extends Model {
   @filterBy('meetings', 'isNew', false)
   savedMeetings;
 
-  @computed('destinations.@each.awesomeness')
   get averageAwesomeness() {
-    const awesomenesses = this.destinations
+    const awesomenesses = this.meetings
+      .mapBy('destination')
+      .filter((d) => d)
       .mapBy('awesomeness')
       .filter((a) => a);
 
@@ -51,9 +51,12 @@ export default class Team extends Model {
     return 0;
   }
 
-  @computed('destinations.@each.risk')
   get averageRisk() {
-    const risks = this.destinations.mapBy('risk').filter((r) => r);
+    const risks = this.meetings
+      .mapBy('destination')
+      .filter((d) => d)
+      .mapBy('risk')
+      .filter((r) => r);
 
     if (risks.length > 0) {
       return risks.reduce((prev, curr) => prev + curr) / risks.length;
@@ -62,7 +65,6 @@ export default class Team extends Model {
     return 0;
   }
 
-  @computed('phones.[]')
   get phonesString() {
     return (this.phones || [])
       .map((phone) => {
@@ -77,7 +79,6 @@ export default class Team extends Model {
   @attr('updateDate')
   updatedAt;
 
-  @computed('name')
   get truncatedName() {
     let limit = 40;
     let text = this.name;

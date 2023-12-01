@@ -1,5 +1,4 @@
-import { computed } from '@ember/object';
-import { equal, not } from '@ember/object/computed';
+import { equal } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { isEmpty } from '@ember/utils';
 import { hasMany, belongsTo, attr } from '@ember-data/model';
@@ -26,7 +25,6 @@ export default class Destination extends Model {
   @attr('string')
   credit;
 
-  @computed('answer', 'puzzles.implementation')
   get suggestedMask() {
     const answer = this.answer || '';
 
@@ -34,7 +32,6 @@ export default class Destination extends Model {
     return this.get('puzzles.implementation').suggestedMask(answer);
   }
 
-  @computed('answer', 'mask', 'puzzles.implementation')
   get maskIsValid() {
     const answer = this.answer || '';
     const mask = this.mask || '';
@@ -49,15 +46,6 @@ export default class Destination extends Model {
   @attr('number')
   risk;
 
-  @computed(
-    'answer',
-    'awesomeness',
-    'description',
-    'maskIsValid',
-    'puzzles.implementation',
-    'region',
-    'risk'
-  )
   get validationErrors() {
     const { description, answer, awesomeness, region, risk, maskIsValid } =
       this;
@@ -78,7 +66,6 @@ export default class Destination extends Model {
     };
   }
 
-  @computed('validationErrors.@each.value')
   get errorsString() {
     let validationErrors = this.validationErrors;
     return Object.keys(validationErrors)
@@ -92,13 +79,13 @@ export default class Destination extends Model {
       .join(', ');
   }
 
-  @computed('validationErrors.@each.keys')
   get isComplete() {
     return Object.values(this.validationErrors).every((error) => !error);
   }
 
-  @not('isComplete')
-  isIncomplete;
+  get isIncomplete() {
+    return !this.isComplete;
+  }
 
   @attr('string')
   status;
@@ -112,7 +99,6 @@ export default class Destination extends Model {
   @hasMany('meeting', { inverse: 'destination', async: false })
   meetings;
 
-  @computed('meetings.{length,@each.destination}')
   get meetingCount() {
     return this.meetings.length;
   }
