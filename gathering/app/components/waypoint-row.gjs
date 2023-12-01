@@ -1,13 +1,13 @@
-import Component from '@glimmer/component';
-import { LinkTo } from '@ember/routing';
-import { action } from '@ember/object';
 import { on } from '@ember/modifier';
+import { action } from '@ember/object';
+import { LinkTo } from '@ember/routing';
+import Component from '@glimmer/component';
 import featureFlag from 'ember-feature-flags/helpers/feature-flag';
 
 export default class WaypointRowComponent extends Component {
   <template>
     <tr
-      class='waypoint {{if @waypoint.isIncomplete "incomplete"}}'
+      class='waypoint {{if @waypoint.isIncomplete 'incomplete'}}'
       data-test-waypoint
     >
       {{! template-lint-disable no-invalid-interactive }}

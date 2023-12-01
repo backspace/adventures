@@ -68,35 +68,40 @@ export default class TxtbeyondService extends Service {
       return phoneNumberToTeam;
     }, {});
 
-    meetings.rejectBy('number').forEach((meeting) => {
-      const phones = meeting.get('teams').reduce((phones, team) => {
-        return phones.concat(team.get('phones'));
-      }, []);
+    meetings
+      .filter((m) => !m.number)
+      .forEach((meeting) => {
+        const phones = meeting.get('teams').reduce((phones, team) => {
+          return phones.concat(team.get('phones'));
+        }, []);
 
-      const phoneNumberToCount = phones.reduce((phoneNumberToCount, phone) => {
-        phoneNumberToCount[phone.number] = phone.meetingCount || 0;
-        return phoneNumberToCount;
-      }, {});
+        const phoneNumberToCount = phones.reduce(
+          (phoneNumberToCount, phone) => {
+            phoneNumberToCount[phone.number] = phone.meetingCount || 0;
+            return phoneNumberToCount;
+          },
+          {}
+        );
 
-      const minimumCount = Math.min(...Object.values(phoneNumberToCount));
+        const minimumCount = Math.min(...Object.values(phoneNumberToCount));
 
-      const phoneNumbersWithMinimumCount = Object.keys(
-        phoneNumberToCount
-      ).filter((phoneNumber) => {
-        return phoneNumberToCount[phoneNumber] === minimumCount;
+        const phoneNumbersWithMinimumCount = Object.keys(
+          phoneNumberToCount
+        ).filter((phoneNumber) => {
+          return phoneNumberToCount[phoneNumber] === minimumCount;
+        });
+
+        const randomPhoneNumber =
+          phoneNumbersWithMinimumCount[
+            Math.floor(Math.random() * phoneNumbersWithMinimumCount.length)
+          ];
+
+        this._incrementTeamPhoneMeetingCount(
+          phoneNumberToTeam[randomPhoneNumber],
+          randomPhoneNumber
+        );
+        meeting.set('phone', randomPhoneNumber);
       });
-
-      const randomPhoneNumber =
-        phoneNumbersWithMinimumCount[
-          Math.floor(Math.random() * phoneNumbersWithMinimumCount.length)
-        ];
-
-      this._incrementTeamPhoneMeetingCount(
-        phoneNumberToTeam[randomPhoneNumber],
-        randomPhoneNumber
-      );
-      meeting.set('phone', randomPhoneNumber);
-    });
 
     return all(
       teams
@@ -106,7 +111,9 @@ export default class TxtbeyondService extends Service {
   }
 
   _incrementTeamPhoneMeetingCount(team, number) {
-    const foundPhone = (team.get('phones') || []).findBy('number', number);
+    const foundPhone = (team.get('phones') || []).find(
+      (p) => p.number === number
+    );
 
     if (!foundPhone) {
       throw new Error(`Unable to find number ${number} under team ${team.id}!`);

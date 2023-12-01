@@ -1,3 +1,4 @@
+import { on } from '@ember/modifier';
 import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
 import { htmlSafe } from '@ember/template';
@@ -5,7 +6,6 @@ import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
 import { ref } from 'ember-ref-bucket';
 import createRef from 'ember-ref-bucket/modifiers/create-ref';
-import { on } from '@ember/modifier';
 import { and } from 'ember-truth-helpers';
 
 // FIXME not used but needed by Foundation??
@@ -49,10 +49,11 @@ export default class MappableRegionComponent extends Component {
       const meetingAncestorRegionIds = highlightedTeam
         .hasMany('meetings')
         .value()
-        .rejectBy('isNew')
+        .filter((m) => !m.isNew)
         .map((meeting) => meeting.belongsTo('destination').value())
-        .map((destination) => destination.belongsTo('region').value())
-        .mapBy('ancestor.id');
+        .map(
+          (destination) => destination.belongsTo('region').value().ancestor.id
+        );
 
       const index = meetingAncestorRegionIds.indexOf(regionId);
 
@@ -78,11 +79,9 @@ export default class MappableRegionComponent extends Component {
       const waypointMeetingAncestorRegionIds = highlightedTeam
         .hasMany('meetings')
         .value()
-        .rejectBy('isNew')
-        .filterBy('waypoint')
+        .filter((m) => !m.isNew && m.waypoint)
         .map((meeting) => meeting.belongsTo('waypoint').value())
-        .map((waypoint) => waypoint.belongsTo('region').value())
-        .mapBy('ancestor.id');
+        .map((waypoint) => waypoint.belongsTo('region').value().ancestor.id);
 
       const index = waypointMeetingAncestorRegionIds.indexOf(regionId);
 
@@ -102,7 +101,7 @@ export default class MappableRegionComponent extends Component {
       return;
     }
 
-    let { clientX, clientY, offsetX } = e;
+    let { clientX, clientY } = e;
 
     this.unsavedX = undefined;
     this.unsavedY = undefined;
@@ -156,12 +155,12 @@ export default class MappableRegionComponent extends Component {
     {{! template-lint-disable no-invalid-interactive }}
     <div
       class='region
-        {{if @isHighlighted "highlighted"}}
-        {{if (and @survey @region.surveyIncomplete) "incomplete"}}
-        {{if this.moving "moving"}}'
+        {{if @isHighlighted 'highlighted'}}
+        {{if (and @survey @region.surveyIncomplete) 'incomplete'}}
+        {{if this.moving 'moving'}}'
       style={{this.style}}
       {{on 'click' this.click}}
-      {{! template-lint-disable no-down-event-binding }}
+      {{! template-lint-disable no-pointer-down-event-binding }}
       {{on 'mousedown' this.dragStart}}
       {{on 'mouseup' this.dragEnd}}
       {{createRef 'Region'}}

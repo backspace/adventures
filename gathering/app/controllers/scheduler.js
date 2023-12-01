@@ -10,11 +10,11 @@ export default class SchedulerController extends Controller {
   @tracked meetingOffsetOverride;
 
   get teamMeetings() {
-    return this.model.teams.mapBy('meetings');
+    return this.model.teams.map((t) => t.meetings);
   }
 
   get meetingCounts() {
-    return this.teamMeetings.mapBy('length');
+    return this.teamMeetings.map((tm) => tm.length);
   }
 
   get highestMeetingCount() {
@@ -34,12 +34,12 @@ export default class SchedulerController extends Controller {
 
   get lastMeetingOffsets() {
     return (get(this, 'meeting.teams') || []).map(
-      (team) => team.get('savedMeetings.lastObject.offset') || 0
+      (team) => team.savedMeetings[team.savedMeetings.length - 1]?.offset || 0
     );
   }
 
   get teams() {
-    return this.model.teams.sortBy('createdAt');
+    return this.model.teams.slice().sort((a, b) => a.createdAt - b.createdAt);
   }
 
   get suggestedOffset() {
@@ -57,8 +57,10 @@ export default class SchedulerController extends Controller {
       const newRegionAncestorName = newRegion.ancestor.name;
 
       const lastMeetingRegionNames = (get(this, 'meeting.teams') || [])
-        .map((team) =>
-          team.get('savedMeetings.lastObject.destination.region.name')
+        .map(
+          (team) =>
+            team.savedMeetings[team.savedMeetings.length - 1]?.destination
+              ?.region?.name
         )
         .filter((n) => !!n);
 
@@ -113,7 +115,8 @@ export default class SchedulerController extends Controller {
     }
 
     if (get(this, 'meeting.teams').includes(team)) {
-      get(this, 'meeting.teams').removeObject(team);
+      let index = get(this, 'meeting.teams').indexOf(team);
+      get(this, 'meeting.teams').splice(index, 1);
       return;
     }
 
@@ -126,7 +129,7 @@ export default class SchedulerController extends Controller {
     }
 
     set(this, 'meeting.index', team.get('meetings.length'));
-    get(this, 'meeting.teams').pushObject(team);
+    get(this, 'meeting.teams').push(team);
   }
 
   @action saveMeeting() {

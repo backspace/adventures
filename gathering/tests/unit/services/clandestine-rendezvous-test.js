@@ -10,7 +10,7 @@ module(
     test('it chooses a blank index', function (assert) {
       const service = this.owner.lookup('service:clandestine-rendezvous');
 
-      assert.equal(
+      assert.strictEqual(
         service.chooseBlankIndex({
           answer: '123',
           mask: '1_3',
@@ -20,7 +20,7 @@ module(
         'expected the only blank index'
       );
 
-      assert.equal(
+      assert.strictEqual(
         service.chooseBlankIndex({
           answer: '321',
           mask: '___',
@@ -30,7 +30,7 @@ module(
         'expected the farthest-away blank index'
       );
 
-      assert.equal(
+      assert.strictEqual(
         service.chooseBlankIndex({
           answer: '222',
           mask: '___',
@@ -93,7 +93,7 @@ module(
         goalDigit: 7,
       });
 
-      assert.equal(teamToDigitMap.get(this.teamA), 4);
+      assert.strictEqual(teamToDigitMap.get(this.teamA), 4);
 
       teamToDigitMap = service.teamDigitsForAnswerAndGoalDigits({
         teams: [this.teamA],
@@ -101,7 +101,7 @@ module(
         goalDigit: 2,
       });
 
-      assert.equal(teamToDigitMap.get(this.teamA), -6);
+      assert.strictEqual(teamToDigitMap.get(this.teamA), -6);
     });
 
     test('splits the difference between teams', function (assert) {
@@ -113,8 +113,8 @@ module(
         goalDigit: 7,
       });
 
-      assert.equal(teamToDigitMap.get(this.teamA), 2);
-      assert.equal(teamToDigitMap.get(this.teamB), 2);
+      assert.strictEqual(teamToDigitMap.get(this.teamA), 2);
+      assert.strictEqual(teamToDigitMap.get(this.teamB), 2);
 
       teamToDigitMap = service.teamDigitsForAnswerAndGoalDigits({
         teams: this.teams,
@@ -122,8 +122,8 @@ module(
         goalDigit: 8,
       });
 
-      assert.equal(teamToDigitMap.get(this.teamA), 3);
-      assert.equal(teamToDigitMap.get(this.teamB), 2);
+      assert.strictEqual(teamToDigitMap.get(this.teamA), 3);
+      assert.strictEqual(teamToDigitMap.get(this.teamB), 2);
 
       teamToDigitMap = service.teamDigitsForAnswerAndGoalDigits({
         teams: this.reversedTeams,
@@ -131,12 +131,12 @@ module(
         goalDigit: 8,
       });
 
-      assert.equal(
+      assert.strictEqual(
         teamToDigitMap.get(this.teamA),
         3,
         'expected the alphabetically-first team to get the larger portion'
       );
-      assert.equal(
+      assert.strictEqual(
         teamToDigitMap.get(this.teamB),
         2,
         'expected the alphabetically-last team to get the smaller portion'
@@ -204,12 +204,12 @@ module(
     test('it suggests masks', function (assert) {
       const service = this.owner.lookup('service:clandestine-rendezvous');
 
-      assert.equal(
+      assert.strictEqual(
         service.suggestedMask('ABC123'),
         'ABC___',
         'expected a suggested mask'
       );
-      assert.equal(
+      assert.strictEqual(
         service.suggestedMask('A0C1234'),
         'A0C1___',
         'expected the suggested mask to blank the three rightmost digits'

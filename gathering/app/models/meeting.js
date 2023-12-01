@@ -1,29 +1,44 @@
-import { computed } from '@ember/object';
 import { sort } from '@ember/object/computed';
 import { hasMany, belongsTo, attr } from '@ember-data/model';
+import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
+import uniq from 'lodash.uniq';
 
-export default Model.extend({
-  destination: belongsTo('destination'),
-  waypoint: belongsTo('waypoint'),
+@classic
+export default class Meeting extends Model {
+  @belongsTo('destination', { inverse: 'meetings', async: false })
+  destination;
 
-  teams: hasMany('team', { async: false }),
+  @belongsTo('waypoint', { inverse: 'meetings', async: false })
+  waypoint;
 
-  sortedTeams: sort('teams', 'teamSort'),
-  teamSort: Object.freeze(['name']),
+  @hasMany('team', { inverse: 'meetings', async: false })
+  teams;
 
-  isForbidden: computed('teams.@each.meetings', function () {
+  @sort('teams', 'teamSort')
+  sortedTeams;
+
+  teamSort = Object.freeze(['name']);
+
+  get isForbidden() {
     const teams = this.teams;
-    const meetingCounts = teams.mapBy('meetings.length');
+    const meetingCounts = teams.map((t) => t.meetings.length);
 
-    return meetingCounts.uniq().length !== 1;
-  }),
+    return uniq(meetingCounts).length !== 1;
+  }
 
-  index: attr('number'),
-  offset: attr('number'),
+  @attr('number')
+  index;
 
-  phone: attr('string'),
+  @attr('number')
+  offset;
 
-  createdAt: attr('createDate'),
-  updatedAt: attr('updateDate'),
-});
+  @attr('string')
+  phone;
+
+  @attr('createDate')
+  createdAt;
+
+  @attr('updateDate')
+  updatedAt;
+}

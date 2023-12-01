@@ -16,7 +16,7 @@ module('Acceptance | settings: fresh', function (hooks) {
   test('a new settings document can be created and saved', async function (assert) {
     await page.visit();
 
-    assert.equal(page.goalField.value, '');
+    assert.strictEqual(page.goalField.value, '');
     assert.notOk(page.destinationStatus.isChecked);
     assert.ok(page.saveButton.isDisabled);
 
@@ -30,7 +30,7 @@ module('Acceptance | settings: fresh', function (hooks) {
 
     let settings = await this.store.findRecord('settings', 'settings');
 
-    assert.equal(settings.get('goal'), 'abc');
+    assert.strictEqual(settings.get('goal'), 'abc');
     assert.ok(settings.get('clandestineRendezvous'));
     assert.ok(settings.get('txtbeyond'));
   });
@@ -63,7 +63,7 @@ module('Acceptance | settings: existing', function (hooks) {
     const featuresService = this.owner.lookup('service:features');
     assert.ok(featuresService.get('destinationStatus'));
 
-    assert.equal(page.goalField.value, '12345');
+    assert.strictEqual(page.goalField.value, '12345');
     assert.ok(page.destinationStatus.isChecked);
     assert.ok(page.saveButton.isDisabled);
 
@@ -84,7 +84,7 @@ module('Acceptance | settings: existing', function (hooks) {
     assert.ok(featuresService.get('txtbeyond'));
     assert.ok(featuresService.get('unmnemonicDevices'));
 
-    assert.equal(settings.get('goal'), '789');
+    assert.strictEqual(settings.get('goal'), '789');
     assert.notOk(settings.get('destinationStatus'));
   });
 });

@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
+import sortBy from 'lodash.sortby';
 
 export default class WaypointController extends Controller {
   @service
@@ -10,13 +11,13 @@ export default class WaypointController extends Controller {
   router;
 
   get sortedRegions() {
-    return this.regions.sortBy('name');
+    return sortBy(this.regions, ['name']);
   }
 
   @action
   setRegion(event) {
     const regionId = event.target.value;
-    const region = this.regions.findBy('id', regionId);
+    const region = this.regions.find((r) => r.id === regionId);
     this.model.set('region', region);
   }
 

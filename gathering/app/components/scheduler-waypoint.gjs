@@ -1,7 +1,7 @@
-import Component from '@glimmer/component';
-import { action } from '@ember/object';
 import { on } from '@ember/modifier';
+import { action } from '@ember/object';
 import { htmlSafe } from '@ember/template';
+import Component from '@glimmer/component';
 
 export default class SchedulerWaypointComponent extends Component {
   @action select() {
@@ -16,7 +16,7 @@ export default class SchedulerWaypointComponent extends Component {
 
   get isHighlighted() {
     return this.args.highlightedTeam?.waypoints
-      .mapBy('id')
+      .map((t) => t.id)
       .includes(this.args.waypoint.id);
   }
 
@@ -24,8 +24,8 @@ export default class SchedulerWaypointComponent extends Component {
     {{! template-lint-disable no-invalid-interactive }}
     <li
       class='waypoint
-        {{if @isSelected "selected"}}
-        {{if this.isHighlighted "highlighted"}}'
+        {{if @isSelected 'selected'}}
+        {{if this.isHighlighted 'highlighted'}}'
       style={{this.style}}
       {{on 'click' this.select}}
       data-test-waypoint

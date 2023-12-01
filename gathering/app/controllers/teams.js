@@ -3,6 +3,7 @@ import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
 import classic from 'ember-classic-decorator';
+import sortBy from 'lodash.sortby';
 import { all } from 'rsvp';
 
 @classic
@@ -13,12 +14,15 @@ export default class TeamsController extends Controller {
   @tracked modelsToSave;
 
   get sortedTeams() {
+    let sorted = sortBy(this.model, (t) => t.name.toLowerCase());
+
     if (this.modelsToSave?.length) {
-      return this.model
-        .sortBy('name')
-        .map((team) => ({ current: team, changes: team.changedAttributes() }));
+      return sorted.map((team) => ({
+        current: team,
+        changes: team.changedAttributes(),
+      }));
     } else {
-      return this.model.sortBy('name').map((team) => ({ current: team }));
+      return sorted.map((team) => ({ current: team }));
     }
   }
 

@@ -31,6 +31,7 @@ module('Acceptance | destinations', function (hooks) {
       status: 'available',
       region: regionTwo,
       awesomeness: 1,
+      updatedAt: new Date(2020, 0, 1),
     });
 
     await fixtureOne.save();
@@ -68,29 +69,29 @@ module('Acceptance | destinations', function (hooks) {
   test('existing destinations are listed and can be sorted by region or awesomeness', async function (assert) {
     await visit('/destinations');
 
-    assert.equal(page.destinations[0].description, 'Ina-Karekh');
-    assert.equal(page.destinations[0].answer, 'ABC123');
-    assert.equal(page.destinations[0].mask, 'ABC__3');
-    assert.equal(page.destinations[0].region, 'There');
+    assert.strictEqual(page.destinations[0].description, 'Ina-Karekh');
+    assert.strictEqual(page.destinations[0].answer, 'ABC123');
+    assert.strictEqual(page.destinations[0].mask, 'ABC__3');
+    assert.strictEqual(page.destinations[0].region, 'There');
     assert.notOk(page.destinations[0].isIncomplete);
 
-    assert.equal(page.destinations[1].description, 'Hona-Karekh');
-    assert.equal(page.destinations[1].region, 'Here');
+    assert.strictEqual(page.destinations[1].description, 'Hona-Karekh');
+    assert.strictEqual(page.destinations[1].region, 'Here');
     assert.ok(page.destinations[1].isIncomplete);
 
     await page.headerRegion.click();
 
-    assert.equal(page.destinations[0].description, 'Hona-Karekh');
-    assert.equal(page.destinations[1].description, 'Ina-Karekh');
+    assert.strictEqual(page.destinations[0].description, 'Hona-Karekh');
+    assert.strictEqual(page.destinations[1].description, 'Ina-Karekh');
 
     await page.headerRegion.click();
 
-    assert.equal(page.destinations[0].description, 'Ina-Karekh');
-    assert.equal(page.destinations[1].description, 'Hona-Karekh');
+    assert.strictEqual(page.destinations[0].description, 'Ina-Karekh');
+    assert.strictEqual(page.destinations[1].description, 'Hona-Karekh');
 
     await page.headerAwesomeness.click();
 
-    assert.equal(page.destinations[0].description, 'Hona-Karekh');
+    assert.strictEqual(page.destinations[0].description, 'Hona-Karekh');
   });
 
   test('destination status doesn’t show when the feature flag is off', async function (assert) {
@@ -109,17 +110,17 @@ module('Acceptance | destinations', function (hooks) {
     // Sort by region, otherwise destinations will jump around
     await page.headerRegion.click();
 
-    assert.equal(page.destinations[0].status.value, '✓');
-    assert.equal(page.destinations[1].status.value, '✘');
+    assert.strictEqual(page.destinations[0].status.value, '✓');
+    assert.strictEqual(page.destinations[1].status.value, '✘');
 
     await page.destinations[0].status.click();
     await waitUntil(() => page.destinations[0].status.value === '✘');
-    assert.equal(page.destinations[0].status.value, '✘');
+    assert.strictEqual(page.destinations[0].status.value, '✘');
 
     await page.destinations[0].status.click();
     // TODO why does this help?
     await waitUntil(() => page.destinations[0].status.value === '?');
-    assert.equal(page.destinations[0].status.value, '?');
+    assert.strictEqual(page.destinations[0].status.value, '?');
   });
 
   test('a destination can be created and will appear at the top of the list', async function (assert) {
@@ -130,19 +131,19 @@ module('Acceptance | destinations', function (hooks) {
     await page.descriptionField.fill('Bromarte');
     await page.answerField.fill('R0E0H0');
 
-    assert.equal(page.suggestedMaskButton.label, 'R_E_H_');
+    assert.strictEqual(page.suggestedMaskButton.label, 'R_E_H_');
 
     await page.suggestedMaskButton.click();
 
-    assert.equal(page.maskField.value, 'R_E_H_');
+    assert.strictEqual(page.maskField.value, 'R_E_H_');
 
     await page.maskField.fill('R0E0H_');
 
     await page.save();
     await waitUntil(() => page.destinations.length);
 
-    assert.equal(page.destinations[0].description, 'Bromarte');
-    assert.equal(page.destinations[0].mask, 'R0E0H_');
+    assert.strictEqual(page.destinations[0].description, 'Bromarte');
+    assert.strictEqual(page.destinations[0].mask, 'R0E0H_');
   });
 
   test('the destination’s suggested mask is based on the adventure', async function (assert) {
@@ -152,7 +153,10 @@ module('Acceptance | destinations', function (hooks) {
     await page.new();
     await page.answerField.fill('itchin snitchin witchin');
 
-    assert.equal(page.suggestedMaskButton.label, 'itchin ________ witchin');
+    assert.strictEqual(
+      page.suggestedMaskButton.label,
+      'itchin ________ witchin'
+    );
   });
 
   test('unmnemonic devices suggests and requires a mask', async function (assert) {
@@ -167,17 +171,17 @@ module('Acceptance | destinations', function (hooks) {
     await page.riskField.fill(5);
     await page.regionField.fillByText('There');
 
-    assert.equal(
+    assert.strictEqual(
       page.suggestedMaskButton.label,
       'property __ ___________ literature'
     );
 
-    assert.equal(page.errors.text, 'mask is invalid');
+    assert.strictEqual(page.errors.text, 'mask is invalid');
 
     await page.save();
     await waitUntil(() => page.destinations.length);
 
-    assert.equal(page.destinations[0].description, 'Bromarte');
+    assert.strictEqual(page.destinations[0].description, 'Bromarte');
     assert.ok(page.destinations[0].isIncomplete);
 
     await page.destinations[0].edit();
@@ -188,7 +192,7 @@ module('Acceptance | destinations', function (hooks) {
     await page.save();
     await waitUntil(() => page.destinations.length);
 
-    assert.equal(
+    assert.strictEqual(
       page.destinations[0].mask,
       'property of ___________ __________'
     );
@@ -212,13 +216,13 @@ module('Acceptance | destinations', function (hooks) {
 
     await page.destinations[0].edit();
 
-    assert.equal(page.descriptionField.value, 'Ina-Karekh');
-    assert.equal(page.accessibilityField.value, 'You might need help');
-    assert.equal(page.awesomenessField.value, '9');
-    assert.equal(page.riskField.value, '6');
-    assert.equal(page.answerField.value, 'ABC123');
-    assert.equal(page.creditField.value, 'greatnesses');
-    assert.equal(page.regionField.text, 'There');
+    assert.strictEqual(page.descriptionField.value, 'Ina-Karekh');
+    assert.strictEqual(page.accessibilityField.value, 'You might need help');
+    assert.strictEqual(page.awesomenessField.value, '9');
+    assert.strictEqual(page.riskField.value, '6');
+    assert.strictEqual(page.answerField.value, 'ABC123');
+    assert.strictEqual(page.creditField.value, 'greatnesses');
+    assert.strictEqual(page.regionField.text, 'There');
 
     await page.descriptionField.fill('Kisua');
     await page.accessibilityField.fill('You must cross the Empty Thousand!');
@@ -231,24 +235,24 @@ module('Acceptance | destinations', function (hooks) {
     await waitUntil(() => page.destinations.length);
 
     const destination = page.destinations[0];
-    assert.equal(destination.description, 'Kisua');
-    assert.equal(destination.awesomeness, '10');
-    assert.equal(destination.status.value, '✓');
-    assert.equal(destination.risk, '5');
+    assert.strictEqual(destination.description, 'Kisua');
+    assert.strictEqual(destination.awesomeness, '10');
+    assert.strictEqual(destination.status.value, '✓');
+    assert.strictEqual(destination.risk, '5');
 
     await page.destinations[0].edit();
 
-    assert.equal(
+    assert.strictEqual(
       page.accessibilityField.value,
       'You must cross the Empty Thousand!'
     );
-    assert.equal(page.answerField.value, 'DEF456');
-    assert.equal(page.creditField.value, 'excellences');
+    assert.strictEqual(page.answerField.value, 'DEF456');
+    assert.strictEqual(page.creditField.value, 'excellences');
 
     await page.descriptionField.fill('Banbarra');
     await page.cancel();
 
-    assert.equal(page.destinations[0].description, 'Kisua');
+    assert.strictEqual(page.destinations[0].description, 'Kisua');
   });
 
   test('a new destination defaults to the same region as the previously-created one', async function (assert) {
@@ -269,7 +273,7 @@ module('Acceptance | destinations', function (hooks) {
 
     await page.new();
 
-    assert.equal(page.regionField.text, 'There');
+    assert.strictEqual(page.regionField.text, 'There');
   });
 
   test('a destination can be deleted', async function (assert) {
@@ -279,6 +283,6 @@ module('Acceptance | destinations', function (hooks) {
     await page.delete();
     await waitUntil(() => page.destinations.length);
 
-    assert.equal(page.destinations.length, 1);
+    assert.strictEqual(page.destinations.length, 1);
   });
 });

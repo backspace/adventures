@@ -1,13 +1,11 @@
-import Component from '@glimmer/component';
-import { alias } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
-import { tagName } from '@ember-decorators/component';
+import Component from '@glimmer/component';
 
-import config from 'adventure-gathering/config/environment';
-import { trackedFunction } from 'ember-resources/util/function';
 import Loading from 'adventure-gathering/components/loading';
+import config from 'adventure-gathering/config/environment';
 
 import blobStream from 'blob-stream';
+import { trackedFunction } from 'ember-resources/util/function';
 
 import moment from 'moment';
 import PDFDocument from 'pdfkit';
@@ -238,7 +236,8 @@ export default class TxtbeyondCardsComponent extends Component {
         team
           .hasMany('meetings')
           .value()
-          .sortBy('index')
+          .slice()
+          .sort((a, b) => a.index - b.index)
           .map((meeting, index) => {
             return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
           })
@@ -255,8 +254,8 @@ export default class TxtbeyondCardsComponent extends Component {
     // const rendezvousLetter = String.fromCharCode(65 + index);
     // const rendezvousTime = this._getRendezvousTimeForIndex(index);
 
-    const otherTeams = teams.rejectBy('id', team.id);
-    const otherTeamName = otherTeams.mapBy('name');
+    const otherTeams = teams.filter((t) => t.id !== team.id);
+    const otherTeamName = otherTeams.map((t) => t.name);
 
     const answer = destination.get('answer');
     const mask = destination.get('mask');

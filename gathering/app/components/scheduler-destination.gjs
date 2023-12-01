@@ -1,7 +1,7 @@
-import Component from '@glimmer/component';
-import { action } from '@ember/object';
 import { on } from '@ember/modifier';
+import { action } from '@ember/object';
 import { htmlSafe } from '@ember/template';
+import Component from '@glimmer/component';
 
 export default class SchedulerDestinationComponent extends Component {
   get style() {
@@ -20,7 +20,7 @@ export default class SchedulerDestinationComponent extends Component {
 
   get isHighlighted() {
     return this.args.highlightedTeam?.destinations
-      .mapBy('id')
+      .map((d) => d.id)
       .includes(this.args.destination.id);
   }
 
@@ -33,8 +33,8 @@ export default class SchedulerDestinationComponent extends Component {
     {{! template-lint-disable no-invalid-interactive }}
     <li
       class='destination
-        {{if @isSelected "selected"}}
-        {{if this.isHighlighted "highlighted"}}'
+        {{if @isSelected 'selected'}}
+        {{if this.isHighlighted 'highlighted'}}'
       title='A{{@destination.awesomeness}} R{{@destination.risk}}'
       style={{this.style}}
       {{on 'click' this.select}}

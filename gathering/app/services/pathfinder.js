@@ -3,6 +3,7 @@ import { computed, get } from '@ember/object';
 import Service, { inject as service } from '@ember/service';
 
 import jsgraphs from 'js-graph-algorithms';
+import uniq from 'lodash.uniq';
 
 export default class PathfinderService extends Service {
   @service store;
@@ -13,10 +14,13 @@ export default class PathfinderService extends Service {
 
   @computed('data.{_rev,data}')
   get regions() {
-    // eslint-disable-next-line ember/no-get
-    return Object.keys(get(this, 'data.data'))
-      .reduce((regions, key) => regions.concat(key.split('|')), [])
-      .uniq();
+    return uniq(
+      // eslint-disable-next-line ember/no-get
+      Object.keys(get(this, 'data.data')).reduce(
+        (regions, key) => regions.concat(key.split('|')),
+        []
+      )
+    );
   }
 
   hasRegion(regionName) {

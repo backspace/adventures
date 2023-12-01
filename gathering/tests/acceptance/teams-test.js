@@ -40,15 +40,18 @@ module('Acceptance | teams', function (hooks) {
   test('existing teams are listed', async function (assert) {
     await page.visit();
 
-    assert.equal(page.teams.length, 2, 'expected two teams to be listed');
+    assert.strictEqual(page.teams.length, 2, 'expected two teams to be listed');
 
-    assert.equal(page.teams[0].name.text, 'Team 1');
-    assert.equal(page.teams[0].riskAversion.text, '3');
-    assert.equal(page.teams[0].phones.text, '2045551212: 5.5');
+    assert.strictEqual(page.teams[0].name.text, 'Team 1');
+    assert.strictEqual(page.teams[0].riskAversion.text, '3');
+    assert.strictEqual(page.teams[0].phones.text, '2045551212: 5.5');
 
-    assert.equal(page.teams[1].name.text, 'Team 2');
-    assert.equal(page.teams[1].riskAversion.text, '1');
-    assert.equal(page.teams[1].phones.text, '2040000000: 4, 5140000000: 5');
+    assert.strictEqual(page.teams[1].name.text, 'Team 2');
+    assert.strictEqual(page.teams[1].riskAversion.text, '1');
+    assert.strictEqual(
+      page.teams[1].phones.text,
+      '2040000000: 4, 5140000000: 5'
+    );
   });
 
   test('teams can be added and updated with JSON input', async function (assert) {
@@ -86,50 +89,54 @@ module('Acceptance | teams', function (hooks) {
 
     await page.update.click();
 
-    assert.equal(page.teams.length, 3, 'expected three teams to be listed');
+    assert.strictEqual(
+      page.teams.length,
+      3,
+      'expected three teams to be listed'
+    );
     assert.notOk(page.save.isDisabled);
 
     assert.ok(page.teams[0].isNew);
     assert.notOk(page.teams[0].hasChanges);
 
-    assert.equal(page.teams[0].name.text, 'jants');
-    assert.equal(
+    assert.strictEqual(page.teams[0].name.text, 'jants');
+    assert.strictEqual(
       page.teams[0].id,
       'daa14876-7bb7-486c-8ed5-5287156a430b',
       'expected newly-specified id to be used'
     );
-    assert.equal(page.teams[0].riskAversion.text, '2');
+    assert.strictEqual(page.teams[0].riskAversion.text, '2');
 
     assert.ok(page.teams[1].hasChanges);
 
     assert.ok(page.teams[1].name.isChanged);
-    assert.equal(page.teams[1].name.text, 'jorts');
-    assert.equal(page.teams[1].originalName, 'Team 1');
+    assert.strictEqual(page.teams[1].name.text, 'jorts');
+    assert.strictEqual(page.teams[1].originalName, 'Team 1');
 
-    assert.equal(
+    assert.strictEqual(
       page.teams[1].id,
       teamOne.id,
       'expected existing id to be preserved'
     );
 
     assert.ok(page.teams[1].users.isChanged);
-    assert.equal(
+    assert.strictEqual(
       page.teams[1].users.text,
       'jorts@example.com, jants@example.com'
     );
 
     assert.ok(page.teams[1].phones.isChanged);
-    assert.equal(page.teams[1].phones.text, '2041231234: 5.75');
+    assert.strictEqual(page.teams[1].phones.text, '2041231234: 5.75');
 
     assert.ok(page.teams[1].notes.isChanged);
-    assert.equal(page.teams[1].notes.text, 'some notes');
+    assert.strictEqual(page.teams[1].notes.text, 'some notes');
 
     assert.ok(page.teams[1].riskAversion.isChanged);
-    assert.equal(page.teams[1].riskAversion.text, '2');
+    assert.strictEqual(page.teams[1].riskAversion.text, '2');
 
     assert.notOk(page.teams[1].identifier.isVisible);
 
-    assert.equal(page.teams[2].name.text, 'Team 2');
+    assert.strictEqual(page.teams[2].name.text, 'Team 2');
 
     await page.save.click();
 
@@ -167,7 +174,10 @@ module('Acceptance | teams', function (hooks) {
     await page.update.click();
     await page.save.click();
 
-    assert.equal(page.teams[0].name.text, 'jorts');
-    assert.equal(page.teams[0].identifier.text, 'i wont do what you tell me');
+    assert.strictEqual(page.teams[0].name.text, 'jorts');
+    assert.strictEqual(
+      page.teams[0].identifier.text,
+      'i wont do what you tell me'
+    );
   });
 });

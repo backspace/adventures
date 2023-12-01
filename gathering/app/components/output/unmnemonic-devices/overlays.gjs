@@ -1,20 +1,19 @@
+import { Input } from '@ember/component';
+import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
-import { inject as service } from '@ember/service';
-import { trackedFunction } from 'ember-resources/util/function';
-import { Input } from '@ember/component';
 import Loading from 'adventure-gathering/components/loading';
+import blobStream from 'blob-stream';
+import { trackedFunction } from 'ember-resources/util/function';
+
+import PDFDocument from 'pdfkit';
 
 import {
   drawZigzagBackground,
   drawConcentricCirclesBackground,
   drawSpiralBackground,
-  drawConcentricSquaresBackground,
   drawConcentricStarsBackground,
 } from './overlay-backgrounds';
-
-import blobStream from 'blob-stream';
-import PDFDocument from 'pdfkit';
 
 export const PAGE_MARGIN = 0.3 * 72;
 export const PAGE_PADDING = 0.2 * 72;
@@ -52,12 +51,11 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
     let waypointsToGenerate;
 
     if (this.allOverlays) {
-      waypointsToGenerate = this.args.waypoints.filterBy('isComplete');
+      waypointsToGenerate = this.args.waypoints.filter((w) => w.isComplete);
 
       if (this.excludeAvailable) {
-        waypointsToGenerate = waypointsToGenerate.rejectBy(
-          'status',
-          'available'
+        waypointsToGenerate = waypointsToGenerate.filter(
+          (w) => w.status !== 'available'
         );
       }
     } else {
@@ -65,7 +63,8 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         team
           .hasMany('meetings')
           .value()
-          .sortBy('destination.id')
+          .slice()
+          .sort((a, b) => a.destination.id - b.destination.id)
           .forEach((meeting, index) => {
             waypoints.push({
               team,
@@ -204,7 +203,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         doc.text(fullOutline);
         doc.text(excerpt);
 
-        outlines.forEach((outline, index) => {
+        outlines.forEach((outline) => {
           doc.text(JSON.stringify(outline));
         });
 

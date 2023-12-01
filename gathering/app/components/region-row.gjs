@@ -1,8 +1,5 @@
-import Component from '@glimmer/component';
-import { action } from '@ember/object';
-import { on } from '@ember/modifier';
-import { htmlSafe } from '@ember/template';
 import { LinkTo } from '@ember/routing';
+import Component from '@glimmer/component';
 
 export default class RegionRow extends Component {
   get nesting() {
@@ -16,7 +13,7 @@ export default class RegionRow extends Component {
   <template>
     <tr
       class='region
-        {{if @region.isComplete "complete" "incomplete"}}
+        {{if @region.isComplete 'complete' 'incomplete'}}
         nesting-{{this.nesting}}'
     >
       <td class='name'>

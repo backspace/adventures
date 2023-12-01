@@ -17,7 +17,7 @@ export default class SchedulerTeamComponent extends Component {
       return false;
     }
 
-    const teamIds = meeting.teams.mapBy('id');
+    const teamIds = meeting.teams.map((t) => t.id);
 
     return teamIds.indexOf(this.args.team.id) > -1;
   }
@@ -32,7 +32,7 @@ export default class SchedulerTeamComponent extends Component {
 
     const teamMeetings = team.hasMany('meetings').value();
 
-    return teamMeetings.any(
+    return teamMeetings.some(
       (meeting) =>
         meeting.hasMany('teams').ids().indexOf(highlightedTeam.id) > -1
     );

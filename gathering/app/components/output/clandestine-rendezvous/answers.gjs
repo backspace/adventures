@@ -1,11 +1,12 @@
 import Component from '@glimmer/component';
-import { trackedFunction } from 'ember-resources/util/function';
 import Loading from 'adventure-gathering/components/loading';
 
 import config from 'adventure-gathering/config/environment';
 
 import blobStream from 'blob-stream';
+import { trackedFunction } from 'ember-resources/util/function';
 
+import uniq from 'lodash.uniq';
 import moment from 'moment';
 import PDFDocument from 'pdfkit';
 
@@ -19,7 +20,7 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
     const stream = doc.pipe(blobStream());
 
     const meetings = this.args.meetings;
-    const meetingIndices = meetings.mapBy('index').uniq().sort();
+    const meetingIndices = uniq(meetings.map((m) => m.index)).sort();
 
     this.args.teams.forEach((team) => {
       doc.text(
@@ -38,7 +39,7 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
 
       doc.moveDown();
 
-      const meetingsWithIndex = meetings.filterBy('index', index);
+      const meetingsWithIndex = meetings.filter((m) => m.index === index);
 
       doc.text(
         meetingsWithIndex
@@ -46,7 +47,7 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
             const teamNames = meeting
               .hasMany('teams')
               .value()
-              .mapBy('name')
+              .map((t) => t.name)
               .sort()
               .join(', ');
 

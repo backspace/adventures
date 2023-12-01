@@ -1,6 +1,7 @@
 import Route from '@ember/routing/route';
 import { inject as service } from '@ember/service';
 import classic from 'ember-classic-decorator';
+import sortBy from 'lodash.sortby';
 import { hash } from 'rsvp';
 
 @classic
@@ -13,12 +14,12 @@ export default class SchedulerRoute extends Route {
   async model() {
     await this.store.findAll('region');
 
-    let destinations = (await this.store.findAll('destination'))
-      .filterBy('isAvailable')
-      .filterBy('isComplete');
-    let waypoints = (await this.store.findAll('waypoint'))
-      .filterBy('isAvailable')
-      .filterBy('isComplete');
+    let destinations = (await this.store.findAll('destination')).filter(
+      (d) => d.isAvailable && d.isComplete
+    );
+    let waypoints = (await this.store.findAll('waypoint')).filter(
+      (w) => w.isAvailable && w.isComplete
+    );
 
     let typeToList = {
       waypoints,
@@ -70,7 +71,9 @@ export default class SchedulerRoute extends Route {
       waypoints,
       teams,
       map: this.map.getURL('image'),
-      ancestorRegionContainers: ancestorRegionContainers.sortBy('region.name'),
+      ancestorRegionContainers: sortBy(ancestorRegionContainers, [
+        'region.name',
+      ]),
     });
   }
 }
@@ -85,7 +88,7 @@ class RegionContainer {
 
   has(type) {
     return (
-      this[type].length > 0 || this.children.any((child) => child.has(type))
+      this[type].length > 0 || this.children.some((child) => child.has(type))
     );
   }
 

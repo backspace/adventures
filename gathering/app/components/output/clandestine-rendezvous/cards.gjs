@@ -1,14 +1,13 @@
-import { alias } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import Loading from 'adventure-gathering/components/loading';
-import { get } from '@ember/object';
 
 import config from 'adventure-gathering/config/environment';
 
 import blobStream from 'blob-stream';
 import { trackedFunction } from 'ember-resources/util/function';
 
+import sortBy from 'lodash.sortby';
 import moment from 'moment';
 import PDFDocument from 'pdfkit';
 
@@ -167,7 +166,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
           label: `from ${cardData.otherTeamName}`,
         };
 
-        const sortedTeams = [cardData.team, otherTeam].sortBy('name');
+        const sortedTeams = sortBy([cardData.team, otherTeam], ['name']);
 
         if (sortedTeams[0] === cardData.team) {
           rows.push(myRow);
@@ -274,7 +273,8 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         team
           .hasMany('meetings')
           .value()
-          .sortBy('index')
+          .slice()
+          .sort((a, b) => a.index - b.index)
           .map((meeting, index) => {
             return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
           })
@@ -294,13 +294,13 @@ export default class ClandestineRendezvousCardsComponent extends Component {
     const rendezvousLetter = String.fromCharCode(65 + index);
     const rendezvousTime = this._getRendezvousTimeForIndex(index);
 
-    const otherTeams = teams.rejectBy('id', team.id);
-    const otherTeamName = otherTeams.mapBy('name');
+    const otherTeams = teams.filter((t) => t.id !== team.id);
+    const otherTeamName = otherTeams.map((t) => t.name);
 
     const answer = destination.get('answer');
     const mask = destination.get('mask');
 
-    const goalLetter = get(this.args.settings, 'goal')[index];
+    const goalLetter = this.args.settings.goal[index];
     const goalDigit = parseInt(goalLetter);
 
     const chosenBlankIndex = this.puzzles.implementation.chooseBlankIndex({

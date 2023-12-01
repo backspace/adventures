@@ -1,10 +1,9 @@
-import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
-import { trackedFunction } from 'ember-resources/util/function';
 import { inject as service } from '@ember/service';
+import Component from '@glimmer/component';
 import Loading from 'adventure-gathering/components/loading';
 
 import blobStream from 'blob-stream';
+import { trackedFunction } from 'ember-resources/util/function';
 import PDFDocument from 'pdfkit';
 
 const pageMargin = 0.5 * 72;
@@ -34,8 +33,6 @@ export default class TeamOverviewsComponent extends Component {
     let mapBase64String = await this.map.blobToBase64String(mapBlob);
     let lowMapBase64String = await this.map.blobToBase64String(lowMapBlob);
 
-    let mapHighToLowRatio = lowMapBitmap.width / mapBitmap.width;
-
     let mapTeamFontSize = 18;
     let mapMarkerFontSize = 12;
     let mapMarkerCircleRadius = 10;
@@ -58,22 +55,25 @@ export default class TeamOverviewsComponent extends Component {
 
     let devices = this.devices;
 
-    this.args.teams.sortBy('createdAt').forEach((team, index) => {
-      if (index > 0) {
-        doc.addPage();
-      }
+    this.args.teams
+      .slice()
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .forEach((team, index) => {
+        if (index > 0) {
+          doc.addPage();
+        }
 
-      drawMargins(doc, () => {
-        drawHeader(team);
-        drawMap();
-        drawMeetingPoints(team);
-        drawExtras();
+        drawMargins(doc, () => {
+          drawHeader(team);
+          drawMap();
+          drawMeetingPoints(team);
+          drawExtras();
 
-        doc.addPage();
+          doc.addPage();
 
-        drawMeetingBlanks(team);
+          drawMeetingBlanks(team);
+        });
       });
-    });
 
     doc.end();
 
@@ -137,7 +137,8 @@ export default class TeamOverviewsComponent extends Component {
         team
           .hasMany('meetings')
           .value()
-          .sortBy('destination.id')
+          .slice()
+          .sort((a, b) => a.destination.id - b.destination.id)
           .forEach((meeting, index) => {
             const rendezvousLetter = identifierForMeeting(index);
 
@@ -297,7 +298,8 @@ export default class TeamOverviewsComponent extends Component {
       team
         .hasMany('meetings')
         .value()
-        .sortBy('destination.id')
+        .slice()
+        .sort((a, b) => a.destination.id - b.destination.id)
         .forEach((meeting, index) => {
           const rendezvousLetter = identifierForMeeting(index);
 
@@ -371,8 +373,6 @@ export default class TeamOverviewsComponent extends Component {
             doc.translate(meetingHalfWidth + meetingPadding, 0);
 
             doc.fontSize(meetingHeadingFontSize);
-
-            let parent = destinationRegion.belongsTo('parent').value();
 
             doc.text(destinationRegion.name, 0, meetingPadding, {
               width: meetingHalfWithoutPadding,

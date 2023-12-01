@@ -1,9 +1,8 @@
-import Component from '@glimmer/component';
 import { inject as service } from '@ember/service';
-import blobStream from 'blob-stream';
-import classic from 'ember-classic-decorator';
-import { trackedFunction } from 'ember-resources/util/function';
+import Component from '@glimmer/component';
 import Loading from 'adventure-gathering/components/loading';
+import blobStream from 'blob-stream';
+import { trackedFunction } from 'ember-resources/util/function';
 
 import PDFDocument from 'pdfkit';
 
@@ -73,7 +72,8 @@ export default class ClandestineRendezvousMapsComponent extends Component {
       team
         .hasMany('meetings')
         .value()
-        .sortBy('index')
+        .slice()
+        .sort((a, b) => a.index - b.index)
         .forEach((meeting, index) => {
           const destination = meeting.belongsTo('destination').value();
           const region = destination.belongsTo('region').value();

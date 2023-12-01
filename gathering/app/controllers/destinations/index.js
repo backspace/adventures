@@ -8,7 +8,7 @@ export default class DestinationsIndexController extends Controller {
   @tracked defaultSort = true;
 
   get destinations() {
-    return orderBy(this.model.toArray(), this.sorting[0], this.sorting[1]);
+    return orderBy(this.model.slice(), this.sorting[0], this.sorting[1]);
   }
 
   @action

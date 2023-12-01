@@ -1,5 +1,3 @@
-import { computed } from '@ember/object';
-import { mapBy, filterBy } from '@ember/object/computed';
 import { hasMany, attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
@@ -24,22 +22,26 @@ export default class Team extends Model {
   @attr()
   phones;
 
-  @hasMany('meeting', { async: false })
+  @hasMany('meeting', { inverse: 'teams', async: false })
   meetings;
 
-  @mapBy('meetings', 'destination')
-  destinations;
+  get destinations() {
+    return this.meetings.map((m) => m.destination);
+  }
 
-  @mapBy('meetings', 'waypoint')
-  waypoints;
+  get waypoints() {
+    return this.meetings.map((m) => m.waypoint);
+  }
 
-  @filterBy('meetings', 'isNew', false)
-  savedMeetings;
+  get savedMeetings() {
+    return this.meetings.filter((m) => !m.isNew);
+  }
 
-  @computed('destinations.@each.awesomeness')
   get averageAwesomeness() {
-    const awesomenesses = this.destinations
-      .mapBy('awesomeness')
+    const awesomenesses = this.meetings
+      .map((m) => m.destination)
+      .filter((d) => d)
+      .map((d) => d.awesomeness)
       .filter((a) => a);
 
     if (awesomenesses.length > 0) {
@@ -51,9 +53,12 @@ export default class Team extends Model {
     return 0;
   }
 
-  @computed('destinations.@each.risk')
   get averageRisk() {
-    const risks = this.destinations.mapBy('risk').filter((r) => r);
+    const risks = this.meetings
+      .map((m) => m.destination)
+      .filter((d) => d)
+      .map((d) => d.risk)
+      .filter((r) => r);
 
     if (risks.length > 0) {
       return risks.reduce((prev, curr) => prev + curr) / risks.length;
@@ -62,7 +67,6 @@ export default class Team extends Model {
     return 0;
   }
 
-  @computed('phones.[]')
   get phonesString() {
     return (this.phones || [])
       .map((phone) => {
@@ -77,7 +81,6 @@ export default class Team extends Model {
   @attr('updateDate')
   updatedAt;
 
-  @computed('name')
   get truncatedName() {
     let limit = 40;
     let text = this.name;
