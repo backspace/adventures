@@ -14,8 +14,8 @@ export default class PathfinderService extends Service {
 
   @computed('data.{_rev,data}')
   get regions() {
-    // eslint-disable-next-line ember/no-get
     return uniq(
+      // eslint-disable-next-line ember/no-get
       Object.keys(get(this, 'data.data')).reduce(
         (regions, key) => regions.concat(key.split('|')),
         []
