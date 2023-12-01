@@ -2,6 +2,7 @@ import { sort } from '@ember/object/computed';
 import { hasMany, belongsTo, attr } from '@ember-data/model';
 import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
+import uniq from 'lodash.uniq';
 
 @classic
 export default class Meeting extends Model {
@@ -23,7 +24,7 @@ export default class Meeting extends Model {
     const teams = this.teams;
     const meetingCounts = teams.map((t) => t.meetings.length);
 
-    return meetingCounts.uniq().length !== 1;
+    return uniq(meetingCounts).length !== 1;
   }
 
   @attr('number')

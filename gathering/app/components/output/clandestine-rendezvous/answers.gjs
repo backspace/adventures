@@ -8,6 +8,7 @@ import { trackedFunction } from 'ember-resources/util/function';
 
 import moment from 'moment';
 import PDFDocument from 'pdfkit';
+import uniq from 'lodash.uniq';
 
 export default class ClandestineRendezvousAnswersComponent extends Component {
   rendering = true;
@@ -19,10 +20,7 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
     const stream = doc.pipe(blobStream());
 
     const meetings = this.args.meetings;
-    const meetingIndices = meetings
-      .map((m) => m.index)
-      .uniq()
-      .sort();
+    const meetingIndices = uniq(meetings.map((m) => m.index)).sort();
 
     this.args.teams.forEach((team) => {
       doc.text(
