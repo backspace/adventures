@@ -107,7 +107,7 @@
     "maxrects-packer": "^2.0.0",
     "moment": "2.11.1",
     "moment-timezone": "^0.5.0",
-    "node-sass": "^6.0.0",
+    "node-sass": "^8.0.0",
     "patch-package": "^6.5.1",
     "pdfkit": "^0.13.0",
     "pouchdb-adapter-http": "^7.3.1",
@@ -142,7 +142,7 @@
     "node": "14.* || 16.* || >= 18"
   },
   "volta": {
-    "node": "16.19.1"
+    "node": "18.19.0"
   },
   "ember": {
     "edition": "octane"
