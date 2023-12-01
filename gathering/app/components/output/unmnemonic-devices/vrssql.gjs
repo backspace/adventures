@@ -85,7 +85,7 @@ export default class TeamOverviewsComponent extends Component {
       .insert(
         this.args.meetings.map((meeting) => ({
           id: meeting.get('id'),
-          team_id: meeting.get('teams.firstObject.id'),
+          team_id: meeting.get('teams.[0].id'),
           book_id: meeting.get('waypoint.id'),
           destination_id: meeting.get('destination.id'),
         }))
