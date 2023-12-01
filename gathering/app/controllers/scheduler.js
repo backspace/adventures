@@ -34,7 +34,7 @@ export default class SchedulerController extends Controller {
 
   get lastMeetingOffsets() {
     return (get(this, 'meeting.teams') || []).map(
-      (team) => team.get('savedMeetings.lastObject.offset') || 0
+      (team) => team.savedMeetings[team.savedMeetings.length - 1]?.offset || 0
     );
   }
 
@@ -57,8 +57,10 @@ export default class SchedulerController extends Controller {
       const newRegionAncestorName = newRegion.ancestor.name;
 
       const lastMeetingRegionNames = (get(this, 'meeting.teams') || [])
-        .map((team) =>
-          team.get('savedMeetings.lastObject.destination.region.name')
+        .map(
+          (team) =>
+            team.savedMeetings[team.savedMeetings.length - 1]?.destination
+              ?.region?.name
         )
         .filter((n) => !!n);
 
