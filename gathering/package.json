@@ -124,7 +124,7 @@
     "qunit-dom": "^2.0.0",
     "relational-pouch": "^4.0.4",
     "stream-browserify": "^3.0.0",
-    "stylelint": "^15.4.0",
+    "stylelint": "^15.7.0",
     "stylelint-config-standard": "^32.0.0",
     "stylelint-prettier": "^3.0.0",
     "testem": "^3.11.0",
