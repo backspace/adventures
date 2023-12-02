@@ -17,16 +17,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18.x
-          cache: npm
-          cache-dependency-path: gathering/package-lock.json
+          cache: pnpm
+          cache-dependency-path: gathering/pnpm-lock.yaml
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install
         working-directory: gathering
-      - name: Lint JS
-        run: npm run lint:js
-        working-directory: gathering
-      - name: Lint HBS
-        run: npm run lint:hbs
+      - name: Lint
+        run: pnpm lint
         working-directory: gathering
 
   test:
@@ -39,13 +36,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18.x
-          cache: npm
-          cache-dependency-path: gathering/package-lock.json
+          cache: pnpm
+          cache-dependency-path: gathering/pnpm-lock.yaml
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install
         working-directory: gathering
       - name: Run Tests
-        run: npm test
+        run: pnpm test
         working-directory: gathering
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2.9.0
