@@ -6,6 +6,13 @@ const webpack = require('webpack');
 
 module.exports = function (defaults) {
   const app = new EmberApp(defaults, {
+    '@embroider/macros': {
+      setConfig: {
+        '@ember-data/store': {
+          polyfillUUID: true,
+        },
+      },
+    },
     autoImport: {
       webpack: {
         plugins: [
