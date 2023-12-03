@@ -1,11 +1,11 @@
 import { visit, waitUntil } from '@ember/test-helpers';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
+import page from 'adventure-gathering/tests/pages/destinations';
+import nav from 'adventure-gathering/tests/pages/nav';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 
 import withSetting from '../helpers/with-setting';
-
-import page from '../pages/destinations';
 
 module('Acceptance | destinations', function (hooks) {
   setupApplicationTest(hooks);
@@ -72,11 +72,11 @@ module('Acceptance | destinations', function (hooks) {
     assert.strictEqual(page.destinations[0].description, 'Ina-Karekh');
     assert.strictEqual(page.destinations[0].answer, 'ABC123');
     assert.strictEqual(page.destinations[0].mask, 'ABC__3');
-    assert.strictEqual(page.destinations[0].region, 'There');
+    assert.strictEqual(page.destinations[0].region.text, 'There');
     assert.notOk(page.destinations[0].isIncomplete);
 
     assert.strictEqual(page.destinations[1].description, 'Hona-Karekh');
-    assert.strictEqual(page.destinations[1].region, 'Here');
+    assert.strictEqual(page.destinations[1].region.text, 'Here');
     assert.ok(page.destinations[1].isIncomplete);
 
     await page.headerRegion.click();
@@ -144,6 +144,31 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.strictEqual(page.destinations[0].description, 'Bromarte');
     assert.strictEqual(page.destinations[0].mask, 'R0E0H_');
+  });
+
+  test('a region can be entered and destinations will be scoped to it', async function (assert) {
+    await visit('/destinations');
+
+    await page.destinations[0].region.click();
+    assert.strictEqual(page.region.title, 'There');
+    assert.strictEqual(page.destinations.length, 1);
+
+    await nav.destinations.click();
+    assert.ok(page.region.isHidden);
+    assert.strictEqual(page.destinations.length, 2);
+
+    await page.destinations[0].region.click();
+    await page.region.leave();
+    assert.ok(page.region.isHidden);
+
+    await page.destinations[0].region.click();
+    await page.new();
+    assert.strictEqual(page.regionField.text, 'There');
+
+    await page.save();
+    await waitUntil(() => page.destinations.length);
+
+    assert.strictEqual(page.destinations.length, 2);
   });
 
   test('the destination’s suggested mask is based on the adventure', async function (assert) {

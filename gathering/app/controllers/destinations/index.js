@@ -1,14 +1,28 @@
-import Controller from '@ember/controller';
+import Controller, { inject as controller } from '@ember/controller';
 import { action, set } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
 import orderBy from 'lodash.orderby';
 
 export default class DestinationsIndexController extends Controller {
+  @controller('destinations') destinationsController;
+
   @tracked sorting = Object.freeze([['updatedAt'], ['desc']]);
   @tracked defaultSort = true;
 
+  get region() {
+    return this.destinationsController.region;
+  }
+
   get destinations() {
-    return orderBy(this.model.slice(), this.sorting[0], this.sorting[1]);
+    let filteredDestinations = this.model.slice();
+
+    if (this.region) {
+      filteredDestinations = filteredDestinations.filter(
+        (d) => d.region === this.region
+      );
+    }
+
+    return orderBy(filteredDestinations, this.sorting[0], this.sorting[1]);
   }
 
   @action

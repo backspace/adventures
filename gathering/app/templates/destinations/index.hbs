@@ -1,5 +1,13 @@
 <div class='grid-x'>
   <div class='small-12 cell'>
+    {{#if this.region}}
+      <section data-test-destination-region-scope>
+        <strong data-test-title>
+          {{this.region.name}}
+        </strong>
+        <LinkTo @route='destinations' @query={{(hash regionId=null)}} data-test-leave>leave</LinkTo>
+      </section>
+    {{/if}}
     <table>
       <thead>
         <tr>

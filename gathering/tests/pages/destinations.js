@@ -43,6 +43,13 @@ const fillSelectByText = function (selector) {
 export default PageObject.create({
   visit: visitable('/destinations'),
 
+  region: {
+    scope: '[data-test-destination-region-scope]',
+
+    title: text('[data-test-title]'),
+    leave: clickable('[data-test-leave]'),
+  },
+
   headerRegion: {
     scope: '[data-test-header-region]',
     click: clickable(),
@@ -63,7 +70,7 @@ export default PageObject.create({
     isIncomplete: hasClass('incomplete'),
     hasMeetings: hasClass('meetings'),
 
-    region: text('.region'),
+    region: { scope: '[data-test-destination-region]' },
 
     status: {
       scope: '.status',

@@ -12,7 +12,11 @@
       >{{this.status}}</button>
     </td>
   {{/if}}
-  <td class='region'>{{@destination.region.name}}</td>
+  <td class='region'>
+    <LinkTo @route='destinations.index' @query={{hash region-id=@destination.region.id}} data-test-destination-region>
+      {{@destination.region.name}}
+    </LinkTo>
+  </td>
   <td class='description'>{{@destination.description}}</td>
   <td class='answer'>{{@destination.answer}}</td>
   <td class='mask show-for-medium'>{{@destination.mask}}</td>

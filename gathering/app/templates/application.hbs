@@ -2,8 +2,8 @@
 <div class='grid-container'>
   <div class='small-12 cell'>
     <div class='top-bar'>
-      <ul class='menu'>
-        <li class='pair'><LinkTo @route='destinations'>dest<span
+      <ul class='menu' data-test-nav>
+        <li class='pair'><LinkTo @route='destinations' @query={{(hash regionId=null)}} data-test-destinations>dest<span
               class='show-for-medium'
             >inations</span></LinkTo>
           <LinkTo

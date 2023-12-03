@@ -264,7 +264,7 @@ module('Acceptance | scheduler', function (hooks) {
 
       await waitUntil(() => destinationsPage.destinations.length === 7);
       assert.strictEqual(
-        destinationsPage.destinations[0].region,
+        destinationsPage.destinations[0].region.text,
         'Portage Place'
       );
 
