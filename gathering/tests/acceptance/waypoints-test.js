@@ -1,6 +1,7 @@
 import { waitUntil } from '@ember/test-helpers';
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import homePage from 'adventure-gathering/tests/pages/home';
+import nav from 'adventure-gathering/tests/pages/nav';
 import page from 'adventure-gathering/tests/pages/waypoints';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
@@ -77,13 +78,13 @@ module('Acceptance | waypoints', function (hooks) {
     let one = page.waypoints[0];
     assert.strictEqual(one.name, 'The Shadowed Sun');
     assert.strictEqual(one.author, 'N. K. Jemisin');
-    assert.strictEqual(one.region, 'Harvey Smith');
+    assert.strictEqual(one.region.text, 'Harvey Smith');
     assert.notOk(one.isIncomplete);
 
     let two = page.waypoints[1];
     assert.strictEqual(two.name, 'The Killing Moon');
     assert.strictEqual(two.author, 'N. K. Jemisin');
-    assert.strictEqual(two.region, 'Henderson');
+    assert.strictEqual(two.region.text, 'Henderson');
     assert.ok(two.isIncomplete);
   });
 
@@ -149,6 +150,32 @@ module('Acceptance | waypoints', function (hooks) {
 
     assert.strictEqual(page.waypoints[0].name, 'A Half-Built Garden');
     assert.strictEqual(page.waypoints[0].author, 'Ruthanna Emrys');
+  });
+
+  test('a region can be entered and waypoints will be scoped to it', async function (assert) {
+    await homePage.visit();
+    await homePage.waypoints.click();
+
+    await page.waypoints[0].region.click();
+    assert.strictEqual(page.region.title, 'Harvey Smith');
+    assert.strictEqual(page.waypoints.length, 1);
+
+    await nav.waypoints.click();
+    assert.ok(page.region.isHidden);
+    assert.strictEqual(page.waypoints.length, 2);
+
+    await page.waypoints[0].region.click();
+    await page.region.leave();
+    assert.ok(page.region.isHidden);
+
+    await page.waypoints[0].region.click();
+    await page.new();
+    assert.strictEqual(page.regionField.text, 'Harvey Smith');
+
+    await page.save();
+    await waitUntil(() => page.waypoints.length);
+
+    assert.strictEqual(page.waypoints.length, 2);
   });
 
   test('the status fieldset doesn’t show when the feature isn’t on', async function (assert) {

@@ -40,6 +40,13 @@ const fillSelectByText = function (selector) {
 };
 
 export default PageObject.create({
+  region: {
+    scope: '[data-test-waypoint-region-scope]',
+
+    title: text('[data-test-title]'),
+    leave: clickable('[data-test-leave]'),
+  },
+
   headerRegion: {
     scope: '[data-test-header-region]',
     click: clickable(),
@@ -48,7 +55,7 @@ export default PageObject.create({
   waypoints: collection('[data-test-waypoint]', {
     name: text('[data-test-name]'),
     author: text('[data-test-author]'),
-    region: text('[data-test-region]'),
+    region: { scope: '[data-test-region]' },
 
     isIncomplete: hasClass('incomplete'),
 

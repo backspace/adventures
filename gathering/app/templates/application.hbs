@@ -11,8 +11,10 @@
             class='destinations new'
           >+</LinkTo></li>
         {{#if this.puzzles.implementation.hasWaypoints}}
-          <li class='pair'><LinkTo
+          <li class='pair'>
+            <LinkTo
               @route='waypoints'
+              @query={{(hash regionId=null)}}
               data-test-waypoints
             >way<span class='show-for-medium'>points</span></LinkTo>
             <LinkTo

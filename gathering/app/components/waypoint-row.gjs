@@ -1,3 +1,4 @@
+import { hash } from '@ember/helper';
 import { on } from '@ember/modifier';
 import { action } from '@ember/object';
 import { LinkTo } from '@ember/routing';
@@ -16,8 +17,10 @@ export default class WaypointRowComponent extends Component {
           {{on 'click' this.toggleStatus}}
           data-test-status
         >{{this.status}}</td>{{/if}}
-      <td data-test-region>
-        {{@waypoint.region.name}}
+      <td>
+        <LinkTo @route='waypoints.index' @query={{hash region-id=@waypoint.region.id}} data-test-region>
+          {{@waypoint.region.name}}
+        </LinkTo>
       </td>
       <td data-test-name>
         {{@waypoint.name}}
