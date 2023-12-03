@@ -35,6 +35,7 @@ module('Acceptance | destinations', function (hooks) {
     });
 
     await fixtureOne.save();
+    await regionTwo.save();
 
     const fixtureTwo = store.createRecord('destination');
 
@@ -52,9 +53,7 @@ module('Acceptance | destinations', function (hooks) {
     });
 
     await fixtureTwo.save();
-
     await regionOne.save();
-    await regionTwo.save();
 
     regionThree.setProperties({
       parent: regionOne,
