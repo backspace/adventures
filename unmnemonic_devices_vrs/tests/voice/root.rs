@@ -256,6 +256,15 @@ async fn root_serves_welcome_and_does_not_notify_self_call_when_begun(db: PgPool
     assert!(response.status().is_success());
 }
 
+#[sqlx::test(fixtures("schema", "settings-no-notify-supervisor"))]
+async fn root_serves_welcome_and_does_not_notify_supervisor_with_setting(db: PgPool) {
+    let response = get(db, "/?Caller=2040000000", false)
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+}
+
 #[sqlx::test(fixtures("schema", "settings"))]
 async fn root_serves_welcome_when_query_param_begin(db: PgPool) {
     let response = get(db, "/?begun", false)

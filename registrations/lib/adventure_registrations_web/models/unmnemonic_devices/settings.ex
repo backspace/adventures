@@ -8,6 +8,7 @@ defmodule AdventureRegistrationsWeb.UnmnemonicDevices.Settings do
     field(:compromised, :boolean, default: false)
     field(:down, :boolean, default: false)
     field(:ending, :boolean, default: false)
+    field(:notify_supervisor, :boolean, default: true)
     field(:override, :string)
     field(:vrs_href, :string)
     field(:vrs_human, :string)
@@ -17,6 +18,15 @@ defmodule AdventureRegistrationsWeb.UnmnemonicDevices.Settings do
 
   def changeset(settings, attrs) do
     settings
-    |> cast(attrs, [:override, :begun, :compromised, :ending, :down, :vrs_href, :vrs_human])
+    |> cast(attrs, [
+      :override,
+      :begun,
+      :compromised,
+      :ending,
+      :notify_supervisor,
+      :down,
+      :vrs_href,
+      :vrs_human
+    ])
   end
 end

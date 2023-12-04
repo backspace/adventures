@@ -113,7 +113,7 @@ pub async fn get_root(
     .ok();
 
     let settings =
-        sqlx::query!("SELECT begun, down, ending, override as override_message FROM unmnemonic_devices.settings LIMIT 1")
+        sqlx::query!("SELECT begun, down, ending, override as override_message, notify_supervisor FROM unmnemonic_devices.settings LIMIT 1")
             .fetch_one(&state.db)
             .await
             .expect("Failed to fetch settings");
@@ -128,8 +128,10 @@ pub async fn get_root(
     let caller_is_supervisor =
         params.caller.clone().unwrap_or("NOTHING".to_string()) == supervisor_number;
 
-    let notify_supervisor =
-        settings.begun.unwrap() && !settings.ending.unwrap() && !caller_is_supervisor;
+    let notify_supervisor = settings.begun.unwrap()
+        && !settings.ending.unwrap()
+        && !caller_is_supervisor
+        && settings.notify_supervisor.unwrap();
     let notify_notification = params.caller.is_some()
         && !settings.begun.unwrap()
         && !caller_is_supervisor
