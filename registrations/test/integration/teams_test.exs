@@ -46,6 +46,7 @@ defmodule AdventureRegistrations.Integration.Teams do
     Login.login_as("takver@example.com", "Anarres")
 
     refute Details.Attending.present?(), "Expected attending fields to be hidden unless enabled"
+    refute Details.Team.present?(), "Expected no team block for an unassigned user"
 
     Details.fill_team_emails(
       "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"
@@ -190,5 +191,32 @@ defmodule AdventureRegistrations.Integration.Teams do
 
     assert Nav.info_text() == "Please log in to edit your details"
     Login.fill_email("anemail")
+  end
+
+  test "team details are shown if the user is assigned to one" do
+    takver =
+      insert(:user,
+        email: "takver@example.com",
+        crypted_password: Bcrypt.hash_pwd_salt("Anarres")
+      )
+
+    bedap =
+      insert(:user, email: "bedap@example.com", crypted_password: Bcrypt.hash_pwd_salt("Anarres"))
+
+    insert(:team,
+      name: "A team",
+      risk_aversion: 2,
+      notes: "Some notes",
+      user_ids: [takver.id, bedap.id]
+    )
+
+    navigate_to("/")
+
+    Login.login_as("takver@example.com", "Anarres")
+
+    assert Details.Team.present?()
+    assert Details.Team.name() == "A team"
+    assert Details.Team.risk_aversion() == "Push me a little"
+    assert Details.Team.emails() == "takver@example.com, bedap@example.com"
   end
 end

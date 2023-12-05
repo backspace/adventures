@@ -128,6 +128,24 @@ defmodule AdventureRegistrations.Pages.Details do
     end
   end
 
+  defmodule Team do
+    def present? do
+      element?(:css, "[data-test-assigned-team]")
+    end
+
+    def name do
+      visible_text({:css, "[data-test-assigned-team-name]"})
+    end
+
+    def risk_aversion do
+      visible_text({:css, "[data-test-assigned-team-risk-aversion]"})
+    end
+
+    def emails do
+      visible_text({:css, "[data-test-assigned-team-emails]"})
+    end
+  end
+
   def active? do
     current_path() == "/details"
   end

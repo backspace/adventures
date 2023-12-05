@@ -2,12 +2,13 @@ defmodule AdventureRegistrationsWeb.UserController do
   use AdventureRegistrationsWeb, :controller
 
   alias AdventureRegistrationsWeb.User
+  alias AdventureRegistrationsWeb.Team
 
   plug AdventureRegistrationsWeb.Plugs.Admin when action in [:index]
   plug AdventureRegistrationsWeb.Plugs.LoginRequired when action in [:edit, :update]
 
   def index(conn, _params) do
-    teams = Repo.all(AdventureRegistrationsWeb.Team)
+    teams = Repo.all(Team)
 
     users =
       Repo.all(User)
@@ -22,6 +23,28 @@ defmodule AdventureRegistrationsWeb.UserController do
     users = Repo.all(User)
     current_user = conn.assigns[:current_user_object]
     changeset = User.details_changeset(current_user)
+
+    team =
+      Repo.one(
+        from(t in Team,
+          where: fragment("? = ANY(?.user_ids)", ^Ecto.UUID.dump!(current_user.id), t),
+          select: t
+        )
+      )
+
+    team_emails =
+      if team do
+        Repo.all(
+          from(u in User,
+            # Filter users whose IDs are in team.user_ids
+            where: u.id in ^team.user_ids,
+            select: u.email
+          )
+        )
+        |> Enum.join(", ")
+      else
+        nil
+      end
 
     conn =
       case Application.get_env(:adventure_registrations, :registration_closed) do
@@ -38,6 +61,8 @@ defmodule AdventureRegistrationsWeb.UserController do
 
     render(conn, "edit.html",
       user: current_user,
+      team: team,
+      team_emails: team_emails,
       relationships: AdventureRegistrationsWeb.TeamFinder.relationships(current_user, users),
       changeset: changeset
     )
@@ -47,6 +72,28 @@ defmodule AdventureRegistrationsWeb.UserController do
     users = Repo.all(User)
     current_user = conn.assigns[:current_user_object]
     changeset = User.details_changeset(current_user, user_params)
+
+    team =
+      Repo.one(
+        from(t in Team,
+          where: fragment("? = ANY(?.user_ids)", ^Ecto.UUID.dump!(current_user.id), t),
+          select: t
+        )
+      )
+
+    team_emails =
+      if team do
+        Repo.all(
+          from(u in User,
+            # Filter users whose IDs are in team.user_ids
+            where: u.id in ^team.user_ids,
+            select: u.email
+          )
+        )
+        |> Enum.join(", ")
+      else
+        nil
+      end
 
     case Repo.update(changeset) do
       {:ok, _} ->
@@ -59,6 +106,8 @@ defmodule AdventureRegistrationsWeb.UserController do
       {:error, changeset} ->
         render(conn, "edit.html",
           user: current_user,
+          team: team,
+          team_emails: team_emails,
           relationships: AdventureRegistrationsWeb.TeamFinder.relationships(current_user, users),
           changeset: changeset
         )

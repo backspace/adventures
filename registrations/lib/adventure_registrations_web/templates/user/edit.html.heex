@@ -1,3 +1,19 @@
+<%= if @team do %>
+  <div class='row highlight' data-test-assigned-team>
+    <div class='small-12 columns'>
+      <p>These are your team details. If anything is incorrect, please let us know as soon as possible!</p>
+      <dl>
+        <dt>Name</dt>
+        <dd data-test-assigned-team-name><%= @team.name %></dd>
+        <dt>Risk aversion</dt>
+        <dd data-test-assigned-team-risk-aversion><%= risk_aversion_integer_to_string()[@team.risk_aversion] %></dd>
+        <dt>Emails</dt>
+        <dd data-test-assigned-team-emails><%= @team_emails %></dd>
+      </dl>
+    </div>
+  </div>
+<% end %>
+
 <div class='row card'>
   <div class='small-12 columns'>
     <p><%= phrase("change_deadline") %></p>
