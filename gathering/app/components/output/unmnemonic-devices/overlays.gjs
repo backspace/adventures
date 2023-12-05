@@ -11,8 +11,8 @@ import PDFDocument from 'pdfkit';
 import {
   drawZigzagBackground,
   drawConcentricCirclesBackground,
-  drawSpiralBackground,
   drawConcentricStarsBackground,
+  drawDotGridBackground,
 } from './overlay-backgrounds';
 
 export const PAGE_MARGIN = 0.3 * 72;
@@ -332,11 +332,11 @@ function drawBackground(doc, width, height, pageIndex) {
   let backgroundIndex = pageIndex % BACKGROUND_COUNT;
 
   if (backgroundIndex === 0) {
-    drawZigzagBackground(doc, width, height);
+    drawDotGridBackground(doc, width, height);
   } else if (backgroundIndex === 1) {
     drawConcentricCirclesBackground(doc, width, height);
   } else if (backgroundIndex === 2) {
-    drawSpiralBackground(doc, width, height);
+    drawZigzagBackground(doc, width, height);
   } else if (backgroundIndex === 3) {
     drawConcentricStarsBackground(doc, width, height);
   }

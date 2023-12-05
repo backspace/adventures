@@ -136,3 +136,64 @@ export function drawSpiralBackground(doc, width, height) {
     doc.path(path).stroke();
   }
 }
+
+export function drawDotGridBackground(doc, width, height) {
+  let smallRadius = 1;
+  let largeRadius = 2;
+  let delta = 0.25;
+
+  let cellSize = 5;
+
+  let rows = height / cellSize;
+  let cols = width / cellSize;
+
+  doc.save();
+
+  doc.fillColor('black');
+
+  let startingRadius = smallRadius;
+  let startingRadiusGrowing = true;
+
+  for (let row = 0; row < rows; row++) {
+    let radius = startingRadius;
+    let radiusGrowing = true;
+
+    for (let col = 0; col < cols; col++) {
+      doc.circle(col * cellSize, row * cellSize, radius).fill();
+
+      if (radiusGrowing) {
+        radius += delta;
+
+        if (radius > largeRadius) {
+          radiusGrowing = false;
+          radius = largeRadius - delta;
+        }
+      } else {
+        radius -= delta;
+
+        if (radius < smallRadius) {
+          radiusGrowing = true;
+          radius = smallRadius + delta;
+        }
+      }
+    }
+
+    if (startingRadiusGrowing) {
+      startingRadius += delta;
+
+      if (startingRadius > largeRadius) {
+        startingRadiusGrowing = false;
+        startingRadius = largeRadius - delta;
+      }
+    } else {
+      startingRadius -= delta;
+
+      if (startingRadius < smallRadius) {
+        startingRadiusGrowing = true;
+        startingRadius = smallRadius + delta;
+      }
+    }
+  }
+
+  doc.restore();
+}
