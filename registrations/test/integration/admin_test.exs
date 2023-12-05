@@ -99,6 +99,30 @@ defmodule AdventureRegistrations.Integration.Admin do
     refute team.notes
   end
 
+  test "teams without any name proposals get a placeholder" do
+    a =
+      insert(:user,
+        email: "a@example.com",
+        team_emails: "",
+        risk_aversion: 3,
+        accessibility: "Some text"
+      )
+
+    insert(:octavia, admin: true)
+
+    navigate_to("/")
+    Login.login_as("octavia.butler@example.com", "Xenogenesis")
+
+    Nav.users_link().click
+    Users.build_team_from(a.id)
+
+    assert Nav.info_text() == "Team built successfully"
+
+    Nav.teams_link().click
+
+    assert Teams.name(1) == "FIXME"
+  end
+
   test "admin can view team JSON" do
     a = insert(:user, accessibility: "my notes", email: "a@example.com")
     b = insert(:user, email: "b@example.com")

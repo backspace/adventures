@@ -82,7 +82,7 @@ defmodule AdventureRegistrationsWeb.TeamController do
 
     changeset =
       Team.changeset(%Team{}, %{
-        "name" => base_user.proposed_team_name,
+        "name" => base_user.proposed_team_name || "FIXME",
         "risk_aversion" => base_user.risk_aversion,
         "user_ids" => Enum.map(team_users, fn u -> u.id end)
       })
