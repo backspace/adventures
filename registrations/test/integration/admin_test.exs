@@ -97,11 +97,11 @@ defmodule AdventureRegistrations.Integration.Admin do
     [team] = AdventureRegistrations.Repo.all(AdventureRegistrationsWeb.Team)
     assert team.name == "Team A"
     assert team.risk_aversion == 3
-    assert team.notes == "a: Some text, b: More text"
+    refute team.notes
   end
 
   test "admin can view team JSON" do
-    a = insert(:user, email: "a@example.com")
+    a = insert(:user, accessibility: "my notes", email: "a@example.com")
     b = insert(:user, email: "b@example.com")
 
     team =
@@ -127,7 +127,7 @@ defmodule AdventureRegistrations.Integration.Admin do
                  "id" => team.id,
                  "attributes" => %{
                    "name" => "A team",
-                   "notes" => "Some notes",
+                   "notes" => "Some notes\n\na@example.com: my notes",
                    "users" => "a@example.com, b@example.com",
                    "riskAversion" => 2,
                    "createdAt" => NaiveDateTime.to_iso8601(team.inserted_at),
@@ -232,7 +232,7 @@ defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Admin do
                  "attributes" => %{
                    "name" => "A team",
                    "identifier" => "A voicepass",
-                   "notes" => "Some notes",
+                   "notes" => "Some notes\n",
                    "users" => "a@example.com, b@example.com",
                    "riskAversion" => 2,
                    "createdAt" => NaiveDateTime.to_iso8601(team.inserted_at),

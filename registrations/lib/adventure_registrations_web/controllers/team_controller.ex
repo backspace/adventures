@@ -33,10 +33,21 @@ defmodule AdventureRegistrationsWeb.TeamController do
             end)
             |> Enum.join(", ")
 
+          user_notes =
+            Enum.reduce(team.user_ids, "\n", fn user_id, notes ->
+              user = Enum.find(users, fn u -> u.id == user_id end)
+
+              if user && user.accessibility && String.length(user.accessibility) > 0 do
+                "#{notes}\n#{user.email}: #{user.accessibility}"
+              else
+                notes
+              end
+            end)
+
           team_attributes = %{
             name: team.name,
             riskAversion: team.risk_aversion,
-            notes: team.notes,
+            notes: "#{team.notes}#{user_notes}",
             users: team_emails,
             createdAt: team.inserted_at,
             updatedAt: team.updated_at
@@ -73,12 +84,7 @@ defmodule AdventureRegistrationsWeb.TeamController do
       Team.changeset(%Team{}, %{
         "name" => base_user.proposed_team_name,
         "risk_aversion" => base_user.risk_aversion,
-        "user_ids" => Enum.map(team_users, fn u -> u.id end),
-        "notes" =>
-          team_users
-          |> Enum.filter(fn u -> String.trim(u.accessibility || "") != "" end)
-          |> Enum.map(&"#{String.split(&1.email, "@") |> hd}: #{&1.accessibility}")
-          |> Enum.join(", ")
+        "user_ids" => Enum.map(team_users, fn u -> u.id end)
       })
 
     case Repo.insert(changeset) do
