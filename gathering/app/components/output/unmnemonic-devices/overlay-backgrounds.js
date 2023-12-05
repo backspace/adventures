@@ -136,36 +136,3 @@ export function drawSpiralBackground(doc, width, height) {
     doc.path(path).stroke();
   }
 }
-
-export function drawConcentricSquaresBackground(doc, width, height) {
-  // Choose a random starting point within a quarter of the page length from the center
-  let centreX = width / 2;
-  let centreY = height / 2;
-  let quarterLength = Math.min(centreX, centreY) / 2;
-  let startX = centreX + Math.random() * quarterLength - quarterLength / 2;
-  let startY = centreY + Math.random() * quarterLength - quarterLength / 2;
-
-  let maxLength =
-    2 *
-    Math.max(
-      Math.sqrt(Math.pow(startX, 2) + Math.pow(startY, 2)),
-      Math.sqrt(Math.pow(width - startX, 2) + Math.pow(height - startY, 2))
-    );
-
-  let lineWidth = 2;
-  let squareSpacing = lineWidth * 4;
-  let numSquares = Math.ceil(maxLength / squareSpacing);
-
-  doc.lineWidth(lineWidth);
-
-  for (let i = 0; i < numSquares; i++) {
-    let sideLength = (i + 1) * squareSpacing;
-    let rotation = (i * Math.PI) / numSquares;
-
-    doc.save();
-    doc.translate(startX, startY);
-    doc.rotate((rotation * 180) / Math.PI);
-    doc.rect(-sideLength / 2, -sideLength / 2, sideLength, sideLength).stroke();
-    doc.restore();
-  }
-}
