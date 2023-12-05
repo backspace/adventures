@@ -9,17 +9,24 @@ import { trackedFunction } from 'ember-resources/util/function';
 import PDFDocument from 'pdfkit';
 
 import {
+  drawMazeBackground,
   drawZigzagBackground,
   drawConcentricCirclesBackground,
   drawConcentricStarsBackground,
   drawDotGridBackground,
 } from './overlay-backgrounds';
 
+const BACKGROUNDS = [
+  drawMazeBackground,
+  drawZigzagBackground,
+  drawConcentricCirclesBackground,
+  drawConcentricStarsBackground,
+  drawDotGridBackground,
+];
+
 export const PAGE_MARGIN = 0.3 * 72;
 export const PAGE_PADDING = 0.2 * 72;
 
-// Removing concentric squares, seems reminiscent of troubled imagery!
-export const BACKGROUND_COUNT = 5 - 1;
 export const TEXT_OUTLINE_WIDTH = 4;
 export const TEAM_FONT_SIZE = 14;
 export const TEAM_GAP_SIZE = PAGE_PADDING;
@@ -329,17 +336,10 @@ function drawBackground(doc, width, height, pageIndex) {
   doc.save();
   doc.rect(0, 0, width, height).clip();
 
-  let backgroundIndex = pageIndex % BACKGROUND_COUNT;
+  let backgroundIndex = pageIndex % BACKGROUNDS.length;
+  let backgroundFunction = BACKGROUNDS[backgroundIndex];
 
-  if (backgroundIndex === 0) {
-    drawDotGridBackground(doc, width, height);
-  } else if (backgroundIndex === 1) {
-    drawConcentricCirclesBackground(doc, width, height);
-  } else if (backgroundIndex === 2) {
-    drawZigzagBackground(doc, width, height);
-  } else if (backgroundIndex === 3) {
-    drawConcentricStarsBackground(doc, width, height);
-  }
+  backgroundFunction(doc, width, height);
 
   doc.restore();
 }

@@ -197,3 +197,61 @@ export function drawDotGridBackground(doc, width, height) {
 
   doc.restore();
 }
+
+export function drawMazeBackground(doc, width, height) {
+  doc.lineWidth(3);
+  doc.lineCap('round');
+
+  const cellSize = 4;
+  const rows = Math.floor(height / cellSize);
+  const cols = Math.floor(width / cellSize);
+
+  const grid = new Array(rows).fill(null).map(() => new Array(cols).fill(true));
+
+  function generateMaze(row, col) {
+    const directions = ['up', 'down', 'left', 'right'];
+    directions.sort(() => Math.random() - 0.65);
+
+    for (const direction of directions) {
+      let newRow = row;
+      let newCol = col;
+
+      switch (direction) {
+        case 'up':
+          newRow -= 2;
+          break;
+        case 'down':
+          newRow += 2;
+          break;
+        case 'left':
+          newCol -= 2;
+          break;
+        case 'right':
+          newCol += 2;
+          break;
+      }
+
+      if (
+        newRow >= 0 &&
+        newRow < rows &&
+        newCol >= 0 &&
+        newCol < cols &&
+        grid[newRow][newCol]
+      ) {
+        grid[newRow][newCol] = false;
+        grid[row][col] = false;
+
+        const x1 = col * cellSize + cellSize / 2;
+        const y1 = row * cellSize + cellSize / 2;
+        const x2 = newCol * cellSize + cellSize / 2;
+        const y2 = newRow * cellSize + cellSize / 2;
+
+        doc.moveTo(x1, y1).lineTo(x2, y2).stroke();
+
+        generateMaze(newRow, newCol);
+      }
+    }
+  }
+
+  generateMaze(0, 0);
+}
