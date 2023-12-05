@@ -94,7 +94,7 @@ defmodule AdventureRegistrations.Integration.ClandestineRendezvous.Registrations
     set_window_to_show_account()
 
     navigate_to("/")
-    Login.login_as("octavia.butler@example.com", "Xenogenesis")
+    Login.login_as_admin()
 
     Nav.edit_details()
     Details.edit_account()
@@ -201,7 +201,7 @@ defmodule AdventureRegistrations.Integration.ClandestineRendezvous.Registrations
     insert(:octavia)
 
     navigate_to("/")
-    Login.login_as("octavia.butler@example.com", "Xenogenesis")
+    Login.login_as_admin()
 
     Nav.edit_details()
     Details.delete_account()
@@ -234,7 +234,7 @@ defmodule AdventureRegistrations.Integration.ClandestineRendezvous.Registrations
              "Registration is closed; however, you may continue and we will email you"
 
     insert(:octavia)
-    Login.login_as("octavia.butler@example.com", "Xenogenesis")
+    Login.login_as_admin()
 
     assert Nav.error_text() ==
              "You may change your details but it’s too late to guarantee the changes can be integrated"

@@ -21,6 +21,10 @@ defmodule AdventureRegistrations.Pages.Login do
     submit()
   end
 
+  def login_as_admin() do
+    login_as("octavia.butler@example.com", "Xenogenesis")
+  end
+
   def click_forgot_password do
     click({:css, "a.forgot"})
   end

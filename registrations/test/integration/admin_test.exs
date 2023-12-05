@@ -72,7 +72,7 @@ defmodule AdventureRegistrations.Integration.Admin do
     insert(:octavia, admin: true)
 
     navigate_to("/")
-    Login.login_as("octavia.butler@example.com", "Xenogenesis")
+    Login.login_as_admin()
 
     Nav.users_link().click
 
@@ -111,7 +111,7 @@ defmodule AdventureRegistrations.Integration.Admin do
     insert(:octavia, admin: true)
 
     navigate_to("/")
-    Login.login_as("octavia.butler@example.com", "Xenogenesis")
+    Login.login_as_admin()
 
     Nav.users_link().click
     Users.build_team_from(a.id)
@@ -138,7 +138,7 @@ defmodule AdventureRegistrations.Integration.Admin do
     insert(:octavia, admin: true)
 
     navigate_to("/")
-    Login.login_as("octavia.butler@example.com", "Xenogenesis")
+    Login.login_as_admin()
 
     navigate_to("/api/teams")
     json = Floki.find(page_source(), "pre") |> Floki.text() |> Jason.decode!()
@@ -242,7 +242,7 @@ defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Admin do
     insert(:octavia, admin: true)
 
     navigate_to("/")
-    Login.login_as("octavia.butler@example.com", "Xenogenesis")
+    Login.login_as_admin()
 
     navigate_to("/api/teams")
     json = Floki.find(page_source(), "pre") |> Floki.text() |> Jason.decode!()
