@@ -264,7 +264,14 @@ export default class ClandestineRendezvousCardsComponent extends Component {
   });
 
   _padMask(mask) {
-    return mask.replace(/_/g, ' __ ').replace(/^ */, '');
+    // Thin space was being rendered after every blank for unknown reasons!
+    return (
+      mask
+        .replace(/_/g, ' __ ')
+        .replace(/^ */, '')
+        // eslint-disable-next-line no-control-regex
+        .replace(/[^\x00-\x7F]/g, '')
+    );
   }
 
   _rendezvousCards() {
