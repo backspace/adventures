@@ -356,7 +356,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
 
   <template>
     {{#if this.src}}
-      <iframe title='embedded-rendezvous-cards' src={{this.src}}>
+      <iframe title='cards' src={{this.src}}>
       </iframe>
     {{else}}
       <Loading />

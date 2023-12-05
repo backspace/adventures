@@ -259,7 +259,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
     {{/if}}
 
     {{#if this.src}}
-      <iframe title='embedded-unmnemonic-devices-overlays' src={{this.src}}>
+      <iframe title='overlays' src={{this.src}}>
       </iframe>
     {{else}}
       <Loading />

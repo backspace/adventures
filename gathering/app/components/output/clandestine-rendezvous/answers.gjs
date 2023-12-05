@@ -98,7 +98,7 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
 
   <template>
     {{#if this.src}}
-      <iframe title='embedded-rendezvous-answers' src={{this.src}}>
+      <iframe title='answers' src={{this.src}}>
       </iframe>
     {{else}}
       <Loading />

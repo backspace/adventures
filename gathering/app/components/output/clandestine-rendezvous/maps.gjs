@@ -130,7 +130,7 @@ export default class ClandestineRendezvousMapsComponent extends Component {
 
   <template>
     {{#if this.src}}
-      <iframe title='embedded-rendezvous-maps' src={{this.src}}>
+      <iframe title='maps' src={{this.src}}>
       </iframe>
     {{else}}
       <Loading />

@@ -303,7 +303,7 @@ export default class TxtbeyondCardsComponent extends Component {
 
   <template>
     {{#if this.src}}
-      <iframe title='embedded-txtbeyond-cards' src={{this.src}}>
+      <iframe title='cards' src={{this.src}}>
       </iframe>
     {{else}}
       <Loading />

@@ -219,7 +219,7 @@ export default class TxtbeyondTransparenciesComponent extends Component {
 
   <template>
     {{#if this.src}}
-      <iframe title='embedded-txtbeyond-transparencies' src={{this.src}}>
+      <iframe title='transparencies' src={{this.src}}>
       </iframe>
     {{else}}
       <Loading />
