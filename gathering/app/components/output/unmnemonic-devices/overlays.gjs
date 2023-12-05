@@ -20,8 +20,8 @@ const BACKGROUNDS = [
   drawMazeBackground,
   drawZigzagBackground,
   drawConcentricCirclesBackground,
-  drawConcentricStarsBackground,
   drawDotGridBackground,
+  drawConcentricStarsBackground,
 ];
 
 export const PAGE_MARGIN = 0.3 * 72;
