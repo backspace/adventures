@@ -129,8 +129,7 @@ defmodule AdventureRegistrations.Pages.Details do
   end
 
   def active? do
-    # FIXME is there no current_url or the like?
-    element?(:id, "user_accessibility")
+    current_path() == "/details"
   end
 
   def submit do
