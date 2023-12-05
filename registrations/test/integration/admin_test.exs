@@ -6,7 +6,7 @@ defmodule AdventureRegistrations.Integration.Admin do
   alias AdventureRegistrations.Pages.Login
   alias AdventureRegistrations.Pages.Nav
   alias AdventureRegistrations.Pages.Users
-  # alias AdventureRegistrations.Pages.Teams
+  alias AdventureRegistrations.Pages.Teams
 
   # Import Hound helpers
   use Hound.Helpers
@@ -88,11 +88,10 @@ defmodule AdventureRegistrations.Integration.Admin do
     assert Users.teamed(b.id)
     refute Users.teamed(c.id)
 
-    # FIXME why did this break? Works in development
-    # Nav.teams_link.click
-    #
-    # assert Teams.name(1) == "Team A"
-    # assert Teams.risk_aversion(1) == "3"
+    Nav.teams_link().click
+
+    assert Teams.name(1) == "Team A"
+    assert Teams.risk_aversion(1) == "3"
 
     [team] = AdventureRegistrations.Repo.all(AdventureRegistrationsWeb.Team)
     assert team.name == "Team A"
