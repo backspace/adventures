@@ -137,8 +137,7 @@ defmodule AdventureRegistrations.Integration.Teams do
     sadik.add.()
     Details.submit()
 
-    # FIXME restore this test that breaks on Travis… Javascript problem?
-    # assert length(Details.mutuals) == 3
+    assert length(Details.mutuals()) == 3
   end
 
   test "the table is hidden when empty" do
