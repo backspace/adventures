@@ -1,3 +1,5 @@
+import { fn } from '@ember/helper';
+import { on } from '@ember/modifier';
 import { action } from '@ember/object';
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
@@ -73,4 +75,40 @@ export default class SchedulerTeamComponent extends Component {
   editMeeting(meeting) {
     this.args.editMeeting(meeting);
   }
+
+  <template>
+    {{! template-lint-disable no-invalid-interactive }}
+    <li
+      class='team
+        {{if this.isSelected 'selected'}}
+        {{if this.hasMetHighlightedTeam 'highlighted'}}
+        {{if @isAhead 'ahead'}}'
+      title={{this.usersAndNotes}}
+      {{on 'mouseenter' this.handleMouseEnter}}
+      {{on 'mouseleave' this.handleMouseLeave}}
+      data-risk-aversion={{@team.riskAversion}}
+    >
+      {{! template-lint-disable no-invalid-interactive }}
+      <div {{on 'click' this.select}}>
+        <span class='name'>{{@team.truncatedName}}</span>
+        <span class='count'>{{this.count}}</span>
+
+        <div>
+          A<span class='average-awesomeness'>{{this.roundedAwesomeness}}</span>
+          R<span class='average-risk'>{{this.roundedRisk}}</span>
+        </div>
+      </div>
+
+      {{#if this.showMeetings}}
+        <ul>
+          {{#each @team.meetings as |meeting index|}}
+            <li class='meeting' {{on 'click' (fn this.editMeeting meeting)}}><span
+                class='index'
+              >{{index}}</span>:
+              <span class='offset'>{{meeting.offset}}</span></li>
+          {{/each}}
+        </ul>
+      {{/if}}
+    </li>
+  </template>
 }
