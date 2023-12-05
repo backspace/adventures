@@ -1,14 +1,8 @@
-import {
-  find,
-  settled,
-  triggerEvent,
-  waitFor,
-  waitUntil,
-} from '@ember/test-helpers';
+import { find, settled, waitFor, waitUntil } from '@ember/test-helpers';
 
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
-import { module, skip, test } from 'qunit';
+import { module, test } from 'qunit';
 
 import withSetting from '../helpers/with-setting';
 
@@ -240,14 +234,10 @@ module('Acceptance | regions with no map', function (hooks) {
     await page.visit();
     await page.visitMap();
 
-    // FIXME had to turn this off after the 2.18 update
-    // assert.ok(mapPage.imageSrc() === '', 'expected no img src');
+    assert.notOk(mapPage.imageSrc, 'expected no img src');
 
     await waitFor('input#map');
-    await setMap(base64Gif);
-
-    // FIXME restore use of page object? and why the waitFor?
-    // await mapPage.setMap('R0lGODlhDwAPAKECAAAAzMzM/////wAAACwAAAAADwAPAAACIISPeQHsrZ5ModrLlN48CXF8m2iQ3YmmKqVlRtW4MLwWACH+H09wdGltaXplZCBieSBVbGVhZCBTbWFydFNhdmVyIQAAOw==');
+    await mapPage.setMap(base64Gif);
 
     assert.ok(
       mapPage.imageSrc.indexOf('blob') > -1,
@@ -267,7 +257,7 @@ module('Acceptance | regions with existing map', function (hooks) {
     await db.putAttachment('map', 'image', attachment, 'image/png');
   });
 
-  skip('an existing map is displayed and can be updated', async function (assert) {
+  test('an existing map is displayed and can be updated', async function (assert) {
     await page.visit();
     await page.visitMap();
 
@@ -279,22 +269,17 @@ module('Acceptance | regions with existing map', function (hooks) {
       'expected img src to have a blob URL'
     );
 
-    await waitFor('input#map');
-    await setMap(base64Gif);
+    await mapPage.setMap(base64Gif);
 
-    // FIXME restore use of page object? and why the waitFor?
-    // await mapPage.setMap('R0lGODlhDwAPAKECAAAAzMzM/////wAAACwAAAAADwAPAAACIISPeQHsrZ5ModrLlN48CXF8m2iQ3YmmKqVlRtW4MLwWACH+H09wdGltaXplZCBieSBVbGVhZCBTbWFydFNhdmVyIQAAOw==');
     newSrc = mapPage.imageSrc;
     assert.ok(
       newSrc.indexOf('blob') > -1,
       'expected new img src to have a blob URL'
     );
-    assert.ok(existingSrc !== newSrc, 'expected img src to have changed');
+    assert.notStrictEqual(
+      existingSrc,
+      newSrc,
+      'expected img src to have changed'
+    );
   });
 });
-
-async function setMap(base64) {
-  return triggerEvent('input#map', 'change', {
-    files: [new Blob([base64], { type: 'image/gif' })],
-  });
-}

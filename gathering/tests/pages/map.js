@@ -33,11 +33,8 @@ const setMap = function (selector) {
     value(base64) {
       const blob = new window.Blob([base64], { type: 'image/gif' });
 
-      findElement(this, selector).trigger({
-        type: 'change',
-        target: {
-          files: [blob],
-        },
+      return triggerEvent(selector, 'change', {
+        files: [blob],
       });
     },
   };
