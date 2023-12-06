@@ -1,4 +1,4 @@
-import { find, settled, waitFor, waitUntil } from '@ember/test-helpers';
+import { settled, waitFor, waitUntil } from '@ember/test-helpers';
 
 import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';

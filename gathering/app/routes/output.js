@@ -1,7 +1,7 @@
 import Route from '@ember/routing/route';
 import { inject as service } from '@ember/service';
 import fs from 'pdfkit/js/virtual-fs';
-import { hash, all } from 'rsvp';
+import { hash } from 'rsvp';
 
 export default class OutputRoute extends Route {
   queryParams = {

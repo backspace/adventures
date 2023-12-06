@@ -1,14 +1,17 @@
 import Route from '@ember/routing/route';
 import { inject as service } from '@ember/service';
+import { tracked } from '@glimmer/tracking';
 
 export default class DestinationRoute extends Route {
   @service
   store;
 
+  @tracked regions;
+
   beforeModel() {
     return this.store
       .findAll('region')
-      .then((regions) => this.set('regions', regions));
+      .then((regions) => (this.regions = regions));
   }
 
   setupController(controller, model) {
