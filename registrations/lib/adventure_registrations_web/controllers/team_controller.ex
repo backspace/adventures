@@ -70,8 +70,10 @@ defmodule AdventureRegistrationsWeb.TeamController do
     changeset =
       Team.changeset(%Team{}, %{
         "name" => base_user.proposed_team_name || "FIXME",
-        "risk_aversion" => base_user.risk_aversion
+        "risk_aversion" => base_user.risk_aversion || 1
       })
+
+    fallbacks = !base_user.proposed_team_name && !base_user.risk_aversion
 
     case Repo.insert(changeset) do
       {:ok, team} ->
@@ -83,8 +85,22 @@ defmodule AdventureRegistrationsWeb.TeamController do
         )
         |> Repo.update_all([])
 
+        flash_type =
+          if fallbacks do
+            :error
+          else
+            :info
+          end
+
+        flash_message =
+          if fallbacks do
+            "Team built with placeholders!"
+          else
+            "Team built successfully"
+          end
+
         conn
-        |> put_flash(:info, "Team built successfully")
+        |> put_flash(flash_type, flash_message)
         |> redirect(to: Routes.user_path(conn, :index))
 
       {:error, _changeset} ->

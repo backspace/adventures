@@ -100,12 +100,11 @@ defmodule AdventureRegistrations.Integration.Admin do
     refute team.notes
   end
 
-  test "teams without any name proposals get a placeholder" do
+  test "teams without any name proposals or risk aversions get placeholders" do
     a =
       insert(:user,
         email: "a@example.com",
         team_emails: "",
-        risk_aversion: 3,
         accessibility: "Some text"
       )
 
@@ -117,11 +116,12 @@ defmodule AdventureRegistrations.Integration.Admin do
     Nav.users_link().click
     Users.build_team_from(a.id)
 
-    assert Nav.info_text() == "Team built successfully"
+    assert Nav.error_text() == "Team built with placeholders!"
 
     Nav.teams_link().click
 
     assert Teams.name(1) == "FIXME"
+    assert Teams.risk_aversion(1) === "1"
   end
 
   test "admin can view team JSON" do
