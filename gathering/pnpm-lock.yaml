@@ -105,8 +105,8 @@ devDependencies:
     specifier: ^2.1.0
     version: 2.1.0
   ember-cli-page-object:
-    specifier: 2.0.0-beta.5
-    version: 2.0.0-beta.5(@ember/test-helpers@2.9.3)
+    specifier: 2.1.3
+    version: 2.1.3(@ember/test-helpers@2.9.3)
   ember-cli-sass:
     specifier: ^11.0.0
     version: 11.0.1
@@ -4446,8 +4446,8 @@ packages:
       safe-buffer: 5.1.2
     dev: true
 
-  /bcrypt-pbkdf@1.0.1:
-    resolution: {integrity: sha512-vY4sOrSlpwNZXsinfJ0HpbSkFft4nhSVLeUrQ4j2ydGmBOiVY83aMJStJATBy0C3+XdaYa990kIA1qkC2mUq6g==}
+  /bcrypt-pbkdf@1.0.2:
+    resolution: {integrity: sha512-qeFIXtP4MSoi6NLqO12WfqARWWuCKi2Rn/9hJLEmtB5yTNr9DqFWkJRCf2qShWzPeAMRnOgCrq0sg/KLv5ES9w==}
     requiresBuild: true
     dependencies:
       tweetnacl: 0.14.5
@@ -6603,11 +6603,12 @@ packages:
       readable-stream: 2.3.7
     dev: true
 
-  /ecc-jsbn@0.1.1:
-    resolution: {integrity: sha512-8Pvg9QY16SYajEL9W1Lk+9yM7XCK/MOq2wibslLZYAAEEkbAIO6mLkW+GFYbvvw8qTuDFzFMg40rS9IxkNCWPg==}
+  /ecc-jsbn@0.1.2:
+    resolution: {integrity: sha512-eh9O+hwRHNbG4BLTjEl3nw044CkGm5X6LoaCf7LPp7UU8Qrt47JYNi6nPX8xjW97TKGKm1ouctg0QSpZe9qrnw==}
     requiresBuild: true
     dependencies:
       jsbn: 0.1.1
+      safer-buffer: 2.1.2
     dev: true
     optional: true
 
@@ -7067,12 +7068,12 @@ packages:
       - supports-color
     dev: true
 
-  /ember-cli-page-object@2.0.0-beta.5(@ember/test-helpers@2.9.3):
-    resolution: {integrity: sha512-Pwq00lq78c3mKkh+kAcpF86Xd8RU5/kEyiKqGX7Y+a8xGaqI7omWaYWRvl2WLGZB1PpTqlZc9no+5D/NkI85fA==}
+  /ember-cli-page-object@2.1.3(@ember/test-helpers@2.9.3):
+    resolution: {integrity: sha512-lDwzsQz0rVJLCOhmKx1y2BbJdA3BYGnq6t16aZ6mr/DXVKI8madMXYxkl6kpgm7KZH14FS79pGMpWb5gkzLXDg==}
     engines: {node: 12.* || 14.* || >= 16}
     peerDependencies:
       '@ember/jquery': '*'
-      '@ember/test-helpers': ^2.5.0
+      '@ember/test-helpers': '>= 2.5.0'
     peerDependenciesMeta:
       '@ember/jquery':
         optional: true
@@ -14905,8 +14906,8 @@ packages:
       dashdash: 1.14.1
       getpass: 0.1.7
     optionalDependencies:
-      bcrypt-pbkdf: 1.0.1
-      ecc-jsbn: 0.1.1
+      bcrypt-pbkdf: 1.0.2
+      ecc-jsbn: 0.1.2
       jodid25519: 1.0.2
       jsbn: 0.1.1
       tweetnacl: 0.14.5
