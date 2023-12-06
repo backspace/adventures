@@ -1,5 +1,4 @@
 import { waitUntil } from '@ember/test-helpers';
-import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import homePage from 'adventure-gathering/tests/pages/home';
 import nav from 'adventure-gathering/tests/pages/nav';
 import page from 'adventure-gathering/tests/pages/waypoints';
@@ -10,7 +9,6 @@ import withSetting, { withoutSetting } from '../helpers/with-setting';
 
 module('Acceptance | waypoints', function (hooks) {
   setupApplicationTest(hooks);
-  clearDatabase(hooks);
 
   hooks.beforeEach(async function () {
     await withSetting(this.owner, 'unmnemonic-devices');

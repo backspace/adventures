@@ -1,6 +1,5 @@
 import { find, waitUntil } from '@ember/test-helpers';
 
-import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 
@@ -11,7 +10,6 @@ import page from '../pages/scheduler';
 
 module('Acceptance | scheduler', function (hooks) {
   setupApplicationTest(hooks);
-  clearDatabase(hooks);
 
   let store,
     portagePlace,

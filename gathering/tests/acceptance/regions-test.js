@@ -1,6 +1,5 @@
 import { settled, waitFor, waitUntil } from '@ember/test-helpers';
 
-import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 
@@ -15,7 +14,6 @@ const base64Gif =
 
 module('Acceptance | regions', function (hooks) {
   setupApplicationTest(hooks);
-  clearDatabase(hooks);
 
   hooks.beforeEach(async function () {
     const store = this.owner.lookup('service:store');
@@ -221,7 +219,6 @@ module('Acceptance | regions', function (hooks) {
 
 module('Acceptance | regions with no map', function (hooks) {
   setupApplicationTest(hooks);
-  clearDatabase(hooks);
 
   test('a new map can be uploaded', async function (assert) {
     await page.visit();
@@ -241,7 +238,6 @@ module('Acceptance | regions with no map', function (hooks) {
 
 module('Acceptance | regions with existing map', function (hooks) {
   setupApplicationTest(hooks);
-  clearDatabase(hooks);
 
   hooks.beforeEach(async function () {
     const db = this.owner.lookup('adapter:application').get('db');

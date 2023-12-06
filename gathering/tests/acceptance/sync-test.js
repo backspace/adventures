@@ -1,7 +1,6 @@
 import { run } from '@ember/runloop';
 import { visit } from '@ember/test-helpers';
 
-import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
 
 import { module, test } from 'qunit';
@@ -10,7 +9,6 @@ import page from '../pages/sync';
 
 module('Acceptance | sync', function (hooks) {
   setupApplicationTest(hooks);
-  clearDatabase(hooks);
 
   hooks.beforeEach(function (assert) {
     const store = this.owner.lookup('service:store');

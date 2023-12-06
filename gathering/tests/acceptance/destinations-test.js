@@ -1,5 +1,4 @@
 import { visit, waitUntil } from '@ember/test-helpers';
-import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import page from 'adventure-gathering/tests/pages/destinations';
 import nav from 'adventure-gathering/tests/pages/nav';
 import { setupApplicationTest } from 'ember-qunit';
@@ -9,7 +8,6 @@ import withSetting from '../helpers/with-setting';
 
 module('Acceptance | destinations', function (hooks) {
   setupApplicationTest(hooks);
-  clearDatabase(hooks);
 
   hooks.beforeEach(async function () {
     const store = this.owner.lookup('service:store');

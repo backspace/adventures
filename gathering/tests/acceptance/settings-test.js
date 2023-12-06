@@ -1,5 +1,4 @@
 import { run } from '@ember/runloop';
-import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 
@@ -7,7 +6,6 @@ import page from '../pages/settings';
 
 module('Acceptance | settings: fresh', function (hooks) {
   setupApplicationTest(hooks);
-  clearDatabase(hooks);
 
   hooks.beforeEach(function () {
     this.store = this.owner.lookup('service:store');
@@ -38,7 +36,6 @@ module('Acceptance | settings: fresh', function (hooks) {
 
 module('Acceptance | settings: existing', function (hooks) {
   setupApplicationTest(hooks);
-  clearDatabase(hooks);
 
   hooks.beforeEach(function (assert) {
     this.store = this.owner.lookup('service:store');

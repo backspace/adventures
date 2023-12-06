@@ -1,4 +1,3 @@
-import clearDatabase from 'adventure-gathering/tests/helpers/clear-database';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 
@@ -10,7 +9,6 @@ let teamOne, teamTwo;
 
 module('Acceptance | teams', function (hooks) {
   setupApplicationTest(hooks);
-  clearDatabase(hooks);
 
   hooks.beforeEach(async function () {
     const store = this.owner.lookup('service:store');
