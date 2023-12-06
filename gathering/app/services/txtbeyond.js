@@ -1,8 +1,6 @@
 import Service from '@ember/service';
-import classic from 'ember-classic-decorator';
 import { all } from 'rsvp';
 
-@classic
 export default class TxtbeyondService extends Service {
   name = 'txtbeyond';
 

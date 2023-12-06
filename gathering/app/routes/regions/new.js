@@ -1,9 +1,7 @@
 import { inject as service } from '@ember/service';
-import classic from 'ember-classic-decorator';
 
 import RegionRoute from '../region';
 
-@classic
 export default class NewRoute extends RegionRoute {
   @service store;
 

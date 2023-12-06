@@ -1,10 +1,8 @@
 import Route from '@ember/routing/route';
 import { inject as service } from '@ember/service';
-import classic from 'ember-classic-decorator';
 import sortBy from 'lodash.sortby';
 import { hash } from 'rsvp';
 
-@classic
 export default class SchedulerRoute extends Route {
   @service
   map;

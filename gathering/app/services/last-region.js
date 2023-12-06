@@ -1,16 +1,13 @@
 import Service, { inject as service } from '@ember/service';
-import classic from 'ember-classic-decorator';
 import StorageObject from 'ember-local-storage/local/object';
 import { Promise as EmberPromise } from 'rsvp';
 
-@classic
 class LastRegionIdObject extends StorageObject {
   storageKey = 'last-region-id';
 }
 
 const LastRegionId = LastRegionIdObject.create();
 
-@classic
 export default class LastRegionService extends Service {
   @service
   store;

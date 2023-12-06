@@ -1,7 +1,5 @@
 import Service, { inject as service } from '@ember/service';
-import classic from 'ember-classic-decorator';
 
-@classic
 export default class SettingsService extends Service {
   @service
   features;

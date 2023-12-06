@@ -1,15 +1,16 @@
-import { computed } from '@ember/object';
-import { equal } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { isEmpty } from '@ember/utils';
 import { belongsTo, hasMany, attr } from '@ember-data/model';
-import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
 
-@classic
 export default class Waypoint extends Model {
+  @service puzzles;
+
   @belongsTo('region', { inverse: 'waypoints', async: false })
   region;
+
+  @hasMany('meeting', { inverse: 'waypoint', async: false })
+  meetings;
 
   @attr('string')
   name;
@@ -35,22 +36,15 @@ export default class Waypoint extends Model {
   @attr('string')
   credit;
 
+  @attr('string')
+  status;
+
   @attr('createDate')
   createdAt;
 
   @attr('updateDate')
   updatedAt;
 
-  @computed(
-    'call',
-    'excerpt',
-    'dimensions',
-    'outline',
-    'puzzles.implementation',
-    'page',
-    'name',
-    'region'
-  )
   get validationErrors() {
     const { call, excerpt, dimensions, name, page, outline, region } = this;
 
@@ -75,7 +69,6 @@ export default class Waypoint extends Model {
     };
   }
 
-  @computed('validationErrors.@each.value')
   get errorsString() {
     let validationErrors = this.validationErrors;
     return Object.keys(validationErrors)
@@ -89,7 +82,6 @@ export default class Waypoint extends Model {
       .join(', ');
   }
 
-  @computed('validationErrors.@each.keys')
   get isComplete() {
     return Object.values(this.validationErrors).every((error) => !error);
   }
@@ -98,15 +90,7 @@ export default class Waypoint extends Model {
     return !this.isComplete;
   }
 
-  @attr('string')
-  status;
-
-  @equal('status', 'available')
-  isAvailable;
-
-  @hasMany('meeting', { inverse: 'waypoint', async: false })
-  meetings;
-
-  @service
-  puzzles;
+  get isAvailable() {
+    return this.status === 'available';
+  }
 }

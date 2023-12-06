@@ -1,9 +1,7 @@
 import { inject as service } from '@ember/service';
-import classic from 'ember-classic-decorator';
 
 import WaypointRoute from '../waypoint';
 
-@classic
 export default class NewRoute extends WaypointRoute {
   @service
   lastRegion;

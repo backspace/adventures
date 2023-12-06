@@ -1,10 +1,8 @@
-import { sort } from '@ember/object/computed';
 import { hasMany, belongsTo, attr } from '@ember-data/model';
-import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
+import sortBy from 'lodash.sortby';
 import uniq from 'lodash.uniq';
 
-@classic
 export default class Meeting extends Model {
   @belongsTo('destination', { inverse: 'meetings', async: false })
   destination;
@@ -14,18 +12,6 @@ export default class Meeting extends Model {
 
   @hasMany('team', { inverse: 'meetings', async: false })
   teams;
-
-  @sort('teams', 'teamSort')
-  sortedTeams;
-
-  teamSort = Object.freeze(['name']);
-
-  get isForbidden() {
-    const teams = this.teams;
-    const meetingCounts = teams.map((t) => t.meetings.length);
-
-    return uniq(meetingCounts).length !== 1;
-  }
 
   @attr('number')
   index;
@@ -41,4 +27,15 @@ export default class Meeting extends Model {
 
   @attr('updateDate')
   updatedAt;
+
+  get sortedTeams() {
+    return sortBy(this.teams, 'name');
+  }
+
+  get isForbidden() {
+    const teams = this.teams;
+    const meetingCounts = teams.map((t) => t.meetings.length);
+
+    return uniq(meetingCounts).length !== 1;
+  }
 }

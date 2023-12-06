@@ -1,10 +1,11 @@
 import { inject as service } from '@ember/service';
 import { belongsTo, hasMany, attr } from '@ember-data/model';
-import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
 
-@classic
 export default class Region extends Model {
+  @service features;
+  @service pathfinder;
+
   @attr('string')
   name;
 
@@ -29,6 +30,18 @@ export default class Region extends Model {
   @hasMany('waypoint', { inverse: 'region', async: false })
   waypoints;
 
+  @attr('number')
+  x;
+
+  @attr('number')
+  y;
+
+  @attr('createDate')
+  createdAt;
+
+  @attr('updateDate')
+  updatedAt;
+
   get meetingCount() {
     let destinationMeetingCount = this.destinations.reduce(
       (sum, destination) => {
@@ -42,31 +55,12 @@ export default class Region extends Model {
     }, destinationMeetingCount);
   }
 
-  @attr('number')
-  x;
-
-  @attr('number')
-  y;
-
-  @attr('createDate')
-  createdAt;
-
-  @attr('updateDate')
-  updatedAt;
-
-  @service
-  features;
-
-  @service
-  pathfinder;
-
   get hasPaths() {
     return this.pathfinder.hasRegion(this.name);
   }
 
   get isComplete() {
-    // eslint-disable-next-line ember/no-get
-    if (this.get('features.txtbeyond')) {
+    if (this.features.isEnabled('txtbeyond')) {
       return this.hasPaths;
     } else {
       return true;

@@ -1,8 +1,6 @@
 import { hasMany, attr } from '@ember-data/model';
-import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
 
-@classic
 export default class Team extends Model {
   @attr('string')
   name;

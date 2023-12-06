@@ -1,10 +1,8 @@
 import Route from '@ember/routing/route';
 import { inject as service } from '@ember/service';
-import classic from 'ember-classic-decorator';
 import fs from 'pdfkit/js/virtual-fs';
 import { hash, all } from 'rsvp';
 
-@classic
 export default class OutputRoute extends Route {
   queryParams = {
     debug: {
@@ -26,22 +24,19 @@ export default class OutputRoute extends Route {
   async model() {
     let fontPaths;
 
-    // eslint-disable-next-line ember/no-get
-    if (this.get('features.clandestineRendezvous')) {
+    if (this.features.isEnabled('clandestineRendezvous')) {
       fontPaths = [
         fetch('/fonts/blackout.ttf'),
         fetch('/fonts/Oswald-Bold.ttf'),
         fetch('/fonts/Oswald-Regular.ttf'),
       ];
-      // eslint-disable-next-line ember/no-get
-    } else if (this.get('features.txtbeyond')) {
+    } else if (this.features.isEnabled('txtbeyond')) {
       fontPaths = [
         fetch('/fonts/nokiafc22.ttf'),
         fetch('/fonts/Arvo-Bold.ttf'),
         fetch('/fonts/Arvo-Regular.ttf'),
       ];
-      // eslint-disable-next-line ember/no-get
-    } else if (this.get('features.unmnemonicDevices')) {
+    } else if (this.features.isEnabled('unmnemonicDevices')) {
       fontPaths = [
         fetch('/fonts/unmnemonic-regular.ttf'),
         fetch('/fonts/unmnemonic-bold.ttf'),

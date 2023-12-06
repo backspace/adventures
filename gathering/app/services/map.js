@@ -1,13 +1,9 @@
 import { getOwner } from '@ember/application';
-import { computed } from '@ember/object';
 import Service from '@ember/service';
 
 import { blobToArrayBuffer, blobToBase64String } from 'blob-util';
-import classic from 'ember-classic-decorator';
 
-@classic
 export default class MapService extends Service {
-  @computed
   get db() {
     return getOwner(this).lookup('adapter:application').get('db');
   }

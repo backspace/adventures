@@ -1,12 +1,17 @@
-import { equal } from '@ember/object/computed';
 import { inject as service } from '@ember/service';
 import { isEmpty } from '@ember/utils';
 import { hasMany, belongsTo, attr } from '@ember-data/model';
-import classic from 'ember-classic-decorator';
 import Model from 'ember-pouch/model';
 
-@classic
 export default class Destination extends Model {
+  @service puzzles;
+
+  @belongsTo('region', { inverse: 'destinations', async: false })
+  region;
+
+  @hasMany('meeting', { inverse: 'destination', async: false })
+  meetings;
+
   @attr('string')
   description;
 
@@ -25,35 +30,49 @@ export default class Destination extends Model {
   @attr('string')
   credit;
 
-  get suggestedMask() {
-    const answer = this.answer || '';
-
-    // eslint-disable-next-line ember/no-get
-    return this.get('puzzles.implementation').suggestedMask(answer);
-  }
-
-  get maskIsValid() {
-    const answer = this.answer || '';
-    const mask = this.mask || '';
-
-    // eslint-disable-next-line ember/no-get
-    return this.get('puzzles.implementation').maskIsValid(answer, mask);
-  }
-
   @attr('number')
   awesomeness;
 
   @attr('number')
   risk;
 
+  @attr('string')
+  status;
+
+  @attr('createDate')
+  createdAt;
+
+  @attr('updateDate')
+  updatedAt;
+
+  get isAvailable() {
+    return this.status === 'available';
+  }
+
+  get meetingCount() {
+    return this.meetings.length;
+  }
+
+  get suggestedMask() {
+    const answer = this.answer || '';
+
+    return this.puzzles.implementation.suggestedMask(answer);
+  }
+
+  get maskIsValid() {
+    const answer = this.answer || '';
+    const mask = this.mask || '';
+
+    return this.puzzles.implementation.maskIsValid(answer, mask);
+  }
+
   get validationErrors() {
     const { description, answer, awesomeness, region, risk, maskIsValid } =
       this;
 
-    // eslint-disable-next-line ember/no-get
-    const descriptionIsValid = this.get(
-      'puzzles.implementation'
-    ).descriptionIsValid(description ?? 'FAKE');
+    const descriptionIsValid = this.puzzles.implementation.descriptionIsValid(
+      description ?? 'FAKE'
+    );
 
     return {
       'description is empty': isEmpty(description),
@@ -86,29 +105,4 @@ export default class Destination extends Model {
   get isIncomplete() {
     return !this.isComplete;
   }
-
-  @attr('string')
-  status;
-
-  @equal('status', 'available')
-  isAvailable;
-
-  @belongsTo('region', { inverse: 'destinations', async: false })
-  region;
-
-  @hasMany('meeting', { inverse: 'destination', async: false })
-  meetings;
-
-  get meetingCount() {
-    return this.meetings.length;
-  }
-
-  @attr('createDate')
-  createdAt;
-
-  @attr('updateDate')
-  updatedAt;
-
-  @service
-  puzzles;
 }

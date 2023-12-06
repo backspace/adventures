@@ -1,8 +1,6 @@
 import Service from '@ember/service';
-import classic from 'ember-classic-decorator';
 import sortBy from 'lodash.sortby';
 
-@classic
 export default class ClandestineRendezvousService extends Service {
   name = 'Clandestine Rendezvous';
 
