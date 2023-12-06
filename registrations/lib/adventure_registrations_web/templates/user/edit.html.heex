@@ -8,7 +8,7 @@
         <dt>Risk aversion</dt>
         <dd data-test-assigned-team-risk-aversion><%= risk_aversion_integer_to_string()[@team.risk_aversion] %></dd>
         <dt>Emails</dt>
-        <dd data-test-assigned-team-emails><%= @team_emails %></dd>
+        <dd data-test-assigned-team-emails><%= Enum.map(@team.users, fn user -> user.email end) |> Enum.join(", ") %></dd>
       </dl>
     </div>
   </div>

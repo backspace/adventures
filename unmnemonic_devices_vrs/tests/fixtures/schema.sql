@@ -109,7 +109,6 @@ CREATE TABLE public.teams (
     name text,
     risk_aversion integer,
     notes text,
-    user_ids uuid[] DEFAULT ARRAY[]::uuid[],
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL,
     voicepass character varying(255),
@@ -137,7 +136,8 @@ CREATE TABLE public.users (
     source text,
     attending boolean,
     voicepass character varying(255),
-    remembered integer DEFAULT 0
+    remembered integer DEFAULT 0,
+    team_id uuid
 );
 
 
@@ -418,6 +418,14 @@ CREATE UNIQUE INDEX recordings_team_id_index ON unmnemonic_devices.recordings US
 
 
 --
+-- Name: users users_team_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
+
+
+--
 -- Name: calls calls_team_id_fkey; Type: FK CONSTRAINT; Schema: unmnemonic_devices; Owner: -
 --
 
@@ -538,3 +546,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231110062026);
 INSERT INTO public."schema_migrations" (version) VALUES (20231111171443);
 INSERT INTO public."schema_migrations" (version) VALUES (20231112020314);
 INSERT INTO public."schema_migrations" (version) VALUES (20231204001556);
+INSERT INTO public."schema_migrations" (version) VALUES (20231205235352);

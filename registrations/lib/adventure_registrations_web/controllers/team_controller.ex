@@ -9,34 +9,21 @@ defmodule AdventureRegistrationsWeb.TeamController do
   plug :scrub_params, "team" when action in [:create, :update]
 
   def index(conn, _params) do
-    teams = Repo.all(Team)
+    teams = Repo.all(Team) |> Repo.preload(:users)
     render(conn, "index.html", teams: teams)
   end
 
   # FIXME surely there’s a better way
   def index_json(conn, _params) do
-    users = Repo.all(User)
-    teams = Repo.all(Team)
+    teams = Repo.all(Team) |> Repo.preload(:users)
 
     json(conn, %{
       data:
         Enum.map(teams, fn team ->
-          team_emails =
-            Enum.map(team.user_ids, fn user_id ->
-              user = Enum.find(users, fn u -> u.id == user_id end)
-
-              if user do
-                user.email
-              else
-                "unknown user #{user_id}"
-              end
-            end)
-            |> Enum.join(", ")
+          team_emails = Enum.map(team.users, fn user -> user.email end) |> Enum.join(", ")
 
           user_notes =
-            Enum.reduce(team.user_ids, "\n", fn user_id, notes ->
-              user = Enum.find(users, fn u -> u.id == user_id end)
-
+            Enum.reduce(team.users, "\n", fn user, notes ->
               if user && user.accessibility && String.length(user.accessibility) > 0 do
                 "#{notes}\n#{user.email}: #{user.accessibility}"
               else
@@ -83,12 +70,19 @@ defmodule AdventureRegistrationsWeb.TeamController do
     changeset =
       Team.changeset(%Team{}, %{
         "name" => base_user.proposed_team_name || "FIXME",
-        "risk_aversion" => base_user.risk_aversion,
-        "user_ids" => Enum.map(team_users, fn u -> u.id end)
+        "risk_aversion" => base_user.risk_aversion
       })
 
     case Repo.insert(changeset) do
-      {:ok, _team} ->
+      {:ok, team} ->
+        team_user_ids = Enum.map(team_users, fn user -> user.id end)
+
+        from(u in User,
+          where: u.id in ^team_user_ids,
+          update: [set: [team_id: ^team.id]]
+        )
+        |> Repo.update_all([])
+
         conn
         |> put_flash(:info, "Team built successfully")
         |> redirect(to: Routes.user_path(conn, :index))

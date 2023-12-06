@@ -207,7 +207,7 @@ defmodule AdventureRegistrations.Integration.Teams do
       name: "A team",
       risk_aversion: 2,
       notes: "Some notes",
-      user_ids: [takver.id, bedap.id]
+      users: [takver, bedap]
     )
 
     navigate_to("/")

@@ -92,6 +92,7 @@ defmodule AdventureRegistrations.Integration.Admin do
 
     assert Teams.name(1) == "Team A"
     assert Teams.risk_aversion(1) == "3"
+    assert Teams.emails(1) == "a@example.com, b@example.com"
 
     [team] = AdventureRegistrations.Repo.all(AdventureRegistrationsWeb.Team)
     assert team.name == "Team A"
@@ -132,7 +133,7 @@ defmodule AdventureRegistrations.Integration.Admin do
         name: "A team",
         risk_aversion: 2,
         notes: "Some notes",
-        user_ids: [a.id, b.id]
+        users: [a, b]
       )
 
     insert(:octavia, admin: true)
@@ -236,7 +237,7 @@ defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Admin do
         risk_aversion: 2,
         notes: "Some notes",
         voicepass: "A voicepass",
-        user_ids: [a.id, b.id]
+        users: [a, b]
       )
 
     insert(:octavia, admin: true)

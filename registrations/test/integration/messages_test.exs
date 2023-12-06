@@ -142,21 +142,22 @@ defmodule AdventureRegistrations.Integration.Messages do
       crypted_password: Bcrypt.hash_pwd_salt("admin")
     )
 
-    team_member_1 =
-      insert(:user,
-        email: "user-with-team@example.com",
-        team_emails: "teammate@example.com",
-        proposed_team_name: "Ignored team name"
+    team =
+      insert(:team,
+        name: "True team name",
+        risk_aversion: 1
       )
 
-    team_member_2 = insert(:user, email: "teammate@example.com")
-    insert(:user, email: "teamless-user@example.com")
-
-    insert(:team,
-      name: "True team name",
-      risk_aversion: 1,
-      user_ids: [team_member_1.id, team_member_2.id]
+    insert(:user,
+      email: "user-with-team@example.com",
+      team_emails: "teammate@example.com",
+      proposed_team_name: "Ignored team name",
+      team_id: team.id
     )
+
+    insert(:user, email: "teammate@example.com", team_id: team.id)
+
+    insert(:user, email: "teamless-user@example.com")
 
     navigate_to("/")
 

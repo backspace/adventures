@@ -8,13 +8,14 @@ defmodule AdventureRegistrationsWeb.Team do
     field(:risk_aversion, :integer)
     field(:notes, :string)
     field(:voicepass, :string)
-    field(:user_ids, {:array, :binary_id})
+
+    has_many(:users, AdventureRegistrationsWeb.User)
 
     timestamps()
   end
 
   @required_fields ~w(name risk_aversion)a
-  @optional_fields ~w(notes voicepass user_ids)a
+  @optional_fields ~w(notes voicepass)a
 
   @doc """
   Creates a changeset based on the `model` and `params`.

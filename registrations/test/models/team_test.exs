@@ -3,7 +3,7 @@ defmodule AdventureRegistrationsWeb.TeamTest do
 
   alias AdventureRegistrationsWeb.Team
 
-  @valid_attrs %{name: "some content", notes: "some content", risk_aversion: 42, user_ids: []}
+  @valid_attrs %{name: "some content", notes: "some content", risk_aversion: 42}
   @invalid_attrs %{}
 
   test "changeset with valid attributes" do

@@ -18,7 +18,7 @@ defmodule AdventureRegistrationsWeb.User do
 
     field(:attending, :boolean)
 
-    field(:teamed, :boolean, virtual: true)
+    belongs_to(:team, AdventureRegistrationsWeb.Team, type: :binary_id)
 
     field(:team_emails, AdventureRegistrationsWeb.DowncasedString)
     field(:proposed_team_name, :string)
@@ -36,7 +36,7 @@ defmodule AdventureRegistrationsWeb.User do
   end
 
   @required_fields ~w(email password)a
-  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source)a
+  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source team_id)a
 
   @doc """
   Creates a changeset based on the `model` and `params`.

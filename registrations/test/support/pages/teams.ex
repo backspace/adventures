@@ -12,4 +12,8 @@ defmodule AdventureRegistrations.Pages.Teams do
   def risk_aversion(index) do
     visible_text({:css, "#{team_container(index)} .risk-aversion"})
   end
+
+  def emails(index) do
+    visible_text({:css, "#{team_container(index)} [data-test-emails]"})
+  end
 end

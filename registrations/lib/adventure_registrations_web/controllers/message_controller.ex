@@ -67,18 +67,15 @@ defmodule AdventureRegistrationsWeb.MessageController do
     message = Repo.get!(Message, id)
 
     users =
-      if me == "true",
+      if(me == "true",
         do: [conn.assigns[:current_user_object]],
         else: Repo.all(AdventureRegistrationsWeb.User)
-
-    teams = Repo.all(AdventureRegistrationsWeb.Team)
+      )
+      |> Repo.preload(:team)
 
     Enum.each(users, fn user ->
       relationships = AdventureRegistrationsWeb.TeamFinder.relationships(user, users)
-
-      team = Enum.find(teams, fn team -> Enum.member?(team.user_ids, user.id) end)
-
-      AdventureRegistrations.Mailer.send_message(message, user, relationships, team)
+      AdventureRegistrations.Mailer.send_message(message, user, relationships, user.team)
     end)
 
     conn
