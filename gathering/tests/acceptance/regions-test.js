@@ -124,12 +124,7 @@ module('Acceptance | regions', function (hooks) {
     await destinationsPage.visit();
     await destinationsPage.new();
 
-    // FIXME this is an unpleasant way to find the label of the selected value
-    const id = destinationsPage.regionField.value;
-    assert.strictEqual(
-      find(`option[value='${id}']`).innerHTML.trim(),
-      'Jellevy'
-    );
+    assert.strictEqual(destinationsPage.regionField.text, 'Jellevy');
   });
 
   test('a region can be edited and edits can be cancelled', async function (assert) {
@@ -171,10 +166,8 @@ module('Acceptance | regions', function (hooks) {
     await destinationsPage.visit();
     await destinationsPage.new();
 
-    // FIXME see above
-    const id = destinationsPage.regionField.value;
     assert.strictEqual(
-      find(`option[value='${id}']`).innerHTML.trim(),
+      destinationsPage.regionField.text,
       '--Kisua Protectorate'
     );
   });
