@@ -24,7 +24,9 @@ module.exports = function (environment) {
       saveHasMany: true,
       options: {},
     },
-
+    'ember-local-storage': {
+      loadInitializer: false,
+    },
     firstRendezvousTime: '2016-02-12 13:50',
     rendezvousInterval: 22,
   };

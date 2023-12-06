@@ -138,8 +138,8 @@ devDependencies:
     specifier: ^2.1.2
     version: 2.1.2(@babel/core@7.23.5)
   ember-local-storage:
-    specifier: ^2.0.4
-    version: 2.0.4
+    specifier: ^2.0.6
+    version: 2.0.6
   ember-modifier:
     specifier: ^4.1.0
     version: 4.1.0(ember-source@4.12.3)
@@ -7622,8 +7622,8 @@ packages:
       - supports-color
     dev: true
 
-  /ember-local-storage@2.0.4:
-    resolution: {integrity: sha512-sVGh6J2meHZkzQhIp0NPwT1l4Qo2gNNqi+2FBZCi7Y55UFnBSNJi8o1Fk2agZzkQlvdAEwKdPUAuhgSm1DHi8Q==}
+  /ember-local-storage@2.0.6:
+    resolution: {integrity: sha512-SrC147cA726m1ho00PVtYqEz7xib4+0JJQbN6A2E3Dvrv2JnmwBK7Oexslu3GkHLvTGwry2bzQ0ySFSz2RObBw==}
     engines: {node: 12.* || 14.* || >= 16}
     dependencies:
       blob-polyfill: 7.0.20220408
