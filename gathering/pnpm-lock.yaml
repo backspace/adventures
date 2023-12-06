@@ -9,13 +9,13 @@ devDependencies:
     specifier: ^7.21.3
     version: 7.21.3(@babel/core@7.23.5)(eslint@8.54.0)
   '@babel/plugin-proposal-decorators':
-    specifier: ^7.21.0
+    specifier: ^7.23.5
     version: 7.23.5(@babel/core@7.23.5)
   '@ember/optional-features':
     specifier: ^2.0.0
     version: 2.0.0
   '@ember/string':
-    specifier: ^3.0.1
+    specifier: ^3.1.1
     version: 3.1.1
   '@ember/test-helpers':
     specifier: ^2.9.3
@@ -54,10 +54,10 @@ devDependencies:
     specifier: ^6.0.3
     version: 6.0.3
   concurrently:
-    specifier: ^8.0.1
+    specifier: ^8.2.2
     version: 8.2.2
   ember-auto-import:
-    specifier: ^2.6.3
+    specifier: ^2.7.0
     version: 2.7.0(webpack@5.89.0)
   ember-classic-decorator:
     specifier: ^3.0.1
@@ -66,7 +66,7 @@ devDependencies:
     specifier: ~4.12.2
     version: 4.12.2
   ember-cli-app-version:
-    specifier: ^6.0.0
+    specifier: ^6.0.1
     version: 6.0.1(ember-source@4.12.3)
   ember-cli-babel:
     specifier: ^7.26.11
@@ -108,7 +108,7 @@ devDependencies:
     specifier: 2.1.3
     version: 2.1.3(@ember/test-helpers@2.9.3)
   ember-cli-sass:
-    specifier: ^11.0.0
+    specifier: ^11.0.1
     version: 11.0.1
   ember-cli-sri:
     specifier: ^2.1.1
@@ -150,7 +150,7 @@ devDependencies:
     specifier: ^7.0.0
     version: 7.0.0
   ember-pouch:
-    specifier: ^8.0.0-beta.2
+    specifier: 8.0.0-beta.2
     version: 8.0.0-beta.2(webpack@5.89.0)
   ember-qunit:
     specifier: ^6.2.0
@@ -162,22 +162,22 @@ devDependencies:
     specifier: 3.0.0-beta.1
     version: 3.0.0-beta.1
   ember-ref-bucket:
-    specifier: ^5.0.0
+    specifier: ^5.0.5
     version: 5.0.5(ember-source@4.12.3)(webpack@5.89.0)
   ember-resolver:
-    specifier: ^10.0.0
+    specifier: ^10.1.1
     version: 10.1.1(@ember/string@3.1.1)(ember-source@4.12.3)
   ember-resources:
     specifier: ^5.6.4
     version: 5.6.4(@glimmer/component@1.1.2)(@glimmer/tracking@1.1.2)(@glint/template@1.2.1)(ember-concurrency@2.3.7)(ember-source@4.12.3)
   ember-source:
-    specifier: ~4.12.0
+    specifier: ~4.12.3
     version: 4.12.3(@babel/core@7.23.5)(@glimmer/component@1.1.2)(webpack@5.89.0)
   ember-template-imports:
-    specifier: ^3.4.1
+    specifier: ^3.4.2
     version: 3.4.2
   ember-template-lint:
-    specifier: ^5.7.2
+    specifier: ^5.13.0
     version: 5.13.0
   ember-test-selectors:
     specifier: ^6.0.0
@@ -189,13 +189,13 @@ devDependencies:
     specifier: ^5.0.1
     version: 5.0.1
   eslint:
-    specifier: ^8.37.0
+    specifier: ^8.54.0
     version: 8.54.0
   eslint-config-prettier:
-    specifier: ^8.8.0
+    specifier: ^8.10.0
     version: 8.10.0(eslint@8.54.0)
   eslint-plugin-ember:
-    specifier: ^11.5.0
+    specifier: ^11.11.1
     version: 11.11.1(eslint@8.54.0)
   eslint-plugin-import:
     specifier: ^2.27.5
@@ -246,7 +246,7 @@ devDependencies:
     specifier: 2.11.1
     version: 2.11.1
   moment-timezone:
-    specifier: ^0.5.0
+    specifier: ^0.5.40
     version: 0.5.40
   node-sass:
     specifier: ^8.0.0
@@ -288,7 +288,7 @@ devDependencies:
     specifier: ^0.3.2
     version: 0.3.2
   qunit:
-    specifier: ^2.19.4
+    specifier: ^2.20.0
     version: 2.20.0
   qunit-dom:
     specifier: ^2.0.0
@@ -324,7 +324,7 @@ devDependencies:
     specifier: ^1.5.2
     version: 1.5.2
   tracked-built-ins:
-    specifier: ^3.1.1
+    specifier: ^3.3.0
     version: 3.3.0
   transform-loader:
     specifier: ^0.2.4
@@ -339,7 +339,7 @@ devDependencies:
     specifier: ^13.9.0
     version: 13.9.0
   webpack:
-    specifier: ^5.78.0
+    specifier: ^5.89.0
     version: 5.89.0
 
 packages:
