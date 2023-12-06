@@ -51,7 +51,7 @@ defmodule AdventureRegistrationsWeb.SharedHelpers do
   end
 
   def start_time do
-    if parsed_start_time.minute > 0 do
+    if parsed_start_time().minute > 0 do
       formatted_start_time("%-I:%M%p") |> String.downcase()
     else
       formatted_start_time("%-I%p") |> String.downcase()
