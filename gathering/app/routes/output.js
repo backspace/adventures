@@ -67,9 +67,11 @@ export default class OutputRoute extends Route {
 
       settings: this.store.findRecord('settings', 'settings'),
 
-      assets: all(fontPaths)
+      assets: Promise.all(fontPaths)
         .then((responses) => {
-          return all(responses.map((response) => response.arrayBuffer()));
+          return Promise.all(
+            responses.map((response) => response.arrayBuffer())
+          );
         })
         .then(([header, bold, regular]) => {
           return hash({

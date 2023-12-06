@@ -1,5 +1,4 @@
 import Service from '@ember/service';
-import { all } from 'rsvp';
 
 export default class TxtbeyondService extends Service {
   name = 'txtbeyond';
@@ -101,7 +100,7 @@ export default class TxtbeyondService extends Service {
         meeting.set('phone', randomPhoneNumber);
       });
 
-    return all(
+    return Promise.all(
       teams
         .map((team) => team.save())
         .concat(meetings.map((meeting) => meeting.save()))

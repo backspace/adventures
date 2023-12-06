@@ -3,7 +3,6 @@ import Controller from '@ember/controller';
 import { action, get, set } from '@ember/object';
 import { inject as service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
-import { all } from 'rsvp';
 
 export default class SchedulerController extends Controller {
   @tracked meeting;
@@ -140,10 +139,13 @@ export default class SchedulerController extends Controller {
     meeting
       .save()
       .then(() => {
-        return all([meeting.get('destination'), meeting.get('teams')]);
+        return Promise.all([meeting.get('destination'), meeting.get('teams')]);
       })
       .then(([destination, teams]) => {
-        return all([destination.save(), ...teams.map((team) => team.save())]);
+        return Promise.all([
+          destination.save(),
+          ...teams.map((team) => team.save()),
+        ]);
       })
       .then(() => {
         set(this, 'meeting', this.store.createRecord('meeting'));
