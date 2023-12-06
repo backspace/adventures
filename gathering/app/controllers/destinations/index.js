@@ -1,13 +1,28 @@
 import Controller, { inject as controller } from '@ember/controller';
-import { action, set } from '@ember/object';
+import { action } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
 import orderBy from 'lodash.orderby';
 
 export default class DestinationsIndexController extends Controller {
   @controller('destinations') destinationsController;
 
-  @tracked sorting = Object.freeze([['updatedAt'], ['desc']]);
-  @tracked defaultSort = true;
+  @tracked sorting = 'default';
+
+  static sortings = {
+    default: [['updatedAt'], ['desc']],
+    region: [
+      ['region.name', 'createdAt'],
+      ['asc', 'desc'],
+    ],
+    awesomeness: [
+      ['awesomeness', 'createdAt'],
+      ['asc', 'desc'],
+    ],
+    scheduled: [
+      ['meetings.length', 'createdAt'],
+      ['asc', 'desc'],
+    ],
+  };
 
   get region() {
     return this.destinationsController.region;
@@ -22,47 +37,30 @@ export default class DestinationsIndexController extends Controller {
       );
     }
 
-    return orderBy(filteredDestinations, this.sorting[0], this.sorting[1]);
+    let sorting = DestinationsIndexController.sortings[this.sorting];
+    return orderBy(filteredDestinations, sorting[0], sorting[1]);
   }
 
   @action
-  toggleSort() {
-    set(this, 'defaultSort', !this.defaultSort);
-
-    if (this.defaultSort) {
-      set(this, 'sorting', [['updatedAt'], ['desc']]);
-    } else {
-      set(this, 'sorting', [
-        ['region.name', 'createdAt'],
-        ['asc', 'desc'],
-      ]);
-    }
+  toggleRegionSort() {
+    this.toggleSort('region');
   }
 
-  // FIXME this should be generalised, obvs
   @action
   toggleAwesomenessSort() {
-    set(this, 'defaultSort', !this.defaultSort);
-
-    if (this.defaultSort) {
-      set(this, 'sorting', [['updatedAt'], ['desc']]);
-    } else {
-      set(this, 'sorting', [
-        ['awesomeness', 'createdAt'],
-        ['asc', 'desc'],
-      ]);
-    }
+    this.toggleSort('awesomeness');
   }
 
-  // FIXME this should be generalised, obvs
   @action
   toggleScheduledSort() {
-    set(this, 'defaultSort', !this.defaultSort);
+    this.toggleSort('scheduled');
+  }
 
-    if (this.defaultSort) {
-      set(this, 'sorting', [['updatedAt'], ['desc']]);
+  toggleSort(sortProperty) {
+    if (this.sorting === sortProperty) {
+      this.sorting = 'default';
     } else {
-      set(this, 'sorting', ['meetings.length', 'createdAt'], ['asc', 'desc']);
+      this.sorting = sortProperty;
     }
   }
 }

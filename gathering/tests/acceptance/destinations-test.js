@@ -80,16 +80,21 @@ module('Acceptance | destinations', function (hooks) {
 
     await page.headerRegion.click();
 
+    assert.ok(page.headerRegion.isActive);
     assert.strictEqual(page.destinations[0].description, 'Hona-Karekh');
     assert.strictEqual(page.destinations[1].description, 'Ina-Karekh');
 
     await page.headerRegion.click();
 
+    assert.notOk(page.headerRegion.isActive);
     assert.strictEqual(page.destinations[0].description, 'Ina-Karekh');
     assert.strictEqual(page.destinations[1].description, 'Hona-Karekh');
 
+    assert.notOk(page.headerAwesomeness.isActive);
+
     await page.headerAwesomeness.click();
 
+    assert.ok(page.headerAwesomeness.isActive);
     assert.strictEqual(page.destinations[0].description, 'Hona-Karekh');
   });
 

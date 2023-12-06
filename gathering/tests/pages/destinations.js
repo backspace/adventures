@@ -53,11 +53,13 @@ export default PageObject.create({
   headerRegion: {
     scope: '[data-test-header-region]',
     click: clickable(),
+    isActive: hasClass('success'),
   },
 
   headerAwesomeness: {
     scope: '[data-test-header-awesomeness]',
     click: clickable(),
+    isActive: hasClass('success'),
   },
 
   destinations: collection('.destination', {

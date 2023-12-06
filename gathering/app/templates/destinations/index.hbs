@@ -16,8 +16,8 @@
           {{/if}}
           <th>
             <button
-              {{on 'click' this.toggleSort}}
-              class='secondary label'
+              {{on 'click' this.toggleRegionSort}}
+              class='label {{if (eq this.sorting 'region') 'success' 'secondary'}}'
               type='button'
               data-test-header-region
             >
@@ -35,7 +35,7 @@
           </th>
           <th>
             <button
-              class='secondary label'
+              class='label {{if (eq this.sorting 'awesomeness') 'success' 'secondary'}}'
               type='button'
               {{on 'click' this.toggleAwesomenessSort}}
               data-test-header-awesomeness
@@ -48,7 +48,7 @@
           </th>
           <th>
             <button
-              class='secondary label'
+              class='label {{if (eq this.sorting 'scheduled') 'success' 'secondary'}}'
               type='button'
               {{on 'click' this.toggleScheduledSort}}
               data-test-header-scheduler

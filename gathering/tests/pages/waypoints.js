@@ -50,6 +50,7 @@ export default PageObject.create({
   headerRegion: {
     scope: '[data-test-header-region]',
     click: clickable(),
+    isActive: hasClass('success'),
   },
 
   waypoints: collection('[data-test-waypoint]', {

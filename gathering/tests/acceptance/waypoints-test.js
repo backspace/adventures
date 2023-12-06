@@ -121,9 +121,12 @@ module('Acceptance | waypoints', function (hooks) {
     await homePage.visit();
     await homePage.waypoints.click();
 
+    assert.notOk(page.headerRegion.isActive);
+
     // Sort by region, otherwise waypoints will jump around
     await page.headerRegion.click();
 
+    assert.ok(page.headerRegion.isActive);
     assert.strictEqual(page.waypoints[0].status.value, '✓');
     assert.strictEqual(page.waypoints[1].status.value, '✘');
 

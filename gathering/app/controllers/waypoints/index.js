@@ -3,10 +3,18 @@ import { action } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
 import orderBy from 'lodash.orderby';
 
-export default class WaypointIndexController extends Controller {
+export default class WaypointsIndexController extends Controller {
   @controller('waypoints') waypointsController;
 
-  @tracked defaultSort = true;
+  @tracked sorting = 'default';
+
+  static sortings = {
+    default: [['updatedAt'], ['desc']],
+    region: [
+      ['region.name', 'createdAt'],
+      ['asc', 'desc'],
+    ],
+  };
 
   get region() {
     return this.waypointsController.region;
@@ -21,19 +29,20 @@ export default class WaypointIndexController extends Controller {
       );
     }
 
-    if (this.defaultSort) {
-      return orderBy(filteredWaypoints, ['updatedAt'], ['desc']);
-    } else {
-      return orderBy(
-        filteredWaypoints,
-        ['region.name', 'createdAt'],
-        ['asc', 'asc']
-      );
-    }
+    let sorting = WaypointsIndexController.sortings[this.sorting];
+    return orderBy(filteredWaypoints, sorting[0], sorting[1]);
   }
 
   @action
-  toggleSort() {
-    this.defaultSort = !this.defaultSort;
+  toggleRegionSort() {
+    this.toggleSort('region');
+  }
+
+  toggleSort(sortProperty) {
+    if (this.sorting === sortProperty) {
+      this.sorting = 'default';
+    } else {
+      this.sorting = sortProperty;
+    }
   }
 }

@@ -16,9 +16,9 @@
           {{/if}}
           <th>
             <button
-              class='secondary label'
+              {{on 'click' this.toggleRegionSort}}
+              class='label {{if (eq this.sorting 'region') 'success' 'secondary'}}'
               type='button'
-              {{on 'click' this.toggleSort}}
               data-test-header-region
             >
               Region
