@@ -184,6 +184,11 @@ defmodule AdventureRegistrations.Integration.Messages do
     assert String.contains?(has_team_email.text_body, "True team name")
     assert String.contains?(has_team_email.text_body, "Go easy on me")
 
+    assert String.contains?(
+             has_team_email.text_body,
+             "user-with-team@example.com, teammate@example.com"
+           )
+
     assert has_no_team_email.to == [{"", "teamless-user@example.com"}]
     assert String.contains?(has_no_team_email.text_body, "You have no team assigned!")
   end

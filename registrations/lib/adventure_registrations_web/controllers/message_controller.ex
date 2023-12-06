@@ -71,7 +71,7 @@ defmodule AdventureRegistrationsWeb.MessageController do
         do: [conn.assigns[:current_user_object]],
         else: Repo.all(AdventureRegistrationsWeb.User)
       )
-      |> Repo.preload(:team)
+      |> Repo.preload(team: [:users])
 
     Enum.each(users, fn user ->
       relationships = AdventureRegistrationsWeb.TeamFinder.relationships(user, users)

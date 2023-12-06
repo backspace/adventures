@@ -19,7 +19,7 @@
 
   <li>
     <strong>Users:</strong>
-    <%= Enum.map(@team.users, fn user -> user.email end) |> Enum.join(", ") %>
+    <%= team_emails(@team) %>
   </li>
 
 </ul>

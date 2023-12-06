@@ -18,6 +18,10 @@ defmodule AdventureRegistrationsWeb.SharedHelpers do
     end
   end
 
+  def team_emails(team) do
+    Enum.map(team.users, fn user -> user.email end) |> Enum.join(", ")
+  end
+
   def adventure do
     Application.get_env(:adventure_registrations, :adventure)
   end

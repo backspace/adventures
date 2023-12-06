@@ -27,7 +27,7 @@
       <%= if is_unmnemonic_devices() do %>
         <td><%= team.voicepass %></td>
       <% end %>
-      <td data-test-emails><%= Enum.map(team.users, fn user -> user.email end) |> Enum.join(", ") %></td>
+      <td data-test-emails><%= team_emails(team) %></td>
 
       <td class="text-right">
         <%= link "Show", to: Routes.team_path(@conn, :show, team), class: "btn btn-default btn-xs" %>

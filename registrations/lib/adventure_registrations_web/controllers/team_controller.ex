@@ -20,7 +20,7 @@ defmodule AdventureRegistrationsWeb.TeamController do
     json(conn, %{
       data:
         Enum.map(teams, fn team ->
-          team_emails = Enum.map(team.users, fn user -> user.email end) |> Enum.join(", ")
+          team_emails = AdventureRegistrationsWeb.SharedHelpers.team_emails(team)
 
           user_notes =
             Enum.reduce(team.users, "\n", fn user, notes ->
