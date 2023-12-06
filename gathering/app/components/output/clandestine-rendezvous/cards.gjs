@@ -275,18 +275,25 @@ export default class ClandestineRendezvousCardsComponent extends Component {
   }
 
   _rendezvousCards() {
-    return this.args.teams.reduce((cards, team) => {
-      return cards.concat(
-        team
-          .hasMany('meetings')
-          .value()
-          .slice()
-          .sort((a, b) => a.index - b.index)
-          .map((meeting, index) => {
-            return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
-          })
-      );
-    }, []);
+    return this.args.teams
+      .slice()
+      .sort((a, b) => a.createdAt - b.createdAt)
+      .reduce((cards, team) => {
+        return cards.concat(
+          team
+            .hasMany('meetings')
+            .value()
+            .slice()
+            .sort((a, b) => a.index - b.index)
+            .map((meeting, index) => {
+              return this._rendezvousCardDataForTeamMeeting(
+                team,
+                meeting,
+                index
+              );
+            })
+        );
+      }, []);
   }
 
   @service
