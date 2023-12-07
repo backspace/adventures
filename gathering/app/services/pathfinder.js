@@ -1,6 +1,5 @@
-// eslint-disable-next-line ember/no-computed-properties-in-native-classes
-import { computed, get } from '@ember/object';
 import Service, { inject as service } from '@ember/service';
+import { tracked } from '@glimmer/tracking';
 
 import jsgraphs from 'js-graph-algorithms';
 import uniq from 'lodash.uniq';
@@ -8,15 +7,13 @@ import uniq from 'lodash.uniq';
 export default class PathfinderService extends Service {
   @service store;
 
-  data = Object.freeze({
+  @tracked data = Object.freeze({
     data: {},
   });
 
-  @computed('data.{_rev,data}')
   get regions() {
     return uniq(
-      // eslint-disable-next-line ember/no-get
-      Object.keys(get(this, 'data.data')).reduce(
+      Object.keys(this.data.data).reduce(
         (regions, key) => regions.concat(key.split('|')),
         []
       )
@@ -27,16 +24,13 @@ export default class PathfinderService extends Service {
     return this.regions.includes(regionName);
   }
 
-  @computed('data.{_rev,data}', 'regions.length')
   get graph() {
-    // eslint-disable-next-line ember/no-get
-    const graph = new jsgraphs.WeightedDiGraph(get(this, 'regions.length'));
+    const graph = new jsgraphs.WeightedDiGraph(this.regions.length);
 
     const regionToIndex = {};
     let regionIndex = 0;
 
-    // eslint-disable-next-line ember/no-get
-    Object.entries(get(this, 'data.data')).forEach(([regions, distance]) => {
+    Object.entries(this.data.data).forEach(([regions, distance]) => {
       const [dataA, dataB] = regions.split('|');
 
       [dataA, dataB].forEach((region) => {
