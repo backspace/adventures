@@ -6,6 +6,7 @@
           {{this.region.name}}
         </strong>
         <LinkTo
+          class='underline'
           @route='waypoints'
           @query={{(hash regionId=null)}}
           data-test-leave
@@ -18,21 +19,21 @@
           {{#if (feature-flag 'destination-status')}}
             <th></th>
           {{/if}}
-          <th>
+          <th class='p-2 text-left'>
             <button
               {{on 'click' this.toggleRegionSort}}
-              class='label
-                {{if (eq this.sorting "region") "success" "secondary"}}'
+              class='px-1.5 border-2 border-black
+                {{if (eq this.sorting "region") "text-white bg-black"}}'
               type='button'
               data-test-header-region
             >
               Region
             </button>
           </th>
-          <th>
+          <th class='p-2 text-left'>
             Name
           </th>
-          <th>
+          <th class='p-2 text-left'>
             Author
           </th>
           <th></th>

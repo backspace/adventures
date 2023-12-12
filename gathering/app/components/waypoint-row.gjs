@@ -8,28 +8,31 @@ import featureFlag from 'ember-feature-flags/helpers/feature-flag';
 export default class WaypointRowComponent extends Component {
   <template>
     <tr
-      class='waypoint {{if @waypoint.isIncomplete 'incomplete'}}'
+      class='waypoint
+        even:bg-gray-50
+        {{if @waypoint.isIncomplete 'border-l-4 border-x-red-500'}}
+      '
       data-test-waypoint
     >
       {{! template-lint-disable no-invalid-interactive }}
       {{#if (featureFlag 'destination-status')}}<td
-          class='status'
+          class='status p-2 align-top'
           {{on 'click' this.toggleStatus}}
           data-test-status
         >{{this.status}}</td>{{/if}}
-      <td>
-        <LinkTo @route='waypoints.index' @query={{hash region-id=@waypoint.region.id}} data-test-region>
+      <td class='p-2 align-top'>
+        <LinkTo @route='waypoints.index' @query={{hash region-id=@waypoint.region.id}} class='underline' data-test-region>
           {{@waypoint.region.name}}
         </LinkTo>
       </td>
-      <td data-test-name>
+      <td class='p-2 align-top' data-test-name>
         {{@waypoint.name}}
       </td>
-      <td data-test-author>
+      <td class='p-2 align-top' data-test-author>
         {{@waypoint.author}}
       </td>
-      <td>
-        <LinkTo @route='waypoint' @model={{@waypoint}} data-test-edit>
+      <td class='p-2 align-top'>
+        <LinkTo @route='waypoint' @model={{@waypoint}} class='underline' data-test-edit>
           Edit
         </LinkTo>
       </td>
