@@ -1,22 +1,22 @@
-<div class='grid-container'>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <div class='input-group'>
-        <span for='url' class='input-group-label'>
+<div class='w-full'>
+  <div class='mx-auto md:container'>
+    {{outlet}}
+      <div class='w-full flex border-2 border-black'>
+        <label for='url' class='border-r-2 border-black p-2'>
           DB
-        </span>
+        </label>
         <Input
           id='url'
           @type='url'
           @value={{or this.destination (get this.sortedDatabases '0')}}
           {{on 'change' this.handleDestinationInput}}
-          class='destination input-group-field'
+          class='destination flex-1 p-2'
         />
         <div class='input-group-button'>
           <button
             type='button'
             onclick={{perform this.sync}}
-            class='sync button primary'
+            class='sync bg-black text-white p-2'
           >
             {{#if this.syncTask.isRunning}}
               <Loading />
@@ -27,18 +27,22 @@
         </div>
       </div>
 
-      <ul class='databases'>
+      <ul class='databases pl-10 pt-2'>
         {{#each this.sortedDatabases as |database|}}
-          <li class='database'>
-            <a href='#' {{on 'click' (fn this.setDestination database)}}>
-              {{database}}
-            </a>
+          <li class='database flex p-2 gap-2'>
             <button
-              class='button tiny hollow secondary'
+              class='border-2 border-black p-2'
+              type='button'
+              {{on 'click' (fn this.setDestination database)}}
+            >
+              {{database}}
+            </button>
+            <button
+              class='border-2 border-red-500 p-2'
               type='button'
               {{on 'click' (fn this.removeDestination database)}}
               data-test-remove
-            >✘</button>
+            >Delete</button>
           </li>
         {{/each}}
       </ul>
@@ -103,13 +107,8 @@
           {{this.error}}
         </code>
       {{/if}}
-    </div>
-  </div>
 
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
       Version:
       {{this.version}}
     </div>
-  </div>
 </div>
