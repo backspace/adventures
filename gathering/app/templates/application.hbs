@@ -1,53 +1,48 @@
 {{page-title this.title}}
 <div class='w-full'>
-  <div class='md:container mx-auto'>
-    <div class='top-bar'>
-      <ul class='flex items-center' data-test-nav>
-        <li class='pair'><LinkTo
-            @route='destinations'
-            @query={{(hash regionId=null)}}
-            data-test-destinations
-          >dest<span class='hidden md:inline'>inations</span></LinkTo>
+  <div class='mx-auto md:container'>
+    <ul class='flex justify-center gap-4 bg-slate-200 p-2' data-test-nav>
+      <li class='pair'><LinkTo
+          @route='destinations'
+          @query={{(hash regionId=null)}}
+          data-test-destinations
+        >dest<span class='hidden md:inline'>inations</span></LinkTo>
+        <LinkTo
+          @route='destinations.new'
+          class='destinations new'
+        >+</LinkTo></li>
+      {{#if this.puzzles.implementation.hasWaypoints}}
+        <li class='pair'>
           <LinkTo
-            @route='destinations.new'
-            class='destinations new'
-          >+</LinkTo></li>
-        {{#if this.puzzles.implementation.hasWaypoints}}
-          <li class='pair'>
-            <LinkTo
-              @route='waypoints'
-              @query={{(hash regionId=null)}}
-              data-test-waypoints
-            >way<span class='hidden md:inline'>points</span></LinkTo>
-            <LinkTo
-              @route='waypoints.new'
-              data-test-waypoint-new
-            >+</LinkTo></li>
-        {{/if}}
-        <li class='pair'><LinkTo @route='regions'>reg<span
-              class='hidden md:inline'
-            >ions</span></LinkTo>
-          <LinkTo @route='regions.new' class='regions new'>+</LinkTo></li>
-        <li class='hidden md:inline'><LinkTo
-            @route='teams'
-            class='teams'
-          >teams</LinkTo></li>
-        <li class='hidden md:inline'><LinkTo
-            @route='scheduler'
-          >scheduler</LinkTo></li>
-        <li class='hidden md:inline pair'><LinkTo
-            @route='output'
-            @query={{hash debug=false}}
-          >output</LinkTo><LinkTo
-            @route='output'
-            @query={{hash debug=true}}
-          >/d</LinkTo></li>
-        <li><LinkTo @route='sync' class='sync'>sync</LinkTo></li>
-        <li class='hidden md:inline'><LinkTo
-            @route='settings'
-          >settings</LinkTo></li>
-      </ul>
-    </div>
+            @route='waypoints'
+            @query={{(hash regionId=null)}}
+            data-test-waypoints
+          >way<span class='hidden md:inline'>points</span></LinkTo>
+          <LinkTo @route='waypoints.new' data-test-waypoint-new>+</LinkTo></li>
+      {{/if}}
+      <li class='pair'><LinkTo @route='regions'>reg<span
+            class='hidden md:inline'
+          >ions</span></LinkTo>
+        <LinkTo @route='regions.new' class='regions new'>+</LinkTo></li>
+      <li class='hidden md:inline'><LinkTo
+          @route='teams'
+          class='teams'
+        >teams</LinkTo></li>
+      <li class='hidden md:inline'><LinkTo
+          @route='scheduler'
+        >scheduler</LinkTo></li>
+      <li class='pair hidden md:inline'><LinkTo
+          @route='output'
+          @query={{hash debug=false}}
+        >output</LinkTo><LinkTo
+          @route='output'
+          @query={{hash debug=true}}
+        >/d</LinkTo></li>
+      <li><LinkTo @route='sync' class='sync'>sync</LinkTo></li>
+      <li class='hidden md:inline'><LinkTo
+          @route='settings'
+        >settings</LinkTo></li>
+    </ul>
   </div>
 </div>
 
