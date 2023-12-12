@@ -5,7 +5,11 @@
         <strong data-test-title>
           {{this.region.name}}
         </strong>
-        <LinkTo @route='waypoints' @query={{(hash regionId=null)}} data-test-leave>leave</LinkTo>
+        <LinkTo
+          @route='waypoints'
+          @query={{(hash regionId=null)}}
+          data-test-leave
+        >leave</LinkTo>
       </section>
     {{/if}}
     <table>
@@ -17,7 +21,8 @@
           <th>
             <button
               {{on 'click' this.toggleRegionSort}}
-              class='label {{if (eq this.sorting 'region') 'success' 'secondary'}}'
+              class='label
+                {{if (eq this.sorting "region") "success" "secondary"}}'
               type='button'
               data-test-header-region
             >

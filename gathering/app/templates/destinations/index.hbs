@@ -5,7 +5,11 @@
         <strong data-test-title>
           {{this.region.name}}
         </strong>
-        <LinkTo @route='destinations' @query={{(hash regionId=null)}} data-test-leave>leave</LinkTo>
+        <LinkTo
+          @route='destinations'
+          @query={{(hash regionId=null)}}
+          data-test-leave
+        >leave</LinkTo>
       </section>
     {{/if}}
     <table>
@@ -17,7 +21,8 @@
           <th>
             <button
               {{on 'click' this.toggleRegionSort}}
-              class='label {{if (eq this.sorting 'region') 'success' 'secondary'}}'
+              class='label
+                {{if (eq this.sorting "region") "success" "secondary"}}'
               type='button'
               data-test-header-region
             >
@@ -35,7 +40,8 @@
           </th>
           <th>
             <button
-              class='label {{if (eq this.sorting 'awesomeness') 'success' 'secondary'}}'
+              class='label
+                {{if (eq this.sorting "awesomeness") "success" "secondary"}}'
               type='button'
               {{on 'click' this.toggleAwesomenessSort}}
               data-test-header-awesomeness
@@ -48,7 +54,8 @@
           </th>
           <th>
             <button
-              class='label {{if (eq this.sorting 'scheduled') 'success' 'secondary'}}'
+              class='label
+                {{if (eq this.sorting "scheduled") "success" "secondary"}}'
               type='button'
               {{on 'click' this.toggleScheduledSort}}
               data-test-header-scheduler

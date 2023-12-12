@@ -1,5 +1,5 @@
-@import 'settings';
-@import 'foundation';
+@import "settings";
+@import "foundation";
 @include foundation-everything;
 
 td {
@@ -109,7 +109,7 @@ $region-length: 4rem;
     }
 
     &:after {
-      content: ' ';
+      content: " ";
       position: absolute;
       top: 50%;
       left: calc(50% - 2px);
@@ -135,14 +135,14 @@ $column-width: 6rem;
 
   grid-template-columns: auto $column-width $column-width;
   grid-template-areas:
-    'map teams destinations'
-    'map form form';
+    "map teams destinations"
+    "map form form";
 
   &.has-waypoints {
     grid-template-columns: auto $column-width $column-width $column-width;
     grid-template-areas:
-      'map teams waypoints destinations'
-      'map form form form';
+      "map teams waypoints destinations"
+      "map form form form";
   }
 
   font-family: Silkscreen;
@@ -189,15 +189,15 @@ $column-width: 6rem;
     li {
       border-right: 0;
 
-      &[data-risk-aversion='1'] {
+      &[data-risk-aversion="1"] {
         border-right: 5px solid green;
       }
 
-      &[data-risk-aversion='2'] {
+      &[data-risk-aversion="2"] {
         border-right: 5px solid darkorange;
       }
 
-      &[data-risk-aversion='3'] {
+      &[data-risk-aversion="3"] {
         border-right: 5px solid red;
       }
     }
@@ -314,12 +314,12 @@ fieldset {
   label {
     display: inline;
 
-    input[type='radio'] {
+    input[type="radio"] {
       margin-right: 0.25rem;
       margin-left: 1rem;
     }
 
-    &:first-of-type input[type='radio'] {
+    &:first-of-type input[type="radio"] {
       margin-left: 0;
     }
   }

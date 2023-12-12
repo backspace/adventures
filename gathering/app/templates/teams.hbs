@@ -41,33 +41,33 @@
         {{#each this.sortedTeams as |teamAndChanges|}}
           <tbody data-test-team>
             {{#let teamAndChanges.current as |team|}}
-              <tr class='{{if team.isNew 'new'}}' data-test-team-id={{team.id}}>
+              <tr class='{{if team.isNew "new"}}' data-test-team-id={{team.id}}>
                 <td
-                  class='{{if teamAndChanges.changes.name 'changed'}}'
+                  class='{{if teamAndChanges.changes.name "changed"}}'
                   data-test-name
                 >
                   {{team.name}}
                 </td>
                 <td
-                  class='{{if teamAndChanges.changes.users 'changed'}}'
+                  class='{{if teamAndChanges.changes.users "changed"}}'
                   data-test-users
                 >
                   {{team.users}}
                 </td>
                 <td
-                  class='{{if teamAndChanges.changes.phones 'changed'}}'
+                  class='{{if teamAndChanges.changes.phones "changed"}}'
                   data-test-phones
                 >
                   {{team.phonesString}}
                 </td>
                 <td
-                  class='{{if teamAndChanges.changes.riskAversion 'changed'}}'
+                  class='{{if teamAndChanges.changes.riskAversion "changed"}}'
                   data-test-risk-aversion
                 >
                   {{team.riskAversion}}
                 </td>
                 <td
-                  class='{{if teamAndChanges.changes.notes 'changed'}}'
+                  class='{{if teamAndChanges.changes.notes "changed"}}'
                   data-test-notes
                 >
                   {{team.notes}}
@@ -75,21 +75,26 @@
               </tr>
               {{#if (and teamAndChanges.changes (not team.isNew))}}
                 <tr data-test-changes data-test-original-team-id={{team.id}}>
-                  <td
-                    data-test-original-name
-                  >{{get teamAndChanges.changes.name '0'}}</td>
-                  <td
-                    data-test-original-users
-                  >{{get teamAndChanges.changes.users '0'}}</td>
-                  <td
-                    data-test-original-phones
-                  >{{get teamAndChanges.changes.phones '0'}}</td>
-                  <td
-                    data-test-original-risk-aversion
-                  >{{get teamAndChanges.changes.riskAversion '0'}}</td>
-                  <td
-                    data-test-original-notes
-                  >{{get teamAndChanges.changes.notes '0'}}</td>
+                  <td data-test-original-name>{{get
+                      teamAndChanges.changes.name
+                      '0'
+                    }}</td>
+                  <td data-test-original-users>{{get
+                      teamAndChanges.changes.users
+                      '0'
+                    }}</td>
+                  <td data-test-original-phones>{{get
+                      teamAndChanges.changes.phones
+                      '0'
+                    }}</td>
+                  <td data-test-original-risk-aversion>{{get
+                      teamAndChanges.changes.riskAversion
+                      '0'
+                    }}</td>
+                  <td data-test-original-notes>{{get
+                      teamAndChanges.changes.notes
+                      '0'
+                    }}</td>
                 </tr>
               {{/if}}
               {{#if this.puzzles.implementation.hasTeamIdentifiers}}

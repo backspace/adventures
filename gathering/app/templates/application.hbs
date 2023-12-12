@@ -3,9 +3,11 @@
   <div class='small-12 cell'>
     <div class='top-bar'>
       <ul class='menu' data-test-nav>
-        <li class='pair'><LinkTo @route='destinations' @query={{(hash regionId=null)}} data-test-destinations>dest<span
-              class='show-for-medium'
-            >inations</span></LinkTo>
+        <li class='pair'><LinkTo
+            @route='destinations'
+            @query={{(hash regionId=null)}}
+            data-test-destinations
+          >dest<span class='show-for-medium'>inations</span></LinkTo>
           <LinkTo
             @route='destinations.new'
             class='destinations new'
