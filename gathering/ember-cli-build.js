@@ -7,6 +7,7 @@ module.exports = function (defaults) {
   const app = new EmberApp(defaults, {
     postcssOptions: {
       compile: {
+        cacheInclude: [/.*\.(css|hbs|gjs)$/],
         plugins: [
           require('tailwindcss')('./tailwind.config.js'),
           { module: require('autoprefixer') },
