@@ -10,19 +10,24 @@ export default class RegionRow extends Component {
     return this.nesting + 1;
   }
 
+  get nestingStyle() {
+    // Ensure classes are not stripped
+    // pl-2 pl-5 pl-8 pl-11 pl-14
+    return `pl-${2 + this.nesting * 3}`;
+  }
+
   <template>
     <tr
-      class='region
-        {{if @region.isComplete 'complete' 'incomplete'}}
-        nesting-{{this.nesting}}'
+      class='region even:bg-gray-50
+        {{if @region.isComplete 'complete' 'incomplete'}}'
     >
-      <td class='name'>
+      <td class='name p-2 align-top {{this.nestingStyle}}'>
         {{@region.name}}
       </td>
-      <td>{{@region.notes}}</td>
-      <td data-test-hours>{{@region.hours}}</td>
-      <td>
-        <LinkTo @route='region' @model={{@region}} class='edit'>
+      <td class='p-2 align-top'>{{@region.notes}}</td>
+      <td class='p-2 align-top' data-test-hours>{{@region.hours}}</td>
+      <td class='p-2 align-top'>
+        <LinkTo @route='region' @model={{@region}} class='edit underline'>
           Edit
         </LinkTo>
       </td>
