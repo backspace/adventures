@@ -1,73 +1,79 @@
-<div class='grid-container'>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <Textarea aria-label='teams JSON' @value={{this.teamsJSON}} rows={{4}} />
-      <button
-        class='button'
-        type='button'
-        {{on 'click' this.update}}
-        data-test-update
-      >Update</button>
-      <button
-        class='save success button'
-        type='button'
-        disabled={{not this.modelsToSave}}
-        {{on 'click' this.save}}
-        data-test-save
-      >
-        Save
-      </button>
+<div class='w-full'>
+  <div class='mx-auto md:container'>
+      <Textarea
+        class='border-black border-2 w-full'
+        aria-label='teams JSON'
+        @value={{this.teamsJSON}}
+        rows={{4}}
+      />
+      <section class='flex'>
+        <button
+          class='flex-1 bg-yellow-500'
+          type='button'
+          {{on 'click' this.update}}
+          data-test-update
+        >Update</button>
+        <button
+          class='flex-1 bg-green-500 {{if this.modelsToSave '' 'opacity-50'}}'
+          type='button'
+          disabled={{not this.modelsToSave}}
+          {{on 'click' this.save}}
+          data-test-save
+        >
+          Save
+        </button>
+      </section>
 
       <table class='teams'>
         <thead>
           <tr>
-            <th>
+            <th class='text-left'>
               Name
             </th>
-            <th>
+            <th class='text-left'>
               Users
             </th>
-            <th>
+            <th class='text-left'>
               Phones
             </th>
-            <th>
+            <th class='text-left'>
               Risk
             </th>
-            <th>
+            <th class='text-left'>
               Notes
             </th>
           </tr>
         </thead>
         {{#each this.sortedTeams as |teamAndChanges|}}
-          <tbody data-test-team>
+          <tbody class='even:bg-gray-50' data-test-team>
             {{#let teamAndChanges.current as |team|}}
-              <tr class='{{if team.isNew "new"}}' data-test-team-id={{team.id}}>
+              <tr class='{{if team.isNew "border-green-500 border-l-8"}}' data-test-team-id={{team.id}}>
                 <td
-                  class='{{if teamAndChanges.changes.name "changed"}}'
+                  class='{{if teamAndChanges.changes.name "bg-yellow-500"}}'
                   data-test-name
                 >
                   {{team.name}}
                 </td>
                 <td
-                  class='{{if teamAndChanges.changes.users "changed"}}'
+                  class='{{if teamAndChanges.changes.users "bg-yellow-500"}}'
                   data-test-users
                 >
                   {{team.users}}
                 </td>
                 <td
-                  class='{{if teamAndChanges.changes.phones "changed"}}'
+                  class='{{if teamAndChanges.changes.phones "bg-yellow-500"}}'
                   data-test-phones
                 >
                   {{team.phonesString}}
                 </td>
                 <td
-                  class='{{if teamAndChanges.changes.riskAversion "changed"}}'
+                  class='{{if teamAndChanges.changes.riskAversion "bg-yellow-500"}}'
                   data-test-risk-aversion
                 >
                   {{team.riskAversion}}
                 </td>
                 <td
-                  class='{{if teamAndChanges.changes.notes "changed"}}'
+                  class='{{if teamAndChanges.changes.notes "bg-yellow-500"}}'
                   data-test-notes
                 >
                   {{team.notes}}
@@ -109,6 +115,5 @@
           </tbody>
         {{/each}}
       </table>
-    </div>
   </div>
 </div>
