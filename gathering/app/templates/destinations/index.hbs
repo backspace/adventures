@@ -18,15 +18,13 @@
         <th></th>
       {{/if}}
       <th class='p-2 text-left'>
-        <button
+        <SortButton
+          @active={{eq this.sorting 'region'}}
           {{on 'click' this.toggleRegionSort}}
-          class='px-1.5 border-2 border-black
-            {{if (eq this.sorting "region") "text-white bg-black"}}'
-          type='button'
           data-test-header-region
         >
           Region
-        </button>
+        </SortButton>
       </th>
       <th class='p-2 text-left'>
         Description
@@ -38,29 +36,25 @@
         Mask
       </th>
       <th class='p-2 text-left'>
-        <button
-          class='px-1.5 border-2 border-black
-            {{if (eq this.sorting "awesomeness") "text-white bg-black"}}'
-          type='button'
+        <SortButton
+          @active={{eq this.sorting 'awesomeness'}}
           {{on 'click' this.toggleAwesomenessSort}}
           data-test-header-awesomeness
         >
           A
-        </button>
+        </SortButton>
       </th>
       <th class='p-2 text-left'>
         R
       </th>
       <th class='p-2 text-left'>
-        <button
-          class='px-1.5 border-2 border-black
-            {{if (eq this.sorting "scheduled") "text-white bg-black"}}'
-          type='button'
+        <SortButton
+          @active={{eq this.sorting 'scheduled'}}
           {{on 'click' this.toggleScheduledSort}}
           data-test-header-scheduler
         >
           S?
-        </button>
+        </SortButton>
       </th>
       <th></th>
     </tr>
