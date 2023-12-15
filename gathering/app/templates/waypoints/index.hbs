@@ -19,7 +19,7 @@
           {{#if (feature-flag 'destination-status')}}
             <th></th>
           {{/if}}
-          <th class='p-2 text-left'>
+          <th class='p-2 text-sm text-left'>
             <SortButton
               @active={{eq this.sorting 'region'}}
               {{on 'click' this.toggleRegionSort}}
@@ -28,10 +28,10 @@
               Region
             </SortButton>
           </th>
-          <th class='p-2 text-left'>
+          <th class='p-2 text-sm text-left'>
             Name
           </th>
-          <th class='p-2 text-left'>
+          <th class='p-2 text-sm text-left'>
             Author
           </th>
           <th></th>
