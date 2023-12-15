@@ -16,42 +16,6 @@ body.draglessness {
   touch-action: none;
 }
 
-.top-bar ul li.pair {
-  a {
-    display: inline-block;
-  }
-
-  a:first-child {
-    padding-right: 0;
-  }
-
-  a:last-child {
-    padding-left: 0.35rem;
-  }
-}
-
-tr.destination,
-tr.region,
-tr.waypoint {
-  &.incomplete {
-    border-left: 5px solid red;
-  }
-
-  &.meetings {
-    border-right: 5px solid green;
-  }
-
-  @for $i from 1 through 10 {
-    &.nesting-#{$i} td:first-child {
-      text-indent: 1rem * $i;
-    }
-  }
-}
-
-.errors {
-  background-color: $input-background-invalid;
-}
-
 $region-length: 4rem;
 
 .map {
@@ -307,35 +271,6 @@ $column-width: 6rem;
 
     padding: 4px;
     font-size: 16px;
-  }
-}
-
-fieldset {
-  label {
-    display: inline;
-
-    input[type="radio"] {
-      margin-right: 0.25rem;
-      margin-left: 1rem;
-    }
-
-    &:first-of-type input[type="radio"] {
-      margin-left: 0;
-    }
-  }
-}
-
-table.teams {
-  .new {
-    background-color: yellow;
-  }
-
-  .changed {
-    background-color: lime;
-  }
-
-  .new .changed {
-    background-color: inherit;
   }
 }
 
