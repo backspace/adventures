@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+body.draglessness {
+  user-select: none;
+}
+
+.undraggable {
+  touch-action: none;
+}
+
 iframe {
   display: inline;
   width: calc(50% - 3px);

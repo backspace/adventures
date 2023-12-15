@@ -6,16 +6,6 @@ td {
   vertical-align: top;
 }
 
-body.draglessness {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-}
-
-.undraggable {
-  touch-action: none;
-}
-
 $region-length: 4rem;
 
 .map {
