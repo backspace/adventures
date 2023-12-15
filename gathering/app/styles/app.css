@@ -79,7 +79,9 @@
     "map form form";
 
   &.has-waypoints {
-    grid-template-columns: auto var(--column-width) var(--column-width) var(--column-width);
+    grid-template-columns: auto var(--column-width) var(--column-width) var(
+        --column-width
+      );
     grid-template-areas:
       "map teams waypoints destinations"
       "map form form form";

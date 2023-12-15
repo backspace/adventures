@@ -47,33 +47,33 @@
         {{#each this.sortedTeams as |teamAndChanges|}}
           <tbody class='even:bg-gray-50' data-test-team>
             {{#let teamAndChanges.current as |team|}}
-              <tr class='{{if team.isNew "border-green-500 border-l-8"}}' data-test-team-id={{team.id}}>
+              <tr class='{{if team.isNew 'border-green-500 border-l-8'}}' data-test-team-id={{team.id}}>
                 <td
-                  class='align-top {{if teamAndChanges.changes.name "bg-yellow-500"}}'
+                  class='align-top {{if teamAndChanges.changes.name 'bg-yellow-500'}}'
                   data-test-name
                 >
                   {{team.name}}
                 </td>
                 <td
-                  class='align-top {{if teamAndChanges.changes.users "bg-yellow-500"}}'
+                  class='align-top {{if teamAndChanges.changes.users 'bg-yellow-500'}}'
                   data-test-users
                 >
                   {{team.users}}
                 </td>
                 <td
-                  class='align-top {{if teamAndChanges.changes.phones "bg-yellow-500"}}'
+                  class='align-top {{if teamAndChanges.changes.phones 'bg-yellow-500'}}'
                   data-test-phones
                 >
                   {{team.phonesString}}
                 </td>
                 <td
-                  class='align-top {{if teamAndChanges.changes.riskAversion "bg-yellow-500"}}'
+                  class='align-top {{if teamAndChanges.changes.riskAversion 'bg-yellow-500'}}'
                   data-test-risk-aversion
                 >
                   {{team.riskAversion}}
                 </td>
                 <td
-                  class='align-top {{if teamAndChanges.changes.notes "bg-yellow-500"}}'
+                  class='align-top {{if teamAndChanges.changes.notes 'bg-yellow-500'}}'
                   data-test-notes
                 >
                   {{team.notes}}
