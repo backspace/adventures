@@ -1,182 +1,179 @@
-<div class='grid-container'>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <label>
-        Region
-        <select {{on 'change' this.setRegion}} class='region'>
-          <option></option>
-          <RegionOptions
-            @regions={{this.sortedRegions}}
-            @selected={{this.model.region}}
-          />
-        </select>
-      </label>
+<div class='w-full px-2'>
+  <div class='mx-auto md:container'>
 
-      <label>
-        Description
-        <Textarea
-          @value={{this.model.description}}
-          class='description'
-          rows={{4}}
+    <LabeledInput @label='region' as |utilities|>
+      <select
+        id={{utilities.label}}
+        {{on 'change' this.setRegion}}
+        class='region {{utilities.inputClasses}}'
+      >
+        <option></option>
+        <RegionOptions
+          @regions={{this.sortedRegions}}
+          @selected={{this.model.region}}
         />
-      </label>
-    </div>
-  </div>
+      </select>
+    </LabeledInput>
 
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <label>
-        Answer
-        <Input @value={{this.model.answer}} class='answer' />
-      </label>
-    </div>
-
-    <div class='small-12 cell'>
-      <label>
-        Mask
-        <div class='input-group'>
-          <Input @value={{this.model.mask}} class='mask input-group-field' />
-          {{#if this.model.suggestedMask}}
-            <div class='input-group-button'>
-              <button
-                type='button'
-                class='suggested-mask button default'
-                {{on 'click' this.setMaskToSuggestion}}
-              >
-                {{this.model.suggestedMask}}
-              </button>
-            </div>
-          {{/if}}
-        </div>
-      </label>
-    </div>
-  </div>
-
-  <div class='grid-x grid-padding-x'>
-    <div class='small-10 cell'>
-      <label>
-        Accessibility
-        <Textarea @value={{this.model.accessibility}} class='accessibility' />
-      </label>
-    </div>
-    <fieldset class='small-2 cell'>
-      <legend>&nbsp;</legend>
-      <Input
-        @checked={{this.model.isOutside}}
-        id='outside'
-        class='outside'
-        @type='checkbox'
+    <LabeledInput @label='description' as |utilities|>
+      <Textarea
+        id={{utilities.label}}
+        @value={{this.model.description}}
+        class='description {{utilities.inputClasses}}'
+        rows={{4}}
       />
-      <label for='outside'>
-        Outside
-      </label>
-    </fieldset>
-  </div>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-6 cell'>
-      <label>
-        Credit
-        <Input @value={{this.model.credit}} data-test-credit />
-      </label>
-    </div>
-  </div>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-4 cell'>
-      <label>
-        Awesomeness
+    </LabeledInput>
+
+    <LabeledInput @label='answer' as |utilities|>
+      <Input
+        id={{utilities.label}}
+        @value={{this.model.answer}}
+        class='answer {{utilities.inputClasses}}'
+      />
+    </LabeledInput>
+
+    <LabeledInput @label='mask' as |utilities|>
+      <section class='flex gap-0'>
         <Input
+          id={{utilities.label}}
+          @value={{this.model.mask}}
+          class='mask {{utilities.inputClasses}}'
+        />
+        {{#if this.model.suggestedMask}}
+          <button
+            type='button'
+            class='suggested-mask w-auto whitespace-nowrap bg-green-500 px-3'
+            {{on 'click' this.setMaskToSuggestion}}
+          >
+            {{this.model.suggestedMask}}
+          </button>
+        {{/if}}
+      </section>
+    </LabeledInput>
+
+    <section class='flex gap-4'>
+
+      <LabeledInput class='flex-1 grow' @label='accessibility' as |utilities|>
+        <Textarea
+          id={{utilities.label}}
+          @value={{this.model.accessibility}}
+          class='accessibility {{utilities.inputClasses}}'
+        />
+      </LabeledInput>
+
+      <LabeledInput class='shrink' @label='outside' as |utilities|>
+        <Input
+          @checked={{this.model.isOutside}}
+          id={{utilities.label}}
+          class='outside {{utilities.inputClasses}}'
+          @type='checkbox'
+        />
+      </LabeledInput>
+
+    </section>
+
+    <section class='flex gap-4'>
+      <LabeledInput class='w-full' @label='credit' as |utilities|>
+        <Input
+          id={{utilities.label}}
+          class={{utilities.inputClasses}}
+          @value={{this.model.credit}}
+          data-test-credit
+        />
+      </LabeledInput>
+    </section>
+
+    <section class='flex gap-4'>
+
+      <LabeledInput class='w-full' @label='awesomeness' as |utilities|>
+        <Input
+          id={{utilities.label}}
           @value={{this.model.awesomeness}}
           @type='number'
-          class='awesomeness undraggable'
+          class='awesomeness {{utilities.inputClasses}}'
           min={{0}}
           max={{10}}
           step={{0.25}}
           {{draggable-number}}
         />
-      </label>
-    </div>
-    <div class='small-4 cell'>
-      <label>
-        Risk
+      </LabeledInput>
+
+      <LabeledInput class='w-full' @label='risk' as |utilities|>
         <Input
+          id={{utilities.label}}
           @value={{this.model.risk}}
           @type='number'
-          class='risk undraggable'
+          class='risk undraggable {{utilities.inputClasses}}'
           min={{0}}
           max={{10}}
           step={{0.25}}
           {{draggable-number}}
         />
-      </label>
-    </div>
-    {{#if (feature-flag 'destination-status')}}
-      <div class='small-4 cell'>
-        <fieldset class='status'>
-          <legend>
-            Status
-          </legend>
-          <RadioButton
-            @value='available'
-            @groupValue={{this.model.status}}
-            @class='available'
-            @changed={{fn (mut this.model.status) 'available'}}
-          >
-            ✓
-          </RadioButton>
-          <RadioButton
-            @value='unavailable'
-            @groupValue={{this.model.status}}
-            @class='unavailable'
-            @changed={{fn (mut this.model.status) 'unavailable'}}
-          >
-            ✘
-          </RadioButton>
-          <RadioButton
-            @value='unknown'
-            @groupValue={{this.model.status}}
-            @class='unknown'
-            @changed={{fn (mut this.model.status) 'unknown'}}
-          >
-            ?
-          </RadioButton>
-        </fieldset>
-      </div>
+      </LabeledInput>
+
+      {{#if (feature-flag 'destination-status')}}
+        <LabeledInput class='w-full' @label='status' as |utilities|>
+          <fieldset class='status flex gap-4 {{utilities.inputClasses}}'>
+            <RadioButton
+              @value='available'
+              @groupValue={{this.model.status}}
+              @class='available'
+              @changed={{fn (mut this.model.status) 'available'}}
+            >
+              ✓
+            </RadioButton>
+            <RadioButton
+              @value='unavailable'
+              @groupValue={{this.model.status}}
+              @class='unavailable'
+              @changed={{fn (mut this.model.status) 'unavailable'}}
+            >
+              ✘
+            </RadioButton>
+            <RadioButton
+              @value='unknown'
+              @groupValue={{this.model.status}}
+              @class='unknown'
+              @changed={{fn (mut this.model.status) 'unknown'}}
+            >
+              ?
+            </RadioButton>
+          </fieldset>
+        </LabeledInput>
+      {{/if}}
+
+    </section>
+
+    {{#if this.model.isIncomplete}}
+      <p
+        class='my-2 bg-red-500 p-2'
+        data-test-errors
+      >{{this.model.errorsString}}</p>
     {{/if}}
-  </div>
 
-  {{#if this.model.isIncomplete}}
-    <div class='grid-x grid-padding-x'>
-      <div class='small-12 cell'>
-        <p class='errors' data-test-errors>{{this.model.errorsString}}</p>
-      </div>
-    </div>
-  {{/if}}
+    <section class='my-2 flex justify-between gap-2'>
+      <button
+        class='save w-full bg-green-500 p-2'
+        type='button'
+        {{on 'click' (fn this.save this.model)}}
+      >
+        Save
+      </button>
+      <button
+        class='delete w-full bg-red-500 p-2'
+        type='button'
+        {{on 'click' (fn this.delete this.model)}}
+      >
+        Delete
+      </button>
+      <button
+        class='cancel w-full bg-yellow-500 p-2'
+        type='button'
+        {{on 'click' (fn this.cancel this.model)}}
+      >
+        Cancel
+      </button>
+    </section>
 
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <div class='expanded button-group'>
-        <button
-          class='save success button'
-          type='button'
-          {{on 'click' (fn this.save this.model)}}
-        >
-          Save
-        </button>
-        <button
-          class='delete alert button'
-          type='button'
-          {{on 'click' (fn this.delete this.model)}}
-        >
-          Delete
-        </button>
-        <button
-          class='cancel warning button'
-          type='button'
-          {{on 'click' (fn this.cancel this.model)}}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
   </div>
 </div>
