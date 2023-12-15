@@ -1,119 +1,127 @@
 <div class='w-full'>
   <div class='mx-auto md:container'>
-      <Textarea
-        class='border-black border-2 w-full'
-        aria-label='teams JSON'
-        @value={{this.teamsJSON}}
-        rows={{4}}
-      />
-      <section class='flex'>
-        <button
-          class='flex-1 bg-yellow-500'
-          type='button'
-          {{on 'click' this.update}}
-          data-test-update
-        >Update</button>
-        <button
-          class='flex-1 bg-green-500 {{if this.modelsToSave '' 'opacity-50'}}'
-          type='button'
-          disabled={{not this.modelsToSave}}
-          {{on 'click' this.save}}
-          data-test-save
-        >
-          Save
-        </button>
-      </section>
+    <Textarea
+      class='w-full border-2 border-black'
+      aria-label='teams JSON'
+      @value={{this.teamsJSON}}
+      rows={{4}}
+    />
+    <section class='flex'>
+      <button
+        class='flex-1 bg-yellow-500'
+        type='button'
+        {{on 'click' this.update}}
+        data-test-update
+      >Update</button>
+      <button
+        class='flex-1 bg-green-500 {{if this.modelsToSave "" "opacity-50"}}'
+        type='button'
+        disabled={{not this.modelsToSave}}
+        {{on 'click' this.save}}
+        data-test-save
+      >
+        Save
+      </button>
+    </section>
 
-      <table class='teams'>
-        <thead>
-          <tr>
-            <th class='text-left'>
-              Name
-            </th>
-            <th class='text-left'>
-              Users
-            </th>
-            <th class='text-left'>
-              Phones
-            </th>
-            <th class='text-left'>
-              Risk
-            </th>
-            <th class='text-left'>
-              Notes
-            </th>
-          </tr>
-        </thead>
-        {{#each this.sortedTeams as |teamAndChanges|}}
-          <tbody class='even:bg-gray-50' data-test-team>
-            {{#let teamAndChanges.current as |team|}}
-              <tr class='{{if team.isNew 'border-green-500 border-l-8'}}' data-test-team-id={{team.id}}>
-                <td
-                  class='align-top {{if teamAndChanges.changes.name 'bg-yellow-500'}}'
-                  data-test-name
-                >
-                  {{team.name}}
-                </td>
-                <td
-                  class='align-top {{if teamAndChanges.changes.users 'bg-yellow-500'}}'
-                  data-test-users
-                >
-                  {{team.users}}
-                </td>
-                <td
-                  class='align-top {{if teamAndChanges.changes.phones 'bg-yellow-500'}}'
-                  data-test-phones
-                >
-                  {{team.phonesString}}
-                </td>
-                <td
-                  class='align-top {{if teamAndChanges.changes.riskAversion 'bg-yellow-500'}}'
-                  data-test-risk-aversion
-                >
-                  {{team.riskAversion}}
-                </td>
-                <td
-                  class='align-top {{if teamAndChanges.changes.notes 'bg-yellow-500'}}'
-                  data-test-notes
-                >
-                  {{team.notes}}
+    <table class='teams'>
+      <thead>
+        <tr>
+          <th class='text-left'>
+            Name
+          </th>
+          <th class='text-left'>
+            Users
+          </th>
+          <th class='text-left'>
+            Phones
+          </th>
+          <th class='text-left'>
+            Risk
+          </th>
+          <th class='text-left'>
+            Notes
+          </th>
+        </tr>
+      </thead>
+      {{#each this.sortedTeams as |teamAndChanges|}}
+        <tbody class='even:bg-gray-50' data-test-team>
+          {{#let teamAndChanges.current as |team|}}
+            <tr
+              class='{{if team.isNew "border-l-8 border-green-500"}}'
+              data-test-team-id={{team.id}}
+            >
+              <td
+                class='align-top
+                  {{if teamAndChanges.changes.name "bg-yellow-500"}}'
+                data-test-name
+              >
+                {{team.name}}
+              </td>
+              <td
+                class='align-top
+                  {{if teamAndChanges.changes.users "bg-yellow-500"}}'
+                data-test-users
+              >
+                {{team.users}}
+              </td>
+              <td
+                class='align-top
+                  {{if teamAndChanges.changes.phones "bg-yellow-500"}}'
+                data-test-phones
+              >
+                {{team.phonesString}}
+              </td>
+              <td
+                class='align-top
+                  {{if teamAndChanges.changes.riskAversion "bg-yellow-500"}}'
+                data-test-risk-aversion
+              >
+                {{team.riskAversion}}
+              </td>
+              <td
+                class='align-top
+                  {{if teamAndChanges.changes.notes "bg-yellow-500"}}'
+                data-test-notes
+              >
+                {{team.notes}}
+              </td>
+            </tr>
+            {{#if (and teamAndChanges.changes (not team.isNew))}}
+              <tr data-test-changes data-test-original-team-id={{team.id}}>
+                <td data-test-original-name>{{get
+                    teamAndChanges.changes.name
+                    '0'
+                  }}</td>
+                <td data-test-original-users>{{get
+                    teamAndChanges.changes.users
+                    '0'
+                  }}</td>
+                <td data-test-original-phones>{{get
+                    teamAndChanges.changes.phones
+                    '0'
+                  }}</td>
+                <td data-test-original-risk-aversion>{{get
+                    teamAndChanges.changes.riskAversion
+                    '0'
+                  }}</td>
+                <td data-test-original-notes>{{get
+                    teamAndChanges.changes.notes
+                    '0'
+                  }}</td>
+              </tr>
+            {{/if}}
+            {{#if this.puzzles.implementation.hasTeamIdentifiers}}
+              <tr data-test-identifier>
+                <td></td>
+                <td colspan='4'>
+                  {{team.identifier}}
                 </td>
               </tr>
-              {{#if (and teamAndChanges.changes (not team.isNew))}}
-                <tr data-test-changes data-test-original-team-id={{team.id}}>
-                  <td data-test-original-name>{{get
-                      teamAndChanges.changes.name
-                      '0'
-                    }}</td>
-                  <td data-test-original-users>{{get
-                      teamAndChanges.changes.users
-                      '0'
-                    }}</td>
-                  <td data-test-original-phones>{{get
-                      teamAndChanges.changes.phones
-                      '0'
-                    }}</td>
-                  <td data-test-original-risk-aversion>{{get
-                      teamAndChanges.changes.riskAversion
-                      '0'
-                    }}</td>
-                  <td data-test-original-notes>{{get
-                      teamAndChanges.changes.notes
-                      '0'
-                    }}</td>
-                </tr>
-              {{/if}}
-              {{#if this.puzzles.implementation.hasTeamIdentifiers}}
-                <tr data-test-identifier>
-                  <td></td>
-                  <td colspan='4'>
-                    {{team.identifier}}
-                  </td>
-                </tr>
-              {{/if}}
-            {{/let}}
-          </tbody>
-        {{/each}}
-      </table>
+            {{/if}}
+          {{/let}}
+        </tbody>
+      {{/each}}
+    </table>
   </div>
 </div>
