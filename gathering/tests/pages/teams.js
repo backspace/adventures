@@ -14,20 +14,23 @@ export default PageObject.create({
 
   teams: collection('[data-test-team]', {
     id: attribute('data-test-team-id', 'tr[data-test-team-id]'),
-    name: { scope: '[data-test-name]', isChanged: hasClass('changed') },
-    users: { scope: '[data-test-users]', isChanged: hasClass('changed') },
-    notes: { scope: '[data-test-notes]', isChanged: hasClass('changed') },
+    name: { scope: '[data-test-name]', isChanged: hasClass('bg-yellow-500') },
+    users: { scope: '[data-test-users]', isChanged: hasClass('bg-yellow-500') },
+    notes: { scope: '[data-test-notes]', isChanged: hasClass('bg-yellow-500') },
     riskAversion: {
       scope: '[data-test-risk-aversion]',
-      isChanged: hasClass('changed'),
+      isChanged: hasClass('bg-yellow-500'),
     },
-    phones: { scope: '[data-test-phones]', isChanged: hasClass('changed') },
+    phones: {
+      scope: '[data-test-phones]',
+      isChanged: hasClass('bg-yellow-500'),
+    },
 
     identifier: {
       scope: '[data-test-identifier]',
     },
 
-    isNew: hasClass('new', '[data-test-team-id]'),
+    isNew: hasClass('border-green-500', '[data-test-team-id]'),
     hasChanges: isPresent('[data-test-changes]'),
 
     originalName: text('[data-test-original-name]'),

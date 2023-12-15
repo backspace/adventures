@@ -53,13 +53,13 @@ export default PageObject.create({
   headerRegion: {
     scope: '[data-test-header-region]',
     click: clickable(),
-    isActive: hasClass('success'),
+    isActive: hasClass('bg-black'),
   },
 
   headerAwesomeness: {
     scope: '[data-test-header-awesomeness]',
     click: clickable(),
-    isActive: hasClass('success'),
+    isActive: hasClass('bg-black'),
   },
 
   destinations: collection('.destination', {
@@ -69,7 +69,7 @@ export default PageObject.create({
     risk: text('.risk'),
     mask: text('.mask'),
 
-    isIncomplete: hasClass('incomplete'),
+    isIncomplete: hasClass('border-x-red-500'),
     hasMeetings: hasClass('meetings'),
 
     region: { scope: '[data-test-destination-region]' },

@@ -34,6 +34,7 @@
               class='border-2 border-black p-2'
               type='button'
               {{on 'click' (fn this.setDestination database)}}
+              data-test-database-name
             >
               {{database}}
             </button>

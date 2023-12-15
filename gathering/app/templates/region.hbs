@@ -32,11 +32,12 @@
       </select>
     </LabeledInput>
 
-    <LabeledInput @label='notes' as |utilities|>
+    <LabeledInput @label='hours' as |utilities|>
       <Input
         id={{utilities.label}}
-        @value={{this.model.notes}}
-        class='notes {{utilities.inputClasses}}'
+        @value={{this.model.hours}}
+        class='{{utilities.inputClasses}}'
+        data-test-hours-field
       />
     </LabeledInput>
 

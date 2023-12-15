@@ -70,9 +70,9 @@
       <LabeledInput class='flex-1' @label='page number' as |utilities|>
         <Input
           id={{utilities.label}}
-          @value={{this.model.number}}
+          @value={{this.model.page}}
           class='{{utilities.inputClasses}}'
-          data-test-number-field
+          data-test-page-field
         />
       </LabeledInput>
 
@@ -94,7 +94,7 @@
           id={{utilities.label}}
           class={{utilities.inputClasses}}
           @value={{this.model.credit}}
-          data-test-credit
+          data-test-credit-field
         />
       </LabeledInput>
 
@@ -140,23 +140,26 @@
 
     <section class='my-2 flex justify-between gap-2'>
       <button
-        class='save w-full bg-green-500 p-2'
+        class='w-full bg-green-500 p-2'
         type='button'
         {{on 'click' (fn this.save this.model)}}
+        data-test-save-button
       >
         Save
       </button>
       <button
-        class='delete w-full bg-red-500 p-2'
+        class='w-full bg-red-500 p-2'
         type='button'
         {{on 'click' (fn this.delete this.model)}}
+        data-test-delete-button
       >
         Delete
       </button>
       <button
-        class='cancel w-full bg-yellow-500 p-2'
+        class='w-full bg-yellow-500 p-2'
         type='button'
         {{on 'click' (fn this.cancel this.model)}}
+        data-test-cancel-button
       >
         Cancel
       </button>

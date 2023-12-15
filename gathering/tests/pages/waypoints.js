@@ -50,7 +50,7 @@ export default PageObject.create({
   headerRegion: {
     scope: '[data-test-header-region]',
     click: clickable(),
-    isActive: hasClass('success'),
+    isActive: hasClass('bg-black'),
   },
 
   waypoints: collection('[data-test-waypoint]', {
@@ -58,7 +58,7 @@ export default PageObject.create({
     author: text('[data-test-author]'),
     region: { scope: '[data-test-region]' },
 
-    isIncomplete: hasClass('incomplete'),
+    isIncomplete: hasClass('border-x-red-500'),
 
     status: {
       scope: '[data-test-status]',
