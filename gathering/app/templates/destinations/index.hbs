@@ -1,73 +1,71 @@
-<div class='grid-x'>
-  <div class='small-12 cell'>
-    {{#if this.region}}
-      <section data-test-destination-region-scope>
-        <strong data-test-title>
-          {{this.region.name}}
-        </strong>
-        <LinkTo @route='destinations' @query={{(hash regionId=null)}} data-test-leave>leave</LinkTo>
-      </section>
-    {{/if}}
-    <table>
-      <thead>
-        <tr>
-          {{#if (feature-flag 'destination-status')}}
-            <th></th>
-          {{/if}}
-          <th>
-            <button
-              {{on 'click' this.toggleRegionSort}}
-              class='label {{if (eq this.sorting 'region') 'success' 'secondary'}}'
-              type='button'
-              data-test-header-region
-            >
-              Region
-            </button>
-          </th>
-          <th>
-            Description
-          </th>
-          <th>
-            Answer
-          </th>
-          <th class='show-for-medium'>
-            Mask
-          </th>
-          <th>
-            <button
-              class='label {{if (eq this.sorting 'awesomeness') 'success' 'secondary'}}'
-              type='button'
-              {{on 'click' this.toggleAwesomenessSort}}
-              data-test-header-awesomeness
-            >
-              A
-            </button>
-          </th>
-          <th>
-            R
-          </th>
-          <th>
-            <button
-              class='label {{if (eq this.sorting 'scheduled') 'success' 'secondary'}}'
-              type='button'
-              {{on 'click' this.toggleScheduledSort}}
-              data-test-header-scheduler
-            >
-              S?
-            </button>
-          </th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each this.destinations as |destination|}}
-          <DestinationRow @destination={{destination}} />
-        {{/each}}
-      </tbody>
-    </table>
+{{#if this.region}}
+  <section data-test-destination-region-scope>
+    <strong data-test-title>
+      {{this.region.name}}
+    </strong>
+    <LinkTo
+      class='underline'
+      @route='destinations'
+      @query={{(hash regionId=null)}}
+      data-test-leave
+    >leave</LinkTo>
+  </section>
+{{/if}}
+<table>
+  <thead>
+    <tr>
+      {{#if (feature-flag 'destination-status')}}
+        <th></th>
+      {{/if}}
+      <th class='p-2 text-sm text-left'>
+        <SortButton
+          @active={{eq this.sorting 'region'}}
+          {{on 'click' this.toggleRegionSort}}
+          data-test-header-region
+        >
+          Region
+        </SortButton>
+      </th>
+      <th class='p-2 text-sm text-left'>
+        Description
+      </th>
+      <th class='p-2 text-sm text-left'>
+        Answer
+      </th>
+      <th class='hidden p-2 text-sm text-left md:table-cell'>
+        Mask
+      </th>
+      <th class='p-2 text-sm text-left'>
+        <SortButton
+          @active={{eq this.sorting 'awesomeness'}}
+          {{on 'click' this.toggleAwesomenessSort}}
+          data-test-header-awesomeness
+        >
+          A
+        </SortButton>
+      </th>
+      <th class='p-2 text-sm text-left'>
+        R
+      </th>
+      <th class='p-2 text-sm text-left'>
+        <SortButton
+          @active={{eq this.sorting 'scheduled'}}
+          {{on 'click' this.toggleScheduledSort}}
+          data-test-header-scheduler
+        >
+          S?
+        </SortButton>
+      </th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each this.destinations as |destination|}}
+      <DestinationRow @destination={{destination}} />
+    {{/each}}
+  </tbody>
+</table>
 
-    <LinkTo @route='destinations.new' class='new'>
-      New
-    </LinkTo>
-  </div>
-</div>
+<LinkTo @route='destinations.new' class='new'>
+  New
+</LinkTo>

@@ -52,7 +52,6 @@ export default class SyncController extends Controller {
       })
       .catch((error) => {
         run(() => {
-          // eslint-disable-next-line
           console.log('error with sync:', stringify(error));
           this.error = error;
         });

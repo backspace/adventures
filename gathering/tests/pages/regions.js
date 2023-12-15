@@ -9,18 +9,18 @@ import PageObject, {
 } from 'ember-cli-page-object';
 import { findOne } from 'ember-cli-page-object/extend';
 
-const nesting = function () {
+const nesting = function (selector) {
   return {
     isDescriptor: true,
 
     get() {
-      let nestingClass = Array.from(findOne(this).classList).find((klass) =>
-        klass.startsWith('nesting-')
+      let nestingClass = Array.from(findOne(this, selector).classList).find(
+        (klass) => klass.startsWith('pl-')
       );
 
       if (nestingClass) {
-        let number = nestingClass.replace('nesting-', '');
-        return parseInt(number);
+        let number = parseInt(nestingClass.replace('pl-', ''));
+        return (number - 2) / 3;
       }
     },
   };
@@ -34,7 +34,7 @@ export default PageObject.create({
     name: text('.name'),
     hours: text('[data-test-hours]'),
     isIncomplete: hasClass('incomplete'),
-    nesting: nesting(),
+    nesting: nesting('.name'),
 
     edit: clickable('.edit'),
   }),

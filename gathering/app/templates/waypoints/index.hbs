@@ -5,7 +5,12 @@
         <strong data-test-title>
           {{this.region.name}}
         </strong>
-        <LinkTo @route='waypoints' @query={{(hash regionId=null)}} data-test-leave>leave</LinkTo>
+        <LinkTo
+          class='underline'
+          @route='waypoints'
+          @query={{(hash regionId=null)}}
+          data-test-leave
+        >leave</LinkTo>
       </section>
     {{/if}}
     <table>
@@ -14,20 +19,19 @@
           {{#if (feature-flag 'destination-status')}}
             <th></th>
           {{/if}}
-          <th>
-            <button
+          <th class='p-2 text-sm text-left'>
+            <SortButton
+              @active={{eq this.sorting 'region'}}
               {{on 'click' this.toggleRegionSort}}
-              class='label {{if (eq this.sorting 'region') 'success' 'secondary'}}'
-              type='button'
               data-test-header-region
             >
               Region
-            </button>
+            </SortButton>
           </th>
-          <th>
+          <th class='p-2 text-sm text-left'>
             Name
           </th>
-          <th>
+          <th class='p-2 text-sm text-left'>
             Author
           </th>
           <th></th>

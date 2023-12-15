@@ -41,12 +41,13 @@ export default class DestinationRow extends Component {
 
   <template>
     <tr
-      class='destination
-        {{if @destination.isIncomplete 'incomplete'}}
+      class='destination even:bg-gray-50
+        {{if @destination.isIncomplete 'border-l-4 border-x-red-500'}}
+        {{if @destination.isComplete 'border-r-4 border-x-green-500'}}
         {{if this.hasMeetings 'meetings'}}'
     >
       {{#if (featureFlag 'destination-status')}}
-        <td>
+        <td class='p-2 align-top'>
           <button
             class='status'
             type='button'
@@ -54,21 +55,21 @@ export default class DestinationRow extends Component {
           >{{this.status}}</button>
         </td>
       {{/if}}
-      <td class='region'>
-        <LinkTo @route='destinations.index' @query={{hash region-id=@destination.region.id}} data-test-destination-region>
+      <td class='region p-2 align-top'>
+        <LinkTo class='underline' @route='destinations.index' @query={{hash region-id=@destination.region.id}} data-test-destination-region>
           {{@destination.region.name}}
         </LinkTo>
       </td>
-      <td class='description'>{{@destination.description}}</td>
-      <td class='answer'>{{@destination.answer}}</td>
-      <td class='mask show-for-medium'>{{@destination.mask}}</td>
-      <td class='awesomeness'>{{@destination.awesomeness}}</td>
-      <td class='risk'>{{@destination.risk}}</td>
-      <td class='scheduled'>{{if @destination.meetings '✓'}}</td>
-      <td><LinkTo
+      <td class='description p-2 align-top'>{{@destination.description}}</td>
+      <td class='answer p-2 align-top'>{{@destination.answer}}</td>
+      <td class='mask hidden md:table-cell p-2 align-top'>{{@destination.mask}}</td>
+      <td class='awesomeness p-2 align-top'>{{@destination.awesomeness}}</td>
+      <td class='risk p-2 align-top'>{{@destination.risk}}</td>
+      <td class='scheduled p-2 align-top'>{{if @destination.meetings '✓'}}</td>
+      <td class='p-2 align-top'><LinkTo
           @route='destination'
           @model={{@destination}}
-          class='edit'
+          class='edit underline'
         >Edit</LinkTo></td>
     </tr>
   </template>

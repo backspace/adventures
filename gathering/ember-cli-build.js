@@ -1,11 +1,19 @@
 'use strict';
 
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
-const nodeSass = require('node-sass');
 const webpack = require('webpack');
 
 module.exports = function (defaults) {
   const app = new EmberApp(defaults, {
+    postcssOptions: {
+      compile: {
+        cacheInclude: [/.*\.(css|hbs|gjs)$/],
+        plugins: [
+          require('tailwindcss')('./tailwind.config.js'),
+          { module: require('autoprefixer') },
+        ],
+      },
+    },
     '@embroider/macros': {
       setConfig: {
         '@ember-data/store': {
@@ -85,10 +93,6 @@ module.exports = function (defaults) {
     fingerprint: {
       exclude: ['apple-touch-icon', 'favicon', 'mstile'],
       replaceExtensions: ['html', 'css', 'js', 'json'],
-    },
-    sassOptions: {
-      implementation: nodeSass,
-      includePaths: ['node_modules/foundation-sites/scss'],
     },
   });
 

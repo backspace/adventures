@@ -1,145 +1,169 @@
-<div class='grid-container'>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <label>
-        Region
-        <select {{on 'change' this.setRegion}} data-test-region>
-          <option></option>
-          <RegionOptions
-            @regions={{this.sortedRegions}}
-            @selected={{this.model.region}}
-          />
-        </select>
-      </label>
+<div class='w-full px-2'>
+  <div class='mx-auto md:container'>
 
-      <label>
-        Name
-        <Input @value={{this.model.name}} data-test-name-field />
-      </label>
-    </div>
-  </div>
+    <LabeledInput @label='region' as |utilities|>
+      <select
+        id={{utilities.label}}
+        {{on 'change' this.setRegion}}
+        class='{{utilities.inputClasses}}'
+        data-test-region
+      >
+        <option></option>
+        <RegionOptions
+          @regions={{this.sortedRegions}}
+          @selected={{this.model.region}}
+        />
+      </select>
+    </LabeledInput>
 
-  <div class='grid-x grid-padding-x'>
-    <div class='small-6 cell'>
-      <label>
-        Author
-        <Input @value={{this.model.author}} data-test-author-field />
-      </label>
-    </div>
-    <div class='small-6 cell'>
-      <label>
-        Call
-        <Input @value={{this.model.call}} data-test-call-field />
-      </label>
-    </div>
-  </div>
+    <LabeledInput @label='name' as |utilities|>
+      <Input
+        id={{utilities.label}}
+        @value={{this.model.name}}
+        class='{{utilities.inputClasses}}'
+        data-test-name-field
+      />
+    </LabeledInput>
 
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <label>
-        Excerpt
-        <Textarea @value={{this.model.excerpt}} data-test-excerpt-field />
-      </label>
-    </div>
-  </div>
+    <section class='flex gap-4'>
 
-  <div class='grid-x grid-padding-x'>
-    <div class='small-9 cell'>
-      <label>
-        Page dimensions
-        <Input @value={{this.model.dimensions}} data-test-dimensions-field />
-      </label>
-    </div>
-    <div class='small-3 cell'>
-      <label>
-        Page number
-        <Input @value={{this.model.page}} data-test-page-field />
-      </label>
-    </div>
-  </div>
+      <LabeledInput class='flex-1' @label='author' as |utilities|>
+        <Input
+          id={{utilities.label}}
+          @value={{this.model.author}}
+          class='{{utilities.inputClasses}}'
+          data-test-author-field
+        />
+      </LabeledInput>
 
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <label>
-        Outline
-        <Input @value={{this.model.outline}} data-test-outline-field />
-      </label>
-    </div>
-  </div>
+      <LabeledInput class='flex-1' @label='call' as |utilities|>
+        <Input
+          id={{utilities.label}}
+          @value={{this.model.call}}
+          class='{{utilities.inputClasses}}'
+          data-test-call-field
+        />
+      </LabeledInput>
 
-  <div class='grid-x grid-padding-x'>
-    <div class='small-6 cell'>
-      <label>
-        Credit
-        <Input @value={{this.model.credit}} data-test-credit-field />
-      </label>
-    </div>
-  </div>
+    </section>
 
-  <div class='grid-x grid-padding-x'>
-    {{#if (feature-flag 'destination-status')}}
-      <div class='small-4 cell'>
-        <fieldset class='status'>
-          <legend>Status</legend>
-          <RadioButton
-            @value='available'
-            @groupValue={{this.model.status}}
-            @class='available'
-            @changed={{fn (mut this.model.status) 'available'}}
-          > ✓</RadioButton>
-          <RadioButton
-            @value='unavailable'
-            @groupValue={{this.model.status}}
-            @class='unavailable'
-            @changed={{fn (mut this.model.status) 'unavailable'}}
-          > ✘</RadioButton>
-          <RadioButton
-            @value='unknown'
-            @groupValue={{this.model.status}}
-            @class='unknown'
-            @changed={{fn (mut this.model.status) 'unknown'}}
-          > ?</RadioButton>
-        </fieldset>
-      </div>
+    <LabeledInput @label='excerpt' as |utilities|>
+      <Textarea
+        id={{utilities.label}}
+        @value={{this.model.excerpt}}
+        class='{{utilities.inputClasses}}'
+        data-test-excerpt-field
+      />
+    </LabeledInput>
+
+    <section class='flex gap-4'>
+
+      <LabeledInput class='flex-auto' @label='page dimensions' as |utilities|>
+        <Input
+          id={{utilities.label}}
+          @value={{this.model.dimensions}}
+          class='{{utilities.inputClasses}}'
+          data-test-dimensions-field
+        />
+      </LabeledInput>
+
+      <LabeledInput class='flex-1' @label='page number' as |utilities|>
+        <Input
+          id={{utilities.label}}
+          @value={{this.model.page}}
+          class='{{utilities.inputClasses}}'
+          data-test-page-field
+        />
+      </LabeledInput>
+
+    </section>
+
+    <LabeledInput @label='outlines' as |utilities|>
+      <Input
+        id={{utilities.label}}
+        @value={{this.model.outline}}
+        class='{{utilities.inputClasses}}'
+        data-test-outline-field
+      />
+    </LabeledInput>
+
+    <section class='flex gap-4'>
+
+      <LabeledInput class='flex-auto' @label='credit' as |utilities|>
+        <Input
+          id={{utilities.label}}
+          class={{utilities.inputClasses}}
+          @value={{this.model.credit}}
+          data-test-credit-field
+        />
+      </LabeledInput>
+
+      {{#if (feature-flag 'destination-status')}}
+        <LabeledInput class='flex-1' @label='status' as |utilities|>
+          <fieldset class='status flex gap-4 {{utilities.inputClasses}}'>
+            <RadioButton
+              @value='available'
+              @groupValue={{this.model.status}}
+              @class='available'
+              @changed={{fn (mut this.model.status) 'available'}}
+            >
+              ✓
+            </RadioButton>
+            <RadioButton
+              @value='unavailable'
+              @groupValue={{this.model.status}}
+              @class='unavailable'
+              @changed={{fn (mut this.model.status) 'unavailable'}}
+            >
+              ✘
+            </RadioButton>
+            <RadioButton
+              @value='unknown'
+              @groupValue={{this.model.status}}
+              @class='unknown'
+              @changed={{fn (mut this.model.status) 'unknown'}}
+            >
+              ?
+            </RadioButton>
+          </fieldset>
+        </LabeledInput>
+      {{/if}}
+
+    </section>
+
+    {{#if this.model.isIncomplete}}
+      <p
+        class='my-2 bg-red-500 p-2'
+        data-test-errors
+      >{{this.model.errorsString}}</p>
     {{/if}}
-  </div>
 
-  {{#if this.model.isIncomplete}}
-    <div class='grid-x grid-padding-x'>
-      <div class='small-12 cell'>
-        <p class='errors' data-test-errors>{{this.model.errorsString}}</p>
-      </div>
-    </div>
-  {{/if}}
+    <section class='my-2 flex justify-between gap-2'>
+      <button
+        class='w-full bg-green-500 p-2'
+        type='button'
+        {{on 'click' (fn this.save this.model)}}
+        data-test-save-button
+      >
+        Save
+      </button>
+      <button
+        class='w-full bg-red-500 p-2'
+        type='button'
+        {{on 'click' (fn this.delete this.model)}}
+        data-test-delete-button
+      >
+        Delete
+      </button>
+      <button
+        class='w-full bg-yellow-500 p-2'
+        type='button'
+        {{on 'click' (fn this.cancel this.model)}}
+        data-test-cancel-button
+      >
+        Cancel
+      </button>
+    </section>
 
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <div class='expanded button-group'>
-        <button
-          class='save success button'
-          type='button'
-          data-test-save-button
-          {{on 'click' (fn this.save this.model)}}
-        >
-          Save
-        </button>
-        <button
-          class='delete alert button'
-          type='button'
-          data-test-delete-button
-          {{on 'click' (fn this.delete this.model)}}
-        >
-          Delete
-        </button>
-        <button
-          class='cancel warning button'
-          type='button'
-          data-test-cancel-button
-          {{on 'click' (fn this.cancel this.model)}}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
   </div>
 </div>

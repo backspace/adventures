@@ -1,89 +1,78 @@
-<div class='grid-container'>
-  <div class='grid-x grid-padding-x'>
-    <div class='cell small-6'>
-      <div class='input-group'>
-        <label for='destination-status' class='input-group-label'>
-          Destination status
-        </label>
-        <Input
-          id='destination-status'
-          @checked={{this.model.destinationStatus}}
-          class='destination-status'
-          @type='checkbox'
-        />
-      </div>
-    </div>
-  </div>
-  <div class='grid-x grid-padding-x'>
-    <div class='cell small-4'>
-      <div class='input-group'>
-        <label for='clandestine-rendezvous' class='input-group-label'>
-          Clandestine Rendezvous
-        </label>
-        <Input
-          id='clandestine-rendezvous'
-          @checked={{this.model.clandestineRendezvous}}
-          class='clandestine-rendezvous'
-          @type='checkbox'
-        />
-      </div>
-    </div>
-    <div class='cell small-4'>
-      <div class='input-group'>
-        <label for='txtbeyond' class='input-group-label'>
-          txtbeyond
-        </label>
-        <Input
-          id='txtbeyond'
-          @checked={{this.model.txtbeyond}}
-          class='txtbeyond'
-          @type='checkbox'
-        />
-      </div>
-    </div>
-    <div class='cell small-4'>
-      <div class='input-group'>
-        <label for='unmnemonic-devices' class='input-group-label'>
-          unmnemonic devices
-        </label>
-        <Input
-          id='unmnemonic-devices'
-          @checked={{this.model.unmnemonicDevices}}
-          @type='checkbox'
-          data-test-unmnemonic-devices
-        />
-      </div>
-    </div>
-  </div>
-  <div class='grid-x grid-padding-x'>
-    <div class='cell small-6'>
-      <div class='input-group'>
-        <label for='goal' class='input-group-label'>
-          Goal
-        </label>
-        <Input
-          id='goal'
-          @value={{this.model.goal}}
-          class='goal input-group-field'
-        />
-      </div>
-    </div>
-  </div>
+<div class='w-full px-2'>
+  <div class='mx-auto md:container'>
 
-  <div class='grid-x grid-padding-x'>
-    <div class='button-group expanded'>
-      <button
-        type='button'
-        class='save button primary'
-        disabled={{not this.model.hasDirtyAttributes}}
-        {{on 'click' this.save}}
-        data-test-save-button
-      >
-        Save
-      </button>
-      <button type='button' class='button warning' {{on 'click' this.refresh}}>
-        Refresh
-      </button>
-    </div>
+    <section class='py-2'>
+      <label for='destination-status'>
+        Destination status
+      </label>
+      <Input
+        id='destination-status'
+        @checked={{this.model.destinationStatus}}
+        class='destination-status'
+        @type='checkbox'
+      />
+    </section>
+
+    <section class='py-2'>
+      <label for='clandestine-rendezvous'>
+        Clandestine Rendezvous
+      </label>
+      <Input
+        id='clandestine-rendezvous'
+        @checked={{this.model.clandestineRendezvous}}
+        class='clandestine-rendezvous'
+        @type='checkbox'
+      />
+    </section>
+
+    <section class='py-2'>
+      <label for='txtbeyond'>
+        txtbeyond
+      </label>
+      <Input
+        id='txtbeyond'
+        @checked={{this.model.txtbeyond}}
+        class='txtbeyond'
+        @type='checkbox'
+      />
+    </section>
+
+    <section class='py-2'>
+      <label for='unmnemonic-devices'>
+        unmnemonic devices
+      </label>
+      <Input
+        id='unmnemonic-devices'
+        @checked={{this.model.unmnemonicDevices}}
+        @type='checkbox'
+        data-test-unmnemonic-devices
+      />
+    </section>
+
+    <LabeledInput @label='goal' as |utilities|>
+      <Input
+        id={{utilities.label}}
+        @value={{this.model.goal}}
+        class='goal {{utilities.inputClasses}}'
+      />
+    </LabeledInput>
+
+    <button
+      class='save block my-2 bg-green-500 p-2 {{if this.model.hasDirtyAttributes '' 'opacity-50'}}'
+      type='button'
+      disabled={{not this.model.hasDirtyAttributes}}
+      {{on 'click' this.save}}
+      data-test-save-button
+    >
+      Save
+    </button>
+    <button
+      class='delete block my-2 bg-red-500 p-2'
+      type='button'
+      {{on 'click' this.refresh}}
+    >
+      Refresh
+    </button>
+
   </div>
 </div>

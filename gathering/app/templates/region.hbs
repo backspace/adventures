@@ -1,75 +1,78 @@
-<div class='grid-container'>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <label>
-        Name
-        <Input @value={{this.model.name}} class='name' />
-      </label>
+<div class='w-full px-2'>
+  <div class='mx-auto md:container'>
 
-      <label>
-        Notes
-        <Textarea @value={{this.model.notes}} class='notes' rows={{4}} />
-      </label>
-    </div>
-  </div>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <label>
-        Region
-        <select {{on 'change' this.setParent}} class='region'>
-          <option></option>
-          <RegionOptions
-            @regions={{this.sortedRegions}}
-            @selected={{this.model.parent}}
-          />
-        </select>
-      </label>
-    </div>
-  </div>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <label>
-        Hours
-        <Input @value={{this.model.hours}} data-test-hours-field />
-      </label>
-    </div>
-  </div>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <label>
-        Accessibility
-        <Textarea
-          @value={{this.model.accessibility}}
-          data-test-accessibility-field
+    <LabeledInput @label='name' as |utilities|>
+      <Input
+        id={{utilities.label}}
+        @value={{this.model.name}}
+        class='name {{utilities.inputClasses}}'
+      />
+    </LabeledInput>
+
+    <LabeledInput @label='notes' as |utilities|>
+      <Textarea
+        id={{utilities.label}}
+        @value={{this.model.notes}}
+        class='notes {{utilities.inputClasses}}'
+        rows={{4}}
+      />
+    </LabeledInput>
+
+    <LabeledInput @label='region' as |utilities|>
+      <select
+        id={{utilities.label}}
+        {{on 'change' this.setParent}}
+        class='region {{utilities.inputClasses}}'
+      >
+        <option></option>
+        <RegionOptions
+          @regions={{this.sortedRegions}}
+          @selected={{this.model.parent}}
         />
-      </label>
-    </div>
-  </div>
-  <div class='grid-x grid-padding-x'>
-    <div class='small-12 cell'>
-      <div class='expanded button-group'>
-        <button
-          class='save success button'
-          type='button'
-          {{on 'click' (fn this.save this.model)}}
-        >
-          Save
-        </button>
-        <button
-          class='delete alert button'
-          type='button'
-          {{on 'click' (fn this.delete this.model)}}
-        >
-          Delete
-        </button>
-        <button
-          class='cancel warning button'
-          type='button'
-          {{on 'click' (fn this.cancel this.model)}}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
+      </select>
+    </LabeledInput>
+
+    <LabeledInput @label='hours' as |utilities|>
+      <Input
+        id={{utilities.label}}
+        @value={{this.model.hours}}
+        class='{{utilities.inputClasses}}'
+        data-test-hours-field
+      />
+    </LabeledInput>
+
+    <LabeledInput @label='accessibility' as |utilities|>
+      <Textarea
+        id={{utilities.label}}
+        @value={{this.model.accessibility}}
+        class='{{utilities.inputClasses}}'
+        data-test-accessibility-field
+      />
+    </LabeledInput>
+
+    <section class='my-2 flex justify-between gap-2'>
+      <button
+        class='save w-full bg-green-500 p-2'
+        type='button'
+        {{on 'click' (fn this.save this.model)}}
+      >
+        Save
+      </button>
+      <button
+        class='delete w-full bg-red-500 p-2'
+        type='button'
+        {{on 'click' (fn this.delete this.model)}}
+      >
+        Delete
+      </button>
+      <button
+        class='cancel w-full bg-yellow-500 p-2'
+        type='button'
+        {{on 'click' (fn this.cancel this.model)}}
+      >
+        Cancel
+      </button>
+    </section>
+
   </div>
 </div>

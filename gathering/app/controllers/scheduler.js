@@ -1,12 +1,14 @@
-/* eslint-disable ember/no-get */
 import Controller from '@ember/controller';
-import { action, get, set } from '@ember/object';
+import { action } from '@ember/object';
 import { inject as service } from '@ember/service';
 import { tracked } from '@glimmer/tracking';
 
 export default class SchedulerController extends Controller {
   @tracked meeting;
   @tracked meetingOffsetOverride;
+
+  @tracked highlightedRegion;
+  @tracked highlightedTeam;
 
   get teamMeetings() {
     return this.model.teams.map((t) => t.meetings);
@@ -31,8 +33,12 @@ export default class SchedulerController extends Controller {
     ].uniqBy('id');
   }
 
+  get meetingTeams() {
+    return this.meeting?.teams || [];
+  }
+
   get lastMeetingOffsets() {
-    return (get(this, 'meeting.teams') || []).map(
+    return this.meetingTeams.map(
       (team) => team.savedMeetings[team.savedMeetings.length - 1]?.offset || 0
     );
   }
@@ -47,7 +53,7 @@ export default class SchedulerController extends Controller {
 
       let timeFromLastRegion = 0;
 
-      const newRegion = get(this, 'meeting.destination.region');
+      const newRegion = this.meeting?.destination?.region;
 
       if (!newRegion) {
         return 0;
@@ -55,7 +61,7 @@ export default class SchedulerController extends Controller {
 
       const newRegionAncestorName = newRegion.ancestor.name;
 
-      const lastMeetingRegionNames = (get(this, 'meeting.teams') || [])
+      const lastMeetingRegionNames = this.meetingTeams
         .map(
           (team) =>
             team.savedMeetings[team.savedMeetings.length - 1]?.destination
@@ -89,10 +95,10 @@ export default class SchedulerController extends Controller {
       this.meeting = this.store.createRecord('meeting');
     }
 
-    if (get(this, 'meeting.destination.id') === destination.id) {
-      set(this, 'meeting.destination', undefined);
+    if (this.meeting?.destination?.id === destination.id) {
+      this.meeting.destination = undefined;
     } else {
-      set(this, 'meeting.destination', destination);
+      this.meeting.destination = destination;
     }
   }
 
@@ -101,21 +107,21 @@ export default class SchedulerController extends Controller {
       this.meeting = this.store.createRecord('meeting');
     }
 
-    if (get(this, 'meeting.waypoint.id') === waypoint.id) {
-      set(this, 'meeting.waypoint', undefined);
+    if (this.meeting?.waypoint?.id === waypoint.id) {
+      this.meeting.waypoint = undefined;
     } else {
-      set(this, 'meeting.waypoint', waypoint);
+      this.meeting.waypoint = waypoint;
     }
   }
 
   @action selectTeam(team) {
     if (!this.meeting) {
-      set(this, 'meeting', this.store.createRecord('meeting'));
+      this.meeting = this.store.createRecord('meeting');
     }
 
-    if (get(this, 'meeting.teams').includes(team)) {
-      let index = get(this, 'meeting.teams').indexOf(team);
-      get(this, 'meeting.teams').splice(index, 1);
+    if (this.meetingTeams.includes(team)) {
+      let index = this.meetingTeams.indexOf(team);
+      this.meeting.teams.splice(index, 1);
       return;
     }
 
@@ -127,8 +133,8 @@ export default class SchedulerController extends Controller {
       return;
     }
 
-    set(this, 'meeting.index', team.get('meetings.length'));
-    get(this, 'meeting.teams').push(team);
+    this.meeting.index = team.get('meetings.length');
+    this.meeting.teams.push(team);
   }
 
   @action saveMeeting() {
@@ -148,7 +154,7 @@ export default class SchedulerController extends Controller {
         ]);
       })
       .then(() => {
-        set(this, 'meeting', this.store.createRecord('meeting'));
+        this.meeting = this.store.createRecord('meeting');
         this.meetingOffsetOverride = undefined;
       });
   }
@@ -156,7 +162,7 @@ export default class SchedulerController extends Controller {
   @action resetMeeting() {
     this.meeting.rollbackAttributes();
 
-    set(this, 'meeting', this.store.createRecord('meeting'));
+    this.meeting = this.store.createRecord('meeting');
   }
 
   @action editMeeting(meeting) {
@@ -166,22 +172,22 @@ export default class SchedulerController extends Controller {
       existingMeeting.rollbackAttributes();
     }
 
-    set(this, 'meeting', meeting);
+    this.meeting = meeting;
   }
 
   @action mouseEnterRegion(region) {
-    set(this, 'highlightedRegion', region.ancestor);
+    this.highlightedRegion = region.ancestor;
   }
 
   @action mouseLeaveRegion() {
-    set(this, 'highlightedRegion', undefined);
+    this.highlightedRegion = undefined;
   }
 
   @action mouseEnterTeam(team) {
-    set(this, 'highlightedTeam', team);
+    this.highlightedTeam = team;
   }
 
   @action mouseLeaveTeam() {
-    set(this, 'highlightedTeam', undefined);
+    this.highlightedTeam = undefined;
   }
 }

@@ -8,10 +8,6 @@ import { ref } from 'ember-ref-bucket';
 import createRef from 'ember-ref-bucket/modifiers/create-ref';
 import { and } from 'ember-truth-helpers';
 
-// FIXME not used but needed by Foundation??
-// eslint-disable-next-line
-import jQuery from 'jquery';
-
 export default class MappableRegionComponent extends Component {
   @service puzzles;
 
