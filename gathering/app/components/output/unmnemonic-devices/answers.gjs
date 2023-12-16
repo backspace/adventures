@@ -57,7 +57,7 @@ export default class AnswersComponent extends Component {
 
             doc.text(waypointRegion.name);
             doc.text(
-              `${waypoint.name} (${waypoint.call}, page ${waypoint.page})`
+              `${waypoint.name} (${waypoint.call}, page ${waypoint.page})`,
             );
             doc.moveDown();
 

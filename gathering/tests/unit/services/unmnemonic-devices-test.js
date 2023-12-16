@@ -20,7 +20,7 @@ module('Unit | Service | unmnemonic-devices', function (hooks) {
     const service = this.owner.lookup('service:unmnemonic-devices');
     assert.strictEqual(
       service.trimmedInnerExcerpt('an|excerpt,.?!: but|exists'),
-      'excerpt but'
+      'excerpt but',
     );
   });
 
@@ -35,17 +35,17 @@ module('Unit | Service | unmnemonic-devices', function (hooks) {
     assert.strictEqual(
       service.suggestedMask('one two three'),
       'one ___ three',
-      'expected a suggested mask with the middle word blanked'
+      'expected a suggested mask with the middle word blanked',
     );
     assert.strictEqual(
       service.suggestedMask('one two three four'),
       'one ___ _____ four',
-      'expected a suggested mask with the middle words blanked'
+      'expected a suggested mask with the middle words blanked',
     );
     assert.strictEqual(
       service.suggestedMask('one'),
       '___',
-      'expected a suggested mask entirely blanked with only one word'
+      'expected a suggested mask entirely blanked with only one word',
     );
   });
 
@@ -54,7 +54,7 @@ module('Unit | Service | unmnemonic-devices', function (hooks) {
 
     assert.strictEqual(
       service.extractAnswer('one two three', 'one ___ three'),
-      'two'
+      'two',
     );
 
     assert.throws(function () {
@@ -75,21 +75,21 @@ module(
 
       assert.notOk(
         service.excerptIsValid('a partial | excerpt'),
-        'excerpt should have two pipes'
+        'excerpt should have two pipes',
       );
 
       assert.notOk(
         service.excerptIsValid('a broken | excerpt | yes | it is'),
-        'excerpt should have two pipes'
+        'excerpt should have two pipes',
       );
 
       assert.notOk(
         service.excerptIsValid('x'),
-        'excerpt should have two pipes'
+        'excerpt should have two pipes',
       );
       assert.notOk(service.excerptIsValid(null), 'excerpt should exist');
     });
-  }
+  },
 );
 
 module(
@@ -104,32 +104,32 @@ module(
 
       assert.notOk(
         service.dimensionsIsValid('13.1 14.3'),
-        'dimensions should have a separating comma'
+        'dimensions should have a separating comma',
       );
 
       assert.notOk(
         service.dimensionsIsValid('13.1,14.3,13.1'),
-        'there should only be two numbers'
+        'there should only be two numbers',
       );
 
       assert.notOk(
         service.dimensionsIsValid('13.x,14.y'),
-        'both should be numbers'
+        'both should be numbers',
       );
 
       assert.notOk(
         service.dimensionsIsValid('-13.1,14.3'),
-        'both should be positive'
+        'both should be positive',
       );
 
       assert.notOk(
         service.dimensionsIsValid('13.1,0'),
-        'both should be positive'
+        'both should be positive',
       );
 
       assert.notOk(service.dimensionsIsValid(null), 'should exist');
     });
-  }
+  },
 );
 
 module(
@@ -145,7 +145,7 @@ module(
         cmToPt(14.3),
       ]);
     });
-  }
+  },
 );
 
 module(
@@ -159,52 +159,52 @@ module(
       assert.ok(service.outlineIsValid('(3.2,2.3),1.5,-0.5'));
 
       assert.ok(
-        service.outlineIsValid('(3.2,2.3),1.5,-0.5|(3.2,2.3),1.5,-0.5')
+        service.outlineIsValid('(3.2,2.3),1.5,-0.5|(3.2,2.3),1.5,-0.5'),
       );
 
       assert.notOk(service.outlineIsValid(null), 'outline must be present');
 
       assert.notOk(
         service.outlineIsValid('(-3.2,0),1.5,2'),
-        'first point cannot be negative'
+        'first point cannot be negative',
       );
 
       assert.notOk(
         service.outlineIsValid('(0,-2.3),1.5,2'),
-        'second point cannot be negative'
+        'second point cannot be negative',
       );
 
       assert.notOk(
         service.outlineIsValid('(0,2.3),1.5,0'),
-        'displacements cannot be zero'
+        'displacements cannot be zero',
       );
 
       assert.notOk(
         service.outlineIsValid('(0,2.3),1.5,3.x'),
-        'displacements must be floats'
+        'displacements must be floats',
       );
 
       assert.notOk(
         service.outlineIsValid('(0,2.3),1.5'),
-        'there must be at least two displacement points'
+        'there must be at least two displacement points',
       );
 
       assert.notOk(
         service.outlineIsValid('(0,2.3)'),
-        'there must be at least two displacement points'
+        'there must be at least two displacement points',
       );
       assert.notOk(service.outlineIsValid('(0'), 'there must be a first point');
       assert.notOk(
         service.outlineIsValid('(0,1'),
-        'there must be a first point'
+        'there must be a first point',
       );
       assert.notOk(
         service.outlineIsValid('(0)'),
-        'there must be a first point'
+        'there must be a first point',
       );
       assert.notOk(service.outlineIsValid(''), 'there must be a first point');
     });
-  }
+  },
 );
 
 module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
@@ -278,7 +278,7 @@ module('Unit | Service | unmnemonic-devices | parsedOutline', function (hooks) {
           [cmToPt(3.2), cmToPt(2.3)],
         ],
       },
-      'it closes the polygon'
+      'it closes the polygon',
     );
 
     assert.outlineEqual(p2, {

@@ -52,7 +52,7 @@ export default class TxtbeyondTransparenciesComponent extends Component {
       2,
       {
         pot: false,
-      }
+      },
     );
     packer.addArray(boxes);
 
@@ -118,7 +118,7 @@ export default class TxtbeyondTransparenciesComponent extends Component {
       pointDimensions,
       containerDimensions,
     },
-    debug
+    debug,
   ) {
     const header = this.args.assets.header;
     const regular = this.args.assets.regular;
@@ -157,14 +157,14 @@ export default class TxtbeyondTransparenciesComponent extends Component {
     doc.save();
     doc.translate(
       adjustedPixelLength / 2,
-      pointDimensions.height - adjustedPixelLength / 2
+      pointDimensions.height - adjustedPixelLength / 2,
     );
     this._drawRegistrationMark(doc), doc.restore();
 
     doc.save();
     doc.translate(
       pointDimensions.width - adjustedPixelLength / 2,
-      adjustedPixelLength / 2
+      adjustedPixelLength / 2,
     );
     this._drawRegistrationMark(doc), doc.restore();
 
@@ -181,11 +181,11 @@ export default class TxtbeyondTransparenciesComponent extends Component {
             col * adjustedPixelLength,
             row * adjustedPixelLength,
             drawnAdjustedLength,
-            drawnAdjustedLength
+            drawnAdjustedLength,
           );
           doc.fill();
         }
-      }
+      },
     );
 
     doc.restore();
@@ -213,7 +213,7 @@ export default class TxtbeyondTransparenciesComponent extends Component {
       meeting
         .get('teams')
         .reduce((phones, team) => phones.concat(team.get('phones')), [])
-        .find((phone) => phone.number === number).displaySize
+        .find((phone) => phone.number === number).displaySize,
     );
   }
 

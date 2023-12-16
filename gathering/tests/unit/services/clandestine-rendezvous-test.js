@@ -17,7 +17,7 @@ module(
           goalDigit: 9,
         }),
         1,
-        'expected the only blank index'
+        'expected the only blank index',
       );
 
       assert.strictEqual(
@@ -27,7 +27,7 @@ module(
           goalDigit: 9,
         }),
         2,
-        'expected the farthest-away blank index'
+        'expected the farthest-away blank index',
       );
 
       assert.strictEqual(
@@ -37,7 +37,7 @@ module(
           goalDigit: 9,
         }),
         0,
-        'expected the first farthest-away blank index'
+        'expected the first farthest-away blank index',
       );
     });
 
@@ -68,7 +68,7 @@ module(
         });
       }, 'expected an error when the mask had no blanks');
     });
-  }
+  },
 );
 
 module(
@@ -134,12 +134,12 @@ module(
       assert.strictEqual(
         teamToDigitMap.get(this.teamA),
         3,
-        'expected the alphabetically-first team to get the larger portion'
+        'expected the alphabetically-first team to get the larger portion',
       );
       assert.strictEqual(
         teamToDigitMap.get(this.teamB),
         2,
-        'expected the alphabetically-last team to get the smaller portion'
+        'expected the alphabetically-last team to get the smaller portion',
       );
     });
 
@@ -160,7 +160,7 @@ module(
         service.teamDigitsForAnswerAndGoalDigits({ teams: [] });
       }, 'expected an error with no teams');
     });
-  }
+  },
 );
 
 module(
@@ -173,27 +173,27 @@ module(
 
       assert.ok(
         service.maskIsValid('ABC123', 'ABC___'),
-        'expected the mask to be valid when it matches the answer'
+        'expected the mask to be valid when it matches the answer',
       );
       assert.ok(
         service.maskIsValid('ABC123', 'ABC1_3'),
-        'expected the mask to be valid when it masks a subset of the answer'
+        'expected the mask to be valid when it masks a subset of the answer',
       );
 
       assert.notOk(
         service.maskIsValid('ABC123', 'AB___'),
-        'expected the mask to be invalid when it’s a different length'
+        'expected the mask to be invalid when it’s a different length',
       );
       assert.notOk(
         service.maskIsValid('ABD123', 'ABC___'),
-        'expected the mask to be invalid when a letter differs'
+        'expected the mask to be invalid when a letter differs',
       );
       assert.notOk(
         service.maskIsValid('ABC123', 'ABC123'),
-        'expected the mask to be invalid when it has no blanks'
+        'expected the mask to be invalid when it has no blanks',
       );
     });
-  }
+  },
 );
 
 module(
@@ -207,13 +207,13 @@ module(
       assert.strictEqual(
         service.suggestedMask('ABC123'),
         'ABC___',
-        'expected a suggested mask'
+        'expected a suggested mask',
       );
       assert.strictEqual(
         service.suggestedMask('A0C1234'),
         'A0C1___',
-        'expected the suggested mask to blank the three rightmost digits'
+        'expected the suggested mask to blank the three rightmost digits',
       );
     });
-  }
+  },
 );

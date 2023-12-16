@@ -24,7 +24,9 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
 
     this.args.teams.forEach((team) => {
       doc.text(
-        `${team.get('name')}: ${team.get('riskAversion')}, ${team.get('users')}`
+        `${team.get('name')}: ${team.get('riskAversion')}, ${team.get(
+          'users',
+        )}`,
       );
       doc.moveDown();
     });
@@ -55,13 +57,13 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
             const region = destination.belongsTo('region').value();
 
             return `${teamNames}\n${region.get('name')}\n\n${destination.get(
-              'description'
+              'description',
             )}\n\n${destination.get('answer')}`;
           })
           .join('\n\n\n'),
         {
           columns: 3,
-        }
+        },
       );
 
       doc.moveDown();

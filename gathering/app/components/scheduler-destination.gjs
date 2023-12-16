@@ -14,7 +14,7 @@ export default class SchedulerDestinationComponent extends Component {
         });` +
         `border-right-color: rgba(255, 0, 0, ${
           this.args.destination.get('risk') / 10
-        });`
+        });`,
     );
   }
 
@@ -32,8 +32,7 @@ export default class SchedulerDestinationComponent extends Component {
     {{! template-lint-disable no-inline-styles }}
     {{! template-lint-disable no-invalid-interactive }}
     <li
-      class='
-        {{if @isSelected 'selected'}}
+      class='{{if @isSelected 'selected'}}
         {{if this.isHighlighted 'highlighted'}}'
       title='A{{@destination.awesomeness}} R{{@destination.risk}}'
       style={{this.style}}
@@ -44,7 +43,10 @@ export default class SchedulerDestinationComponent extends Component {
       <div data-test-description>{{@destination.description}}</div>
 
       {{#if @destination.accessibility}}
-        <div class='accessibility' data-test-accessibility>{{@destination.accessibility}}</div>
+        <div
+          class='accessibility'
+          data-test-accessibility
+        >{{@destination.accessibility}}</div>
       {{/if}}
     </li>
   </template>

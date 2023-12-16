@@ -62,7 +62,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
       if (this.excludeAvailable) {
         waypointsToGenerate = waypointsToGenerate.filter(
-          (w) => w.status !== 'available'
+          (w) => w.status !== 'available',
         );
       }
     } else {
@@ -89,7 +89,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
       let dimensions = waypoint.get('dimensions');
       let regionAndCall = `${waypoint.get('region.name')}: ${waypoint.get(
-        'call'
+        'call',
       )}`;
       let waypointName = waypoint.get('name');
       let excerpt = waypoint.get('excerpt');
@@ -122,7 +122,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         page,
         waypointName,
         regionAndCall,
-        maybeTeamAndWaypoint.identifierForMeeting
+        maybeTeamAndWaypoint.identifierForMeeting,
       );
 
       doc.strokeColor('black');
@@ -225,7 +225,7 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
             team.truncatedName,
             PAGE_PADDING,
             height + TEAM_GAP_SIZE - TEAM_FONT_SIZE / 2,
-            { lineBreak: false }
+            { lineBreak: false },
           );
       }
 
@@ -278,7 +278,7 @@ function drawRegistrationMarks(doc, width, height, teamBottomMargin) {
   doc.save();
   doc.translate(
     registrationLength + registrationPadding,
-    registrationLength + registrationPadding
+    registrationLength + registrationPadding,
   );
 
   doc.lineWidth(0.25);
@@ -351,7 +351,7 @@ function drawHeaderAndFooterText(
   page,
   waypointName,
   regionAndCall,
-  identifier
+  identifier,
 ) {
   let upperLeftText, upperRightText;
 
@@ -381,13 +381,13 @@ function drawHeaderAndFooterText(
         regionAndCall,
         PAGE_PADDING,
         height - doc.currentLineHeight() - PAGE_PADDING,
-        { ...textOptions }
+        { ...textOptions },
       )
       .text(
         identifier || '',
         PAGE_PADDING,
         height - doc.currentLineHeight() - PAGE_PADDING,
-        { width: width - PAGE_PADDING * 2, align: 'right', ...textOptions }
+        { width: width - PAGE_PADDING * 2, align: 'right', ...textOptions },
       );
   });
 }

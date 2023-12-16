@@ -47,7 +47,7 @@ export default class Region extends Model {
       (sum, destination) => {
         return sum + destination.meetingCount;
       },
-      0
+      0,
     );
 
     return this.children.reduce((sum, child) => {

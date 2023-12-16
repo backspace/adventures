@@ -16,7 +16,7 @@ const nesting = function (selector) {
 
     get() {
       let nestingClass = Array.from(findOne(this, selector).classList).find(
-        (klass) => klass.startsWith('pl-')
+        (klass) => klass.startsWith('pl-'),
       );
 
       if (nestingClass) {

@@ -71,7 +71,7 @@ export default class Destination extends Model {
       this;
 
     const descriptionIsValid = this.puzzles.implementation.descriptionIsValid(
-      description ?? 'FAKE'
+      description ?? 'FAKE',
     );
 
     return {

@@ -10,12 +10,12 @@ module('Unit | Service | txtbeyond', function (hooks) {
     assert.strictEqual(
       service.suggestedMask('one two three'),
       'one ___ three',
-      'expected a suggested mask with the middle word blanked'
+      'expected a suggested mask with the middle word blanked',
     );
     assert.strictEqual(
       service.suggestedMask('one'),
       '___',
-      'expected a suggested mask entirely blanked with only one word'
+      'expected a suggested mask entirely blanked with only one word',
     );
   });
 
@@ -24,24 +24,24 @@ module('Unit | Service | txtbeyond', function (hooks) {
 
     assert.ok(
       service.maskIsValid('hello there', 'hello _____'),
-      'expected the mask to be valid when it matches the answer'
+      'expected the mask to be valid when it matches the answer',
     );
     assert.ok(
       service.maskIsValid('hello there', 'hello the__'),
-      'expected the mask to be valid when it masks a subset of the answer'
+      'expected the mask to be valid when it masks a subset of the answer',
     );
 
     assert.notOk(
       service.maskIsValid('hello there', 'hello there ___'),
-      'expected the mask to be invalid when it’s a different length'
+      'expected the mask to be invalid when it’s a different length',
     );
     assert.notOk(
       service.maskIsValid('hello there', 'horlo _____'),
-      'expected the mask to be invalid when a letter differs'
+      'expected the mask to be invalid when a letter differs',
     );
     assert.notOk(
       service.maskIsValid('hello there', 'hello there'),
-      'expected the mask to be invalid when it has no blanks'
+      'expected the mask to be invalid when it has no blanks',
     );
   });
 
@@ -50,15 +50,15 @@ module('Unit | Service | txtbeyond', function (hooks) {
 
     assert.ok(
       service.descriptionIsValid('hey this has a ~masked~ word'),
-      'expected a description with a masked word to be valid'
+      'expected a description with a masked word to be valid',
     );
     assert.notOk(
       service.descriptionIsValid('this has no masked word'),
-      'expected a description with no masked word to be invalid'
+      'expected a description with no masked word to be invalid',
     );
     assert.notOk(
       service.descriptionIsValid('this ~has~ invalid ~masking'),
-      'expected a description with invalid masking to be invalid'
+      'expected a description with invalid masking to be invalid',
     );
   });
 
@@ -67,11 +67,11 @@ module('Unit | Service | txtbeyond', function (hooks) {
 
     assert.strictEqual(
       service.maskedDescription('this is ~masked~'),
-      'this is ______'
+      'this is ______',
     );
     assert.strictEqual(
       service.maskedDescription('~is~ this ~masked~'),
-      '__ this ______'
+      '__ this ______',
     );
   });
 
@@ -91,27 +91,27 @@ module('Unit | Service | txtbeyond', function (hooks) {
     assert.strictEqual(
       service.twitterName('ABC'),
       'abc',
-      'expected the username to be downcased'
+      'expected the username to be downcased',
     );
     assert.strictEqual(
       service.twitterName('abc  def'),
       'abc_def',
-      'expected groups of spaces to become underscores'
+      'expected groups of spaces to become underscores',
     );
     assert.strictEqual(
       service.twitterName('abc\tdef'),
       'abc_def',
-      'expected tabs to become underscores'
+      'expected tabs to become underscores',
     );
     assert.strictEqual(
       service.twitterName('1234567890123456'),
       '123456789012345',
-      'expected the name to be truncated at 15 characters'
+      'expected the name to be truncated at 15 characters',
     );
     assert.strictEqual(
       service.twitterName('something@etc!!!yes'),
       'somethingetcyes',
-      'expected symbols to be removed'
+      'expected symbols to be removed',
     );
   });
 });

@@ -36,7 +36,7 @@ export default class TeamOverviewsComponent extends Component {
             id: region.get('id'),
             name: this.stripString(region.get('name')),
             inserted_at: region.get('createdAt').toISOString(),
-          }))
+          })),
       )
       .onConflict('id')
       .merge();
@@ -53,10 +53,10 @@ export default class TeamOverviewsComponent extends Component {
             region_id: this.stripString(destination.get('region.id')),
             answer: this.devices.extractAnswer(
               destination.answer,
-              destination.mask
+              destination.mask,
             ),
             inserted_at: destination.get('createdAt').toISOString(),
-          }))
+          })),
       )
       .onConflict('id')
       .merge();
@@ -71,10 +71,10 @@ export default class TeamOverviewsComponent extends Component {
             id: waypoint.get('id'),
             title: this.stripString(waypoint.get('name')),
             excerpt: this.stripString(
-              this.devices.trimmedInnerExcerpt(waypoint.get('excerpt'))
+              this.devices.trimmedInnerExcerpt(waypoint.get('excerpt')),
             ),
             inserted_at: waypoint.get('createdAt').toISOString(),
-          }))
+          })),
       )
       .onConflict('id')
       .merge();
@@ -88,7 +88,7 @@ export default class TeamOverviewsComponent extends Component {
           team_id: meeting.get('teams.[0].id'),
           book_id: meeting.get('waypoint.id'),
           destination_id: meeting.get('destination.id'),
-        }))
+        })),
       )
       .onConflict(['id'])
       .merge();

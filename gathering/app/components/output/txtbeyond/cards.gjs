@@ -159,22 +159,22 @@ export default class TxtbeyondCardsComponent extends Component {
         doc
           .moveTo(
             innerCardWidth / 2 - cropMarkLength / 2,
-            cardHeight - cardMargin
+            cardHeight - cardMargin,
           )
           .lineTo(
             innerCardWidth / 2 + cropMarkLength / 2,
-            cardHeight - cardMargin
+            cardHeight - cardMargin,
           )
           .stroke();
 
         doc
           .moveTo(
             innerCardWidth + cardMargin,
-            cardHeight / 2 - cropMarkLength / 2
+            cardHeight / 2 - cropMarkLength / 2,
           )
           .lineTo(
             innerCardWidth + cardMargin,
-            cardHeight / 2 + cropMarkLength / 2
+            cardHeight / 2 + cropMarkLength / 2,
           )
           .stroke();
 
@@ -189,14 +189,14 @@ export default class TxtbeyondCardsComponent extends Component {
               -cardWidth / 2,
               0,
               innerCardWidth,
-              cardHeight - cardMargin * 2
+              cardHeight - cardMargin * 2,
             )
             .stroke();
           doc.rect(
             -cardMargin - cardWidth / 2,
             -cardMargin,
             cardWidth,
-            cardHeight
+            cardHeight,
           );
 
           doc.text(`Back of ${cardData.letter}/${cardData.teamName}`, 0, 0);
@@ -240,7 +240,7 @@ export default class TxtbeyondCardsComponent extends Component {
           .sort((a, b) => a.index - b.index)
           .map((meeting, index) => {
             return this._rendezvousCardDataForTeamMeeting(team, meeting, index);
-          })
+          }),
       );
     }, []);
   }
@@ -277,7 +277,7 @@ export default class TxtbeyondCardsComponent extends Component {
 
       regionName: region.get('name'),
       destinationDescription: this.txtbeyond.maskedDescription(
-        destination.get('description')
+        destination.get('description'),
       ),
 
       // goalLetter,

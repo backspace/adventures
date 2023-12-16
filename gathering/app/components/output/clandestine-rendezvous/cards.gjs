@@ -150,7 +150,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
           cardData.teamDigitsForAnswerAndGoalDigits.get(otherTeam);
 
         const myDigit = cardData.teamDigitsForAnswerAndGoalDigits.get(
-          cardData.team
+          cardData.team,
         );
 
         const rows = [{ label: '^ from other side' }];
@@ -200,22 +200,22 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         doc
           .moveTo(
             innerCardWidth / 2 - cropMarkLength / 2,
-            cardHeight - cardMargin
+            cardHeight - cardMargin,
           )
           .lineTo(
             innerCardWidth / 2 + cropMarkLength / 2,
-            cardHeight - cardMargin
+            cardHeight - cardMargin,
           )
           .stroke();
 
         doc
           .moveTo(
             innerCardWidth + cardMargin,
-            cardHeight / 2 - cropMarkLength / 2
+            cardHeight / 2 - cropMarkLength / 2,
           )
           .lineTo(
             innerCardWidth + cardMargin,
-            cardHeight / 2 + cropMarkLength / 2
+            cardHeight / 2 + cropMarkLength / 2,
           )
           .stroke();
 
@@ -230,14 +230,14 @@ export default class ClandestineRendezvousCardsComponent extends Component {
               -cardWidth / 2,
               0,
               innerCardWidth,
-              cardHeight - cardMargin * 2
+              cardHeight - cardMargin * 2,
             )
             .stroke();
           doc.rect(
             -cardMargin - cardWidth / 2,
             -cardMargin,
             cardWidth,
-            cardHeight
+            cardHeight,
           );
 
           doc.text(`Back of ${cardData.letter}/${cardData.teamName}`, 0, 0);
@@ -289,9 +289,9 @@ export default class ClandestineRendezvousCardsComponent extends Component {
               return this._rendezvousCardDataForTeamMeeting(
                 team,
                 meeting,
-                index
+                index,
               );
-            })
+            }),
         );
       }, []);
   }

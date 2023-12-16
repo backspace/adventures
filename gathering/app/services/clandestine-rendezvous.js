@@ -28,7 +28,7 @@ export default class ClandestineRendezvousService extends Service {
           }
         }
       },
-      { maxDistance: -1 }
+      { maxDistance: -1 },
     ).maxDistanceIndex;
   }
 
@@ -95,7 +95,7 @@ export default class ClandestineRendezvousService extends Service {
           return { suggestion: `${character}${suggestion}`, replaced };
         }
       },
-      { suggestion: '', replaced: 0 }
+      { suggestion: '', replaced: 0 },
     ).suggestion;
   }
 }

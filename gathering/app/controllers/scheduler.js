@@ -39,7 +39,7 @@ export default class SchedulerController extends Controller {
 
   get lastMeetingOffsets() {
     return this.meetingTeams.map(
-      (team) => team.savedMeetings[team.savedMeetings.length - 1]?.offset || 0
+      (team) => team.savedMeetings[team.savedMeetings.length - 1]?.offset || 0,
     );
   }
 
@@ -65,13 +65,13 @@ export default class SchedulerController extends Controller {
         .map(
           (team) =>
             team.savedMeetings[team.savedMeetings.length - 1]?.destination
-              ?.region?.name
+              ?.region?.name,
         )
         .filter((n) => !!n);
 
       if (newRegionAncestorName && lastMeetingRegionNames.length > 0) {
         const destinationDistances = lastMeetingRegionNames.map((name) =>
-          this.pathfinder.distance(newRegionAncestorName, name)
+          this.pathfinder.distance(newRegionAncestorName, name),
         );
         timeFromLastRegion = Math.max(...destinationDistances);
       }

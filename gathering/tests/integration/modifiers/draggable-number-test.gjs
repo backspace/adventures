@@ -23,7 +23,7 @@ module('Integration | Modifier | draggable-number', function (hooks) {
         aria-label='test input'
         {{draggableNumber}}
         {{on 'change' updateValue}}
-      >
+      />
     </template>);
 
     let input = find('input');

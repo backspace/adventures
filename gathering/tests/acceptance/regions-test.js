@@ -92,7 +92,7 @@ module('Acceptance | regions', function (hooks) {
 
     assert.notOk(
       page.regions[0].isIncomplete,
-      'expected Gujaareh not to be incomplete because this is not txtbeyond'
+      'expected Gujaareh not to be incomplete because this is not txtbeyond',
     );
   });
 
@@ -102,7 +102,7 @@ module('Acceptance | regions', function (hooks) {
 
     assert.ok(
       page.regions[0].isIncomplete,
-      'expected Gujaareh to be incomplete'
+      'expected Gujaareh to be incomplete',
     );
     assert.notOk(page.regions[3].isIncomplete, 'expected Kisua to be complete');
   });
@@ -166,7 +166,7 @@ module('Acceptance | regions', function (hooks) {
 
     assert.strictEqual(
       destinationsPage.regionField.text,
-      '--Kisua Protectorate'
+      '--Kisua Protectorate',
     );
   });
 
@@ -186,7 +186,7 @@ module('Acceptance | regions', function (hooks) {
     assert.strictEqual(
       mapPage.regions.length,
       2,
-      'expected nested regions to be hidden'
+      'expected nested regions to be hidden',
     );
 
     let gujaareh = mapPage.regions[0];
@@ -231,7 +231,7 @@ module('Acceptance | regions with no map', function (hooks) {
 
     assert.ok(
       mapPage.imageSrc.indexOf('blob') > -1,
-      'expected new img src to have a blob URL'
+      'expected new img src to have a blob URL',
     );
   });
 });
@@ -255,7 +255,7 @@ module('Acceptance | regions with existing map', function (hooks) {
     existingSrc = mapPage.imageSrc;
     assert.ok(
       existingSrc.indexOf('blob') > -1,
-      'expected img src to have a blob URL'
+      'expected img src to have a blob URL',
     );
 
     await mapPage.setMap(base64Gif);
@@ -263,12 +263,12 @@ module('Acceptance | regions with existing map', function (hooks) {
     newSrc = mapPage.imageSrc;
     assert.ok(
       newSrc.indexOf('blob') > -1,
-      'expected new img src to have a blob URL'
+      'expected new img src to have a blob URL',
     );
     assert.notStrictEqual(
       existingSrc,
       newSrc,
-      'expected img src to have changed'
+      'expected img src to have changed',
     );
   });
 });

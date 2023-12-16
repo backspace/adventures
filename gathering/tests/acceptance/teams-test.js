@@ -48,7 +48,7 @@ module('Acceptance | teams', function (hooks) {
     assert.strictEqual(page.teams[1].riskAversion.text, '1');
     assert.strictEqual(
       page.teams[1].phones.text,
-      '2040000000: 4, 5140000000: 5'
+      '2040000000: 4, 5140000000: 5',
     );
   });
 
@@ -90,7 +90,7 @@ module('Acceptance | teams', function (hooks) {
     assert.strictEqual(
       page.teams.length,
       3,
-      'expected three teams to be listed'
+      'expected three teams to be listed',
     );
     assert.notOk(page.save.isDisabled);
 
@@ -101,7 +101,7 @@ module('Acceptance | teams', function (hooks) {
     assert.strictEqual(
       page.teams[0].id,
       'daa14876-7bb7-486c-8ed5-5287156a430b',
-      'expected newly-specified id to be used'
+      'expected newly-specified id to be used',
     );
     assert.strictEqual(page.teams[0].riskAversion.text, '2');
 
@@ -114,13 +114,13 @@ module('Acceptance | teams', function (hooks) {
     assert.strictEqual(
       page.teams[1].id,
       teamOne.id,
-      'expected existing id to be preserved'
+      'expected existing id to be preserved',
     );
 
     assert.ok(page.teams[1].users.isChanged);
     assert.strictEqual(
       page.teams[1].users.text,
-      'jorts@example.com, jants@example.com'
+      'jorts@example.com, jants@example.com',
     );
 
     assert.ok(page.teams[1].phones.isChanged);
@@ -175,7 +175,7 @@ module('Acceptance | teams', function (hooks) {
     assert.strictEqual(page.teams[0].name.text, 'jorts');
     assert.strictEqual(
       page.teams[0].identifier.text,
-      'i wont do what you tell me'
+      'i wont do what you tell me',
     );
   });
 });

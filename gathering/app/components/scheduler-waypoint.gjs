@@ -10,7 +10,7 @@ export default class SchedulerWaypointComponent extends Component {
 
   get style() {
     return htmlSafe(
-      `border-top-width: ${this.args.waypoint.get('meetings.length') * 2}px;`
+      `border-top-width: ${this.args.waypoint.get('meetings.length') * 2}px;`,
     );
   }
 
@@ -23,8 +23,7 @@ export default class SchedulerWaypointComponent extends Component {
   <template>
     {{! template-lint-disable no-invalid-interactive }}
     <li
-      class='
-        {{if @isSelected 'selected'}}
+      class='{{if @isSelected 'selected'}}
         {{if this.isHighlighted 'highlighted'}}'
       style={{this.style}}
       {{on 'click' this.select}}

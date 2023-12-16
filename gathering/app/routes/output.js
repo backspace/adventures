@@ -70,7 +70,7 @@ export default class OutputRoute extends Route {
       assets: Promise.all(fontPaths)
         .then((responses) => {
           return Promise.all(
-            responses.map((response) => response.arrayBuffer())
+            responses.map((response) => response.arrayBuffer()),
           );
         })
         .then(([header, bold, regular]) => {

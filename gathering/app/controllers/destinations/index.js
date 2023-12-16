@@ -33,7 +33,7 @@ export default class DestinationsIndexController extends Controller {
 
     if (this.region) {
       filteredDestinations = filteredDestinations.filter(
-        (d) => d.region === this.region
+        (d) => d.region === this.region,
       );
     }
 

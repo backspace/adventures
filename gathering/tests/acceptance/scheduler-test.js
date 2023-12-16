@@ -180,7 +180,7 @@ module('Acceptance | scheduler', function (hooks) {
       assert.strictEqual(
         page.destinationRegions.length,
         3,
-        'only regions with available destinations and their parents should be listed'
+        'only regions with available destinations and their parents should be listed',
       );
       const eatonPlace = page.destinationRegions[0];
 
@@ -223,19 +223,19 @@ module('Acceptance | scheduler', function (hooks) {
       assert.strictEqual(eatonPlace.y, 100);
       assert.notOk(
         eatonPlace.isHighlighted,
-        'expected Eaton Place not to be highlighted'
+        'expected Eaton Place not to be highlighted',
       );
 
       await page.destinationRegions[1].hover();
       assert.ok(
         eatonPlace.isHighlighted,
-        'expected Eaton Place to be highlighted'
+        'expected Eaton Place to be highlighted',
       );
 
       await page.destinationRegions[1].exit();
       assert.notOk(
         eatonPlace.isHighlighted,
-        'expected Eaton Place not to be highlighted'
+        'expected Eaton Place not to be highlighted',
       );
     });
 
@@ -251,11 +251,11 @@ module('Acceptance | scheduler', function (hooks) {
       await destinationsPage.riskField.fill('2');
 
       const portagePlaceOption = find(
-        `option[data-test-region-name="Portage Place"]`
+        `option[data-test-region-name="Portage Place"]`,
       );
       await destinationsPage.regionField.select(portagePlaceOption.value);
       await waitUntil(
-        () => destinationsPage.regionField.text === 'Portage Place'
+        () => destinationsPage.regionField.text === 'Portage Place',
       );
 
       await destinationsPage.save();
@@ -263,7 +263,7 @@ module('Acceptance | scheduler', function (hooks) {
       await waitUntil(() => destinationsPage.destinations.length === 7);
       assert.strictEqual(
         destinationsPage.destinations[0].region.text,
-        'Portage Place'
+        'Portage Place',
       );
 
       await destinationsPage.destinations[0].status.click();
@@ -279,11 +279,11 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.ok(
         destinationsPage.destinations[0].hasMeetings,
-        'expected the first destination to have meetings'
+        'expected the first destination to have meetings',
       );
       assert.notOk(
         destinationsPage.destinations[1].hasMeetings,
-        'expected the second destination not to have meetings'
+        'expected the second destination not to have meetings',
       );
     });
 
@@ -293,23 +293,23 @@ module('Acceptance | scheduler', function (hooks) {
       const superfans = page.teams[0];
       assert.strictEqual(
         superfans.name,
-        'Leave It to Beaver superfans this is a…'
+        'Leave It to Beaver superfans this is a…',
       );
       assert.strictEqual(superfans.riskAversionColour, 'red');
       assert.strictEqual(
         superfans.usersAndNotes,
-        'june@example.com, eddie@example.com\n\nHere is a note'
+        'june@example.com, eddie@example.com\n\nHere is a note',
       );
 
       assert.ok(superfans.isAhead, 'expected team with meeting to be ahead');
       assert.ok(
         page.teams[1].isAhead,
-        'expected team with meeting to be ahead'
+        'expected team with meeting to be ahead',
       );
 
       assert.notOk(
         page.teams[2].isAhead,
-        'expected team with no meeting not to be ahead'
+        'expected team with no meeting not to be ahead',
       );
     });
 
@@ -326,7 +326,7 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.strictEqual(
         page.destinationRegions[2].destinations[0].meetingCountBorderWidth,
-        '2px'
+        '2px',
       );
     });
 
@@ -345,11 +345,11 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.ok(
         page.teams[1].isHighlighted,
-        'expected the met team to be highlighted'
+        'expected the met team to be highlighted',
       );
       assert.notOk(
         page.teams[2].isHighlighted,
-        'expected the other team to not be highlighted'
+        'expected the other team to not be highlighted',
       );
     });
 
@@ -361,7 +361,7 @@ module('Acceptance | scheduler', function (hooks) {
       assert.strictEqual(page.meeting.destination, 'Edmonton Court');
       assert.strictEqual(
         page.meeting.teams[0].value,
-        'Leave It to Beaver superfans this is a…'
+        'Leave It to Beaver superfans this is a…',
       );
       assert.strictEqual(page.meeting.teams[1].value, 'Mayors');
     });
@@ -376,12 +376,12 @@ module('Acceptance | scheduler', function (hooks) {
       assert.strictEqual(page.meeting.destination, 'Prairie Theatre Exchange');
       assert.strictEqual(
         page.meeting.teams[0].value,
-        'Leave It to Beaver superfans this is a…'
+        'Leave It to Beaver superfans this is a…',
       );
       assert.strictEqual(page.meeting.teams[1].value, 'Mayors');
       assert.notOk(
         page.meeting.isForbidden,
-        'expected meeting not be forbidden'
+        'expected meeting not be forbidden',
       );
       assert.strictEqual(page.meeting.index, '1');
       assert.strictEqual(page.meeting.offset.value, '15');
@@ -405,13 +405,13 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.strictEqual(
         page.destinationRegions[2].destinations[1].meetingCountBorderWidth,
-        '2px'
+        '2px',
       );
 
       assert.strictEqual(
         page.meeting.teams.length,
         0,
-        'expected no set teams after saving'
+        'expected no set teams after saving',
       );
 
       await page.destinationRegions[0].destinations[0].click();
@@ -580,7 +580,7 @@ module('Acceptance | scheduler', function (hooks) {
       assert.strictEqual(
         page.waypointRegions.length,
         4,
-        'only regions with available waypoints should be listed'
+        'only regions with available waypoints should be listed',
       );
 
       const region = page.waypointRegions[2];
@@ -597,7 +597,7 @@ module('Acceptance | scheduler', function (hooks) {
       assert.strictEqual(
         portagePlaceRegion.regions.length,
         2,
-        'expected Portage Place to have two children'
+        'expected Portage Place to have two children',
       );
     });
 
@@ -618,7 +618,7 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.strictEqual(
         page.waypointRegions[2].waypoints[0].meetingCountBorderWidth,
-        '2px'
+        '2px',
       );
     });
 
@@ -652,7 +652,7 @@ module('Acceptance | scheduler', function (hooks) {
       assert.strictEqual(page.meeting.waypoint, 'fourten');
       assert.strictEqual(
         page.meeting.teams[0].value,
-        'Leave It to Beaver superfans this is a…'
+        'Leave It to Beaver superfans this is a…',
       );
     });
 
@@ -668,11 +668,11 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.strictEqual(
         page.meeting.teams[0].value,
-        'Leave It to Beaver superfans this is a…'
+        'Leave It to Beaver superfans this is a…',
       );
       assert.notOk(
         page.meeting.isForbidden,
-        'expected meeting not be forbidden'
+        'expected meeting not be forbidden',
       );
       assert.strictEqual(page.meeting.index, '1');
 
@@ -696,7 +696,7 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.strictEqual(
         page.destinationRegions[2].destinations[1].meetingCountBorderWidth,
-        '2px'
+        '2px',
       );
 
       await waitUntil(() => !page.meeting.teams.length);
@@ -704,7 +704,7 @@ module('Acceptance | scheduler', function (hooks) {
       assert.strictEqual(
         page.meeting.teams.length,
         0,
-        'expected no set teams after saving'
+        'expected no set teams after saving',
       );
     });
 

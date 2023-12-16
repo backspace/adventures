@@ -60,7 +60,7 @@ export default class ClandestineRendezvousMapsComponent extends Component {
             'data:image/png;base64,' + map,
             mapOffsetX - mapClipLeft,
             mapOffsetY - mapClipTop,
-            { scale: 0.125 }
+            { scale: 0.125 },
           );
 
           doc.restore();
@@ -93,7 +93,7 @@ export default class ClandestineRendezvousMapsComponent extends Component {
               {
                 width: mapMarkerCircleRadius * 2,
                 align: 'center',
-              }
+              },
             );
           });
 
@@ -105,11 +105,11 @@ export default class ClandestineRendezvousMapsComponent extends Component {
         doc
           .moveTo(
             pageWidth / 2 - margin - cropMarkLength / 2,
-            pageHeight / 2 - margin
+            pageHeight / 2 - margin,
           )
           .lineTo(
             pageWidth / 2 - margin + cropMarkLength / 2,
-            pageHeight / 2 - margin
+            pageHeight / 2 - margin,
           )
           .stroke();
 

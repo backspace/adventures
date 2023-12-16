@@ -15,8 +15,8 @@ export default class PathfinderService extends Service {
     return uniq(
       Object.keys(this.data.data).reduce(
         (regions, key) => regions.concat(key.split('|')),
-        []
-      )
+        [],
+      ),
     );
   }
 
@@ -43,10 +43,10 @@ export default class PathfinderService extends Service {
       });
 
       graph.addEdge(
-        new jsgraphs.Edge(regionToIndex[dataA], regionToIndex[dataB], distance)
+        new jsgraphs.Edge(regionToIndex[dataA], regionToIndex[dataB], distance),
       );
       graph.addEdge(
-        new jsgraphs.Edge(regionToIndex[dataB], regionToIndex[dataA], distance)
+        new jsgraphs.Edge(regionToIndex[dataB], regionToIndex[dataA], distance),
       );
     });
 
@@ -73,7 +73,7 @@ export default class PathfinderService extends Service {
     const graph = this.graph;
 
     return Object.keys(graph.nodeInfo).find(
-      (key) => graph.nodeInfo[key].label === region
+      (key) => graph.nodeInfo[key].label === region,
     );
   }
 }

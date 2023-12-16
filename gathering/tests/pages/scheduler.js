@@ -114,7 +114,7 @@ export default PageObject.create({
       }),
 
       regions: collection('[data-test-scheduler-column-region]'),
-    }
+    },
   ),
 
   waypointsContainer: {
@@ -143,7 +143,7 @@ export default PageObject.create({
       }),
 
       regions: collection('[data-test-scheduler-column-region]'),
-    }
+    },
   ),
 
   teams: collection('[data-test-team]', {

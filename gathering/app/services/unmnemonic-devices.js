@@ -100,7 +100,7 @@ export default class UnmnemonicDevicesService extends Service {
 
   excerptWithBlanks(excerpt) {
     return `${this.preExcerpt(excerpt)} ${this.trimmedInnerExcerpt(
-      excerpt
+      excerpt,
     ).replace(/\w/g, '_')} ${this.postExcerpt(excerpt)}`;
   }
 
@@ -200,12 +200,12 @@ export default class UnmnemonicDevicesService extends Service {
 
     let maxY = Math.max(...polygonPoints.map((p) => p[1]));
     let maxYmaxX = Math.max(
-      ...polygonPoints.filter((p) => p[1] === maxY).map((p) => p[0])
+      ...polygonPoints.filter((p) => p[1] === maxY).map((p) => p[0]),
     );
 
     let pointAfterEnd = [maxYmaxX, maxY];
     let pointAfterEndIndex = polygonPoints.findIndex(
-      (p) => p[0] === pointAfterEnd[0] && p[1] === pointAfterEnd[1]
+      (p) => p[0] === pointAfterEnd[0] && p[1] === pointAfterEnd[1],
     );
 
     let end = polygonPoints[pointAfterEndIndex - 1];

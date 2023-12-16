@@ -35,7 +35,7 @@ export default class TeamOverviewsComponent extends Component {
         doc.text(destination.description);
         doc.text(' ');
         doc.text(
-          `Awesomeness: ${destination.awesomeness}, Risk: ${destination.risk}`
+          `Awesomeness: ${destination.awesomeness}, Risk: ${destination.risk}`,
         );
         doc.text(' ');
         doc.text(destination.mask);

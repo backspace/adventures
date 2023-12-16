@@ -36,7 +36,7 @@ export default class SyncController extends Controller {
     const sourceDb = getOwner(this).lookup('adapter:application').get('db');
     const destinationDb = new PouchDB(
       this.destination,
-      config.emberPouch.options
+      config.emberPouch.options,
     );
 
     const syncPromise = sourceDb.sync(destinationDb);

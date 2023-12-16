@@ -181,7 +181,7 @@ export default class TeamOverviewsComponent extends Component {
                 {
                   width: mapMarkerCircleRadius * 2,
                   align: 'center',
-                }
+                },
               );
             }
 
@@ -203,9 +203,9 @@ export default class TeamOverviewsComponent extends Component {
                       align: 'center',
                       width: mapMarkerCircleRadius * 2,
                       ...textOptions,
-                    }
+                    },
                   );
-              }
+              },
             );
 
             doc.restore();
@@ -217,7 +217,7 @@ export default class TeamOverviewsComponent extends Component {
                 {
                   width: mapMarkerCircleRadius * 2,
                   align: 'center',
-                }
+                },
               );
             }
 
@@ -239,9 +239,9 @@ export default class TeamOverviewsComponent extends Component {
                       align: 'center',
                       width: mapMarkerCircleRadius * 2,
                       ...textOptions,
-                    }
+                    },
                   );
-              }
+              },
             );
 
             doc.restore();
@@ -261,7 +261,7 @@ export default class TeamOverviewsComponent extends Component {
             0,
             0,
             mapWidthOnPage,
-            pageHeight - mapTeamFontSize * 4 - pageMargin * 2 - mapHeightOnPage
+            pageHeight - mapTeamFontSize * 4 - pageMargin * 2 - mapHeightOnPage,
           )
           .stroke();
       }
@@ -331,7 +331,7 @@ export default class TeamOverviewsComponent extends Component {
               meetingPadding,
               {
                 width: meetingHalfWithoutPadding - meetingPadding,
-              }
+              },
             );
 
             doc.fontSize(meetingBodyFontSize);
@@ -341,7 +341,7 @@ export default class TeamOverviewsComponent extends Component {
             printRegionNotesAndParents(
               doc,
               waypointRegion,
-              meetingHalfWithoutPadding - meetingPadding
+              meetingHalfWithoutPadding - meetingPadding,
             );
 
             doc.fontSize(meetingBodyFontSize / 2);
@@ -352,7 +352,7 @@ export default class TeamOverviewsComponent extends Component {
               doubleBlanks(devices.excerptWithBlanks(waypoint.excerpt)),
               {
                 width: meetingHalfWithoutPadding - meetingPadding,
-              }
+              },
             );
 
             if (waypoint.credit) {
@@ -383,7 +383,7 @@ export default class TeamOverviewsComponent extends Component {
             printRegionNotesAndParents(
               doc,
               destinationRegion,
-              meetingHalfWithoutPadding
+              meetingHalfWithoutPadding,
             );
 
             doc.fontSize(meetingBodyFontSize / 2);
@@ -477,7 +477,7 @@ function drawArrow(doc, waypointX, waypointY, destinationX, destinationY) {
   const directionX = destinationX - waypointX;
   const directionY = destinationY - waypointY;
   const magnitude = Math.sqrt(
-    directionX * directionX + directionY * directionY
+    directionX * directionX + directionY * directionY,
   );
   const unitDirectionX = directionX / magnitude;
   const unitDirectionY = directionY / magnitude;
@@ -518,7 +518,7 @@ function printRegionNotesAndParents(doc, region, width) {
   if (region.notes || region.hours) {
     doc.text(
       `${region.hours ? `${region.hours}. ` : ''}${region.notes ?? ''}`,
-      { width }
+      { width },
     );
   }
 
@@ -529,7 +529,7 @@ function printRegionNotesAndParents(doc, region, width) {
       `In ${parent.name}${parent.hours ? `, ${parent.hours}` : ''}. ${
         parent.notes ?? ''
       }`,
-      { width }
+      { width },
     );
     parent = parent.belongsTo('parent').value();
   }

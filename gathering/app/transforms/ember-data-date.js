@@ -11,7 +11,7 @@ export default class EmberDataDateTransform extends Transform {
       if (offset !== -1 && serialized.length - 5 === offset) {
         offset += 3;
         return new Date(
-          serialized.slice(0, offset) + ':' + serialized.slice(offset)
+          serialized.slice(0, offset) + ':' + serialized.slice(offset),
         );
       }
       return new Date(serialized);

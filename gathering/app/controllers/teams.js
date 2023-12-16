@@ -31,7 +31,7 @@ export default class TeamsController extends Controller {
 
     teams.forEach((incomingTeam) => {
       let existingTeam = this.model.find(
-        (existing) => existing.id === incomingTeam.id
+        (existing) => existing.id === incomingTeam.id,
       );
 
       if (existingTeam) {

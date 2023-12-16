@@ -57,16 +57,33 @@ export default class DestinationRow extends Component {
         </td>
       {{/if}}
       <td class='p-2 align-top'>
-        <LinkTo class='underline' @route='destinations.index' @query={{hash region-id=@destination.region.id}} data-test-destination-region>
+        <LinkTo
+          class='underline'
+          @route='destinations.index'
+          @query={{hash region-id=@destination.region.id}}
+          data-test-destination-region
+        >
           {{@destination.region.name}}
         </LinkTo>
       </td>
-      <td class='p-2 align-top' data-test-description>{{@destination.description}}</td>
+      <td
+        class='p-2 align-top'
+        data-test-description
+      >{{@destination.description}}</td>
       <td class='p-2 align-top' data-test-answer>{{@destination.answer}}</td>
-      <td class='hidden md:table-cell p-2 align-top' data-test-mask>{{@destination.mask}}</td>
-      <td class='p-2 align-top' data-test-awesomeness>{{@destination.awesomeness}}</td>
+      <td
+        class='hidden p-2 align-top md:table-cell'
+        data-test-mask
+      >{{@destination.mask}}</td>
+      <td
+        class='p-2 align-top'
+        data-test-awesomeness
+      >{{@destination.awesomeness}}</td>
       <td class='p-2 align-top' data-test-risk>{{@destination.risk}}</td>
-      <td class='p-2 align-top' data-test-scheduled>{{if @destination.meetings '✓'}}</td>
+      <td class='p-2 align-top' data-test-scheduled>{{if
+          @destination.meetings
+          '✓'
+        }}</td>
       <td class='p-2 align-top'><LinkTo
           @route='destination'
           @model={{@destination}}

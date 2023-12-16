@@ -19,8 +19,7 @@ export default class RegionRow extends Component {
 
   <template>
     <tr
-      class='even:bg-gray-50
-      {{if @region.isComplete 'complete' 'incomplete'}}'
+      class='even:bg-gray-50 {{if @region.isComplete 'complete' 'incomplete'}}'
       data-test-region
       data-test-incomplete={{not @region.isComplete}}
     >

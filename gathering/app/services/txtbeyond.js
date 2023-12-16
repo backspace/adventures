@@ -60,7 +60,7 @@ export default class TxtbeyondService extends Service {
   assignMeetingPhones(teams, meetings) {
     const phoneNumberToTeam = teams.reduce((phoneNumberToTeam, team) => {
       (team.get('phones') || []).forEach(
-        (phone) => (phoneNumberToTeam[phone.number] = team)
+        (phone) => (phoneNumberToTeam[phone.number] = team),
       );
       return phoneNumberToTeam;
     }, {});
@@ -77,13 +77,13 @@ export default class TxtbeyondService extends Service {
             phoneNumberToCount[phone.number] = phone.meetingCount || 0;
             return phoneNumberToCount;
           },
-          {}
+          {},
         );
 
         const minimumCount = Math.min(...Object.values(phoneNumberToCount));
 
         const phoneNumbersWithMinimumCount = Object.keys(
-          phoneNumberToCount
+          phoneNumberToCount,
         ).filter((phoneNumber) => {
           return phoneNumberToCount[phoneNumber] === minimumCount;
         });
@@ -95,7 +95,7 @@ export default class TxtbeyondService extends Service {
 
         this._incrementTeamPhoneMeetingCount(
           phoneNumberToTeam[randomPhoneNumber],
-          randomPhoneNumber
+          randomPhoneNumber,
         );
         meeting.set('phone', randomPhoneNumber);
       });
@@ -103,13 +103,13 @@ export default class TxtbeyondService extends Service {
     return Promise.all(
       teams
         .map((team) => team.save())
-        .concat(meetings.map((meeting) => meeting.save()))
+        .concat(meetings.map((meeting) => meeting.save())),
     );
   }
 
   _incrementTeamPhoneMeetingCount(team, number) {
     const foundPhone = (team.get('phones') || []).find(
-      (p) => p.number === number
+      (p) => p.number === number,
     );
 
     if (!foundPhone) {

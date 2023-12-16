@@ -25,7 +25,7 @@ export default class WaypointsIndexController extends Controller {
 
     if (this.region) {
       filteredWaypoints = filteredWaypoints.filter(
-        (w) => w.region === this.region
+        (w) => w.region === this.region,
       );
     }
 

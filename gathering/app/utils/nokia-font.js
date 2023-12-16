@@ -587,7 +587,7 @@ const characters = {
 
 const characterWidths = Object.keys(characters).reduce((widths, character) => {
   widths[character] = Math.max(
-    ...characters[character].split('\n').map((line) => line.length)
+    ...characters[character].split('\n').map((line) => line.length),
   );
   return widths;
 }, {});
@@ -643,7 +643,7 @@ function pointDimensionsForDisplay(word, displaySize) {
   const displayDiagonalInPoints = displaySize * 72;
 
   const diagonalInPixelsWithMarks = Math.sqrt(
-    Math.pow(heightInPixelsWithMarks, 2) + Math.pow(widthInPixelsWithMarks, 2)
+    Math.pow(heightInPixelsWithMarks, 2) + Math.pow(widthInPixelsWithMarks, 2),
   );
 
   const pointsPerPixel = displayDiagonalInPoints / diagonalInPixelsWithMarks;

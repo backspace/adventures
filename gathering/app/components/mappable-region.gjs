@@ -32,7 +32,7 @@ export default class MappableRegionComponent extends Component {
     } else {
       return htmlSafe(
         `top: ${Math.max(this.args.region.y, 0)}px;` +
-          `left: ${Math.max(this.args.region.x, 0)}px;`
+          `left: ${Math.max(this.args.region.x, 0)}px;`,
       );
     }
   }
@@ -48,7 +48,7 @@ export default class MappableRegionComponent extends Component {
         .filter((m) => !m.isNew)
         .map((meeting) => meeting.belongsTo('destination').value())
         .map(
-          (destination) => destination.belongsTo('region').value().ancestor.id
+          (destination) => destination.belongsTo('region').value().ancestor.id,
         );
 
       const index = meetingAncestorRegionIds.indexOf(regionId);

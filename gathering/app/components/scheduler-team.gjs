@@ -36,7 +36,7 @@ export default class SchedulerTeamComponent extends Component {
 
     return teamMeetings.some(
       (meeting) =>
-        meeting.hasMany('teams').ids().indexOf(highlightedTeam.id) > -1
+        meeting.hasMany('teams').ids().indexOf(highlightedTeam.id) > -1,
     );
   }
 
@@ -95,7 +95,9 @@ export default class SchedulerTeamComponent extends Component {
         <span data-test-count>{{this.count}}</span>
 
         <div>
-          A<span data-test-average-awesomeness>{{this.roundedAwesomeness}}</span>
+          A<span
+            data-test-average-awesomeness
+          >{{this.roundedAwesomeness}}</span>
           R<span data-test-average-risk>{{this.roundedRisk}}</span>
         </div>
       </div>
@@ -103,9 +105,10 @@ export default class SchedulerTeamComponent extends Component {
       {{#if this.showMeetings}}
         <ul>
           {{#each @team.meetings as |meeting index|}}
-            <li data-test-meeting {{on 'click' (fn this.editMeeting meeting)}}><span
-                data-test-index
-              >{{index}}</span>:
+            <li
+              data-test-meeting
+              {{on 'click' (fn this.editMeeting meeting)}}
+            ><span data-test-index>{{index}}</span>:
               <span data-test-offset>{{meeting.offset}}</span></li>
           {{/each}}
         </ul>
