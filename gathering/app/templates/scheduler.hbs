@@ -21,7 +21,7 @@
 
   <ul class='regions' data-test-regions-destinations>
     {{#each this.model.ancestorRegionContainers as |region|}}
-      <Scheduler::RegionContainerDestinations
+      <Scheduler::RegionContents
         @container={{region}}
         @type='destination'
         @mouseEnterRegion={{this.mouseEnterRegion}}
@@ -36,7 +36,7 @@
   {{#if this.puzzles.implementation.hasWaypoints}}
     <ul class='waypoint-regions' data-test-waypoint-regions>
       {{#each this.model.ancestorRegionContainers as |region|}}
-        <Scheduler::RegionContainerDestinations
+        <Scheduler::RegionContents
           @container={{region}}
           @type='waypoint'
           @mouseEnterRegion={{this.mouseEnterRegion}}

@@ -6,7 +6,7 @@ import SchedulerWaypoint from 'adventure-gathering/components/scheduler-waypoint
 import createRef from 'ember-ref-bucket/modifiers/create-ref';
 import { eq } from 'ember-truth-helpers';
 
-export default class RegionContainerDestinations extends Component {
+export default class RegionContents extends Component {
   get region() {
     return this.args.container.region;
   }
@@ -69,7 +69,7 @@ export default class RegionContainerDestinations extends Component {
         {{/if}}
 
         {{#each @container.children as |childContainer|}}
-          <RegionContainerDestinations
+          <RegionContents
             @container={{childContainer}}
             @type={{@type}}
             @mouseEnterRegion={{@mouseEnterRegion}}
