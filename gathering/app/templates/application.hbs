@@ -2,7 +2,7 @@
 <div class='w-full'>
   <div class='mx-auto md:container'>
     <ul class='flex justify-center gap-4 bg-gray-200 p-2' data-test-nav>
-      <li class='pair'><LinkTo
+      <li><LinkTo
           @route='destinations'
           @query={{(hash regionId=null)}}
           data-test-destinations
@@ -12,7 +12,7 @@
           class='destinations new'
         >+</LinkTo></li>
       {{#if this.puzzles.implementation.hasWaypoints}}
-        <li class='pair'>
+        <li>
           <LinkTo
             @route='waypoints'
             @query={{(hash regionId=null)}}
@@ -20,7 +20,7 @@
           >way<span class='hidden sm:inline'>points</span></LinkTo>
           <LinkTo @route='waypoints.new' data-test-waypoint-new>+</LinkTo></li>
       {{/if}}
-      <li class='pair'><LinkTo @route='regions'>reg<span
+      <li><LinkTo @route='regions'>reg<span
             class='hidden sm:inline'
           >ions</span></LinkTo>
         <LinkTo @route='regions.new' class='regions new'>+</LinkTo></li>
@@ -31,7 +31,7 @@
       <li class='hidden sm:inline'><LinkTo
           @route='scheduler'
         >scheduler</LinkTo></li>
-      <li class='pair hidden sm:inline'><LinkTo
+      <li class='hidden sm:inline'><LinkTo
           @route='output'
           @query={{hash debug=false}}
         >output</LinkTo><LinkTo
