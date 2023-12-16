@@ -32,11 +32,11 @@ export default class RegionContainerDestinations extends Component {
         {{on 'mouseleave' @mouseLeaveRegion}}
         {{createRef (concat 'region-' this.region.id)}}
       >
-        <div class='name'>{{this.region.name}}</div>
+        <div class='name' data-test-name>{{this.region.name}}</div>
         {{#if this.region.accessibility}}
           <div
             class='accessibility'
-            data-test-accessibility
+            data-test-region-accessibility
           >{{this.region.accessibility}}</div>
         {{/if}}
 

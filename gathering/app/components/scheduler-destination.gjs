@@ -32,18 +32,19 @@ export default class SchedulerDestinationComponent extends Component {
     {{! template-lint-disable no-inline-styles }}
     {{! template-lint-disable no-invalid-interactive }}
     <li
-      class='destination
+      class='
         {{if @isSelected 'selected'}}
         {{if this.isHighlighted 'highlighted'}}'
       title='A{{@destination.awesomeness}} R{{@destination.risk}}'
       style={{this.style}}
       {{on 'click' this.select}}
+      data-test-destination
       ...attributes
     >
-      <div class='description'>{{@destination.description}}</div>
+      <div data-test-description>{{@destination.description}}</div>
 
       {{#if @destination.accessibility}}
-        <div class='accessibility'>{{@destination.accessibility}}</div>
+        <div class='accessibility' data-test-accessibility>{{@destination.accessibility}}</div>
       {{/if}}
     </li>
   </template>

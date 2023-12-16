@@ -8,8 +8,8 @@
       <Input
         id='destination-status'
         @checked={{this.model.destinationStatus}}
-        class='destination-status'
         @type='checkbox'
+        data-test-destination-status
       />
     </section>
 
@@ -20,8 +20,8 @@
       <Input
         id='clandestine-rendezvous'
         @checked={{this.model.clandestineRendezvous}}
-        class='clandestine-rendezvous'
         @type='checkbox'
+        data-test-clandestine-rendezvous
       />
     </section>
 
@@ -32,8 +32,8 @@
       <Input
         id='txtbeyond'
         @checked={{this.model.txtbeyond}}
-        class='txtbeyond'
         @type='checkbox'
+        data-test-txtbeyond
       />
     </section>
 
@@ -53,7 +53,8 @@
       <Input
         id={{utilities.label}}
         @value={{this.model.goal}}
-        class='goal {{utilities.inputClasses}}'
+        class='{{utilities.inputClasses}}'
+        data-test-goal
       />
     </LabeledInput>
 

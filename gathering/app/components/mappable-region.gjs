@@ -160,8 +160,9 @@ export default class MappableRegionComponent extends Component {
       {{on 'mousedown' this.dragStart}}
       {{on 'mouseup' this.dragEnd}}
       {{createRef 'Region'}}
+      data-test-mappable-region
     >
-      <div class='name'>
+      <div class='name' data-test-name>
         {{@region.name}}
       </div>
 
@@ -172,7 +173,7 @@ export default class MappableRegionComponent extends Component {
       {{/if}}
 
       {{#if this.meetingIndex}}
-        <div class='meeting-index'>
+        <div class='meeting-index' data-test-meeting-index>
           {{this.meetingIndex}}
         </div>
       {{/if}}

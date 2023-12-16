@@ -1,31 +1,31 @@
 import PageObject, { clickable, collection, text } from 'ember-cli-page-object';
 
 export default PageObject.create({
-  visit: clickable('a.sync'),
+  visit: clickable('[data-test-sync-route]'),
 
   destination: {
-    scope: 'input.destination',
+    scope: '[data-test-destination]',
   },
 
-  sync: clickable('button.sync'),
+  sync: clickable('[data-test-sync'),
 
-  databases: collection('.databases .database', {
+  databases: collection('[data-test-database]', {
     name: text('[data-test-database-name]'),
     click: clickable('[data-test-database-name]'),
     remove: clickable('[data-test-remove]'),
   }),
 
   push: {
-    scope: 'tr.push',
-    read: text('.read'),
-    written: text('.written'),
-    writeFailures: text('.write-failures'),
+    scope: '[data-test-push]',
+    read: text('[data-test-read]'),
+    written: text('[data-test-written]'),
+    writeFailures: text('[data-test-write-failures]'),
   },
 
   pull: {
-    scope: 'tr.pull',
-    read: text('.read'),
-    written: text('.written'),
-    writeFailures: text('.write-failures'),
+    scope: '[data-test-pull]',
+    read: text('[data-test-read]'),
+    written: text('[data-test-written]'),
+    writeFailures: text('[data-test-write-failures]'),
   },
 });

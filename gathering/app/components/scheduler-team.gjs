@@ -87,25 +87,26 @@ export default class SchedulerTeamComponent extends Component {
       {{on 'mouseenter' this.handleMouseEnter}}
       {{on 'mouseleave' this.handleMouseLeave}}
       data-risk-aversion={{@team.riskAversion}}
+      data-test-team
     >
       {{! template-lint-disable no-invalid-interactive }}
       <div {{on 'click' this.select}}>
-        <span class='name'>{{@team.truncatedName}}</span>
-        <span class='count'>{{this.count}}</span>
+        <span data-test-name>{{@team.truncatedName}}</span>
+        <span data-test-count>{{this.count}}</span>
 
         <div>
-          A<span class='average-awesomeness'>{{this.roundedAwesomeness}}</span>
-          R<span class='average-risk'>{{this.roundedRisk}}</span>
+          A<span data-test-average-awesomeness>{{this.roundedAwesomeness}}</span>
+          R<span data-test-average-risk>{{this.roundedRisk}}</span>
         </div>
       </div>
 
       {{#if this.showMeetings}}
         <ul>
           {{#each @team.meetings as |meeting index|}}
-            <li class='meeting' {{on 'click' (fn this.editMeeting meeting)}}><span
-                class='index'
+            <li data-test-meeting {{on 'click' (fn this.editMeeting meeting)}}><span
+                data-test-index
               >{{index}}</span>:
-              <span class='offset'>{{meeting.offset}}</span></li>
+              <span data-test-offset>{{meeting.offset}}</span></li>
           {{/each}}
         </ul>
       {{/if}}

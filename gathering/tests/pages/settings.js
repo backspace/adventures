@@ -10,25 +10,25 @@ export default PageObject.create({
   visit: visitable('/settings'),
 
   goalField: {
-    scope: 'input.goal',
+    scope: '[data-test-goal]',
     value: value(),
     fill: fillable(),
   },
 
   destinationStatus: {
-    scope: 'input.destination-status',
+    scope: '[data-test-destination-status]',
 
     isChecked: property('checked'),
   },
 
   clandestineRendezvous: {
-    scope: 'input.clandestine-rendezvous',
+    scope: '[data-test-clandestine-rendezvous]',
 
     isChecked: property('checked'),
   },
 
   txtbeyond: {
-    scope: 'input.txtbeyond',
+    scope: '[data-test-txtbeyond]',
 
     isChecked: property('checked'),
   },

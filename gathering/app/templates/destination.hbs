@@ -5,7 +5,8 @@
       <select
         id={{utilities.label}}
         {{on 'change' this.setRegion}}
-        class='region {{utilities.inputClasses}}'
+        class='{{utilities.inputClasses}}'
+        data-test-region
       >
         <option></option>
         <RegionOptions
@@ -19,8 +20,9 @@
       <Textarea
         id={{utilities.label}}
         @value={{this.model.description}}
-        class='description {{utilities.inputClasses}}'
+        class='{{utilities.inputClasses}}'
         rows={{4}}
+        data-test-description
       />
     </LabeledInput>
 
@@ -28,7 +30,8 @@
       <Input
         id={{utilities.label}}
         @value={{this.model.answer}}
-        class='answer {{utilities.inputClasses}}'
+        class='{{utilities.inputClasses}}'
+        data-test-answer
       />
     </LabeledInput>
 
@@ -37,13 +40,15 @@
         <Input
           id={{utilities.label}}
           @value={{this.model.mask}}
-          class='mask {{utilities.inputClasses}}'
+          class='{{utilities.inputClasses}}'
+          data-test-mask
         />
         {{#if this.model.suggestedMask}}
           <button
             type='button'
-            class='suggested-mask w-auto whitespace-nowrap bg-green-500 px-3'
+            class='w-auto whitespace-nowrap bg-green-500 px-3'
             {{on 'click' this.setMaskToSuggestion}}
+            data-test-suggested-mask
           >
             {{this.model.suggestedMask}}
           </button>
@@ -57,7 +62,8 @@
         <Textarea
           id={{utilities.label}}
           @value={{this.model.accessibility}}
-          class='accessibility {{utilities.inputClasses}}'
+          class='{{utilities.inputClasses}}'
+          data-test-accessibility
         />
       </LabeledInput>
 
@@ -65,8 +71,9 @@
         <Input
           @checked={{this.model.isOutside}}
           id={{utilities.label}}
-          class='outside {{utilities.inputClasses}}'
+          class='{{utilities.inputClasses}}'
           @type='checkbox'
+          data-test-outside
         />
       </LabeledInput>
 
@@ -90,11 +97,12 @@
           id={{utilities.label}}
           @value={{this.model.awesomeness}}
           @type='number'
-          class='awesomeness {{utilities.inputClasses}}'
+          class='undraggable {{utilities.inputClasses}}'
           min={{0}}
           max={{10}}
           step={{0.25}}
           {{draggable-number}}
+          data-test-awesomeness
         />
       </LabeledInput>
 
@@ -103,17 +111,21 @@
           id={{utilities.label}}
           @value={{this.model.risk}}
           @type='number'
-          class='risk undraggable {{utilities.inputClasses}}'
+          class='undraggable {{utilities.inputClasses}}'
           min={{0}}
           max={{10}}
           step={{0.25}}
           {{draggable-number}}
+          data-test-risk
         />
       </LabeledInput>
 
       {{#if (feature-flag 'destination-status')}}
         <LabeledInput class='w-full' @label='status' as |utilities|>
-          <fieldset class='status flex gap-4 {{utilities.inputClasses}}'>
+          <fieldset
+            class='flex gap-4 {{utilities.inputClasses}}'
+            data-test-status
+          >
             <RadioButton
               @value='available'
               @groupValue={{this.model.status}}
@@ -153,23 +165,26 @@
 
     <section class='my-2 flex justify-between gap-2'>
       <button
-        class='save w-full bg-green-500 p-2'
+        class='w-full bg-green-500 p-2'
         type='button'
         {{on 'click' (fn this.save this.model)}}
+        data-test-save
       >
         Save
       </button>
       <button
-        class='delete w-full bg-red-500 p-2'
+        class='w-full bg-red-500 p-2'
         type='button'
         {{on 'click' (fn this.delete this.model)}}
+        data-test-delete
       >
         Delete
       </button>
       <button
-        class='cancel w-full bg-yellow-500 p-2'
+        class='w-full bg-yellow-500 p-2'
         type='button'
         {{on 'click' (fn this.cancel this.model)}}
+        data-test-cancel
       >
         Cancel
       </button>

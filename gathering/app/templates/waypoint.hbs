@@ -100,7 +100,7 @@
 
       {{#if (feature-flag 'destination-status')}}
         <LabeledInput class='flex-1' @label='status' as |utilities|>
-          <fieldset class='status flex gap-4 {{utilities.inputClasses}}'>
+          <fieldset class='flex gap-4 {{utilities.inputClasses}}' data-test-status-fieldset>
             <RadioButton
               @value='available'
               @groupValue={{this.model.status}}

@@ -43,13 +43,13 @@ const setMap = function (selector) {
 export default PageObject.create({
   imageSrc: attribute('src', 'img'),
 
-  regions: collection('.region', {
-    name: text('.name'),
+  regions: collection('[data-test-mappable-region]', {
+    name: text('[data-test-name]'),
     x: x(),
     y: y(),
 
     async dragBy(x, y) {
-      const jqueryElement = findElement(this, '.name');
+      const jqueryElement = findElement(this, '[data-test-name]');
       const position = jqueryElement.position();
 
       await triggerEvent(jqueryElement[0], 'mousedown', {
@@ -64,5 +64,5 @@ export default PageObject.create({
     },
   }),
 
-  setMap: setMap('input#map'),
+  setMap: setMap('[data-test-map-input]'),
 });

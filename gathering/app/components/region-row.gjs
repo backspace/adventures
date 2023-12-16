@@ -1,5 +1,6 @@
 import { LinkTo } from '@ember/routing';
 import Component from '@glimmer/component';
+import { not } from 'ember-truth-helpers';
 
 export default class RegionRow extends Component {
   get nesting() {
@@ -18,16 +19,23 @@ export default class RegionRow extends Component {
 
   <template>
     <tr
-      class='region even:bg-gray-50
-        {{if @region.isComplete 'complete' 'incomplete'}}'
+      class='even:bg-gray-50
+      {{if @region.isComplete 'complete' 'incomplete'}}'
+      data-test-region
+      data-test-incomplete={{not @region.isComplete}}
     >
-      <td class='name p-2 align-top {{this.nestingStyle}}'>
+      <td class='p-2 align-top {{this.nestingStyle}}' data-test-name>
         {{@region.name}}
       </td>
       <td class='p-2 align-top'>{{@region.notes}}</td>
       <td class='p-2 align-top' data-test-hours>{{@region.hours}}</td>
       <td class='p-2 align-top'>
-        <LinkTo @route='region' @model={{@region}} class='edit underline'>
+        <LinkTo
+          @route='region'
+          @model={{@region}}
+          class='underline'
+          data-test-edit
+        >
           Edit
         </LinkTo>
       </td>

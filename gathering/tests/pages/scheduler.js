@@ -91,17 +91,17 @@ export default PageObject.create({
   destinationRegions: collection(
     '[data-test-regions-destinations] [data-test-scheduler-column-region]',
     {
-      name: text('> .name'),
-      accessibility: text('[data-test-accessibility]'),
+      name: text('> [data-test-name]'),
+      accessibility: text('[data-test-region-accessibility]'),
       notes: attribute('title'),
 
       hover: triggerable('mouseenter'),
       exit: triggerable('mouseleave'),
 
       destinations: collection('[data-test-scheduler-destination]', {
-        description: text('.description'),
+        description: text('[data-test-description]'),
         qualities: attribute('title'),
-        accessibility: text('.accessibility'),
+        accessibility: text('[data-test-accessibility]'),
 
         meetingCountBorderWidth: propertyValue('border-top-width'),
         awesomenessBorderOpacity: propertyColourOpacity('border-left-color'),
@@ -124,8 +124,8 @@ export default PageObject.create({
   waypointRegions: collection(
     '[data-test-waypoint-regions] [data-test-scheduler-column-region]',
     {
-      name: text('> .name'),
-      accessibility: text('[data-test-accessibility]'),
+      name: text('> [data-test-name]'),
+      accessibility: text('[data-test-region-accessibility]'),
       notes: attribute('title'),
 
       hover: triggerable('mouseenter'),
@@ -146,68 +146,68 @@ export default PageObject.create({
     }
   ),
 
-  teams: collection('.team', {
-    name: text('.name'),
+  teams: collection('[data-test-team]', {
+    name: text('[data-test-name]'),
     usersAndNotes: attribute('title'),
-    count: text('.count'),
+    count: text('[data-test-count]'),
     riskAversionColour: propertyColourName('border-right-color'),
 
-    averageAwesomeness: text('.average-awesomeness'),
-    averageRisk: text('.average-risk'),
+    averageAwesomeness: text('[data-test-average-awesomeness]'),
+    averageRisk: text('[data-test-average-risk]'),
 
     isSelected: hasClass('selected'),
     isHighlighted: hasClass('highlighted'),
     isAhead: hasClass('ahead'),
 
-    click: clickable('.name'),
-    hover: triggerable('mouseenter', '.name'),
+    click: clickable('[data-test-name]'),
+    hover: triggerable('mouseenter', '[data-test-name]'),
 
-    meetings: collection('.meeting', {
+    meetings: collection('[data-test-meeting]', {
       click: clickable(),
 
-      index: text('.index'),
-      offset: text('.offset'),
+      index: text('[data-test-index]'),
+      offset: text('[data-test-offset]'),
     }),
   }),
 
   map: {
-    scope: '.map',
+    scope: '[data-test-map]',
 
-    regions: collection('.region', {
+    regions: collection('[data-test-mappable-region]', {
       x: x(),
       y: y(),
 
-      name: text('.name'),
+      name: text('[data-test-name]'),
 
-      meetingIndex: text('.meeting-index'),
+      meetingIndex: text('[data-test-meeting-index]'),
       waypointMeetingIndex: text('[data-test-waypoint-meeting-index]'),
 
-      count: text('.count'),
+      count: text('[data-test-count]'),
 
       isHighlighted: hasClass('highlighted'),
     }),
   },
 
   meeting: {
-    scope: '.meeting-form',
+    scope: '[data-test-meeting-form]',
 
-    destination: selectText('.destination'),
-    waypoint: selectText('.waypoint'),
+    destination: selectText('[data-test-destination]'),
+    waypoint: selectText('[data-test-waypoint]'),
 
-    index: value('.index'),
+    index: value('[data-test-index]'),
 
     offset: {
       scope: '[data-test-offset-input]',
     },
 
-    teams: collection('.team', {
+    teams: collection('[data-test-team]', {
       value: selectText(),
     }),
 
     isForbidden: hasClass('forbidden'),
-    saveIsHidden: isHidden('button.save'),
+    saveIsHidden: isHidden('[data-test-save]'),
 
-    save: clickable('button.save'),
-    reset: clickable('button.reset'),
+    save: clickable('[data-test-save]'),
+    reset: clickable('[data-test-reset]'),
   },
 });

@@ -9,7 +9,7 @@
         >dest<span class='hidden sm:inline'>inations</span></LinkTo>
         <LinkTo
           @route='destinations.new'
-          class='destinations new'
+          data-test-destinations-new
         >+</LinkTo></li>
       {{#if this.puzzles.implementation.hasWaypoints}}
         <li>
@@ -23,7 +23,7 @@
       <li><LinkTo @route='regions'>reg<span
             class='hidden sm:inline'
           >ions</span></LinkTo>
-        <LinkTo @route='regions.new' class='regions new'>+</LinkTo></li>
+        <LinkTo @route='regions.new' data-test-regions-new>+</LinkTo></li>
       <li class='hidden sm:inline'><LinkTo
           @route='teams'
           class='teams'
@@ -38,7 +38,7 @@
           @route='output'
           @query={{hash debug=true}}
         >/d</LinkTo></li>
-      <li><LinkTo @route='sync' class='sync'>sync</LinkTo></li>
+      <li><LinkTo @route='sync' data-test-sync-route>sync</LinkTo></li>
       <li class='hidden sm:inline'><LinkTo
           @route='settings'
         >settings</LinkTo></li>

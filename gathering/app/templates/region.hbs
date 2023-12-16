@@ -5,7 +5,8 @@
       <Input
         id={{utilities.label}}
         @value={{this.model.name}}
-        class='name {{utilities.inputClasses}}'
+        class='{{utilities.inputClasses}}'
+        data-test-name-field
       />
     </LabeledInput>
 
@@ -13,8 +14,9 @@
       <Textarea
         id={{utilities.label}}
         @value={{this.model.notes}}
-        class='notes {{utilities.inputClasses}}'
+        class='{{utilities.inputClasses}}'
         rows={{4}}
+        data-test-notes-field
       />
     </LabeledInput>
 
@@ -22,7 +24,8 @@
       <select
         id={{utilities.label}}
         {{on 'change' this.setParent}}
-        class='region {{utilities.inputClasses}}'
+        class='{{utilities.inputClasses}}'
+        data-test-region
       >
         <option></option>
         <RegionOptions
@@ -52,23 +55,26 @@
 
     <section class='my-2 flex justify-between gap-2'>
       <button
-        class='save w-full bg-green-500 p-2'
+        class='w-full bg-green-500 p-2'
         type='button'
         {{on 'click' (fn this.save this.model)}}
+        data-test-save
       >
         Save
       </button>
       <button
-        class='delete w-full bg-red-500 p-2'
+        class='w-full bg-red-500 p-2'
         type='button'
         {{on 'click' (fn this.delete this.model)}}
+        data-test-delete
       >
         Delete
       </button>
       <button
-        class='cancel w-full bg-yellow-500 p-2'
+        class='w-full bg-yellow-500 p-2'
         type='button'
         {{on 'click' (fn this.cancel this.model)}}
+        data-test-cancel
       >
         Cancel
       </button>

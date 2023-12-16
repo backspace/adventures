@@ -10,13 +10,15 @@
         @type='url'
         @value={{or this.destination (get this.sortedDatabases '0')}}
         {{on 'change' this.handleDestinationInput}}
-        class='destination flex-1 p-2'
+        class='flex-1 p-2'
+        data-test-destination
       />
       <div class='input-group-button'>
         <button
           type='button'
           onclick={{perform this.sync}}
-          class='sync bg-black p-2 text-white'
+          class='bg-black p-2 text-white'
+          data-test-sync
         >
           {{#if this.syncTask.isRunning}}
             <Loading />
@@ -27,9 +29,9 @@
       </div>
     </div>
 
-    <ul class='databases pl-10 pt-2'>
+    <ul class='pl-10 pt-2'>
       {{#each this.sortedDatabases as |database|}}
-        <li class='database flex gap-2 p-2'>
+        <li class='flex gap-2 p-2' data-test-database>
           <button
             class='border-2 border-black p-2'
             type='button'
@@ -66,34 +68,34 @@
           </th>
         </thead>
         <tbody>
-          <tr class='push'>
+          <tr data-test-push>
             <td>
               push
             </td>
-            <td class='read'>
+            <td data-test-read>
               {{this.result.push.docs_read}}
             </td>
-            <td class='written'>
+            <td data-test-written>
               {{this.result.push.docs_written}}
             </td>
-            <td class='write-failures'>
+            <td data-test-write-failures>
               {{this.result.push.doc_write_failures}}
             </td>
             <td data-test-errors>
               {{this.result.push.errors}}
             </td>
           </tr>
-          <tr class='pull'>
+          <tr data-test-pull>
             <td>
               pull
             </td>
-            <td class='read'>
+            <td data-test-read>
               {{this.result.pull.docs_read}}
             </td>
-            <td class='written'>
+            <td data-test-written>
               {{this.result.pull.docs_written}}
             </td>
-            <td class='write-failures'>
+            <td data-test-write-failures>
               {{this.result.pull.doc_write_failures}}
             </td>
             <td data-test-errors>

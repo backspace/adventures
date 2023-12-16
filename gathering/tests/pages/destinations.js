@@ -11,6 +11,8 @@ import PageObject, {
   visitable,
 } from 'ember-cli-page-object';
 
+import hasAttribute from './has-attribute';
+
 const selectText = function (selector) {
   return {
     isDescriptor: true,
@@ -62,67 +64,67 @@ export default PageObject.create({
     isActive: hasClass('bg-black'),
   },
 
-  destinations: collection('.destination', {
-    description: text('.description'),
-    answer: text('.answer'),
-    awesomeness: text('.awesomeness'),
-    risk: text('.risk'),
-    mask: text('.mask'),
+  destinations: collection('[data-test-destination]', {
+    description: text('[data-test-description]'),
+    answer: text('[data-test-answer]'),
+    awesomeness: text('[data-test-awesomeness]'),
+    risk: text('[data-test-risk]'),
+    mask: text('[data-test-mask]'),
 
     isIncomplete: hasClass('border-x-red-500'),
-    hasMeetings: hasClass('meetings'),
+    hasMeetings: hasAttribute('[data-test-has-meetings]'),
 
     region: { scope: '[data-test-destination-region]' },
 
     status: {
-      scope: '.status',
+      scope: '[data-test-status]',
       value: text(),
       click: clickable(),
     },
 
-    edit: clickable('.edit'),
+    edit: clickable('[data-test-edit]'),
   }),
 
-  new: clickable('.destinations.new'),
+  new: clickable('[data-test-destinations-new]'),
 
   descriptionField: {
-    scope: 'textarea.description',
+    scope: '[data-test-description]',
     value: value(),
     fill: fillable(),
   },
 
   accessibilityField: {
-    scope: 'textarea.accessibility',
+    scope: '[data-test-accessibility]',
     value: value(),
     fill: fillable(),
   },
 
   awesomenessField: {
-    scope: 'input.awesomeness',
+    scope: '[data-test-awesomeness]',
     value: value(),
     fill: fillable(),
   },
 
   riskField: {
-    scope: 'input.risk',
+    scope: '[data-test-risk]',
     value: value(),
     fill: fillable(),
   },
 
   answerField: {
-    scope: 'input.answer',
+    scope: '[data-test-answer]',
     value: value(),
     fill: fillable(),
   },
 
   maskField: {
-    scope: 'input.mask',
+    scope: '[data-test-mask]',
     value: value(),
     fill: fillable(),
   },
 
   suggestedMaskButton: {
-    scope: 'button.suggested-mask',
+    scope: '[data-test-suggested-mask]',
     label: text(),
     click: clickable(),
   },
@@ -134,7 +136,7 @@ export default PageObject.create({
   },
 
   regionField: {
-    scope: 'select.region',
+    scope: '[data-test-region]',
     value: value(),
     text: selectText(),
     fillByText: fillSelectByText(),
@@ -143,7 +145,7 @@ export default PageObject.create({
   },
 
   statusFieldset: {
-    scope: 'fieldset.status',
+    scope: '[data-test-status]',
 
     availableOption: {
       scope: 'input[value=available]',
@@ -155,7 +157,7 @@ export default PageObject.create({
     scope: '[data-test-errors]',
   },
 
-  save: clickable('.save'),
-  cancel: clickable('.cancel'),
-  delete: clickable('.delete'),
+  save: clickable('[data-test-save]'),
+  cancel: clickable('[data-test-cancel]'),
+  delete: clickable('[data-test-delete]'),
 });

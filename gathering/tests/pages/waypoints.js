@@ -128,7 +128,7 @@ export default PageObject.create({
   },
 
   statusFieldset: {
-    scope: 'fieldset.status',
+    scope: '[data-test-status-fieldset]',
 
     availableOption: {
       scope: 'input[value=available]',

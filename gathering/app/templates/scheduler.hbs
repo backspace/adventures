@@ -2,7 +2,7 @@
   id='scheduler'
   class={{if this.puzzles.implementation.hasWaypoints 'has-waypoints'}}
 >
-  <div class='map'>
+  <div class='map' data-test-map>
     <img src={{this.model.map}} alt='map' />
     {{#each this.model.ancestorRegionContainers as |regionContainer|}}
       {{#let regionContainer.region as |region|}}
@@ -13,7 +13,7 @@
           @highlightedTeam={{this.highlightedTeam}}
           @sidebarRegionElement={{ref-to (concat 'region-' region.id)}}
         >
-          <div class='count'>{{region.meetingCount}}</div>
+          <div class='count' data-test-count>{{region.meetingCount}}</div>
         </MappableRegion>
       {{/let}}
     {{/each}}
@@ -64,11 +64,11 @@
     {{/each}}
   </ul>
 
-  <div class='meeting-form {{if this.meeting.isForbidden 'forbidden'}}'>
+  <div class='meeting-form {{if this.meeting.isForbidden 'forbidden'}}' data-test-meeting-form>
     {{#if this.puzzles.implementation.hasWaypoints}}
       <div class='row'>
         <label for='waypoint-select'>W</label>
-        <select id='waypoint-select' class='waypoint'>
+        <select id='waypoint-select' class='waypoint' data-test-waypoint>
           <option></option>
           {{#each this.model.waypoints as |waypoint|}}
             {{#if waypoint.isAvailable}}
@@ -84,7 +84,7 @@
 
     <div class='row'>
       <label for='destination-select'>D</label>
-      <select id='destination-select' class='destination'>
+      <select id='destination-select' class='destination' data-test-destination>
         <option></option>
         {{#each this.model.destinations as |destination|}}
           {{#if destination.isAvailable}}
@@ -100,7 +100,7 @@
     {{#each this.meeting.sortedTeams as |meetingTeam index|}}
       <div class='row'>
         <label for={{concat 'team-select-' index}}>T{{index}}</label>
-        <select id={{concat 'team-select-' index}} class='team'>
+        <select id={{concat 'team-select-' index}} class='team' data-test-team>
           {{#each this.model.teams as |team|}}
             <option
               value={{team.id}}
@@ -113,7 +113,7 @@
 
     <div class='row'>
       <label for='index-input'>I</label>
-      <Input @value={{this.meeting.index}} id='index-input' class='index' />
+      <Input @value={{this.meeting.index}} id='index-input' class='index' data-test-index />
     </div>
 
     {{#if this.puzzles.implementation.hasMeetingOffsets}}
@@ -133,13 +133,15 @@
     {{#unless this.meeting.isForbidden}}
       <button
         type='button'
-        class='save button tiny success'
+        class='button tiny success'
         onclick={{this.saveMeeting}}
+        data-test-save
       >Save</button>
       <button
         type='button'
-        class='reset button tiny alert'
+        class='button tiny alert'
         onclick={{this.resetMeeting}}
+        data-test-reset
       >Reset</button>
     {{/unless}}
   </div>
