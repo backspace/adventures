@@ -3,7 +3,7 @@ import { action } from '@ember/object';
 import { htmlSafe } from '@ember/template';
 import Component from '@glimmer/component';
 
-export default class SchedulerWaypointComponent extends Component {
+export default class WaypointComponent extends Component {
   @action select() {
     this.args.select(this.args.waypoint);
   }

@@ -3,7 +3,7 @@ import { action } from '@ember/object';
 import { htmlSafe } from '@ember/template';
 import Component from '@glimmer/component';
 
-export default class SchedulerDestinationComponent extends Component {
+export default class DestinationComponent extends Component {
   get style() {
     return htmlSafe(
       `border-top-width: ${

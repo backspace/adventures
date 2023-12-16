@@ -1,8 +1,8 @@
 import { fn, concat } from '@ember/helper';
 import { on } from '@ember/modifier';
 import Component from '@glimmer/component';
-import SchedulerDestination from 'adventure-gathering/components/scheduler-destination';
-import SchedulerWaypoint from 'adventure-gathering/components/scheduler-waypoint';
+import SchedulerDestination from 'adventure-gathering/components/scheduler/destination';
+import SchedulerWaypoint from 'adventure-gathering/components/scheduler/waypoint';
 import createRef from 'ember-ref-bucket/modifiers/create-ref';
 import { eq } from 'ember-truth-helpers';
 
