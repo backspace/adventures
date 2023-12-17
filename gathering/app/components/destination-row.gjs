@@ -72,7 +72,7 @@ export default class DestinationRow extends Component {
       >{{@destination.description}}</td>
       <td class='p-2 align-top' data-test-answer>{{@destination.answer}}</td>
       <td
-        class='hidden p-2 align-top md:table-cell'
+        class='p-2 align-top hidden sm:table-cell'
         data-test-mask
       >{{@destination.mask}}</td>
       <td
