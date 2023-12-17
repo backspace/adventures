@@ -54,6 +54,7 @@ jobs:
         working-directory: registrations
       - run: npm run deploy --prefix assets
         working-directory: registrations
+      - uses: browser-actions/setup-chrome@v1
       - run: chrome --version
       - uses: nanasess/setup-chromedriver@v2
       - run: |
