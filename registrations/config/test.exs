@@ -18,6 +18,6 @@ config :adventure_registrations, AdventureRegistrations.Repo,
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox
 
-config :hound, driver: "chrome_driver", browser: "chrome_headless"
+config :hound, driver: "chrome_driver", browser: "chrome"
 
 config :adventure_registrations, AdventureRegistrations.Mailer, adapter: Swoosh.Adapters.Local
