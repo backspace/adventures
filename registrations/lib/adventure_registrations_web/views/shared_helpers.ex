@@ -5,6 +5,9 @@ defmodule AdventureRegistrationsWeb.SharedHelpers do
     omission = opts[:omission] || "…"
 
     cond do
+      !text ->
+        ""
+
       not String.valid?(text) ->
         text
 
