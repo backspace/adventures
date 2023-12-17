@@ -1,0 +1,14 @@
+{{#each voicemails}}
+  <tr class="{{#if approved}}approved{{else}}unapproved{{/if}}" data-id="{{id}}">
+  {{#if (not @index)}}
+    <th rowspan={{len ../voicemails}}>{{../label}}</th>
+  {{/if}}
+    <td>
+      {{character_name}}
+    </td>
+    <td>{{team_name}}</td>
+    <td>
+      <audio controls src="{{url}}"></audio>
+    </td>
+  </tr>
+{{/each}}

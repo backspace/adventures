@@ -12,10 +12,12 @@ use crate::AppState;
 
 #[derive(Serialize)]
 pub struct Voicemails {
-    voicemails: Vec<Voicemail>,
+    unapproved: Vec<Voicemail>,
+    approved: Vec<Voicemail>,
+    rejected: Vec<Voicemail>,
 }
 
-#[derive(sqlx::FromRow, Serialize)]
+#[derive(Clone, sqlx::FromRow, Serialize)]
 pub struct Voicemail {
     id: Uuid,
     character_name: String,
@@ -51,10 +53,32 @@ pub async fn get_admin_voicemails(
     .await
     .expect("Failed to fetch voicemails");
 
+    let unapproved = voicemails
+        .iter()
+        .filter(|v| v.approved == Some(false))
+        .cloned()
+        .collect::<Vec<_>>();
+
+    let approved = voicemails
+        .iter()
+        .filter(|v| v.approved == Some(true))
+        .cloned()
+        .collect::<Vec<_>>();
+
+    let rejected = voicemails
+        .iter()
+        .filter(|v| v.approved.is_none())
+        .cloned()
+        .collect::<Vec<_>>();
+
     RenderHtml(
         key.chars().skip(1).collect::<String>(),
         state.engine,
-        Voicemails { voicemails },
+        Voicemails {
+            unapproved,
+            approved,
+            rejected,
+        },
     )
 }
 

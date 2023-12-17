@@ -38,6 +38,14 @@ async fn list_voicemails(db: PgPool) {
         .find(Name("tr").and(Class("unapproved")))
         .next()
         .unwrap();
+    assert_that(
+        &first_unapproved_row
+            .find(Name("th"))
+            .next()
+            .unwrap()
+            .text()
+            .contains("unapproved"),
+    );
     assert_that(&first_unapproved_row.text()).contains("knut");
     assert_eq!(
         &first_unapproved_row
@@ -53,12 +61,20 @@ async fn list_voicemails(db: PgPool) {
         &"4a578222-9a0e-48f0-a023-2be7d873849f"
     );
 
-    let first_row = document
+    let first_approved_row = document
         .find(Descendant(Name("tbody"), Name("tr")))
         .next()
         .unwrap();
+    assert_that(
+        &first_approved_row
+            .find(Name("th"))
+            .next()
+            .unwrap()
+            .text()
+            .contains("approved"),
+    );
     assert_eq!(
-        &first_row
+        &first_approved_row
             .find(Name("audio"))
             .next()
             .unwrap()
@@ -67,12 +83,20 @@ async fn list_voicemails(db: PgPool) {
         &"http://example.com/voicemail-old"
     );
 
-    assert_that(&first_row.text()).contains("tortles");
+    assert_that(&first_approved_row.text()).contains("tortles");
 
     let rejected_row = document
         .find(Name("tr").and(Class("unapproved")))
         .last()
         .unwrap();
+    assert_that(
+        &rejected_row
+            .find(Name("th"))
+            .next()
+            .unwrap()
+            .text()
+            .contains("rejected"),
+    );
     assert_that(&rejected_row.text()).contains("rejected");
 }
 
