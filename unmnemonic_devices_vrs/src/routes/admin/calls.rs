@@ -94,7 +94,7 @@ pub async fn get_calls(
 
     let call_teams = sqlx::query_as::<_, CallWithTeam>(
         "
-          SELECT c.id as call_id, c.path as call_path, t.name as team_name
+          SELECT c.id as call_id, c.path as call_path, t.name_truncated as team_name
           FROM unmnemonic_devices.calls c
           LEFT JOIN teams t ON c.team_id = t.id
           WHERE c.id = ANY($1)

@@ -36,7 +36,7 @@ pub async fn get_admin_voicemails(
         r#"
           SELECT
             r.*,
-            t.name as team_name
+            t.name_truncated as team_name
           FROM
             unmnemonic_devices.recordings r
           LEFT JOIN

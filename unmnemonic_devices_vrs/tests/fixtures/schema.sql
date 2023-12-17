@@ -112,7 +112,12 @@ CREATE TABLE public.teams (
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL,
     voicepass character varying(255),
-    listens integer DEFAULT 0
+    listens integer DEFAULT 0,
+    name_truncated character varying(53) GENERATED ALWAYS AS (
+CASE
+    WHEN (length(name) > 50) THEN ("substring"(name, 1, (50 - "position"(reverse("substring"(name, 1, 50)), ' '::text))) || '…'::text)
+    ELSE name
+END) STORED
 );
 
 
@@ -547,3 +552,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231111171443);
 INSERT INTO public."schema_migrations" (version) VALUES (20231112020314);
 INSERT INTO public."schema_migrations" (version) VALUES (20231204001556);
 INSERT INTO public."schema_migrations" (version) VALUES (20231205235352);
+INSERT INTO public."schema_migrations" (version) VALUES (20231217183904);

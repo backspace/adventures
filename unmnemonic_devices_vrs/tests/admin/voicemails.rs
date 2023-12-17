@@ -46,6 +46,7 @@ async fn list_voicemails(db: PgPool) {
             .text()
             .contains("unapproved"),
     );
+    assert_that(&first_unapproved_row.text()).contains("tortles this is a truncated team name…");
     assert_that(&first_unapproved_row.text()).contains("knut");
     assert_eq!(
         &first_unapproved_row

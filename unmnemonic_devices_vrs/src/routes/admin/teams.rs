@@ -37,13 +37,13 @@ pub async fn get_admin_teams(
     let teams = sqlx::query_as::<_, Team>(
         r#"
             SELECT
-                t.name AS name,
+                t.name_truncated AS name,
                 t.voicepass AS voicepass,
                 complete,
                 ARRAY_AGG(region_listens ORDER BY region_listens) AS region_listens
             FROM (
                 SELECT
-                    t.name,
+                    t.name_truncated,
                     t.listens > 0 as complete,
                     t.voicepass,
                     r.name || ': ' || COALESCE(SUM(m.listens), 0) AS region_listens
@@ -53,12 +53,12 @@ pub async fn get_admin_teams(
                 LEFT JOIN unmnemonic_devices.destinations d ON m.destination_id = d.id
                 LEFT JOIN unmnemonic_devices.regions r ON d.region_id = r.id
                 GROUP BY
-                    t.name, complete, t.voicepass, r.name
+                    t.name_truncated, complete, t.voicepass, r.name
             ) t
             GROUP BY
-                t.name, complete, t.voicepass
+                t.name_truncated, complete, t.voicepass
             ORDER BY
-                t.name;
+                t.name_truncated;
         "#,
     )
     .fetch_all(&state.db)

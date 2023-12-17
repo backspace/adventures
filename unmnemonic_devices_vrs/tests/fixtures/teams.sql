@@ -10,7 +10,7 @@ VALUES
   ),
   (
     '5f721b36-38bd-4504-a5aa-428e9447ab12',
-    'tortles',
+    'tortles this is a truncated team name veryveryveryvery long it has ended',
     'this is another voicepass',
     now(),
     now()
