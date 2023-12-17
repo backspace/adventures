@@ -1,17 +1,7 @@
 <div class='row'>
   <div class='small-12 columns'>
     {{#if this.region}}
-      <section data-test-waypoint-region-scope>
-        <strong data-test-title>
-          {{this.region.name}}
-        </strong>
-        <LinkTo
-          class='underline'
-          @route='waypoints'
-          @query={{(hash regionId=null)}}
-          data-test-leave
-        >leave</LinkTo>
-      </section>
+      <RegionHeading @region={{this.region}} @route='destinations' />
     {{/if}}
     <table>
       <thead>

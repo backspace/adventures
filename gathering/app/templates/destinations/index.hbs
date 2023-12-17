@@ -1,15 +1,5 @@
 {{#if this.region}}
-  <section data-test-destination-region-scope>
-    <strong data-test-title>
-      {{this.region.name}}
-    </strong>
-    <LinkTo
-      class='underline'
-      @route='destinations'
-      @query={{(hash regionId=null)}}
-      data-test-leave
-    >leave</LinkTo>
-  </section>
+  <RegionHeading @region={{this.region}} @route='destinations' />
 {{/if}}
 <table>
   <thead>
