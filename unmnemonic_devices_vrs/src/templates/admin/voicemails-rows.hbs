@@ -1,8 +1,8 @@
 {{#each voicemails}}
-  <tr class="{{#if approved}}approved{{else}}unapproved{{/if}}" data-id="{{id}}">
-  {{#if (not @index)}}
-    <th rowspan={{len ../voicemails}}>{{../label}}</th>
-  {{/if}}
+  <tr class="{{#if approved}}approved{{else}}unapproved{{/if}} {{#if listened}}listened{{/if}}" data-id="{{id}}">
+    {{#if (not @index)}}
+      <th rowspan={{len ../voicemails}}>{{../label}}</th>
+    {{/if}}
     <td>
       {{character_name}}
     </td>

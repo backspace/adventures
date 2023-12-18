@@ -24,6 +24,7 @@ pub struct Voicemail {
     url: String,
     approved: Option<bool>,
     team_name: Option<String>,
+    listened: bool,
 }
 
 #[axum_macros::debug_handler]
@@ -36,8 +37,12 @@ pub async fn get_admin_voicemails(
         r#"
           SELECT
             r.*,
-            t.name_truncated as team_name
-          FROM
+            t.name_truncated as team_name,
+            CASE
+              WHEN ARRAY_LENGTH(team_listen_ids, 1) IS NULL OR ARRAY_LENGTH(team_listen_ids, 1) = 0 THEN FALSE
+              ELSE TRUE
+            END AS listened
+            FROM
             unmnemonic_devices.recordings r
           LEFT JOIN
             unmnemonic_devices.calls c ON r.call_id = c.id

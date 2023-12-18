@@ -16,7 +16,8 @@ use uuid::uuid;
     "teams",
     "calls",
     "calls-teams",
-    "recordings-to-team-call"
+    "recordings-to-team-call",
+    "recordings-encouraging-listened"
 ))]
 async fn list_voicemails(db: PgPool) {
     let response = get(db, "/admin/voicemails", false)
@@ -82,6 +83,20 @@ async fn list_voicemails(db: PgPool) {
             .attr("src")
             .unwrap(),
         &"http://example.com/voicemail-old"
+    );
+
+    let approved_listened_row = document
+        .find(Descendant(Name("tbody"), Name("tr")).and(Class("listened")))
+        .next()
+        .unwrap();
+    assert_eq!(
+        &approved_listened_row
+            .find(Name("audio"))
+            .next()
+            .unwrap()
+            .attr("src")
+            .unwrap(),
+        &"http://example.com/old-approved"
     );
 
     assert_that(&first_approved_row.text()).contains("tortles");
