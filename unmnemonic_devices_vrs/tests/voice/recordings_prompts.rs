@@ -1,5 +1,11 @@
 use crate::common;
-use common::helpers::{get, post, RedirectTo};
+use common::helpers::{get, post, spawn_app, RedirectTo};
+
+use base64::{engine::general_purpose, Engine as _};
+use std::env;
+use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
+use unmnemonic_devices_vrs::InjectableServices;
+use wiremock::{matchers::any, Mock, MockServer, ResponseTemplate};
 
 use select::{document::Document, predicate::Name};
 use serde::Serialize;
@@ -439,13 +445,12 @@ async fn post_character_prompt_decide_updates_recording_upon_save(db: PgPool) {
     assert_that(&response).redirects_to("/recordings/prompts/testa");
 }
 
-#[ignore = "doesn’t actually exercise cache because each request starts a new server"]
-#[sqlx::test(fixtures("schema", "recordings-prompts-pure-monitoring"))]
+#[sqlx::test(fixtures("schema", "calls-recordings", "recordings-prompts-pure-monitoring"))]
 async fn post_character_prompt_decide_updates_cache_upon_save(db: PgPool) {
-    post(
+    let (app_address, client) = post_and_return_client(
       db.clone(),
       "/recordings/prompts/pure/monitoring/decide?recording_url=http://example.com/newer-monitoring",
-      "SpeechResult=Save.",
+      "SpeechResult=Save.&CallSid=HMM_SID",
       true,
   )
   .await
@@ -454,7 +459,7 @@ async fn post_character_prompt_decide_updates_cache_upon_save(db: PgPool) {
     let recording_url = sqlx::query_as::<_, Recording>(
         r#"
         SELECT
-          r.url
+          r.url, r.call_id
         FROM
           unmnemonic_devices.recordings r
         WHERE
@@ -472,7 +477,7 @@ async fn post_character_prompt_decide_updates_cache_upon_save(db: PgPool) {
         "http://example.com/newer-monitoring"
     );
 
-    let get_prerecord_response = get(db.clone(), "/prerecord", true)
+    let get_prerecord_response = get_with_client(app_address, client, "/prerecord")
         .await
         .expect("Failed to execute get prompt request.");
 
@@ -517,4 +522,76 @@ async fn post_character_prompt_decide_discards_and_forwards_unrecorded(db: PgPoo
       .expect("Failed to execute request.");
 
     assert_that(&response).redirects_to("/recordings/prompts/testa/voicepass?unrecorded");
+}
+
+async fn get_with_client(
+    app_address: String,
+    client: reqwest::Client,
+    path: &str,
+) -> Result<reqwest::Response, reqwest::Error> {
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+
+    client
+        .get(&format!("{}{}", app_address, path))
+        .header(
+            "Authorization",
+            format!(
+                "Basic {}",
+                general_purpose::STANDARD.encode(config.auth.clone())
+            ),
+        )
+        .send()
+        .await
+}
+
+async fn post_and_return_client(
+    db: PgPool,
+    path: &str,
+    body: &str,
+    skip_redirects: bool,
+) -> Result<(String, reqwest::Client), reqwest::Error> {
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(any())
+        .respond_with(ResponseTemplate::new(500))
+        .expect(0)
+        .named("Mock Twilio API")
+        .mount(&mock_twilio)
+        .await;
+
+    let services = InjectableServices {
+        db,
+        twilio_address: mock_twilio.uri(),
+    };
+
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = &env_config_provider.get_config();
+    let app_address = spawn_app(services).await.address;
+    let client_builder = reqwest::Client::builder();
+
+    let client = if skip_redirects {
+        client_builder
+            .redirect(reqwest::redirect::Policy::none())
+            .build()?
+    } else {
+        client_builder.build()?
+    };
+
+    client
+        .post(&format!("{}{}", app_address, path))
+        .header(
+            "Authorization",
+            format!(
+                "Basic {}",
+                general_purpose::STANDARD.encode(config.auth.clone())
+            ),
+        )
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .body(body.to_string())
+        .send()
+        .await
+        .expect("Failed to execute post");
+
+    Ok((app_address, client))
 }
