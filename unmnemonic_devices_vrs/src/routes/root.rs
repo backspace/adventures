@@ -228,7 +228,7 @@ pub async fn post_root(State(state): State<AppState>, Form(form): Form<TwilioFor
         && settings.unwrap().begun.unwrap()
     {
         if form.speech_result == "recordings" {
-            Redirect::to("/recordings")
+            Redirect::to("/recordings/confirm")
         } else {
             Redirect::to("/teams")
         }
@@ -247,7 +247,7 @@ pub async fn post_root(State(state): State<AppState>, Form(form): Form<TwilioFor
         } else if form.speech_result == "begun" {
             Redirect::to("/?begun")
         } else if form.speech_result == "recordings" {
-            Redirect::to("/recordings")
+            Redirect::to("/recordings/confirm")
         } else {
             Redirect::to("/")
         }

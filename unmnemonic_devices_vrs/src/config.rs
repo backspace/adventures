@@ -8,6 +8,7 @@ pub struct Config {
     pub database_url: Url,
     pub conductor_number: String,
     pub supervisor_number: String,
+    pub recordings_voicepass: String,
     pub root_url: Url,
     pub twilio_account_sid: String,
     pub twilio_api_key_sid: String,
@@ -35,6 +36,10 @@ impl EnvVarProvider {
             supervisor_number: args
                 .get("SUPERVISOR_NUMBER")
                 .expect("Missing supervisor number")
+                .to_string(),
+            recordings_voicepass: args
+                .get("RECORDINGS_VOICEPASS")
+                .expect("Missing recordings voicepass")
                 .to_string(),
             root_url: Url::parse(args.get("ROOT_URL").expect("Missing root URL"))
                 .expect("Unable to parse ROOT_URL as a URL"),

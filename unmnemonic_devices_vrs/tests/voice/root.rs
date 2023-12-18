@@ -302,7 +302,7 @@ async fn root_serves_down_when_down(db: PgPool) {
 async fn post_recordings_redirects(db: PgPool) {
     for (speech_result, redirect) in [
         ("Begun.", "/?begun"),
-        ("Recordings.", "/recordings"),
+        ("Recordings.", "/recordings/confirm"),
         ("Knut.", "/voicemails/knut"),
         ("Pure.", "/voicemails/pure"),
         ("Remember.", "/voicemails/remember/confirm"),
@@ -326,7 +326,7 @@ async fn post_recordings_redirects(db: PgPool) {
 async fn post_unknown_redirects_to_teams_when_begun(db: PgPool) {
     for (speech_result, redirect) in [
         ("Begun.", "/teams"),
-        ("Recordings.", "/recordings"),
+        ("Recordings.", "/recordings/confirm"),
         ("whatever.", "/teams"),
     ] {
         let response = post(

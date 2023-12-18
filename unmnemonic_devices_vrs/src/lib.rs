@@ -103,6 +103,12 @@ pub async fn app(services: InjectableServices) -> Router {
         .route("/meetings/:id", post(post_meeting))
         .route("/recordings", get(get_recordings))
         .route("/recordings", post(post_recordings))
+        .route("/recordings/confirm", get(get_recordings_confirm))
+        .route("/recordings/confirm", post(post_recordings_confirm))
+        .route(
+            "/recordings/voicepass-incorrect",
+            get(get_recordings_voicepass_incorrect),
+        )
         .route("/recordings/prompts", get(get_prompts))
         .route("/recordings/prompts", post(post_prompts))
         .route(
