@@ -52,6 +52,7 @@ defmodule AdventureRegistrations.Integration.Admin do
     a =
       insert(:user,
         email: "a@example.com",
+        attending: true,
         proposed_team_name: "Team A",
         team_emails: "b@example.com",
         risk_aversion: 3,
@@ -61,13 +62,21 @@ defmodule AdventureRegistrations.Integration.Admin do
     b =
       insert(:user,
         email: "b@example.com",
+        attending: true,
         proposed_team_name: "Team B",
         team_emails: "a@example.com",
         risk_aversion: 1,
         accessibility: "More text"
       )
 
-    c = insert(:user, email: "c@example.com", team_emails: "a@example.com b@example.com")
+    insert(:user, email: "not-attending@example.com", attending: false)
+
+    c =
+      insert(:user,
+        email: "c@example.com",
+        attending: true,
+        team_emails: "a@example.com b@example.com"
+      )
 
     insert(:octavia, admin: true)
 
@@ -87,6 +96,14 @@ defmodule AdventureRegistrations.Integration.Admin do
     assert Users.teamed(a.id)
     assert Users.teamed(b.id)
     refute Users.teamed(c.id)
+
+    assert Users.all_emails() == [
+             "c@example.com",
+             "octavia.butler@example.com",
+             "not-attending@example.com",
+             "a@example.com",
+             "b@example.com"
+           ]
 
     Nav.teams_link().click
 

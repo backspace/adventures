@@ -7,7 +7,20 @@ defmodule AdventureRegistrationsWeb.UserController do
   plug AdventureRegistrationsWeb.Plugs.LoginRequired when action in [:edit, :update]
 
   def index(conn, _params) do
-    users = Repo.all(User) |> Repo.preload(:team)
+    users =
+      from(u in User,
+        order_by: [
+          desc: u.team_id,
+          asc:
+            fragment(
+              "CASE WHEN ? IS TRUE THEN 0 WHEN ? IS NULL THEN 1 ELSE 2 END",
+              u.attending,
+              u.attending
+            )
+        ]
+      )
+      |> Repo.all()
+      |> Repo.preload(:team)
 
     render(conn, "index.html", users: users)
   end

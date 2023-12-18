@@ -28,4 +28,8 @@ defmodule AdventureRegistrations.Pages.Users do
   def build_team_from(id) do
     click({:css, "#{user_container(id)} a"})
   end
+
+  def all_emails() do
+    Hound.Helpers.Page.find_all_elements(:css, "tr .email") |> Enum.map(&visible_text/1)
+  end
 end
