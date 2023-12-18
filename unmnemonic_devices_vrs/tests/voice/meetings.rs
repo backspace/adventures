@@ -1,19 +1,16 @@
 use crate::common;
-use common::helpers::{get, get_with_twilio, post, RedirectTo};
+use common::helpers::{get, get_config, get_with_twilio, post, RedirectTo};
 use select::{document::Document, predicate::Name};
 use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::PgPool;
-use std::env;
-use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::InjectableServices;
 use wiremock::matchers::{body_string, method, path_regex};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
 #[sqlx::test(fixtures("schema", "teams", "books", "regions", "destinations", "meetings"))]
 async fn meeting_show_names_region_increments_listens_and_notifies(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let vrs_number = config.vrs_number.to_string();
     let conductor_number = config.conductor_number.to_string();
 

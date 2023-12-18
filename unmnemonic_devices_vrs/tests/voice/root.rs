@@ -1,5 +1,5 @@
 use crate::common;
-use common::helpers::{get, get_with_twilio, post, RedirectTo};
+use common::helpers::{get, get_config, get_with_twilio, post, RedirectTo};
 
 use select::{
     document::Document,
@@ -9,8 +9,6 @@ use serde::Serialize;
 use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::PgPool;
-use std::env;
-use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::InjectableServices;
 use wiremock::matchers::{body_string, method, path_regex};
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -23,8 +21,7 @@ pub struct CallRecord {
 
 #[sqlx::test(fixtures("schema", "settings"))]
 async fn root_serves_prewelcome_notifies_and_stores_call(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let vrs_number = config.vrs_number.to_string();
     let conductor_number = config.conductor_number.to_string();
 
@@ -82,8 +79,7 @@ async fn root_serves_prewelcome_notifies_and_stores_call(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "settings"))]
 async fn root_ignores_duplicate_call_sid(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let conductor_number = config.conductor_number.to_string();
 
     let response = get(
@@ -102,8 +98,7 @@ async fn root_ignores_duplicate_call_sid(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "settings-override"))]
 async fn root_plays_override_when_it_exists(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let conductor_number = config.conductor_number.to_string();
 
     let response = get(
@@ -180,8 +175,7 @@ async fn root_serves_recorded_disclaimer_when_it_exists(db: PgPool) {
 async fn root_serves_welcome_and_notifies_supervisor_and_still_gathers_recordings_when_begun(
     db: PgPool,
 ) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let vrs_number = config.vrs_number.to_string();
     let supervisor_number = config.supervisor_number.to_string();
 
@@ -241,8 +235,7 @@ async fn root_serves_welcome_and_notifies_supervisor_and_still_gathers_recording
 
 #[sqlx::test(fixtures("schema", "settings-begun"))]
 async fn root_serves_welcome_and_does_not_notify_self_call_when_begun(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let supervisor_number = config.supervisor_number.to_string();
 
     let response = get(

@@ -26,6 +26,11 @@ pub mod helpers {
         TestApp { address }
     }
 
+    pub fn get_config() -> unmnemonic_devices_vrs::config::Config {
+        let env_config_provider = EnvVarProvider::new(env::vars().collect());
+        env_config_provider.get_config().clone()
+    }
+
     pub async fn get(
         db: PgPool,
         path: &str,

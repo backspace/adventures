@@ -1,13 +1,11 @@
 use crate::common;
-use common::helpers::{get, post_with_twilio};
+use common::helpers::{get, get_config, post_with_twilio};
 
 use select::{document::Document, predicate::Name};
 use serde::Serialize;
 use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::PgPool;
-use std::env;
-use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::InjectableServices;
 use wiremock::matchers::{body_string, method, path_regex};
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -36,8 +34,7 @@ pub struct Recording {
 
 #[sqlx::test(fixtures("schema", "calls"))]
 async fn post_voicemail_stores_voicemail_and_notifies(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let vrs_number = config.vrs_number.to_string();
     let conductor_number = config.conductor_number.to_string();
 
@@ -126,8 +123,7 @@ async fn get_voicemails_remember_confirm_gathers_user_voicepass(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "users"))]
 async fn post_voicemails_remember_confirm_updates_user_notifies_and_redirects(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let vrs_number = config.vrs_number.to_string();
     let conductor_number = config.conductor_number.to_string();
 
@@ -181,8 +177,7 @@ async fn post_voicemails_remember_confirm_updates_user_notifies_and_redirects(db
 async fn post_voicemails_remember_confirm_errors_when_unrecognised_notifies_and_redirects(
     db: PgPool,
 ) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let vrs_number = config.vrs_number.to_string();
     let conductor_number = config.conductor_number.to_string();
 

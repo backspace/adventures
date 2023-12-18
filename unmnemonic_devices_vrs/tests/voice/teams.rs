@@ -1,13 +1,11 @@
 use crate::common;
-use common::helpers::{get, get_with_twilio, post, RedirectTo};
+use common::helpers::{get, get_config, get_with_twilio, post, RedirectTo};
 
 use select::{document::Document, predicate::Name};
 use serde::Serialize;
 use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::{types::Uuid, PgPool};
-use std::env;
-use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::InjectableServices;
 use wiremock::matchers::{body_string, method, path_regex};
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -424,8 +422,7 @@ async fn team_post_redirects_to_completion(db: PgPool) {
 
 #[sqlx::test(fixtures("schema", "teams"))]
 async fn team_get_complete_notifies_and_increments_listens(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let vrs_number = config.vrs_number.to_string();
     let conductor_number = config.conductor_number.to_string();
 

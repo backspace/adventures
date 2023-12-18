@@ -1,16 +1,13 @@
 use crate::common;
-use common::helpers::{get, post, RedirectTo};
+use common::helpers::{get, get_config, post, RedirectTo};
 use select::{document::Document, predicate::Name};
-use std::env;
-use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 
 use speculoos::prelude::*;
 use sqlx::PgPool;
 
 #[sqlx::test(fixtures("schema", "settings-down"))]
 async fn root_serves_down_when_down(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let recordings_voicepass = config.recordings_voicepass.to_string();
 
     let response = get(db, "/recordings/confirm", false)
@@ -34,8 +31,7 @@ async fn root_serves_down_when_down(db: PgPool) {
 
 #[sqlx::test(fixtures("schema"))]
 async fn post_recordings_confirm_redirects(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let recordings_voicepass = config.recordings_voicepass.to_string();
 
     for (speech_result, redirect) in [

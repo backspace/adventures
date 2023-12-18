@@ -1,9 +1,7 @@
 use crate::common;
-use common::helpers::{get, post, spawn_app, RedirectTo};
+use common::helpers::{get, get_config, post, spawn_app, RedirectTo};
 
 use base64::{engine::general_purpose, Engine as _};
-use std::env;
-use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::InjectableServices;
 use wiremock::{matchers::any, Mock, MockServer, ResponseTemplate};
 
@@ -529,8 +527,7 @@ async fn get_with_client(
     client: reqwest::Client,
     path: &str,
 ) -> Result<reqwest::Response, reqwest::Error> {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
 
     client
         .get(&format!("{}{}", app_address, path))
@@ -565,8 +562,7 @@ async fn post_and_return_client(
         twilio_address: mock_twilio.uri(),
     };
 
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let app_address = spawn_app(services).await.address;
     let client_builder = reqwest::Client::builder();
 

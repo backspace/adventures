@@ -1,5 +1,5 @@
 use crate::common;
-use common::helpers::{get_with_twilio, post_with_twilio};
+use common::helpers::{get_config, get_with_twilio, post_with_twilio};
 
 use select::{
     document::Document,
@@ -8,8 +8,6 @@ use select::{
 use serde_json::json;
 use speculoos::prelude::*;
 use sqlx::PgPool;
-use std::env;
-use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::InjectableServices;
 use wiremock::matchers::{body_string, method, path_regex, query_param};
 use wiremock::{Mock, MockServer, ResponseTemplate};
@@ -102,8 +100,7 @@ async fn calls_list_with_calls_and_teams_and_paths(db: PgPool) {
 
 #[sqlx::test(fixtures("schema"))]
 async fn create_call_success(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let vrs_number = config.vrs_number.to_string();
 
     let twilio_call_create_body = serde_urlencoded::to_string([
@@ -193,8 +190,7 @@ async fn create_call_creation_failure(db: PgPool) {
 
 #[sqlx::test(fixtures("schema"))]
 async fn create_call_update_failure(db: PgPool) {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = get_config();
     let vrs_number = config.vrs_number.to_string();
 
     let mock_twilio = MockServer::start().await;
