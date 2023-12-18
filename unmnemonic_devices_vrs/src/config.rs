@@ -6,7 +6,7 @@ use url::Url;
 pub struct Config {
     pub auth: String,
     pub database_url: Url,
-    pub notification_number: String,
+    pub conductor_number: String,
     pub supervisor_number: String,
     pub root_url: Url,
     pub twilio_account_sid: String,
@@ -28,9 +28,9 @@ impl EnvVarProvider {
             auth: args.get("AUTH").expect("Missing auth").to_string(),
             database_url: Url::parse(args.get("DATABASE_URL").expect("Missing database URL"))
                 .expect("Unable to parse DATABASE_URL as a URL"),
-            notification_number: args
-                .get("NOTIFICATION_NUMBER")
-                .expect("Missing notification number")
+            conductor_number: args
+                .get("CONDUCTOR_NUMBER")
+                .expect("Missing conductor number")
                 .to_string(),
             supervisor_number: args
                 .get("SUPERVISOR_NUMBER")

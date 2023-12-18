@@ -26,11 +26,11 @@ async fn root_serves_prewelcome_notifies_and_stores_call(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
     let vrs_number = config.vrs_number.to_string();
-    let notification_number = config.notification_number.to_string();
+    let conductor_number = config.conductor_number.to_string();
 
     let twilio_create_message_body = serde_urlencoded::to_string([
         ("Body", &"New call from 2040000000".to_string()),
-        ("To", &notification_number),
+        ("To", &conductor_number),
         ("From", &vrs_number),
     ])
     .expect("Could not encode message creation body");
@@ -84,13 +84,13 @@ async fn root_serves_prewelcome_notifies_and_stores_call(db: PgPool) {
 async fn root_ignores_duplicate_call_sid(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let notification_number = config.notification_number.to_string();
+    let conductor_number = config.conductor_number.to_string();
 
     let response = get(
         db.clone(),
         &format!(
             "/?CallSid=xyz&Caller={}&CallSid=abc",
-            urlencoding::encode(&notification_number)
+            urlencoding::encode(&conductor_number)
         ),
         false,
     )
@@ -104,13 +104,13 @@ async fn root_ignores_duplicate_call_sid(db: PgPool) {
 async fn root_plays_override_when_it_exists(db: PgPool) {
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
-    let notification_number = config.notification_number.to_string();
+    let conductor_number = config.conductor_number.to_string();
 
     let response = get(
         db.clone(),
         &format!(
             "/?CallSid=xyz&Caller={}",
-            urlencoding::encode(&notification_number),
+            urlencoding::encode(&conductor_number),
         ),
         false,
     )

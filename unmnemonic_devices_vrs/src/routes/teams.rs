@@ -376,11 +376,11 @@ pub async fn get_complete_team(
         let api_sid = config.twilio_api_key_sid.to_string();
         let api_secret = config.twilio_api_key_secret.to_string();
         let vrs_number = config.vrs_number.to_string();
-        let notification_number = config.notification_number.to_string();
+        let conductor_number = config.conductor_number.to_string();
 
         let create_message_body = serde_urlencoded::to_string([
             ("Body", format!("Team {} has completed", team.name)),
-            ("To", notification_number),
+            ("To", conductor_number),
             ("From", vrs_number),
         ])
         .expect("Could not encode completion message creation body");

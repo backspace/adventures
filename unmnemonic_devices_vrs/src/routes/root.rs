@@ -121,10 +121,10 @@ pub async fn get_root(
     let env_config_provider = EnvVarProvider::new(env::vars().collect());
     let config = &env_config_provider.get_config();
     let supervisor_number = config.supervisor_number.to_string();
-    let notification_number = config.notification_number.to_string();
+    let conductor_number = config.conductor_number.to_string();
 
-    let caller_is_notification =
-        params.caller.clone().unwrap_or("NOTHING".to_string()) == notification_number;
+    let caller_is_conductor =
+        params.caller.clone().unwrap_or("NOTHING".to_string()) == conductor_number;
     let caller_is_supervisor =
         params.caller.clone().unwrap_or("NOTHING".to_string()) == supervisor_number;
 
@@ -132,10 +132,10 @@ pub async fn get_root(
         && !settings.ending.unwrap()
         && !caller_is_supervisor
         && settings.notify_supervisor.unwrap();
-    let notify_notification = params.caller.is_some()
+    let notify_conductor = params.caller.is_some()
         && !settings.begun.unwrap()
         && !caller_is_supervisor
-        && !caller_is_notification;
+        && !caller_is_conductor;
 
     let account_sid = config.twilio_account_sid.to_string();
     let api_sid = config.twilio_api_key_sid.to_string();
@@ -150,7 +150,7 @@ pub async fn get_root(
         general_purpose::STANDARD_NO_PAD.encode(basic_auth)
     );
 
-    if notify_notification {
+    if notify_conductor {
         let create_message_body = serde_urlencoded::to_string([
             (
                 "Body",

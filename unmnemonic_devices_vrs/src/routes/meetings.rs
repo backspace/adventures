@@ -78,7 +78,7 @@ pub async fn get_meeting(
         let api_sid = config.twilio_api_key_sid.to_string();
         let api_secret = config.twilio_api_key_secret.to_string();
         let vrs_number = config.vrs_number.to_string();
-        let notification_number = config.notification_number.to_string();
+        let conductor_number = config.conductor_number.to_string();
 
         let create_message_body = serde_urlencoded::to_string([
             (
@@ -88,7 +88,7 @@ pub async fn get_meeting(
                     meeting.team_name, meeting.book_title, meeting.region_name
                 ),
             ),
-            ("To", notification_number),
+            ("To", conductor_number),
             ("From", vrs_number),
         ])
         .expect("Could not encode meeting message creation body");
