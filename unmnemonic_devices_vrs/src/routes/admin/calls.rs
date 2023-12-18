@@ -6,10 +6,9 @@ use axum_template::{Key, RenderHtml};
 use base64::{engine::general_purpose, Engine as _};
 use http::StatusCode;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, env};
+use std::collections::HashMap;
 
 use crate::auth::User;
-use crate::config::{ConfigProvider, EnvVarProvider};
 use crate::AppState;
 
 #[derive(Debug, Deserialize)]
@@ -45,8 +44,7 @@ pub async fn get_calls(
     State(state): State<AppState>,
     _user: User,
 ) -> impl IntoResponse {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = state.config;
     let account_sid = config.twilio_account_sid.to_string();
     let api_sid = config.twilio_api_key_sid.to_string();
     let api_secret = config.twilio_api_key_secret.to_string();
@@ -129,8 +127,7 @@ pub async fn post_calls(
     State(state): State<AppState>,
     Form(params): Form<CreateCallParams>,
 ) -> Response {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = state.config;
     let account_sid = config.twilio_account_sid.to_string();
     let api_sid = config.twilio_api_key_sid.to_string();
     let api_secret = config.twilio_api_key_secret.to_string();

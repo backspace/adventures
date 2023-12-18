@@ -168,8 +168,7 @@ pub async fn post_voicemails_remember_confirm(
     .fetch_one(&state.db)
     .await;
 
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = state.config;
 
     let account_sid = config.twilio_account_sid.to_string();
     let api_sid = config.twilio_api_key_sid.to_string();

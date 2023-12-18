@@ -8,9 +8,7 @@ use axum_template::Key;
 use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
 use serde_querystring_axum::QueryString;
-use std::env;
 
-use crate::config::{ConfigProvider, EnvVarProvider};
 use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Deserialize)]
@@ -50,8 +48,7 @@ pub async fn get_record(
     State(state): State<AppState>,
     params: Query<TwilioParams>,
 ) -> impl IntoResponse {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = state.config;
     let account_sid = config.twilio_account_sid.to_string();
     let api_sid = config.twilio_api_key_sid.to_string();
     let api_secret = config.twilio_api_key_secret.to_string();
@@ -118,8 +115,7 @@ pub async fn get_root(
             .await
             .expect("Failed to fetch settings");
 
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
+    let config = state.config;
     let supervisor_number = config.supervisor_number.to_string();
     let conductor_number = config.conductor_number.to_string();
 

@@ -5,6 +5,7 @@ pub mod render_xml;
 pub mod routes;
 pub mod twilio_form;
 
+use crate::config::{ConfigProvider, EnvVarProvider};
 use axum::{
     body::Bytes,
     extract::MatchedPath,
@@ -20,6 +21,7 @@ use handlebars_concat::HandlebarsConcat;
 use helpers::{get_all_prompts, store_call_path_middleware};
 use serde::Deserialize;
 use sqlx::PgPool;
+use std::env;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{collections::HashMap, fs};
@@ -62,6 +64,7 @@ pub struct AppState {
     engine: AppEngine,
     prompts: Prompts,
     mutable_prompts: Arc<Mutex<String>>,
+    config: config::Config,
 }
 
 #[derive(Clone, Deserialize)]
@@ -84,12 +87,16 @@ pub async fn app(services: InjectableServices) -> Router {
 
     let serialised_prompts = get_all_prompts(&services.db, &prompts).await;
 
+    let env_config_provider = EnvVarProvider::new(env::vars().collect());
+    let config = env_config_provider.get_config();
+
     let shared_state = AppState {
         db: services.db,
         twilio_address: services.twilio_address,
         engine: Engine::from(hbs),
         prompts,
         mutable_prompts: Arc::new(Mutex::new(serialised_prompts)),
+        config: config.clone(),
     };
 
     Router::new()

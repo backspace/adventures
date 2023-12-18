@@ -5,9 +5,7 @@ use axum::{
 };
 use axum_template::Key;
 use serde::Serialize;
-use std::env;
 
-use crate::config::{ConfigProvider, EnvVarProvider};
 use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[axum_macros::debug_handler]
@@ -45,9 +43,7 @@ pub async fn get_recordings_confirm(
     Key(key): Key,
     State(state): State<AppState>,
 ) -> impl IntoResponse {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
-    let recordings_voicepass = config.recordings_voicepass.to_string();
+    let recordings_voicepass = state.config.recordings_voicepass.to_string();
 
     RenderXml(
         key,
@@ -60,10 +56,11 @@ pub async fn get_recordings_confirm(
 }
 
 #[axum_macros::debug_handler]
-pub async fn post_recordings_confirm(Form(form): Form<TwilioForm>) -> Redirect {
-    let env_config_provider = EnvVarProvider::new(env::vars().collect());
-    let config = &env_config_provider.get_config();
-    let recordings_voicepass = config.recordings_voicepass.to_string();
+pub async fn post_recordings_confirm(
+    State(state): State<AppState>,
+    Form(form): Form<TwilioForm>,
+) -> Redirect {
+    let recordings_voicepass = state.config.recordings_voicepass;
 
     if form.speech_result == recordings_voicepass {
         Redirect::to("/recordings")

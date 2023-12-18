@@ -2,7 +2,7 @@
 use std::collections::HashMap;
 use url::Url;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Config {
     pub auth: String,
     pub database_url: Url,
