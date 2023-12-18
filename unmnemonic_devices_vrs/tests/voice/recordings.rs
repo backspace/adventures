@@ -1,9 +1,6 @@
 use crate::common;
 use common::helpers::{get, post, RedirectTo};
-use select::{
-    document::Document,
-    predicate::{Descendant, Name},
-};
+use select::{document::Document, predicate::Name};
 use std::env;
 use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 
