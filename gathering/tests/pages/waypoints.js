@@ -1,43 +1,14 @@
-import { fillIn } from '@ember/test-helpers';
 import PageObject, {
   clickable,
   collection,
   fillable,
-  findElement,
   hasClass,
-  selectable,
   text,
   value,
 } from 'ember-cli-page-object';
 
-const selectText = function (selector) {
-  return {
-    isDescriptor: true,
-
-    get() {
-      const selectElement = findElement(this, selector);
-      const id = selectElement.val();
-
-      if (id) {
-        return selectElement.find(`option[value=${id}]`).text().trim();
-      } else {
-        return '';
-      }
-    },
-  };
-};
-
-const fillSelectByText = function (selector) {
-  return {
-    isDescriptor: true,
-
-    value(text) {
-      const selectElement = findElement(this, selector);
-      const id = selectElement.find(`option:contains('${text}')`).attr('value');
-      return fillIn(selectElement[0], id);
-    },
-  };
-};
+import selectField from './helpers/select-field';
+import textField from './helpers/text-field';
 
 export default PageObject.create({
   region: {
@@ -95,15 +66,7 @@ export default PageObject.create({
     fill: fillable(),
   },
 
-  outlineField: {
-    scope: '[data-test-outline-field]',
-    value: value(),
-    fill: fillable(),
-    isInvalid: hasClass('border-red-500'),
-    errors: text('[data-test-outline-container] [data-test-errors]', {
-      resetScope: true,
-    }),
-  },
+  outlineField: textField('[data-test-outline-container]'),
 
   excerptField: {
     scope: '[data-test-excerpt-field]',
@@ -123,17 +86,7 @@ export default PageObject.create({
     fill: fillable(),
   },
 
-  regionField: {
-    scope: '[data-test-region]',
-    value: value(),
-    text: selectText(),
-    fillByText: fillSelectByText(),
-    select: selectable(),
-    isInvalid: hasClass('border-red-500'),
-    errors: text('[data-test-region-container] [data-test-errors]', {
-      resetScope: true,
-    }),
-  },
+  regionField: selectField('[data-test-region-container]'),
 
   statusFieldset: {
     scope: '[data-test-status-fieldset]',

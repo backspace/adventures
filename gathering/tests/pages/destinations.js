@@ -11,7 +11,7 @@ import PageObject, {
   visitable,
 } from 'ember-cli-page-object';
 
-import hasAttribute from './has-attribute';
+import hasAttribute from './helpers/has-attribute';
 
 const selectText = function (selector) {
   return {
