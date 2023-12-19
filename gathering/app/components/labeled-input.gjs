@@ -2,22 +2,12 @@ import { concat, hash } from '@ember/helper';
 
 const LabeledInput = <template>
   {{#let (if @errors 'red-500' 'black') as |colour|}}
-    <section class='block py-2' ...attributes>
+    <section class='block pt-2 {{if @errors '' 'pb-6'}}' ...attributes>
       <div class='flex -mb-0.5'>
         <label
           for={{@label}}
           class='border-2 border-{{colour}} bg-{{colour}} p-1 text-sm text-white'
         >{{@label}}</label>
-        {{#if @errors}}
-          <span
-            class='border-2 border-white p-1 text-sm'
-            data-test-errors
-          >
-            {{#each @errors as |error|}}
-              {{error.key}}
-            {{/each}}
-          </span>
-        {{/if}}
       </div>
 
       {{yield
@@ -26,6 +16,16 @@ const LabeledInput = <template>
           label=@label
         )
       }}
+      {{#if @errors}}
+        <span
+          class='border-2 border-transparent p-1 text-sm'
+          data-test-errors
+        >
+          {{#each @errors as |error|}}
+            {{error.key}}
+          {{/each}}
+        </span>
+      {{/if}}
     </section>
   {{/let}}
 </template>;
