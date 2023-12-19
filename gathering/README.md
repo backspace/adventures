@@ -1,5 +1,7 @@
 # Adventure Gathering [![Build Status](https://travis-ci.org/backspace/adventure-gathering.svg?branch=primary)](https://travis-ci.org/backspace/adventure-gathering)
 
+FIXME
+
 This is a PouchDB-backed offline data-gathering application to organise a
 live-action puzzle-solving adventure game.
 
