@@ -9,6 +9,7 @@ module.exports = function (defaults) {
       compile: {
         cacheInclude: [/.*\.(css|hbs|gjs)$/],
         plugins: [
+          require('postcss-import'),
           require('tailwindcss/nesting'),
           require('tailwindcss')('./tailwind.config.js'),
           { module: require('autoprefixer') },

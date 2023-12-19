@@ -1,0 +1,5 @@
+iframe {
+  display: inline;
+  width: calc(50% - 3px);
+  height: 40rem;
+}

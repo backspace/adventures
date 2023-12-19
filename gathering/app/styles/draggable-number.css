@@ -1,0 +1,7 @@
+body.draglessness {
+  user-select: none;
+}
+
+.undraggable {
+  touch-action: none;
+}

@@ -257,6 +257,9 @@ devDependencies:
   postcss:
     specifier: ^8.4.32
     version: 8.4.32
+  postcss-import:
+    specifier: ^15.1.0
+    version: 15.1.0(postcss@8.4.32)
   postcss-loader:
     specifier: ^7.3.3
     version: 7.3.3(postcss@8.4.32)(webpack@5.89.0)
