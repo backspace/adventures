@@ -112,6 +112,25 @@ module('Acceptance | waypoints', function (hooks) {
 
     assert.ok(page.regionField.isInvalid);
     assert.strictEqual(page.regionField.errors, 'required');
+
+    assert.ok(page.nameField.isInvalid);
+    assert.strictEqual(page.nameField.errors, 'required');
+
+    assert.notOk(page.authorField.isInvalid);
+
+    assert.ok(page.callField.isInvalid);
+    assert.strictEqual(page.callField.errors, 'required');
+
+    assert.notOk(page.creditField.isInvalid);
+
+    assert.ok(page.excerptField.isInvalid);
+    assert.strictEqual(page.excerptField.errors, 'required');
+
+    assert.ok(page.pageField.isInvalid);
+    assert.strictEqual(page.pageField.errors, 'required');
+
+    assert.ok(page.dimensionsField.isInvalid);
+    assert.strictEqual(page.dimensionsField.errors, 'required');
   });
 
   test('waypoint status doesn’t show when the feature flag is off', async function (assert) {

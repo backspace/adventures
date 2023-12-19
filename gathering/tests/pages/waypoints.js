@@ -1,10 +1,8 @@
 import PageObject, {
   clickable,
   collection,
-  fillable,
   hasClass,
   text,
-  value,
 } from 'ember-cli-page-object';
 
 import selectField from './helpers/select-field';
@@ -42,49 +40,14 @@ export default PageObject.create({
 
   new: clickable('[data-test-waypoints-new]'),
 
-  nameField: {
-    scope: '[data-test-name-field]',
-    value: value(),
-    fill: fillable(),
-  },
-
-  authorField: {
-    scope: '[data-test-author-field]',
-    value: value(),
-    fill: fillable(),
-  },
-
-  callField: {
-    scope: '[data-test-call-field]',
-    value: value(),
-    fill: fillable(),
-  },
-
-  creditField: {
-    scope: '[data-test-credit-field]',
-    value: value(),
-    fill: fillable(),
-  },
-
+  nameField: textField('[data-test-name-container]'),
+  authorField: textField('[data-test-author-container]'),
+  callField: textField('[data-test-call-container]'),
+  creditField: textField('[data-test-credit-container]'),
   outlineField: textField('[data-test-outline-container]'),
-
-  excerptField: {
-    scope: '[data-test-excerpt-field]',
-    value: value(),
-    fill: fillable(),
-  },
-
-  pageField: {
-    scope: '[data-test-page-field]',
-    value: value(),
-    fill: fillable(),
-  },
-
-  dimensionsField: {
-    scope: '[data-test-dimensions-field]',
-    value: value(),
-    fill: fillable(),
-  },
+  excerptField: textField('[data-test-excerpt-container]', 'textarea'),
+  pageField: textField('[data-test-page-container]'),
+  dimensionsField: textField('[data-test-dimensions-container]'),
 
   regionField: selectField('[data-test-region-container]'),
 
