@@ -12,6 +12,7 @@ voicepass_confirm = "Is this correct?"
 excerpt_gather = "Confirmed. What is your cathartic phrase or the collation of the findings from your kinetic instructions?"
 
 repeat_record_end = "Repeat, record an encouraging message for others, or end?"
+leave_message = "Leave your message after the beep."
 
 encouraging = "Here as an encouraging message from another team."
 
