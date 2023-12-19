@@ -2,6 +2,7 @@ name: unmnemonic devices checks
 
 on:
   push:
+    branches: [main]
   pull_request:
     paths:
       - "unmnemonic_devices_vrs/**"

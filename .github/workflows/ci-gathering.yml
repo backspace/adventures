@@ -2,6 +2,7 @@ name: Gathering checks
 
 on:
   push:
+    branches: [main]
   pull_request:
     paths:
       - "gathering/**"

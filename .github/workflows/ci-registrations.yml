@@ -2,6 +2,7 @@ name: AdventureRegistrations checks
 
 on:
   push:
+    branches: [main]
   pull_request:
     paths:
       - "registrations/**"
