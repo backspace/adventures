@@ -22,6 +22,11 @@ module('Unit | Service | txtbeyond', function (hooks) {
   test('it checks mask validity', function (assert) {
     const service = this.owner.lookup('service:txtbeyond');
 
+    assert.notOk(
+      service.maskIsValid(null, null),
+      'expected nulls to be invalid',
+    );
+
     assert.ok(
       service.maskIsValid('hello there', 'hello _____'),
       'expected the mask to be valid when it matches the answer',

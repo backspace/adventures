@@ -59,6 +59,10 @@ export default class ClandestineRendezvousService extends Service {
   }
 
   maskIsValid(answer, mask) {
+    if (!answer || !mask) {
+      return false;
+    }
+
     if (answer.length !== mask.length) {
       return false;
     }

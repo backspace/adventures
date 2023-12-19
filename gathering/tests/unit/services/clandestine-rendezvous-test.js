@@ -171,6 +171,11 @@ module(
     test('it checks mask validity', function (assert) {
       const service = this.owner.lookup('service:clandestine-rendezvous');
 
+      assert.notOk(
+        service.maskIsValid(null, null),
+        'expected nulls to be invalid',
+      );
+
       assert.ok(
         service.maskIsValid('ABC123', 'ABC___'),
         'expected the mask to be valid when it matches the answer',

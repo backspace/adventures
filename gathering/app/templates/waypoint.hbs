@@ -1,12 +1,16 @@
 <div class='w-full px-2'>
   <div class='mx-auto md:container'>
 
-    <LabeledInput @label='region' as |utilities|>
+    <LabeledInput
+      @label='region'
+      @errors={{this.model.schemas.fieldErrors.region}}
+      data-test-region-container
+      as |utilities|
+    >
       <select
         id={{utilities.label}}
         {{on 'change' this.setRegion}}
         class='{{utilities.inputClasses}}'
-        data-test-region
       >
         <option></option>
         <RegionOptions
@@ -16,85 +20,120 @@
       </select>
     </LabeledInput>
 
-    <LabeledInput @label='name' as |utilities|>
+    <LabeledInput
+      @label='name'
+      @errors={{this.model.schemas.fieldErrors.name}}
+      data-test-name-container
+      as |utilities|
+    >
       <Input
         id={{utilities.label}}
         @value={{this.model.name}}
         class='{{utilities.inputClasses}}'
-        data-test-name-field
       />
     </LabeledInput>
 
     <section class='flex gap-4'>
 
-      <LabeledInput class='flex-1' @label='author' as |utilities|>
+      <LabeledInput
+        class='flex-1'
+        @label='author'
+        @errors={{this.model.schemas.fieldErrors.author}}
+        data-test-author-container
+        as |utilities|
+      >
         <Input
           id={{utilities.label}}
           @value={{this.model.author}}
           class='{{utilities.inputClasses}}'
-          data-test-author-field
         />
       </LabeledInput>
 
-      <LabeledInput class='flex-1' @label='call' as |utilities|>
+      <LabeledInput
+        class='flex-1'
+        @label='call'
+        @errors={{this.model.schemas.fieldErrors.call}}
+        data-test-call-container
+        as |utilities|
+      >
         <Input
           id={{utilities.label}}
           @value={{this.model.call}}
           class='{{utilities.inputClasses}}'
-          data-test-call-field
         />
       </LabeledInput>
 
     </section>
 
-    <LabeledInput @label='excerpt' as |utilities|>
+    <LabeledInput
+      @label='excerpt'
+      @errors={{this.model.schemas.fieldErrors.excerpt}}
+      data-test-excerpt-container
+      as |utilities|
+    >
       <Textarea
         id={{utilities.label}}
         @value={{this.model.excerpt}}
         class='{{utilities.inputClasses}}'
-        data-test-excerpt-field
       />
     </LabeledInput>
 
     <section class='flex gap-4'>
 
-      <LabeledInput class='flex-auto' @label='page dimensions' as |utilities|>
+      <LabeledInput
+        class='flex-auto'
+        @label='page dimensions'
+        @errors={{this.model.schemas.fieldErrors.dimensions}}
+        data-test-dimensions-container
+        as |utilities|
+      >
         <Input
           id={{utilities.label}}
           @value={{this.model.dimensions}}
           class='{{utilities.inputClasses}}'
-          data-test-dimensions-field
         />
       </LabeledInput>
 
-      <LabeledInput class='flex-1' @label='page number' as |utilities|>
+      <LabeledInput
+        class='flex-auto'
+        @label='page number'
+        @errors={{this.model.schemas.fieldErrors.page}}
+        data-test-page-container
+        as |utilities|
+      >
         <Input
           id={{utilities.label}}
           @value={{this.model.page}}
           class='{{utilities.inputClasses}}'
-          data-test-page-field
         />
       </LabeledInput>
 
     </section>
 
-    <LabeledInput @label='outlines' as |utilities|>
+    <LabeledInput
+      @label='outlines'
+      @errors={{this.model.schemas.fieldErrors.outline}}
+      data-test-outline-container
+      as |utilities|
+    >
       <Input
         id={{utilities.label}}
         @value={{this.model.outline}}
         class='{{utilities.inputClasses}}'
-        data-test-outline-field
       />
     </LabeledInput>
 
     <section class='flex gap-4'>
 
-      <LabeledInput class='flex-auto' @label='credit' as |utilities|>
+      <LabeledInput
+        class='flex-auto'
+        @label='credit'
+        data-test-credit-container
+        as |utilities|>
         <Input
           id={{utilities.label}}
           class={{utilities.inputClasses}}
           @value={{this.model.credit}}
-          data-test-credit-field
         />
       </LabeledInput>
 
@@ -133,13 +172,6 @@
       {{/if}}
 
     </section>
-
-    {{#if this.model.isIncomplete}}
-      <p
-        class='my-2 bg-red-500 p-2'
-        data-test-errors
-      >{{this.model.errorsString}}</p>
-    {{/if}}
 
     <section class='my-2 flex justify-between gap-2'>
       <button

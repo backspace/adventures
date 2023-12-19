@@ -8,7 +8,7 @@ import PageObject, {
 } from 'ember-cli-page-object';
 import { findOne } from 'ember-cli-page-object/extend';
 
-import hasAttribute from './has-attribute';
+import hasAttribute from './helpers/has-attribute';
 
 const nesting = function (selector) {
   return {

@@ -17,6 +17,10 @@ export default class TxtbeyondService extends Service {
   }
 
   maskIsValid(answer, mask) {
+    if (!answer || !mask) {
+      return false;
+    }
+
     if (answer.length !== mask.length) {
       return false;
     }
