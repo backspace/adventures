@@ -123,13 +123,16 @@ export default PageObject.create({
     fill: fillable(),
   },
 
-  // FIXME add validation
   regionField: {
     scope: '[data-test-region]',
     value: value(),
     text: selectText(),
     fillByText: fillSelectByText(),
     select: selectable(),
+    isInvalid: hasClass('border-red-500'),
+    errors: text('[data-test-region-container] [data-test-errors]', {
+      resetScope: true,
+    }),
   },
 
   statusFieldset: {

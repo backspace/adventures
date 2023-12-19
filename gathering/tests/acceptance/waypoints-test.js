@@ -98,11 +98,20 @@ module('Acceptance | waypoints', function (hooks) {
     await page.outlineField.fill('not a valid outline');
     assert.strictEqual(page.outlineField.errors, 'invalid');
 
+    assert.notOk(page.regionField.isInvalid);
+
     await page.cancel();
 
     await page.waypoints[0].edit();
 
     assert.notOk(page.outlineField.isInvalid);
+    assert.notOk(page.regionField.isInvalid);
+
+    await page.cancel();
+    await page.new();
+
+    assert.ok(page.regionField.isInvalid);
+    assert.strictEqual(page.regionField.errors, 'required');
   });
 
   test('waypoint status doesn’t show when the feature flag is off', async function (assert) {

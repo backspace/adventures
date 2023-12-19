@@ -8,6 +8,7 @@ export default class Waypoint extends Model {
   @service puzzles;
 
   schemas = new Yup(this, {
+    region: string().required(),
     call: string().required(),
     name: string().required(),
     excerpt: string()
