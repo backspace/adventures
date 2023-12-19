@@ -140,7 +140,8 @@
     "tty-browserify": "^0.0.1",
     "util": "^0.12.5",
     "validator": "^13.11.0",
-    "webpack": "^5.89.0"
+    "webpack": "^5.89.0",
+    "yup": "^1.3.3"
   },
   "engines": {
     "node": "14.* || 16.* || >= 18"

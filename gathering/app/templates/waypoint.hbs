@@ -16,7 +16,7 @@
       </select>
     </LabeledInput>
 
-    <LabeledInput @label='name' as |utilities|>
+    <LabeledInput @label='name' @errors={{this.model.schemas.fieldErrors.name}} as |utilities|>
       <Input
         id={{utilities.label}}
         @value={{this.model.name}}
@@ -27,7 +27,7 @@
 
     <section class='flex gap-4'>
 
-      <LabeledInput class='flex-1' @label='author' as |utilities|>
+      <LabeledInput class='flex-1' @label='author' @errors={{this.model.schemas.fieldErrors.author}} as |utilities|>
         <Input
           id={{utilities.label}}
           @value={{this.model.author}}
@@ -36,7 +36,7 @@
         />
       </LabeledInput>
 
-      <LabeledInput class='flex-1' @label='call' as |utilities|>
+      <LabeledInput class='flex-1' @label='call' @errors={{this.model.schemas.fieldErrors.call}} as |utilities|>
         <Input
           id={{utilities.label}}
           @value={{this.model.call}}
@@ -47,7 +47,7 @@
 
     </section>
 
-    <LabeledInput @label='excerpt' as |utilities|>
+    <LabeledInput @label='excerpt' @errors={{this.model.schemas.fieldErrors.excerpt}} as |utilities|>
       <Textarea
         id={{utilities.label}}
         @value={{this.model.excerpt}}
@@ -58,7 +58,7 @@
 
     <section class='flex gap-4'>
 
-      <LabeledInput class='flex-auto' @label='page dimensions' as |utilities|>
+      <LabeledInput class='flex-auto' @label='page dimensions' @errors={{this.model.schemas.fieldErrors.dimensions}} as |utilities|>
         <Input
           id={{utilities.label}}
           @value={{this.model.dimensions}}
@@ -67,7 +67,7 @@
         />
       </LabeledInput>
 
-      <LabeledInput class='flex-1' @label='page number' as |utilities|>
+      <LabeledInput class='flex-1' @label='page number' @errors={{this.model.schemas.fieldErrors.page}} as |utilities|>
         <Input
           id={{utilities.label}}
           @value={{this.model.page}}
@@ -78,7 +78,11 @@
 
     </section>
 
-    <LabeledInput @label='outlines' as |utilities|>
+    <LabeledInput
+      @label='outlines'
+      @errors={{this.model.schemas.fieldErrors.outline}}
+      data-test-outline-container
+      as |utilities|>
       <Input
         id={{utilities.label}}
         @value={{this.model.outline}}
@@ -133,13 +137,6 @@
       {{/if}}
 
     </section>
-
-    {{#if this.model.isIncomplete}}
-      <p
-        class='my-2 bg-red-500 p-2'
-        data-test-errors
-      >{{this.model.errorsString}}</p>
-    {{/if}}
 
     <section class='my-2 flex justify-between gap-2'>
       <button

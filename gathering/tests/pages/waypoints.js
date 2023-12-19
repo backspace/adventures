@@ -99,6 +99,10 @@ export default PageObject.create({
     scope: '[data-test-outline-field]',
     value: value(),
     fill: fillable(),
+    isInvalid: hasClass('border-red-500'),
+    errors: text('[data-test-outline-container] [data-test-errors]', {
+      resetScope: true,
+    }),
   },
 
   excerptField: {
@@ -119,6 +123,7 @@ export default PageObject.create({
     fill: fillable(),
   },
 
+  // FIXME add validation
   regionField: {
     scope: '[data-test-region]',
     value: value(),
@@ -134,10 +139,6 @@ export default PageObject.create({
       scope: 'input[value=available]',
       click: clickable(),
     },
-  },
-
-  errors: {
-    scope: '[data-test-errors]',
   },
 
   save: clickable('[data-test-save-button]'),

@@ -92,16 +92,17 @@ module('Acceptance | waypoints', function (hooks) {
 
     await page.waypoints[1].edit();
 
-    assert.strictEqual(
-      page.errors.text,
-      'excerpt is empty, excerpt is invalid, dimensions is empty, dimensions is invalid, outline is empty, outline is invalid, page is empty',
-    );
+    assert.ok(page.outlineField.isInvalid);
+    assert.strictEqual(page.outlineField.errors, 'required');
+
+    await page.outlineField.fill('not a valid outline');
+    assert.strictEqual(page.outlineField.errors, 'invalid');
 
     await page.cancel();
 
     await page.waypoints[0].edit();
 
-    assert.ok(page.errors.isHidden);
+    assert.notOk(page.outlineField.isInvalid);
   });
 
   test('waypoint status doesn’t show when the feature flag is off', async function (assert) {
@@ -110,7 +111,7 @@ module('Acceptance | waypoints', function (hooks) {
 
     assert.ok(
       page.waypoints[0].status.isHidden,
-      'expected the status to be hidden',
+      'expected the status to be hidden'
     );
   });
 
@@ -187,7 +188,7 @@ module('Acceptance | waypoints', function (hooks) {
 
     assert.ok(
       page.statusFieldset.isHidden,
-      'expected the status fieldset to be hidden',
+      'expected the status fieldset to be hidden'
     );
   });
 
@@ -204,13 +205,13 @@ module('Acceptance | waypoints', function (hooks) {
 
     assert.strictEqual(
       page.excerptField.value,
-      'on the|relations between pleasure and death,|which',
+      'on the|relations between pleasure and death,|which'
     );
     assert.strictEqual(page.pageField.value, '24');
     assert.strictEqual(page.dimensionsField.value, '12,18.1');
     assert.strictEqual(
       page.outlineField.value,
-      '(7.3,10.6),3.6,.35,-3.1,.35,-1.5,-.35,1',
+      '(7.3,10.6),3.6,.35,-3.1,.35,-1.5,-.35,1'
     );
 
     await page.nameField.fill('The Fifth Season');
@@ -239,7 +240,7 @@ module('Acceptance | waypoints', function (hooks) {
 
     assert.strictEqual(
       page.excerptField.value,
-      'activity|as it is absent of air.|Buildings',
+      'activity|as it is absent of air.|Buildings'
     );
     assert.strictEqual(page.pageField.value, '276');
     assert.strictEqual(page.dimensionsField.value, '12.1,16.4');
