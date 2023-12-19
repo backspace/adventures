@@ -1,6 +1,10 @@
 name: unmnemonic devices checks
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+    paths:
+      - "unmnemonic_devices_vrs/**"
 
 env:
   CARGO_TERM_COLOR: always
