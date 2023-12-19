@@ -1,12 +1,15 @@
 <div class='w-full px-2'>
   <div class='mx-auto md:container'>
 
-    <LabeledInput @label='region' as |utilities|>
+    <LabeledInput
+      @label='region'
+      @errors={{this.model.schemas.fieldErrors.region}}
+      data-test-region-container
+      as |utilities|>
       <select
         id={{utilities.label}}
         {{on 'change' this.setRegion}}
         class='{{utilities.inputClasses}}'
-        data-test-region
       >
         <option></option>
         <RegionOptions
@@ -16,32 +19,41 @@
       </select>
     </LabeledInput>
 
-    <LabeledInput @label='description' as |utilities|>
+    <LabeledInput
+      @label='description'
+      @errors={{this.model.schemas.fieldErrors.description}}
+      data-test-description-container
+      as |utilities|>
       <Textarea
         id={{utilities.label}}
         @value={{this.model.description}}
         class='{{utilities.inputClasses}}'
         rows={{4}}
-        data-test-description
       />
     </LabeledInput>
 
-    <LabeledInput @label='answer' as |utilities|>
+    <LabeledInput
+      @label='answer'
+      @errors={{this.model.schemas.fieldErrors.answer}}
+      data-test-answer-container
+      as |utilities|>
       <Input
         id={{utilities.label}}
         @value={{this.model.answer}}
         class='{{utilities.inputClasses}}'
-        data-test-answer
       />
     </LabeledInput>
 
-    <LabeledInput @label='mask' as |utilities|>
+    <LabeledInput
+      @label='mask'
+      @errors={{this.model.schemas.fieldErrors.mask}}
+      data-test-mask-container
+      as |utilities|>
       <section class='flex gap-0'>
         <Input
           id={{utilities.label}}
           @value={{this.model.mask}}
           class='{{utilities.inputClasses}}'
-          data-test-mask
         />
         {{#if this.model.suggestedMask}}
           <button
@@ -58,41 +70,56 @@
 
     <section class='flex gap-4'>
 
-      <LabeledInput class='flex-1 grow' @label='accessibility' as |utilities|>
+      <LabeledInput
+        class='flex-1 grow'
+        @label='accessibility'
+        @errors={{this.model.schemas.fieldErrors.accessibility}}
+        data-test-accessibility-container
+         as |utilities|>
         <Textarea
           id={{utilities.label}}
           @value={{this.model.accessibility}}
           class='{{utilities.inputClasses}}'
-          data-test-accessibility
         />
       </LabeledInput>
 
-      <LabeledInput class='shrink' @label='outside' as |utilities|>
+      <LabeledInput
+        class='shrink'
+        @label='outside'
+         as |utilities|>
         <Input
           @checked={{this.model.isOutside}}
           id={{utilities.label}}
           class='{{utilities.inputClasses}}'
           @type='checkbox'
-          data-test-outside
         />
       </LabeledInput>
 
     </section>
 
     <section class='flex gap-4'>
-      <LabeledInput class='w-full' @label='credit' as |utilities|>
+      <LabeledInput
+        class='w-full'
+        @label='credit'
+        @errors={{this.model.schemas.fieldErrors.credit}}
+        data-test-credit-container
+        as |utilities|>
         <Input
           id={{utilities.label}}
           class={{utilities.inputClasses}}
           @value={{this.model.credit}}
-          data-test-credit
         />
       </LabeledInput>
     </section>
 
     <section class='flex gap-4'>
 
-      <LabeledInput class='w-full' @label='awesomeness' as |utilities|>
+      <LabeledInput
+        class='w-full'
+        @label='awesomeness'
+        @errors={{this.model.schemas.fieldErrors.awesomeness}}
+        data-test-awesomeness-container
+        as |utilities|>
         <Input
           id={{utilities.label}}
           @value={{this.model.awesomeness}}
@@ -102,11 +129,15 @@
           max={{10}}
           step={{0.5}}
           {{draggable-number}}
-          data-test-awesomeness
         />
       </LabeledInput>
 
-      <LabeledInput class='w-full' @label='risk' as |utilities|>
+      <LabeledInput
+        class='w-full'
+        @label='risk'
+        @errors={{this.model.schemas.fieldErrors.risk}}
+        data-test-risk-container
+        as |utilities|>
         <Input
           id={{utilities.label}}
           @value={{this.model.risk}}
@@ -116,7 +147,6 @@
           max={{10}}
           step={{0.5}}
           {{draggable-number}}
-          data-test-risk
         />
       </LabeledInput>
 
@@ -155,13 +185,6 @@
       {{/if}}
 
     </section>
-
-    {{#if this.model.isIncomplete}}
-      <p
-        class='my-2 bg-red-500 p-2'
-        data-test-errors
-      >{{this.model.errorsString}}</p>
-    {{/if}}
 
     <section class='my-2 flex justify-between gap-2'>
       <button

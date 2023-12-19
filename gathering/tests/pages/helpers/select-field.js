@@ -1,5 +1,6 @@
 import { fillIn } from '@ember/test-helpers';
 import {
+  collection,
   findElement,
   selectable,
   value,
@@ -43,6 +44,7 @@ export default function selectField(containerSelector) {
     text: selectText(),
     fillByText: fillSelectByText(),
     select: selectable(),
+    options: collection('option'),
     isInvalid: hasClass('border-red-500'),
     errors: text(`${containerSelector} [data-test-errors]`, {
       resetScope: true,

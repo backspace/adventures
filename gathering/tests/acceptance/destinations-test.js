@@ -101,7 +101,7 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.ok(
       page.destinations[0].status.isHidden,
-      'expected the status to be hidden',
+      'expected the status to be hidden'
     );
   });
 
@@ -182,7 +182,7 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.strictEqual(
       page.suggestedMaskButton.label,
-      'itchin ________ witchin',
+      'itchin ________ witchin'
     );
   });
 
@@ -192,6 +192,26 @@ module('Acceptance | destinations', function (hooks) {
 
     await page.new();
 
+    assert.ok(page.regionField.isInvalid);
+    assert.strictEqual(page.regionField.errors, 'required');
+
+    assert.ok(page.descriptionField.isInvalid);
+    assert.strictEqual(page.descriptionField.errors, 'required');
+
+    assert.ok(page.answerField.isInvalid);
+    assert.strictEqual(page.answerField.errors, 'required');
+
+    assert.ok(page.maskField.isInvalid);
+    assert.strictEqual(page.maskField.errors, 'required');
+
+    assert.ok(page.awesomenessField.isInvalid);
+    assert.strictEqual(page.awesomenessField.errors, 'required');
+
+    assert.ok(page.riskField.isInvalid);
+    assert.strictEqual(page.riskField.errors, 'required');
+
+    assert.notOk(page.creditField.isInvalid);
+
     await page.descriptionField.fill('Bromarte');
     await page.answerField.fill('property of comparative literature');
     await page.awesomenessField.fill(10);
@@ -200,10 +220,8 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.strictEqual(
       page.suggestedMaskButton.label,
-      'property __ ___________ literature',
+      'property __ ___________ literature'
     );
-
-    assert.strictEqual(page.errors.text, 'mask is invalid');
 
     await page.save();
     await waitUntil(() => page.destinations.length);
@@ -214,14 +232,14 @@ module('Acceptance | destinations', function (hooks) {
     await page.destinations[0].edit();
     await page.maskField.fill('property of ___________ __________');
 
-    assert.ok(page.errors.isHidden);
+    assert.notOk(page.maskField.isInvalid);
 
     await page.save();
     await waitUntil(() => page.destinations.length);
 
     assert.strictEqual(
       page.destinations[0].mask,
-      'property of ___________ __________',
+      'property of ___________ __________'
     );
     assert.notOk(page.destinations[0].isIncomplete);
   });
@@ -233,7 +251,7 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.ok(
       page.statusFieldset.isHidden,
-      'expected the status fieldset to be hidden',
+      'expected the status fieldset to be hidden'
     );
   });
 
@@ -271,7 +289,7 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.strictEqual(
       page.accessibilityField.value,
-      'You must cross the Empty Thousand!',
+      'You must cross the Empty Thousand!'
     );
     assert.strictEqual(page.answerField.value, 'DEF456');
     assert.strictEqual(page.creditField.value, 'excellences');

@@ -79,8 +79,7 @@ export default class Waypoint extends Model {
   updatedAt;
 
   get isComplete() {
-    this.schemas.validate();
-    return this.schemas.error === null;
+    return this.schemas.fieldErrors.length === 0;
   }
 
   get isIncomplete() {
