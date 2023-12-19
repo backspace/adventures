@@ -69,12 +69,12 @@ function extendYup() {
 
   addMethod(array, 'relationship', function () {
     return this.transform(
-      (_value, originalValue) => originalValue?.toArray() || []
+      (_value, originalValue) => originalValue?.toArray() || [],
     ).test(async function (value) {
       const validationsPassed = await Promise.all(
         value.map(({ validations }) => {
           return validations.validate();
-        })
+        }),
       );
 
       return validationsPassed.every((validation) => validation === true);

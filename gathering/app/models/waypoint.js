@@ -16,21 +16,21 @@ export default class Waypoint extends Model {
       .test(
         'is-valid',
         (d) => ({ key: 'invalid', path: d.path, values: {} }),
-        (value) => this.puzzles.implementation.excerptIsValid(value)
+        (value) => this.puzzles.implementation.excerptIsValid(value),
       ),
     dimensions: string()
       .required()
       .test(
         'is-valid',
         (d) => ({ key: 'invalid', path: d.path, values: {} }),
-        (value) => this.puzzles.implementation.dimensionsIsValid(value)
+        (value) => this.puzzles.implementation.dimensionsIsValid(value),
       ),
     outline: string()
       .required()
       .test(
         'is-valid',
         (d) => ({ key: 'invalid', path: d.path, values: {} }),
-        (value) => this.puzzles.implementation.outlineIsValid(value)
+        (value) => this.puzzles.implementation.outlineIsValid(value),
       ),
     page: string().required(),
   });

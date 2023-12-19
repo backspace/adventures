@@ -14,7 +14,7 @@ export default class Destination extends Model {
       .test(
         'is-valid',
         (d) => ({ key: 'invalid', path: d.path, values: {} }),
-        (value) => this.puzzles.implementation.descriptionIsValid(value)
+        (value) => this.puzzles.implementation.descriptionIsValid(value),
       ),
     answer: string().required(),
     awesomeness: number().required(),
@@ -24,7 +24,7 @@ export default class Destination extends Model {
       .test(
         'is-valid',
         (d) => ({ key: 'invalid', path: d.path, values: {} }),
-        () => this.maskIsValid
+        () => this.maskIsValid,
       ),
   });
 

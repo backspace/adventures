@@ -101,7 +101,7 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.ok(
       page.destinations[0].status.isHidden,
-      'expected the status to be hidden'
+      'expected the status to be hidden',
     );
   });
 
@@ -182,7 +182,7 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.strictEqual(
       page.suggestedMaskButton.label,
-      'itchin ________ witchin'
+      'itchin ________ witchin',
     );
   });
 
@@ -220,7 +220,7 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.strictEqual(
       page.suggestedMaskButton.label,
-      'property __ ___________ literature'
+      'property __ ___________ literature',
     );
 
     await page.save();
@@ -239,7 +239,7 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.strictEqual(
       page.destinations[0].mask,
-      'property of ___________ __________'
+      'property of ___________ __________',
     );
     assert.notOk(page.destinations[0].isIncomplete);
   });
@@ -251,7 +251,7 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.ok(
       page.statusFieldset.isHidden,
-      'expected the status fieldset to be hidden'
+      'expected the status fieldset to be hidden',
     );
   });
 
@@ -289,7 +289,7 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.strictEqual(
       page.accessibilityField.value,
-      'You must cross the Empty Thousand!'
+      'You must cross the Empty Thousand!',
     );
     assert.strictEqual(page.answerField.value, 'DEF456');
     assert.strictEqual(page.creditField.value, 'excellences');

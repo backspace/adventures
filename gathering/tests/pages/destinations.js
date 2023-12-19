@@ -60,7 +60,7 @@ export default PageObject.create({
   descriptionField: textField('[data-test-description-container]', 'textarea'),
   accessibilityField: textField(
     '[data-test-accessibility-container]',
-    'textarea'
+    'textarea',
   ),
   awesomenessField: textField('[data-test-awesomeness-container]'),
   riskField: textField('[data-test-risk-container]'),
