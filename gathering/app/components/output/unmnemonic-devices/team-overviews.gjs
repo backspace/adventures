@@ -47,6 +47,8 @@ export default class TeamOverviewsComponent extends Component {
     let meetingBodyFontSize = 12;
     let creditFontSize = 9;
 
+    let gapAboveMap = mapTeamFontSize * 3;
+
     let pageWidth = 8.5 * 72;
     let pageHeight = 11 * 72;
 
@@ -108,7 +110,7 @@ export default class TeamOverviewsComponent extends Component {
       let base64String = lowRes ? lowMapBase64String : mapBase64String;
 
       {
-        doc.translate(0, mapTeamFontSize * 3);
+        doc.translate(0, gapAboveMap);
         doc.scale(ratio, ratio);
 
         if (debug) {
@@ -137,7 +139,7 @@ export default class TeamOverviewsComponent extends Component {
       ];
 
       {
-        doc.translate(0, mapTeamFontSize * 2);
+        doc.translate(0, gapAboveMap);
 
         team
           .hasMany('meetings')
