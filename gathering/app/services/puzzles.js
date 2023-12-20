@@ -13,6 +13,18 @@ export default class PuzzlesService extends Service {
   @service
   features;
 
+  get adventureFlag() {
+    if (this.features.isEnabled('txtbeyond')) {
+      return 'txtbeyond';
+    } else if (this.features.isEnabled('unmnemonicDevices')) {
+      return 'unmnemonicDevices';
+    } else if (this.features.isEnabled('clandestineRendezvous')) {
+      return 'clandestineRendezvous';
+    } else {
+      return undefined;
+    }
+  }
+
   get implementation() {
     if (this.features.isEnabled('txtbeyond')) {
       return this.txtbeyond;
