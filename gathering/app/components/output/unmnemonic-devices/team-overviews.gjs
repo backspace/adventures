@@ -74,7 +74,6 @@ export default class TeamOverviewsComponent extends Component {
           drawHeader(team);
           drawMap();
           drawMeetingPoints(team);
-          drawExtras();
 
           doc.addPage();
 
@@ -263,30 +262,6 @@ export default class TeamOverviewsComponent extends Component {
       }
 
       regionSymbols.get(region).add(symbol);
-    }
-
-    function drawExtras() {
-      doc.save();
-      doc.translate(0, mapTeamFontSize * 4 + mapHeightOnPage);
-
-      if (debug) {
-        doc
-          .rect(
-            0,
-            0,
-            mapWidthOnPage,
-            pageHeight - mapTeamFontSize * 4 - pageMargin * 2 - mapHeightOnPage,
-          )
-          .stroke();
-      }
-
-      // Hackish reset of text position, unsure why but without this text was floating in the container, or even below it.
-      doc.text('', 0, 0);
-      doc.moveUp();
-
-      // doc.text('Extras go here');
-
-      doc.restore();
     }
 
     function drawMeetingBlanks(team) {
