@@ -75,6 +75,14 @@ defmodule AdventureRegistrations.Pages.Details do
     attribute_value({:id, "user_accessibility"}, "value")
   end
 
+  def team_emails do
+    attribute_value({:name, "user[team_emails]"}, "value")
+  end
+
+  def add_to_team_emails do
+    click({:css, "[data-action=add-email]"})
+  end
+
   def comments do
     AdventureRegistrations.Pages.Details.Comments
   end

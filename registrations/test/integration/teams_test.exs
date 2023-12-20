@@ -141,6 +141,30 @@ defmodule AdventureRegistrations.Integration.Teams do
     assert length(Details.mutuals()) == 3
   end
 
+  test "team emails can be appended to" do
+    insert(:user,
+      email: "Shevek@example.com",
+      team_emails: "Takver@example.com bedap@example.com tuio@example.com rulag@example.com",
+      proposed_team_name: "Sequency",
+      risk_aversion: 1
+    )
+
+    insert(:user,
+      email: "takver@example.com",
+      crypted_password: Bcrypt.hash_pwd_salt("Anarres")
+    )
+
+    navigate_to("/")
+
+    Login.login_as("takver@example.com", "Anarres")
+
+    assert Details.team_emails() == ""
+
+    Details.add_to_team_emails()
+
+    assert Details.team_emails() == " shevek@example.com"
+  end
+
   test "the table is hidden when empty" do
     insert(:user,
       email: "takver@example.com",
@@ -218,5 +242,45 @@ defmodule AdventureRegistrations.Integration.Teams do
     assert Details.Team.name() == "A team"
     assert Details.Team.risk_aversion() == "Push me a little"
     assert Details.Team.emails() == "takver@example.com, bedap@example.com"
+  end
+end
+
+defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Teams do
+  use AdventureRegistrationsWeb.ConnCase
+  use AdventureRegistrations.SwooshHelper
+  use AdventureRegistrations.ResetRequestConfirmation
+  use AdventureRegistrations.UnmnemonicDevices
+
+  alias AdventureRegistrations.Pages.Login
+  alias AdventureRegistrations.Pages.Details
+
+  # Import Hound helpers
+  use Hound.Helpers
+
+  # Start a Hound session
+  hound_session()
+
+  test "team emails can be appended to" do
+    insert(:user,
+      email: "Shevek@example.com",
+      team_emails: "Takver@example.com bedap@example.com tuio@example.com rulag@example.com",
+      proposed_team_name: "Sequency",
+      risk_aversion: 1
+    )
+
+    insert(:user,
+      email: "takver@example.com",
+      crypted_password: Bcrypt.hash_pwd_salt("Anarres")
+    )
+
+    navigate_to("/")
+
+    Login.login_as("takver@example.com", "Anarres")
+
+    assert Details.team_emails() == ""
+
+    Details.add_to_team_emails()
+
+    assert Details.team_emails() == " shevek@example.com"
   end
 end
