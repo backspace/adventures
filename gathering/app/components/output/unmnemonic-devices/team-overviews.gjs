@@ -141,6 +141,9 @@ export default class TeamOverviewsComponent extends Component {
       {
         doc.translate(0, gapAboveMap);
 
+        let regionCircles = new Set();
+        let regionSymbols = new Map();
+
         team
           .hasMany('meetings')
           .value()
@@ -153,6 +156,9 @@ export default class TeamOverviewsComponent extends Component {
             const waypointRegion = waypoint.belongsTo('region').value();
             const waypointAncestor = waypointRegion.ancestor;
 
+            regionCircles.add(waypointAncestor);
+            addRegionSymbol(regionSymbols, waypointAncestor, rendezvousLetter);
+
             const waypointX = waypointAncestor.x * innerWidthToMapLowRatio;
             const waypointY = waypointAncestor.y * innerWidthToMapLowRatio;
 
@@ -160,23 +166,17 @@ export default class TeamOverviewsComponent extends Component {
             const destinationRegion = destination.belongsTo('region').value();
             const destinationAncestor = destinationRegion.ancestor;
 
+            regionCircles.add(destinationAncestor);
+            addRegionSymbol(
+              regionSymbols,
+              destinationAncestor,
+              rendezvousLetter,
+            );
+
             const destinationX =
               destinationAncestor.get('x') * innerWidthToMapLowRatio;
             const destinationY =
               destinationAncestor.get('y') * innerWidthToMapLowRatio;
-
-            doc.save();
-            {
-              doc
-                .circle(waypointX, waypointY, mapMarkerCircleRadius)
-                .fillOpacity(0.25)
-                .fillAndStroke('white', 'black');
-              doc
-                .circle(destinationX, destinationY, mapMarkerCircleRadius)
-                .fillOpacity(0.25)
-                .fillAndStroke('white', 'black');
-            }
-            doc.restore();
 
             drawArrow(doc, waypointX, waypointY, destinationX, destinationY);
 
@@ -192,30 +192,6 @@ export default class TeamOverviewsComponent extends Component {
               );
             }
 
-            doc.save();
-
-            // Print rendezvous letter with outline
-            OUTLINE_TEXT_ARGUMENTS.forEach(
-              ({ lineWidth, strokeOpacity, textOptions }) => {
-                doc
-                  .fillColor('black')
-                  .strokeColor('white')
-                  .strokeOpacity(strokeOpacity)
-                  .lineWidth(lineWidth)
-                  .text(
-                    rendezvousLetter,
-                    waypointX - mapMarkerCircleRadius,
-                    waypointY + MAP_MARKER_Y_TWEAK - mapMarkerFontSize / 2,
-                    {
-                      align: 'center',
-                      width: mapMarkerCircleRadius * 2,
-                      ...textOptions,
-                    },
-                  );
-              },
-            );
-
-            doc.restore();
             if (debug) {
               doc.text(
                 `D ${destinationRegion.name}`,
@@ -227,35 +203,66 @@ export default class TeamOverviewsComponent extends Component {
                 },
               );
             }
-
-            doc.save();
-
-            // Print rendezvous letter with outline
-            OUTLINE_TEXT_ARGUMENTS.forEach(
-              ({ lineWidth, strokeOpacity, textOptions }) => {
-                doc
-                  .fillColor('black')
-                  .strokeColor('white')
-                  .strokeOpacity(strokeOpacity)
-                  .lineWidth(lineWidth)
-                  .text(
-                    rendezvousLetter,
-                    destinationX - mapMarkerCircleRadius,
-                    destinationY + MAP_MARKER_Y_TWEAK - mapMarkerFontSize / 2,
-                    {
-                      align: 'center',
-                      width: mapMarkerCircleRadius * 2,
-                      ...textOptions,
-                    },
-                  );
-              },
-            );
-
-            doc.restore();
           });
+
+        doc.save();
+
+        regionCircles.forEach((region) => {
+          const regionX = region.x * innerWidthToMapLowRatio;
+          const regionY = region.y * innerWidthToMapLowRatio;
+
+          {
+            doc
+              .circle(regionX, regionY, mapMarkerCircleRadius)
+              .fillOpacity(0.25)
+              .fillAndStroke('white', 'black');
+          }
+        });
+
+        doc.restore();
+
+        doc.save();
+
+        regionSymbols.forEach((symbols, region) => {
+          const regionX = region.x * innerWidthToMapLowRatio;
+          const regionY = region.y * innerWidthToMapLowRatio;
+
+          const symbolsString = [...symbols].join('');
+
+          // Print rendezvous letter with outline
+          OUTLINE_TEXT_ARGUMENTS.forEach(
+            ({ lineWidth, strokeOpacity, textOptions }) => {
+              doc
+                .fillColor('black')
+                .strokeColor('white')
+                .strokeOpacity(strokeOpacity)
+                .lineWidth(lineWidth)
+                .text(
+                  symbolsString,
+                  regionX - mapMarkerCircleRadius,
+                  regionY + MAP_MARKER_Y_TWEAK - mapMarkerFontSize / 2,
+                  {
+                    align: 'center',
+                    width: mapMarkerCircleRadius * 2,
+                    ...textOptions,
+                  },
+                );
+            },
+          );
+        });
+
+        doc.restore();
       }
 
       doc.restore();
+    }
+
+    function addRegionSymbol(regionSymbols, region, symbol) {
+      if (!regionSymbols.has(region)) {
+        regionSymbols.set(region, new Set());
+      }
+
+      regionSymbols.get(region).add(symbol);
     }
 
     function drawExtras() {
