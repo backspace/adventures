@@ -123,7 +123,8 @@ pub async fn get_root(
     let caller_is_supervisor =
         params.caller.clone().unwrap_or("NOTHING".to_string()) == supervisor_number;
 
-    let notify_supervisor = settings.begun.unwrap()
+    let notify_supervisor = params.caller.is_some()
+        && settings.begun.unwrap()
         && !settings.ending.unwrap()
         && !caller_is_supervisor
         && settings.notify_supervisor.unwrap();

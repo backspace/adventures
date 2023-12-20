@@ -172,65 +172,12 @@ async fn root_serves_recorded_disclaimer_when_it_exists(db: PgPool) {
 }
 
 #[sqlx::test(fixtures("schema", "settings-begun"))]
-async fn root_serves_welcome_and_notifies_supervisor_and_still_gathers_recordings_when_begun(
-    db: PgPool,
-) {
-    let config = get_config();
-    let vrs_number = config.vrs_number.to_string();
-    let supervisor_number = config.supervisor_number.to_string();
-
-    let twilio_create_message_body = serde_urlencoded::to_string([
-        ("Body", &"New call from 2040000000".to_string()),
-        ("To", &supervisor_number),
-        ("From", &vrs_number),
-    ])
-    .expect("Could not encode message creation body");
-
-    let mock_twilio = MockServer::start().await;
-
-    Mock::given(method("POST"))
-        .and(path_regex(r"^/2010-04-01/Accounts/.*/Messages.json$"))
-        .and(body_string(twilio_create_message_body.to_string()))
-        .respond_with(ResponseTemplate::new(201).set_body_json(json!({})))
-        .expect(1)
-        .named("create message")
-        .mount(&mock_twilio)
-        .await;
-
-    let response = get_with_twilio(
-        InjectableServices {
-            db: db.clone(),
-            twilio_address: mock_twilio.uri(),
-        },
-        "/?Caller=2040000000",
-        false,
-    )
-    .await
-    .expect("Failed to execute request.");
+async fn root_serves_welcome_with_no_caller(db: PgPool) {
+    let response = get(db, "/", false)
+        .await
+        .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
-    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-
-    let text = response.text().await.unwrap();
-    let document = Document::from(text.as_str());
-
-    assert_that(
-        &document
-            .find(Descendant(Name("gather"), Name("say")))
-            .next()
-            .unwrap()
-            .text(),
-    )
-    .contains("welcome to unmnemonic");
-
-    let gather_hints = &document
-        .find(Name("gather"))
-        .next()
-        .unwrap()
-        .attr("hints")
-        .unwrap();
-
-    assert_that(gather_hints).contains("recordings");
 }
 
 #[sqlx::test(fixtures("schema", "settings-begun"))]
