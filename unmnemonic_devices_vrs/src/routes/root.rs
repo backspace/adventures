@@ -85,7 +85,6 @@ pub async fn get_record(
 #[derive(Serialize)]
 pub struct RootData {
     begun: bool,
-    down: bool,
     ending: bool,
     override_message: Option<String>,
     character_names: Vec<String>,
@@ -110,7 +109,7 @@ pub async fn get_root(
     .ok();
 
     let settings =
-        sqlx::query!("SELECT begun, down, ending, override as override_message, notify_supervisor FROM unmnemonic_devices.settings LIMIT 1")
+        sqlx::query!("SELECT begun, ending, override as override_message, notify_supervisor FROM unmnemonic_devices.settings LIMIT 1")
             .fetch_one(&state.db)
             .await
             .expect("Failed to fetch settings");
@@ -198,7 +197,6 @@ pub async fn get_root(
         state.mutable_prompts.lock().unwrap().to_string(),
         RootData {
             begun: settings.begun.unwrap() || params.begun.is_some(),
-            down: settings.down.unwrap(),
             ending: settings.ending.unwrap(),
             override_message: settings.override_message,
             character_names: state
@@ -214,7 +212,7 @@ pub async fn get_root(
 #[axum_macros::debug_handler]
 pub async fn post_root(State(state): State<AppState>, Form(form): Form<TwilioForm>) -> Redirect {
     let settings =
-        sqlx::query!("SELECT begun, down, ending, override as override_message FROM unmnemonic_devices.settings LIMIT 1")
+        sqlx::query!("SELECT begun, ending, override as override_message FROM unmnemonic_devices.settings LIMIT 1")
             .fetch_optional(&state.db)
             .await
             .expect("Failed to fetch settings");

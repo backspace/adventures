@@ -6,7 +6,6 @@ defmodule AdventureRegistrationsWeb.UnmnemonicDevices.Settings do
   schema "settings" do
     field(:begun, :boolean, default: false)
     field(:compromised, :boolean, default: false)
-    field(:down, :boolean, default: false)
     field(:ending, :boolean, default: false)
     field(:notify_supervisor, :boolean, default: true)
     field(:override, :string)
@@ -24,7 +23,6 @@ defmodule AdventureRegistrationsWeb.UnmnemonicDevices.Settings do
       :compromised,
       :ending,
       :notify_supervisor,
-      :down,
       :vrs_href,
       :vrs_human
     ])

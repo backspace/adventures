@@ -1,33 +1,8 @@
 use crate::common;
-use common::helpers::{get, get_config, post, RedirectTo};
-use select::{document::Document, predicate::Name};
+use common::helpers::{get_config, post, RedirectTo};
 
 use speculoos::prelude::*;
 use sqlx::PgPool;
-
-#[sqlx::test(fixtures("schema", "settings-down"))]
-async fn root_serves_down_when_down(db: PgPool) {
-    let config = get_config();
-    let recordings_voicepass = config.recordings_voicepass.to_string();
-
-    let response = get(db, "/recordings/confirm", false)
-        .await
-        .expect("Failed to execute request.");
-
-    assert!(response.status().is_success());
-
-    let text = response.text().await.unwrap();
-    let document = Document::from(text.as_str());
-
-    let gather_hints = &document
-        .find(Name("gather"))
-        .next()
-        .unwrap()
-        .attr("hints")
-        .unwrap();
-
-    assert_that(gather_hints).contains(recordings_voicepass);
-}
 
 #[sqlx::test(fixtures("schema"))]
 async fn post_recordings_confirm_redirects(db: PgPool) {

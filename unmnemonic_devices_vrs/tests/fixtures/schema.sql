@@ -240,11 +240,8 @@ CREATE TABLE unmnemonic_devices.settings (
     begun boolean DEFAULT false,
     compromised boolean DEFAULT false,
     ending boolean DEFAULT false,
-    down boolean DEFAULT false,
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL,
-    day_before boolean DEFAULT false,
-    degrading boolean DEFAULT false,
     vrs_href character varying(255),
     vrs_human character varying(255),
     notify_supervisor boolean DEFAULT true
@@ -553,3 +550,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231112020314);
 INSERT INTO public."schema_migrations" (version) VALUES (20231204001556);
 INSERT INTO public."schema_migrations" (version) VALUES (20231205235352);
 INSERT INTO public."schema_migrations" (version) VALUES (20231217183904);
+INSERT INTO public."schema_migrations" (version) VALUES (20231220025457);

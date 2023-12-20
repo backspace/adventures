@@ -280,17 +280,6 @@ async fn root_serves_ending_when_ending(db: PgPool) {
     assert_that(&response.text().await.unwrap()).contains("Placeholder for ending message");
 }
 
-#[sqlx::test(fixtures("schema", "settings-down"))]
-async fn root_serves_down_when_down(db: PgPool) {
-    let response = get(db, "/", false)
-        .await
-        .expect("Failed to execute request.");
-
-    assert!(response.status().is_success());
-    assert_eq!(response.headers().get("Content-Type").unwrap(), "text/xml");
-    assert_that(&response.text().await.unwrap()).contains("It is down");
-}
-
 #[sqlx::test(fixtures("schema", "settings"))]
 async fn post_recordings_redirects(db: PgPool) {
     for (speech_result, redirect) in [
