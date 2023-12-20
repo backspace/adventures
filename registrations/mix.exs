@@ -43,7 +43,7 @@ defmodule AdventureRegistrations.Mixfile do
       {:plug_cowboy, "~> 2.1"},
       {:plug, "~> 1.7"},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:hound, "~> 1.1.1", only: :test},
+      {:hound, github: "backspace/hound", ref: "malgasm-plus-warning-fixes", only: :test},
       {:ex_machina, "~> 2.7.0", only: :test},
       {:bcrypt_elixir, "~> 3.0"},
       {:swoosh, "~> 1.9"},
