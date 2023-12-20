@@ -24,6 +24,7 @@ export default class TeamOverviewsComponent extends Component {
     let lowRes = this.lowResMap;
 
     let regular = this.args.assets.regular;
+    let bold = this.args.assets.bold;
 
     let doc = new PDFDocument({ layout: 'portrait', font: regular });
     let stream = doc.pipe(blobStream());
@@ -346,6 +347,8 @@ export default class TeamOverviewsComponent extends Component {
               doc,
               waypointRegion,
               meetingHalfWithoutPadding - meetingPadding,
+              regular,
+              bold,
             );
 
             doc.fontSize(meetingBodyFontSize / 2);
@@ -388,6 +391,8 @@ export default class TeamOverviewsComponent extends Component {
               doc,
               destinationRegion,
               meetingHalfWithoutPadding,
+              regular,
+              bold,
             );
 
             doc.fontSize(meetingBodyFontSize / 2);
@@ -523,23 +528,41 @@ function doubleBlanks(s) {
   return s.replace(/_/g, '__');
 }
 
-function printRegionNotesAndParents(doc, region, width) {
+function printRegionNotesAndParents(doc, region, width, regular, bold) {
   if (region.notes || region.hours) {
-    doc.text(
-      `${region.hours ? `${region.hours}. ` : ''}${region.notes ?? ''}`,
-      { width },
-    );
+    if (region.hours) {
+      doc.font(bold);
+      doc.text(`${region.hours}. `, {
+        continued: Boolean(region.notes),
+        width,
+      });
+      doc.font(regular);
+    }
+
+    doc.text(region.notes ?? ' ', { width });
   }
 
   let parent = region.belongsTo('parent').value();
 
+  let segments = [];
+
   while (parent) {
-    doc.text(
-      `In ${parent.name}${parent.hours ? `, ${parent.hours}` : ''}. ${
-        parent.notes ?? ''
-      }`,
-      { width },
-    );
+    segments.push({ text: `In ${parent.name}`, font: regular });
+
+    if (parent.hours) {
+      segments.push({ text: ', ', font: regular });
+      segments.push({ text: parent.hours, font: bold });
+    }
+
+    segments.push({ text: `. ${parent.notes ?? ''}`, font: regular });
+
     parent = parent.belongsTo('parent').value();
   }
+
+  segments.forEach(({ text, font }, index) => {
+    doc.font(font);
+    doc.text(text, { width, continued: index < segments.length - 1 });
+  });
+
+  doc.font(regular);
 }
