@@ -20,8 +20,17 @@ export default class DestinationComponent extends Component {
 
   get isHighlighted() {
     return this.args.highlightedTeam?.destinations
-      .map((d) => d.id)
+      .map((d) => d && d.id)
       .includes(this.args.destination.id);
+  }
+
+  get isIneligible() {
+    return (
+      this.args.meeting &&
+      this.args.meeting.teams.some(
+        (t) => t.highestRecommendedRisk < this.args.destination.risk,
+      )
+    );
   }
 
   @action select() {
@@ -33,7 +42,8 @@ export default class DestinationComponent extends Component {
     {{! template-lint-disable no-invalid-interactive }}
     <li
       class='{{if @isSelected 'selected'}}
-        {{if this.isHighlighted 'highlighted'}}'
+        {{if this.isHighlighted 'highlighted'}}
+        {{if this.isIneligible 'ineligible'}}'
       title='A{{@destination.awesomeness}} R{{@destination.risk}}'
       style={{this.style}}
       {{on 'click' this.select}}

@@ -110,6 +110,8 @@ export default PageObject.create({
         isSelected: hasClass('selected'),
         isHighlighted: hasClass('highlighted'),
 
+        isIneligible: hasClass('ineligible'),
+
         click: clickable(),
       }),
 

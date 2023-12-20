@@ -101,7 +101,7 @@ module('Acceptance | scheduler', function (hooks) {
     prairieTheatreExchange = store.createRecord('destination', {
       description: 'Prairie Theatre Exchange',
       awesomeness: 4 / 3,
-      risk: 1,
+      risk: 10,
       region: portagePlace,
       status: 'available',
       answer: '1234',
@@ -366,6 +366,19 @@ module('Acceptance | scheduler', function (hooks) {
       assert.strictEqual(page.meeting.teams[1].value, 'Mayors');
     });
 
+    test('choosing teams causes destinations outside their risk to be faded as ineligible', async function (assert) {
+      await page.visit();
+
+      let pte = page.destinationRegions[2].destinations[1];
+      assert.notOk(pte.isIneligible);
+
+      await page.teams[0].click();
+      assert.notOk(pte.isIneligible);
+
+      await page.teams[1].click();
+      assert.ok(pte.isIneligible);
+    });
+
     test('a new meeting can be scheduled and resets the form when saved', async function (assert) {
       await page.visit();
 
@@ -399,7 +412,7 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.strictEqual(page.teams[0].count, '••');
       assert.strictEqual(page.teams[0].averageAwesomeness, '2.17');
-      assert.strictEqual(page.teams[0].averageRisk, '1.5');
+      assert.strictEqual(page.teams[0].averageRisk, '6');
 
       assert.strictEqual(page.teams[1].count, '••');
 
@@ -690,7 +703,7 @@ module('Acceptance | scheduler', function (hooks) {
 
       assert.strictEqual(page.teams[0].count, '••');
       assert.strictEqual(page.teams[0].averageAwesomeness, '2.17');
-      assert.strictEqual(page.teams[0].averageRisk, '1.5');
+      assert.strictEqual(page.teams[0].averageRisk, '6');
 
       assert.strictEqual(page.teams[1].count, '');
 

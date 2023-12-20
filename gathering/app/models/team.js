@@ -65,6 +65,18 @@ export default class Team extends Model {
     return 0;
   }
 
+  get highestRecommendedRisk() {
+    switch (this.riskAversion) {
+      case 3:
+        return 10;
+      case 2:
+        return 7;
+      case 1:
+      default:
+        return 4;
+    }
+  }
+
   get phonesString() {
     return (this.phones || [])
       .map((phone) => {

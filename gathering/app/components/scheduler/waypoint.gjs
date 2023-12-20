@@ -16,7 +16,7 @@ export default class WaypointComponent extends Component {
 
   get isHighlighted() {
     return this.args.highlightedTeam?.waypoints
-      .map((t) => t.id)
+      .map((t) => t && t.id)
       .includes(this.args.waypoint.id);
   }
 

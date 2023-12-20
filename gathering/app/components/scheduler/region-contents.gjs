@@ -47,6 +47,7 @@ export default class RegionContents extends Component {
                 <SchedulerDestination
                   data-test-scheduler-destination
                   @destination={{destination}}
+                  @meeting={{@meeting}}
                   @select={{@select}}
                   @isSelected={{eq destination.id @meeting.destination.id}}
                   @highlightedTeam={{@highlightedTeam}}
