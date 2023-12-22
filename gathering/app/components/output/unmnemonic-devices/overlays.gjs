@@ -57,12 +57,12 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
     this.state.set('unmnemonicDevicesOverlaysAll', value);
   }
 
-  get excludeAvailable() {
-    return this.state.get('unmnemonicDevicesOverlaysExcludeAvailable');
+  get onlyUnknownStatus() {
+    return this.state.get('unmnemonicDevicesOverlaysonlyUnknownStatus');
   }
 
-  set excludeAvailable(value) {
-    this.state.set('unmnemonicDevicesOverlaysExcludeAvailable', value);
+  set onlyUnknownStatus(value) {
+    this.state.set('unmnemonicDevicesOverlaysonlyUnknownStatus', value);
   }
 
   generator = trackedFunction(this, async () => {
@@ -76,9 +76,9 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
     if (this.allOverlays) {
       waypointsToGenerate = this.args.waypoints.filter((w) => w.isComplete);
 
-      if (this.excludeAvailable) {
+      if (this.onlyUnknownStatus) {
         waypointsToGenerate = waypointsToGenerate.filter(
-          (w) => w.status !== 'available',
+          (w) => w.status !== 'available' && w.status !== 'unavailable',
         );
       }
     } else {
@@ -277,9 +277,9 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
       {{#if this.allOverlays}}
         <Checkbox
-          @label='Exclude available'
-          @id='exclude-available'
-          @checked={{this.excludeAvailable}}
+          @label='Only unknown status'
+          @id='only-unknown-status'
+          @checked={{this.onlyUnknownStatus}}
         />
       {{/if}}
     </section>
