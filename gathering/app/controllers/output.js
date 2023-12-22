@@ -1,6 +1,5 @@
 import Controller from '@ember/controller';
 import { inject as service } from '@ember/service';
-import { tracked } from '@glimmer/tracking';
 
 import ClandestineRendezvousAnswers from 'adventure-gathering/components/output/clandestine-rendezvous/answers';
 import ClandestineRendezvousCards from 'adventure-gathering/components/output/clandestine-rendezvous/cards';
@@ -14,14 +13,12 @@ import UnmnemonicDevicesOverlays from 'adventure-gathering/components/output/unm
 import UnmnemonicDevicesTeamOverviews from 'adventure-gathering/components/output/unmnemonic-devices/team-overviews';
 import UnmnemonicDevicesVerification from 'adventure-gathering/components/output/unmnemonic-devices/verification';
 import UnmnemonicDevicesVrssql from 'adventure-gathering/components/output/unmnemonic-devices/vrssql';
+import { storageFor } from 'ember-local-storage';
 
 export default class OutputController extends Controller {
-  queryParams = ['debug', 'active'];
+  @storageFor('output') state;
 
   @service puzzles;
-
-  @tracked debug = false;
-  @tracked active = null;
 
   allOutputs = {
     clandestineRendezvous: [
@@ -49,12 +46,12 @@ export default class OutputController extends Controller {
   }
 
   get outputComponent() {
-    if (!this.active) {
+    if (!this.state.get('active')) {
       return null;
     }
 
     return this.allOutputs[this.puzzles.adventureFlag].find(([name]) => {
-      return name === this.active;
+      return name === this.state.get('active');
     })[1];
   }
 }

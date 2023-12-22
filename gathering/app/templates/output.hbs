@@ -2,15 +2,15 @@
   <div class='mx-auto md:container'>
     <label>
       Debug?
-      <Input @type='checkbox' @checked={{this.debug}} />
+      <Input @type='checkbox' @checked={{this.state.debug}} />
     </label>
 
     <header class='w-full gap-2 my-2 flex justify-between'>
       {{#each this.outputNames as |outputName|}}
         <button
-          class='border-2 border-black p-2 flex-1 {{if (eq this.active outputName) "bg-gray-200"}}'
+          class='border-2 border-black p-2 flex-1 {{if (eq this.state.active outputName) "bg-gray-200"}}'
           type='button'
-          {{on 'click' (fn (mut this.active) outputName)}}
+          {{on 'click' (fn (mut this.state.active) outputName)}}
         >
           {{outputName}}
         </button>
@@ -26,7 +26,7 @@
         @meetings={{this.model.meetings}}
         @assets={{this.model.assets}}
         @settings={{this.model.settings}}
-        @debug={{this.debug}}
+        @debug={{this.state.debug}}
       />
     {{/if}}
 

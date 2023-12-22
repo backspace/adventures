@@ -1,10 +1,10 @@
 import { Input } from '@ember/component';
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
 import Loading from 'adventure-gathering/components/loading';
-
 import blobStream from 'blob-stream';
+import { storageFor } from 'ember-local-storage';
+
 import { trackedFunction } from 'ember-resources/util/function';
 import PDFDocument from 'pdfkit';
 
@@ -15,7 +15,15 @@ export default class TeamOverviewsComponent extends Component {
   @service map;
   @service('unmnemonic-devices') devices;
 
-  @tracked lowResMap = true;
+  @storageFor('output') state;
+
+  get lowResMap() {
+    return this.state.get('unmnemonicDevicesOverviewsLowResMap');
+  }
+
+  set lowResMap(value) {
+    this.state.set('unmnemonicDevicesOverviewsLowResMap', value);
+  }
 
   generator = trackedFunction(this, async () => {
     let identifierForMeeting = this.devices.identifierForMeeting;
@@ -410,11 +418,13 @@ export default class TeamOverviewsComponent extends Component {
   }
 
   <template>
-    Low res map?
-    <Input
-      @type='checkbox'
-      @checked={{this.lowResMap}}
-    />
+    <label>
+      Low res map?
+      <Input
+        @type='checkbox'
+        @checked={{this.lowResMap}}
+      />
+    </label>
     {{#if this.src}}
       <iframe title='team-overviews' src={{this.src}}>
       </iframe>

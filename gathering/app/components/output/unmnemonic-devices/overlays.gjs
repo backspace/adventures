@@ -1,9 +1,9 @@
 import { Input } from '@ember/component';
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
-import { tracked } from '@glimmer/tracking';
 import Loading from 'adventure-gathering/components/loading';
 import blobStream from 'blob-stream';
+import { storageFor } from 'ember-local-storage';
 import { trackedFunction } from 'ember-resources/util/function';
 
 import PDFDocument from 'pdfkit';
@@ -44,10 +44,25 @@ let registrationLength = PAGE_PADDING / 2;
 let registrationTotal = registrationPadding + registrationLength;
 
 export default class UnmnemonicDevicesOverlaysComponent extends Component {
-  @tracked allOverlays = true;
-  @tracked excludeAvailable = false;
-
   @service('unmnemonic-devices') devices;
+
+  @storageFor('output') state;
+
+  get allOverlays() {
+    return this.state.get('unmnemonicDevicesOverlaysAll');
+  }
+
+  set allOverlays(value) {
+    this.state.set('unmnemonicDevicesOverlaysAll', value);
+  }
+
+  get excludeAvailable() {
+    return this.state.get('unmnemonicDevicesOverlaysExcludeAvailable');
+  }
+
+  set excludeAvailable(value) {
+    this.state.set('unmnemonicDevicesOverlaysExcludeAvailable', value);
+  }
 
   generator = trackedFunction(this, async () => {
     let regular = this.args.assets.regular;
