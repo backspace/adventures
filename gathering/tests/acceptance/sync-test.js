@@ -1,28 +1,25 @@
 import { run } from '@ember/runloop';
-import { visit } from '@ember/test-helpers';
+import { visit, waitUntil } from '@ember/test-helpers';
 
+import PouchDB from 'adventure-gathering/utils/pouch';
 import { setupApplicationTest } from 'ember-qunit';
 
 import { module, test } from 'qunit';
 
+import regionsPage from '../pages/regions';
 import page from '../pages/sync';
 
 module('Acceptance | sync', function (hooks) {
   setupApplicationTest(hooks);
 
-  hooks.beforeEach(function (assert) {
+  hooks.beforeEach(async function () {
     const store = this.owner.lookup('service:store');
-    const done = assert.async();
 
-    run(() => {
-      const fixture = store.createRecord('destination');
+    const fixture = store.createRecord('destination');
 
-      fixture.set('description', 'Ina-Karekh');
+    fixture.set('description', 'Ina-Karekh');
 
-      fixture.save().then(() => {
-        done();
-      });
-    });
+    await fixture.save();
   });
 
   // I had these as separate tests but localStorage was bleeding through… ugh
@@ -67,5 +64,46 @@ module('Acceptance | sync', function (hooks) {
     await page.databases[2].remove();
 
     assert.strictEqual(page.databases.length, 2);
+  });
+
+  test('shows when there are conflicts', async function (assert) {
+    let store = this.owner.lookup('service:store');
+
+    let region = store.createRecord('region', {
+      name: 'A region',
+    });
+
+    await region.save();
+
+    await visit('/');
+    await page.visit();
+    await page.destination.fillIn('eventual-conflicts');
+    await page.sync();
+
+    let otherDb = new PouchDB('eventual-conflicts', {
+      adapter: 'memory',
+    });
+
+    let regionDoc = (await otherDb.allDocs()).rows.find((row) =>
+      row.id.includes('region'),
+    );
+
+    await otherDb.put({
+      _id: regionDoc.id,
+      _rev: regionDoc.value.rev,
+      name: 'A region version 100',
+    });
+
+    await regionsPage.visit();
+
+    await regionsPage.regions[0].edit();
+    await regionsPage.nameField.fill('A region version -100');
+    await regionsPage.save();
+    await waitUntil(() => regionsPage.regions.length);
+
+    await page.visit();
+    await page.sync();
+
+    assert.strictEqual(page.conflicts.length, 1);
   });
 });

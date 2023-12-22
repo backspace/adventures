@@ -11,6 +11,7 @@ import { task } from 'ember-concurrency';
 import { storageFor } from 'ember-local-storage';
 
 import stringify from 'json-stringify-safe';
+import { TrackedArray } from 'tracked-built-ins';
 
 export default class SyncController extends Controller {
   @storageFor('databases')
@@ -19,6 +20,8 @@ export default class SyncController extends Controller {
   @tracked destination;
   @tracked result;
   @tracked error;
+
+  @tracked conflicts;
 
   @tracked syncPromise;
   @tracked isSyncing = false;
@@ -39,23 +42,55 @@ export default class SyncController extends Controller {
       config.emberPouch.options,
     );
 
-    const syncPromise = sourceDb.sync(destinationDb);
+    /*
+    const changes = sourceDb
+      .changes({ live: true, include_docs: true, conflicts: true })
+      .on('change', (info) => {
+        if (info.doc._conflicts) {
+          console.log('confl???', info);
+          this.conflicts.push(info.doc);
+        }
+      })
+      .on('error', (error) => {
+        console.log('error with changes:', stringify(error));
+        this.error = error;
+      });
+    */
+
+    const syncPromise = sourceDb.sync(destinationDb, { conflicts: true });
+    // .on('error', (error) => {
+    //   console.log('error with sync:', stringify(error));
+    //   this.error = error;
+    // })
+    // .on('change', (info) => {
+    //   console.log('change with sync:', stringify(info));
+    //   this.result = info;
+    // });
 
     this.result = undefined;
     this.syncPromise = syncPromise;
+    this.conflicts = new TrackedArray();
 
-    yield syncPromise
-      .then((result) => {
-        run(() => {
-          this.result = result;
-        });
-      })
-      .catch((error) => {
-        run(() => {
-          console.log('error with sync:', stringify(error));
-          this.error = error;
-        });
+    try {
+      let result = yield syncPromise;
+      this.result = result;
+
+      let allDocs = yield sourceDb.allDocs({
+        include_docs: true,
+        conflicts: true,
       });
+
+      allDocs.rows.forEach((row) => {
+        if (row.doc._conflicts) {
+          this.conflicts.push(row.doc);
+        }
+      });
+    } catch (error) {
+      console.log('error with sync:', stringify(error));
+      this.error = error;
+    }
+
+    // changes.cancel();
   })
   sync;
 

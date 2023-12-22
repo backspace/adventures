@@ -111,6 +111,17 @@
       </code>
     {{/if}}
 
+    {{#if this.conflicts.length}}
+      <h2 class='mt-4 text-2xl font-bold'>Conflicts</h2>
+      <ul class='border-2 border-red-500'>
+        {{#each this.conflicts as |conflict|}}
+          <li data-test-conflict>
+            {{conflict._id}}: {{#each conflict._conflicts as |rev|}}{{rev}} {{/each}}
+          </li>
+        {{/each}}
+      </ul>
+    {{/if}}
+
     Version:
     {{this.version}}
   </div>
