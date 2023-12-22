@@ -255,7 +255,6 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
 
     let blobUrl = await new Promise((resolve) => {
       stream.on('finish', () => {
-        this.rendering = false;
         resolve(stream.toBlobURL('application/pdf'));
       });
     });
