@@ -2,6 +2,7 @@ import { Input } from '@ember/component';
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import Loading from 'adventure-gathering/components/loading';
+import Checkbox from 'adventure-gathering/components/output/checkbox';
 import blobStream from 'blob-stream';
 import { storageFor } from 'ember-local-storage';
 
@@ -418,13 +419,13 @@ export default class TeamOverviewsComponent extends Component {
   }
 
   <template>
-    <label>
-      Low res map?
-      <Input
-        @type='checkbox'
-        @checked={{this.lowResMap}}
-      />
-    </label>
+    <Checkbox
+      class='mb-2'
+      @id='low-res-map'
+      @label='Low res map'
+      @checked={{this.lowResMap}}
+    />
+
     {{#if this.src}}
       <iframe title='team-overviews' src={{this.src}}>
       </iframe>

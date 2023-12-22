@@ -2,6 +2,7 @@ import { Input } from '@ember/component';
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import Loading from 'adventure-gathering/components/loading';
+import Checkbox from 'adventure-gathering/components/output/checkbox';
 import blobStream from 'blob-stream';
 import { storageFor } from 'ember-local-storage';
 import { trackedFunction } from 'ember-resources/util/function';
@@ -267,17 +268,21 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
   }
 
   <template>
-    <label>
-      All overlays instead of per-team?
-      <Input @type='checkbox' @checked={{this.allOverlays}} />
-    </label>
+    <section class='flex gap-2 mb-2'>
+      <Checkbox
+        @label='All books'
+        @id='all-books'
+        @checked={{this.allOverlays}}
+      />
 
-    {{#if this.allOverlays}}
-      <label>
-        Exclude available?
-        <Input @type='checkbox' @checked={{this.excludeAvailable}} />
-      </label>
-    {{/if}}
+      {{#if this.allOverlays}}
+        <Checkbox
+          @label='Exclude available'
+          @id='exclude-available'
+          @checked={{this.excludeAvailable}}
+        />
+      {{/if}}
+    </section>
 
     {{#if this.src}}
       <iframe title='overlays' src={{this.src}}>

@@ -1,11 +1,14 @@
 <div class='w-full'>
   <div class='mx-auto md:container'>
-    <label>
-      Debug?
-      <Input @type='checkbox' @checked={{this.state.debug}} />
-    </label>
 
     <header class='w-full gap-2 my-2 flex justify-between'>
+      <Output::Checkbox
+        class='h-full'
+        @id='debug'
+        @label='Debug'
+        @checked={{this.state.debug}}
+      />
+
       {{#each this.outputNames as |outputName|}}
         <button
           class='border-2 border-black p-2 flex-1 {{if (eq this.state.active outputName) "bg-gray-200"}}'
