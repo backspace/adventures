@@ -28,4 +28,6 @@ export default PageObject.create({
     written: text('[data-test-written]'),
     writeFailures: text('[data-test-write-failures]'),
   },
+
+  conflicts: collection('[data-test-conflict]'),
 });
