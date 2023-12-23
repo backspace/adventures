@@ -1,4 +1,3 @@
-import { run } from '@ember/runloop';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 
@@ -37,21 +36,16 @@ module('Acceptance | settings: fresh', function (hooks) {
 module('Acceptance | settings: existing', function (hooks) {
   setupApplicationTest(hooks);
 
-  hooks.beforeEach(function (assert) {
+  hooks.beforeEach(async function () {
     this.store = this.owner.lookup('service:store');
-    const done = assert.async();
 
-    run(() => {
-      const settings = this.store.createRecord('settings', {
-        id: 'settings',
-        goal: '12345',
-        destinationStatus: true,
-      });
-
-      settings.save().then(() => {
-        done();
-      });
+    const settings = this.store.createRecord('settings', {
+      id: 'settings',
+      goal: '12345',
+      destinationStatus: true,
     });
+
+    await settings.save();
   });
 
   test('an existing settings document is displayed and can be updated, with its boolean flags mirrored to the features service', async function (assert) {

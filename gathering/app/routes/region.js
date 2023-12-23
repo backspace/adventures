@@ -7,10 +7,8 @@ export default class RegionRoute extends Route {
 
   @tracked regions;
 
-  beforeModel() {
-    return this.store
-      .findAll('region')
-      .then((regions) => (this.regions = regions));
+  async beforeModel() {
+    this.regions = await this.store.findAll('region');
   }
 
   setupController(controller, model) {

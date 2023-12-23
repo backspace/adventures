@@ -44,18 +44,14 @@ export default class SyncController extends Controller {
     this.result = undefined;
     this.syncPromise = syncPromise;
 
-    yield syncPromise
-      .then((result) => {
-        run(() => {
-          this.result = result;
-        });
-      })
-      .catch((error) => {
-        run(() => {
-          console.log('error with sync:', stringify(error));
-          this.error = error;
-        });
-      });
+    try {
+      let result = yield syncPromise;
+
+      this.result = result;
+    } catch (error) {
+      console.log('error with sync:', stringify(error));
+      this.error = error;
+    }
   })
   sync;
 

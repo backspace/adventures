@@ -137,26 +137,25 @@ export default class SchedulerController extends Controller {
     this.meeting.teams.push(team);
   }
 
-  @action saveMeeting() {
+  @action async saveMeeting() {
     const meeting = this.meeting;
 
     meeting.set('offset', this.meetingOffset);
 
-    meeting
-      .save()
-      .then(() => {
-        return Promise.all([meeting.get('destination'), meeting.get('teams')]);
-      })
-      .then(([destination, teams]) => {
-        return Promise.all([
-          destination.save(),
-          ...teams.map((team) => team.save()),
-        ]);
-      })
-      .then(() => {
-        this.meeting = this.store.createRecord('meeting');
-        this.meetingOffsetOverride = undefined;
-      });
+    await meeting.save();
+
+    let [destination, teams] = await Promise.all([
+      meeting.get('destination'),
+      meeting.get('teams'),
+    ]);
+
+    await Promise.all([
+      destination.save(),
+      ...teams.map((team) => team.save()),
+    ]);
+
+    this.meeting = this.store.createRecord('meeting');
+    this.meetingOffsetOverride = undefined;
   }
 
   @action resetMeeting() {

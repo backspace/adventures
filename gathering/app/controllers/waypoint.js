@@ -22,22 +22,17 @@ export default class WaypointController extends Controller {
   }
 
   @action
-  save(model) {
-    model
-      .save()
-      .then(() => {
-        return model.get('region');
-      })
-      .then((region) => {
-        if (region) {
-          this.lastRegion.setLastRegionId(region.id);
-        }
+  async save(model) {
+    await model.save();
 
-        return region ? region.save() : true;
-      })
-      .then(() => {
-        this.router.transitionTo('waypoints');
-      });
+    let region = model.get('region');
+
+    if (region) {
+      this.lastRegion.setLastRegionId(region.id);
+      await region.save();
+    }
+
+    this.router.transitionTo('waypoints');
   }
 
   @action
@@ -47,16 +42,12 @@ export default class WaypointController extends Controller {
   }
 
   @action
-  delete(model) {
+  async delete(model) {
     // This is an unfortunate workaround to address test errors of this form:
     // Attempted to handle event `pushedData` on … while in state root.deleted.inFlight
-    model
-      .reload()
-      .then((reloaded) => {
-        return reloaded.destroyRecord();
-      })
-      .then(() => {
-        this.router.transitionTo('waypoints');
-      });
+    await model.reload();
+    await model.destroyRecord();
+
+    this.router.transitionTo('destinations');
   }
 }

@@ -1,4 +1,3 @@
-import { run } from '@ember/runloop';
 import { visit } from '@ember/test-helpers';
 
 import { setupApplicationTest } from 'ember-qunit';
@@ -10,19 +9,13 @@ import page from '../pages/sync';
 module('Acceptance | sync', function (hooks) {
   setupApplicationTest(hooks);
 
-  hooks.beforeEach(function (assert) {
+  hooks.beforeEach(async function () {
     const store = this.owner.lookup('service:store');
-    const done = assert.async();
 
-    run(() => {
-      const fixture = store.createRecord('destination');
+    const fixture = store.createRecord('destination');
+    fixture.set('description', 'Ina-Karekh');
 
-      fixture.set('description', 'Ina-Karekh');
-
-      fixture.save().then(() => {
-        done();
-      });
-    });
+    await fixture.save();
   });
 
   // I had these as separate tests but localStorage was bleeding through… ugh

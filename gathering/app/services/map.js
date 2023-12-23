@@ -1,7 +1,7 @@
 import { getOwner } from '@ember/application';
 import Service from '@ember/service';
 
-import { blobToArrayBuffer, blobToBase64String } from 'blob-util';
+import { blobToBase64String } from 'blob-util';
 
 export default class MapService extends Service {
   get db() {
@@ -12,29 +12,27 @@ export default class MapService extends Service {
     return this.db.getAttachment('map', name);
   }
 
-  getURL(name) {
-    return this.getAttachment(name)
-      .then((attachment) => {
-        return URL.createObjectURL(attachment);
-      })
-      .catch(() => {
-        return null;
-      });
+  async getURL(name) {
+    try {
+      let attachment = await this.getAttachment(name);
+      return URL.createObjectURL(attachment);
+    } catch (e) {
+      return null;
+    }
   }
 
   blobToBase64String(blob) {
     return blobToBase64String(blob);
   }
 
-  saveFile(file, name) {
+  async saveFile(file, name) {
     const db = this.db;
 
-    db.get('map')
-      .then((map) => {
-        return db.putAttachment('map', name, map._rev, file, file.type);
-      })
-      .catch(() => {
-        return db.putAttachment('map', name, file, file.type);
-      });
+    try {
+      let map = await db.get('map');
+      return db.putAttachment('map', name, map._rev, file, file.type);
+    } catch (e) {
+      return db.putAttachment('map', name, file, file.type);
+    }
   }
 }

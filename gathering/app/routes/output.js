@@ -58,6 +58,11 @@ export default class OutputRoute extends Route {
       console.log('Unable to fetch map');
     }
 
+    let fontResponses = await Promise.all(fontPaths);
+    let [header, bold, regular] = await Promise.all(
+      fontResponses.map((response) => response.arrayBuffer()),
+    );
+
     return hash({
       teams: this.store.findAll('team'),
       meetings: this.store.findAll('meeting'),
@@ -67,21 +72,13 @@ export default class OutputRoute extends Route {
 
       settings: this.store.findRecord('settings', 'settings'),
 
-      assets: Promise.all(fontPaths)
-        .then((responses) => {
-          return Promise.all(
-            responses.map((response) => response.arrayBuffer()),
-          );
-        })
-        .then(([header, bold, regular]) => {
-          return hash({
-            header,
-            bold,
-            regular,
-            map,
-            lowMap,
-          });
-        }),
+      assets: {
+        header,
+        bold,
+        regular,
+        map,
+        lowMap,
+      },
     });
   }
 

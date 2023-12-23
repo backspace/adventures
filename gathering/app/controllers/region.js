@@ -22,20 +22,18 @@ export default class RegionController extends Controller {
   }
 
   @action
-  save(model) {
-    return model
-      .save()
-      .then(() => {
-        this.lastRegion.setLastRegionId(model.id);
+  async save(model) {
+    await model.save();
 
-        return model.get('parent');
-      })
-      .then((parent) => {
-        return parent ? parent.save() : true;
-      })
-      .then(() => {
-        this.router.transitionTo('regions');
-      });
+    this.lastRegion.setLastRegionId(model.id);
+
+    let parent = model.get('parent');
+
+    if (parent) {
+      await parent.save();
+    }
+
+    this.router.transitionTo('regions');
   }
 
   @action
@@ -45,14 +43,10 @@ export default class RegionController extends Controller {
   }
 
   @action
-  delete(model) {
-    model
-      .reload()
-      .then((reloaded) => {
-        return reloaded.destroyRecord();
-      })
-      .then(() => {
-        this.router.transitionTo('regions');
-      });
+  async delete(model) {
+    await model.reload();
+    await model.destroyRecord();
+
+    this.router.transitionTo('regions');
   }
 }

@@ -8,18 +8,15 @@ export default class NewRoute extends WaypointRoute {
 
   @service store;
 
-  model() {
+  async model() {
     if (this.controllerFor('waypoints').region) {
       return this.store.createRecord('waypoint', {
         region: this.controllerFor('waypoints').region,
       });
     }
 
-    const lastRegion = this.lastRegion.getLastRegion();
-
-    return lastRegion.then((region) => {
-      return this.store.createRecord('waypoint', { region });
-    });
+    const lastRegion = await this.lastRegion.getLastRegion();
+    return this.store.createRecord('waypoint', { region: lastRegion });
   }
 
   templateName = 'waypoint';
