@@ -22,18 +22,6 @@ export default class MapService extends Service {
       });
   }
 
-  getArrayBuffer(name) {
-    return this.getAttachment(name).then((attachment) => {
-      return blobToArrayBuffer(attachment);
-    });
-  }
-
-  getBase64String(name) {
-    return this.getAttachment(name).then((attachment) => {
-      return blobToBase64String(attachment);
-    });
-  }
-
   blobToBase64String(blob) {
     return blobToBase64String(blob);
   }
