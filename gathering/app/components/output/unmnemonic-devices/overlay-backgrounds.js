@@ -199,59 +199,100 @@ export function drawDotGridBackground(doc, width, height) {
 }
 
 export function drawMazeBackground(doc, width, height) {
-  doc.lineWidth(3);
-  doc.lineCap('round');
+  doc.lineWidth(2);
+  doc.lineCap('square');
 
-  const cellSize = 4;
+  const cellSize = 3;
   const rows = Math.floor(height / cellSize);
   const cols = Math.floor(width / cellSize);
 
-  const grid = new Array(rows).fill(null).map(() => new Array(cols).fill(true));
+  const grid = new Array(rows).fill(null).map(() => new Array(cols).fill(0));
+  const sets = new Array(rows).fill(null).map(() => new Array(cols).fill(0));
 
-  function generateMaze(row, col) {
-    const directions = ['up', 'down', 'left', 'right'];
-    directions.sort(() => Math.random() - 0.65);
+  let setId = 1;
 
-    for (const direction of directions) {
-      let newRow = row;
-      let newCol = col;
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      grid[row][col] = setId;
+      sets[row][col] = setId;
+      setId++;
+    }
+  }
 
-      switch (direction) {
-        case 'up':
-          newRow -= 2;
-          break;
-        case 'down':
-          newRow += 2;
-          break;
-        case 'left':
-          newCol -= 2;
-          break;
-        case 'right':
-          newCol += 2;
-          break;
-      }
+  function getCellSetId(row, col) {
+    return sets[row][col];
+  }
 
-      if (
-        newRow >= 0 &&
-        newRow < rows &&
-        newCol >= 0 &&
-        newCol < cols &&
-        grid[newRow][newCol]
-      ) {
-        grid[newRow][newCol] = false;
-        grid[row][col] = false;
-
-        const x1 = col * cellSize + cellSize / 2;
-        const y1 = row * cellSize + cellSize / 2;
-        const x2 = newCol * cellSize + cellSize / 2;
-        const y2 = newRow * cellSize + cellSize / 2;
-
-        doc.moveTo(x1, y1).lineTo(x2, y2).stroke();
-
-        generateMaze(newRow, newCol);
+  function mergeSets(set1, set2) {
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        if (sets[row][col] === set2) {
+          sets[row][col] = set1;
+        }
       }
     }
   }
 
-  generateMaze(0, 0);
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  // Walls to consider for removal
+  const walls = [];
+
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (col < cols - 1) {
+        walls.push({ row, col, direction: 'right' });
+      }
+      if (row < rows - 1) {
+        walls.push({ row, col, direction: 'down' });
+      }
+    }
+  }
+
+  shuffleArray(walls);
+
+  function cellsBelongToDifferentSets(cell1, cell2) {
+    return (
+      getCellSetId(cell1.row, cell1.col) !== getCellSetId(cell2.row, cell2.col)
+    );
+  }
+
+  function removeWall(cell1, cell2) {
+    const x1 = cell1.col * cellSize;
+    const y1 = cell1.row * cellSize;
+    const x2 = cell2.col * cellSize;
+    const y2 = cell2.row * cellSize;
+
+    doc.moveTo(x1, y1).lineTo(x2, y2).stroke();
+
+    mergeSets(
+      getCellSetId(cell1.row, cell1.col),
+      getCellSetId(cell2.row, cell2.col),
+    );
+  }
+
+  // Kruskal's Algorithm
+  for (const wall of walls) {
+    const { row, col, direction } = wall;
+    const currentCell = { row, col };
+    let neighborRow = row;
+    let neighborCol = col;
+
+    if (direction === 'right') {
+      neighborCol++;
+    } else if (direction === 'down') {
+      neighborRow++;
+    }
+
+    const neighborCell = { row: neighborRow, col: neighborCol };
+
+    if (cellsBelongToDifferentSets(currentCell, neighborCell)) {
+      removeWall(currentCell, neighborCell);
+    }
+  }
 }
