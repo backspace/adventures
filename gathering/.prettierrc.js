@@ -7,7 +7,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: '**/*.{hbs,js,ts,gjs,gts}',
+      files: '**/*.{css,hbs,js,ts,gjs,gts}',
       options: {
         singleQuote: true,
       },

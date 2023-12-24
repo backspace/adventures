@@ -10,16 +10,16 @@
   display: grid;
   grid-template-columns: auto var(--column-width) var(--column-width);
   grid-template-areas:
-    "map teams destinations"
-    "map form form";
+    'map teams destinations'
+    'map form form';
 
   &.has-waypoints {
     grid-template-columns: auto var(--column-width) var(--column-width) var(
         --column-width
       );
     grid-template-areas:
-      "map teams waypoints destinations"
-      "map form form form";
+      'map teams waypoints destinations'
+      'map form form form';
   }
 
   font-family: Silkscreen, monospace;
@@ -67,15 +67,15 @@
     li {
       border-right: 0;
 
-      &[data-risk-aversion="1"] {
+      &[data-risk-aversion='1'] {
         border-right: 5px solid green;
       }
 
-      &[data-risk-aversion="2"] {
+      &[data-risk-aversion='2'] {
         border-right: 5px solid darkorange;
       }
 
-      &[data-risk-aversion="3"] {
+      &[data-risk-aversion='3'] {
         border-right: 5px solid red;
       }
     }
