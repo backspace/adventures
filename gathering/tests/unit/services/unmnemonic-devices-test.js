@@ -1,5 +1,5 @@
-import cmToPt from 'gathering/utils/cm-to-pt';
 import { setupTest } from 'ember-qunit';
+import cmToPt from 'gathering/utils/cm-to-pt';
 import { module, test } from 'qunit';
 
 module('Unit | Service | unmnemonic-devices', function (hooks) {

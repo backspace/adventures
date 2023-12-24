@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
 import { inject as service } from '@ember/service';
 
+import { storageFor } from 'ember-local-storage';
 import ClandestineRendezvousAnswers from 'gathering/components/output/clandestine-rendezvous/answers';
 import ClandestineRendezvousCards from 'gathering/components/output/clandestine-rendezvous/cards';
 import ClandestineRendezvousMaps from 'gathering/components/output/clandestine-rendezvous/maps';
@@ -13,7 +14,6 @@ import UnmnemonicDevicesOverlays from 'gathering/components/output/unmnemonic-de
 import UnmnemonicDevicesTeamOverviews from 'gathering/components/output/unmnemonic-devices/team-overviews';
 import UnmnemonicDevicesVerification from 'gathering/components/output/unmnemonic-devices/verification';
 import UnmnemonicDevicesVrssql from 'gathering/components/output/unmnemonic-devices/vrssql';
-import { storageFor } from 'ember-local-storage';
 
 export default class OutputController extends Controller {
   @storageFor('output') state;

@@ -1,7 +1,7 @@
 import { inject as service } from '@ember/service';
 import { hasMany, belongsTo, attr } from '@ember-data/model';
-import Yup from 'gathering/utils/yup';
 import Model from 'ember-pouch/model';
+import Yup from 'gathering/utils/yup';
 import { number, string } from 'yup';
 
 export default class Destination extends Model {

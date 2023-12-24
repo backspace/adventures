@@ -1,7 +1,7 @@
 import { visit, waitUntil } from '@ember/test-helpers';
+import { setupApplicationTest } from 'ember-qunit';
 import page from 'gathering/tests/pages/destinations';
 import nav from 'gathering/tests/pages/nav';
-import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 
 import withSetting from '../helpers/with-setting';

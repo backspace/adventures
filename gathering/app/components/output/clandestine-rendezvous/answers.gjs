@@ -1,10 +1,9 @@
 import Component from '@glimmer/component';
+import blobStream from 'blob-stream';
+import { trackedFunction } from 'ember-resources/util/function';
 import Loading from 'gathering/components/loading';
 
 import config from 'gathering/config/environment';
-
-import blobStream from 'blob-stream';
-import { trackedFunction } from 'ember-resources/util/function';
 
 import uniq from 'lodash.uniq';
 import moment from 'moment';

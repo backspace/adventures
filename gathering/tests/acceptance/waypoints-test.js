@@ -1,8 +1,8 @@
 import { waitUntil } from '@ember/test-helpers';
+import { setupApplicationTest } from 'ember-qunit';
 import homePage from 'gathering/tests/pages/home';
 import nav from 'gathering/tests/pages/nav';
 import page from 'gathering/tests/pages/waypoints';
-import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 
 import withSetting, { withoutSetting } from '../helpers/with-setting';

@@ -1,6 +1,8 @@
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 
+import blobStream from 'blob-stream';
+import { trackedFunction } from 'ember-resources/util/function';
 import Loading from 'gathering/components/loading';
 import {
   pixelLength,
@@ -9,8 +11,6 @@ import {
   registrationLength,
   pointDimensionsForDisplay,
 } from 'gathering/utils/nokia-font';
-import blobStream from 'blob-stream';
-import { trackedFunction } from 'ember-resources/util/function';
 
 import MaxRectsPackerPackage from 'maxrects-packer';
 import PDFDocument from 'pdfkit';

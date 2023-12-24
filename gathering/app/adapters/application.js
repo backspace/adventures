@@ -1,10 +1,10 @@
 import { getOwner } from '@ember/application';
 import { assert } from '@ember/debug';
 import { isEmpty } from '@ember/utils';
-import config from 'gathering/config/environment';
-import PouchDB from 'gathering/utils/pouch';
 import Ember from 'ember';
 import { Adapter } from 'ember-pouch';
+import config from 'gathering/config/environment';
+import PouchDB from 'gathering/utils/pouch';
 
 window.process = window.process || {};
 window.global = window;

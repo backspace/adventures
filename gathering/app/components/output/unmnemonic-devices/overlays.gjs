@@ -1,10 +1,10 @@
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
-import Loading from 'gathering/components/loading';
-import Checkbox from 'gathering/components/output/checkbox';
 import blobStream from 'blob-stream';
 import { storageFor } from 'ember-local-storage';
 import { trackedFunction } from 'ember-resources/util/function';
+import Loading from 'gathering/components/loading';
+import Checkbox from 'gathering/components/output/checkbox';
 import truncate from 'lodash.truncate';
 
 import PDFDocument from 'pdfkit';

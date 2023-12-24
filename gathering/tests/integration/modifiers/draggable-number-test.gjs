@@ -1,7 +1,7 @@
 import { on } from '@ember/modifier';
 import { find, render, triggerEvent } from '@ember/test-helpers';
-import draggableNumber from 'gathering/modifiers/draggable-number';
 import { setupRenderingTest } from 'ember-qunit';
+import draggableNumber from 'gathering/modifiers/draggable-number';
 import { module, test } from 'qunit';
 
 module('Integration | Modifier | draggable-number', function (hooks) {

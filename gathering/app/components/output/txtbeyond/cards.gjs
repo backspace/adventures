@@ -1,11 +1,10 @@
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 
-import Loading from 'gathering/components/loading';
-import config from 'gathering/config/environment';
-
 import blobStream from 'blob-stream';
 import { trackedFunction } from 'ember-resources/util/function';
+import Loading from 'gathering/components/loading';
+import config from 'gathering/config/environment';
 
 import moment from 'moment';
 import PDFDocument from 'pdfkit';

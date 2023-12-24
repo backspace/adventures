@@ -1,8 +1,8 @@
 import { setApplication } from '@ember/test-helpers';
+import { start } from 'ember-qunit';
 import Application from 'gathering/app';
 import config from 'gathering/config/environment';
 import PouchDB from 'gathering/utils/pouch';
-import { start } from 'ember-qunit';
 import MemoryAdapter from 'pouchdb-adapter-memory';
 import * as QUnit from 'qunit';
 import { setup } from 'qunit-dom';
