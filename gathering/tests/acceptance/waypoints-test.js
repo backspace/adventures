@@ -72,6 +72,7 @@ module('Acceptance | waypoints', function (hooks) {
   test('existing waypoints are listed', async function (assert) {
     await homePage.visit();
     await nav.waypoints.click();
+    await page.headerRegion.click();
 
     let one = page.waypoints[0];
     assert.strictEqual(one.name, 'The Shadowed Sun');
@@ -89,6 +90,7 @@ module('Acceptance | waypoints', function (hooks) {
   test('validation errors show on the form', async function (assert) {
     await homePage.visit();
     await nav.waypoints.click();
+    await page.headerRegion.click();
 
     await page.waypoints[1].edit();
 
@@ -185,6 +187,7 @@ module('Acceptance | waypoints', function (hooks) {
   test('a region can be entered and waypoints will be scoped to it', async function (assert) {
     await homePage.visit();
     await nav.waypoints.click();
+    await page.headerRegion.click();
 
     await page.waypoints[0].region.click();
     assert.strictEqual(page.region.title, 'Harvey Smith');
@@ -224,6 +227,7 @@ module('Acceptance | waypoints', function (hooks) {
     await withSetting(this.owner, 'destination-status');
     await homePage.visit();
     await nav.waypoints.click();
+    await page.headerRegion.click();
     await page.waypoints[0].edit();
 
     assert.strictEqual(page.nameField.value, 'The Shadowed Sun');
