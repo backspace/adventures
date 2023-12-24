@@ -1,4 +1,3 @@
-import { Input } from '@ember/component';
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import Loading from 'adventure-gathering/components/loading';

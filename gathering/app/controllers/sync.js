@@ -1,7 +1,6 @@
 import { getOwner } from '@ember/application';
 import Controller from '@ember/controller';
 import { action } from '@ember/object';
-import { run } from '@ember/runloop';
 import { tracked } from '@glimmer/tracking';
 import config from 'adventure-gathering/config/environment';
 import PouchDB from 'adventure-gathering/utils/pouch';

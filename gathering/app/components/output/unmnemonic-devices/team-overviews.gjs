@@ -1,4 +1,3 @@
-import { Input } from '@ember/component';
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import Loading from 'adventure-gathering/components/loading';
@@ -65,9 +64,6 @@ export default class TeamOverviewsComponent extends Component {
 
     let innerWidthToMapHighRatio = (pageWidth - margin * 2) / mapBitmap.width;
     let innerWidthToMapLowRatio = (pageWidth - margin * 2) / lowMapBitmap.width;
-
-    let mapWidthOnPage = pageWidth - margin * 2;
-    let mapHeightOnPage = (mapWidthOnPage * mapBitmap.height) / mapBitmap.width;
 
     let devices = this.devices;
 
