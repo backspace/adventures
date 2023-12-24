@@ -1,8 +1,8 @@
 import { getOwner } from '@ember/application';
 import { assert } from '@ember/debug';
 import { isEmpty } from '@ember/utils';
-import config from 'adventure-gathering/config/environment';
-import PouchDB from 'adventure-gathering/utils/pouch';
+import config from 'gathering/config/environment';
+import PouchDB from 'gathering/utils/pouch';
 import Ember from 'ember';
 import { Adapter } from 'ember-pouch';
 

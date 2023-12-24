@@ -1,4 +1,4 @@
-import cmToPt from 'adventure-gathering/utils/cm-to-pt';
+import cmToPt from 'gathering/utils/cm-to-pt';
 import { setupTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 

@@ -1,8 +1,8 @@
 {
-  "name": "adventure-gathering",
+  "name": "gathering",
   "version": "0.0.0",
   "private": true,
-  "description": "Small description for adventure-gathering goes here",
+  "description": "Small description for gathering goes here",
   "repository": "",
   "license": "MIT",
   "author": "",

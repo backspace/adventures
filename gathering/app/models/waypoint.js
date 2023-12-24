@@ -1,6 +1,6 @@
 import { inject as service } from '@ember/service';
 import { belongsTo, hasMany, attr } from '@ember-data/model';
-import Yup from 'adventure-gathering/utils/yup';
+import Yup from 'gathering/utils/yup';
 import Model from 'ember-pouch/model';
 import { string } from 'yup';
 

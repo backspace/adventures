@@ -1,5 +1,5 @@
 import Application from '@ember/application';
-import config from 'adventure-gathering/config/environment';
+import config from 'gathering/config/environment';
 import loadInitializers from 'ember-load-initializers';
 import Resolver from 'ember-resolver';
 

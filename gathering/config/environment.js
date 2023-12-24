@@ -2,7 +2,7 @@
 
 module.exports = function (environment) {
   const ENV = {
-    modulePrefix: 'adventure-gathering',
+    modulePrefix: 'gathering',
     environment,
     rootURL: '/',
     locationType: 'history',

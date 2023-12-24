@@ -2,8 +2,8 @@ import { getOwner } from '@ember/application';
 import Controller from '@ember/controller';
 import { action } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
-import config from 'adventure-gathering/config/environment';
-import PouchDB from 'adventure-gathering/utils/pouch';
+import config from 'gathering/config/environment';
+import PouchDB from 'gathering/utils/pouch';
 
 import { task } from 'ember-concurrency';
 

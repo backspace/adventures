@@ -1,6 +1,6 @@
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
-import Loading from 'adventure-gathering/components/loading';
+import Loading from 'gathering/components/loading';
 import blobStream from 'blob-stream';
 import { trackedFunction } from 'ember-resources/util/function';
 

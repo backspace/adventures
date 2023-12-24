@@ -6,7 +6,7 @@ module.exports = function (/* environment, appConfig */) {
   // supported properties
 
   return {
-    name: 'adventure-gathering',
+    name: 'gathering',
     short_name: 'Gathering',
     description: 'data gathering for adventures',
     start_url: '/',

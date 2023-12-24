@@ -1,18 +1,18 @@
 import Controller from '@ember/controller';
 import { inject as service } from '@ember/service';
 
-import ClandestineRendezvousAnswers from 'adventure-gathering/components/output/clandestine-rendezvous/answers';
-import ClandestineRendezvousCards from 'adventure-gathering/components/output/clandestine-rendezvous/cards';
-import ClandestineRendezvousMaps from 'adventure-gathering/components/output/clandestine-rendezvous/maps';
+import ClandestineRendezvousAnswers from 'gathering/components/output/clandestine-rendezvous/answers';
+import ClandestineRendezvousCards from 'gathering/components/output/clandestine-rendezvous/cards';
+import ClandestineRendezvousMaps from 'gathering/components/output/clandestine-rendezvous/maps';
 
-import txtbeyondCards from 'adventure-gathering/components/output/txtbeyond/cards';
-import txtbeyondTransparencies from 'adventure-gathering/components/output/txtbeyond/transparencies';
+import txtbeyondCards from 'gathering/components/output/txtbeyond/cards';
+import txtbeyondTransparencies from 'gathering/components/output/txtbeyond/transparencies';
 
-import UnmnemonicDevicesAnswers from 'adventure-gathering/components/output/unmnemonic-devices/answers';
-import UnmnemonicDevicesOverlays from 'adventure-gathering/components/output/unmnemonic-devices/overlays';
-import UnmnemonicDevicesTeamOverviews from 'adventure-gathering/components/output/unmnemonic-devices/team-overviews';
-import UnmnemonicDevicesVerification from 'adventure-gathering/components/output/unmnemonic-devices/verification';
-import UnmnemonicDevicesVrssql from 'adventure-gathering/components/output/unmnemonic-devices/vrssql';
+import UnmnemonicDevicesAnswers from 'gathering/components/output/unmnemonic-devices/answers';
+import UnmnemonicDevicesOverlays from 'gathering/components/output/unmnemonic-devices/overlays';
+import UnmnemonicDevicesTeamOverviews from 'gathering/components/output/unmnemonic-devices/team-overviews';
+import UnmnemonicDevicesVerification from 'gathering/components/output/unmnemonic-devices/verification';
+import UnmnemonicDevicesVrssql from 'gathering/components/output/unmnemonic-devices/vrssql';
 import { storageFor } from 'ember-local-storage';
 
 export default class OutputController extends Controller {

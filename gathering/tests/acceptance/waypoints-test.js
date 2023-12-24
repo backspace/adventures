@@ -1,7 +1,7 @@
 import { waitUntil } from '@ember/test-helpers';
-import homePage from 'adventure-gathering/tests/pages/home';
-import nav from 'adventure-gathering/tests/pages/nav';
-import page from 'adventure-gathering/tests/pages/waypoints';
+import homePage from 'gathering/tests/pages/home';
+import nav from 'gathering/tests/pages/nav';
+import page from 'gathering/tests/pages/waypoints';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 

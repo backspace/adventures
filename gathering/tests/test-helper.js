@@ -1,7 +1,7 @@
 import { setApplication } from '@ember/test-helpers';
-import Application from 'adventure-gathering/app';
-import config from 'adventure-gathering/config/environment';
-import PouchDB from 'adventure-gathering/utils/pouch';
+import Application from 'gathering/app';
+import config from 'gathering/config/environment';
+import PouchDB from 'gathering/utils/pouch';
 import { start } from 'ember-qunit';
 import MemoryAdapter from 'pouchdb-adapter-memory';
 import * as QUnit from 'qunit';

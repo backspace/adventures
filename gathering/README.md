@@ -1,4 +1,4 @@
-# Adventure Gathering [![Build Status](https://travis-ci.org/backspace/adventure-gathering.svg?branch=primary)](https://travis-ci.org/backspace/adventure-gathering)
+# Gathering [![Build Status](https://travis-ci.org/backspace/gathering.svg?branch=primary)](https://travis-ci.org/backspace/gathering)
 
 This is a PouchDB-backed offline data-gathering application to organise a
 live-action puzzle-solving adventure game.
@@ -18,7 +18,7 @@ You will need the following things properly installed on your computer.
 ## Installation
 
 - `git clone <repository-url>` this repository
-- `cd adventure-gathering`
+- `cd gathering`
 - `npm install`
 
 ## Running / Development

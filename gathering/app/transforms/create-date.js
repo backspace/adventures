@@ -1,4 +1,4 @@
-import DateTransform from 'adventure-gathering/transforms/ember-data-date';
+import DateTransform from 'gathering/transforms/ember-data-date';
 
 export default class CreateDateTransform extends DateTransform {
   serialize(deserialized) {

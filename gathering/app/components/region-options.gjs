@@ -1,4 +1,4 @@
-import RegionOption from 'adventure-gathering/components/region-option';
+import RegionOption from 'gathering/components/region-option';
 
 <template>
   {{#each @regions as |region|}}

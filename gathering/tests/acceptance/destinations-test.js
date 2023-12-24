@@ -1,6 +1,6 @@
 import { visit, waitUntil } from '@ember/test-helpers';
-import page from 'adventure-gathering/tests/pages/destinations';
-import nav from 'adventure-gathering/tests/pages/nav';
+import page from 'gathering/tests/pages/destinations';
+import nav from 'gathering/tests/pages/nav';
 import { setupApplicationTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 

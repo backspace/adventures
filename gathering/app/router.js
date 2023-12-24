@@ -1,5 +1,5 @@
 import EmberRouter from '@ember/routing/router';
-import config from 'adventure-gathering/config/environment';
+import config from 'gathering/config/environment';
 
 export default class Router extends EmberRouter {
   location = config.locationType;

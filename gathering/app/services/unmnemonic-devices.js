@@ -1,5 +1,5 @@
 import Service, { inject as service } from '@ember/service';
-import cmToPt from 'adventure-gathering/utils/cm-to-pt';
+import cmToPt from 'gathering/utils/cm-to-pt';
 import isFloat from 'validator/lib/isFloat';
 
 export default class UnmnemonicDevicesService extends Service {

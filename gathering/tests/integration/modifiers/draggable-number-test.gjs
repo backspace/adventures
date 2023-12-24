@@ -1,6 +1,6 @@
 import { on } from '@ember/modifier';
 import { find, render, triggerEvent } from '@ember/test-helpers';
-import draggableNumber from 'adventure-gathering/modifiers/draggable-number';
+import draggableNumber from 'gathering/modifiers/draggable-number';
 import { setupRenderingTest } from 'ember-qunit';
 import { module, test } from 'qunit';
 

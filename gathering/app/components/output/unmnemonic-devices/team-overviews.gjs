@@ -1,7 +1,7 @@
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
-import Loading from 'adventure-gathering/components/loading';
-import Checkbox from 'adventure-gathering/components/output/checkbox';
+import Loading from 'gathering/components/loading';
+import Checkbox from 'gathering/components/output/checkbox';
 import blobStream from 'blob-stream';
 import { storageFor } from 'ember-local-storage';
 
