@@ -6,6 +6,7 @@ import Checkbox from 'adventure-gathering/components/output/checkbox';
 import blobStream from 'blob-stream';
 import { storageFor } from 'ember-local-storage';
 import { trackedFunction } from 'ember-resources/util/function';
+import truncate from 'lodash.truncate';
 
 import PDFDocument from 'pdfkit';
 
@@ -104,9 +105,8 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
       let waypoint = maybeTeamAndWaypoint.waypoint || maybeTeamAndWaypoint;
 
       let dimensions = waypoint.get('dimensions');
-      let regionAndCall = `${waypoint.get('region.name')}: ${waypoint.get(
-        'call',
-      )}`;
+      let region = waypoint.get('region.name');
+      let call = waypoint.get('call');
       let waypointName = waypoint.get('name');
       let excerpt = waypoint.get('excerpt');
       let fullOutline = waypoint.get('outline');
@@ -137,8 +137,9 @@ export default class UnmnemonicDevicesOverlaysComponent extends Component {
         height,
         page,
         waypointName,
-        regionAndCall,
-        maybeTeamAndWaypoint.identifierForMeeting,
+        region,
+        call,
+        maybeTeamAndWaypoint.identifierForMeeting || 'X',
       );
 
       doc.strokeColor('black');
@@ -369,7 +370,8 @@ function drawHeaderAndFooterText(
   height,
   page,
   waypointName,
-  regionAndCall,
+  region,
+  call,
   identifier,
 ) {
   let upperLeftText, upperRightText;
@@ -381,6 +383,26 @@ function drawHeaderAndFooterText(
     upperLeftText = waypointName;
     upperRightText = page;
   }
+
+  let maybeTruncatedRegion = region;
+  let lengthAfterTruncation = maybeTruncatedRegion.length;
+  let widthOfIdentifier = doc.widthOfString(identifier);
+  let widthOfColonAndCall = doc.widthOfString(': ' + call);
+
+  while (
+    doc.widthOfString(maybeTruncatedRegion) + widthOfColonAndCall >
+      width - widthOfIdentifier - PAGE_PADDING * 3 &&
+    maybeTruncatedRegion.length > 0
+  ) {
+    lengthAfterTruncation--;
+    maybeTruncatedRegion = truncate(region, {
+      length: lengthAfterTruncation,
+      separator: /:,? +/,
+      omission: '…',
+    });
+  }
+
+  let regionAndCall = `${maybeTruncatedRegion}: ${call}`;
 
   // Draw string outlines in their respective corners and then the strings themselves
   OUTLINE_TEXT_ARGUMENTS.forEach(({ lineWidth, textOptions }) => {

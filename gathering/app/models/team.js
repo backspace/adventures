@@ -1,5 +1,6 @@
 import { hasMany, attr } from '@ember-data/model';
 import Model from 'ember-pouch/model';
+import truncate from 'lodash.truncate';
 
 export default class Team extends Model {
   @attr('string')
@@ -92,13 +93,10 @@ export default class Team extends Model {
   updatedAt;
 
   get truncatedName() {
-    let limit = 40;
-    let text = this.name;
-
-    if (limit >= text.length) {
-      return text;
-    }
-
-    return `${text.substring(0, text.lastIndexOf(' ', limit))}…`;
+    return truncate(this.name, {
+      length: 40,
+      separator: /,? +/,
+      omission: '…',
+    });
   }
 }
