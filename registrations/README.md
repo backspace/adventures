@@ -1,4 +1,4 @@
-# AdventureRegistrations [![.github/workflows/ci-registrations.yml](https://github.com/backspace/adventures/actions/workflows/ci-registrations.yml/badge.svg)](https://github.com/backspace/adventures/actions/workflows/ci-registrations.yml)
+# AdventureRegistrations
 
 This site is to advertise and collect registrations for adventures.
 
