@@ -1,8 +1,8 @@
-@import './draggable-number.css';
-@import './loading.css';
-@import './map.css';
-@import './output.css';
-@import './scheduler.css';
+@import url('./draggable-number.css');
+@import url('./loading.css');
+@import url('./map.css');
+@import url('./output.css');
+@import url('./scheduler.css');
 
 @tailwind base;
 @tailwind components;
