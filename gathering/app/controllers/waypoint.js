@@ -43,11 +43,7 @@ export default class WaypointController extends Controller {
 
   @action
   async delete(model) {
-    // This is an unfortunate workaround to address test errors of this form:
-    // Attempted to handle event `pushedData` on … while in state root.deleted.inFlight
-    await model.reload();
     await model.destroyRecord();
-
     this.router.transitionTo('destinations');
   }
 }
