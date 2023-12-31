@@ -47,9 +47,6 @@ devDependencies:
   broccoli-asset-rev:
     specifier: ^3.0.0
     version: 3.0.0
-  broccoli-clean-css:
-    specifier: ^2.0.1
-    version: 2.0.1
   browserify-zlib:
     specifier: ^0.2.0
     version: 0.2.0
@@ -128,9 +125,6 @@ devDependencies:
   ember-data:
     specifier: ~4.11.3
     version: 4.11.3(@babel/core@7.23.5)(@ember/string@3.1.1)(@glimmer/tracking@1.1.2)(@glint/template@1.2.1)(ember-source@4.12.3)(webpack@5.89.0)
-  ember-decorators:
-    specifier: ^6.1.1
-    version: 6.1.1
   ember-feature-flags:
     specifier: ^6.0.0
     version: 6.0.0
@@ -1966,35 +1960,6 @@ packages:
   /@ember-data/tracking@4.11.3:
     resolution: {integrity: sha512-YZxFTMe2TBL8H8/GrnrvP7Wc/uuAijoSyiP2g6TMNRsL1e/3BWDT0EIl+B/5Wji+dchofY8iuMWfpY7VDvPIzA==}
     engines: {node: 14.* || 16.* || >= 18}
-    dependencies:
-      ember-cli-babel: 7.26.11
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
-
-  /@ember-decorators/component@6.1.1:
-    resolution: {integrity: sha512-Cj8tY/c0MC/rsipqsiWLh3YVN72DK92edPYamD/HzvftwzC6oDwawWk8RmStiBnG9PG/vntAt41l3S7HSSA+1Q==}
-    engines: {node: '>= 8.*'}
-    dependencies:
-      '@ember-decorators/utils': 6.1.1
-      ember-cli-babel: 7.26.11
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
-
-  /@ember-decorators/object@6.1.1:
-    resolution: {integrity: sha512-cb4CNR9sRoA31J3FCOFLDuR9ztM4wO9w1WlS4JeNRS7Z69SlB/XSXB/vplA3i9OOaXEy/zKWbu5ndZrHz0gvLw==}
-    engines: {node: '>= 8.*'}
-    dependencies:
-      '@ember-decorators/utils': 6.1.1
-      ember-cli-babel: 7.26.11
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
-
-  /@ember-decorators/utils@6.1.1:
-    resolution: {integrity: sha512-0KqnoeoLKb6AyoSU65TRF5T85wmS4uDn06oARddwNPxxf/lt5jQlh41uX3W7V/fWL9tPu8x1L1Vvpc80MN1+YA==}
-    engines: {node: '>= 8.*'}
     dependencies:
       ember-cli-babel: 7.26.11
     transitivePeerDependencies:
@@ -4883,18 +4848,6 @@ packages:
       - supports-color
     dev: true
 
-  /broccoli-clean-css@2.0.1:
-    resolution: {integrity: sha512-tSQcCfSU6Jmd5nnJVYhwt9AyJEzA4bSDfJdSPgomAsc+dMUzH5hxIbMPHRkvT7SnW564m1ePHjWVxap2s+FTSg==}
-    engines: {node: '>=4'}
-    dependencies:
-      broccoli-persistent-filter: 1.4.6
-      clean-css-promise: 2.1.0
-      json-stable-stringify: 1.1.0
-      source-map-to-comment: 1.1.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: true
-
   /broccoli-concat@4.2.5:
     resolution: {integrity: sha512-dFB5ATPwOyV8S2I7a07HxCoutoq23oY//LhM6Mou86cWUTB174rND5aQLR7Fu8FjFFLxoTbkk7y0VPITJ1IQrw==}
     engines: {node: 10.* || >= 12.*}
@@ -5690,12 +5643,6 @@ packages:
       pinkie-promise: 2.0.1
     dev: true
 
-  /clean-css-promise@2.1.0:
-    resolution: {integrity: sha512-drIjos9WjRSllp3UO/g/pB731+d0hlC/bFuqFFoE/s7kuYHD2Zvl1hQvX5Tf/JRVUxKOjmvHAPP0TJjUbkXXTQ==}
-    dependencies:
-      clean-css: 4.2.4
-    dev: true
-
   /clean-css@3.4.28:
     resolution: {integrity: sha512-aTWyttSdI2mYi07kWqHi24NUU9YlELFKGOAgFzZjDN1064DMAOy2FBuoyGmkKRlXkbpXd0EVHmiVkbKhKoirTw==}
     engines: {node: '>=0.10.0'}
@@ -5703,13 +5650,6 @@ packages:
     dependencies:
       commander: 2.8.1
       source-map: 0.4.4
-    dev: true
-
-  /clean-css@4.2.4:
-    resolution: {integrity: sha512-EJUDT7nDVFDvaQgAo2G/PJvxmp1o/c6iXLbswsBbUFXi1Nr+AjA2cKmfbKDMjMvzEe75g3P6JkaDDAKk96A85A==}
-    engines: {node: '>= 4.0'}
-    dependencies:
-      source-map: 0.6.1
     dev: true
 
   /clean-stack@2.2.0:
@@ -7695,17 +7635,6 @@ packages:
       - ember-source
       - supports-color
       - webpack
-    dev: true
-
-  /ember-decorators@6.1.1:
-    resolution: {integrity: sha512-63vZPntPn1aqMyeNRLoYjJD+8A8obd+c2iZkJflswpDRNVIsp2m7aQdSCtPt4G0U/TEq2251g+N10maHX3rnJQ==}
-    engines: {node: '>= 8.*'}
-    dependencies:
-      '@ember-decorators/component': 6.1.1
-      '@ember-decorators/object': 6.1.1
-      ember-cli-babel: 7.26.11
-    transitivePeerDependencies:
-      - supports-color
     dev: true
 
   /ember-destroyable-polyfill@2.0.3(@babel/core@7.23.5):
@@ -14857,11 +14786,6 @@ packages:
     dependencies:
       buffer-from: 1.1.2
       source-map: 0.6.1
-    dev: true
-
-  /source-map-to-comment@1.1.0:
-    resolution: {integrity: sha512-kHe3acPFQtLZTfMw/FohyTKA7wyYTLAE5X9S2ynVZzRNHiHR+cxk6vft/DxrJo9v4R002h6gh4Pptb3T8Q9Axw==}
-    engines: {node: '>=0.10.0'}
     dev: true
 
   /source-map-url@0.3.0:
