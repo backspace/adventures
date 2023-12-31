@@ -1,0 +1,17 @@
+diff --git a/.npmignore b/.npmignore
+deleted file mode 100644
+index 79edc7b5e4012eafc3b4c8de07ceac4247bd8d2e..0000000000000000000000000000000000000000
+diff --git a/src/jsgraphs.js b/src/jsgraphs.js
+index 12fbde597d1692039a3f1ad8826eadd66ccddffc..e21ab1c1385faed3671cff468526c36936b72809 100644
+--- a/src/jsgraphs.js
++++ b/src/jsgraphs.js
+@@ -1202,7 +1202,4 @@ var jsgraphs = jsgraphs || {};
+     jss.FordFulkerson = FordFulkerson;
+ })(jsgraphs);
+ 
+-var module = module || {};
+-if(module) {
+-	module.exports = jsgraphs;
+-}
+\ No newline at end of file
++module.exports = jsgraphs;

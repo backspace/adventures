@@ -19,7 +19,6 @@
     "lint:hbs": "ember-template-lint .",
     "lint:hbs:fix": "ember-template-lint . --fix",
     "lint:js": "eslint . --cache",
-    "postinstall": "patch-package",
     "lint:js:fix": "eslint . --fix",
     "start": "ember serve",
     "test": "concurrently \"npm:lint\" \"npm:test:*\" --names \"lint,test:\"",
@@ -106,7 +105,6 @@
     "maxrects-packer": "^2.7.3",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
-    "patch-package": "^6.5.1",
     "pdfkit": "^0.14.0",
     "postcss": "^8.4.32",
     "postcss-import": "^15.1.0",
@@ -153,5 +151,10 @@
   },
   "ember": {
     "edition": "octane"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "js-graph-algorithms@1.0.18": "patches/js-graph-algorithms@1.0.18.patch"
+    }
   }
 }
