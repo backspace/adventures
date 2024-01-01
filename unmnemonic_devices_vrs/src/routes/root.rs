@@ -9,7 +9,7 @@ use base64::{engine::general_purpose, Engine as _};
 use serde::{Deserialize, Serialize};
 use serde_querystring_axum::QueryString;
 
-use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
+use crate::{helpers::TwilioParams, render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Deserialize)]
 pub struct RootParams {
@@ -34,12 +34,6 @@ pub async fn get_prerecord(Key(key): Key, State(state): State<AppState>) -> impl
         state.mutable_prompts.lock().unwrap().to_string(),
         (),
     )
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct TwilioParams {
-    call_sid: String,
 }
 
 #[axum_macros::debug_handler]

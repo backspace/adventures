@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{types::Uuid, PgPool, Row};
 
 use crate::{
-    helpers::MaybeRecordingParams,
+    helpers::{ConfirmRecordingPrompt, MaybeRecordingParams},
     render_xml::RenderXml,
     twilio_form::{TwilioForm, TwilioRecordingForm},
     AppState,
@@ -131,7 +131,7 @@ pub async fn post_recording_objects(
 }
 
 #[derive(Serialize)]
-pub struct UnrecordedIntroduction {
+struct UnrecordedIntroduction {
     object_type: String,
     skip_message: bool,
     redirect: String,
@@ -241,12 +241,6 @@ pub async fn get_recording_object(
     .into_response()
 }
 
-#[derive(Serialize)]
-pub struct ConfirmRecordingPrompt {
-    recording_url: String,
-    action: String,
-}
-
 #[axum_macros::debug_handler]
 pub async fn post_recording_object(
     Path((object, id)): Path<(String, Uuid)>,
@@ -276,7 +270,7 @@ pub async fn post_recording_object(
 }
 
 #[derive(Deserialize)]
-pub struct DecideParams {
+pub struct ObjectDecideParams {
     recording_url: String,
     unrecorded: Option<String>,
 }
@@ -285,7 +279,7 @@ pub struct DecideParams {
 pub async fn post_recording_object_decide(
     Key(_key): Key,
     Path((object, id)): Path<(String, Uuid)>,
-    params: Query<DecideParams>,
+    params: Query<ObjectDecideParams>,
     State(state): State<AppState>,
     Form(form): Form<TwilioForm>,
 ) -> impl IntoResponse {

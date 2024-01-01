@@ -5,21 +5,24 @@ use axum::{
 };
 use axum_template::Key;
 use base64::{engine::general_purpose, Engine as _};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_querystring_axum::QueryString;
 use sqlx::types::Uuid;
 use std::env;
 
-use crate::config::{ConfigProvider, EnvVarProvider};
+use crate::{
+    config::{ConfigProvider, EnvVarProvider},
+    helpers::TwilioParams,
+};
 use crate::{render_xml::RenderXml, twilio_form::TwilioForm, AppState};
 
 #[derive(Serialize)]
-pub struct Teams {
+struct Teams {
     teams: Vec<Team>,
 }
 
 #[derive(sqlx::FromRow, Serialize)]
-pub struct Team {
+struct Team {
     id: Uuid,
     name: String,
     voicepass: String,
@@ -144,12 +147,6 @@ pub async fn post_confirm_team(
     } else {
         Redirect::to("/teams")
     }
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "PascalCase")]
-pub struct TwilioParams {
-    call_sid: String,
 }
 
 #[derive(Serialize)]

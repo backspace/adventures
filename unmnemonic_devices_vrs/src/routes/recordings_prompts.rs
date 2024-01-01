@@ -9,7 +9,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::{
-    helpers::{get_all_prompts, MaybeRecordingParams},
+    helpers::{get_all_prompts, ConfirmRecordingPrompt, MaybeRecordingParams},
     render_xml::RenderXml,
     twilio_form::{TwilioForm, TwilioRecordingForm},
     AppState,
@@ -115,7 +115,7 @@ pub struct PromptNotFound {
 }
 
 #[derive(Serialize)]
-pub struct UnrecordedIntroduction {
+struct UnrecordedIntroduction {
     skip_message: bool,
     character_name: String,
     redirect: String,
@@ -239,12 +239,6 @@ pub async fn get_character_prompt(
     }
 }
 
-#[derive(Serialize)]
-pub struct ConfirmRecordingPrompt {
-    recording_url: String,
-    action: String,
-}
-
 #[axum_macros::debug_handler]
 pub async fn post_character_prompt(
     Key(_key): Key,
@@ -275,7 +269,7 @@ pub async fn post_character_prompt(
 }
 
 #[derive(Deserialize)]
-pub struct DecideParams {
+pub struct PromptDecideParams {
     recording_url: String,
     unrecorded: Option<String>,
 }
@@ -284,7 +278,7 @@ pub struct DecideParams {
 pub async fn post_character_prompt_decide(
     Key(_key): Key,
     Path((character_name, prompt_name)): Path<(String, String)>,
-    params: Query<DecideParams>,
+    params: Query<PromptDecideParams>,
     State(state): State<AppState>,
     Form(form): Form<TwilioForm>,
 ) -> Redirect {

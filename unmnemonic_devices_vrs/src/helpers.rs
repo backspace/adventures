@@ -4,7 +4,7 @@ use crate::WrappedPrompts;
 use crate::WrappedPromptsSerialisation;
 use axum::response::Response;
 use axum::{extract::State, http::StatusCode, middleware::Next};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use sqlx::Row;
 use std::collections::HashMap;
@@ -104,4 +104,16 @@ pub async fn store_call_path_middleware<B>(
     }
 
     Ok(next.run(req).await)
+}
+
+#[derive(Serialize)]
+pub struct ConfirmRecordingPrompt {
+    pub recording_url: String,
+    pub action: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct TwilioParams {
+    pub call_sid: String,
 }
