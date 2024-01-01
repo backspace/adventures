@@ -1,15 +1,15 @@
-defmodule AdventureRegistrations.Integration.ClandestineRendezvous.Registrations do
-  use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.SwooshHelper
-  use AdventureRegistrations.ResetRegistrationClosed
-  use AdventureRegistrations.ClandestineRendezvous
+defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.ResetRegistrationClosed
+  use Registrations.ClandestineRendezvous
 
-  alias AdventureRegistrations.Pages.Register
-  alias AdventureRegistrations.Pages.Login
-  alias AdventureRegistrations.Pages.Nav
-  alias AdventureRegistrations.Pages.Details
-  alias AdventureRegistrations.Pages.Account
-  alias AdventureRegistrations.Pages.ForgotPassword
+  alias Registrations.Pages.Register
+  alias Registrations.Pages.Login
+  alias Registrations.Pages.Nav
+  alias Registrations.Pages.Details
+  alias Registrations.Pages.Account
+  alias Registrations.Pages.ForgotPassword
 
   # Import Hound helpers
   use Hound.Helpers
@@ -43,7 +43,7 @@ defmodule AdventureRegistrations.Integration.ClandestineRendezvous.Registrations
 
     assert Nav.info_text() == "Your account was created"
 
-    [welcome_email, admin_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [welcome_email, admin_email] = Registrations.SwooshHelper.sent_email()
 
     assert admin_email.to == [{"", "b@events.chromatin.ca"}]
     assert admin_email.from == {"", "b@events.chromatin.ca"}
@@ -149,14 +149,14 @@ defmodule AdventureRegistrations.Integration.ClandestineRendezvous.Registrations
     ForgotPassword.submit()
 
     assert Nav.error_text() == "No registration with that email address found"
-    refute AdventureRegistrations.SwooshHelper.emails_sent?()
+    refute Registrations.SwooshHelper.emails_sent?()
 
     ForgotPassword.fill_email("octavia.butler@example.com")
     ForgotPassword.submit()
 
     assert Nav.info_text() == "Check your email for a password reset link"
 
-    [forgot_password_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [forgot_password_email] = Registrations.SwooshHelper.sent_email()
 
     assert forgot_password_email.to == [{"", "octavia.butler@example.com"}]
     assert forgot_password_email.from == {"", "b@events.chromatin.ca"}
@@ -216,7 +216,7 @@ defmodule AdventureRegistrations.Integration.ClandestineRendezvous.Registrations
 
     assert Nav.info_text() == "Your account has been deleted 😧"
 
-    [admin_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [admin_email] = Registrations.SwooshHelper.sent_email()
 
     assert admin_email.to == [{"", "b@events.chromatin.ca"}]
     assert admin_email.from == {"", "b@events.chromatin.ca"}
@@ -224,7 +224,7 @@ defmodule AdventureRegistrations.Integration.ClandestineRendezvous.Registrations
   end
 
   test "when registration is closed, a warning is displayed on the registration and details routes" do
-    Application.put_env(:adventure_registrations, :registration_closed, true)
+    Application.put_env(:registrations, :registration_closed, true)
 
     navigate_to("/")
 
@@ -241,14 +241,14 @@ defmodule AdventureRegistrations.Integration.ClandestineRendezvous.Registrations
   end
 end
 
-defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Registrations do
-  use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.SwooshHelper
-  use AdventureRegistrations.ResetRegistrationClosed
-  use AdventureRegistrations.UnmnemonicDevices
+defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.ResetRegistrationClosed
+  use Registrations.UnmnemonicDevices
 
-  alias AdventureRegistrations.Pages.Register
-  alias AdventureRegistrations.Pages.Nav
+  alias Registrations.Pages.Register
+  alias Registrations.Pages.Nav
 
   # Import Hound helpers
   use Hound.Helpers
@@ -270,7 +270,7 @@ defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Registrations do
     Register.fill_password("nestofspiders")
     Register.submit()
 
-    [welcome_email, admin_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [welcome_email, admin_email] = Registrations.SwooshHelper.sent_email()
 
     assert admin_email.to == [{"", "knut@chromatin.ca"}]
     assert admin_email.from == {"", "knut@chromatin.ca"}

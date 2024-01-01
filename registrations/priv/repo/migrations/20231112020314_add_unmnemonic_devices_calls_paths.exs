@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddUnmnemonicDevicesCallsPaths do
+defmodule Registrations.Repo.Migrations.AddUnmnemonicDevicesCallsPaths do
   use Ecto.Migration
 
   def change do

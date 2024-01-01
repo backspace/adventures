@@ -6,7 +6,7 @@ import Config
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we use it
 # with brunch.io to recompile .js and .css sources.
-config :adventure_registrations, AdventureRegistrationsWeb.Endpoint,
+config :registrations, RegistrationsWeb.Endpoint,
   http: [port: 4000],
   debug_errors: true,
   code_reloader: true,
@@ -23,7 +23,7 @@ config :adventure_registrations, AdventureRegistrationsWeb.Endpoint,
   ]
 
 # Watch static and templates for browser reloading.
-config :adventure_registrations, AdventureRegistrationsWeb.Endpoint,
+config :registrations, RegistrationsWeb.Endpoint,
   live_reload: [
     patterns: [
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
@@ -41,15 +41,15 @@ config :logger, :console, format: "[$level] $message\n"
 config :phoenix, :stacktrace_depth, 20
 
 # Configure your database
-config :adventure_registrations, AdventureRegistrations.Repo,
+config :registrations, Registrations.Repo,
   adapter: Ecto.Adapters.Postgres,
   username: "postgres",
   password: "postgres",
-  database: "adventure_registrations_dev",
+  database: "registrations_dev",
   hostname: "localhost",
   pool_size: 10
 
-config :adventure_registrations,
+config :registrations,
   request_confirmation: true
 
 config :mix_test_watch,

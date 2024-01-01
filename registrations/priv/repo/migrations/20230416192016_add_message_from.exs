@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddMessageFrom do
+defmodule Registrations.Repo.Migrations.AddMessageFrom do
   use Ecto.Migration
 
   def change do

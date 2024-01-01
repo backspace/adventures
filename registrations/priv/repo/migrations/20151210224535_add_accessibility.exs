@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddAccessibility do
+defmodule Registrations.Repo.Migrations.AddAccessibility do
   use Ecto.Migration
 
   def change do

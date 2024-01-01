@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddUnmnemonicDevicesNotifySupervisorSetting do
+defmodule Registrations.Repo.Migrations.AddUnmnemonicDevicesNotifySupervisorSetting do
   use Ecto.Migration
 
   def change do

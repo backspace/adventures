@@ -1,10 +1,10 @@
-defmodule AdventureRegistrations.ClandestineRendezvous.Integration.Questions do
-  use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.SwooshHelper
-  use AdventureRegistrations.ClandestineRendezvous
+defmodule Registrations.ClandestineRendezvous.Integration.Questions do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.ClandestineRendezvous
 
-  alias AdventureRegistrations.Pages.Home
-  alias AdventureRegistrations.Pages.Nav
+  alias Registrations.Pages.Home
+  alias Registrations.Pages.Nav
 
   use Hound.Helpers
 
@@ -25,7 +25,7 @@ defmodule AdventureRegistrations.ClandestineRendezvous.Integration.Questions do
 
     assert Nav.info_text() == "Your question has been submitted."
 
-    [sent_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [sent_email] = Registrations.SwooshHelper.sent_email()
     assert sent_email.to == [{"", "b@events.chromatin.ca"}]
     assert sent_email.from == {"", "b@events.chromatin.ca"}
 
@@ -37,13 +37,13 @@ defmodule AdventureRegistrations.ClandestineRendezvous.Integration.Questions do
   end
 end
 
-defmodule AdventureRegistrations.UnmnemonicDevices.Integration.Questions do
-  use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.SwooshHelper
-  use AdventureRegistrations.UnmnemonicDevices
+defmodule Registrations.UnmnemonicDevices.Integration.Questions do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.UnmnemonicDevices
 
-  alias AdventureRegistrations.Pages.Home
-  alias AdventureRegistrations.Pages.Nav
+  alias Registrations.Pages.Home
+  alias Registrations.Pages.Nav
 
   use Hound.Helpers
 
@@ -64,7 +64,7 @@ defmodule AdventureRegistrations.UnmnemonicDevices.Integration.Questions do
 
     assert Nav.info_text() == "Your question has been submitted."
 
-    [sent_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [sent_email] = Registrations.SwooshHelper.sent_email()
     assert sent_email.to == [{"", "knut@chromatin.ca"}]
     assert sent_email.from == {"", "knut@chromatin.ca"}
 

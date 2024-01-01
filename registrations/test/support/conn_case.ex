@@ -1,4 +1,4 @@
-defmodule AdventureRegistrationsWeb.ConnCase do
+defmodule RegistrationsWeb.ConnCase do
   @moduledoc """
   This module defines the test case to be used by
   tests that require setting up a connection.
@@ -21,23 +21,23 @@ defmodule AdventureRegistrationsWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
 
-      alias AdventureRegistrations.Repo
+      alias Registrations.Repo
       import Ecto.Query, only: [from: 2]
 
-      alias AdventureRegistrationsWeb.Router.Helpers, as: Routes
+      alias RegistrationsWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
-      @endpoint AdventureRegistrationsWeb.Endpoint
+      @endpoint RegistrationsWeb.Endpoint
 
-      import AdventureRegistrations.Factory
+      import Registrations.Factory
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(AdventureRegistrations.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Registrations.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(AdventureRegistrations.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Registrations.Repo, {:shared, self()})
     end
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}

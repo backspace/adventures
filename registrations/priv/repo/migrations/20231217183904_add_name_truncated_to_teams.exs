@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddNameTruncatedToTeams do
+defmodule Registrations.Repo.Migrations.AddNameTruncatedToTeams do
   use Ecto.Migration
 
   def up do

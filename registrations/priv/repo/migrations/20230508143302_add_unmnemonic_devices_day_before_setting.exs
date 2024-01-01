@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddUnmnemonicDevicesDayBeforeSetting do
+defmodule Registrations.Repo.Migrations.AddUnmnemonicDevicesDayBeforeSetting do
   use Ecto.Migration
 
   def change do

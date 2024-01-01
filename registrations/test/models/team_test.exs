@@ -1,7 +1,7 @@
-defmodule AdventureRegistrationsWeb.TeamTest do
-  use AdventureRegistrations.ModelCase
+defmodule RegistrationsWeb.TeamTest do
+  use Registrations.ModelCase
 
-  alias AdventureRegistrationsWeb.Team
+  alias RegistrationsWeb.Team
 
   @valid_attrs %{name: "some content", notes: "some content", risk_aversion: 42}
   @invalid_attrs %{}

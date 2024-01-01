@@ -1,12 +1,12 @@
-defmodule AdventureRegistrations.Integration.Admin do
-  use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.SwooshHelper
-  use AdventureRegistrations.ClandestineRendezvous
+defmodule Registrations.Integration.Admin do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.ClandestineRendezvous
 
-  alias AdventureRegistrations.Pages.Login
-  alias AdventureRegistrations.Pages.Nav
-  alias AdventureRegistrations.Pages.Users
-  alias AdventureRegistrations.Pages.Teams
+  alias Registrations.Pages.Login
+  alias Registrations.Pages.Nav
+  alias Registrations.Pages.Users
+  alias Registrations.Pages.Teams
 
   # Import Hound helpers
   use Hound.Helpers
@@ -111,7 +111,7 @@ defmodule AdventureRegistrations.Integration.Admin do
     assert Teams.risk_aversion(1) == "3"
     assert Teams.emails(1) == "a@example.com, b@example.com"
 
-    [team] = AdventureRegistrations.Repo.all(AdventureRegistrationsWeb.Team)
+    [team] = Registrations.Repo.all(RegistrationsWeb.Team)
     assert team.name == "Team A"
     assert team.risk_aversion == 3
     refute team.notes
@@ -199,13 +199,13 @@ defmodule AdventureRegistrations.Integration.Admin do
   end
 end
 
-defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Admin do
-  use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.SwooshHelper
-  use AdventureRegistrations.UnmnemonicDevices
+defmodule Registrations.Integration.UnmnemonicDevices.Admin do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.UnmnemonicDevices
 
-  alias AdventureRegistrations.Pages.Login
-  alias AdventureRegistrations.Pages.Nav
+  alias Registrations.Pages.Login
+  alias Registrations.Pages.Nav
 
   use Hound.Helpers
 

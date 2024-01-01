@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Pages.Users do
+defmodule Registrations.Pages.Users do
   use Hound.Helpers
 
   defp user_container(id) do

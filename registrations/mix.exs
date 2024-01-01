@@ -1,9 +1,9 @@
-defmodule AdventureRegistrations.Mixfile do
+defmodule Registrations.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :adventure_registrations,
+      app: :registrations,
       version: "0.0.1",
       elixir: "~> 1.0",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -19,7 +19,7 @@ defmodule AdventureRegistrations.Mixfile do
   #
   # Type `mix help compile.app` for more information.
   def application do
-    [mod: {AdventureRegistrations.Application, []}, extra_applications: [:logger]]
+    [mod: {Registrations.Application, []}, extra_applications: [:logger]]
   end
 
   # Specifies which paths to compile per environment.

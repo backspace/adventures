@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Pages.Home do
+defmodule Registrations.Pages.Home do
   use Hound.Helpers
 
   def fill_name(name) do
@@ -22,7 +22,7 @@ defmodule AdventureRegistrations.Pages.Home do
   end
 
   def pi do
-    AdventureRegistrations.Pages.Home.Pi
+    Registrations.Pages.Home.Pi
   end
 
   defmodule Pi do
@@ -38,12 +38,12 @@ defmodule AdventureRegistrations.Pages.Home do
   end
 
   def overlay do
-    AdventureRegistrations.Pages.Home.Overlay
+    Registrations.Pages.Home.Overlay
   end
 
   defmodule Overlay do
     def voicepass do
-      AdventureRegistrations.Pages.Home.Overlay.Voicepass
+      Registrations.Pages.Home.Overlay.Voicepass
     end
 
     defmodule Voicepass do
@@ -59,7 +59,7 @@ defmodule AdventureRegistrations.Pages.Home do
     end
 
     def regenerate do
-      AdventureRegistrations.Pages.Home.Overlay.Regenerate
+      Registrations.Pages.Home.Overlay.Regenerate
     end
 
     defmodule Regenerate do

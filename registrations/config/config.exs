@@ -6,23 +6,23 @@
 import Config
 
 # Configures the endpoint
-config :adventure_registrations, AdventureRegistrationsWeb.Endpoint,
+config :registrations, RegistrationsWeb.Endpoint,
   url: [host: "localhost"],
   root: Path.dirname(__DIR__),
   secret_key_base: "xn64PMB42eKmnISH1qTC8I+r62bNyMgTxlXYupsWCvvjBnFJEycMHcXdeFitYxyS",
   render_errors: [accepts: ~w(html json)],
-  pubsub_server: AdventureRegistrations.PubSub
+  pubsub_server: Registrations.PubSub
 
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-config :adventure_registrations, AdventureRegistrations.Mailer,
+config :registrations, Registrations.Mailer,
   adapter: Swoosh.Adapters.Mailgun,
   domain: "mg.chromatin.ca"
 
-config :adventure_registrations,
+config :registrations,
   start_time: [{{2017, 6, 8}, {18, 00, 00}}, "Canada/Pacific"],
   location: "Zagreb",
   base_url: "http://example.com"
@@ -41,4 +41,4 @@ config :phoenix, :generators,
 
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
-config :adventure_registrations, ecto_repos: [AdventureRegistrations.Repo]
+config :registrations, ecto_repos: [Registrations.Repo]

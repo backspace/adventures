@@ -1,8 +1,8 @@
-defmodule AdventureRegistrations.Repo.Migrations.MoveUsersToBelongToTeams do
+defmodule Registrations.Repo.Migrations.MoveUsersToBelongToTeams do
   use Ecto.Migration
 
-  alias AdventureRegistrations.Repo
-  alias AdventureRegistrationsWeb.Team
+  alias Registrations.Repo
+  alias RegistrationsWeb.Team
 
   def up do
     alter table(:users) do

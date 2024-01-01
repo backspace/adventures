@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddTeamVoicepass do
+defmodule Registrations.Repo.Migrations.AddTeamVoicepass do
   use Ecto.Migration
 
   def change do

@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Pages.Register do
+defmodule Registrations.Pages.Register do
   use Hound.Helpers
 
   def fill_email(email) do

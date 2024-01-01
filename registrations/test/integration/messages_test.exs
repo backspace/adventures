@@ -1,12 +1,12 @@
-defmodule AdventureRegistrations.Integration.Messages do
-  use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.SwooshHelper
-  use AdventureRegistrations.ClandestineRendezvous
+defmodule Registrations.Integration.Messages do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.ClandestineRendezvous
 
-  alias AdventureRegistrations.Pages.Login
-  alias AdventureRegistrations.Pages.Register
-  alias AdventureRegistrations.Pages.Messages
-  alias AdventureRegistrations.Pages.Nav
+  alias Registrations.Pages.Login
+  alias Registrations.Pages.Register
+  alias Registrations.Pages.Messages
+  alias Registrations.Pages.Nav
 
   use Hound.Helpers
   hound_session()
@@ -49,7 +49,7 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     assert Nav.info_text() == "Message was sent"
 
-    [empty_email, _, email, _] = AdventureRegistrations.SwooshHelper.sent_email()
+    [empty_email, _, email, _] = Registrations.SwooshHelper.sent_email()
     assert email.to == [{"", "user@example.com"}]
     assert email.from == {"", "b@events.chromatin.ca"}
     assert email.subject == "[rendezvous] A Subject!"
@@ -98,7 +98,7 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     assert Nav.info_text() == "Message was sent"
 
-    [email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [email] = Registrations.SwooshHelper.sent_email()
     assert email.to == [{"", "admin@example.com"}]
     assert email.from == {"", "b@events.chromatin.ca"}
     assert email.subject == "[rendezvous] A Subject!"
@@ -132,7 +132,7 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     assert Nav.info_text() == "Message was sent"
 
-    [email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [email] = Registrations.SwooshHelper.sent_email()
     assert email.from == {"Knut", "knut@example.com"}
   end
 
@@ -178,7 +178,7 @@ defmodule AdventureRegistrations.Integration.Messages do
 
     assert Nav.info_text() == "Message was sent"
 
-    [has_no_team_email, _, has_team_email, _] = AdventureRegistrations.SwooshHelper.sent_email()
+    [has_no_team_email, _, has_team_email, _] = Registrations.SwooshHelper.sent_email()
 
     assert has_team_email.to == [{"", "user-with-team@example.com"}]
     assert String.contains?(has_team_email.text_body, "True team name")
@@ -211,7 +211,7 @@ defmodule AdventureRegistrations.Integration.Messages do
     Register.fill_password("abcdefghi")
     Register.submit()
 
-    [backlog_email, _welcome_, _admin] = AdventureRegistrations.SwooshHelper.sent_email()
+    [backlog_email, _welcome_, _admin] = Registrations.SwooshHelper.sent_email()
 
     assert backlog_email.to == [{"", "registerer@example.com"}]
     assert backlog_email.from == {"", "b@events.chromatin.ca"}

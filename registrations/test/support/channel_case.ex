@@ -1,4 +1,4 @@
-defmodule AdventureRegistrationsWeb.ChannelCase do
+defmodule RegistrationsWeb.ChannelCase do
   @moduledoc """
   This module defines the test case to be used by
   channel tests.
@@ -20,19 +20,19 @@ defmodule AdventureRegistrationsWeb.ChannelCase do
       # Import conveniences for testing with channels
       use Phoenix.ChannelTest
 
-      alias AdventureRegistrations.Repo
+      alias Registrations.Repo
       import Ecto.Query, only: [from: 2]
 
       # The default endpoint for testing
-      @endpoint AdventureRegistrationsWeb.Endpoint
+      @endpoint RegistrationsWeb.Endpoint
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(AdventureRegistrations.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Registrations.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(AdventureRegistrations.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Registrations.Repo, {:shared, self()})
     end
 
     :ok

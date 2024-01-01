@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Pages.Messages do
+defmodule Registrations.Pages.Messages do
   use Hound.Helpers
 
   def new_message do

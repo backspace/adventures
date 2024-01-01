@@ -1,7 +1,7 @@
-defmodule AdventureRegistrationsWeb.MessageControllerTest do
-  use AdventureRegistrationsWeb.ConnCase
+defmodule RegistrationsWeb.MessageControllerTest do
+  use RegistrationsWeb.ConnCase
 
-  # alias AdventureRegistrationsWeb.Message
+  # alias RegistrationsWeb.Message
   # @valid_attrs %{
   #   content: "some content",
   #   postmarked_at: "2010-04-17",

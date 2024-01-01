@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.ModelCase do
+defmodule Registrations.ModelCase do
   @moduledoc """
   This module defines the test case to be used by
   model tests.
@@ -16,17 +16,17 @@ defmodule AdventureRegistrations.ModelCase do
 
   using do
     quote do
-      alias AdventureRegistrations.Repo
+      alias Registrations.Repo
       import Ecto.Query, only: [from: 2]
-      import AdventureRegistrations.ModelCase
+      import Registrations.ModelCase
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(AdventureRegistrations.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Registrations.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(AdventureRegistrations.Repo, {:shared, self()})
+      Ecto.Adapters.SQL.Sandbox.mode(Registrations.Repo, {:shared, self()})
     end
 
     :ok
@@ -56,7 +56,7 @@ defmodule AdventureRegistrations.ModelCase do
   """
   def errors_on(struct, data) do
     struct.__struct__.changeset(struct, data)
-    |> Ecto.Changeset.traverse_errors(&AdventureRegistrationsWeb.ErrorHelpers.translate_error/1)
+    |> Ecto.Changeset.traverse_errors(&RegistrationsWeb.ErrorHelpers.translate_error/1)
     |> Enum.flat_map(fn {key, errors} -> for msg <- errors, do: {key, msg} end)
   end
 end

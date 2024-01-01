@@ -17,7 +17,7 @@ import Config
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
 if System.get_env("PHX_SERVER") do
-  config :adventure_registrations, AdventureRegistrationsWeb.Endpoint, server: true
+  config :registrations, RegistrationsWeb.Endpoint, server: true
 end
 
 if config_env() != :test do
@@ -27,7 +27,7 @@ if config_env() != :test do
       environment variable ADVENTURE is missing.
       """
 
-  config :adventure_registrations,
+  config :registrations,
     adventure: adventure
 end
 
@@ -65,7 +65,7 @@ if config_env() == :prod do
         raise "Failed to parse START_TIME"
     end
 
-  config :adventure_registrations,
+  config :registrations,
     location: location,
     base_url: base_url,
     start_time: start_time
@@ -79,7 +79,7 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
 
-  config :adventure_registrations, AdventureRegistrations.Repo,
+  config :registrations, Registrations.Repo,
     # ssl: true,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
@@ -100,7 +100,7 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "example.com"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
-  config :adventure_registrations, AdventureRegistrationsWeb.Endpoint,
+  config :registrations, RegistrationsWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
       # Enable IPv6 and bind on all interfaces.
@@ -118,7 +118,7 @@ if config_env() == :prod do
   # Also, you may need to configure the Swoosh API client of your choice if you
   # are not using SMTP. Here is an example of the configuration:
   #
-  config :adventure_registrations, AdventureRegistrations.Mailer,
+  config :registrations, Registrations.Mailer,
     adapter: Swoosh.Adapters.Mailgun,
     api_key: System.get_env("MAILGUN_API_KEY"),
     domain: System.get_env("MAILGUN_DOMAIN")

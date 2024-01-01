@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Pages.Account do
+defmodule Registrations.Pages.Account do
   use Hound.Helpers
 
   def fill_current_password(password) do

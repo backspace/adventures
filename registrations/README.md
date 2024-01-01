@@ -1,4 +1,4 @@
-# AdventureRegistrations
+# Registrations
 
 This site is to advertise and collect registrations for adventures.
 

@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddUnmnemonicDevicesTeamListens do
+defmodule Registrations.Repo.Migrations.AddUnmnemonicDevicesTeamListens do
   use Ecto.Migration
 
   def change do

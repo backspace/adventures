@@ -1,3 +1,3 @@
-defmodule AdventureRegistrations.LayoutViewTest do
-  use AdventureRegistrationsWeb.ConnCase, async: true
+defmodule Registrations.LayoutViewTest do
+  use RegistrationsWeb.ConnCase, async: true
 end

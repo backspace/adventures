@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Pages.Details do
+defmodule Registrations.Pages.Details do
   use Hound.Helpers
 
   def edit_account do
@@ -62,7 +62,7 @@ defmodule AdventureRegistrations.Pages.Details do
 
   def choose_risk_aversion(level_string) do
     level_integer =
-      AdventureRegistrationsWeb.UserView.risk_aversion_string_into_integer()[level_string]
+      RegistrationsWeb.UserView.risk_aversion_string_into_integer()[level_string]
 
     click({:css, "input.level-#{level_integer}"})
   end
@@ -84,7 +84,7 @@ defmodule AdventureRegistrations.Pages.Details do
   end
 
   def comments do
-    AdventureRegistrations.Pages.Details.Comments
+    Registrations.Pages.Details.Comments
   end
 
   defmodule Comments do
@@ -100,7 +100,7 @@ defmodule AdventureRegistrations.Pages.Details do
   end
 
   def source do
-    AdventureRegistrations.Pages.Details.Source
+    Registrations.Pages.Details.Source
   end
 
   # FIXME this is just begging for DRYing!

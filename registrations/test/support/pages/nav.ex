@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Pages.Nav do
+defmodule Registrations.Pages.Nav do
   use Hound.Helpers
 
   def info_text do
@@ -10,29 +10,29 @@ defmodule AdventureRegistrations.Pages.Nav do
   end
 
   def register_link do
-    AdventureRegistrations.Pages.Nav.RegisterLink
+    Registrations.Pages.Nav.RegisterLink
   end
 
   def login_link do
-    AdventureRegistrations.Pages.Nav.LoginLink
+    Registrations.Pages.Nav.LoginLink
   end
 
   # FIXME there is surely a better way to do this?
   # macros/DSL to create page objects?
   def logout_link do
-    AdventureRegistrations.Pages.Nav.LogoutLink
+    Registrations.Pages.Nav.LogoutLink
   end
 
   def users_link do
-    AdventureRegistrations.Pages.Nav.UsersLink
+    Registrations.Pages.Nav.UsersLink
   end
 
   def teams_link do
-    AdventureRegistrations.Pages.Nav.TeamsLink
+    Registrations.Pages.Nav.TeamsLink
   end
 
   def settings_link do
-    AdventureRegistrations.Pages.Nav.SettingsLink
+    Registrations.Pages.Nav.SettingsLink
   end
 
   def edit_details do

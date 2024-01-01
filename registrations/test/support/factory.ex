@@ -1,8 +1,8 @@
-defmodule AdventureRegistrations.Factory do
-  use ExMachina.Ecto, repo: AdventureRegistrations.Repo
+defmodule Registrations.Factory do
+  use ExMachina.Ecto, repo: Registrations.Repo
 
   def user_factory do
-    %AdventureRegistrationsWeb.User{
+    %RegistrationsWeb.User{
       email: sequence(:email, &"jh#{&1}@example.com")
     }
   end
@@ -27,11 +27,11 @@ defmodule AdventureRegistrations.Factory do
   end
 
   def team_factory do
-    %AdventureRegistrationsWeb.Team{}
+    %RegistrationsWeb.Team{}
   end
 
   def message_factory do
-    %AdventureRegistrationsWeb.Message{
+    %RegistrationsWeb.Message{
       ready: true
     }
   end
@@ -46,6 +46,6 @@ defmodule AdventureRegistrations.Factory do
   end
 
   def unmnemonic_devices_settings_factory do
-    %AdventureRegistrationsWeb.UnmnemonicDevices.Settings{}
+    %RegistrationsWeb.UnmnemonicDevices.Settings{}
   end
 end

@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddUnmnemonicDevicesSchema do
+defmodule Registrations.Repo.Migrations.AddUnmnemonicDevicesSchema do
   use Ecto.Migration
 
   def up do

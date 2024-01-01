@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Pages.Teams do
+defmodule Registrations.Pages.Teams do
   use Hound.Helpers
 
   defp team_container(index) do

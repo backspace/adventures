@@ -3,20 +3,20 @@
 ExUnit.configure(formatters: [JUnitFormatter, ExUnit.CLIFormatter])
 ExUnit.start()
 
-Ecto.Adapters.SQL.Sandbox.mode(AdventureRegistrations.Repo, :manual)
+Ecto.Adapters.SQL.Sandbox.mode(Registrations.Repo, :manual)
 
 # FIXME the duplication below can surely be extracted
 
-defmodule AdventureRegistrations.ResetRequestConfirmation do
+defmodule Registrations.ResetRequestConfirmation do
   use ExUnit.CaseTemplate
 
   setup do
     request_confirmation_setting =
-      Application.get_env(:adventure_registrations, :request_confirmation)
+      Application.get_env(:registrations, :request_confirmation)
 
     on_exit(fn ->
       Application.put_env(
-        :adventure_registrations,
+        :registrations,
         :request_confirmation,
         request_confirmation_setting
       )
@@ -26,16 +26,16 @@ defmodule AdventureRegistrations.ResetRequestConfirmation do
   end
 end
 
-defmodule AdventureRegistrations.ResetRegistrationClosed do
+defmodule Registrations.ResetRegistrationClosed do
   use ExUnit.CaseTemplate
 
   setup do
     registration_closed_setting =
-      Application.get_env(:adventure_registrations, :registration_closed)
+      Application.get_env(:registrations, :registration_closed)
 
     on_exit(fn ->
       Application.put_env(
-        :adventure_registrations,
+        :registrations,
         :registration_closed,
         registration_closed_setting
       )
@@ -45,7 +45,7 @@ defmodule AdventureRegistrations.ResetRegistrationClosed do
   end
 end
 
-defmodule AdventureRegistrations.SwooshHelper do
+defmodule Registrations.SwooshHelper do
   use ExUnit.CaseTemplate
 
   setup do
@@ -63,11 +63,11 @@ defmodule AdventureRegistrations.SwooshHelper do
   end
 end
 
-defmodule AdventureRegistrations.ClandestineRendezvous do
+defmodule Registrations.ClandestineRendezvous do
   use ExUnit.CaseTemplate
 
   setup do
-    put_application_env_for_test(:adventure_registrations, :adventure, "clandestine-rendezvous")
+    put_application_env_for_test(:registrations, :adventure, "clandestine-rendezvous")
   end
 
   defp put_application_env_for_test(app, key, value) do
@@ -77,11 +77,11 @@ defmodule AdventureRegistrations.ClandestineRendezvous do
   end
 end
 
-defmodule AdventureRegistrations.UnmnemonicDevices do
+defmodule Registrations.UnmnemonicDevices do
   use ExUnit.CaseTemplate
 
   setup do
-    put_application_env_for_test(:adventure_registrations, :adventure, "unmnemonic-devices")
+    put_application_env_for_test(:registrations, :adventure, "unmnemonic-devices")
   end
 
   defp put_application_env_for_test(app, key, value) do

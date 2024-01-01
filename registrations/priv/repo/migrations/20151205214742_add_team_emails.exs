@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddTeamEmails do
+defmodule Registrations.Repo.Migrations.AddTeamEmails do
   use Ecto.Migration
 
   def change do

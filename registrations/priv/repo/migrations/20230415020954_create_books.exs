@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.CreateBooks do
+defmodule Registrations.Repo.Migrations.CreateBooks do
   use Ecto.Migration
 
   def change do

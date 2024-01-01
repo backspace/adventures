@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddTrigramExtension do
+defmodule Registrations.Repo.Migrations.AddTrigramExtension do
   use Ecto.Migration
 
   def change do

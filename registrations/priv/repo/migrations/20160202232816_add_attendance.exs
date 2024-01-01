@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddAttendance do
+defmodule Registrations.Repo.Migrations.AddAttendance do
   use Ecto.Migration
 
   def change do

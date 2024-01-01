@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Repo.Migrations.AddCommentsAndSource do
+defmodule Registrations.Repo.Migrations.AddCommentsAndSource do
   use Ecto.Migration
 
   def change do

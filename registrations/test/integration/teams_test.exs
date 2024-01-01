@@ -1,12 +1,12 @@
-defmodule AdventureRegistrations.Integration.Teams do
-  use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.SwooshHelper
-  use AdventureRegistrations.ResetRequestConfirmation
-  use AdventureRegistrations.ClandestineRendezvous
+defmodule Registrations.Integration.Teams do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.ResetRequestConfirmation
+  use Registrations.ClandestineRendezvous
 
-  alias AdventureRegistrations.Pages.Login
-  alias AdventureRegistrations.Pages.Nav
-  alias AdventureRegistrations.Pages.Details
+  alias Registrations.Pages.Login
+  alias Registrations.Pages.Nav
+  alias Registrations.Pages.Details
 
   # Import Hound helpers
   use Hound.Helpers
@@ -67,7 +67,7 @@ defmodule AdventureRegistrations.Integration.Teams do
     assert Details.comments().value == "Some comments"
     assert Details.source().value == "A source"
 
-    [sent_email] = AdventureRegistrations.SwooshHelper.sent_email()
+    [sent_email] = Registrations.SwooshHelper.sent_email()
     assert sent_email.to == [{"", "b@events.chromatin.ca"}]
     assert sent_email.from == {"", "b@events.chromatin.ca"}
 
@@ -179,7 +179,7 @@ defmodule AdventureRegistrations.Integration.Teams do
   end
 
   test "when confirmation-requesting is enabled, show and require the fields" do
-    Application.put_env(:adventure_registrations, :request_confirmation, true)
+    Application.put_env(:registrations, :request_confirmation, true)
 
     insert(:user,
       email: "takver@example.com",
@@ -245,14 +245,14 @@ defmodule AdventureRegistrations.Integration.Teams do
   end
 end
 
-defmodule AdventureRegistrations.Integration.UnmnemonicDevices.Teams do
-  use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.SwooshHelper
-  use AdventureRegistrations.ResetRequestConfirmation
-  use AdventureRegistrations.UnmnemonicDevices
+defmodule Registrations.Integration.UnmnemonicDevices.Teams do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.ResetRequestConfirmation
+  use Registrations.UnmnemonicDevices
 
-  alias AdventureRegistrations.Pages.Login
-  alias AdventureRegistrations.Pages.Details
+  alias Registrations.Pages.Login
+  alias Registrations.Pages.Details
 
   # Import Hound helpers
   use Hound.Helpers

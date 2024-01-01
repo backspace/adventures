@@ -1,11 +1,11 @@
-defmodule AdventureRegistrations.UnmnemonicDevices.Integration.Home do
-  use AdventureRegistrationsWeb.ConnCase
-  use AdventureRegistrations.SwooshHelper
-  use AdventureRegistrations.UnmnemonicDevices
+defmodule Registrations.UnmnemonicDevices.Integration.Home do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.UnmnemonicDevices
 
-  alias AdventureRegistrations.Pages.Home
-  alias AdventureRegistrations.Pages.Login
-  alias AdventureRegistrations.Pages.Nav
+  alias Registrations.Pages.Home
+  alias Registrations.Pages.Login
+  alias Registrations.Pages.Nav
 
   use Hound.Helpers
 

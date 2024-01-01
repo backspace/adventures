@@ -1,7 +1,7 @@
-defmodule AdventureRegistrationsWeb.MessageTest do
-  use AdventureRegistrations.ModelCase
+defmodule RegistrationsWeb.MessageTest do
+  use Registrations.ModelCase
 
-  alias AdventureRegistrationsWeb.Message
+  alias RegistrationsWeb.Message
 
   @valid_attrs %{
     content: "some content",

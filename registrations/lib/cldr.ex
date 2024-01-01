@@ -1,4 +1,4 @@
-defmodule AdventureRegistrations.Cldr do
+defmodule Registrations.Cldr do
   use Cldr,
     locales: [:en],
     default_locale: "en",

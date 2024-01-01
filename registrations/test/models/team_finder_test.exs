@@ -1,7 +1,7 @@
-defmodule AdventureRegistrationsWeb.TeamFinderTest do
+defmodule RegistrationsWeb.TeamFinderTest do
   use ExUnit.Case, async: true
 
-  alias AdventureRegistrationsWeb.TeamFinder
+  alias RegistrationsWeb.TeamFinder
 
   test "finds mutuals and users proposing teaming up" do
     current = %{email: "A@e.co", team_emails: "M1@e.co M2@e.co P@e.co Z@e.co XX YY"}
