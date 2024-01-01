@@ -1,4 +1,4 @@
-{{#> admin/layout}}
+{{#> admin/layout css="voicemails" js="voicemails" }}
   <table>
     <thead>
       <tr>
@@ -15,62 +15,4 @@
       {{> admin/voicemails-rows label="rejected" voicemails=rejected}}
     </tbody>
   </table>
-  <style>
-    .approved {
-      opacity: 0.7;
-    }
-
-    table {
-      border-collapse: collapse;
-    }
-
-    th, td {
-      vertical-align: top;
-      padding: 0.5rem;
-    }
-
-    tbody tr:has(th) {
-      border-top: 5px solid black;
-    }
-
-    tbody tr:first-child {
-      border-top: 0;
-    }
-
-    .listened {
-      background-color: pink;
-    }
-  </style>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('tbody tr').forEach(function (row) {
-        if (row.classList.contains('unapproved')) {
-          insertButton(row, 'Approve', true);
-        } else {
-          insertButton(row, 'Unapprove', false);
-        }
-
-        insertButton(row, 'Reject', '');
-      });
-    });
-
-    function updateApproval(id, approvedArg) {
-      let searchParams = {};
-
-      if (approvedArg) {
-        searchParams.approved = approvedArg;
-      }
-
-      fetch(`${window.location.href}/${id}`, {
-        method: 'POST',
-        body: new URLSearchParams(searchParams),
-      }).then(() => {
-        window.location.reload();
-      });
-    }
-
-    function insertButton(row, label, approvedArg) {
-      row.insertAdjacentHTML('beforeend', `<td><button onclick="updateApproval('${row.dataset.id}', '${approvedArg}')">${label}</button></td>`);
-    }
-  </script>
 {{/admin/layout}}

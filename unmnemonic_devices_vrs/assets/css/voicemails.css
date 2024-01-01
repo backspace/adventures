@@ -1,0 +1,24 @@
+.approved {
+  opacity: 0.7;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th, td {
+  vertical-align: top;
+  padding: 0.5rem;
+}
+
+tbody tr:has(th) {
+  border-top: 5px solid black;
+}
+
+tbody tr:first-child {
+  border-top: 0;
+}
+
+.listened {
+  background-color: pink;
+}

@@ -1,0 +1,11 @@
+td {
+  padding: 0.5rem;
+}
+
+td.listened {
+  background-color: pink;
+}
+
+.team.complete {
+  background-color: pink;
+}

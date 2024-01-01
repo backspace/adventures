@@ -25,7 +25,7 @@ use std::env;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use std::{collections::HashMap, fs};
-use tower_http::{classify::ServerErrorsFailureClass, trace::TraceLayer};
+use tower_http::{classify::ServerErrorsFailureClass, services::ServeDir, trace::TraceLayer};
 use tracing::{info_span, Span};
 
 use crate::routes::*;
@@ -100,6 +100,7 @@ pub async fn app(services: InjectableServices) -> Router {
     };
 
     Router::new()
+        .nest_service("/assets", ServeDir::new("assets"))
         .route("/prerecord", get(get_prerecord))
         .route("/record", get(get_record))
         .route("/", get(get_root))

@@ -1,28 +1,17 @@
 <html>
   <head>
     <title>unmnemonic devices</title>
-    <style>
-      nav ul {
-        margin-bottom: 1rem;
-        list-style-type: none;
-        padding: 0;
-        display: flex;
-        gap: 1rem;
-      }
 
-      nav .active {
-        font-weight: bold;
-      }
-    </style>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('nav a').forEach(function (link) {
-          if (window.location.pathname.endsWith(link.innerText)) {
-            link.classList.add('active');
-          }
-        });
-      });
-    </script>
+    <link rel="stylesheet" href="/assets/css/layout.css">
+    <script src="/assets/js/layout.js"></script>
+
+    {{#if css}}
+      <link rel="stylesheet" href="/assets/css/{{ css }}.css">
+    {{/if}}
+
+    {{#if js}}
+      <script src="/assets/js/{{ js }}.js"></script>
+    {{/if}}
   </head>
   <body>
     {{> admin/nav}}
