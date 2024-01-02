@@ -1,5 +1,5 @@
 use crate::common;
-use common::helpers::{get_config, get_with_twilio, post_with_twilio};
+use common::helpers::{get_config, get_with_twilio, get_with_twilio_and_auth, post_with_twilio};
 
 use select::{
     document::Document,
@@ -96,6 +96,58 @@ async fn calls_list_with_calls_and_teams_and_paths(db: PgPool) {
     assert_that(&row.text()).contains("+15145551212");
     assert_that(&row.text()).contains("tortles");
     assert_that(&row.text()).contains("/a-path");
+}
+
+#[sqlx::test(fixtures("schema", "teams", "calls-teams", "users-maybe-admin"))]
+async fn calls_list_with_admin_user_from_database(db: PgPool) {
+    let mock_twilio = MockServer::start().await;
+
+    Mock::given(method("GET"))
+        .and(path_regex(r"^/2010-04-01/Accounts/.*/Calls.json$"))
+        .and(query_param("Status", "in-progress"))
+        .respond_with(
+            ResponseTemplate::new(200).set_body_json(json!({"calls": [{"sid": "AN_SID", "from": "+15145551212", "start_time": "Tue, 03 Oct 2023 05:39:58 +0000"}]})),
+        )
+        .expect(1)
+        .mount(&mock_twilio)
+        .await;
+
+    let response = get_with_twilio_and_auth(
+        InjectableServices {
+            db,
+            twilio_address: mock_twilio.uri(),
+        },
+        "/admin/calls",
+        false,
+        "admin@example.com:this-is-my-password".to_string(),
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert!(response.status().is_success());
+    assert_eq!(
+        response.headers().get("Content-Type").unwrap(),
+        "text/html; charset=utf-8"
+    );
+}
+
+#[sqlx::test(fixtures("schema", "teams", "calls-teams", "users-maybe-admin"))]
+async fn calls_list_with_non_admin_user_from_database(db: PgPool) {
+    let mock_twilio = MockServer::start().await;
+
+    let response = get_with_twilio_and_auth(
+        InjectableServices {
+            db,
+            twilio_address: mock_twilio.uri(),
+        },
+        "/admin/calls",
+        false,
+        "nonadmin@example.com:this-is-my-password".to_string(),
+    )
+    .await
+    .expect("Failed to execute request.");
+
+    assert_eq!(response.status(), 401);
 }
 
 #[sqlx::test(fixtures("schema"))]

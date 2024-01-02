@@ -13,6 +13,7 @@ name = "unmnemonic_devices_vrs"
 [dependencies]
 axum = { version = "0.6", features = ["tracing"] }
 axum-template = { version = "0.15", features = ["handlebars"] }
+bcrypt = "0.15"
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
 handlebars = { version = "4", features = ["dir_source"] }
 http = "0.2.9"

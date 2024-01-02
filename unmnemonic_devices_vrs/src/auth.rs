@@ -1,10 +1,15 @@
-use crate::config::{ConfigProvider, EnvVarProvider};
+use crate::{
+    config::{ConfigProvider, EnvVarProvider},
+    AppState,
+};
 use axum::{
     async_trait,
-    extract::FromRequestParts,
+    extract::{FromRef, FromRequestParts},
     http::{request::Parts, StatusCode},
 };
 use base64::{engine::general_purpose, Engine as _};
+use bcrypt::verify;
+use serde::Serialize;
 use std::{env, str::from_utf8};
 
 // Adapted from https://www.shuttle.rs/blog/2023/09/27/rust-vs-go-comparison#middleware-1
@@ -12,14 +17,23 @@ use std::{env, str::from_utf8};
 // A user that is authorized to access admin routes.
 pub struct User;
 
+#[derive(sqlx::FromRow, Serialize)]
+pub struct UserCryptedPassword {
+    crypted_password: String,
+}
+
 #[async_trait]
 impl<S> FromRequestParts<S> for User
 where
+    AppState: FromRef<S>,
     S: Send + Sync,
 {
     type Rejection = axum::http::Response<axum::body::Body>;
 
-    async fn from_request_parts(parts: &mut Parts, _: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state_reference: &S,
+    ) -> Result<Self, Self::Rejection> {
         let env_config_provider = EnvVarProvider::new(env::vars().collect());
         let config = &env_config_provider.get_config();
 
@@ -36,10 +50,35 @@ where
                     .expect("Unable to decode credentials");
                 let credential_str = from_utf8(&decoded).unwrap_or("");
 
-                // Our username and password are hardcoded here.
-                // In a real app, you'd want to read them from the environment.
+                // Preserving ENV-set auth for now
                 if credential_str == config.auth {
                     return Ok(User);
+                } else {
+                    let state = AppState::from_ref(state_reference);
+
+                    let (username, password) = credential_str.split_once(':').unwrap_or(("", ""));
+
+                    let maybe_user = sqlx::query_as::<_, UserCryptedPassword>(
+                        r#"
+                        SELECT
+                          crypted_password
+                        FROM
+                          users
+                        WHERE
+                          email = $1 AND admin IS TRUE;
+                      "#,
+                    )
+                    .bind(username)
+                    .fetch_one(&state.db) // Replace `&state.db` with the correct field name for the database connection.
+                    .await;
+
+                    let user = maybe_user.unwrap_or(UserCryptedPassword {
+                        crypted_password: "".to_string(),
+                    });
+
+                    if verify(password, &user.crypted_password).unwrap_or(false) {
+                        return Ok(User);
+                    }
                 }
             }
         }

@@ -63,6 +63,16 @@ pub mod helpers {
     ) -> Result<reqwest::Response, reqwest::Error> {
         let env_config_provider = EnvVarProvider::new(env::vars().collect());
         let config = &env_config_provider.get_config();
+
+        get_with_twilio_and_auth(services, path, skip_redirects, config.auth.clone()).await
+    }
+
+    pub async fn get_with_twilio_and_auth(
+        services: InjectableServices,
+        path: &str,
+        skip_redirects: bool,
+        auth: String,
+    ) -> Result<reqwest::Response, reqwest::Error> {
         let app_address = spawn_app(services).await.address;
         let client_builder = reqwest::Client::builder();
 
@@ -78,10 +88,7 @@ pub mod helpers {
             .get(&format!("{}{}", app_address, path))
             .header(
                 "Authorization",
-                format!(
-                    "Basic {}",
-                    general_purpose::STANDARD.encode(config.auth.clone())
-                ),
+                format!("Basic {}", general_purpose::STANDARD.encode(auth)),
             )
             .send()
             .await
