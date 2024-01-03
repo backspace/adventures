@@ -77,7 +77,7 @@ pub async fn app(services: InjectableServices) -> Router {
     hbs.register_templates_directory(
         "src/templates",
         DirectorySourceOptions {
-            tpl_extension: "hbs".to_string(),
+            tpl_extension: ".hbs".to_string(),
             hidden: false,
             temporary: false,
         },
