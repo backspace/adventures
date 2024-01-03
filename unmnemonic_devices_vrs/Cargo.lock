@@ -192,7 +192,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29e09d39390c641607a9aa85dab4f67f0bb5599866a614b6a66b938769315130"
 dependencies = [
  "axum",
- "handlebars 5.0.0",
+ "handlebars",
  "serde",
  "thiserror",
 ]
@@ -830,20 +830,6 @@ dependencies = [
 
 [[package]]
 name = "handlebars"
-version = "4.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "035ef95d03713f2c347a72547b7cd38cbc9af7cd51e6099fb62d586d4a6dee3a"
-dependencies = [
- "log",
- "pest",
- "pest_derive",
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "handlebars"
 version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94eae21d01d20dabef65d8eda734d83df6e2dea8166788804be9bd6bc92448fa"
@@ -855,16 +841,6 @@ dependencies = [
  "serde_json",
  "thiserror",
  "walkdir",
-]
-
-[[package]]
-name = "handlebars-concat"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5d15acdc892ff883c8eb9e928fb1d6a52fd9c3e759c5b28a247442c3f6895b1"
-dependencies = [
- "handlebars 4.3.6",
- "serde_json",
 ]
 
 [[package]]
@@ -2975,8 +2951,7 @@ dependencies = [
  "base64 0.21.4",
  "bcrypt",
  "chrono",
- "handlebars 5.0.0",
- "handlebars-concat",
+ "handlebars",
  "http 1.0.0",
  "mime",
  "reqwest",
