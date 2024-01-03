@@ -40,7 +40,6 @@ base64 = "0.21.4"
 axum-macros = "0.4"
 axum-extra = "0.9"
 handlebars-concat = "0.1.4"
-serde-querystring-axum = "0.2.0"
 url = { version = "2.4.1", features = ["serde"] }
 
 [dependencies.uuid]
