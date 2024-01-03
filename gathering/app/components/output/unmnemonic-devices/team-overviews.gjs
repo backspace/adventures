@@ -37,6 +37,10 @@ export default class TeamOverviewsComponent extends Component {
     let doc = new PDFDocument({ layout: 'portrait', font: regular });
     let stream = doc.pipe(blobStream());
 
+    let sortedTeams = this.args.teams
+      .slice()
+      .sort((a, b) => a.createdAt - b.createdAt);
+
     let mapBlob = this.args.assets.map;
     let lowMapBlob = this.args.assets.lowMap;
 
@@ -67,24 +71,21 @@ export default class TeamOverviewsComponent extends Component {
 
     let devices = this.devices;
 
-    this.args.teams
-      .slice()
-      .sort((a, b) => a.createdAt - b.createdAt)
-      .forEach((team, index) => {
-        if (index > 0) {
-          doc.addPage();
-        }
+    sortedTeams.forEach((team, index) => {
+      if (index > 0) {
+        doc.addPage();
+      }
 
-        drawMargins(doc, () => {
-          drawHeader(team);
-          drawMap();
-          drawMeetingPoints(team);
+      drawMargins(doc, () => {
+        drawHeader(team);
+        drawMap();
+        drawMeetingPoints(team);
 
-          doc.addPage();
+        doc.addPage();
 
-          drawMeetingBlanks(team);
-        });
+        drawMeetingBlanks(team);
       });
+    });
 
     doc.end();
 

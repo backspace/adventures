@@ -136,6 +136,9 @@ devDependencies:
   ember-fetch:
     specifier: ^8.1.2
     version: 8.1.2
+  ember-inflector:
+    specifier: ^4.0.2
+    version: 4.0.2
   ember-load-initializers:
     specifier: ^2.1.2
     version: 2.1.2(@babel/core@7.23.5)

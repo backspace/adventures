@@ -9,6 +9,14 @@
         @checked={{this.state.debug}}
       />
 
+      <button
+        class='border-2 border-black p-2 flex-1 {{if this.filteredTeamIds 'bg-gray-200'}}'
+        type='button'
+        {{on 'click' this.toggleTeamFilterOpen}}
+      >
+        {{this.filterButtonLabel}}
+      </button>
+
       {{#each this.outputNames as |outputName|}}
         <button
           class='border-2 border-black p-2 flex-1 {{if (eq this.state.active outputName) 'bg-gray-200'}}'
@@ -20,12 +28,31 @@
       {{/each}}
     </header>
 
+    {{#if this.teamFilterOpen}}
+      <ul>
+        {{#each this.teamsWithCheckedStatus as |teamAndChecked|}}
+          <li>
+            <input
+              id={{teamAndChecked.team.id}}
+              type='checkbox'
+              checked={{teamAndChecked.checked}}
+              {{on 'change' (fn this.toggleTeam teamAndChecked.team.id)}}
+            />
+
+            <label for={{teamAndChecked.team.id}} class='ml-2'>
+              {{teamAndChecked.team.truncatedName}}
+            </label>
+          </li>
+        {{/each}}
+      </ul>
+    {{/if}}
+
     {{#if this.outputComponent}}
       <this.outputComponent
         @regions={{this.model.regions}}
         @destinations={{this.model.destinations}}
         @waypoints={{this.model.waypoints}}
-        @teams={{this.model.teams}}
+        @teams={{this.filteredTeams}}
         @meetings={{this.model.meetings}}
         @assets={{this.model.assets}}
         @settings={{this.model.settings}}
