@@ -11,17 +11,17 @@ path = "src/main.rs"
 name = "unmnemonic_devices_vrs"
 
 [dependencies]
-axum = { version = "0.6", features = ["tracing"] }
-axum-template = { version = "0.15", features = ["handlebars"] }
+axum = { version = "0.7", features = ["tracing"] }
+axum-template = { version = "2", features = ["handlebars"] }
 bcrypt = "0.15"
 chrono = { version = "0.4.22", default-features = false, features = ["clock"] }
-handlebars = { version = "4", features = ["dir_source"] }
-http = "0.2.9"
+handlebars = { version = "5", features = ["dir_source"] }
+http = "1"
 mime = "0.3.16"
 reqwest = { version = "0.11", features = ["json"] }
 tokio = { version = "1.0", features = ["full"] }
 toml = "0.7.3"
-tower-http = { version = "0.4", features = ["fs", "trace"] }
+tower-http = { version = "0.5", features = ["fs", "trace"] }
 tracing = "0.1.35"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
 select = "0.6"
@@ -37,9 +37,9 @@ sqlx = { version = "0.7.2", features = [
 ] }
 urlencoding = "2.1.2"
 base64 = "0.21.4"
-axum-macros = "0.3.8"
-axum-extra = "0.8.0"
-handlebars-concat = "0.1.2"
+axum-macros = "0.4"
+axum-extra = "0.9"
+handlebars-concat = "0.1.4"
 serde-querystring-axum = "0.2.0"
 url = { version = "2.4.1", features = ["serde"] }
 
