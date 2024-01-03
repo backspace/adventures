@@ -130,7 +130,7 @@ async fn get_character_prompts_404s_for_unknown_character(db: PgPool) {
         .await
         .expect("Failed to execute request.");
 
-    assert_eq!(response.status(), http::StatusCode::NOT_FOUND);
+    assert_eq!(response.status(), 404);
 }
 
 #[sqlx::test(fixtures("schema", "teams"))]
