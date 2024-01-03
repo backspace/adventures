@@ -1,9 +1,8 @@
 pub mod helpers {
-    use axum::Server;
     use base64::{engine::general_purpose, Engine as _};
     use sqlx::PgPool;
     use std::env;
-    use std::net::TcpListener;
+    use tokio::net::TcpListener;
     use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
     use unmnemonic_devices_vrs::{app, InjectableServices};
     use wiremock::matchers::any;
@@ -14,14 +13,17 @@ pub mod helpers {
     }
 
     pub async fn spawn_app(services: InjectableServices) -> TestApp {
-        let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
+        let listener = TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("Failed to bind random port");
         let port = listener.local_addr().unwrap().port();
         let address = format!("http://127.0.0.1:{}", port);
 
-        let server = Server::from_tcp(listener)
-            .expect("Failed to listen")
-            .serve(app(services).await.into_make_service());
-        let _ = tokio::spawn(server);
+        tokio::spawn(async move {
+            axum::serve(listener, app(services).await.into_make_service())
+                .await
+                .unwrap();
+        });
 
         TestApp { address }
     }

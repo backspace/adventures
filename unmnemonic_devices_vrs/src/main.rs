@@ -1,7 +1,7 @@
-use axum::Server;
 use sqlx::PgPool;
 use std::env;
-use std::net::{SocketAddr, TcpListener};
+use std::net::SocketAddr;
+use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use unmnemonic_devices_vrs::config::{ConfigProvider, EnvVarProvider};
 use unmnemonic_devices_vrs::{app, InjectableServices};
@@ -15,7 +15,9 @@ async fn main() {
     let db = PgPool::connect(database_url.as_str()).await.unwrap();
 
     let listener_address = "127.0.0.1:3000";
-    let listener = TcpListener::bind(listener_address.parse::<SocketAddr>().unwrap()).unwrap();
+    let listener = TcpListener::bind(listener_address.parse::<SocketAddr>().unwrap())
+        .await
+        .expect("Failed to bind port 3000");
 
     println!("unmnemonic devices VRS listening on {}", listener_address);
 
@@ -30,16 +32,15 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    Server::from_tcp(listener)
-        .expect("Failed to listen")
-        .serve(
-            app(InjectableServices {
-                db,
-                twilio_address: config.twilio_url.to_string(),
-            })
-            .await
-            .into_make_service(),
-        )
+    axum::serve(
+        listener,
+        app(InjectableServices {
+            db,
+            twilio_address: config.twilio_url.to_string(),
+        })
         .await
-        .expect("Failed to start server")
+        .into_make_service(),
+    )
+    .await
+    .expect("Failed to start server")
 }
