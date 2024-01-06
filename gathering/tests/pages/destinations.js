@@ -43,6 +43,7 @@ export default PageObject.create({
     hasMeetings: hasAttribute('[data-test-has-meetings]'),
 
     region: { scope: '[data-test-destination-region]' },
+    entireRegion: { scope: '[data-test-destination-entire-region]' },
 
     status: {
       scope: '[data-test-status]',

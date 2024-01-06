@@ -56,7 +56,12 @@ export default class DestinationRow extends Component {
           >{{this.status}}</button>
         </td>
       {{/if}}
-      <td class='p-2 align-top'>
+      <td class='p-2 align-top' data-test-destination-entire-region>
+        <div class='text-xs'>
+          {{#if @destination.region.parent}}
+            {{@destination.region.ancestor.name}}
+          {{/if}}
+        </div>
         <LinkTo
           class='underline'
           @route='destinations.index'

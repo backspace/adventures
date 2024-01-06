@@ -6,34 +6,36 @@ import { module, test } from 'qunit';
 
 import withSetting from '../helpers/with-setting';
 
+let thereRegion, hereRegion, childOfThereRegion;
+
 module('Acceptance | destinations', function (hooks) {
   setupApplicationTest(hooks);
 
   hooks.beforeEach(async function () {
     const store = this.owner.lookup('service:store');
 
-    const regionOne = store.createRecord('region');
-    const regionTwo = store.createRecord('region');
-    const regionThree = store.createRecord('region');
+    thereRegion = store.createRecord('region');
+    hereRegion = store.createRecord('region');
+    childOfThereRegion = store.createRecord('region');
 
-    regionOne.set('name', 'There');
-    regionTwo.set('name', 'Here');
+    thereRegion.set('name', 'There');
+    hereRegion.set('name', 'Here');
 
-    await regionOne.save();
-    await regionTwo.save();
+    await thereRegion.save();
+    await hereRegion.save();
 
     const fixtureOne = store.createRecord('destination');
 
     fixtureOne.setProperties({
       description: 'Hona-Karekh',
       status: 'available',
-      region: regionTwo,
+      region: hereRegion,
       awesomeness: 1,
       updatedAt: new Date(2020, 0, 1),
     });
 
     await fixtureOne.save();
-    await regionTwo.save();
+    await hereRegion.save();
 
     const fixtureTwo = store.createRecord('destination');
 
@@ -47,20 +49,20 @@ module('Acceptance | destinations', function (hooks) {
       credit: 'greatnesses',
       status: 'unavailable',
 
-      region: regionOne,
+      region: thereRegion,
     });
 
     await fixtureTwo.save();
-    await regionOne.save();
+    await thereRegion.save();
 
-    regionThree.setProperties({
-      parent: regionOne,
-      name: 'A region within here',
+    childOfThereRegion.setProperties({
+      parent: thereRegion,
+      name: 'A region within there',
     });
 
-    await regionThree.save();
+    await childOfThereRegion.save();
 
-    await regionOne.save();
+    await thereRegion.save();
   });
 
   test('existing destinations are listed and can be sorted by region or awesomeness', async function (assert) {
@@ -94,6 +96,33 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.ok(page.headerAwesomeness.isActive);
     assert.strictEqual(page.destinations[0].description, 'Hona-Karekh');
+  });
+
+  test('a child region’s ancestor is named', async function (assert) {
+    let grandchildOfThereRegion = this.owner
+      .lookup('service:store')
+      .createRecord('region', {
+        parent: childOfThereRegion,
+        name: 'A region within a region within there',
+      });
+
+    await grandchildOfThereRegion.save();
+    await childOfThereRegion.save();
+
+    await this.owner
+      .lookup('service:store')
+      .createRecord('destination', {
+        description: 'Nested destination',
+        region: grandchildOfThereRegion,
+      })
+      .save();
+
+    await visit('/destinations');
+
+    assert.strictEqual(
+      page.destinations[0].entireRegion.text,
+      'There A region within a region within there',
+    );
   });
 
   test('destination status doesn’t show when the feature flag is off', async function (assert) {
