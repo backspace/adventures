@@ -99,11 +99,12 @@ export default class TeamOverviewsComponent extends Component {
   }
 
   <template>
-    <table>
+    <table class='w-full'>
       <tbody>
         <tr>
+          <td></td>
           <td colspan='2'><CopyButton
-              class='button'
+              class='border-2 border-black p-2'
               @text={{this.allQueries}}
             >Copy all</CopyButton></td>
         </tr>
@@ -111,14 +112,16 @@ export default class TeamOverviewsComponent extends Component {
       <tbody>
         {{#each this.outputs as |output|}}
           <tr>
-            <td>{{output.name}}</td>
-            <td>
+            <td class='pt-2 align-top'>{{output.name}}</td>
+            <td class='pt-2 align-top'>
               <CopyButton
-                class='button'
+                class='border-2 border-black p-2'
                 @text={{output.query}}
               >Copy</CopyButton>
-
+            </td>
+            <td class='pt-2'>
               <textarea
+                class='w-full'
                 rows='10'
                 aria-label={{concat 'VRS SQL: ' output.name}}
                 disabled
