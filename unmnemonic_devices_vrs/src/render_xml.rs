@@ -1,6 +1,6 @@
 use crate::{WrappedPrompts, WrappedPromptsSerialisation};
 use axum::{
-    body::{Bytes, Full},
+    body::Body,
     response::{IntoResponse, Response},
 };
 use axum_template::TemplateEngine;
@@ -14,7 +14,7 @@ pub struct Xml<T>(pub T);
 
 impl<T> IntoResponse for Xml<T>
 where
-    T: Into<Full<Bytes>>,
+    T: Into<Body>,
 {
     fn into_response(self) -> Response {
         (

@@ -3,7 +3,11 @@ use crate::Prompts;
 use crate::WrappedPrompts;
 use crate::WrappedPromptsSerialisation;
 use axum::response::Response;
-use axum::{extract::State, http::StatusCode, middleware::Next};
+use axum::{
+    extract::{Request, State},
+    http::StatusCode,
+    middleware::Next,
+};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use sqlx::Row;
@@ -75,10 +79,10 @@ struct CallParams {
     call_sid: Option<String>,
 }
 
-pub async fn store_call_path_middleware<B>(
+pub async fn store_call_path_middleware(
     State(state): State<AppState>,
-    req: axum::http::Request<B>,
-    next: Next<B>,
+    req: Request,
+    next: Next,
 ) -> Result<Response, StatusCode> {
     if req.method() == axum::http::Method::GET {
         if let Some(query) = req.uri().query() {
