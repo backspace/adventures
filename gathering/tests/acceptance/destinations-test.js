@@ -385,7 +385,7 @@ module('Acceptance | destinations', function (hooks) {
       '',
       'Here',
       'There',
-      '--A region within here',
+      '--Child region',
     ]);
 
     await page.save();
