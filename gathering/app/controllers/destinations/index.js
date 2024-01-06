@@ -11,8 +11,8 @@ export default class DestinationsIndexController extends Controller {
   static sortings = {
     default: [['updatedAt'], ['desc']],
     region: [
-      ['region.name', 'createdAt'],
-      ['asc', 'desc'],
+      ['region.ancestor.name', 'region.name', 'createdAt'],
+      ['asc', 'asc', 'desc'],
     ],
     awesomeness: [
       ['awesomeness', 'createdAt'],

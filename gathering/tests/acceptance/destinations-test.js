@@ -57,7 +57,7 @@ module('Acceptance | destinations', function (hooks) {
 
     childOfThereRegion.setProperties({
       parent: thereRegion,
-      name: 'A region within there',
+      name: 'Child region',
     });
 
     await childOfThereRegion.save();
@@ -98,16 +98,32 @@ module('Acceptance | destinations', function (hooks) {
     assert.strictEqual(page.destinations[0].description, 'Hona-Karekh');
   });
 
-  test('a child region’s ancestor is named', async function (assert) {
+  test('a child region’s ancestor is named and region sorting includes that', async function (assert) {
     let grandchildOfThereRegion = this.owner
       .lookup('service:store')
       .createRecord('region', {
         parent: childOfThereRegion,
-        name: 'A region within a region within there',
+        name: 'Grandchild region',
       });
 
     await grandchildOfThereRegion.save();
     await childOfThereRegion.save();
+
+    await this.owner
+      .lookup('service:store')
+      .createRecord('destination', {
+        description: 'Child destination',
+        region: childOfThereRegion,
+      })
+      .save();
+
+    await this.owner
+      .lookup('service:store')
+      .createRecord('destination', {
+        description: 'Another here destination',
+        region: hereRegion,
+      })
+      .save();
 
     await this.owner
       .lookup('service:store')
@@ -121,7 +137,20 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.strictEqual(
       page.destinations[0].entireRegion.text,
-      'There A region within a region within there',
+      'There Grandchild region',
+    );
+
+    await page.headerRegion.click();
+
+    assert.deepEqual(
+      page.destinations.map((d) => d.entireRegion.text),
+      [
+        'Here',
+        'Here',
+        'There Child region',
+        'There Grandchild region',
+        'There',
+      ],
     );
   });
 
