@@ -9,7 +9,7 @@
       {{/if}}
       <th class='p-2 text-left text-sm'>
         <SortButton
-          @active={{eq this.sorting 'region'}}
+          @active={{eq this.state.sorting 'region'}}
           {{on 'click' this.toggleRegionSort}}
           data-test-header-region
         >
@@ -27,7 +27,7 @@
       </th>
       <th class='p-2 text-left text-sm hidden sm:table-cell'>
         <SortButton
-          @active={{eq this.sorting 'awesomeness'}}
+          @active={{eq this.state.sorting 'awesomeness'}}
           {{on 'click' this.toggleAwesomenessSort}}
           data-test-header-awesomeness
         >
@@ -39,7 +39,7 @@
       </th>
       <th class='p-2 text-left text-sm hidden sm:table-cell'>
         <SortButton
-          @active={{eq this.sorting 'scheduled'}}
+          @active={{eq this.state.sorting 'scheduled'}}
           {{on 'click' this.toggleScheduledSort}}
           data-test-header-scheduler
         >

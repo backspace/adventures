@@ -11,7 +11,7 @@
           {{/if}}
           <th class='p-2 text-left text-sm'>
             <SortButton
-              @active={{eq this.sorting 'region'}}
+              @active={{eq this.state.sorting 'region'}}
               {{on 'click' this.toggleRegionSort}}
               data-test-header-region
             >

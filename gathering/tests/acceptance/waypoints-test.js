@@ -1,4 +1,5 @@
 import { waitUntil } from '@ember/test-helpers';
+import resetStorages from 'ember-local-storage/test-support/reset-storage';
 import { setupApplicationTest } from 'ember-qunit';
 import homePage from 'gathering/tests/pages/home';
 import nav from 'gathering/tests/pages/nav';
@@ -56,6 +57,11 @@ module('Acceptance | waypoints', function (hooks) {
     await regionTwo.save();
   });
 
+  hooks.afterEach(function () {
+    window.localStorage.clear();
+    resetStorages();
+  });
+
   test('waypoints show for unmnemonic devices', async function (assert) {
     await homePage.visit();
 
@@ -85,6 +91,17 @@ module('Acceptance | waypoints', function (hooks) {
     assert.strictEqual(two.author, 'N. K. Jemisin');
     assert.strictEqual(two.region.text, 'Henderson');
     assert.ok(two.isIncomplete);
+  });
+
+  test('persisted sort is restored', async function (assert) {
+    window.localStorage.setItem(
+      'storage:waypoints',
+      JSON.stringify({ sorting: 'region' }),
+    );
+
+    await homePage.visit();
+    await nav.waypoints.click();
+    assert.ok(page.headerRegion.isActive);
   });
 
   test('validation errors show on the form', async function (assert) {

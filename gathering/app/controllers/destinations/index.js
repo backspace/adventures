@@ -1,12 +1,12 @@
 import Controller, { inject as controller } from '@ember/controller';
 import { action } from '@ember/object';
-import { tracked } from '@glimmer/tracking';
+import { storageFor } from 'ember-local-storage';
 import orderBy from 'lodash.orderby';
 
 export default class DestinationsIndexController extends Controller {
   @controller('destinations') destinationsController;
 
-  @tracked sorting = 'default';
+  @storageFor('destinations') state;
 
   static sortings = {
     default: [['updatedAt'], ['desc']],
@@ -37,7 +37,8 @@ export default class DestinationsIndexController extends Controller {
       );
     }
 
-    let sorting = DestinationsIndexController.sortings[this.sorting];
+    let sorting =
+      DestinationsIndexController.sortings[this.state.get('sorting')];
     return orderBy(filteredDestinations, sorting[0], sorting[1]);
   }
 
@@ -57,10 +58,10 @@ export default class DestinationsIndexController extends Controller {
   }
 
   toggleSort(sortProperty) {
-    if (this.sorting === sortProperty) {
-      this.sorting = 'default';
+    if (this.state.get('sorting') === sortProperty) {
+      this.state.set('sorting', 'default');
     } else {
-      this.sorting = sortProperty;
+      this.state.set('sorting', sortProperty);
     }
   }
 }

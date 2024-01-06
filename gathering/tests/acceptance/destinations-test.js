@@ -1,4 +1,5 @@
 import { visit, waitUntil } from '@ember/test-helpers';
+import resetStorages from 'ember-local-storage/test-support/reset-storage';
 import { setupApplicationTest } from 'ember-qunit';
 import page from 'gathering/tests/pages/destinations';
 import nav from 'gathering/tests/pages/nav';
@@ -65,6 +66,11 @@ module('Acceptance | destinations', function (hooks) {
     await thereRegion.save();
   });
 
+  hooks.afterEach(function () {
+    window.localStorage.clear();
+    resetStorages();
+  });
+
   test('existing destinations are listed and can be sorted by region or awesomeness', async function (assert) {
     await visit('/destinations');
 
@@ -96,6 +102,16 @@ module('Acceptance | destinations', function (hooks) {
 
     assert.ok(page.headerAwesomeness.isActive);
     assert.strictEqual(page.destinations[0].description, 'Hona-Karekh');
+  });
+
+  test('persisted sort is restored', async function (assert) {
+    window.localStorage.setItem(
+      'storage:destinations',
+      JSON.stringify({ sorting: 'region' }),
+    );
+
+    await visit('/destinations');
+    assert.ok(page.headerRegion.isActive);
   });
 
   test('a child region’s ancestor is named and region sorting includes that', async function (assert) {
