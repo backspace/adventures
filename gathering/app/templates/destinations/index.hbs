@@ -7,7 +7,7 @@
       {{#if (feature-flag 'destination-status')}}
         <th></th>
       {{/if}}
-      <th class='p-2 text-left text-sm'>
+      <th class='p-2 text-left text-sm hidden sm:table-cell'>
         <SortButton
           @active={{eq this.sorting 'region'}}
           {{on 'click' this.toggleRegionSort}}
@@ -16,16 +16,16 @@
           Region
         </SortButton>
       </th>
-      <th class='p-2 text-left text-sm'>
+      <th class='p-2 text-left text-sm hidden sm:table-cell'>
         Description
       </th>
       <th class='p-2 text-left text-sm'>
         Answer
       </th>
-      <th class='p-2 text-left text-sm hidden sm:table-cell'>
+      <th class='p-2 text-left text-sm'>
         Mask
       </th>
-      <th class='p-2 text-left text-sm'>
+      <th class='p-2 text-left text-sm hidden sm:table-cell'>
         <SortButton
           @active={{eq this.sorting 'awesomeness'}}
           {{on 'click' this.toggleAwesomenessSort}}
@@ -34,10 +34,10 @@
           A
         </SortButton>
       </th>
-      <th class='p-2 text-left text-sm'>
+      <th class='p-2 text-left text-sm hidden sm:table-cell'>
         R
       </th>
-      <th class='p-2 text-left text-sm'>
+      <th class='p-2 text-left text-sm hidden sm:table-cell'>
         <SortButton
           @active={{eq this.sorting 'scheduled'}}
           {{on 'click' this.toggleScheduledSort}}

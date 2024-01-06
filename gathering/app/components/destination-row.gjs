@@ -70,17 +70,17 @@ export default class DestinationRow extends Component {
         class='p-2 align-top'
         data-test-description
       >{{@destination.description}}</td>
-      <td class='p-2 align-top' data-test-answer>{{@destination.answer}}</td>
+      <td class='p-2 align-top hidden sm:table-cell' data-test-answer>{{@destination.answer}}</td>
       <td
         class='p-2 align-top hidden sm:table-cell'
         data-test-mask
       >{{@destination.mask}}</td>
       <td
-        class='p-2 align-top'
+        class='p-2 align-top hidden sm:table-cell'
         data-test-awesomeness
       >{{@destination.awesomeness}}</td>
-      <td class='p-2 align-top' data-test-risk>{{@destination.risk}}</td>
-      <td class='p-2 align-top' data-test-scheduled>{{if
+      <td class='p-2 align-top hidden sm:table-cell' data-test-risk>{{@destination.risk}}</td>
+      <td class='p-2 align-top hidden sm:table-cell' data-test-scheduled>{{if
           @destination.meetings
           '✓'
         }}</td>
