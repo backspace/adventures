@@ -1,9 +1,14 @@
 import Component from '@glimmer/component';
 import { eq } from 'ember-truth-helpers';
+import sortBy from 'lodash.sortby';
 
 export default class RegionOption extends Component {
   get prefix() {
     return '--'.repeat(this.args.region.nesting);
+  }
+
+  get sortedChildren() {
+    return sortBy(this.args.region.children, ['name']);
   }
 
   <template>
@@ -16,7 +21,7 @@ export default class RegionOption extends Component {
     >
       {{this.prefix}}{{@region.name}}
     </option>
-    {{#each @region.children as |child|}}
+    {{#each this.sortedChildren as |child|}}
       <RegionOption @region={{child}} @selected={{@selected}} />
     {{/each}}
   </template>

@@ -64,6 +64,16 @@ module('Acceptance | destinations', function (hooks) {
     await childOfThereRegion.save();
 
     await thereRegion.save();
+
+    for (let childName of ['Another child', 'XYZ child']) {
+      let child = store.createRecord('region', {
+        parent: thereRegion,
+        name: childName,
+      });
+
+      await child.save();
+      await thereRegion.save();
+    }
   });
 
   hooks.afterEach(function () {
@@ -385,7 +395,9 @@ module('Acceptance | destinations', function (hooks) {
       '',
       'Here',
       'There',
+      '--Another child',
       '--Child region',
+      '--XYZ child',
     ]);
 
     await page.save();
