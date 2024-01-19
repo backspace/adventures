@@ -154,6 +154,9 @@
     "edition": "octane"
   },
   "pnpm": {
+    "overrides": {
+      "sftp-upload": "1.0.2"
+    },
     "patchedDependencies": {
       "js-graph-algorithms@1.0.18": "patches/js-graph-algorithms@1.0.18.patch"
     }

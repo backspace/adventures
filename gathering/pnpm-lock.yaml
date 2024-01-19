@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  sftp-upload: 1.0.2
+
 patchedDependencies:
   js-graph-algorithms@1.0.18:
     hash: 5z2wyqgqrsd5auavu5a3thkkze
@@ -3678,11 +3681,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /asn1@0.1.11:
-    resolution: {integrity: sha512-Fh9zh3G2mZ8qM/kwsiKwL2U2FmXxVsboP4x1mXjnhKHv3SmzaBZoYvxEQJz/YS2gnCgd8xlAVWcZnQyC9qZBsA==}
-    engines: {node: '>=0.4.9'}
-    dev: true
-
   /asn1@0.2.6:
     resolution: {integrity: sha512-ix/FxPn0MDjeyJ7i/yoHGFt/EX6LyNbxSEhPPXODPL+KB0VPk86UYfL0lMdy+KCnv+fmvIzySwaK5COwqVbWTQ==}
     dependencies:
@@ -3768,6 +3766,10 @@ packages:
 
   /async@0.2.10:
     resolution: {integrity: sha512-eAkdoKxU6/LkKDBzLpT+t6Ff5EtfSF4wx1WfJiPEEV7WNLnDaRXk0oVysiEPm262roaachGexwUv94WhSgN5TQ==}
+    dev: true
+
+  /async@0.9.2:
+    resolution: {integrity: sha512-l6ToIJIotphWahxxHyzK9bnLR6kM4jJIIgLShZeqLY7iboHoGkdgFl7W2/Ivi4SkMJYGKqW8vSuk0uKUj6qsSw==}
     dev: true
 
   /async@2.6.4:
@@ -7058,7 +7060,7 @@ packages:
       ember-cli-babel: 6.18.0(@babel/core@7.23.5)
       ember-cli-deploy-plugin: 0.2.9
       rsvp: 3.6.2
-      sftp-upload: 0.0.7
+      sftp-upload: 1.0.2
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
@@ -9690,16 +9692,20 @@ packages:
       path-scurry: 1.10.1
     dev: true
 
-  /glob@3.2.11:
-    resolution: {integrity: sha512-hVb0zwEZwC1FXSKRPFTeOtN7AArJcJlI6ULGLtrstaswKNlrTJqAA+1lYlSUop4vjA423xlBzqfVS3iWGlqJ+g==}
-    dependencies:
-      inherits: 2.0.4
-      minimatch: 0.3.0
-    dev: true
-
   /glob@5.0.15:
     resolution: {integrity: sha512-c9IPMazfRITpmAAKi22dK1VKxGDX9ehhqfABDriL/lzO92xcUKEJPQHrVA/2YHSNFB4iFlykVmWvwo48nr3OxA==}
     dependencies:
+      inflight: 1.0.6
+      inherits: 2.0.4
+      minimatch: 3.1.2
+      once: 1.4.0
+      path-is-absolute: 1.0.1
+    dev: true
+
+  /glob@7.0.6:
+    resolution: {integrity: sha512-f8c0rE8JiCxpa52kWPAOa3ZaYEnzofDzCQLCn3Vdk0Z5OVLq3BsRFJI4S4ykpeVW6QMGBUkMeUpoEgWnMTnw5Q==}
+    dependencies:
+      fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
       minimatch: 3.1.2
@@ -10787,8 +10793,8 @@ packages:
       is-docker: 2.2.1
     dev: true
 
-  /is@0.3.0:
-    resolution: {integrity: sha512-WS0SSOCjAYLmQyBSKutk8y2UecAHFwKqI5zRlTskSUwI7ZG8RRO+yLGyCQPlnC8l/BrGy+76wG9FbKAxzz3B4Q==}
+  /is@3.3.0:
+    resolution: {integrity: sha512-nW24QBoPcFGGHJGUwnfpI7Yc5CdqWNdsyHQszVE/z2pKHXzh7FZ5GWhJqSyaQ9wMkQnsTx+kAI8bHlCX4tKdbg==}
     dev: true
 
   /isarray@0.0.1:
@@ -11582,9 +11588,8 @@ packages:
     resolution: {integrity: sha512-e/zcLx6CSbmaEgFHCA7BnoQKyCtKMxnuWrJygbwPs/AIn+IMKl66L8/s+wBUn5LRw2pZx3bUHibiV1b6aTWIww==}
     dev: true
 
-  /lodash@2.0.0:
-    resolution: {integrity: sha512-6Ebs0FtZaSrJX8Kr+yFYBlWpv5yoRWiaVQCeiSQiJxouECdp3JXvWiWymwsv3uK3qTmV3OB72nFc8w8Fn76imA==}
-    engines: {'0': node, '1': rhino}
+  /lodash@4.11.2:
+    resolution: {integrity: sha512-kzYAjjUS0vKRLVcNZgK2k7NJOT5cQoFO3w8ddED6mDBdgu3AIL9xhAktXJ5Dm6GD1x+eqqyu1wKAzEt8Uq77NQ==}
     dev: true
 
   /lodash@4.17.21:
@@ -11622,10 +11627,6 @@ packages:
   /lru-cache@10.1.0:
     resolution: {integrity: sha512-/1clY/ui8CzjKFyjdvwPWJUYKiFVXG2I2cY0ssG7h4+hwk+XOIX7ZSG9Q7TW8TW3Kp3BUSqgFWBLgL4PJ+Blag==}
     engines: {node: 14 || >=16.14}
-    dev: true
-
-  /lru-cache@2.7.3:
-    resolution: {integrity: sha512-WpibWJ60c3AgAz8a2iYErDrcT2C7OmKnsWhIcHOjkUHFjkXncJhtLxNSqUmxRxRunpb5I8Vprd7aNSd2NtksJQ==}
     dev: true
 
   /lru-cache@5.1.1:
@@ -11962,14 +11963,6 @@ packages:
       webpack: 5.89.0
     dev: true
 
-  /minimatch@0.3.0:
-    resolution: {integrity: sha512-WFX1jI1AaxNTZVOHLBVazwTWKaQjoykSzCBNXB72vDTCzopQGtyP91tKdFK5cv1+qMwPyiTu1HqUriqplI8pcA==}
-    deprecated: Please update to minimatch 3.0.2 or higher to avoid a RegExp DoS issue
-    dependencies:
-      lru-cache: 2.7.3
-      sigmund: 1.0.1
-    dev: true
-
   /minimatch@3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
     dependencies:
@@ -12253,11 +12246,12 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /node.extend@1.0.10:
-    resolution: {integrity: sha512-JKrWcPkV4WXDwiBowNu0UW79nc7YuYPvVWiUnWsuWWas15VAC8FJgIfXj5XHPxgHoWddixj3uGvt0cYltZck0w==}
-    engines: {'0': node >= 0.4}
+  /node.extend@2.0.3:
+    resolution: {integrity: sha512-xwADg/okH48PvBmRZyoX8i8GJaKuJ1CqlqotlZOhUio8egD1P5trJupHKBzcPjSF9ifK2gPcEICRBnkfPqQXZw==}
+    engines: {node: '>=0.4.0'}
     dependencies:
-      is: 0.3.0
+      hasown: 2.0.0
+      is: 3.3.0
     dev: true
 
   /nopt@3.0.6:
@@ -14353,14 +14347,14 @@ packages:
       get-assigned-identifiers: 1.2.0
     dev: true
 
-  /scp2@0.1.4:
-    resolution: {integrity: sha512-pKE/IHwgGDTE0+Dvdw6il027jzZ+MMyPfIpjFEEcDsSqHRTH8ruBg59Zo0lRFkPQgVP3F5K8RLC9at82IqB13w==}
+  /scp2@0.5.0:
+    resolution: {integrity: sha512-HzPWuOHM/qVjVYhjmgfBKyUXQsI+9+SdI5l+5E0S98bUHirf1NoTynfrAPb0kr0oJKg/JFdFSlZwq7FnqLttvw==}
     hasBin: true
     dependencies:
-      async: 0.2.10
-      glob: 3.2.11
-      lodash: 2.0.0
-      ssh2: 0.2.25
+      async: 0.9.2
+      glob: 7.0.6
+      lodash: 4.11.2
+      ssh2: 0.4.15
     dev: true
 
   /select@1.1.2:
@@ -14475,12 +14469,12 @@ packages:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
     dev: true
 
-  /sftp-upload@0.0.7:
-    resolution: {integrity: sha512-x7wlkzHsr3rCiROBvnQxHH6ckesX6EZcEzTsNSiH+hOAFwEBr0BWysi9NCoIwTCsEqzpVn0QsSWmt3cPaIBJDQ==}
+  /sftp-upload@1.0.2:
+    resolution: {integrity: sha512-ZY5K1Crwp83Zdfskir0xexUmkS6oC/hpeSPSejuChY84C6GrZTNaRo7FrofujOchbZmrRKoSWSgnku5KUKjTkw==}
     dependencies:
       async: 0.2.10
-      node.extend: 1.0.10
-      scp2: 0.1.4
+      node.extend: 2.0.3
+      scp2: 0.5.0
     dev: true
 
   /shallow-copy@0.0.1:
@@ -14540,10 +14534,6 @@ packages:
       call-bind: 1.0.5
       get-intrinsic: 1.2.2
       object-inspect: 1.13.1
-    dev: true
-
-  /sigmund@1.0.1:
-    resolution: {integrity: sha512-fCvEXfh6NWpm+YSuY2bpXb/VIihqWA6hLsgboC+0nl71Q7N7o2eaCW8mJa/NLvQhs6jpd3VZV4UiUQlV6+lc8g==}
     dev: true
 
   /signal-exit@3.0.7:
@@ -14832,12 +14822,21 @@ packages:
     engines: {node: '>= 0.10.4'}
     dev: true
 
-  /ssh2@0.2.25:
-    resolution: {integrity: sha512-rP2quKAFillQrwqq53rGnGqKIKp+7ufwrcgWAwcDGK7vogN/9G3ZdY5HYUfqHoY8w2tWUZ6VAEl9ranxU2SPSg==}
+  /ssh2-streams@0.0.23:
+    resolution: {integrity: sha512-llhegJ0WOuEZQoWvh+ZB/ZQpJNjuDVPVAh+UjIsi0YLM7GeKPX7xMnh5LJtjOBAChumuUg7hNfIUfKjrxfNNYg==}
     engines: {node: '>=0.8.7'}
     dependencies:
-      asn1: 0.1.11
+      asn1: 0.2.6
+      readable-stream: 1.0.34
       streamsearch: 0.1.2
+    dev: true
+
+  /ssh2@0.4.15:
+    resolution: {integrity: sha512-/KEtwbNly4LtP92bBfgY4RCj8YAvKaXg89nLaCINNMu1X5d++W5DOZz+yX2xwjlSmdw8we7AC9LYnAzBkA4OwA==}
+    engines: {node: '>=0.8.7'}
+    dependencies:
+      readable-stream: 1.0.34
+      ssh2-streams: 0.0.23
     dev: true
 
   /sshpk@1.18.0:
