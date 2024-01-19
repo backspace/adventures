@@ -9,7 +9,7 @@ export default class WaypointRowComponent extends Component {
   <template>
     <tr
       class='waypoint even:bg-gray-50
-        {{if @waypoint.isIncomplete 'border-l-4 border-x-red-500'}}
+        {{if @waypoint.isIncomplete 'border-l-8 border-x-red-500'}}
         '
       data-test-waypoint
     >

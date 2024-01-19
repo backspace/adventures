@@ -42,8 +42,8 @@ export default class DestinationRow extends Component {
   <template>
     <tr
       class='even:bg-gray-50
-        {{if @destination.isIncomplete 'border-l-4 border-x-red-500'}}
-        {{if @destination.isComplete 'border-r-4 border-x-green-500'}}'
+        {{if @destination.isIncomplete 'border-l-8 border-x-red-500'}}
+        {{if @destination.isComplete 'border-r-8 border-x-green-500'}}'
       data-test-destination
       data-test-has-meetings={{this.hasMeetings}}
     >
