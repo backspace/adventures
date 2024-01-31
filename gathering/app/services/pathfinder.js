@@ -64,6 +64,14 @@ export default class PathfinderService extends Service {
     const regionAIndex = this.regionToIndex(regionA);
     const regionBIndex = this.regionToIndex(regionB);
 
+    if (!regionAIndex) {
+      throw new Error(`Region ${regionA} not found in pathfinder`);
+    }
+
+    if (!regionBIndex) {
+      throw new Error(`Region ${regionB} not found in pathfinder`);
+    }
+
     const dijkstra = new jsgraphs.Dijkstra(graph, regionAIndex);
 
     return dijkstra.distanceTo(regionBIndex);
