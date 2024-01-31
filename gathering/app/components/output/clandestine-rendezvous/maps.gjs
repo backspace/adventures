@@ -1,8 +1,10 @@
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import blobStream from 'blob-stream';
+import { storageFor } from 'ember-local-storage';
 import { trackedFunction } from 'ember-resources/util/function';
 import Loading from 'gathering/components/loading';
+import Checkbox from 'gathering/components/output/checkbox';
 
 import PDFDocument from 'pdfkit';
 
@@ -10,20 +12,37 @@ export default class ClandestineRendezvousMapsComponent extends Component {
   @service
   map;
 
+  @storageFor('output') state;
+
+  get lowResMap() {
+    return this.state.get('clandestineRendezvousMapsLowResMap');
+  }
+
+  set lowResMap(value) {
+    this.state.set('clandestineRendezvousMapsLowResMap', value);
+  }
+
   generator = trackedFunction(this, async () => {
     const debug = this.args.debug;
+    let lowRes = this.lowResMap;
 
     const header = this.args.assets.header;
     const doc = new PDFDocument({ layout: 'portrait', font: header });
     const stream = doc.pipe(blobStream());
 
-    const mapBlob = this.args.assets.map;
-    const map = await this.map.blobToBase64String(mapBlob);
+    let mapBlob = this.args.assets.map;
+    let lowMapBlob = this.args.assets.lowMap;
+
+    let mapBitmap = await createImageBitmap(mapBlob);
+    let lowMapBitmap = await createImageBitmap(lowMapBlob);
+
+    let mapBase64String = await this.map.blobToBase64String(mapBlob);
+    let lowMapBase64String = await this.map.blobToBase64String(lowMapBlob);
 
     const mapOffsetX = 0;
     const mapOffsetY = 0;
 
-    const mapClipTop = 50;
+    const mapClipTop = 0;
     const mapClipLeft = 0;
 
     const mapMarkerFontSize = 12;
@@ -33,6 +52,14 @@ export default class ClandestineRendezvousMapsComponent extends Component {
     const pageHeight = 11 * 72;
 
     const margin = 0.5 * 72;
+
+    let gapAboveMap = 0;
+
+    let innerWidth = pageWidth - margin * 2;
+    let innerHeight = pageHeight / 2 - margin * 2;
+
+    let innerWidthToMapHighRatio = (pageWidth - margin * 2) / mapBitmap.width;
+    let innerWidthToMapLowRatio = (pageWidth - margin * 2) / lowMapBitmap.width;
 
     this.args.teams
       .slice()
@@ -50,27 +77,30 @@ export default class ClandestineRendezvousMapsComponent extends Component {
           doc.translate(margin, pageHeight / 2 + margin);
         }
 
-        if (!debug) {
-          doc.save();
+        doc.save();
 
-          doc
-            .rect(0, 0, pageWidth - mapClipLeft, pageHeight / 2 - mapClipTop)
-            .clip();
-          doc.image(
-            'data:image/png;base64,' + map,
-            mapOffsetX - mapClipLeft,
-            mapOffsetY - mapClipTop,
-            { scale: 0.125 },
-          );
+        let ratio = lowRes ? innerWidthToMapLowRatio : innerWidthToMapHighRatio;
+        let bitmap = lowRes ? lowMapBitmap : mapBitmap;
+        let base64String = lowRes ? lowMapBase64String : mapBase64String;
 
-          doc.restore();
+        doc.translate(0, gapAboveMap);
+        doc.scale(ratio, ratio);
+
+        if (debug) {
+          doc.rect(0, 0, bitmap.width, bitmap.height).stroke();
+        } else {
+          doc.image('data:image/png;base64,' + base64String, 0, 0);
         }
+
+        doc.restore();
 
         doc.font(header);
         doc.fontSize(18);
         doc.text(team.get('name'), 0, 0);
 
         doc.fontSize(mapMarkerFontSize);
+
+        doc.save();
 
         team
           .hasMany('meetings')
@@ -83,8 +113,10 @@ export default class ClandestineRendezvousMapsComponent extends Component {
 
             const rendezvousLetter = String.fromCharCode(65 + index);
 
-            const x = region.get('x') / 2 + mapOffsetX - mapClipLeft;
-            const y = region.get('y') / 2 + mapOffsetY - mapClipTop;
+            const x = innerWidth * (region.get('x') / lowMapBitmap.width);
+            const y = innerHeight * (region.get('y') / lowMapBitmap.height);
+
+            console.log(`region ${region.name} at ${x}, ${y}`);
 
             doc.text(
               rendezvousLetter,
@@ -96,6 +128,8 @@ export default class ClandestineRendezvousMapsComponent extends Component {
               },
             );
           });
+
+        doc.restore();
 
         const cropMarkLength = 1 * 72;
 
@@ -132,6 +166,13 @@ export default class ClandestineRendezvousMapsComponent extends Component {
   }
 
   <template>
+    <Checkbox
+      class='mb-2'
+      @id='low-res-map'
+      @label='Low res map'
+      @checked={{this.lowResMap}}
+    />
+
     {{#if this.src}}
       <iframe title='maps' src={{this.src}}>
       </iframe>
