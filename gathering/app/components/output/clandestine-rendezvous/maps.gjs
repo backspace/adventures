@@ -116,8 +116,6 @@ export default class ClandestineRendezvousMapsComponent extends Component {
             const x = innerWidth * (region.get('x') / lowMapBitmap.width);
             const y = innerHeight * (region.get('y') / lowMapBitmap.height);
 
-            console.log(`region ${region.name} at ${x}, ${y}`);
-
             doc.text(
               rendezvousLetter,
               x - mapMarkerCircleRadius,
