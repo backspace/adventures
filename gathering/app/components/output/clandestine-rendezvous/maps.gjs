@@ -39,12 +39,6 @@ export default class ClandestineRendezvousMapsComponent extends Component {
     let mapBase64String = await this.map.blobToBase64String(mapBlob);
     let lowMapBase64String = await this.map.blobToBase64String(lowMapBlob);
 
-    const mapOffsetX = 0;
-    const mapOffsetY = 0;
-
-    const mapClipTop = 0;
-    const mapClipLeft = 0;
-
     const mapMarkerFontSize = 12;
     const mapMarkerCircleRadius = 10;
 
