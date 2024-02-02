@@ -111,7 +111,7 @@ module('Acceptance | destinations', function (hooks) {
     await page.headerAwesomeness.click();
 
     assert.ok(page.headerAwesomeness.isActive);
-    assert.strictEqual(page.destinations[0].description, 'Hona-Karekh');
+    assert.strictEqual(page.destinations[0].description, 'Ina-Karekh');
   });
 
   test('persisted sort is restored', async function (assert) {

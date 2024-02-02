@@ -16,7 +16,7 @@ export default class DestinationsIndexController extends Controller {
     ],
     awesomeness: [
       ['awesomeness', 'createdAt'],
-      ['asc', 'desc'],
+      ['desc', 'desc'],
     ],
     scheduled: [
       ['meetings.length', 'createdAt'],
