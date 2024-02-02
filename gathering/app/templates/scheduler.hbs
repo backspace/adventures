@@ -141,13 +141,13 @@
     {{#unless this.meeting.isForbidden}}
       <button
         type='button'
-        class='button tiny success'
+        class='bg-green-500 p-2'
         onclick={{this.saveMeeting}}
         data-test-save
       >Save</button>
       <button
         type='button'
-        class='button tiny alert'
+        class='bg-red-500 p-2'
         onclick={{this.resetMeeting}}
         data-test-reset
       >Reset</button>

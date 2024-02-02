@@ -130,7 +130,9 @@
   }
 
   .meeting-form {
+    font-size: 200%;
     grid-area: form;
+    overflow: hidden;
     background: linear-gradient(
       180deg,
       rgba(255 255 255 / 50%),
@@ -139,6 +141,7 @@
 
     .row {
       display: flex;
+      padding: 0.25rem;
 
       label {
         width: 2em;
@@ -151,6 +154,7 @@
       padding: 0;
       margin: 0;
       height: auto;
+      border: 1px solid black;
     }
 
     &.forbidden {
