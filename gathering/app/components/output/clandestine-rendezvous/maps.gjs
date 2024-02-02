@@ -24,6 +24,11 @@ export default class ClandestineRendezvousMapsComponent extends Component {
 
   generator = trackedFunction(this, async () => {
     const debug = this.args.debug;
+
+    let sortedTeams = this.args.teams
+      .slice()
+      .sort((a, b) => a.createdAt - b.createdAt);
+
     let lowRes = this.lowResMap;
 
     const header = this.args.assets.header;
@@ -55,7 +60,7 @@ export default class ClandestineRendezvousMapsComponent extends Component {
     let innerWidthToMapHighRatio = (pageWidth - margin * 2) / mapBitmap.width;
     let innerWidthToMapLowRatio = (pageWidth - margin * 2) / lowMapBitmap.width;
 
-    this.args.teams
+    sortedTeams
       .slice()
       .sort((a, b) => a.createdAt - b.createdAt)
       .forEach((team, index) => {
