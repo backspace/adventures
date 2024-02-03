@@ -1,5 +1,6 @@
 import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 import blobStream from 'blob-stream';
 import { trackedFunction } from 'ember-resources/util/function';
 import Loading from 'gathering/components/loading';
@@ -11,6 +12,8 @@ import moment from 'moment';
 import PDFDocument from 'pdfkit';
 
 export default class ClandestineRendezvousCardsComponent extends Component {
+  @tracked errors;
+
   generator = trackedFunction(this, async () => {
     const debug = this.args.debug;
 
@@ -43,9 +46,13 @@ export default class ClandestineRendezvousCardsComponent extends Component {
       chunks.push(chunk);
     }
 
+    let page = 1;
+    let errors = new Set();
+
     chunks.forEach((chunk, chunkIndex) => {
       if (chunkIndex !== 0) {
         doc.addPage();
+        page++;
       }
 
       chunk.forEach((cardData, index) => {
@@ -105,6 +112,10 @@ export default class ClandestineRendezvousCardsComponent extends Component {
 
         const widthOfPaddedSkippedMask = doc.widthOfString(paddedSkippedMask);
         doc.text(' ^', widthOfPaddedSkippedMask);
+
+        if (doc.x > cardWidth || doc.y > cardHeight) {
+          errors.add(`Overprint on page ${page}`);
+        }
 
         doc.restore();
 
@@ -259,6 +270,8 @@ export default class ClandestineRendezvousCardsComponent extends Component {
       });
     });
 
+    this.errors = errors;
+
     return blobUrl;
   });
 
@@ -368,6 +381,13 @@ export default class ClandestineRendezvousCardsComponent extends Component {
   }
 
   <template>
+    {{#if this.errors}}
+      <ul class='p-8 border-red-500 border-4'>
+        {{#each this.errors as |error|}}
+          <li>{{error}}</li>
+        {{/each}}
+      </ul>
+    {{/if}}
     {{#if this.src}}
       <iframe title='cards' src={{this.src}}>
       </iframe>
