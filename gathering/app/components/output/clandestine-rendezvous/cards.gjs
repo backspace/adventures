@@ -73,7 +73,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         doc.translate(xOffset, yOffset);
 
         doc.font(header);
-        doc.fontSize(14);
+        doc.fontSize(12);
         doc.text(`Rendezvous ${cardData.letter}`, 0, 0);
 
         doc.font(regular);
