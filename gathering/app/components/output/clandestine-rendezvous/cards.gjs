@@ -97,7 +97,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
 
         doc.text(' ');
         doc.font(bold);
-        doc.text(`@${cardData.time} meet:`);
+        doc.text(`@${cardData.time} meet`);
 
         doc.font(regular);
         doc.text(cardData.otherTeamName);
@@ -113,7 +113,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
           (cardData.mask.match(/_/g) || []).length > 1;
 
         doc.font(bold);
-        doc.text(`Fill in the blank${maskHasMultipleBlanks ? 's' : ''}:`);
+        doc.text(`Fill in the blank${maskHasMultipleBlanks ? 's' : ''}`);
         doc.font(regular);
 
         const paddedMask = this._padMask(cardData.mask);
