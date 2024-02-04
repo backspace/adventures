@@ -80,8 +80,20 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         doc.fontSize(10);
         doc.text(cardData.teamName);
 
-        doc.text(' ');
-        doc.text(cardData.regionName);
+        let regions = cardData.regions;
+
+        regions.forEach((region, index) => {
+          doc.moveDown(0.5);
+          doc.text(`${index ? 'within ' : ''}${region.name}`);
+
+          if (region.notes) {
+            doc.fontSize(9);
+            doc.text(region.notes, {
+              width: innerCardWidth,
+            });
+            doc.fontSize(10);
+          }
+        });
 
         doc.text(' ');
         doc.font(bold);
@@ -344,6 +356,17 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         answerDigit,
       });
 
+    let regions = [];
+    let currentRegion = region;
+
+    while (currentRegion) {
+      regions.push({
+        name: currentRegion.get('name'),
+        notes: currentRegion.get('notes'),
+      });
+      currentRegion = currentRegion.get('parent');
+    }
+
     return {
       team,
       teamName: team.get('name'),
@@ -352,7 +375,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
       otherTeams,
       otherTeamName,
 
-      regionName: region.get('name'),
+      regions,
       destinationDescription: destination.get('description'),
 
       goalLetter,
