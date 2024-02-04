@@ -61,17 +61,17 @@ export default class SchedulerController extends Controller {
 
       const newRegionAncestorName = newRegion.ancestor.name;
 
-      const lastMeetingRegionNames = this.meetingTeams
+      const lastMeetingRegionAncestorNames = this.meetingTeams
         .map(
           (team) =>
             team.savedMeetings[team.savedMeetings.length - 1]?.destination
-              ?.region?.name,
+              ?.region?.ancestor?.name,
         )
         .filter((n) => !!n);
 
-      if (newRegionAncestorName && lastMeetingRegionNames.length > 0) {
-        const destinationDistances = lastMeetingRegionNames.map((name) =>
-          this.pathfinder.distance(newRegionAncestorName, name),
+      if (newRegionAncestorName && lastMeetingRegionAncestorNames.length > 0) {
+        const destinationDistances = lastMeetingRegionAncestorNames.map(
+          (name) => this.pathfinder.distance(newRegionAncestorName, name),
         );
         timeFromLastRegion = Math.max(...destinationDistances);
       }
