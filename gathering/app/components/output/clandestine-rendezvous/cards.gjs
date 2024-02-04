@@ -404,7 +404,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
   }
 
   <template>
-    {{#if this.errors}}
+    {{#if this.errors.size}}
       <ul class='p-8 border-red-500 border-4'>
         {{#each this.errors as |error|}}
           <li>{{error}}</li>
