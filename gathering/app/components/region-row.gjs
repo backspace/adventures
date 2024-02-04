@@ -1,8 +1,11 @@
 import { LinkTo } from '@ember/routing';
+import { inject as service } from '@ember/service';
 import Component from '@glimmer/component';
 import { not } from 'ember-truth-helpers';
 
 export default class RegionRow extends Component {
+  @service pathfinder;
+
   get nesting() {
     return this.args.nesting ?? 0;
   }
@@ -17,6 +20,10 @@ export default class RegionRow extends Component {
     return `pl-${2 + this.nesting * 3}`;
   }
 
+  get inPathfinder() {
+    return this.pathfinder.hasRegion(this.args.region.name) ? '✓' : '✘';
+  }
+
   <template>
     <tr
       class='even:bg-gray-50 {{if @region.isComplete 'complete' 'incomplete'}}'
@@ -28,6 +35,10 @@ export default class RegionRow extends Component {
       </td>
       <td class='p-2 align-top'>{{@region.notes}}</td>
       <td class='p-2 align-top' data-test-hours>{{@region.hours}}</td>
+      <td
+        class='p-2 align-top hidden sm:table-cell'
+        data-test-in-pathfinder
+      >{{this.inPathfinder}}</td>
       <td class='p-2 align-top'>
         <LinkTo
           @route='region'

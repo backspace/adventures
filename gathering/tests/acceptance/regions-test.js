@@ -81,6 +81,7 @@ module('Acceptance | regions', function (hooks) {
     assert.strictEqual(page.regions[0].name, 'Gujaareh');
     assert.strictEqual(page.regions[0].nesting, 0);
     assert.strictEqual(page.regions[0].hours, 'Closes at 8am');
+    assert.strictEqual(page.regions[0].inPathfinder, '✘');
 
     assert.strictEqual(page.regions[1].name, 'Temple');
     assert.strictEqual(page.regions[1].nesting, 1);
@@ -89,6 +90,7 @@ module('Acceptance | regions', function (hooks) {
     assert.strictEqual(page.regions[2].nesting, 2);
 
     assert.strictEqual(page.regions[3].name, 'Kisua');
+    assert.strictEqual(page.regions[3].inPathfinder, '✓');
 
     assert.notOk(
       page.regions[0].isIncomplete,

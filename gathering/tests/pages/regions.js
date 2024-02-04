@@ -34,6 +34,7 @@ export default PageObject.create({
   regions: collection('[data-test-region]', {
     name: text('[data-test-name]'),
     hours: text('[data-test-hours]'),
+    inPathfinder: text('[data-test-in-pathfinder]'),
     isIncomplete: hasAttribute('[data-test-incomplete]'),
     nesting: nesting('[data-test-name]'),
 
