@@ -21,6 +21,10 @@ export default class RegionRow extends Component {
   }
 
   get inPathfinder() {
+    if (this.args.region.parent) {
+      return '';
+    }
+
     return this.pathfinder.hasRegion(this.args.region.name) ? '✓' : '✘';
   }
 

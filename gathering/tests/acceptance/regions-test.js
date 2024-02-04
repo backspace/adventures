@@ -85,6 +85,7 @@ module('Acceptance | regions', function (hooks) {
 
     assert.strictEqual(page.regions[1].name, 'Temple');
     assert.strictEqual(page.regions[1].nesting, 1);
+    assert.strictEqual(page.regions[1].inPathfinder, '');
 
     assert.strictEqual(page.regions[2].name, 'Room');
     assert.strictEqual(page.regions[2].nesting, 2);
