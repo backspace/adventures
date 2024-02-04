@@ -80,6 +80,13 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         doc.fontSize(10);
         doc.text(cardData.teamName);
 
+        doc.text(' ');
+        doc.font(bold);
+        doc.text(`@${cardData.time} meet`);
+
+        doc.font(regular);
+        doc.text(cardData.otherTeamName);
+
         let regions = cardData.regions;
 
         regions.forEach((region, index) => {
@@ -94,13 +101,6 @@ export default class ClandestineRendezvousCardsComponent extends Component {
             doc.fontSize(10);
           }
         });
-
-        doc.text(' ');
-        doc.font(bold);
-        doc.text(`@${cardData.time} meet`);
-
-        doc.font(regular);
-        doc.text(cardData.otherTeamName);
 
         doc.text(' ');
         doc.text(cardData.destinationDescription, {
