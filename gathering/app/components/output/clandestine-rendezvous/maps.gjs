@@ -109,11 +109,14 @@ export default class ClandestineRendezvousMapsComponent extends Component {
           .forEach((meeting, index) => {
             const destination = meeting.belongsTo('destination').value();
             const region = destination.belongsTo('region').value();
+            const ancestorRegion = region.get('ancestor');
 
             const rendezvousLetter = String.fromCharCode(65 + index);
 
-            const x = innerWidth * (region.get('x') / lowMapBitmap.width);
-            const y = innerHeight * (region.get('y') / lowMapBitmap.height);
+            const x =
+              innerWidth * (ancestorRegion.get('x') / lowMapBitmap.width);
+            const y =
+              innerHeight * (ancestorRegion.get('y') / lowMapBitmap.height);
 
             doc.text(
               rendezvousLetter,
