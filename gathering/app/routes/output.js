@@ -26,9 +26,10 @@ export default class OutputRoute extends Route {
 
     if (this.features.isEnabled('clandestineRendezvous')) {
       fontPaths = [
-        fetch('/fonts/blackout.ttf'),
+        fetch('/fonts/Blackout-Sunrise.ttf'),
         fetch('/fonts/Oswald-Bold.ttf'),
         fetch('/fonts/Oswald-Regular.ttf'),
+        fetch('/fonts/Blackout-Midnight.ttf'),
       ];
     } else if (this.features.isEnabled('txtbeyond')) {
       fontPaths = [
@@ -59,7 +60,7 @@ export default class OutputRoute extends Route {
     }
 
     let fontResponses = await Promise.all(fontPaths);
-    let [header, bold, regular] = await Promise.all(
+    let [header, bold, regular, headerAlt] = await Promise.all(
       fontResponses.map((response) => response.arrayBuffer()),
     );
 
@@ -74,6 +75,7 @@ export default class OutputRoute extends Route {
 
       assets: {
         header,
+        headerAlt,
         bold,
         regular,
         map,

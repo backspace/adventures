@@ -32,6 +32,7 @@ export default class ClandestineRendezvousMapsComponent extends Component {
     let lowRes = this.lowResMap;
 
     const header = this.args.assets.header;
+    const rendezvousLetterFont = this.args.assets.headerAlt;
     const doc = new PDFDocument({ layout: 'portrait', font: header });
     const stream = doc.pipe(blobStream());
 
@@ -100,6 +101,8 @@ export default class ClandestineRendezvousMapsComponent extends Component {
         doc.fontSize(mapMarkerFontSize);
 
         doc.save();
+
+        doc.font(rendezvousLetterFont);
 
         team
           .hasMany('meetings')
