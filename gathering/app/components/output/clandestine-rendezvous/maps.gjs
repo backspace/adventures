@@ -124,7 +124,7 @@ export default class ClandestineRendezvousMapsComponent extends Component {
             doc.text(
               rendezvousLetter,
               x - mapMarkerCircleRadius,
-              y + mapMarkerFontSize,
+              y - mapMarkerFontSize / 2,
               {
                 width: mapMarkerCircleRadius * 2,
                 align: 'center',
