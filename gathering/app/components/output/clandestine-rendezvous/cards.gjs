@@ -41,6 +41,8 @@ export default class ClandestineRendezvousCardsComponent extends Component {
 
     const chunks = [];
 
+    const arrowGap = 2;
+
     for (let i = 0, j = cards.length; i < j; i += cardsPerPage) {
       const chunk = cards.slice(i, i + cardsPerPage);
       chunks.push(chunk);
@@ -123,7 +125,16 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         const paddedSkippedMask = this._padMask(skippedMask);
 
         const widthOfPaddedSkippedMask = doc.widthOfString(paddedSkippedMask);
-        doc.text(' ^', widthOfPaddedSkippedMask);
+        const widthOfSpaceBeforeBlank = widthOfPaddedSkippedMask
+          ? doc.widthOfString(' ')
+          : 0;
+        const widthOfBlank = doc.widthOfString('__');
+
+        const arrowX =
+          widthOfBlank / 2 + widthOfSpaceBeforeBlank + widthOfPaddedSkippedMask;
+        const arrowY = doc.y + arrowGap;
+
+        drawArrow(doc, arrowX, arrowY);
 
         if (doc.x > cardWidth || doc.y > cardHeight) {
           errors.add(`Overprint on page ${page}`);
@@ -151,7 +162,8 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         const xOffset = xPosition * cardWidth + cardMargin;
         const yOffset = yPosition * cardHeight + cardMargin;
 
-        doc.fontSize(16);
+        const arithmeticRowFontSize = 16;
+        doc.fontSize(arithmeticRowFontSize);
 
         doc.save();
 
@@ -175,7 +187,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
           cardData.team,
         );
 
-        const rows = [{ label: '^ from other side' }];
+        const rows = [{ label: 'ARROW from other side' }];
 
         const myRow = {
           operand: myDigit > 0 ? '+' : '-',
@@ -202,6 +214,11 @@ export default class ClandestineRendezvousCardsComponent extends Component {
 
         rows.forEach(({ operand, digit, label }, index) => {
           const y = index * rowHeight;
+
+          if (label.includes('ARROW')) {
+            label = label.replace('ARROW', ' ');
+            drawArrow(doc, labelStart, y + arithmeticRowFontSize / 2);
+          }
 
           if (operand) {
             doc.text(operand, 0, y);
@@ -405,7 +422,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
 
   <template>
     {{#if this.errors.size}}
-      <ul class='p-8 border-red-500 border-4'>
+      <ul class='border-4 border-red-500 p-8'>
         {{#each this.errors as |error|}}
           <li>{{error}}</li>
         {{/each}}
@@ -418,4 +435,26 @@ export default class ClandestineRendezvousCardsComponent extends Component {
       <Loading />
     {{/if}}
   </template>
+}
+
+function drawArrow(doc, arrowX, arrowY) {
+  const arrowHeight = 6;
+  const arrowheadRatio = 0.4;
+  const arrowheadHeight = arrowHeight * arrowheadRatio;
+
+  doc.save();
+
+  doc
+    .moveTo(arrowX, arrowY)
+    .lineTo(arrowX, arrowY + arrowHeight)
+    .stroke();
+
+  // Draw arrowhead at the top of the arrow
+  doc
+    .moveTo(arrowX - arrowheadHeight / 2, arrowY + arrowheadHeight / 2)
+    .lineTo(arrowX + arrowheadHeight / 2, arrowY + arrowheadHeight / 2)
+    .lineTo(arrowX, arrowY - arrowheadHeight / 2)
+    .fill();
+
+  doc.restore();
 }
