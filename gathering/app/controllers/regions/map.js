@@ -8,6 +8,7 @@ export default class MapController extends Controller {
   map;
 
   @tracked mapSrc;
+  @tracked showMap = true;
 
   @action
   saveAttachment(name, property, { target }) {

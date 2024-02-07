@@ -1,7 +1,13 @@
 <div class='grid-x'>
   <div class='small-12 cell'>
+    <Output::Checkbox
+      class='mb-2'
+      @id='show-map'
+      @label='Show map'
+      @checked={{this.showMap}}
+    />
     <div class='map'>
-      <img src={{this.mapSrc}} alt='map' />
+      <img class='{{if this.showMap 'visible' 'invisible'}}' src={{this.mapSrc}} alt='map' />
 
       <label>
         Map
