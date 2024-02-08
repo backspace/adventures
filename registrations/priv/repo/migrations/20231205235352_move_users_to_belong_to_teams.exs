@@ -6,7 +6,7 @@ defmodule Registrations.Repo.Migrations.MoveUsersToBelongToTeams do
 
   def up do
     alter table(:users) do
-      add(:team_id, references(:teams, type: :uuid, on_delete: :delete_all))
+      add(:team_id, references(:teams, type: :uuid, on_delete: :nilify_all))
     end
 
     execute("""
