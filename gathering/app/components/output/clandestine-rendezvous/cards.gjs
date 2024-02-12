@@ -82,7 +82,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         doc.fontSize(10);
         doc.text(cardData.teamName);
 
-        doc.text(' ');
+        doc.moveDown(0.5);
         doc.font(bold);
         doc.text(`@${cardData.time} meet`);
 
@@ -104,12 +104,12 @@ export default class ClandestineRendezvousCardsComponent extends Component {
           }
         });
 
-        doc.text(' ');
+        doc.moveDown(0.5);
         doc.text(cardData.destinationDescription, {
           width: innerCardWidth,
         });
 
-        doc.text(' ');
+        doc.moveDown(0.5);
 
         const maskHasMultipleBlanks =
           (cardData.mask.match(/_/g) || []).length > 1;
@@ -162,7 +162,7 @@ export default class ClandestineRendezvousCardsComponent extends Component {
         const xOffset = xPosition * cardWidth + cardMargin;
         const yOffset = yPosition * cardHeight + cardMargin;
 
-        const arithmeticRowFontSize = 16;
+        const arithmeticRowFontSize = 14;
         doc.fontSize(arithmeticRowFontSize);
 
         doc.save();
