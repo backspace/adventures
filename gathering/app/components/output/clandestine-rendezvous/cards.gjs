@@ -233,29 +233,33 @@ export default class ClandestineRendezvousCardsComponent extends Component {
 
         const cropMarkLength = 0.25 * 72;
 
-        doc.lineWidth(0.125);
+        doc.lineWidth(0.25);
         doc.strokeOpacity(0.25);
 
         doc
+          .moveTo(0, cardHeight - cardMargin)
+          .lineTo(cropMarkLength, cardHeight - cardMargin)
+          .stroke();
+
+        doc
           .moveTo(
-            innerCardWidth / 2 - cropMarkLength / 2,
+            innerCardWidth - cardMargin - cropMarkLength,
             cardHeight - cardMargin,
           )
-          .lineTo(
-            innerCardWidth / 2 + cropMarkLength / 2,
-            cardHeight - cardMargin,
-          )
+          .lineTo(innerCardWidth - cardMargin, cardHeight - cardMargin)
+          .stroke();
+
+        doc
+          .moveTo(innerCardWidth + cardMargin, 0)
+          .lineTo(innerCardWidth + cardMargin, cropMarkLength)
           .stroke();
 
         doc
           .moveTo(
             innerCardWidth + cardMargin,
-            cardHeight / 2 - cropMarkLength / 2,
+            cardHeight - cardMargin - cropMarkLength,
           )
-          .lineTo(
-            innerCardWidth + cardMargin,
-            cardHeight / 2 + cropMarkLength / 2,
-          )
+          .lineTo(innerCardWidth + cardMargin, cardHeight - cardMargin)
           .stroke();
 
         doc.restore();
