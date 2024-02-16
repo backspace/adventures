@@ -59,7 +59,7 @@ export default class ClandestineRendezvousAnswersComponent extends Component {
               'description',
             )}\n\n${destination.get('answer')}`;
           })
-          .join('\n\n\n'),
+          .join('\n\n---\n\n'),
         {
           columns: 3,
         },
