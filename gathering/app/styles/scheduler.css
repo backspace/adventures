@@ -9,6 +9,7 @@
   background: white;
   display: grid;
   grid-template-columns: auto var(--column-width) var(--column-width);
+  grid-template-rows: auto 8rem;
   grid-template-areas:
     'map teams destinations'
     'map form form';
