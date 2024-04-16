@@ -63,6 +63,27 @@ defmodule Registrations.SwooshHelper do
   end
 end
 
+defmodule Registrations.ChromeHeadlessHelper do
+  use ExUnit.CaseTemplate
+
+  def additional_capabilities do
+    [
+      additional_capabilities: %{
+        :"goog:chromeOptions" => %{
+          "args" => [
+            "--headless",
+            "--disable-gpu",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-software-rasterizer"
+          ]
+        },
+        browserName: "chrome"
+      }
+    ]
+  end
+end
+
 defmodule Registrations.ClandestineRendezvous do
   use ExUnit.CaseTemplate
 

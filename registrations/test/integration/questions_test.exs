@@ -8,7 +8,7 @@ defmodule Registrations.ClandestineRendezvous.Integration.Questions do
 
   use Hound.Helpers
 
-  hound_session()
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "registering" do
     navigate_to("/")
@@ -47,7 +47,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Questions do
 
   use Hound.Helpers
 
-  hound_session()
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "registering" do
     navigate_to("/")

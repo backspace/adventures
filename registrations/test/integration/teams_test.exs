@@ -12,7 +12,7 @@ defmodule Registrations.Integration.Teams do
   use Hound.Helpers
 
   # Start a Hound session
-  hound_session()
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "teams are negotiable" do
     insert(:user,
@@ -258,7 +258,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Teams do
   use Hound.Helpers
 
   # Start a Hound session
-  hound_session()
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "team emails can be appended to" do
     insert(:user,

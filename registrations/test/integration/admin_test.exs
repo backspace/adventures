@@ -12,7 +12,7 @@ defmodule Registrations.Integration.Admin do
   use Hound.Helpers
 
   # Start a Hound session
-  hound_session()
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "logging in as an admin" do
     user =
@@ -209,7 +209,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
 
   use Hound.Helpers
 
-  hound_session()
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "admin can create and update settings" do
     insert(:octavia, admin: true)

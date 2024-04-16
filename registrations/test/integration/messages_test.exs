@@ -9,7 +9,7 @@ defmodule Registrations.Integration.Messages do
   alias Registrations.Pages.Nav
 
   use Hound.Helpers
-  hound_session()
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "a message is sent to all registrants with their team information summarised" do
     insert(:admin,

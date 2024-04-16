@@ -15,7 +15,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
   use Hound.Helpers
 
   # Start a Hound session
-  hound_session()
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   def set_window_to_show_account do
     set_window_size(current_window_handle(), 720, 450)
@@ -254,7 +254,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
   use Hound.Helpers
 
   # Start a Hound session
-  hound_session()
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   def set_window_to_show_account do
     set_window_size(current_window_handle(), 720, 450)

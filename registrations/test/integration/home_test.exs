@@ -15,7 +15,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
     set_window_size(current_window_handle(), 720, 450)
   end
 
-  hound_session()
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "head tags are correct" do
     navigate_to("/")
