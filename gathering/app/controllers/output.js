@@ -14,7 +14,7 @@ import txtbeyondTransparencies from 'gathering/components/output/txtbeyond/trans
 
 import UnmnemonicDevicesAnswers from 'gathering/components/output/unmnemonic-devices/answers';
 import UnmnemonicDevicesOverlays from 'gathering/components/output/unmnemonic-devices/overlays';
-import UnmnemonicDevicesTeamEnvelopes from 'gathering/components/output/unmnemonic-devices/team-envelopes';
+import UnmnemonicDevicesTeamLabels from 'gathering/components/output/unmnemonic-devices/team-labels';
 import UnmnemonicDevicesTeamOverviews from 'gathering/components/output/unmnemonic-devices/team-overviews';
 import UnmnemonicDevicesVerification from 'gathering/components/output/unmnemonic-devices/verification';
 import UnmnemonicDevicesVrssql from 'gathering/components/output/unmnemonic-devices/vrssql';
@@ -40,7 +40,7 @@ export default class OutputController extends Controller {
     unmnemonicDevices: [
       ['Overlays', UnmnemonicDevicesOverlays],
       ['Overviews', UnmnemonicDevicesTeamOverviews],
-      ['Envelopes', UnmnemonicDevicesTeamEnvelopes],
+      ['Labels', UnmnemonicDevicesTeamLabels],
       ['VRS SQL', UnmnemonicDevicesVrssql],
       ['Answers', UnmnemonicDevicesAnswers],
       ['Verification', UnmnemonicDevicesVerification],

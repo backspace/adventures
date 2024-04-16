@@ -8,11 +8,12 @@ import PDFDocument from 'pdfkit';
 
 const pageMargin = 0.5 * 72;
 
-export default class TeamEnvelopesComponent extends Component {
+export default class TeamLabelsComponent extends Component {
   @storageFor('output') state;
 
   generator = trackedFunction(this, async () => {
     let regular = this.args.assets.regular;
+    let goal = this.args.settings.goal;
 
     let doc = new PDFDocument({ layout: 'portrait', font: regular });
     let stream = doc.pipe(blobStream());
@@ -25,10 +26,6 @@ export default class TeamEnvelopesComponent extends Component {
     let meetingHeadingFontSize = 14;
 
     sortedTeams.forEach((team, index) => {
-      if (index > 0) {
-        doc.addPage();
-      }
-
       drawMargins(doc, () => {
         drawHeader(team);
       });
@@ -43,15 +40,20 @@ export default class TeamEnvelopesComponent extends Component {
     });
 
     function drawHeader(team) {
-      doc.save();
+      if (team.name.includes('Vernor')) {
+        doc.addPage();
+      }
+
       doc.font(regular);
       doc.fontSize(mapTeamFontSize);
-      doc.text(team.truncatedName, 0, 0);
+      doc.text(team.truncatedName);
 
       doc
         .fontSize(meetingHeadingFontSize)
-        .text(`voicepass: ${team.identifier}`);
-      doc.restore();
+        .text(`voicepass: ${team.identifier}`)
+        .text(goal);
+      doc.moveDown();
+      doc.moveDown();
     }
 
     return blobUrl;
@@ -63,7 +65,7 @@ export default class TeamEnvelopesComponent extends Component {
 
   <template>
     {{#if this.src}}
-      <iframe title='team-envelopes' src={{this.src}}>
+      <iframe title='team-labels' src={{this.src}}>
       </iframe>
     {{else}}
       <Loading />
