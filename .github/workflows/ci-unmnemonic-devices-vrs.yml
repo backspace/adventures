@@ -6,6 +6,7 @@ on:
   pull_request:
     paths:
       - "unmnemonic_devices_vrs/**"
+      - ".github/workflows/ci-unmnemonic-devices-vrs.yml"
 
 env:
   CARGO_TERM_COLOR: always
