@@ -41,9 +41,9 @@ export default class TeamComponent extends Component {
   }
 
   get usersAndNotes() {
-    return `${this.args.team.get('users')}\n\n${
-      this.args.team.get('notes') || ''
-    }`;
+    return `${this.args.team.get('riskAversion')}: ${this.args.team.get(
+      'users',
+    )}\n\n${this.args.team.get('notes') || ''}`;
   }
 
   get roundedAwesomeness() {

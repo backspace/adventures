@@ -298,7 +298,7 @@ module('Acceptance | scheduler', function (hooks) {
       assert.strictEqual(superfans.riskAversionColour, 'red');
       assert.strictEqual(
         superfans.usersAndNotes,
-        'june@example.com, eddie@example.com\n\nHere is a note',
+        '3: june@example.com, eddie@example.com\n\nHere is a note',
       );
 
       assert.ok(superfans.isAhead, 'expected team with meeting to be ahead');
