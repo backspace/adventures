@@ -25,7 +25,7 @@ export default class TeamLabelsComponent extends Component {
     let mapTeamFontSize = 18;
     let meetingHeadingFontSize = 14;
 
-    sortedTeams.forEach((team, index) => {
+    sortedTeams.forEach((team) => {
       drawMargins(doc, () => {
         drawHeader(team);
       });
