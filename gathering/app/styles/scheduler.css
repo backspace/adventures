@@ -10,6 +10,7 @@
   display: grid;
   grid-template-columns: auto var(--column-width) var(--column-width);
   grid-template-rows: auto 8rem;
+  /* stylelint-disable-next-line declaration-block-no-redundant-longhand-properties */
   grid-template-areas:
     'map teams destinations'
     'map form form';
