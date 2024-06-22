@@ -1,0 +1,2 @@
+class Incarnation < ApplicationRecord
+end

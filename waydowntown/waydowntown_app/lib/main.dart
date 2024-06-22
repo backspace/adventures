@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const Waydowntown());
@@ -105,6 +108,14 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            ElevatedButton(
+                child: const Text('Request a game'),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const RequestGameRoute()));
+                }),
             const Text(
               'You have pushed the button this many times:',
             ),
@@ -120,6 +131,77 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+class RequestGameRoute extends StatelessWidget {
+  const RequestGameRoute({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Requested a game?'),
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            FutureBuilder<Incarnation>(
+              future: fetchGame(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Column(
+                    children: [
+                      Text(snapshot.data!.concept),
+                      Text(snapshot.data!.mask)
+                    ],
+                  );
+                } else if (snapshot.hasError) {
+                  return Text('${snapshot.error}');
+                }
+
+                return const CircularProgressIndicator();
+              },
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Go back!'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<Incarnation> fetchGame() async {
+    final response = await http
+        .get(Uri.parse('http://localhost:3000/api/v1/incarnations/1'));
+
+    if (response.statusCode == 200) {
+      return Incarnation.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>);
+    } else {
+      throw Exception('Failed to load game');
+    }
+  }
+}
+
+class Incarnation {
+  final String id;
+  final String concept;
+  final String mask;
+
+  const Incarnation(
+      {required this.id, required this.concept, required this.mask});
+
+  factory Incarnation.fromJson(Map<String, dynamic> json) {
+    return Incarnation(
+      id: json['data']['id'],
+      concept: json['data']['attributes']['concept'],
+      mask: json['data']['attributes']['mask'],
     );
   }
 }

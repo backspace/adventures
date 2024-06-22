@@ -1,9 +1,3 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+Incarnation.create!(concept: "fill_in_the_blank", mask: "The food court is home to a plaque in memory of _____ Albert, a dedicated employee of the Portage Place Shopping Centre from 1990 to October 2002.", answer: "Olive")
+Incarnation.create!(concept: "fill_in_the_blank", mask: "The third floor is home to, among others, the Scotiabank ________ Vice President.", answer: "District")
+Incarnation.create!(concept: "fill_in_the_blank", mask: "An enormous headline proclaims ____ quit!", answer: "Huns")
