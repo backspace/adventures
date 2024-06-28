@@ -64,12 +64,6 @@
           "readable": true,
           "writable": true,
           "description": null
-        },
-        "answer": {
-          "type": "string",
-          "readable": true,
-          "writable": true,
-          "description": null
         }
       },
       "extra_attributes": {
@@ -80,8 +74,6 @@
         "concept": {
         },
         "mask": {
-        },
-        "answer": {
         }
       },
       "filters": {
@@ -108,21 +100,6 @@
           ]
         },
         "mask": {
-          "type": "string",
-          "operators": [
-            "eq",
-            "not_eq",
-            "eql",
-            "not_eql",
-            "prefix",
-            "not_prefix",
-            "suffix",
-            "not_suffix",
-            "match",
-            "not_match"
-          ]
-        },
-        "answer": {
           "type": "string",
           "operators": [
             "eq",

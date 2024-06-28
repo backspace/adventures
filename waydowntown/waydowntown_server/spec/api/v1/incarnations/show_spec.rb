@@ -16,6 +16,7 @@ RSpec.describe "incarnations#show", type: :request do
       expect(response.status).to eq(200)
       expect(d.jsonapi_type).to eq('incarnations')
       expect(d.id).to eq(incarnation.id)
+      expect(d.attributes['answer']).to be_nil
     end
   end
 end
