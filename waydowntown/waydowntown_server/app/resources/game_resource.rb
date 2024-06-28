@@ -1,6 +1,8 @@
 class GameResource < ApplicationResource
   belongs_to :incarnation
 
+  attribute :id, :uuid
+
   sideloads[:incarnation]
 
   def create(attributes)
