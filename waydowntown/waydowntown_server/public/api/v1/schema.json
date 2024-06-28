@@ -7,7 +7,7 @@
       "description": null,
       "attributes": {
         "id": {
-          "type": "integer_id",
+          "type": "uuid",
           "readable": true,
           "writable": true,
           "description": null
@@ -21,14 +21,10 @@
       },
       "filters": {
         "id": {
-          "type": "integer_id",
+          "type": "uuid",
           "operators": [
             "eq",
-            "not_eq",
-            "gt",
-            "gte",
-            "lt",
-            "lte"
+            "not_eq"
           ]
         }
       },
@@ -52,7 +48,7 @@
       "description": null,
       "attributes": {
         "id": {
-          "type": "integer_id",
+          "type": "uuid",
           "readable": true,
           "writable": true,
           "description": null
@@ -90,14 +86,10 @@
       },
       "filters": {
         "id": {
-          "type": "integer_id",
+          "type": "uuid",
           "operators": [
             "eq",
-            "not_eq",
-            "gt",
-            "gte",
-            "lt",
-            "lte"
+            "not_eq"
           ]
         },
         "concept": {
