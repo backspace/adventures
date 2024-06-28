@@ -30,8 +30,8 @@ RSpec.describe IncarnationResource, type: :resource do
 
   describe 'sorting' do
     describe 'by id' do
-      let!(:incarnation1) { create(:incarnation) }
-      let!(:incarnation2) { create(:incarnation) }
+      let!(:incarnation1) { create(:incarnation, id: '0551b2c7-47d9-408d-8324-299cae023ef8') }
+      let!(:incarnation2) { create(:incarnation, id: '76d02d70-4b88-409b-8f0c-21ff836e0ed7') }
 
       context 'when ascending' do
         before do

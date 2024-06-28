@@ -30,8 +30,8 @@ RSpec.describe GameResource, type: :resource do
 
   describe 'sorting' do
     describe 'by id' do
-      let!(:game1) { create(:game) }
-      let!(:game2) { create(:game) }
+      let!(:game1) { create(:game, id: '7b437743-0b14-434c-8e02-bd7387ec29b4') }
+      let!(:game2) { create(:game, id: 'ca2a5b38-237c-49a1-ae08-2ef25c1d659f') }
 
       context 'when ascending' do
         before do
