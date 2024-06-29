@@ -41,5 +41,12 @@ jobs:
 
       - run: flutter pub get
         working-directory: waydowntown/waydowntown_app
-      - run: flutter test
-        working-directory: waydowntown/waydowntown_app
+
+      - name: Run integration tests
+        # more info on https://github.com/ReactiveCircus/android-emulator-runner
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 21
+          arch: x86_64
+          profile: Nexus 6
+          script: flutter test --verbose
