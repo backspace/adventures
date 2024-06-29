@@ -54,9 +54,9 @@ jobs:
           bundler-cache: true
           working-directory: waydowntown/waydowntown_server
 
-      - name: Install bundler-audit and brakeman
+      - name: Install lint tools
         working-directory: waydowntown/waydowntown_server
-        run: gem install bundler-audit brakeman
+        run: gem install bundler-audit brakeman rubocop
 
       - name: Security audit dependencies
         working-directory: waydowntown/waydowntown_server
@@ -66,4 +66,4 @@ jobs:
         run: brakeman -q -w2
       - name: Lint Ruby files
         working-directory: waydowntown/waydowntown_server
-        run: bin/rubocop --parallel
+        run: rubocop --parallel
