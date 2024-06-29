@@ -135,30 +135,12 @@
         },
         "create": {
           "resource": "GameResource"
-        },
-        "update": {
-          "resource": "GameResource"
-        },
-        "destroy": {
-          "resource": "GameResource"
         }
       }
     },
     "/api/v1/incarnations": {
       "actions": {
-        "index": {
-          "resource": "IncarnationResource"
-        },
         "show": {
-          "resource": "IncarnationResource"
-        },
-        "create": {
-          "resource": "IncarnationResource"
-        },
-        "update": {
-          "resource": "IncarnationResource"
-        },
-        "destroy": {
           "resource": "IncarnationResource"
         }
       }

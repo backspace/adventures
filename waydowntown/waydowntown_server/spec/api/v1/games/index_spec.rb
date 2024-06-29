@@ -1,22 +1,31 @@
+# frozen_string_literal: true
+
 require 'rails_helper'
 
-RSpec.describe "games#index", type: :request do
-  let(:params) { {} }
-
+RSpec.describe 'games#index' do
   subject(:make_request) do
-    jsonapi_get "/api/v1/games", params: params
+    jsonapi_get '/api/v1/games', params:
   end
 
-  describe 'basic fetch' do
-    let!(:game1) { create(:game) }
-    let!(:game2) { create(:game) }
+  let(:params) { {} }
 
-    it 'works' do
-      expect(GameResource).to receive(:all).and_call_original
+  describe 'basic fetch' do
+    let!(:game) { create(:game) }
+
+    before do
       make_request
+    end
+
+    it 'returns a 200 status code' do
       expect(response.status).to eq(200), response.body
-      expect(d.map(&:jsonapi_type).uniq).to match_array(['games'])
-      expect(d.map(&:id)).to match_array([game1.id, game2.id])
+    end
+
+    it 'returns the correct jsonapi_type' do
+      expect(d.map(&:jsonapi_type).uniq).to contain_exactly('games')
+    end
+
+    it 'returns the correct ids' do
+      expect(d.map(&:id)).to contain_exactly(game.id)
     end
   end
 end

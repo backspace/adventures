@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class GamesController < ApplicationController
   def index
     games = GameResource.all(params)
@@ -13,7 +15,7 @@ class GamesController < ApplicationController
     game = GameResource.build(params)
 
     if game.save
-      render jsonapi: game, status: 201
+      render jsonapi: game, status: :created
     else
       render jsonapi_errors: game
     end
@@ -33,7 +35,7 @@ class GamesController < ApplicationController
     game = GameResource.find(params)
 
     if game.destroy
-      render jsonapi: { meta: {} }, status: 200
+      render jsonapi: { meta: {} }, status: :ok
     else
       render jsonapi_errors: game
     end

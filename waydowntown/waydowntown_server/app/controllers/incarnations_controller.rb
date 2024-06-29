@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class IncarnationsController < ApplicationController
   def index
     incarnations = IncarnationResource.all(params)
@@ -13,7 +15,7 @@ class IncarnationsController < ApplicationController
     incarnation = IncarnationResource.build(params)
 
     if incarnation.save
-      render jsonapi: incarnation, status: 201
+      render jsonapi: incarnation, status: :created
     else
       render jsonapi_errors: incarnation
     end
@@ -33,7 +35,7 @@ class IncarnationsController < ApplicationController
     incarnation = IncarnationResource.find(params)
 
     if incarnation.destroy
-      render jsonapi: { meta: {} }, status: 200
+      render jsonapi: { meta: {} }, status: :ok
     else
       render jsonapi_errors: incarnation
     end

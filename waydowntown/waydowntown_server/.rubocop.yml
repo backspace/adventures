@@ -1,0 +1,19 @@
+require:
+  - rubocop-factory_bot
+  - rubocop-rails
+  - rubocop-rspec
+  - rubocop-rspec_rails
+
+AllCops:
+  NewCops: enable
+
+RSpec/DescribeClass:
+  Exclude:
+    - "**/spec/api/**/*"
+
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - "**/spec/resources/**/*"
+
+Style/Documentation:
+  Enabled: false
