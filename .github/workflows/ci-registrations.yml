@@ -67,6 +67,11 @@ jobs:
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
       - run: mix test
         working-directory: registrations
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: Screenshots
+          path: registrations/*.png
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
