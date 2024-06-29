@@ -147,14 +147,14 @@ class RequestGameRoute extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            FutureBuilder<Incarnation>(
+            FutureBuilder<Game>(
               future: fetchGame(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return Column(
                     children: [
-                      Text(snapshot.data!.concept),
-                      Text(snapshot.data!.mask)
+                      Text(snapshot.data!.incarnation.concept),
+                      Text(snapshot.data!.incarnation.mask)
                     ],
                   );
                 } else if (snapshot.hasError) {
@@ -176,13 +176,12 @@ class RequestGameRoute extends StatelessWidget {
     );
   }
 
-  Future<Incarnation> fetchGame() async {
-    final response = await http
-        .get(Uri.parse('http://localhost:3000/api/v1/incarnations/1'));
+  Future<Game> fetchGame() async {
+    final response = await http.post(
+        Uri.parse('http://localhost:3000/api/v1/games?include=incarnation'));
 
-    if (response.statusCode == 200) {
-      return Incarnation.fromJson(
-          jsonDecode(response.body) as Map<String, dynamic>);
+    if (response.statusCode == 201) {
+      return Game.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
     } else {
       throw Exception('Failed to load game');
     }
@@ -199,9 +198,22 @@ class Incarnation {
 
   factory Incarnation.fromJson(Map<String, dynamic> json) {
     return Incarnation(
-      id: json['data']['id'],
-      concept: json['data']['attributes']['concept'],
-      mask: json['data']['attributes']['mask'],
+      id: json['id'],
+      concept: json['attributes']['concept'],
+      mask: json['attributes']['mask'],
     );
+  }
+}
+
+class Game {
+  final String id;
+  final Incarnation incarnation;
+
+  const Game({required this.id, required this.incarnation});
+
+  factory Game.fromJson(Map<String, dynamic> json) {
+    return Game(
+        id: json['data']['id'],
+        incarnation: Incarnation.fromJson(json['included'][0]));
   }
 }
