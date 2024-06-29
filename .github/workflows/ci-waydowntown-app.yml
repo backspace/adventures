@@ -10,7 +10,7 @@ on:
       - ".github/workflows/ci-waydowntown-app.yml"
 
 jobs:
-  test:
+  test-ios:
     runs-on: macOS-latest
 
     steps:
@@ -19,6 +19,21 @@ jobs:
       - uses: futureware-tech/simulator-action@v3
         with:
           model: "iPhone 14"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - run: flutter pub get
+        working-directory: waydowntown/waydowntown_app
+      - run: flutter test
+        working-directory: waydowntown/waydowntown_app
+
+  test-android:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v4
 
       - uses: subosito/flutter-action@v2
         with:
