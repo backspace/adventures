@@ -1,4 +1,4 @@
-name: AdventureRegistrations checks
+name: Registrations checks
 
 on:
   push:
