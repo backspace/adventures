@@ -65,6 +65,10 @@ jobs:
           export DISPLAY=:99
           chromedriver &
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 &
+      - name: Wait for Chromedriver
+        run: sleep 30s
+        shell: bash
+
       - run: mix test
         working-directory: registrations
       - name: Publish test results
