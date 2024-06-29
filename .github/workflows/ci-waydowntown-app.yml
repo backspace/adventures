@@ -1,0 +1,52 @@
+name: waydowntown_app checks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "waydowntown/waydowntown_app/**"
+      - ".github/workflows/ci-waydowntown-app.yml"
+
+jobs:
+  test-ios:
+    runs-on: macOS-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: futureware-tech/simulator-action@v3
+        with:
+          model: "iPhone 14"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - run: flutter pub get
+        working-directory: waydowntown/waydowntown_app
+      - run: flutter test
+        working-directory: waydowntown/waydowntown_app
+
+  test-android:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - run: flutter pub get
+        working-directory: waydowntown/waydowntown_app
+
+      - name: Run integration tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          working-directory: waydowntown/waydowntown_app
+          api-level: 21
+          arch: x86_64
+          profile: Nexus 6
+          script: flutter test --verbose
