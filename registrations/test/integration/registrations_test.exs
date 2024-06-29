@@ -42,6 +42,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Register.submit()
 
     assert Nav.info_text() == "Your account was created"
+    take_screenshot("registering.png")
 
     [welcome_email, admin_email] = Registrations.SwooshHelper.sent_email()
 
