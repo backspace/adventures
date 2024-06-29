@@ -47,7 +47,7 @@ defmodule Registrations.Integration.Messages do
     Messages.send()
     Messages.dismiss_alert()
 
-    take_screenshot("/message-sent.png")
+    take_screenshot("message-sent.png")
     assert Nav.info_text() == "Message was sent"
 
     [empty_email, _, email, _] = Registrations.SwooshHelper.sent_email()
