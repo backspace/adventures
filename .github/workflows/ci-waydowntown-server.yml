@@ -66,4 +66,4 @@ jobs:
         run: brakeman -q -w2
       - name: Lint Ruby files
         working-directory: waydowntown/waydowntown_server
-        run: rubocop --parallel
+        run: bundle exec rubocop --parallel
