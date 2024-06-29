@@ -47,7 +47,6 @@ defmodule Registrations.Integration.Messages do
     Messages.send()
     Messages.dismiss_alert()
 
-    take_screenshot("message-sent.png")
     assert Nav.info_text() == "Message was sent"
 
     [empty_email, _, email, _] = Registrations.SwooshHelper.sent_email()
@@ -97,7 +96,6 @@ defmodule Registrations.Integration.Messages do
 
     Messages.send_to_me()
 
-    take_screenshot("message-just-logged-in.png")
     assert Nav.info_text() == "Message was sent"
 
     [email] = Registrations.SwooshHelper.sent_email()
@@ -178,7 +176,6 @@ defmodule Registrations.Integration.Messages do
     Messages.send()
     Messages.dismiss_alert()
 
-    take_screenshot("message-show-team.png")
     assert Nav.info_text() == "Message was sent"
 
     [has_no_team_email, _, has_team_email, _] = Registrations.SwooshHelper.sent_email()

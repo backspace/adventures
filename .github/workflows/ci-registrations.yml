@@ -71,12 +71,6 @@ jobs:
 
       - run: mix test
         working-directory: registrations
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: Screenshots
-          path: registrations/*.png
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()

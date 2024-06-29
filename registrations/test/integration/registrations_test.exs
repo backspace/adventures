@@ -41,7 +41,6 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Register.fill_password("nestofspiders")
     Register.submit()
 
-    take_screenshot("registering.png")
     assert Nav.info_text() == "Your account was created"
 
     [welcome_email, admin_email] = Registrations.SwooshHelper.sent_email()
