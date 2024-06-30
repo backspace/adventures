@@ -12,25 +12,73 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 20_240_628_151_327) do
+ActiveRecord::Schema[7.1].define(version: 20_240_630_162_715) do
+  create_schema 'unmnemonic_devices'
+  create_schema 'waydowntown'
+
   # These are extensions that must be enabled in order to support this database
-  enable_extension 'pgcrypto'
+  enable_extension 'pg_trgm'
   enable_extension 'plpgsql'
 
   create_table 'games', id: :uuid, default: -> { 'gen_random_uuid()' }, force: :cascade do |t|
-    t.uuid 'incarnation_id', null: false
-    t.datetime 'created_at', null: false
-    t.datetime 'updated_at', null: false
-    t.index ['incarnation_id'], name: 'index_games_on_incarnation_id'
+    t.uuid 'incarnation_id'
+    t.datetime 'inserted_at', precision: 0, null: false
+    t.datetime 'updated_at', precision: 0, null: false
   end
 
   create_table 'incarnations', id: :uuid, default: -> { 'gen_random_uuid()' }, force: :cascade do |t|
-    t.string 'concept'
-    t.string 'mask'
-    t.string 'answer'
-    t.datetime 'created_at', null: false
-    t.datetime 'updated_at', null: false
+    t.string 'concept', limit: 255
+    t.string 'mask', limit: 255
+    t.string 'answer', limit: 255
+    t.datetime 'inserted_at', precision: 0, null: false
+    t.datetime 'updated_at', precision: 0, null: false
   end
 
-  add_foreign_key 'games', 'incarnations'
+  create_table 'messages', id: :uuid, default: nil, force: :cascade do |t|
+    t.string 'subject', limit: 255
+    t.text 'content'
+    t.boolean 'ready', default: false
+    t.date 'postmarked_at'
+    t.datetime 'inserted_at', precision: 0, null: false
+    t.datetime 'updated_at', precision: 0, null: false
+    t.text 'rendered_content'
+    t.boolean 'show_team'
+    t.string 'from_name', limit: 255
+    t.string 'from_address', limit: 255
+  end
+
+  create_table 'teams', id: :uuid, default: nil, force: :cascade do |t|
+    t.text 'name'
+    t.integer 'risk_aversion'
+    t.text 'notes'
+    t.datetime 'inserted_at', precision: 0, null: false
+    t.datetime 'updated_at', precision: 0, null: false
+    t.string 'voicepass', limit: 255
+    t.integer 'listens', default: 0
+    t.virtual 'name_truncated', type: :string, limit: 53,
+                                as: "\nCASE\n    WHEN (length(name) > 50) THEN (\"substring\"(name, 1, (50 - \"position\"(reverse(\"substring\"(name, 1, 50)), ' '::text))) || '…'::text)\n    ELSE name\nEND", stored: true
+  end
+
+  create_table 'users', id: :uuid, default: nil, force: :cascade do |t|
+    t.string 'email', limit: 255
+    t.string 'crypted_password', limit: 255
+    t.datetime 'inserted_at', precision: 0, null: false
+    t.datetime 'updated_at', precision: 0, null: false
+    t.boolean 'admin'
+    t.text 'team_emails'
+    t.text 'proposed_team_name'
+    t.integer 'risk_aversion'
+    t.text 'accessibility'
+    t.string 'recovery_hash', limit: 255
+    t.text 'comments'
+    t.text 'source'
+    t.boolean 'attending'
+    t.string 'voicepass', limit: 255
+    t.integer 'remembered', default: 0
+    t.uuid 'team_id'
+    t.index ['email'], name: 'users_email_index', unique: true
+  end
+
+  add_foreign_key 'games', 'incarnations', name: 'games_incarnation_id_fkey'
+  add_foreign_key 'users', 'teams', name: 'users_team_id_fkey', on_delete: :nullify
 end

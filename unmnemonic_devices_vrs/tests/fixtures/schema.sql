@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.9
--- Dumped by pg_dump version 13.4
+-- Dumped from database version 13.13
+-- Dumped by pg_dump version 16.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -17,10 +17,10 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: _sqlx_test; Type: SCHEMA; Schema: -; Owner: -
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
 --
 
-CREATE SCHEMA _sqlx_test;
+-- *not* creating schema, since initdb creates it
 
 
 --
@@ -28,6 +28,13 @@ CREATE SCHEMA _sqlx_test;
 --
 
 CREATE SCHEMA unmnemonic_devices;
+
+
+--
+-- Name: waydowntown; Type: SCHEMA; Schema: -; Owner: -
+--
+
+CREATE SCHEMA waydowntown;
 
 
 --
@@ -44,32 +51,9 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
 COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
 
 
---
--- Name: database_ids; Type: SEQUENCE; Schema: _sqlx_test; Owner: -
---
-
-CREATE SEQUENCE _sqlx_test.database_ids
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
-
---
--- Name: databases; Type: TABLE; Schema: _sqlx_test; Owner: -
---
-
-CREATE TABLE _sqlx_test.databases (
-    db_name text NOT NULL,
-    test_path text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
 
 --
 -- Name: messages; Type: TABLE; Schema: public; Owner: -
@@ -268,18 +252,36 @@ ALTER SEQUENCE unmnemonic_devices.settings_id_seq OWNED BY unmnemonic_devices.se
 
 
 --
+-- Name: games; Type: TABLE; Schema: waydowntown; Owner: -
+--
+
+CREATE TABLE waydowntown.games (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    incarnation_id uuid,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: incarnations; Type: TABLE; Schema: waydowntown; Owner: -
+--
+
+CREATE TABLE waydowntown.incarnations (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    concept character varying(255),
+    mask character varying(255),
+    answer character varying(255),
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
 -- Name: settings id; Type: DEFAULT; Schema: unmnemonic_devices; Owner: -
 --
 
 ALTER TABLE ONLY unmnemonic_devices.settings ALTER COLUMN id SET DEFAULT nextval('unmnemonic_devices.settings_id_seq'::regclass);
-
-
---
--- Name: databases databases_pkey; Type: CONSTRAINT; Schema: _sqlx_test; Owner: -
---
-
-ALTER TABLE ONLY _sqlx_test.databases
-    ADD CONSTRAINT databases_pkey PRIMARY KEY (db_name);
 
 
 --
@@ -371,10 +373,19 @@ ALTER TABLE ONLY unmnemonic_devices.settings
 
 
 --
--- Name: databases_created_at; Type: INDEX; Schema: _sqlx_test; Owner: -
+-- Name: games games_pkey; Type: CONSTRAINT; Schema: waydowntown; Owner: -
 --
 
-CREATE INDEX databases_created_at ON _sqlx_test.databases USING btree (created_at);
+ALTER TABLE ONLY waydowntown.games
+    ADD CONSTRAINT games_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: incarnations incarnations_pkey; Type: CONSTRAINT; Schema: waydowntown; Owner: -
+--
+
+ALTER TABLE ONLY waydowntown.incarnations
+    ADD CONSTRAINT incarnations_pkey PRIMARY KEY (id);
 
 
 --
@@ -424,7 +435,7 @@ CREATE UNIQUE INDEX recordings_team_id_index ON unmnemonic_devices.recordings US
 --
 
 ALTER TABLE ONLY public.users
-    ADD CONSTRAINT users_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE CASCADE;
+    ADD CONSTRAINT users_team_id_fkey FOREIGN KEY (team_id) REFERENCES public.teams(id) ON DELETE SET NULL;
 
 
 --
@@ -508,6 +519,14 @@ ALTER TABLE ONLY unmnemonic_devices.recordings
 
 
 --
+-- Name: games games_incarnation_id_fkey; Type: FK CONSTRAINT; Schema: waydowntown; Owner: -
+--
+
+ALTER TABLE ONLY waydowntown.games
+    ADD CONSTRAINT games_incarnation_id_fkey FOREIGN KEY (incarnation_id) REFERENCES waydowntown.incarnations(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -551,3 +570,6 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231204001556);
 INSERT INTO public."schema_migrations" (version) VALUES (20231205235352);
 INSERT INTO public."schema_migrations" (version) VALUES (20231217183904);
 INSERT INTO public."schema_migrations" (version) VALUES (20231220025457);
+INSERT INTO public."schema_migrations" (version) VALUES (20240630162659);
+INSERT INTO public."schema_migrations" (version) VALUES (20240630162710);
+INSERT INTO public."schema_migrations" (version) VALUES (20240630162715);

@@ -73,11 +73,13 @@ defmodule Registrations.Mixfile do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       "db.migrate": [
         "ecto.migrate",
-        "ecto.dump -d ../unmnemonic_devices_vrs/tests/fixtures/schema.sql"
+        "ecto.dump -d ../unmnemonic_devices_vrs/tests/fixtures/schema.sql",
+        "cmd ./lib/dump-waydowntown-server-schema.sh"
       ],
       "db.rollback": [
         "ecto.rollback",
-        "ecto.dump -d ../unmnemonic_devices_vrs/tests/fixtures/schema.sql"
+        "ecto.dump -d ../unmnemonic_devices_vrs/tests/fixtures/schema.sql",
+        "cmd ./lib/dump-waydowntown-server-schema.sh"
       ],
       test: ["ecto.create --quiet", "ecto.migrate", "test"]
     ]
