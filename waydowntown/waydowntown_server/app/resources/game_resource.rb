@@ -2,6 +2,7 @@
 
 class GameResource < ApplicationResource
   belongs_to :incarnation
+  has_many :answers
 
   attribute :id, :uuid
 

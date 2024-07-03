@@ -252,6 +252,31 @@ ALTER SEQUENCE unmnemonic_devices.settings_id_seq OWNED BY unmnemonic_devices.se
 
 
 --
+-- Name: answers; Type: TABLE; Schema: waydowntown; Owner: -
+--
+
+CREATE TABLE waydowntown.answers (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    answer character varying(255),
+    game_id uuid,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
+-- Name: ar_internal_metadata; Type: TABLE; Schema: waydowntown; Owner: -
+--
+
+CREATE TABLE waydowntown.ar_internal_metadata (
+    key character varying NOT NULL,
+    value character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
 -- Name: games; Type: TABLE; Schema: waydowntown; Owner: -
 --
 
@@ -370,6 +395,22 @@ ALTER TABLE ONLY unmnemonic_devices.regions
 
 ALTER TABLE ONLY unmnemonic_devices.settings
     ADD CONSTRAINT settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: answers answers_pkey; Type: CONSTRAINT; Schema: waydowntown; Owner: -
+--
+
+ALTER TABLE ONLY waydowntown.answers
+    ADD CONSTRAINT answers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ar_internal_metadata ar_internal_metadata_pkey; Type: CONSTRAINT; Schema: waydowntown; Owner: -
+--
+
+ALTER TABLE ONLY waydowntown.ar_internal_metadata
+    ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
 
 
 --
@@ -519,6 +560,14 @@ ALTER TABLE ONLY unmnemonic_devices.recordings
 
 
 --
+-- Name: answers answers_game_id_fkey; Type: FK CONSTRAINT; Schema: waydowntown; Owner: -
+--
+
+ALTER TABLE ONLY waydowntown.answers
+    ADD CONSTRAINT answers_game_id_fkey FOREIGN KEY (game_id) REFERENCES waydowntown.games(id);
+
+
+--
 -- Name: games games_incarnation_id_fkey; Type: FK CONSTRAINT; Schema: waydowntown; Owner: -
 --
 
@@ -573,3 +622,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20231220025457);
 INSERT INTO public."schema_migrations" (version) VALUES (20240630162659);
 INSERT INTO public."schema_migrations" (version) VALUES (20240630162710);
 INSERT INTO public."schema_migrations" (version) VALUES (20240630162715);
+INSERT INTO public."schema_migrations" (version) VALUES (20240703014400);

@@ -2,6 +2,7 @@
 
 Rails.application.routes.draw do
   scope path: ApplicationResource.endpoint_namespace, defaults: { format: :jsonapi } do
+    resources :answers, only: %i[index create show]
     resources :games, only: %i[index create show]
     resources :incarnations, only: :show
     mount VandalUi::Engine, at: '/vandal'

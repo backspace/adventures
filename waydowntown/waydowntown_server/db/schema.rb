@@ -12,13 +12,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 20_240_630_162_715) do
+ActiveRecord::Schema[7.1].define(version: 20_240_703_014_400) do
   create_schema 'unmnemonic_devices'
   create_schema 'waydowntown'
 
   # These are extensions that must be enabled in order to support this database
   enable_extension 'pg_trgm'
   enable_extension 'plpgsql'
+
+  create_table 'answers', id: :uuid, default: -> { 'gen_random_uuid()' }, force: :cascade do |t|
+    t.string 'answer', limit: 255
+    t.uuid 'game_id'
+    t.datetime 'inserted_at', precision: 0, null: false
+    t.datetime 'updated_at', precision: 0, null: false
+  end
 
   create_table 'games', id: :uuid, default: -> { 'gen_random_uuid()' }, force: :cascade do |t|
     t.uuid 'incarnation_id'
@@ -79,6 +86,7 @@ ActiveRecord::Schema[7.1].define(version: 20_240_630_162_715) do
     t.index ['email'], name: 'users_email_index', unique: true
   end
 
+  add_foreign_key 'answers', 'games', name: 'answers_game_id_fkey'
   add_foreign_key 'games', 'incarnations', name: 'games_incarnation_id_fkey'
   add_foreign_key 'users', 'teams', name: 'users_team_id_fkey', on_delete: :nullify
 end

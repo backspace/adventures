@@ -138,8 +138,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class RequestGameRoute extends StatelessWidget {
   final Dio dio;
+  String answer = 'answer';
+  Game? game;
 
-  const RequestGameRoute({super.key, required this.dio});
+  RequestGameRoute({super.key, required this.dio});
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +159,21 @@ class RequestGameRoute extends StatelessWidget {
                   return Column(
                     children: [
                       Text(snapshot.data!.incarnation.concept),
-                      Text(snapshot.data!.incarnation.mask)
+                      Text(snapshot.data!.incarnation.mask),
+                      TextField(
+                        decoration: const InputDecoration(
+                          labelText: 'Answer',
+                        ),
+                        onChanged: (value) {
+                          answer = value;
+                        },
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          submitAnswer(answer);
+                        },
+                        child: const Text('Submit'),
+                      ),
                     ],
                   );
                 } else if (snapshot.hasError) {
@@ -167,7 +183,7 @@ class RequestGameRoute extends StatelessWidget {
                 return const CircularProgressIndicator();
               },
             ),
-            ElevatedButton(
+            TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -184,10 +200,27 @@ class RequestGameRoute extends StatelessWidget {
         queryParameters: {'include': 'incarnation'});
 
     if (response.statusCode == 201) {
-      return Game.fromJson(response.data);
+      game = Game.fromJson(response.data);
+      return game!;
     } else {
       throw Exception('Failed to load game');
     }
+  }
+
+  void submitAnswer(String answer) async {
+    await dio.post('http://localhost:3000/api/v1/answers', data: {
+      'data': {
+        'type': 'answers',
+        'attributes': {
+          'answer': answer,
+        },
+        'relationships': {
+          'game': {
+            'data': {'type': 'games', 'id': game?.id}
+          }
+        }
+      }
+    });
   }
 }
 

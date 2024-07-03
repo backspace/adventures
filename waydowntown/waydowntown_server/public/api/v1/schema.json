@@ -1,6 +1,70 @@
 {
   "resources": [
     {
+      "name": "AnswerResource",
+      "type": "answers",
+      "graphql_entrypoint": "answers",
+      "description": null,
+      "attributes": {
+        "id": {
+          "type": "uuid",
+          "readable": true,
+          "writable": true,
+          "description": null
+        },
+        "answer": {
+          "type": "string",
+          "readable": true,
+          "writable": true,
+          "description": null
+        }
+      },
+      "extra_attributes": {
+      },
+      "sorts": {
+        "id": {
+        },
+        "answer": {
+        }
+      },
+      "filters": {
+        "id": {
+          "type": "uuid",
+          "operators": [
+            "eq",
+            "not_eq"
+          ]
+        },
+        "answer": {
+          "type": "string",
+          "operators": [
+            "eq",
+            "not_eq",
+            "eql",
+            "not_eql",
+            "prefix",
+            "not_prefix",
+            "suffix",
+            "not_suffix",
+            "match",
+            "not_match"
+          ]
+        }
+      },
+      "relationships": {
+        "game": {
+          "type": "belongs_to",
+          "description": null,
+          "resource": "GameResource"
+        }
+      },
+      "stats": {
+        "total": [
+          "count"
+        ]
+      }
+    },
+    {
       "name": "GameResource",
       "type": "games",
       "graphql_entrypoint": "games",
@@ -33,6 +97,11 @@
           "type": "belongs_to",
           "description": null,
           "resource": "IncarnationResource"
+        },
+        "answers": {
+          "type": "has_many",
+          "description": null,
+          "resource": "AnswerResource"
         }
       },
       "stats": {
@@ -125,6 +194,19 @@
     }
   ],
   "endpoints": {
+    "/api/v1/answers": {
+      "actions": {
+        "index": {
+          "resource": "AnswerResource"
+        },
+        "show": {
+          "resource": "AnswerResource"
+        },
+        "create": {
+          "resource": "AnswerResource"
+        }
+      }
+    },
     "/api/v1/games": {
       "actions": {
         "index": {
