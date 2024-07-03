@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+Future main() async {
+  await dotenv.load(fileName: '.env');
   runApp(const Waydowntown());
 }
 
@@ -196,7 +198,7 @@ class RequestGameRoute extends StatelessWidget {
   }
 
   Future<Game> fetchGame() async {
-    final response = await dio.post('http://localhost:3000/api/v1/games',
+    final response = await dio.post('${dotenv.env['API_ROOT']}/api/v1/games',
         queryParameters: {'include': 'incarnation'});
 
     if (response.statusCode == 201) {
@@ -208,7 +210,7 @@ class RequestGameRoute extends StatelessWidget {
   }
 
   void submitAnswer(String answer) async {
-    await dio.post('http://localhost:3000/api/v1/answers', data: {
+    await dio.post('${dotenv.env['API_ROOT']}/api/v1/answers', data: {
       'data': {
         'type': 'answers',
         'attributes': {

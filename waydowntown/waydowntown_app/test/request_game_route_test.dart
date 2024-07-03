@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-
 import 'package:waydowntown_app/main.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() {
+  dotenv.testLoad(fileInput: File('.env').readAsStringSync());
+
   testWidgets('Game is requested, displayed, and answers are posted',
       (WidgetTester tester) async {
     final dio = Dio(BaseOptions());
@@ -14,7 +18,7 @@ void main() {
     final dioAdapter = DioAdapter(dio: dio);
 
     dioAdapter.onPost(
-      'http://localhost:3000/api/v1/games',
+      '${dotenv.env['API_ROOT']}/api/v1/games',
       (server) => server.reply(
         201,
         {
@@ -25,7 +29,7 @@ void main() {
               "incarnation": {
                 "links": {
                   "related":
-                      "http://localhost:3000/api/v1/incarnations/0091eb84-85c8-4e63-962b-39e1a19d2781"
+                      "${dotenv.env['API_ROOT']}/api/v1/incarnations/0091eb84-85c8-4e63-962b-39e1a19d2781"
                 },
                 "data": {
                   "type": "incarnations",
@@ -50,7 +54,7 @@ void main() {
     );
 
     dioAdapter.onPost(
-      'http://localhost:3000/api/v1/answers',
+      '${dotenv.env['API_ROOT']}/api/v1/answers',
       (server) => server.reply(
         201,
         {
