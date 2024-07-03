@@ -45,8 +45,6 @@ void main() {
           ],
           "meta": {}
         },
-        // Delay the response by 1 second
-        delay: const Duration(seconds: 1),
       ),
     );
 
