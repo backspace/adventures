@@ -1,7 +1,5 @@
-import 'dart:convert';
-
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const Waydowntown());
@@ -73,6 +71,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final dio = Dio(BaseOptions());
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -114,7 +113,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const RequestGameRoute()));
+                          builder: (context) => RequestGameRoute(
+                                dio: dio,
+                              )));
                 }),
             const Text(
               'You have pushed the button this many times:',
@@ -136,7 +137,9 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class RequestGameRoute extends StatelessWidget {
-  const RequestGameRoute({super.key});
+  final Dio dio;
+
+  const RequestGameRoute({super.key, required this.dio});
 
   @override
   Widget build(BuildContext context) {
@@ -177,11 +180,11 @@ class RequestGameRoute extends StatelessWidget {
   }
 
   Future<Game> fetchGame() async {
-    final response = await http.post(
-        Uri.parse('http://localhost:3000/api/v1/games?include=incarnation'));
+    final response = await dio.post('http://localhost:3000/api/v1/games',
+        queryParameters: {'include': 'incarnation'});
 
     if (response.statusCode == 201) {
-      return Game.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+      return Game.fromJson(response.data);
     } else {
       throw Exception('Failed to load game');
     }
