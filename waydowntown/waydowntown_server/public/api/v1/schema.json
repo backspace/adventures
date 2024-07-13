@@ -102,6 +102,11 @@
           "type": "has_many",
           "description": null,
           "resource": "AnswerResource"
+        },
+        "winner_answer": {
+          "type": "belongs_to",
+          "description": null,
+          "resource": "AnswerResource"
         }
       },
       "stats": {
@@ -203,6 +208,12 @@
           "resource": "AnswerResource"
         },
         "create": {
+          "resource": "AnswerResource"
+        },
+        "update": {
+          "resource": "AnswerResource"
+        },
+        "destroy": {
           "resource": "AnswerResource"
         }
       }

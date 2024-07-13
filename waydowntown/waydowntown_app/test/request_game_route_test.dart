@@ -53,46 +53,109 @@ void main() {
       ),
     );
 
-    dioAdapter.onPost(
-      '${dotenv.env['API_ROOT']}/api/v1/answers',
-      (server) => server.reply(
-        201,
-        {
-          "data": {
-            "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
-            "type": "answers",
-            "attributes": {
-              "answer": "incorrect",
+    dioAdapter
+      ..onPost(
+        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game,game.incarnation',
+        (server) => server.reply(
+          201,
+          {
+            "data": {
+              "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
+              "type": "answers",
+              "attributes": {
+                "answer": "incorrect",
+              },
+              "relationships": {
+                "game": {
+                  "data": {
+                    "type": "games",
+                    "id": "22261813-2171-453f-a669-db08edc70d6d"
+                  }
+                }
+              }
             },
-            "relationships": {
-              "game": {
-                "data": {
-                  "type": "games",
-                  "id": "22261813-2171-453f-a669-db08edc70d6d"
+            "meta": {}
+          },
+        ),
+        data: {
+          'data': {
+            'type': 'answers',
+            'attributes': {
+              'answer': 'incorrect',
+            },
+            'relationships': {
+              'game': {
+                'data': {
+                  'type': 'games',
+                  'id': '22261813-2171-453f-a669-db08edc70d6d'
                 }
               }
             }
-          },
-          "meta": {}
+          }
         },
-      ),
-      data: {
-        'data': {
-          'type': 'answers',
-          'attributes': {
-            'answer': 'incorrect',
+      )
+      ..onPost(
+        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game,game.incarnation',
+        (server) => server.reply(
+          201,
+          {
+            "data": {
+              "id": "afdc23e8-2f50-4ce6-8407-a48f5fe2643c",
+              "type": "answers",
+              "attributes": {
+                "answer": "correct",
+              },
+              "relationships": {
+                "game": {
+                  "data": {
+                    "type": "games",
+                    "id": "22261813-2171-453f-a669-db08edc70d6d"
+                  }
+                }
+              }
+            },
+            "included": [
+              {
+                "id": "0091eb84-85c8-4e63-962b-39e1a19d2781",
+                "type": "incarnations",
+                "attributes": {
+                  "concept": "fill_in_the_blank",
+                  "mask": "An enormous headline proclaims ____ quit!"
+                }
+              },
+              {
+                "id": "22261813-2171-453f-a669-db08edc70d6d",
+                "type": "games",
+                "relationships": {
+                  "winner_answer": {
+                    "links": {
+                      "related":
+                          "${dotenv.env['API_ROOT']}/api/v1/answers/afdc23e8-2f50-4ce6-8407-a48f5fe2643c"
+                    }
+                  }
+                }
+              }
+            ],
+            "meta": {}
           },
-          'relationships': {
-            'game': {
-              'data': {
-                'type': 'games',
-                'id': '22261813-2171-453f-a669-db08edc70d6d'
+        ),
+        data: {
+          'data': {
+            'type': 'answers',
+            'attributes': {
+              'answer': 'correct',
+            },
+            'relationships': {
+              'game': {
+                'data': {
+                  'type': 'games',
+                  'id': '22261813-2171-453f-a669-db08edc70d6d'
+                }
               }
             }
           }
-        }
-      },
-    );
+        },
+      );
 
     await tester.pumpWidget(MaterialApp(home: RequestGameRoute(dio: dio)));
     await tester.pumpAndSettle();
@@ -104,5 +167,11 @@ void main() {
     await tester.enterText(find.byType(TextField), 'incorrect');
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'correct');
+    await tester.tap(find.byType(ElevatedButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ElevatedButton), findsNothing);
   });
 }

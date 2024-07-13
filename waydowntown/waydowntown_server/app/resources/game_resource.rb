@@ -3,6 +3,7 @@
 class GameResource < ApplicationResource
   belongs_to :incarnation
   has_many :answers
+  belongs_to :winner_answer, resource: AnswerResource
 
   attribute :id, :uuid
 

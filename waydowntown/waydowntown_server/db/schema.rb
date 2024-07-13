@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 20_240_703_014_400) do
+ActiveRecord::Schema[7.1].define(version: 20_240_703_235_731) do
   create_schema 'unmnemonic_devices'
   create_schema 'waydowntown'
 
@@ -31,6 +31,7 @@ ActiveRecord::Schema[7.1].define(version: 20_240_703_014_400) do
     t.uuid 'incarnation_id'
     t.datetime 'inserted_at', precision: 0, null: false
     t.datetime 'updated_at', precision: 0, null: false
+    t.uuid 'winner_answer_id'
   end
 
   create_table 'incarnations', id: :uuid, default: -> { 'gen_random_uuid()' }, force: :cascade do |t|
@@ -87,6 +88,8 @@ ActiveRecord::Schema[7.1].define(version: 20_240_703_014_400) do
   end
 
   add_foreign_key 'answers', 'games', name: 'answers_game_id_fkey'
+  add_foreign_key 'games', 'answers', column: 'winner_answer_id', name: 'games_winner_answer_id_fkey',
+                                      on_delete: :nullify
   add_foreign_key 'games', 'incarnations', name: 'games_incarnation_id_fkey'
   add_foreign_key 'users', 'teams', name: 'users_team_id_fkey', on_delete: :nullify
 end

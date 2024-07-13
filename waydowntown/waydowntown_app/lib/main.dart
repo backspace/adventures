@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 Future main() async {
   await dotenv.load(fileName: '.env');
@@ -138,12 +139,70 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class RequestGameRoute extends StatelessWidget {
+class RequestGameRoute extends StatefulWidget {
   final Dio dio;
+
+  RequestGameRoute({Key? key, required this.dio}) : super(key: key);
+
+  @override
+  _RequestGameRouteState createState() => _RequestGameRouteState();
+}
+
+class _RequestGameRouteState extends State<RequestGameRoute> {
   String answer = 'answer';
   Game? game;
 
-  RequestGameRoute({super.key, required this.dio});
+  @override
+  void initState() {
+    super.initState();
+    fetchGame();
+  }
+
+  Future<void> fetchGame() async {
+    try {
+      final response = await widget.dio.post(
+        '${dotenv.env['API_ROOT']}/api/v1/games',
+        queryParameters: {'include': 'incarnation'},
+      );
+
+      if (response.statusCode == 201) {
+        setState(() {
+          game = Game.fromJson(response.data);
+        });
+      } else {
+        throw Exception('Failed to load game');
+      }
+    } catch (error) {
+      print('Error fetching game: $error');
+    }
+  }
+
+  Future<void> submitAnswer(String answer) async {
+    try {
+      final response = await widget.dio.post(
+        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game,game.incarnation',
+        data: {
+          'data': {
+            'type': 'answers',
+            'attributes': {
+              'answer': answer,
+            },
+            'relationships': {
+              'game': {
+                'data': {'type': 'games', 'id': game!.id},
+              },
+            },
+          },
+        },
+      );
+
+      setState(() {
+        game = Game.fromJson(response.data);
+      });
+    } catch (error) {
+      print('Error submitting answer: $error');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,37 +213,32 @@ class RequestGameRoute extends StatelessWidget {
       body: Center(
         child: Column(
           children: [
-            FutureBuilder<Game>(
-              future: fetchGame(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return Column(
-                    children: [
-                      Text(snapshot.data!.incarnation.concept),
-                      Text(snapshot.data!.incarnation.mask),
-                      TextField(
-                        decoration: const InputDecoration(
-                          labelText: 'Answer',
-                        ),
-                        onChanged: (value) {
-                          answer = value;
-                        },
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          submitAnswer(answer);
-                        },
-                        child: const Text('Submit'),
-                      ),
-                    ],
-                  );
-                } else if (snapshot.hasError) {
-                  return Text('${snapshot.error}');
-                }
-
-                return const CircularProgressIndicator();
-              },
-            ),
+            if (game != null)
+              Column(
+                children: [
+                  Text(game!.incarnation.concept),
+                  Text(game!.incarnation.mask),
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Answer',
+                    ),
+                    onChanged: (value) {
+                      answer = value;
+                    },
+                  ),
+                  if (game!.isOver)
+                    const Text('Done!')
+                  else
+                    ElevatedButton(
+                      onPressed: () async {
+                        await submitAnswer(answer);
+                        print("game over? ${game!.isOver}");
+                      },
+                      child: const Text('Submit'),
+                    ),
+                ],
+              ),
+            if (game == null) const CircularProgressIndicator(),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
@@ -195,34 +249,6 @@ class RequestGameRoute extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<Game> fetchGame() async {
-    final response = await dio.post('${dotenv.env['API_ROOT']}/api/v1/games',
-        queryParameters: {'include': 'incarnation'});
-
-    if (response.statusCode == 201) {
-      game = Game.fromJson(response.data);
-      return game!;
-    } else {
-      throw Exception('Failed to load game');
-    }
-  }
-
-  void submitAnswer(String answer) async {
-    await dio.post('${dotenv.env['API_ROOT']}/api/v1/answers', data: {
-      'data': {
-        'type': 'answers',
-        'attributes': {
-          'answer': answer,
-        },
-        'relationships': {
-          'game': {
-            'data': {'type': 'games', 'id': game?.id}
-          }
-        }
-      }
-    });
   }
 }
 
@@ -246,12 +272,40 @@ class Incarnation {
 class Game {
   final String id;
   final Incarnation incarnation;
+  final bool isOver;
 
-  const Game({required this.id, required this.incarnation});
+  const Game(
+      {required this.id, required this.incarnation, required this.isOver});
 
   factory Game.fromJson(Map<String, dynamic> json) {
+    bool gameIsIncluded = json['data']['type'] != 'games';
+    Map<String, dynamic> gameJson = gameIsIncluded
+        ? _findIncluded(json['included'], 'games')
+        : json['data'];
+
+    print("gameJson: $gameJson");
+    print(
+        "isover ${gameJson['relationships']?['winner_answer']?['links']?['related'] != null ? true : false}");
+
     return Game(
-        id: json['data']['id'],
-        incarnation: Incarnation.fromJson(json['included'][0]));
+      id: gameJson['id'],
+      incarnation:
+          Incarnation.fromJson(_findIncluded(json['included'], 'incarnations')),
+      isOver: gameJson['relationships']?['winner_answer']?['links']
+                  ?['related'] !=
+              null
+          ? true
+          : false,
+    );
+  }
+
+  static Map<String, dynamic> _findIncluded(
+      List<dynamic> included, String type) {
+    for (var item in included) {
+      if (item['type'] == type) {
+        return item;
+      }
+    }
+    throw Exception('Game not found in included');
   }
 }

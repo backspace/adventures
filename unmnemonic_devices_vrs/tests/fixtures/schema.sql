@@ -284,7 +284,8 @@ CREATE TABLE waydowntown.games (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     incarnation_id uuid,
     inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL
+    updated_at timestamp(0) without time zone NOT NULL,
+    winner_answer_id uuid
 );
 
 
@@ -576,6 +577,14 @@ ALTER TABLE ONLY waydowntown.games
 
 
 --
+-- Name: games games_winner_answer_id_fkey; Type: FK CONSTRAINT; Schema: waydowntown; Owner: -
+--
+
+ALTER TABLE ONLY waydowntown.games
+    ADD CONSTRAINT games_winner_answer_id_fkey FOREIGN KEY (winner_answer_id) REFERENCES waydowntown.answers(id) ON DELETE SET NULL;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -623,3 +632,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240630162659);
 INSERT INTO public."schema_migrations" (version) VALUES (20240630162710);
 INSERT INTO public."schema_migrations" (version) VALUES (20240630162715);
 INSERT INTO public."schema_migrations" (version) VALUES (20240703014400);
+INSERT INTO public."schema_migrations" (version) VALUES (20240703235731);
