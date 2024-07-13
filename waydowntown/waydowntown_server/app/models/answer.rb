@@ -9,23 +9,21 @@ class Answer < ApplicationRecord
   private
 
   def game_cannot_have_winner
-    if game.winner_answer.present? && game.winner_answer != self
-      errors.add(:game, 'already has a winner answer')
-    end
+    return unless game.winner_answer.present? && game.winner_answer != self
+
+    errors.add(:game, 'already has a winner answer')
   end
 
   def check_for_winner
     answer_found = false
 
-    if self.game.incarnation.answer == self.answer
-      answer_found = true
-    end
+    answer_found = true if game.incarnation.answer == answer
 
     yield answer
 
-    if answer_found
-      self.game.winner_answer = self
-      self.game.save!
-    end
+    return unless answer_found
+
+    game.winner_answer = self
+    game.save!
   end
 end

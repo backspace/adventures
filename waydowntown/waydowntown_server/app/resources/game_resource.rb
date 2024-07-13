@@ -9,7 +9,7 @@ class GameResource < ApplicationResource
 
   sideloads[:incarnation]
 
-  # FIXME should this be in the model? confused
+  # FIXME: should this be in the model? confused
   def create(attributes)
     game = Game.new(attributes)
     game.incarnation = Incarnation.all.sample
