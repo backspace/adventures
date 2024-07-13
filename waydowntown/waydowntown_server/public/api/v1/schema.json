@@ -209,12 +209,6 @@
         },
         "create": {
           "resource": "AnswerResource"
-        },
-        "update": {
-          "resource": "AnswerResource"
-        },
-        "destroy": {
-          "resource": "AnswerResource"
         }
       }
     },
