@@ -3,7 +3,7 @@ defmodule RegistrationsWeb.RegistrationController do
   alias RegistrationsWeb.User
 
   def new(conn, _params) do
-    changeset = User.changeset(%User{})
+    changeset = User.old_changeset(%User{})
 
     conn =
       case Application.get_env(:registrations, :registration_closed) do
@@ -22,7 +22,7 @@ defmodule RegistrationsWeb.RegistrationController do
   end
 
   def create(conn, %{"user" => user_params}) do
-    changeset = User.changeset(%User{}, user_params)
+    changeset = User.old_changeset(%User{}, user_params)
 
     case RegistrationsWeb.Registration.create(changeset, Registrations.Repo) do
       {:ok, user} ->
