@@ -7,7 +7,7 @@ defmodule RegistrationsWeb.Plugs.LoginRequired do
 
   def call(conn, _) do
     conn = fetch_session(conn)
-    user = conn.assigns[:current_user_object]
+    user = conn.assigns[:current_user]
 
     if user do
       conn

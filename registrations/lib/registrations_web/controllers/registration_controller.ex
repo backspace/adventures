@@ -55,14 +55,14 @@ defmodule RegistrationsWeb.RegistrationController do
   end
 
   def edit(conn, _) do
-    current_user = conn.assigns[:current_user_object]
+    current_user = conn.assigns[:current_user]
     changeset = User.account_changeset(current_user)
 
     render(conn, "edit.html", user: current_user, changeset: changeset)
   end
 
   def update(conn, %{"user" => user_params}) do
-    current_user = conn.assigns[:current_user_object]
+    current_user = conn.assigns[:current_user]
     changeset = User.account_changeset(current_user, user_params)
 
     session_params = %{
@@ -93,14 +93,14 @@ defmodule RegistrationsWeb.RegistrationController do
 
   # FIXME 😳
   def maybe_delete(conn, _) do
-    current_user = conn.assigns[:current_user_object]
+    current_user = conn.assigns[:current_user]
     changeset = User.deletion_changeset(current_user)
 
     render(conn, "maybe_delete.html", user: current_user, changeset: changeset)
   end
 
   def delete(conn, %{"user" => user_params}) do
-    current_user = conn.assigns[:current_user_object]
+    current_user = conn.assigns[:current_user]
     changeset = User.deletion_changeset(current_user, user_params)
 
     session_params = %{

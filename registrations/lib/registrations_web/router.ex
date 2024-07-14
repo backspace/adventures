@@ -8,14 +8,12 @@ defmodule RegistrationsWeb.Router do
     plug(:fetch_flash)
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
-    plug(RegistrationsWeb.Plugs.CurrentUser)
     plug(RegistrationsWeb.Plugs.Settings)
   end
 
   pipeline :api do
     plug(:accepts, ["json"])
     plug(:fetch_session)
-    plug(RegistrationsWeb.Plugs.CurrentUser)
   end
 
   scope "/" do

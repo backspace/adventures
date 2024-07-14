@@ -27,7 +27,7 @@ defmodule RegistrationsWeb.UserController do
 
   def edit(conn, _) do
     users = Repo.all(User)
-    current_user_only = conn.assigns[:current_user_object]
+    current_user_only = conn.assigns[:current_user]
     changeset = User.details_changeset(current_user_only)
 
     current_user = Repo.preload(current_user_only, team: [:users])
@@ -55,7 +55,7 @@ defmodule RegistrationsWeb.UserController do
 
   def update(conn, %{"user" => user_params}) do
     users = Repo.all(User)
-    current_user = conn.assigns[:current_user_object]
+    current_user = conn.assigns[:current_user]
     changeset = User.details_changeset(current_user, user_params)
 
     current_user = Repo.preload(current_user, team: [:users])
@@ -79,7 +79,7 @@ defmodule RegistrationsWeb.UserController do
   end
 
   def voicepass(conn, _params) do
-    current_user = conn.assigns[:current_user_object]
+    current_user = conn.assigns[:current_user]
 
     lines = User.voicepass_candidates()
     random_index = :rand.uniform(length(lines))

@@ -18,7 +18,7 @@ defmodule RegistrationsWeb.Session do
   end
 
   def current_user(conn) do
-    conn.assigns[:current_user_object]
+    conn.assigns[:current_user]
   end
 
   def logged_in?(conn), do: !!current_user(conn)

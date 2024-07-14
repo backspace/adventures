@@ -68,7 +68,7 @@ defmodule RegistrationsWeb.MessageController do
 
     users =
       if(me == "true",
-        do: [conn.assigns[:current_user_object]],
+        do: [conn.assigns[:current_user]],
         else: Repo.all(RegistrationsWeb.User)
       )
       |> Repo.preload(team: [:users])
