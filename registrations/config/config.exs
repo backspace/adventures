@@ -37,7 +37,8 @@ config :phoenix, :json_library, Jason
 config :registrations, :pow,
   web_module: RegistrationsWeb,
   user: RegistrationsWeb.User,
-  repo: Registrations.Repo
+  repo: Registrations.Repo,
+  routes_backend: RegistrationsWeb.Pow.Routes
 
 # Configure phoenix generators
 config :phoenix, :generators,
