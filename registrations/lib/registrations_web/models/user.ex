@@ -1,18 +1,14 @@
 defmodule RegistrationsWeb.User do
+  use Ecto.Schema
+  use Pow.Ecto.Schema
+
   use RegistrationsWeb, :model
   alias Registrations.Repo
 
   @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "users" do
-    field(:email, RegistrationsWeb.DowncasedString)
-    field(:crypted_password, :string)
-    field(:password, :string, virtual: true)
-    field(:recovery_hash, :string)
-
-    field(:new_password, :string, virtual: true)
-    field(:new_password_confirmation, :string, virtual: true)
-    field(:current_password, :string, virtual: true)
+    pow_user_fields()
 
     field(:admin, :boolean)
 

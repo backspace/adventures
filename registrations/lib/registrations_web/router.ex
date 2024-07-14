@@ -1,5 +1,6 @@
 defmodule RegistrationsWeb.Router do
   use RegistrationsWeb, :router
+  use Pow.Phoenix.Router
 
   pipeline :browser do
     plug(:accepts, ["html"])
@@ -15,6 +16,12 @@ defmodule RegistrationsWeb.Router do
     plug(:accepts, ["json"])
     plug(:fetch_session)
     plug(RegistrationsWeb.Plugs.CurrentUser)
+  end
+
+  scope "/" do
+    pipe_through :browser
+
+    pow_routes()
   end
 
   scope "/", RegistrationsWeb do

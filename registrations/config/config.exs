@@ -34,6 +34,10 @@ import_config "#{Mix.env()}.exs"
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :registrations, :pow,
+  user: Registrations.User,
+  repo: Registrations.Repo
+
 # Configure phoenix generators
 config :phoenix, :generators,
   migration: true,
