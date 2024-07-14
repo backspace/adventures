@@ -21,7 +21,7 @@ defmodule Registrations.Factory do
       user_factory(),
       %{
         email: "octavia.butler@example.com",
-        password_hash: Bcrypt.hash_pwd_salt("Xenogenesis")
+        password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Xenogenesis")
       }
     )
   end

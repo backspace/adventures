@@ -38,7 +38,7 @@ defmodule Registrations.Integration.Teams do
 
     insert(:user,
       email: "takver@example.com",
-      password_hash: Bcrypt.hash_pwd_salt("Anarres")
+      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
     )
 
     navigate_to("/")
@@ -151,7 +151,7 @@ defmodule Registrations.Integration.Teams do
 
     insert(:user,
       email: "takver@example.com",
-      password_hash: Bcrypt.hash_pwd_salt("Anarres")
+      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
     )
 
     navigate_to("/")
@@ -168,7 +168,7 @@ defmodule Registrations.Integration.Teams do
   test "the table is hidden when empty" do
     insert(:user,
       email: "takver@example.com",
-      password_hash: Bcrypt.hash_pwd_salt("Anarres")
+      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
     )
 
     navigate_to("/")
@@ -183,7 +183,7 @@ defmodule Registrations.Integration.Teams do
 
     insert(:user,
       email: "takver@example.com",
-      password_hash: Bcrypt.hash_pwd_salt("Anarres")
+      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
     )
 
     navigate_to("/")
@@ -221,11 +221,14 @@ defmodule Registrations.Integration.Teams do
     takver =
       insert(:user,
         email: "takver@example.com",
-        password_hash: Bcrypt.hash_pwd_salt("Anarres")
+        password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
       )
 
     bedap =
-      insert(:user, email: "bedap@example.com", password_hash: Bcrypt.hash_pwd_salt("Anarres"))
+      insert(:user,
+        email: "bedap@example.com",
+        password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
+      )
 
     insert(:team,
       name: "A team",
@@ -270,7 +273,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Teams do
 
     insert(:user,
       email: "takver@example.com",
-      password_hash: Bcrypt.hash_pwd_salt("Anarres")
+      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
     )
 
     navigate_to("/")
