@@ -14,12 +14,12 @@
           </div>
           <div class='form-group'>
             <%= label f, :password %>
-            <%= password_input f, :password %>
+            <%= password_input f, :password, id: 'password' %>
             <%= error_tag f, :password %>
           </div>
           <div class='form-group'>
             <%= label f, :password_confirmation %>
-            <%= password_input f, :password_confirmation %>
+            <%= password_input f, :password_confirmation, id: 'password-confirmation' %>
             <%= error_tag f, :password_confirmation %>
           </div>
           <div class='form-group'>
