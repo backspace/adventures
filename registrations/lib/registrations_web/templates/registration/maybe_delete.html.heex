@@ -2,7 +2,7 @@
   <div class='small-12 columns'>
     <h2>Delete account</h2>
 
-    <%= form_for @changeset, Routes.registration_path(@conn, :delete), fn f -> %>
+    <%= form_for @changeset, Routes.pow_registration_path(@conn, :delete), fn f -> %>
       <%= render RegistrationsWeb.SharedView, "errors.html", changeset: @changeset, f: f %>
 
       <div class='row'>

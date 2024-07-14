@@ -96,7 +96,7 @@
 <%= render "relationships.html", user: @user, relationships: @relationships %>
 <div class='row card'>
   <div class='small-12 columns'>
-    <%= link "Change your password", to: Routes.registration_path(@conn, :edit), class: "account" %>
+    <%= link "Change your password", to: Routes.pow_registration_path(@conn, :edit), class: "account" %>
   </div>
 </div>
 <div class='row card'>

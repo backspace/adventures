@@ -2,7 +2,7 @@
   <div class='small-12 columns'>
     <h2>Change Password</h2>
 
-    <%= form_for @changeset, Routes.registration_path(@conn, :update), fn f -> %>
+    <%= form_for @changeset, Routes.pow_registration_path(@conn, :update), fn f -> %>
       <%= render RegistrationsWeb.SharedView, "errors.html", changeset: @changeset, f: f %>
 
       <div class='row'>

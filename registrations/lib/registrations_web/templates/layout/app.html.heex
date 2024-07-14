@@ -31,7 +31,7 @@
               <li><%= active_link "Home", @conn, Routes.page_path(@conn, :index), class: "home" %></li>
               <%= if logged_in?(@conn) do %>
                 <li>
-                  <%= link to: Routes.session_path(@conn, :delete), method: :delete, class: "logout" do %>
+                  <%= link to: Routes.pow_session_path(@conn, :delete), method: :delete, class: "logout" do %>
                     Log out <span class="show-for-medium session-email"><%= current_user(@conn).email %></span>
                   <% end %>
                 </li>
@@ -45,8 +45,8 @@
                   <% end %>
                 <% end %>
               <% else %>
-                <li><%= active_link "Register", @conn, Routes.registration_path(@conn, :new), class: "register" %></li>
-                <li><%= active_link "Log in", @conn, Routes.session_path(@conn, :new), class: "login" %></li>
+                <li><%= active_link "Register", @conn, Routes.pow_registration_path(@conn, :new), class: "register" %></li>
+                <li><%= active_link "Log in", @conn, Routes.pow_session_path(@conn, :new), class: "login" %></li>
               <% end %>
             </ul>
           </div>
