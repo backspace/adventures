@@ -1,0 +1,28 @@
+<div class='row card'>
+  <div class='small-12 columns'>
+    <h2>Sign in</h2>
+
+    <!-- FIXME does not yet exist -->
+    <%= link "Forgot your password?", to: Routes.reset_path(@conn, :new), class: "forgot" %>
+    <%= link "Register", to: Routes.pow_registration_path(@conn, :new) %>
+    <%= form_for @changeset, @action, [as: :user], fn f -> %>
+      <%= render RegistrationsWeb.SharedView, "errors.html", changeset: @changeset, f: f %>
+
+      <div class="form-group">
+        <%= label f, Pow.Ecto.Schema.user_id_field(@changeset) %>
+        <%= text_input f, Pow.Ecto.Schema.user_id_field(@changeset) %>
+        <%= error_tag f, Pow.Ecto.Schema.user_id_field(@changeset) %>
+      </div>
+
+      <div class="form-group">
+        <%= label f, :password %>
+        <%= password_input f, :password %>
+        <%= error_tag f, :password %>
+      </div>
+
+      <div class="form-group">
+        <%= submit "Sign in", class: "button primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

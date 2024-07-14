@@ -35,6 +35,7 @@ import_config "#{Mix.env()}.exs"
 config :phoenix, :json_library, Jason
 
 config :registrations, :pow,
+  web_module: RegistrationsWeb,
   user: RegistrationsWeb.User,
   repo: Registrations.Repo
 
