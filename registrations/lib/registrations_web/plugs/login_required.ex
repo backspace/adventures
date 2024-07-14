@@ -15,7 +15,7 @@ defmodule RegistrationsWeb.Plugs.LoginRequired do
       conn
       |> Phoenix.Controller.put_flash(:info, "Please log in to edit your details")
       |> Phoenix.Controller.redirect(
-        to: RegistrationsWeb.Router.Helpers.session_path(conn, :new)
+        to: RegistrationsWeb.Router.Helpers.pow_session_path(conn, :new)
       )
       |> halt
     end
