@@ -35,11 +35,13 @@ import_config "#{Mix.env()}.exs"
 config :phoenix, :json_library, Jason
 
 config :registrations, :pow,
+  extensions: [PowEmailConfirmation],
+  controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
   web_module: RegistrationsWeb,
   user: RegistrationsWeb.User,
   repo: Registrations.Repo,
   routes_backend: RegistrationsWeb.Pow.Routes,
-  mailer_backend: RegistrationsWeb.Pow.Mailer,
+  mailer_backend: Registrations.Mailer,
   messages_backend: RegistrationsWeb.Pow.Messages
 
 # Configure phoenix generators
