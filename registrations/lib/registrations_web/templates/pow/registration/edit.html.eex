@@ -9,7 +9,7 @@
         <div class='small-12 columns'>
           <div class='form-group'>
             <%= label f, :current_password %>
-            <%= password_input f, :current_password, id: 'current-password' %>
+            <%= password_input f, :current_password, id: 'current_password' %>
             <%= error_tag f, :current_password %>
           </div>
           <div class='form-group'>
@@ -19,12 +19,12 @@
           </div>
           <div class='form-group'>
             <%= label f, :password %>
-            <%= password_input f, :password, id: 'password' %>
+            <%= password_input f, :password, id: 'new_password' %>
             <%= error_tag f, :password %>
           </div>
           <div class='form-group'>
             <%= label f, :password_confirmation %>
-            <%= password_input f, :password_confirmation, id: 'password-confirmation' %>
+            <%= password_input f, :password_confirmation, id: 'new_password_confirmation' %>
             <%= error_tag f, :password_confirmation %>
           </div>
           <div class='form-group'>

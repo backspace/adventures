@@ -44,6 +44,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     Register.fill_email("samuel.delaney@example.com")
     Register.fill_password("nestofspiders")
+    Register.fill_password_confirmation("nestofspiders")
     Register.submit()
 
     assert Nav.info_text() == "Your account was created"
@@ -108,21 +109,23 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Account.fill_current_password("Wrong")
     Account.submit()
 
-    assert Nav.error_text() == "Please enter your current password"
+    assert Nav.error_text() ==
+             "Oops, something went wrong! Please check the errors below:\nCurrent password is invalid"
 
     Account.fill_current_password("Xenogenesis")
     Account.fill_new_password("abcde")
     Account.fill_new_password_confirmation("vwxyz")
     Account.submit()
 
-    assert Nav.error_text() == "New passwords must match"
+    assert Nav.error_text() ==
+             "Oops, something went wrong! Please check the errors below:\nPassword should be at least 8 character(s)\nPassword confirmation does not match confirmation"
 
     Account.fill_current_password("Xenogenesis")
     Account.fill_new_password("Lilith’s Brood")
     Account.fill_new_password_confirmation("Lilith’s Brood")
     Account.submit()
 
-    assert Nav.info_text() == "Your password has been changed"
+    assert Nav.info_text() == "Your account has been updated."
 
     Nav.logout_link().click
 
@@ -192,7 +195,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Account.fill_new_password_confirmation("anewpassword")
     Account.submit()
 
-    assert Nav.info_text() == "Your password has been changed"
+    assert Nav.info_text() == "Your account has been updated."
     assert Nav.logout_link().text == "Log out octavia.butler@example.com"
 
     Nav.logout_link().click

@@ -38,7 +38,8 @@ config :registrations, :pow,
   web_module: RegistrationsWeb,
   user: RegistrationsWeb.User,
   repo: Registrations.Repo,
-  routes_backend: RegistrationsWeb.Pow.Routes
+  routes_backend: RegistrationsWeb.Pow.Routes,
+  messages_backend: RegistrationsWeb.Pow.Messages
 
 # Configure phoenix generators
 config :phoenix, :generators,

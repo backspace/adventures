@@ -9,7 +9,7 @@
         <div class='small-12 columns'>
           <div class='form-group'>
             <%= label f, Pow.Ecto.Schema.user_id_field(@changeset) %>
-            <%= text_input f, Pow.Ecto.Schema.user_id_field(@changeset) %>
+            <%= text_input f, Pow.Ecto.Schema.user_id_field(@changeset), id: 'email' %>
             <%= error_tag f, Pow.Ecto.Schema.user_id_field(@changeset) %>
           </div>
           <div class='form-group'>
@@ -19,7 +19,7 @@
           </div>
           <div class='form-group'>
             <%= label f, :password_confirmation %>
-            <%= password_input f, :password_confirmation, id: 'password-confirmation' %>
+            <%= password_input f, :password_confirmation, id: 'password_confirmation' %>
             <%= error_tag f, :password_confirmation %>
           </div>
           <div class='form-group'>
