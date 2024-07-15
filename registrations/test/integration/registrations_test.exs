@@ -28,14 +28,19 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Nav.register_link().click
 
     Register.submit()
-    assert Nav.error_text() == "Unable to create account"
+
+    assert Nav.error_text() ==
+             "Oops, something went wrong! Please check the errors below:\nPassword can't be blank\nEmail can't be blank"
+
     assert Register.email_error() == "Email can't be blank"
     # FIXME fix plural detection
     assert Register.password_error() == "Password can't be blank"
 
     Register.fill_email("franklin.w.dixon@example.com")
     Register.submit()
-    assert Nav.error_text() == "Unable to create account"
+
+    assert Nav.error_text() ==
+             "Oops, something went wrong! Please check the errors below:\nPassword can't be blank"
 
     Register.fill_email("samuel.delaney@example.com")
     Register.fill_password("nestofspiders")
@@ -71,7 +76,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.fill_password("Parable of the Talents")
     Login.submit()
 
-    assert Nav.error_text() == "Wrong email or password"
+    assert Nav.error_text() ==
+             "The provided login details did not work. Please verify your credentials, and try again."
 
     Login.fill_password("Xenogenesis")
     Login.submit()
@@ -127,7 +133,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.fill_password("Xenogenesis")
     Login.submit()
 
-    assert Nav.error_text() == "Wrong email or password"
+    assert Nav.error_text() ==
+             "The provided login details did not work. Please verify your credentials, and try again."
 
     Login.fill_password("Lilith’s Brood")
     Login.submit()
