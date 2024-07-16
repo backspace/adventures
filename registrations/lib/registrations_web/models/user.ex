@@ -2,7 +2,7 @@ defmodule RegistrationsWeb.User do
   use Ecto.Schema
 
   use Pow.Ecto.Schema
-  use Pow.Extension.Ecto.Schema, extensions: [PowEmailConfirmation]
+  use Pow.Extension.Ecto.Schema, extensions: [PowEmailConfirmation, PowResetPassword]
 
   use RegistrationsWeb, :model
   alias Registrations.Repo

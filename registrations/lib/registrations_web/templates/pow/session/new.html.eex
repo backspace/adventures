@@ -3,7 +3,7 @@
     <h2>Sign in</h2>
 
     <!-- FIXME does not yet exist -->
-    <!-- link "Forgot your password?", to: Routes.reset_path(@conn, :new), class: "forgot" -->
+    <%= link "Forgot your password?", to: Routes.pow_reset_password_reset_password_path(@conn, :new), class: "forgot" %>
     <%= link "Register", to: Routes.pow_registration_path(@conn, :new) %>
     <%= form_for @changeset, @action, [as: :user], fn f -> %>
       <%= render RegistrationsWeb.SharedView, "errors.html", changeset: @changeset, f: f %>

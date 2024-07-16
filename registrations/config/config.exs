@@ -35,7 +35,8 @@ import_config "#{Mix.env()}.exs"
 config :phoenix, :json_library, Jason
 
 config :registrations, :pow,
-  extensions: [PowEmailConfirmation],
+  web_mailer_module: RegistrationsWeb,
+  extensions: [PowEmailConfirmation, PowResetPassword],
   controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
   web_module: RegistrationsWeb,
   user: RegistrationsWeb.User,
