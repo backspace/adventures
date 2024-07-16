@@ -216,15 +216,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Nav.edit_details()
     Details.delete_account()
 
-    Account.fill_current_password("wrongpassword")
-    Account.submit()
-
-    assert Nav.error_text() == "Your password did not match"
-
-    Account.fill_current_password("Xenogenesis")
-    Account.submit()
-
-    assert Nav.info_text() == "Your account has been deleted 😧"
+    assert Nav.info_text() == "Your account has been deleted. Sorry to see you go!"
 
     [admin_email] = Registrations.SwooshHelper.sent_email()
 
