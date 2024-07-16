@@ -10,7 +10,16 @@ defmodule RegistrationsWeb.User do
   @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "users" do
-    pow_user_fields()
+    # pow_user_fields() with overridden email field
+    field(:email, RegistrationsWeb.DowncasedString)
+    field(:password_hash, :string)
+    field(:current_password, :string, virtual: true)
+    field(:password, :string, virtual: true)
+    field(:confirm_password, :string, virtual: true)
+
+    field(:email_confirmation_token, :string)
+    field(:email_confirmed_at, :utc_datetime)
+    field(:unconfirmed_email, :string)
 
     field(:admin, :boolean)
 
