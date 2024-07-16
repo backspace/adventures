@@ -17,7 +17,7 @@ defmodule Registrations.Mailer do
     %Swoosh.Email{}
     |> to({"", user.email})
     |> from(adventure_from())
-    |> subject(subject)
+    |> subject("[#{phrase("email_title")}] #{subject}")
     |> html_body(html)
     |> text_body(text)
   end

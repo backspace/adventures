@@ -155,22 +155,17 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Nav.login_link().click
     Login.click_forgot_password()
 
-    ForgotPassword.fill_email("noone@example.com")
-    ForgotPassword.submit()
-
-    assert Nav.error_text() == "No registration with that email address found"
-    refute Registrations.SwooshHelper.emails_sent?()
-
     ForgotPassword.fill_email("octavia.butler@example.com")
     ForgotPassword.submit()
 
-    assert Nav.info_text() == "Check your email for a password reset link"
+    assert Nav.info_text() ==
+             "If an account for the provided email exists, an email with reset instructions will be sent to you. Please check your inbox."
 
     [forgot_password_email] = Registrations.SwooshHelper.sent_email()
 
     assert forgot_password_email.to == [{"", "octavia.butler@example.com"}]
     assert forgot_password_email.from == {"", "b@events.chromatin.ca"}
-    assert forgot_password_email.subject == "[rendezvous] Password reset"
+    assert forgot_password_email.subject == "[rendezvous] Reset password link"
 
     [url] =
       Floki.find(forgot_password_email.html_body, "a")
@@ -178,10 +173,10 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     reset_path = URI.parse(url).path
 
-    assert String.starts_with?(reset_path, "/reset/%242b")
+    assert String.starts_with?(reset_path, "/reset-password/")
 
-    navigate_to("/reset/fake")
-    assert Nav.error_text() == "Unknown password reset token"
+    navigate_to("/reset-password/fake")
+    assert Nav.error_text() == "The reset token has expired."
 
     navigate_to(reset_path)
 
@@ -189,13 +184,19 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Account.fill_new_password_confirmation("awrongpassword")
     Account.submit()
 
-    assert Nav.error_text() == "New passwords must match"
+    assert Nav.error_text() ==
+             "Oops, something went wrong! Please check the errors below:\nPassword confirmation does not match confirmation"
 
     Account.fill_new_password("anewpassword")
     Account.fill_new_password_confirmation("anewpassword")
     Account.submit()
 
-    assert Nav.info_text() == "Your account has been updated."
+    assert Nav.info_text() == "The password has been updated."
+
+    Login.fill_email("Octavia.butler@example.com")
+    Login.fill_password("anewpassword")
+    Login.submit()
+
     assert Nav.logout_link().text == "Log out octavia.butler@example.com"
 
     Nav.logout_link().click
@@ -203,8 +204,10 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.login_as("octavia.butler@example.com", "anewpassword")
     assert Nav.logout_link().text == "Log out octavia.butler@example.com"
 
+    Nav.logout_link().click
+
     navigate_to(reset_path)
-    assert Nav.error_text() == "Unknown password reset token"
+    assert Nav.error_text() == "The reset token has expired."
   end
 
   test "delete account" do
