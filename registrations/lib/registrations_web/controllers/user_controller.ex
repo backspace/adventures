@@ -27,7 +27,7 @@ defmodule RegistrationsWeb.UserController do
 
   def edit(conn, _) do
     users = Repo.all(User)
-    current_user_only = conn.assigns[:current_user]
+    current_user_only = Repo.get_by(User, email: conn.assigns[:current_user].email)
     changeset = User.details_changeset(current_user_only)
 
     current_user = Repo.preload(current_user_only, team: [:users])
