@@ -5,9 +5,6 @@ defmodule Registrations.Mailer do
   import Swoosh.Email
   import RegistrationsWeb.SharedHelpers
 
-  alias RegistrationsWeb.Router
-  alias RegistrationsWeb.Endpoint
-
   require Logger
 
   @from "b@events.chromatin.ca"
@@ -108,19 +105,6 @@ defmodule Registrations.Mailer do
     |> subject("[#{phrase("email_title")}] #{subject}")
     |> text_body(backlog_text(messages))
     |> html_body(backlog_html(messages))
-    |> deliver
-  end
-
-  @spec send_password_reset(atom | %{:email => any, :recovery_hash => any, optional(any) => any}) ::
-          {:error, any} | {:ok, any}
-  def send_password_reset(user) do
-    new()
-    |> to(user.email)
-    |> from(adventure_from())
-    |> subject("[#{phrase("email_title")}] Password reset")
-    |> html_body(
-      "Here is a <a href='#{Router.Helpers.reset_url(Endpoint, :edit, user.recovery_hash)}'>password reset link</a>"
-    )
     |> deliver
   end
 
