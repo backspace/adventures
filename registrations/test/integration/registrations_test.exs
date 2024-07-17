@@ -49,7 +49,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     assert Nav.info_text() == "Your account was created"
 
-    [welcome_email, admin_email] = Registrations.SwooshHelper.sent_email()
+    [admin_email, welcome_email] = Registrations.SwooshHelper.sent_email()
 
     assert admin_email.to == [{"", "b@events.chromatin.ca"}]
     assert admin_email.from == {"", "b@events.chromatin.ca"}
@@ -273,9 +273,10 @@ defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
 
     Register.fill_email("samuel.delaney@example.com")
     Register.fill_password("nestofspiders")
+    Register.fill_password_confirmation("nestofspiders")
     Register.submit()
 
-    [welcome_email, admin_email] = Registrations.SwooshHelper.sent_email()
+    [admin_email, welcome_email] = Registrations.SwooshHelper.sent_email()
 
     assert admin_email.to == [{"", "knut@chromatin.ca"}]
     assert admin_email.from == {"", "knut@chromatin.ca"}
