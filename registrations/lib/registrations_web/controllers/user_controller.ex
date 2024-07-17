@@ -87,7 +87,8 @@ defmodule RegistrationsWeb.UserController do
 
     changeset = User.voicepass_changeset(current_user, %{voicepass: new_voicepass})
 
-    Repo.update(changeset)
+    {:ok, new_user} = Repo.update(changeset)
+    conn = sync_user(conn, new_user)
 
     json(conn, %{data: %{voicepass: new_voicepass}})
   end

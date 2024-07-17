@@ -35,6 +35,8 @@ defmodule RegistrationsWeb do
       import Ecto.Query, only: [from: 1, from: 2]
 
       alias RegistrationsWeb.Router.Helpers, as: Routes
+
+      import RegistrationsWeb.Pow.ControllerHelper
     end
   end
 
