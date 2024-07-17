@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 20_240_703_235_731) do
+ActiveRecord::Schema[7.1].define(version: 20_240_714_173_901) do
   create_schema 'unmnemonic_devices'
   create_schema 'waydowntown'
 
@@ -68,8 +68,8 @@ ActiveRecord::Schema[7.1].define(version: 20_240_703_235_731) do
   end
 
   create_table 'users', id: :uuid, default: nil, force: :cascade do |t|
-    t.string 'email', limit: 255
-    t.string 'crypted_password', limit: 255
+    t.string 'email', limit: 255, null: false
+    t.string 'password_hash', limit: 255
     t.datetime 'inserted_at', precision: 0, null: false
     t.datetime 'updated_at', precision: 0, null: false
     t.boolean 'admin'

@@ -111,8 +111,8 @@ END) STORED
 
 CREATE TABLE public.users (
     id uuid NOT NULL,
-    email character varying(255),
-    crypted_password character varying(255),
+    email character varying(255) NOT NULL,
+    password_hash character varying(255),
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL,
     admin boolean,
@@ -633,3 +633,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240630162710);
 INSERT INTO public."schema_migrations" (version) VALUES (20240630162715);
 INSERT INTO public."schema_migrations" (version) VALUES (20240703014400);
 INSERT INTO public."schema_migrations" (version) VALUES (20240703235731);
+INSERT INTO public."schema_migrations" (version) VALUES (20240714173901);

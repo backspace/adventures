@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.Router do
 
   use Pow.Extension.Phoenix.Router,
     otp_app: :registrations,
-    extensions: [PowEmailConfirmation, PowResetPassword]
+    extensions: [PowResetPassword]
 
   pipeline :browser do
     plug(:accepts, ["html"])

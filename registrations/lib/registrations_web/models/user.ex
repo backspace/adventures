@@ -2,7 +2,7 @@ defmodule RegistrationsWeb.User do
   use Ecto.Schema
 
   use Pow.Ecto.Schema
-  use Pow.Extension.Ecto.Schema, extensions: [PowEmailConfirmation, PowResetPassword]
+  use Pow.Extension.Ecto.Schema, extensions: [PowResetPassword]
 
   use RegistrationsWeb, :model
   alias Registrations.Repo
@@ -16,10 +16,6 @@ defmodule RegistrationsWeb.User do
     field(:current_password, :string, virtual: true)
     field(:password, :string, virtual: true)
     field(:confirm_password, :string, virtual: true)
-
-    field(:email_confirmation_token, :string)
-    field(:email_confirmed_at, :utc_datetime)
-    field(:unconfirmed_email, :string)
 
     field(:admin, :boolean)
 
