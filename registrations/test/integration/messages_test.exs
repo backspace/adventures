@@ -209,9 +209,10 @@ defmodule Registrations.Integration.Messages do
 
     Register.fill_email("registerer@example.com")
     Register.fill_password("abcdefghi")
+    Register.fill_password_confirmation("abcdefghi")
     Register.submit()
 
-    [backlog_email, _welcome_, _admin] = Registrations.SwooshHelper.sent_email()
+    [_admin, _welcome, backlog_email] = Registrations.SwooshHelper.sent_email()
 
     assert backlog_email.to == [{"", "registerer@example.com"}]
     assert backlog_email.from == {"", "b@events.chromatin.ca"}

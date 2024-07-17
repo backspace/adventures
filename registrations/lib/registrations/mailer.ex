@@ -73,6 +73,8 @@ defmodule Registrations.Mailer do
     |> deliver
   end
 
+  @spec send_registration(atom() | %{:email => any(), optional(any()) => any()}) ::
+          {:error, any()} | {:ok, any()}
   def send_registration(user) do
     new()
     |> to(adventure_from())
