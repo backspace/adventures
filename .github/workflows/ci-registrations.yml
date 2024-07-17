@@ -76,4 +76,4 @@ jobs:
         if: always()
         with:
           check_name: "Registrations test results"
-          files: registrations/_build/test/lib/adventure_registrations/test-junit-report.xml
+          files: registrations/_build/test/lib/registrations/test-junit-report.xml
