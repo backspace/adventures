@@ -1,3 +1,12 @@
+<%# This used to be in the controller but I couldn’t find a hook for it %>
+<%= if Application.get_env(:registrations, :registration_closed) do %>
+  <div class='row flash'>
+    <div class='small-12 columns'>
+      <p class="alert alert-danger callout" role="alert">Registration is closed; however, you may continue and we will email you</p>
+    </div>
+  </div>
+<% end %>
+
 <div class='row card'>
   <div class='small-12 columns'>
     <h2>Register</h2>
