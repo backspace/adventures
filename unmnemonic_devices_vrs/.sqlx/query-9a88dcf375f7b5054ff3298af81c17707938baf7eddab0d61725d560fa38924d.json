@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\nUPDATE\n  unmnemonic_devices.recordings\nSET\n  approved = $1\nWHERE\n  id = $2;\n",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9a88dcf375f7b5054ff3298af81c17707938baf7eddab0d61725d560fa38924d"
+}

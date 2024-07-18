@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n          INSERT INTO unmnemonic_devices.recordings (id, character_name, prompt_name, url)\n          VALUES ($1, $2, $3, $4)\n          ON CONFLICT (character_name, prompt_name)\n          DO UPDATE SET url = EXCLUDED.url, call_id = EXCLUDED.call_id\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a427a89d76ff4bdfd31d00694fe9a7489b24fee7c2187785206a48917235c2c2"
+}

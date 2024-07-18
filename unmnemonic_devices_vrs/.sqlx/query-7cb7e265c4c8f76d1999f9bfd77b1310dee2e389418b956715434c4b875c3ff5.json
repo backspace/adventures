@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n              UPDATE\n                public.users\n              SET\n                remembered = remembered + 1\n              WHERE\n                id = $1;\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7cb7e265c4c8f76d1999f9bfd77b1310dee2e389418b956715434c4b875c3ff5"
+}

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n              UPDATE\n                unmnemonic_devices.recordings\n              SET\n                team_listen_ids = ARRAY_APPEND(team_listen_ids, $1)\n              WHERE\n                id = $2;\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "b6bef49a5d4312c49c41e0549612d90c17adc4285f827f697158ee109f78fef0"
+}

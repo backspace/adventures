@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n    UPDATE\n      public.teams\n    SET\n      listens = listens + 1\n    WHERE\n      id = $1;\n    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "0ded76b522a3c96adbe0e0d0e302e661821f5513af55c148a149e190b6fd98a9"
+}

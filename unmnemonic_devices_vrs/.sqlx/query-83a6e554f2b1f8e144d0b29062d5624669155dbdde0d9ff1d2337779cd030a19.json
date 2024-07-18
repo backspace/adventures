@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT begun, ending, override as override_message, notify_supervisor FROM unmnemonic_devices.settings LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "begun",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 1,
+        "name": "ending",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 2,
+        "name": "override_message",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "notify_supervisor",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "83a6e554f2b1f8e144d0b29062d5624669155dbdde0d9ff1d2337779cd030a19"
+}

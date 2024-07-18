@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n      UPDATE\n        unmnemonic_devices.meetings\n      SET\n        listens = listens + 1\n      WHERE\n        id = $1;\n    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3498a2280d2e833edb56e03d7a39b4e359295c1ffea6abe54017ab762ce2a48b"
+}

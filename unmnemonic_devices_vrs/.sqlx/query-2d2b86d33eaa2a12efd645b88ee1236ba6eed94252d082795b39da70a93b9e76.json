@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n              voicepass, url\n            FROM\n              public.teams\n            LEFT JOIN\n              unmnemonic_devices.recordings r ON r.team_id = teams.id\n            WHERE teams.id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "voicepass",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "url",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "2d2b86d33eaa2a12efd645b88ee1236ba6eed94252d082795b39da70a93b9e76"
+}

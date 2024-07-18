@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n          INSERT INTO unmnemonic_devices.calls (id, number)\n          VALUES ($1, $2)\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "293c331e00d9c39f6dd0704784fb4fd84f31895cb24ece582987f5c6045f8144"
+}

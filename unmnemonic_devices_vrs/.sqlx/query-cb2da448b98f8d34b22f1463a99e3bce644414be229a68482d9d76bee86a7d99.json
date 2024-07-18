@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n          UPDATE\n            unmnemonic_devices.calls\n          SET\n            team_id = $2\n          WHERE\n            id = $1;\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "cb2da448b98f8d34b22f1463a99e3bce644414be229a68482d9d76bee86a7d99"
+}
