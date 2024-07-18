@@ -8,7 +8,10 @@ use axum::{
     http::{request::Parts, StatusCode},
 };
 use base64::{engine::general_purpose, Engine as _};
-use bcrypt::verify;
+use pbkdf2::{
+    password_hash::{PasswordHash, PasswordVerifier},
+    Pbkdf2,
+};
 use serde::Serialize;
 use std::{env, str::from_utf8};
 
@@ -17,7 +20,7 @@ use std::{env, str::from_utf8};
 // A user that is authorized to access admin routes.
 pub struct User;
 
-#[derive(sqlx::FromRow, Serialize)]
+#[derive(sqlx::FromRow, Serialize, Debug)]
 pub struct UserPasswordHash {
     password_hash: String,
 }
@@ -72,12 +75,25 @@ where
                     .fetch_one(&state.db)
                     .await;
 
-                    let user = maybe_user.unwrap_or(UserPasswordHash {
-                        password_hash: "".to_string(),
-                    });
+                    if let Ok(maybe_user) = maybe_user {
+                        let user = UserPasswordHash {
+                            password_hash: maybe_user.password_hash,
+                        };
 
-                    if verify(password, &user.password_hash).unwrap_or(false) {
-                        return Ok(User);
+                        // Pow in Elixir is creating a string with slight differences that are failing to parse
+                        let converted_user_password_hash = user
+                            .password_hash
+                            .replace("==", "")
+                            .replace("$pbkdf2-sha512$100000", "$pbkdf2-sha512$i=100000,l=64");
+
+                        let parsed_hash = PasswordHash::new(&converted_user_password_hash);
+
+                        if Pbkdf2
+                            .verify_password(password.as_bytes(), &parsed_hash.unwrap())
+                            .is_ok()
+                        {
+                            return Ok(User);
+                        }
                     }
                 }
             }
