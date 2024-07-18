@@ -13,6 +13,10 @@ defmodule Registrations.Pages.Register do
     fill_field({:id, "password"}, password)
   end
 
+  def fill_password_confirmation(password_confirmation) do
+    fill_field({:id, "password_confirmation"}, password_confirmation)
+  end
+
   def password_error do
     visible_text({:css, ".errors .password"})
   end

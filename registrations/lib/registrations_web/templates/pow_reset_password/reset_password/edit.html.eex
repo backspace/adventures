@@ -1,0 +1,25 @@
+<div class='row card'>
+  <div class='small-12 columns'>
+    <h2>Reset password</h2>
+
+    <%= form_for @changeset, @action, [as: :user], fn f -> %>
+      <%= render RegistrationsWeb.SharedView, "errors.html", changeset: @changeset, f: f %>
+
+      <div class="form-group">
+        <%= label f, :password %>
+        <%= password_input f, :password, id: 'new_password' %>
+        <%= error_tag f, :password %>
+      </div>
+
+      <div class="form-group">
+        <%= label f, :password_confirmation %>
+        <%= password_input f, :password_confirmation, id: 'new_password_confirmation' %>
+        <%= error_tag f, :password_confirmation %>
+      </div>
+
+      <div class="form-group">
+        <%= submit "Submit", class: "button primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

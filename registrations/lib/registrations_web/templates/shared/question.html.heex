@@ -1,4 +1,4 @@
-<p><strong>This is not the registration form, that’s <%= link "here", to: Routes.registration_path(@conn, :new) %>.</strong></p>
+<p><strong>This is not the registration form, that’s <%= link "here", to: Routes.pow_registration_path(@conn, :new) %>.</strong></p>
 
 <%= form_for @conn, Routes.page_path(@conn, :questions), [as: :question], fn f -> %>
   <div class='form-group'>

@@ -35,6 +35,8 @@ defmodule RegistrationsWeb do
       import Ecto.Query, only: [from: 1, from: 2]
 
       alias RegistrationsWeb.Router.Helpers, as: Routes
+
+      import RegistrationsWeb.Pow.ControllerHelper
     end
   end
 
@@ -79,6 +81,15 @@ defmodule RegistrationsWeb do
 
       # Include shared imports and aliases for views
       unquote(view_helpers())
+    end
+  end
+
+  def mailer_view do
+    quote do
+      use Phoenix.View, root: "lib/registrations_web/templates",
+                        namespace: RegistrationsWeb
+
+      use Phoenix.HTML
     end
   end
 

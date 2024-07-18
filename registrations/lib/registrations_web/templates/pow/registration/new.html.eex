@@ -1,0 +1,41 @@
+<%# This used to be in the controller but I couldn’t find a hook for it %>
+<%= if Application.get_env(:registrations, :registration_closed) do %>
+  <div class='row flash'>
+    <div class='small-12 columns'>
+      <p class="alert alert-danger callout" role="alert">Registration is closed; however, you may continue and we will email you</p>
+    </div>
+  </div>
+<% end %>
+
+<div class='row card'>
+  <div class='small-12 columns'>
+    <h2>Register</h2>
+
+    <%= form_for @changeset, Routes.pow_registration_path(@conn, :create), fn f -> %>
+      <%= render RegistrationsWeb.SharedView, "errors.html", changeset: @changeset, f: f %>
+
+      <div class='row'>
+        <div class='small-12 columns'>
+          <div class='form-group'>
+            <%= label f, Pow.Ecto.Schema.user_id_field(@changeset) %>
+            <%= text_input f, Pow.Ecto.Schema.user_id_field(@changeset), id: 'email' %>
+            <%= error_tag f, Pow.Ecto.Schema.user_id_field(@changeset) %>
+          </div>
+          <div class='form-group'>
+            <%= label f, :password %>
+            <%= password_input f, :password, id: 'password' %>
+            <%= error_tag f, :password %>
+          </div>
+          <div class='form-group'>
+            <%= label f, :password_confirmation %>
+            <%= password_input f, :password_confirmation, id: 'password_confirmation' %>
+            <%= error_tag f, :password_confirmation %>
+          </div>
+          <div class='form-group'>
+            <%= submit "Register", class: "button primary" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -42,6 +42,7 @@ defmodule Registrations.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:plug_cowboy, "~> 2.1"},
       {:plug, "~> 1.7"},
+      {:pow, "~> 1.0.28"},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:hound, github: "backspace/hound", ref: "malgasm-plus-warning-fixes", only: :test},
       {:ex_machina, "~> 2.7.0", only: :test},

@@ -57,7 +57,7 @@
     <h2 class='moving-erasure'>Tell me more!</h2>
     <p>
       To learn more about our technique, please
-      <%= link "register", to: Routes.registration_path(@conn, :new) %>
+      <%= link "register", to: Routes.pow_registration_path(@conn, :new) %>
       to attend the participatory demonstration
       evening on FIXME, location to be announced.
     </p>
@@ -96,7 +96,7 @@
     <h2 class='moving-erasure'>Accessibility</h2>
     <p>
       Do you have accessibility needs we should know about? Please tell us
-      <%= link "when you register", to: Routes.registration_path(@conn, :new) %>
+      <%= link "when you register", to: Routes.pow_registration_path(@conn, :new) %>
       and we will work with you to ensure you can participate.
     </p>
   </div>
@@ -107,7 +107,7 @@
     <h2 class='moving-erasure'>Registration</h2>
     <p>
       You <em>must</em>
-      <%= link "register", to: Routes.registration_path(@conn, :new) %>
+      <%= link "register", to: Routes.pow_registration_path(@conn, :new) %>
       to attend the event, as each therapeutic journey is hand-tuned. If
       you’re uncertain whether you can make it, register anyway; you can
       cancel up until the day before.

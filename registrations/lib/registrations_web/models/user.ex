@@ -1,18 +1,21 @@
 defmodule RegistrationsWeb.User do
+  use Ecto.Schema
+
+  use Pow.Ecto.Schema
+  use Pow.Extension.Ecto.Schema, extensions: [PowResetPassword]
+
   use RegistrationsWeb, :model
   alias Registrations.Repo
 
   @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "users" do
+    # pow_user_fields() with overridden email field
     field(:email, RegistrationsWeb.DowncasedString)
-    field(:crypted_password, :string)
-    field(:password, :string, virtual: true)
-    field(:recovery_hash, :string)
-
-    field(:new_password, :string, virtual: true)
-    field(:new_password_confirmation, :string, virtual: true)
+    field(:password_hash, :string)
     field(:current_password, :string, virtual: true)
+    field(:password, :string, virtual: true)
+    field(:confirm_password, :string, virtual: true)
 
     field(:admin, :boolean)
 
@@ -35,6 +38,12 @@ defmodule RegistrationsWeb.User do
     timestamps()
   end
 
+  def changeset(user_or_changeset, attrs) do
+    user_or_changeset
+    |> pow_changeset(attrs)
+    |> pow_extension_changeset(attrs)
+  end
+
   @required_fields ~w(email password)a
   @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source team_id)a
 
@@ -44,7 +53,7 @@ defmodule RegistrationsWeb.User do
   If no params are provided, an invalid changeset is returned
   with no validation performed.
   """
-  def changeset(model, params \\ %{}) do
+  def old_changeset(model, params \\ %{}) do
     model
     |> cast(params, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)

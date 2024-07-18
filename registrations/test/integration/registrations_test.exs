@@ -28,22 +28,28 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Nav.register_link().click
 
     Register.submit()
-    assert Nav.error_text() == "Unable to create account"
+
+    assert Nav.error_text() ==
+             "Oops, something went wrong! Please check the errors below:\nPassword can't be blank\nEmail can't be blank"
+
     assert Register.email_error() == "Email can't be blank"
     # FIXME fix plural detection
     assert Register.password_error() == "Password can't be blank"
 
     Register.fill_email("franklin.w.dixon@example.com")
     Register.submit()
-    assert Nav.error_text() == "Unable to create account"
+
+    assert Nav.error_text() ==
+             "Oops, something went wrong! Please check the errors below:\nPassword can't be blank"
 
     Register.fill_email("samuel.delaney@example.com")
     Register.fill_password("nestofspiders")
+    Register.fill_password_confirmation("nestofspiders")
     Register.submit()
 
     assert Nav.info_text() == "Your account was created"
 
-    [welcome_email, admin_email] = Registrations.SwooshHelper.sent_email()
+    [admin_email, welcome_email] = Registrations.SwooshHelper.sent_email()
 
     assert admin_email.to == [{"", "b@events.chromatin.ca"}]
     assert admin_email.from == {"", "b@events.chromatin.ca"}
@@ -71,7 +77,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.fill_password("Parable of the Talents")
     Login.submit()
 
-    assert Nav.error_text() == "Wrong email or password"
+    assert Nav.error_text() ==
+             "The provided login details did not work. Please verify your credentials, and try again."
 
     Login.fill_password("Xenogenesis")
     Login.submit()
@@ -102,21 +109,23 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Account.fill_current_password("Wrong")
     Account.submit()
 
-    assert Nav.error_text() == "Please enter your current password"
+    assert Nav.error_text() ==
+             "Oops, something went wrong! Please check the errors below:\nCurrent password is invalid"
 
     Account.fill_current_password("Xenogenesis")
     Account.fill_new_password("abcde")
     Account.fill_new_password_confirmation("vwxyz")
     Account.submit()
 
-    assert Nav.error_text() == "New passwords must match"
+    assert Nav.error_text() ==
+             "Oops, something went wrong! Please check the errors below:\nPassword should be at least 8 character(s)\nPassword confirmation does not match confirmation"
 
     Account.fill_current_password("Xenogenesis")
     Account.fill_new_password("Lilith’s Brood")
     Account.fill_new_password_confirmation("Lilith’s Brood")
     Account.submit()
 
-    assert Nav.info_text() == "Your password has been changed"
+    assert Nav.info_text() == "Your account has been updated."
 
     Nav.logout_link().click
 
@@ -127,7 +136,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.fill_password("Xenogenesis")
     Login.submit()
 
-    assert Nav.error_text() == "Wrong email or password"
+    assert Nav.error_text() ==
+             "The provided login details did not work. Please verify your credentials, and try again."
 
     Login.fill_password("Lilith’s Brood")
     Login.submit()
@@ -145,22 +155,17 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Nav.login_link().click
     Login.click_forgot_password()
 
-    ForgotPassword.fill_email("noone@example.com")
-    ForgotPassword.submit()
-
-    assert Nav.error_text() == "No registration with that email address found"
-    refute Registrations.SwooshHelper.emails_sent?()
-
     ForgotPassword.fill_email("octavia.butler@example.com")
     ForgotPassword.submit()
 
-    assert Nav.info_text() == "Check your email for a password reset link"
+    assert Nav.info_text() ==
+             "If an account for the provided email exists, an email with reset instructions will be sent to you. Please check your inbox."
 
     [forgot_password_email] = Registrations.SwooshHelper.sent_email()
 
     assert forgot_password_email.to == [{"", "octavia.butler@example.com"}]
     assert forgot_password_email.from == {"", "b@events.chromatin.ca"}
-    assert forgot_password_email.subject == "[rendezvous] Password reset"
+    assert forgot_password_email.subject == "[rendezvous] Reset password link"
 
     [url] =
       Floki.find(forgot_password_email.html_body, "a")
@@ -168,10 +173,10 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     reset_path = URI.parse(url).path
 
-    assert String.starts_with?(reset_path, "/reset/%242b")
+    assert String.starts_with?(reset_path, "/reset-password/")
 
-    navigate_to("/reset/fake")
-    assert Nav.error_text() == "Unknown password reset token"
+    navigate_to("/reset-password/fake")
+    assert Nav.error_text() == "The reset token has expired."
 
     navigate_to(reset_path)
 
@@ -179,13 +184,19 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Account.fill_new_password_confirmation("awrongpassword")
     Account.submit()
 
-    assert Nav.error_text() == "New passwords must match"
+    assert Nav.error_text() ==
+             "Oops, something went wrong! Please check the errors below:\nPassword confirmation does not match confirmation"
 
     Account.fill_new_password("anewpassword")
     Account.fill_new_password_confirmation("anewpassword")
     Account.submit()
 
-    assert Nav.info_text() == "Your password has been changed"
+    assert Nav.info_text() == "The password has been updated."
+
+    Login.fill_email("Octavia.butler@example.com")
+    Login.fill_password("anewpassword")
+    Login.submit()
+
     assert Nav.logout_link().text == "Log out octavia.butler@example.com"
 
     Nav.logout_link().click
@@ -193,8 +204,10 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.login_as("octavia.butler@example.com", "anewpassword")
     assert Nav.logout_link().text == "Log out octavia.butler@example.com"
 
+    Nav.logout_link().click
+
     navigate_to(reset_path)
-    assert Nav.error_text() == "Unknown password reset token"
+    assert Nav.error_text() == "The reset token has expired."
   end
 
   test "delete account" do
@@ -206,15 +219,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Nav.edit_details()
     Details.delete_account()
 
-    Account.fill_current_password("wrongpassword")
-    Account.submit()
-
-    assert Nav.error_text() == "Your password did not match"
-
-    Account.fill_current_password("Xenogenesis")
-    Account.submit()
-
-    assert Nav.info_text() == "Your account has been deleted 😧"
+    assert Nav.info_text() == "Your account has been deleted. Sorry to see you go!"
 
     [admin_email] = Registrations.SwooshHelper.sent_email()
 
@@ -268,9 +273,10 @@ defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
 
     Register.fill_email("samuel.delaney@example.com")
     Register.fill_password("nestofspiders")
+    Register.fill_password_confirmation("nestofspiders")
     Register.submit()
 
-    [welcome_email, admin_email] = Registrations.SwooshHelper.sent_email()
+    [admin_email, welcome_email] = Registrations.SwooshHelper.sent_email()
 
     assert admin_email.to == [{"", "knut@chromatin.ca"}]
     assert admin_email.from == {"", "knut@chromatin.ca"}

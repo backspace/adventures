@@ -43,5 +43,7 @@ defmodule RegistrationsWeb.Endpoint do
     max_age: 60 * 60 * 24 * 365
   )
 
+  plug(Pow.Plug.Session, otp_app: :registrations)
+
   plug(RegistrationsWeb.Router)
 end

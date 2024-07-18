@@ -1,5 +1,10 @@
 defmodule RegistrationsWeb.Router do
   use RegistrationsWeb, :router
+  use Pow.Phoenix.Router
+
+  use Pow.Extension.Phoenix.Router,
+    otp_app: :registrations,
+    extensions: [PowResetPassword]
 
   pipeline :browser do
     plug(:accepts, ["html"])
@@ -7,26 +12,24 @@ defmodule RegistrationsWeb.Router do
     plug(:fetch_flash)
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
-    plug(RegistrationsWeb.Plugs.CurrentUser)
     plug(RegistrationsWeb.Plugs.Settings)
   end
 
   pipeline :api do
     plug(:accepts, ["json"])
     plug(:fetch_session)
-    plug(RegistrationsWeb.Plugs.CurrentUser)
+  end
+
+  scope "/" do
+    pipe_through :browser
+
+    pow_routes()
+    pow_extension_routes()
   end
 
   scope "/", RegistrationsWeb do
     # Use the default browser stack
     pipe_through(:browser)
-
-    get("/register", RegistrationController, :new)
-    post("/register", RegistrationController, :create)
-
-    get("/login", SessionController, :new)
-    post("/login", SessionController, :create)
-    delete("/logout", SessionController, :delete)
 
     post("/teams/build", TeamController, :build)
     resources("/teams", TeamController)
@@ -34,17 +37,6 @@ defmodule RegistrationsWeb.Router do
     resources("/users", UserController, only: [:index])
     get("/details", UserController, :edit)
     put("/details", UserController, :update)
-
-    get("/account", RegistrationController, :edit)
-    put("/account", RegistrationController, :update)
-
-    get("/delete", RegistrationController, :maybe_delete)
-    put("/delete", RegistrationController, :delete)
-
-    get("/reset", ResetController, :new)
-    post("/reset", ResetController, :create)
-    get("/reset/:token", ResetController, :edit)
-    put("/reset/:token", ResetController, :update)
 
     resources("/messages", MessageController)
     post("/messages/send-backlog", MessageController, :deliver_backlog)

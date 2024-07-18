@@ -14,7 +14,7 @@ defmodule Registrations.Integration.Messages do
   test "a message is sent to all registrants with their team information summarised" do
     insert(:admin,
       email: "admin@example.com",
-      crypted_password: Bcrypt.hash_pwd_salt("admin")
+      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("admin")
     )
 
     insert(:user,
@@ -64,7 +64,7 @@ defmodule Registrations.Integration.Messages do
   test "a message can be sent to just the logged-in user" do
     insert(:admin,
       email: "admin@example.com",
-      crypted_password: Bcrypt.hash_pwd_salt("admin")
+      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("admin")
     )
 
     insert(:user,
@@ -107,7 +107,7 @@ defmodule Registrations.Integration.Messages do
   test "message sender name/address can be overridden" do
     insert(:admin,
       email: "admin@example.com",
-      crypted_password: Bcrypt.hash_pwd_salt("admin")
+      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("admin")
     )
 
     navigate_to("/")
@@ -139,7 +139,7 @@ defmodule Registrations.Integration.Messages do
   test "a message with show team enabled shows the actual team information instead of their details" do
     insert(:admin,
       email: "admin@example.com",
-      crypted_password: Bcrypt.hash_pwd_salt("admin")
+      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("admin")
     )
 
     team =
@@ -209,9 +209,10 @@ defmodule Registrations.Integration.Messages do
 
     Register.fill_email("registerer@example.com")
     Register.fill_password("abcdefghi")
+    Register.fill_password_confirmation("abcdefghi")
     Register.submit()
 
-    [backlog_email, _welcome_, _admin] = Registrations.SwooshHelper.sent_email()
+    [_admin, _welcome, backlog_email] = Registrations.SwooshHelper.sent_email()
 
     assert backlog_email.to == [{"", "registerer@example.com"}]
     assert backlog_email.from == {"", "b@events.chromatin.ca"}

@@ -7,6 +7,7 @@ defmodule Registrations.Pages.Details do
 
   def delete_account do
     click({:css, "a.delete"})
+    accept_dialog()
   end
 
   def proposers do

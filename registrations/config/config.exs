@@ -34,6 +34,18 @@ import_config "#{Mix.env()}.exs"
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :registrations, :pow,
+  web_mailer_module: RegistrationsWeb,
+  extensions: [PowResetPassword],
+  controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
+  web_module: RegistrationsWeb,
+  user: RegistrationsWeb.User,
+  repo: Registrations.Repo,
+  routes_backend: RegistrationsWeb.Pow.Routes,
+  mailer_backend: Registrations.Mailer,
+  messages_backend: RegistrationsWeb.Pow.Messages,
+  users_context: RegistrationsWeb.Pow.Users
+
 # Configure phoenix generators
 config :phoenix, :generators,
   migration: true,
