@@ -2,7 +2,7 @@ INSERT INTO
   public.users (
     id,
     email,
-    crypted_password,
+    password_hash,
     admin,
     inserted_at,
     updated_at

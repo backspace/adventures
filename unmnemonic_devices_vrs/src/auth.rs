@@ -18,8 +18,8 @@ use std::{env, str::from_utf8};
 pub struct User;
 
 #[derive(sqlx::FromRow, Serialize)]
-pub struct UserCryptedPassword {
-    crypted_password: String,
+pub struct UserPasswordHash {
+    password_hash: String,
 }
 
 #[async_trait]
@@ -58,10 +58,10 @@ where
 
                     let (username, password) = credential_str.split_once(':').unwrap_or(("", ""));
 
-                    let maybe_user = sqlx::query_as::<_, UserCryptedPassword>(
+                    let maybe_user = sqlx::query_as::<_, UserPasswordHash>(
                         r#"
                         SELECT
-                          crypted_password
+                          password_hash
                         FROM
                           users
                         WHERE
@@ -69,14 +69,14 @@ where
                       "#,
                     )
                     .bind(username)
-                    .fetch_one(&state.db) // Replace `&state.db` with the correct field name for the database connection.
+                    .fetch_one(&state.db)
                     .await;
 
-                    let user = maybe_user.unwrap_or(UserCryptedPassword {
-                        crypted_password: "".to_string(),
+                    let user = maybe_user.unwrap_or(UserPasswordHash {
+                        password_hash: "".to_string(),
                     });
 
-                    if verify(password, &user.crypted_password).unwrap_or(false) {
+                    if verify(password, &user.password_hash).unwrap_or(false) {
                         return Ok(User);
                     }
                 }
