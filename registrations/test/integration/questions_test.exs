@@ -10,7 +10,7 @@ defmodule Registrations.ClandestineRendezvous.Integration.Questions do
 
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
-  test "registering" do
+  test "submitting a question" do
     navigate_to("/")
 
     Home.fill_name("Lucy Parsons")
@@ -49,7 +49,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Questions do
 
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
-  test "registering" do
+  test "submitting a question" do
     navigate_to("/")
 
     Home.fill_name("Lucy Parsons")
