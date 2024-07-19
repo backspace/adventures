@@ -40,6 +40,10 @@ module.exports = (env, options) => {
     module: {
       rules: [
         {
+          test: /\.(woff|woff2|eot|ttf|svg)$/,
+          loader: "file-loader",
+        },
+        {
           test: /\.js$/,
           exclude: /node_modules/,
           use: {
