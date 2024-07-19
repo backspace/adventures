@@ -22,10 +22,10 @@
     "hard-source-webpack-plugin": "^0.13.1",
     "jquery": "^3.6.0",
     "mini-css-extract-plugin": "^1.6.2",
-    "node-sass": "^4.13.1",
     "optimize-css-assets-webpack-plugin": "^5.0.8",
+    "sass": "^1.77.8",
     "sass-cubic-bezier-bounding-box": "^1.0.2",
-    "sass-loader": "^10.2.0",
+    "sass-loader": "^13.3.3",
     "string-replace-loader": "^3.1.0",
     "terser-webpack-plugin": "^4.2.3",
     "three": "^0.77.1",
@@ -33,7 +33,7 @@
     "webpack-cli": "^4.10.0"
   },
   "volta": {
-    "node": "12.22.12",
-    "npm": "6.14.18"
+    "node": "16.20.2",
+    "npm": "8.19.4"
   }
 }
