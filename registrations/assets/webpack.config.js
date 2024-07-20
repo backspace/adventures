@@ -8,6 +8,9 @@ module.exports = (env, options) => {
   const devMode = options.mode !== "production";
 
   return {
+    cache: {
+      type: "filesystem",
+    },
     optimization: {
       minimizer: ["...", new CssMinimizerPlugin()],
     },
