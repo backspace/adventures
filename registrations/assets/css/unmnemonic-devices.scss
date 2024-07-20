@@ -5,8 +5,8 @@
 
 @font-face {
     font-family: 'ud-body';
-    src: url('/fonts/unmnemonic-devices/ud-body-regular.woff2') format('woff2'),
-         url('/fonts/unmnemonic-devices/ud-body-regular.woff') format('woff');
+    src: url('../static/fonts/unmnemonic-devices/ud-body-regular.woff2') format('woff2'),
+         url('../static/fonts/unmnemonic-devices/ud-body-regular.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 
@@ -14,8 +14,8 @@
 
 @font-face {
     font-family: 'ud-body';
-    src: url('/fonts/unmnemonic-devices/ud-body-oblique.woff2') format('woff2'),
-         url('/fonts/unmnemonic-devices/ud-body-oblique.woff') format('woff');
+    src: url('../static/fonts/unmnemonic-devices/ud-body-oblique.woff2') format('woff2'),
+         url('../static/fonts/unmnemonic-devices/ud-body-oblique.woff') format('woff');
     font-weight: normal;
     font-style: oblique;
 
@@ -23,8 +23,8 @@
 
 @font-face {
     font-family: 'ud-body';
-    src: url('/fonts/unmnemonic-devices/ud-body-bold.woff2') format('woff2'),
-         url('/fonts/unmnemonic-devices/ud-body-bold.woff') format('woff');
+    src: url('../static/fonts/unmnemonic-devices/ud-body-bold.woff2') format('woff2'),
+         url('../static/fonts/unmnemonic-devices/ud-body-bold.woff') format('woff');
     font-weight: bold;
     font-style: normal;
 
@@ -32,8 +32,8 @@
 
 @font-face {
     font-family: 'ud-body';
-    src: url('/fonts/unmnemonic-devices/ud-body-bold-oblique.woff2') format('woff2'),
-         url('/fonts/unmnemonic-devices/ud-body-bold-oblique.woff') format('woff');
+    src: url('../static/fonts/unmnemonic-devices/ud-body-bold-oblique.woff2') format('woff2'),
+         url('../static/fonts/unmnemonic-devices/ud-body-bold-oblique.woff') format('woff');
     font-weight: bold;
     font-style: oblique;
 
@@ -41,8 +41,8 @@
 
 @font-face {
     font-family: 'ud-script';
-    src: url('/fonts/unmnemonic-devices/ud-script.woff2') format('woff2'),
-         url('/fonts/unmnemonic-devices/ud-script.woff') format('woff');
+    src: url('../static/fonts/unmnemonic-devices/ud-script.woff2') format('woff2'),
+         url('../static/fonts/unmnemonic-devices/ud-script.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 

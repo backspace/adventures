@@ -49,17 +49,21 @@ jobs:
           mix local.hex --force
           mix deps.get
           mix deps.compile
-      - uses: actions/setup-node@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
         with:
-          node-version-file: "registrations/assets/package.json"
-          cache: "npm"
-          cache-dependency-path: "registrations/assets/package-lock.json"
-      - run: npm install -g npm@6.14.18
-        working-directory: registrations
-      - run: npm install --prefix assets
-        working-directory: registrations
-      - run: npm run deploy --prefix assets
-        working-directory: registrations
+          package_json_file: registrations/assets/package.json
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: registrations/assets/package.json
+          cache: pnpm
+          cache-dependency-path: registrations/assets/pnpm-lock.yaml
+      - name: Install Dependencies
+        run: pnpm install
+        working-directory: registrations/assets
+      - run: pnpm build
+        working-directory: registrations/assets
       - uses: nanasess/setup-chromedriver@v2
       - run: |
           export DISPLAY=:99
