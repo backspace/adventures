@@ -1,0 +1,22 @@
+update_fastlane
+
+default_platform(:android)
+
+platform :android do
+  desc "Runs all the tests"
+  lane :test do
+    gradle(task: "test")
+  end
+
+  desc "Submit a new Alpha Build to Play Store"
+  lane :alpha do
+    gradle(task: "clean assembleRelease")
+    upload_to_play_store(track: "alpha", skip_upload_changelogs: true)
+  end
+
+  desc "Deploy a new version to the Google Play"
+  lane :deploy do
+    gradle(task: "clean assembleRelease")
+    upload_to_play_store
+  end
+end
