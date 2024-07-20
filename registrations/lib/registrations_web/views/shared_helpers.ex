@@ -65,14 +65,6 @@ defmodule RegistrationsWeb.SharedHelpers do
     end
   end
 
-  def environment_protocol do
-    if Mix.env() == :prod do
-      "https"
-    else
-      "http"
-    end
-  end
-
   def is_unmnemonic_devices() do
     Application.get_env(:registrations, :adventure) == "unmnemonic-devices"
   end

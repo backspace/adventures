@@ -16,7 +16,7 @@
     <meta property='og:description' content={phrase("description")}>
 
     <title><%= phrase("title") %></title>
-    <link href={"#{environment_protocol()}://fonts.googleapis.com/css?family=Oswald:300,400,700"} rel='stylesheet' type='text/css'>
+    <link href="//fonts.googleapis.com/css?family=Oswald:300,400,700" rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href={Routes.static_path(@conn, "/css/#{Application.get_env(:registrations, :adventure)}.css")}>
 
     <link rel='icon' href={"/images/#{adventure()}/favicon.ico"} />
