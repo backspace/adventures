@@ -23,10 +23,6 @@ jobs:
         elixir: ["1.15.7"]
         otp: ["25.3.2.7"] # FIXME get from .tool-versions
     steps:
-      - name: Cancel previous runs
-        uses: styfle/cancel-workflow-action@0.11.0
-        with:
-          access_token: ${{ github.token }}
       - name: Checkout Github repo
         uses: actions/checkout@v4
       - name: Sets up an Erlang/OTP environment
