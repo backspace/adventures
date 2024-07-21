@@ -97,7 +97,7 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
         throw Exception('Failed to load game');
       }
     } catch (error) {
-      print('Error fetching game: $error');
+      print('Error fetching game from $endpoint: $error');
     }
   }
 
