@@ -17,7 +17,7 @@ class Answer < ApplicationRecord
   def check_for_winner
     answer_found = false
 
-    answer_found = true if game.incarnation.answer == answer
+    answer_found = true if game&.incarnation&.answer&.casecmp?(answer.strip)
 
     yield answer
 

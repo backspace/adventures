@@ -11,7 +11,7 @@ RSpec.describe AnswerResource, type: :resource do
       {
         data: {
           type: 'answers',
-          attributes: attributes_for(:answer, answer: incarnation.answer),
+          attributes: attributes_for(:answer, answer: " #{incarnation.answer.upcase} "),
           relationships: {
             game: {
               data: {
@@ -28,7 +28,7 @@ RSpec.describe AnswerResource, type: :resource do
       described_class.build(payload)
     end
 
-    describe 'when a game does not have a winning answer and the new answer is correct' do
+    describe 'when a game does not have a winning answer and the new answer is case-insensitive correct' do
       before do
         answer.save
         game.reload
