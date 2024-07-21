@@ -2,7 +2,7 @@
   <div class='small-12 columns'>
     <h2>Change Password</h2>
 
-    <%= for link <- PowAssent.Phoenix.ViewHelpers.provider_links(@conn), do: content_tag(:span, link) %>
+    <%= render RegistrationsWeb.SharedView, "oauth-links.html", conn: @conn %>
 
     <%= form_for @changeset, @action, [as: :user], fn f -> %>
       <%= render RegistrationsWeb.SharedView, "errors.html", changeset: @changeset, f: f %>

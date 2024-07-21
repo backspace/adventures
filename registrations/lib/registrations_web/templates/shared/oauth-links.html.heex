@@ -1,0 +1,5 @@
+<ul>
+  <%= for link <- PowAssent.Phoenix.ViewHelpers.provider_links(@conn) do %>
+    <li><%= content_tag(:span, link) %></li>
+  <% end %>
+</ul>
