@@ -18,6 +18,11 @@ defmodule RegistrationsWeb.User do
     field(:password, :string, virtual: true)
     field(:confirm_password, :string, virtual: true)
 
+    has_many(:user_identities, Registrations.UserIdentities.UserIdentity,
+      foreign_key: :user_id,
+      on_delete: :delete_all
+    )
+
     field(:admin, :boolean)
 
     field(:attending, :boolean)
