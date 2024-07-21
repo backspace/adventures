@@ -83,9 +83,10 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
   }
 
   Future<void> fetchGame() async {
+    final endpoint = '${dotenv.env['API_ROOT']}/api/v1/games';
     try {
       final response = await widget.dio.post(
-        '${dotenv.env['API_ROOT']}/api/v1/games',
+        endpoint,
         queryParameters: {'include': 'incarnation'},
       );
 
@@ -142,24 +143,31 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
                 children: [
                   Text(game!.incarnation.concept),
                   Text(game!.incarnation.mask),
-                  TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'Answer',
-                    ),
-                    onChanged: (value) {
-                      answer = value;
-                    },
-                  ),
-                  if (game!.isOver)
-                    const Text('Done!')
-                  else
-                    ElevatedButton(
-                      onPressed: () async {
-                        await submitAnswer(answer);
-                        print("game over? ${game!.isOver}");
+                  Form(
+                      child: Column(children: <Widget>[
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Answer',
+                      ),
+                      onChanged: (value) {
+                        answer = value;
                       },
-                      child: const Text('Submit'),
+                      onFieldSubmitted: (value) async {
+                        answer = value;
+                        await submitAnswer(answer);
+                      },
                     ),
+                    if (game!.isOver)
+                      const Text('Done!')
+                    else
+                      ElevatedButton(
+                        onPressed: () async {
+                          await submitAnswer(answer);
+                          print("game over? ${game!.isOver}");
+                        },
+                        child: const Text('Submit'),
+                      )
+                  ]))
                 ],
               ),
             if (game == null) const CircularProgressIndicator(),
