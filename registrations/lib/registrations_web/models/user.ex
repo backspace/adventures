@@ -2,6 +2,7 @@ defmodule RegistrationsWeb.User do
   use Ecto.Schema
 
   use Pow.Ecto.Schema
+  use PowAssent.Ecto.Schema
   use Pow.Extension.Ecto.Schema, extensions: [PowResetPassword]
 
   use RegistrationsWeb, :model
@@ -16,6 +17,11 @@ defmodule RegistrationsWeb.User do
     field(:current_password, :string, virtual: true)
     field(:password, :string, virtual: true)
     field(:confirm_password, :string, virtual: true)
+
+    has_many(:user_identities, Registrations.UserIdentities.UserIdentity,
+      foreign_key: :user_id,
+      on_delete: :delete_all
+    )
 
     field(:admin, :boolean)
 
