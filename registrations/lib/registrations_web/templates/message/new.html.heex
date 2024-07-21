@@ -1,10 +1,12 @@
-<div class='row'>
-  <div class='small-12 columns'>
+<div class="row">
+  <div class="small-12 columns">
     <h2>New message</h2>
 
-    <%= render "form.html", changeset: @changeset,
-                            action: Routes.message_path(@conn, :create) %>
+    <%= render("form.html",
+      changeset: @changeset,
+      action: Routes.message_path(@conn, :create)
+    ) %>
 
-    <%= link "Back", to: Routes.message_path(@conn, :index) %>
+    <%= link("Back", to: Routes.message_path(@conn, :index)) %>
   </div>
 </div>

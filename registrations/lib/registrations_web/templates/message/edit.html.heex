@@ -1,21 +1,30 @@
-<div class='row'>
-  <div class='small-12 columns'>
+<div class="row">
+  <div class="small-12 columns">
     <h2>Edit message</h2>
 
-    <%= render "form.html", changeset: @changeset,
-                            action: Routes.message_path(@conn, :update, @message) %>
+    <%= render("form.html",
+      changeset: @changeset,
+      action: Routes.message_path(@conn, :update, @message)
+    ) %>
   </div>
 </div>
-<div class='row card'>
-  <div class='small-12 columns'>
-    <%= button("Send", to: Routes.message_path(@conn, :deliver, @message, %{ me: false }), class: "button send", data: [ confirm: "You want to distribute this email?" ]) %>
+<div class="row card">
+  <div class="small-12 columns">
+    <%= button("Send",
+      to: Routes.message_path(@conn, :deliver, @message, %{me: false}),
+      class: "button send",
+      data: [confirm: "You want to distribute this email?"]
+    ) %>
 
-    <%= link "Preview", to: Routes.message_path(@conn, :preview, @message) %>
+    <%= link("Preview", to: Routes.message_path(@conn, :preview, @message)) %>
 
-    <%= link "Back", to: Routes.message_path(@conn, :index) %>
+    <%= link("Back", to: Routes.message_path(@conn, :index)) %>
   </div>
-  <div class='small-12 columns'>
-    <hr>
-    <%= button("Send to me", to: Routes.message_path(@conn, :deliver, @message, %{ me: true }), class: "button send_to_me") %>
+  <div class="small-12 columns">
+    <hr />
+    <%= button("Send to me",
+      to: Routes.message_path(@conn, :deliver, @message, %{me: true}),
+      class: "button send_to_me"
+    ) %>
   </div>
 </div>

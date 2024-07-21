@@ -2,14 +2,32 @@
 <% leftY = 50 %>
 <% width = 180 %>
 <% height = 85 %>
-<svg version="1.1" width={width*1.15} height={height*1.25} xmlns="http://www.w3.org/2000/svg">
+<svg version="1.1" width={width * 1.15} height={height * 1.25} xmlns="http://www.w3.org/2000/svg">
   <defs>
     <clipPath id="iris-container">
-      <path d={"M#{ leftX },#{ leftY }q#{ width/2 },#{ height },#{ width },0 q#{ -width/2 },#{ -height },#{ -width },0 Z"} stroke="black" style="fill: black; stroke-width: 15px;"/>
+      <path
+        d={
+          "M#{leftX},#{leftY}q#{width / 2},#{height},#{width},0 q#{-width / 2},#{-height},#{-width},0 Z"
+        }
+        stroke="black"
+        style="fill: black; stroke-width: 15px;"
+      />
     </clipPath>
   </defs>
-  <path d={"M#{ leftX },#{ leftY }q#{ width/2 },#{ height },#{ width },0 q#{ -width/2 },#{ -height },#{ -width },0 Z"} stroke="black" style="fill: white; stroke-width: 15px;"/>
+  <path
+    d={
+      "M#{leftX},#{leftY}q#{width / 2},#{height},#{width},0 q#{-width / 2},#{-height},#{-width},0 Z"
+    }
+    stroke="black"
+    style="fill: white; stroke-width: 15px;"
+  />
   <g clip-path="url(#iris-container)">
-    <circle class="iris" cx={"#{ leftX + width/2 }"} cy={"#{ leftY }"} r={"#{ height/2 }"} style="fill: black" />
+    <circle
+      class="iris"
+      cx={"#{leftX + width / 2}"}
+      cy={"#{leftY}"}
+      r={"#{height / 2}"}
+      style="fill: black"
+    />
   </g>
 </svg>

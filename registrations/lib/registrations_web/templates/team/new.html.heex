@@ -1,6 +1,8 @@
 <h2>New team</h2>
 
-<%= render "form.html", changeset: @changeset,
-                        action: Routes.team_path(@conn, :create) %>
+<%= render("form.html",
+  changeset: @changeset,
+  action: Routes.team_path(@conn, :create)
+) %>
 
-<%= link "Back", to: Routes.team_path(@conn, :index) %>
+<%= link("Back", to: Routes.team_path(@conn, :index)) %>

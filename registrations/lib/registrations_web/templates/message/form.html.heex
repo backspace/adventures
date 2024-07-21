@@ -1,42 +1,42 @@
 <%= form_for @changeset, @action, fn f -> %>
-  <%= render RegistrationsWeb.SharedView, "errors.html", changeset: @changeset, f: f %>
+  <%= render(RegistrationsWeb.SharedView, "errors.html", changeset: @changeset, f: f) %>
 
   <div class="form-group">
-    <%= label f, :subject, "Subject", class: "control-label" %>
-    <%= text_input f, :subject, class: "form-control" %>
+    <%= label(f, :subject, "Subject", class: "control-label") %>
+    <%= text_input(f, :subject, class: "form-control") %>
   </div>
 
   <div class="form-group">
-    <%= label f, :from_name, "From name", class: "control-label" %>
-    <%= text_input f, :from_name, class: "form-control" %>
+    <%= label(f, :from_name, "From name", class: "control-label") %>
+    <%= text_input(f, :from_name, class: "form-control") %>
   </div>
 
   <div class="form-group">
-    <%= label f, :from_address, "From address", class: "control-label" %>
-    <%= text_input f, :from_address, class: "form-control" %>
+    <%= label(f, :from_address, "From address", class: "control-label") %>
+    <%= text_input(f, :from_address, class: "form-control") %>
   </div>
 
   <div class="form-group">
-    <%= label f, :content, "Content", class: "control-label" %>
-    <%= textarea f, :content, rows: 10, class: "form-control" %>
+    <%= label(f, :content, "Content", class: "control-label") %>
+    <%= textarea(f, :content, rows: 10, class: "form-control") %>
   </div>
 
   <div class="form-group">
-    <%= label f, :ready, "Ready", class: "control-label" %>
-    <%= checkbox f, :ready, class: "form-control" %>
+    <%= label(f, :ready, "Ready", class: "control-label") %>
+    <%= checkbox(f, :ready, class: "form-control") %>
   </div>
 
   <div class="form-group">
-    <%= label f, :show_team, "Show team", class: "control-label" %>
-    <%= checkbox f, :show_team, class: "form-control" %>
+    <%= label(f, :show_team, "Show team", class: "control-label") %>
+    <%= checkbox(f, :show_team, class: "form-control") %>
   </div>
 
   <div class="form-group">
-    <%= label f, :postmarked_at, "Postmarked at", class: "control-label" %>
-    <%= date_input f, :postmarked_at, class: "form-control" %>
+    <%= label(f, :postmarked_at, "Postmarked at", class: "control-label") %>
+    <%= date_input(f, :postmarked_at, class: "form-control") %>
   </div>
 
   <div class="form-group">
-    <%= submit "Submit", class: "button btn-primary submit" %>
+    <%= submit("Submit", class: "button btn-primary submit") %>
   </div>
 <% end %>

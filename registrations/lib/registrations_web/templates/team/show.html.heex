@@ -1,7 +1,6 @@
 <h2>Show team</h2>
 
 <ul>
-
   <li>
     <strong>Name:</strong>
     <%= @team.name %>
@@ -21,8 +20,7 @@
     <strong>Users:</strong>
     <%= team_emails(@team) %>
   </li>
-
 </ul>
 
-<%= link "Edit", to: Routes.team_path(@conn, :edit, @team) %>
-<%= link "Back", to: Routes.team_path(@conn, :index) %>
+<%= link("Edit", to: Routes.team_path(@conn, :edit, @team)) %>
+<%= link("Back", to: Routes.team_path(@conn, :index)) %>

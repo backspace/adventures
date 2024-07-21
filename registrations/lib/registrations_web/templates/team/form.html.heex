@@ -6,32 +6,32 @@
   <% end %>
 
   <div class="form-group">
-    <%= label f, :name, class: "control-label" %>
-    <%= text_input f, :name, class: "form-control" %>
-    <%= error_tag f, :name %>
+    <%= label(f, :name, class: "control-label") %>
+    <%= text_input(f, :name, class: "form-control") %>
+    <%= error_tag(f, :name) %>
   </div>
 
   <div class="form-group">
-    <%= label f, :risk_aversion, class: "control-label" %>
-    <%= number_input f, :risk_aversion, class: "form-control" %>
-    <%= error_tag f, :risk_aversion %>
+    <%= label(f, :risk_aversion, class: "control-label") %>
+    <%= number_input(f, :risk_aversion, class: "form-control") %>
+    <%= error_tag(f, :risk_aversion) %>
   </div>
 
   <div class="form-group">
-    <%= label f, :notes, class: "control-label" %>
-    <%= textarea f, :notes, class: "form-control" %>
-    <%= error_tag f, :notes %>
+    <%= label(f, :notes, class: "control-label") %>
+    <%= textarea(f, :notes, class: "form-control") %>
+    <%= error_tag(f, :notes) %>
   </div>
 
   <%= if is_unmnemonic_devices() do %>
     <div class="form-group">
-      <%= label f, :voicepass, class: "control-label" %>
-      <%= text_input f, :voicepass, class: "form-control" %>
-      <%= error_tag f, :voicepass %>
+      <%= label(f, :voicepass, class: "control-label") %>
+      <%= text_input(f, :voicepass, class: "form-control") %>
+      <%= error_tag(f, :voicepass) %>
     </div>
   <% end %>
 
   <div class="form-group">
-    <%= submit "Submit", class: "btn btn-primary" %>
+    <%= submit("Submit", class: "btn btn-primary") %>
   </div>
 <% end %>

@@ -1,5 +1,8 @@
-<div class='row'>
-  <div class='small-12 columns'>
-    <%= render "form.html", Map.put(assigns, :action, Routes.settings_path(@conn, :update, @settings)) %>
+<div class="row">
+  <div class="small-12 columns">
+    <%= render(
+      "form.html",
+      Map.put(assigns, :action, Routes.settings_path(@conn, :update, @settings))
+    ) %>
   </div>
 </div>

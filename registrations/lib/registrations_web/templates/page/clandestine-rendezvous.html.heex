@@ -1,85 +1,120 @@
-<div class='row title moving-highlight' data-highlight='h2'>
-  <div class='small-4 columns'>
-    <img src='/images/clandestine-rendezvous/logo.png' class='logo' aria-hidden="true" alt="A surveillance camera">
+<div class="row title moving-highlight" data-highlight="h2">
+  <div class="small-4 columns">
+    <img
+      src="/images/clandestine-rendezvous/logo.png"
+      class="logo"
+      aria-hidden="true"
+      alt="A surveillance camera"
+    />
   </div>
-  <div class='small-8 columns'>
-    <h2>Clandestine</h2><h2>Rendezvous</h2>
+  <div class="small-8 columns">
+    <h2>Clandestine</h2>
+    <h2>Rendezvous</h2>
   </div>
 </div>
 
-<div class='row card'>
-  <div class='small-12 columns'>
+<div class="row card">
+  <div class="small-12 columns">
     <p>You are a member of a secret society with a mission of the utmost importance.</p>
-    <p>You will have encounters with other members around an undisclosed location where you will obtain information to get closer to fulfilling your mission.</p>
-  </div>
-</div>
-
-<div class='row card'>
-  <div class='small-12 columns'>
-    <p>Clandestine Rendezvous is an adventure taking place at a to-be-confirmed Victoria location in the evening on <%= full_date() %>. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.</p>
-  </div>
-</div>
-
-<div class='row card'>
-  <div class='small-12 columns'>
-    <img src='/images/first-image.jpg'>
-  </div>
-</div>
-
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-clock-o'></i> When and where?</h4>
-    <p>The secret society is so secret that the venue for initiation cannot be shared publicly. Once it is decided, it will be shared with those who <%= link "register", to: Routes.pow_registration_path(@conn, :new) %>. If you have questions about travel, please write to us after registering.</p>
-    <p>The adventure will begin at <%= start_time() %>. If you have obligations that prevent you from being present at the beginning let us know and we can discuss how to accommodate you.</p>
-  </div>
-</div>
-
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-user-secret'></i> Who?</h4>
-    <p>Anyone is invited to attend. You should have a sense of adventure and stealth. You can go alone or with a partner.</p>
-    <p>Bring a mask!</p>
-  </div>
-</div>
-
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-dollar'></i> Cost</h4>
-    <p>A $5 donation is requested to cover printing costs and labour. If that’s too much, any amount (including 0) is welcome.</p>
-  </div>
-</div>
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-universal-access'></i> Accessibility</h4>
-    <p>Do you have accessibility needs we should know about? Please tell us <%= link "when you register", to: Routes.pow_registration_path(@conn, :new) %> and we will work with you to ensure you can participate.</p>
-  </div>
-</div>
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h4 class='moving-highlight'><i class='fa fa-white fa-pencil'></i> Registration</h4>
-    <p>You <em>must</em> <%= link "register", to: Routes.pow_registration_path(@conn, :new) %> to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until the day before.</p>
-  </div>
-</div>
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h4 class='moving-highlight' id='questions'><i class='fa fa-white fa-question-circle'></i> Questions</h4>
-    <%= render RegistrationsWeb.SharedView, "question.html", conn: @conn %>
-  </div>
-</div>
-
-<div class='row card eye'>
-  <div class='small-12 columns'>
     <p>
-      <%= render "eye.html" %>
+      You will have encounters with other members around an undisclosed location where you will obtain information to get closer to fulfilling your mission.
     </p>
   </div>
 </div>
 
-<div class='row card'>
-  <div class='small-12 columns'>
-    <div class='zoom-container'>
-      <img class='secret-image-container' src='/images/secret-cover.jpg'>
-      <div class='secret'><div class='text'>you found a secret</div></div>
+<div class="row card">
+  <div class="small-12 columns">
+    <p>
+      Clandestine Rendezvous is an adventure taking place at a to-be-confirmed Victoria location in the evening on <%= full_date() %>. Participants receive a set of appointment cards that direct them to specific locations at precise times at which they will meet other operatives and exchange information with them. Each rendezvous will provide a clue to solve the case.
+    </p>
+  </div>
+</div>
+
+<div class="row card">
+  <div class="small-12 columns">
+    <img src="/images/first-image.jpg" />
+  </div>
+</div>
+
+<div class="row card">
+  <div class="small-12 columns">
+    <h4 class="moving-highlight"><i class="fa fa-white fa-clock-o"></i> When and where?</h4>
+    <p>
+      The secret society is so secret that the venue for initiation cannot be shared publicly. Once it is decided, it will be shared with those who <%= link(
+        "register",
+        to: Routes.pow_registration_path(@conn, :new)
+      ) %>. If you have questions about travel, please write to us after registering.
+    </p>
+    <p>
+      The adventure will begin at <%= start_time() %>. If you have obligations that prevent you from being present at the beginning let us know and we can discuss how to accommodate you.
+    </p>
+  </div>
+</div>
+
+<div class="row card">
+  <div class="small-12 columns">
+    <h4 class="moving-highlight"><i class="fa fa-white fa-user-secret"></i> Who?</h4>
+    <p>
+      Anyone is invited to attend. You should have a sense of adventure and stealth. You can go alone or with a partner.
+    </p>
+    <p>Bring a mask!</p>
+  </div>
+</div>
+
+<div class="row card">
+  <div class="small-12 columns">
+    <h4 class="moving-highlight"><i class="fa fa-white fa-dollar"></i> Cost</h4>
+    <p>
+      A $5 donation is requested to cover printing costs and labour. If that’s too much, any amount (including 0) is welcome.
+    </p>
+  </div>
+</div>
+<div class="row card">
+  <div class="small-12 columns">
+    <h4 class="moving-highlight">
+      <i class="fa fa-white fa-universal-access"></i> Accessibility
+    </h4>
+    <p>
+      Do you have accessibility needs we should know about? Please tell us <%= link(
+        "when you register",
+        to: Routes.pow_registration_path(@conn, :new)
+      ) %> and we will work with you to ensure you can participate.
+    </p>
+  </div>
+</div>
+<div class="row card">
+  <div class="small-12 columns">
+    <h4 class="moving-highlight"><i class="fa fa-white fa-pencil"></i> Registration</h4>
+    <p>
+      You
+      <em>must</em> <%= link("register", to: Routes.pow_registration_path(@conn, :new)) %> to attend the event, as scheduling each rendezvous depends on knowing who will attend. If you’re uncertain whether you can make it, register anyway; you can cancel up until the day before.
+    </p>
+  </div>
+</div>
+<div class="row card">
+  <div class="small-12 columns">
+    <h4 class="moving-highlight" id="questions">
+      <i class="fa fa-white fa-question-circle"></i> Questions
+    </h4>
+    <%= render(RegistrationsWeb.SharedView, "question.html", conn: @conn) %>
+  </div>
+</div>
+
+<div class="row card eye">
+  <div class="small-12 columns">
+    <p>
+      <%= render("eye.html") %>
+    </p>
+  </div>
+</div>
+
+<div class="row card">
+  <div class="small-12 columns">
+    <div class="zoom-container">
+      <img class="secret-image-container" src="/images/secret-cover.jpg" />
+      <div class="secret">
+        <div class="text">you found a secret</div>
+      </div>
     </div>
   </div>
 </div>

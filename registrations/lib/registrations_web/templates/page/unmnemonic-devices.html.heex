@@ -1,12 +1,16 @@
-<div class='row hero'>
-  <div class='small-12 columns'>
-    <img alt='A pencil illustration of a war machine on long legs being hit with an explosion, a crowd of humans in distress is on the ground' title='Martian Fighting Machine Hit by Shell by Henrique Alvim Corrêa' src='/images/unmnemonic-devices/correa-martian-fighting-machine.jpg'>
+<div class="row hero">
+  <div class="small-12 columns">
+    <img
+      alt="A pencil illustration of a war machine on long legs being hit with an explosion, a crowd of humans in distress is on the ground"
+      title="Martian Fighting Machine Hit by Shell by Henrique Alvim Corrêa"
+      src="/images/unmnemonic-devices/correa-martian-fighting-machine.jpg"
+    />
     <h1>unmnemonic devices <sup>™</sup></h1>
   </div>
 </div>
 
-<div class='row card'>
-  <div class='small-12 columns'>
+<div class="row card">
+  <div class="small-12 columns">
     <p>
       Is knowing about the impending doom and subsequent death of everyone on Earth
       getting you down? We here at Chromatin know the feeling. That’s why we want to share with you our breakthrough invention:
@@ -15,19 +19,19 @@
   </div>
 </div>
 
-<div class='row highlight'>
-  <div class='small-12 columns'>
+<div class="row highlight">
+  <div class="small-12 columns">
     <p>
       <%= location() %>
-      <br>
+      <br />
       <%= start_time() %>, <%= ordinal_date() %>
     </p>
   </div>
 </div>
 
-<div class='row'>
-  <div class='small-12 columns'>
-    <h2 class='moving-erasure'>What is it?</h2>
+<div class="row">
+  <div class="small-12 columns">
+    <h2 class="moving-erasure">What is it?</h2>
     <p>
       Want to stop obsessing about how most of your family perished in the
       dramatic coastal floods of this past summer? Need to block out those
@@ -40,9 +44,9 @@
   </div>
 </div>
 
-<div class='row'>
-  <div class='small-12 columns'>
-    <h2 class='moving-erasure'>How does it work?</h2>
+<div class="row">
+  <div class="small-12 columns">
+    <h2 class="moving-erasure">How does it work?</h2>
     <p>
       When you encounter a phrase that represents a traumatic incident you’ve
       barely survived and tell it to our advanced processing system, you’ll
@@ -52,26 +56,25 @@
   </div>
 </div>
 
-<div class='row'>
-  <div class='small-12 columns'>
-    <h2 class='moving-erasure'>Tell me more!</h2>
+<div class="row">
+  <div class="small-12 columns">
+    <h2 class="moving-erasure">Tell me more!</h2>
     <p>
-      To learn more about our technique, please
-      <%= link "register", to: Routes.pow_registration_path(@conn, :new) %>
-      to attend the participatory demonstration
+      To learn more about our technique, please <%= link("register",
+        to: Routes.pow_registration_path(@conn, :new)
+      ) %> to attend the participatory demonstration
       evening on FIXME, location to be announced.
     </p>
   </div>
 </div>
 
-<div class='row highlight'>
-  <div class='small-12 columns'>
+<div class="row highlight">
+  <div class="small-12 columns">
     <h2>What is it, really?</h2>
     <p>
       <details>
         <summary>Spoil me</summary>
-        It’s an interactive puzzle-solving
-        <a href="https://events.chromatin.ca/">adventure</a>,
+        It’s an interactive puzzle-solving <a href="https://events.chromatin.ca/">adventure</a>,
         a game akin to a scavenger hunt.
         Teams will find texts to read into software that will direct them to various
         locations. The site is “in character” and therefore cryptic but use the form
@@ -81,9 +84,9 @@
   </div>
 </div>
 
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h2 class='moving-erasure'>Cost</h2>
+<div class="row card">
+  <div class="small-12 columns">
+    <h2 class="moving-erasure">Cost</h2>
     <p>
       A $5 donation is requested to cover printing costs and labour. If
       that’s too much, any amount (including 0) is welcome.
@@ -91,24 +94,24 @@
   </div>
 </div>
 
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h2 class='moving-erasure'>Accessibility</h2>
+<div class="row card">
+  <div class="small-12 columns">
+    <h2 class="moving-erasure">Accessibility</h2>
     <p>
-      Do you have accessibility needs we should know about? Please tell us
-      <%= link "when you register", to: Routes.pow_registration_path(@conn, :new) %>
-      and we will work with you to ensure you can participate.
+      Do you have accessibility needs we should know about? Please tell us <%= link(
+        "when you register",
+        to: Routes.pow_registration_path(@conn, :new)
+      ) %> and we will work with you to ensure you can participate.
     </p>
   </div>
 </div>
 
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h2 class='moving-erasure'>Registration</h2>
+<div class="row card">
+  <div class="small-12 columns">
+    <h2 class="moving-erasure">Registration</h2>
     <p>
       You <em>must</em>
-      <%= link "register", to: Routes.pow_registration_path(@conn, :new) %>
-      to attend the event, as each therapeutic journey is hand-tuned. If
+      <%= link("register", to: Routes.pow_registration_path(@conn, :new)) %> to attend the event, as each therapeutic journey is hand-tuned. If
       you’re uncertain whether you can make it, register anyway; you can
       cancel up until the day before.
     </p>
@@ -120,9 +123,9 @@
   </div>
 </div>
 
-<div class='row card'>
-  <div class='small-12 columns'>
-    <h2 class='moving-erasure'>Questions</h2>
-    <%= render RegistrationsWeb.SharedView, "question.html", conn: @conn %>
+<div class="row card">
+  <div class="small-12 columns">
+    <h2 class="moving-erasure">Questions</h2>
+    <%= render(RegistrationsWeb.SharedView, "question.html", conn: @conn) %>
   </div>
 </div>

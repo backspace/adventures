@@ -17,20 +17,34 @@
   </thead>
   <tbody>
     <%= for {user, i} <- Enum.with_index(@users) do %>
-      <tr id={"user-#{ user.id }"}>
+      <tr id={"user-#{user.id}"}>
         <td><%= i %></td>
         <td><%= user.id %></td>
-        <td class='email'><%= user.email %></td>
+        <td class="email"><%= user.email %></td>
         <td><%= user.voicepass %></td>
-        <td class='attending'><%= symbol_for_boolean(user.attending) %></td>
-        <td class='risk-aversion'><%= user.risk_aversion %></td>
-        <td class='accessibility'><%= user.accessibility %></td>
-        <td class='proposed-team-name' title={user.proposed_team_name}><%= truncate(user.proposed_team_name) %></td>
-        <td class='team-emails'><%= user.team_emails %></td>
-        <td class='source'><%= user.source %></td>
-        <td class='comments'><%= user.comments %></td>
-        <td class='teamed'><%= if user.team do %>✓<% else %>✘<% end %></td>
-        <td><%= link "Build", to: Routes.team_path(@conn, :build, user_id: user.id), method: :post, class: "build" %></td>
+        <td class="attending"><%= symbol_for_boolean(user.attending) %></td>
+        <td class="risk-aversion"><%= user.risk_aversion %></td>
+        <td class="accessibility"><%= user.accessibility %></td>
+        <td class="proposed-team-name" title={user.proposed_team_name}>
+          <%= truncate(user.proposed_team_name) %>
+        </td>
+        <td class="team-emails"><%= user.team_emails %></td>
+        <td class="source"><%= user.source %></td>
+        <td class="comments"><%= user.comments %></td>
+        <td class="teamed">
+          <%= if user.team do %>
+            ✓
+          <% else %>
+            ✘
+          <% end %>
+        </td>
+        <td>
+          <%= link("Build",
+            to: Routes.team_path(@conn, :build, user_id: user.id),
+            method: :post,
+            class: "build"
+          ) %>
+        </td>
       </tr>
     <% end %>
   </tbody>

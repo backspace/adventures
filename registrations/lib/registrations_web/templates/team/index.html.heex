@@ -17,26 +17,37 @@
     </tr>
   </thead>
   <tbody>
-<%= for {team, i} <- Enum.with_index(@teams) do %>
-    <tr>
-      <td><%= i + 1 %></td>
-      <td><%= team.id %></td>
-      <td title={team.name} class='name'><%=truncate(team.name) %></td>
-      <td class='risk-aversion'><%= team.risk_aversion %></td>
-      <td><%= team.notes %></td>
-      <%= if is_unmnemonic_devices() do %>
-        <td><%= team.voicepass %></td>
-      <% end %>
-      <td data-test-emails><%= team_emails(team) %></td>
+    <%= for {team, i} <- Enum.with_index(@teams) do %>
+      <tr>
+        <td><%= i + 1 %></td>
+        <td><%= team.id %></td>
+        <td title={team.name} class="name"><%= truncate(team.name) %></td>
+        <td class="risk-aversion"><%= team.risk_aversion %></td>
+        <td><%= team.notes %></td>
+        <%= if is_unmnemonic_devices() do %>
+          <td><%= team.voicepass %></td>
+        <% end %>
+        <td data-test-emails><%= team_emails(team) %></td>
 
-      <td class="text-right">
-        <%= link "Show", to: Routes.team_path(@conn, :show, team), class: "btn btn-default btn-xs" %>
-        <%= link "Edit", to: Routes.team_path(@conn, :edit, team), class: "btn btn-default btn-xs" %>
-        <%= link "Delete", to: Routes.team_path(@conn, :delete, team), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
-      </td>
-    </tr>
-<% end %>
+        <td class="text-right">
+          <%= link("Show",
+            to: Routes.team_path(@conn, :show, team),
+            class: "btn btn-default btn-xs"
+          ) %>
+          <%= link("Edit",
+            to: Routes.team_path(@conn, :edit, team),
+            class: "btn btn-default btn-xs"
+          ) %>
+          <%= link("Delete",
+            to: Routes.team_path(@conn, :delete, team),
+            method: :delete,
+            data: [confirm: "Are you sure?"],
+            class: "btn btn-danger btn-xs"
+          ) %>
+        </td>
+      </tr>
+    <% end %>
   </tbody>
 </table>
 
-<%= link "New team", to: Routes.team_path(@conn, :new) %>
+<%= link("New team", to: Routes.team_path(@conn, :new)) %>

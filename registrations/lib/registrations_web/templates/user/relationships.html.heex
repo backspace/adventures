@@ -1,6 +1,6 @@
 <%= if !@relationships.empty? || assigns[:email] do %>
-  <div class='row card'>
-    <div class='small-12 columns'>
+  <div class="row card">
+    <div class="small-12 columns">
       <table>
         <%= if !Enum.empty?(@relationships.mutuals) || assigns[:email] do %>
           <thead>
@@ -14,18 +14,28 @@
           <tbody>
             <%= if assigns[:email] do %>
               <tr data-test-mutuals>
-                <td class='email'><%= @user.email %></td>
-                <td class='symbol'></td>
-                <td class='risk-aversion'><%= risk_aversion_integer_to_string()[@user.risk_aversion] %></td>
-                <td class='proposed-team-name'><%= @user.proposed_team_name %></td>
+                <td class="email"><%= @user.email %></td>
+                <td class="symbol"></td>
+                <td class="risk-aversion">
+                  <%= risk_aversion_integer_to_string()[@user.risk_aversion] %>
+                </td>
+                <td class="proposed-team-name"><%= @user.proposed_team_name %></td>
               </tr>
             <% end %>
             <%= for user <- @relationships.mutuals do %>
               <tr data-test-mutuals>
-                <td class='email'><%= user.email %></td>
-                <td class='symbol'>✓</td>
-                <td class={"risk-aversion #{ class_for_attribute(@user, user, :risk_aversion) }"}><%= symbol_for_attribute(@user, user, :risk_aversion) %> <%= risk_aversion_integer_to_string()[user.risk_aversion] %></td>
-                <td class={"proposed-team-name #{ class_for_attribute(@user, user, :proposed_team_name) }"}><%= symbol_for_attribute(@user, user, :proposed_team_name) %> <%= user.proposed_team_name %></td>
+                <td class="email"><%= user.email %></td>
+                <td class="symbol">✓</td>
+                <td class={"risk-aversion #{class_for_attribute(@user, user, :risk_aversion)}"}>
+                  <%= symbol_for_attribute(@user, user, :risk_aversion) %> <%= risk_aversion_integer_to_string()[
+                    user.risk_aversion
+                  ] %>
+                </td>
+                <td class={
+                  "proposed-team-name #{class_for_attribute(@user, user, :proposed_team_name)}"
+                }>
+                  <%= symbol_for_attribute(@user, user, :proposed_team_name) %> <%= user.proposed_team_name %>
+                </td>
               </tr>
             <% end %>
           </tbody>
@@ -35,42 +45,51 @@
             <tr>
               <th>Email</th>
               <th>Has you?</th>
-              <th colspan='2'></th>
+              <th colspan="2"></th>
             </tr>
           </thead>
           <tbody>
             <%= for user <- @relationships.proposers do %>
               <tr data-test-proposers>
-                <td class='email'><%= user.email %></td>
-                <td class='symbol'>?</td>
-                <td class='text' colspan='2'>This person has you listed in their team. <a data-action='add-email'>Add their address to your team emails list</a> if you agree.</td>
+                <td class="email"><%= user.email %></td>
+                <td class="symbol">?</td>
+                <td class="text" colspan="2">
+                  This person has you listed in their team.
+                  <a data-action="add-email">Add their address to your team emails list</a>
+                  if you agree.
+                </td>
               </tr>
             <% end %>
           </tbody>
           <tbody>
             <%= for {proposal, mutuals} <- @relationships.proposals_by_mutuals do %>
               <tr data-test-proposals-by-mutuals>
-                <td class='email'><%= proposal.email %></td>
-                <td class='symbol'>?</td>
-                <td class='text' colspan='2'><%= proposal_by_mutual_sentence(mutuals) %> <a data-action='add-email'>Add it</a> if you agree.</td>
+                <td class="email"><%= proposal.email %></td>
+                <td class="symbol">?</td>
+                <td class="text" colspan="2">
+                  <%= proposal_by_mutual_sentence(mutuals) %>
+                  <a data-action="add-email">Add it</a> if you agree.
+                </td>
               </tr>
             <% end %>
           </tbody>
           <tbody>
             <%= for user <- @relationships.proposees do %>
               <tr data-test-proposees>
-                <td class='email'><%= user.email %></td>
-                <td class='symbol'>✘</td>
-                <td class='text' colspan='2'>This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer.</td>
+                <td class="email"><%= user.email %></td>
+                <td class="symbol">✘</td>
+                <td class="text" colspan="2">
+                  This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer.
+                </td>
               </tr>
             <% end %>
           </tbody>
           <tbody>
             <%= for invalid <- @relationships.invalids do %>
               <tr data-test-invalids>
-                <td class='email'><%= invalid %></td>
-                <td class='symbol'>✘</td>
-                <td class='text' colspan='2'>This doesn’t seem like a valid email address!</td>
+                <td class="email"><%= invalid %></td>
+                <td class="symbol">✘</td>
+                <td class="text" colspan="2">This doesn’t seem like a valid email address!</td>
               </tr>
             <% end %>
           </tbody>

@@ -1,5 +1,5 @@
-<div class='row card'>
-  <div class='small-12 columns'>
+<div class="row card">
+  <div class="small-12 columns">
     <%= if length(@messages) == 1 do %>
       This message was sent before you registered.
     <% else %>
@@ -8,11 +8,11 @@
   </div>
 </div>
 <%= for message <- @messages do %>
-  <div class='row card'>
-    <div class='small-12 columns'>
-      <h3><%= raw message.subject %>: <%= message.postmarked_at %></h3>
+  <div class="row card">
+    <div class="small-12 columns">
+      <h3><%= raw(message.subject) %>: <%= message.postmarked_at %></h3>
       <%= Registrations.Mailer.message_from_string(message) %>
-      <p><%= raw message.content %></p>
+      <p><%= raw(message.content) %></p>
     </div>
   </div>
 <% end %>
