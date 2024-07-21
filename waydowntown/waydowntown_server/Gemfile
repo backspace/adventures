@@ -44,6 +44,9 @@ group :development, :test do
   gem 'faker', '~> 2.5'
   gem 'graphiti_spec_helpers'
   gem 'rspec-rails', '~> 6.0'
+
+  gem 'guard'
+  gem 'guard-rspec', require: false
 end
 
 group :development do
