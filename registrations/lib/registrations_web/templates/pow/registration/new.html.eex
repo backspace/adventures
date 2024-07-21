@@ -11,6 +11,8 @@
   <div class='small-12 columns'>
     <h2>Register</h2>
 
+    <%= for link <- PowAssent.Phoenix.ViewHelpers.provider_links(@conn), do: content_tag(:span, link) %>
+
     <%= form_for @changeset, Routes.pow_registration_path(@conn, :create), fn f -> %>
       <%= render RegistrationsWeb.SharedView, "errors.html", changeset: @changeset, f: f %>
 
