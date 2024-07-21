@@ -46,6 +46,9 @@ config :registrations, :pow,
   messages_backend: RegistrationsWeb.Pow.Messages,
   users_context: RegistrationsWeb.Pow.Users
 
+config :registrations, :pow_assent,
+  user_identities_context: RegistrationsWeb.PowAssent.UserIdentities
+
 # Configure phoenix generators
 config :phoenix, :generators,
   migration: true,
