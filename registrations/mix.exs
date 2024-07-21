@@ -44,6 +44,7 @@ defmodule Registrations.Mixfile do
       {:plug, "~> 1.7"},
       {:pow, "~> 1.0.28"},
       {:pow_assent, "~> 0.4.15"},
+      {:redix, "~> 0.9.2"},
       {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false},
       {:hound, github: "backspace/hound", ref: "malgasm-plus-warning-fixes", only: :test},
       {:ex_machina, "~> 2.7.0", only: :test},
