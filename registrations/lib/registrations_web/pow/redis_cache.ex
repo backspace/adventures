@@ -61,8 +61,8 @@ defmodule RegistrationsWeb.Pow.RedisCache do
         _any -> false
       end)
       |> case do
-        []     -> :ok
-        errors -> raise "Redix received unexpected response #{inspect errors}"
+        [] -> :ok
+        errors -> raise "Redix received unexpected response #{inspect(errors)}"
       end
     end)
 
@@ -70,13 +70,14 @@ defmodule RegistrationsWeb.Pow.RedisCache do
   end
 
   defp put_command({key, []}, value, ttl) do
-    key   = to_binary_redis_key(key)
+    key = to_binary_redis_key(key)
     value = :erlang.term_to_binary(value)
 
     ["SET", key, value, "PX", ttl]
   end
+
   defp put_command({prefix, key}, _value, ttl) do
-    key       = to_binary_redis_key(key)
+    key = to_binary_redis_key(key)
     timestamp = current_timestamp()
 
     index_key =
@@ -105,9 +106,10 @@ defmodule RegistrationsWeb.Pow.RedisCache do
     |> Enum.reduce([], &flatten/2)
   end
 
-  defp flatten([item | _rest] = items, acc) when is_list(item)  do
+  defp flatten([item | _rest] = items, acc) when is_list(item) do
     Enum.reduce(items, acc, &flatten/2)
   end
+
   defp flatten(item, acc), do: acc ++ [item]
 
   defp maybe_async(config, fun) do
@@ -136,6 +138,7 @@ defmodule RegistrationsWeb.Pow.RedisCache do
 
     ["DEL", prefix]
   end
+
   def delete_command({prefix, key}) do
     index_key =
       prefix
@@ -155,7 +158,7 @@ defmodule RegistrationsWeb.Pow.RedisCache do
       |> to_binary_redis_key()
 
     case Redix.command!(@redix_instance_name, ["GET", key]) do
-      nil   -> :not_found
+      nil -> :not_found
       value -> :erlang.binary_to_term(value)
     end
   end
@@ -163,14 +166,14 @@ defmodule RegistrationsWeb.Pow.RedisCache do
   @impl true
   def all(config, key_match) do
     compiled_match_spec = :ets.match_spec_compile([{{key_match, :_}, [], [:"$_"]}])
-    key_match           = redis_key(config, key_match)
+    key_match = redis_key(config, key_match)
 
     prefix =
       key_match
-      |> Enum.find_index(& &1 == :_)
+      |> Enum.find_index(&(&1 == :_))
       |> case do
         nil -> {redis_key(config, []), key_match}
-        i   -> Enum.split(key_match, i)
+        i -> Enum.split(key_match, i)
       end
       |> elem(0)
 
@@ -179,27 +182,36 @@ defmodule RegistrationsWeb.Pow.RedisCache do
       |> to_binary_redis_key()
       |> to_index_key()
 
-    Redix.command!(@redix_instance_name, ["ZREMRANGEBYSCORE", index_key, "-inf", current_timestamp()])
+    Redix.command!(@redix_instance_name, [
+      "ZREMRANGEBYSCORE",
+      index_key,
+      "-inf",
+      current_timestamp()
+    ])
 
     Stream.resource(
       fn -> do_scan(config, prefix, compiled_match_spec, "0") end,
       &stream_scan(config, prefix, compiled_match_spec, &1),
-      fn _ -> :ok end)
+      fn _ -> :ok end
+    )
     |> Enum.to_list()
   end
 
   defp to_index_key(key), do: "_index:#{key}"
 
   defp stream_scan(_config, _prefix, _compiled_match_spec, {[], "0"}), do: {:halt, nil}
+
   defp stream_scan(config, prefix, compiled_match_spec, {[], iterator}) do
     result = do_scan(config, prefix, compiled_match_spec, iterator)
 
     stream_scan(config, prefix, compiled_match_spec, result)
   end
-  defp stream_scan(_config, _prefix, _compiled_match_spec, {keys, iterator}), do: {keys, {[], iterator}}
+
+  defp stream_scan(_config, _prefix, _compiled_match_spec, {keys, iterator}),
+    do: {keys, {[], iterator}}
 
   defp do_scan(config, prefix, compiled_match_spec, iterator) do
-    prefix    = to_binary_redis_key(prefix)
+    prefix = to_binary_redis_key(prefix)
     index_key = to_index_key(prefix)
 
     [iterator, res] = Redix.command!(@redix_instance_name, ["ZSCAN", index_key, iterator])
@@ -230,6 +242,7 @@ defmodule RegistrationsWeb.Pow.RedisCache do
   defp unwrap([_namespace | key]), do: key
 
   defp populate_values([], _config), do: []
+
   defp populate_values(records, config) do
     binary_keys = Enum.map(records, fn {key, nil} -> binary_redis_key(config, key) end)
 
@@ -237,7 +250,7 @@ defmodule RegistrationsWeb.Pow.RedisCache do
       @redix_instance_name
       |> Redix.command!(["MGET"] ++ binary_keys)
       |> Enum.map(fn
-        nil   -> nil
+        nil -> nil
         value -> :erlang.binary_to_term(value)
       end)
 
@@ -249,6 +262,7 @@ defmodule RegistrationsWeb.Pow.RedisCache do
   defp zip_values([{key, nil} | next1], [value | next2]) do
     [{key, value} | zip_values(next1, next2)]
   end
+
   defp zip_values(_, []), do: []
   defp zip_values([], _), do: []
 

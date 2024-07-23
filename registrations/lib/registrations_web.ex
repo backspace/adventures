@@ -86,8 +86,9 @@ defmodule RegistrationsWeb do
 
   def mailer_view do
     quote do
-      use Phoenix.View, root: "lib/registrations_web/templates",
-                        namespace: RegistrationsWeb
+      use Phoenix.View,
+        root: "lib/registrations_web/templates",
+        namespace: RegistrationsWeb
 
       use Phoenix.HTML
     end
