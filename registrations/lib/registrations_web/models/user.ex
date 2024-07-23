@@ -3,7 +3,7 @@ defmodule RegistrationsWeb.User do
 
   use Pow.Ecto.Schema
   use PowAssent.Ecto.Schema
-  use Pow.Extension.Ecto.Schema, extensions: [PowResetPassword]
+  use Pow.Extension.Ecto.Schema, extensions: [PowResetPassword, PowInvitation]
 
   use RegistrationsWeb, :model
   alias Registrations.Repo
@@ -17,6 +17,12 @@ defmodule RegistrationsWeb.User do
     field(:current_password, :string, virtual: true)
     field(:password, :string, virtual: true)
     field(:confirm_password, :string, virtual: true)
+
+    field(:invitation_token, :string)
+    field(:invitation_accepted_at, :utc_datetime)
+
+    belongs_to(:invited_by, RegistrationsWeb.User, type: :binary_id)
+    has_many(:invited_users, RegistrationsWeb.User, foreign_key: :invited_by_id)
 
     has_many(:user_identities, Registrations.UserIdentities.UserIdentity,
       foreign_key: :user_id,
