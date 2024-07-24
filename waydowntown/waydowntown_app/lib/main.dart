@@ -3,18 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:logging/logging.dart';
+import 'package:logger/logger.dart';
 
-final logger = Logger('main');
+var logger = Logger();
 
 Future main() async {
   await dotenv.load(fileName: '.env');
-  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
-  Logger.root.onRecord.listen((record) {
-    // ignore: avoid_print
-    print(
-        '${record.time} [${record.loggerName}] ${record.level.name}: ${record.message}');
-  });
+  Logger.level = kDebugMode ? Level.debug : Level.warning;
   runApp(const Waydowntown());
 }
 
@@ -47,7 +42,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final dio = Dio(BaseOptions());
-    final logger = Logger('dio');
 
     dio.interceptors.add(PrettyDioLogger(
         requestHeader: true,
@@ -58,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
         compact: true,
         maxWidth: 90,
         logPrint: (message) {
-          logger.fine(message);
+          logger.d(message);
         }));
 
     return Scaffold(
@@ -122,7 +116,7 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
         throw Exception('Failed to load game');
       }
     } catch (error) {
-      logger.severe('Error fetching game from $endpoint: $error');
+      logger.e('Error fetching game from $endpoint: $error');
     }
   }
 
@@ -149,7 +143,7 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
         game = Game.fromJson(response.data);
       });
     } catch (error) {
-      logger.severe('Error submitting answer: $error');
+      logger.e('Error submitting answer: $error');
     }
   }
 
