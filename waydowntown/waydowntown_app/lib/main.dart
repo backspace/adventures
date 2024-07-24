@@ -1,10 +1,20 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:logging/logging.dart';
+
+final logger = Logger('main');
 
 Future main() async {
   await dotenv.load(fileName: '.env');
+  Logger.root.level = kDebugMode ? Level.ALL : Level.INFO;
+  Logger.root.onRecord.listen((record) {
+    // ignore: avoid_print
+    print(
+        '${record.time} [${record.loggerName}] ${record.level.name}: ${record.message}');
+  });
   runApp(const Waydowntown());
 }
 
@@ -37,6 +47,20 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final dio = Dio(BaseOptions());
+    final logger = Logger('dio');
+
+    dio.interceptors.add(PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        compact: true,
+        maxWidth: 90,
+        logPrint: (message) {
+          logger.fine(message);
+        }));
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -98,7 +122,7 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
         throw Exception('Failed to load game');
       }
     } catch (error) {
-      print('Error fetching game from $endpoint: $error');
+      logger.severe('Error fetching game from $endpoint: $error');
     }
   }
 
@@ -125,7 +149,7 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
         game = Game.fromJson(response.data);
       });
     } catch (error) {
-      print('Error submitting answer: $error');
+      logger.severe('Error submitting answer: $error');
     }
   }
 
@@ -163,7 +187,6 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
                       ElevatedButton(
                         onPressed: () async {
                           await submitAnswer(answer);
-                          print("game over? ${game!.isOver}");
                         },
                         child: const Text('Submit'),
                       )
@@ -214,10 +237,6 @@ class Game {
     Map<String, dynamic> gameJson = gameIsIncluded
         ? _findIncluded(json['included'], 'games')
         : json['data'];
-
-    print("gameJson: $gameJson");
-    print(
-        "isover ${gameJson['relationships']?['winner_answer']?['links']?['related'] != null ? true : false}");
 
     return Game(
       id: gameJson['id'],
