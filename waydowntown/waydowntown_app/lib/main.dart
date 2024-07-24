@@ -93,6 +93,7 @@ class RequestGameRoute extends StatefulWidget {
 class _RequestGameRouteState extends State<RequestGameRoute> {
   String answer = 'answer';
   Game? game;
+  bool isOver = false;
 
   @override
   void initState() {
@@ -105,7 +106,9 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
     try {
       final response = await widget.dio.post(
         endpoint,
-        queryParameters: {'include': 'incarnation'},
+        queryParameters: {
+          'include': 'incarnation,incarnation.region,incarnation.region.parent'
+        },
       );
 
       if (response.statusCode == 201) {
@@ -123,7 +126,7 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
   Future<void> submitAnswer(String answer) async {
     try {
       final response = await widget.dio.post(
-        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game,game.incarnation',
+        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game',
         data: {
           'data': {
             'type': 'answers',
@@ -140,7 +143,7 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
       );
 
       setState(() {
-        game = Game.fromJson(response.data);
+        isOver = checkWinnerAnswerLink(response.data);
       });
     } catch (error) {
       logger.e('Error submitting answer: $error');
@@ -151,7 +154,9 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Requested a game?'),
+        title: game == null
+            ? const Text('Requested a game?')
+            : Text(getRegionPath(game!.incarnation)),
       ),
       body: Center(
         child: Column(
@@ -175,7 +180,7 @@ class _RequestGameRouteState extends State<RequestGameRoute> {
                         await submitAnswer(answer);
                       },
                     ),
-                    if (game!.isOver)
+                    if (isOver)
                       const Text('Done!')
                     else
                       ElevatedButton(
@@ -205,52 +210,132 @@ class Incarnation {
   final String id;
   final String concept;
   final String mask;
+  final Region region;
 
   const Incarnation(
-      {required this.id, required this.concept, required this.mask});
+      {required this.id,
+      required this.concept,
+      required this.mask,
+      required this.region});
 
-  factory Incarnation.fromJson(Map<String, dynamic> json) {
+  factory Incarnation.fromJson(
+      Map<String, dynamic> json, List<dynamic> included) {
+    final attributes = json['attributes'];
+    final relationships = json['relationships'];
+
+    if (relationships == null ||
+        relationships['region'] == null ||
+        relationships['region']['data'] == null) {
+      throw const FormatException('Incarnation must have a region');
+    }
+
+    final regionData = relationships['region']['data'];
+    final regionJson = included.firstWhere(
+      (item) => item['type'] == 'regions' && item['id'] == regionData['id'],
+      orElse: () =>
+          throw const FormatException('Region not found in included data'),
+    );
+
     return Incarnation(
       id: json['id'],
-      concept: json['attributes']['concept'],
-      mask: json['attributes']['mask'],
+      concept: attributes['concept'],
+      mask: attributes['mask'],
+      region: Region.fromJson(regionJson, included),
     );
+  }
+}
+
+class Region {
+  final String id;
+  final String name;
+  final String? description;
+  Region? parentRegion;
+
+  Region(
+      {required this.id,
+      required this.name,
+      this.description,
+      this.parentRegion});
+
+  factory Region.fromJson(Map<String, dynamic> json, List<dynamic> included) {
+    final attributes = json['attributes'];
+    final relationships = json['relationships'];
+
+    Region region = Region(
+      id: json['id'],
+      name: attributes['name'],
+      description: attributes['description'],
+    );
+
+    if (relationships != null &&
+        relationships['parent'] != null &&
+        relationships['parent']['data'] != null) {
+      final parentData = relationships['parent']['data'];
+      final parentJson = included.firstWhere(
+        (item) => item['type'] == 'regions' && item['id'] == parentData['id'],
+        orElse: () => null,
+      );
+      if (parentJson != null) {
+        region.parentRegion = Region.fromJson(parentJson, included);
+      }
+    }
+
+    return region;
   }
 }
 
 class Game {
   final String id;
   final Incarnation incarnation;
-  final bool isOver;
 
-  const Game(
-      {required this.id, required this.incarnation, required this.isOver});
+  Game({required this.id, required this.incarnation});
 
   factory Game.fromJson(Map<String, dynamic> json) {
-    bool gameIsIncluded = json['data']['type'] != 'games';
-    Map<String, dynamic> gameJson = gameIsIncluded
-        ? _findIncluded(json['included'], 'games')
-        : json['data'];
+    final data = json['data'];
+    final included = json['included'] as List<dynamic>;
+
+    if (data['relationships'] == null ||
+        data['relationships']['incarnation'] == null) {
+      throw const FormatException('Game must have an incarnation');
+    }
+
+    final incarnationData = data['relationships']['incarnation']['data'];
+    final incarnationJson = included.firstWhere(
+      (item) =>
+          item['type'] == 'incarnations' && item['id'] == incarnationData['id'],
+      orElse: () =>
+          throw const FormatException('Incarnation not found in included data'),
+    );
 
     return Game(
-      id: gameJson['id'],
-      incarnation:
-          Incarnation.fromJson(_findIncluded(json['included'], 'incarnations')),
-      isOver: gameJson['relationships']?['winner_answer']?['links']
-                  ?['related'] !=
-              null
-          ? true
-          : false,
-    );
+        id: data['id'],
+        incarnation: Incarnation.fromJson(incarnationJson, included));
+  }
+}
+
+bool checkWinnerAnswerLink(Map<String, dynamic> apiResponse) {
+  if (apiResponse['included'] == null) return false;
+
+  var included = apiResponse['included'] as List<dynamic>;
+
+  for (var item in included) {
+    if (item['type'] == 'games') {
+      return item['relationships']?['winner_answer']?['links']?['related'] !=
+          null;
+    }
   }
 
-  static Map<String, dynamic> _findIncluded(
-      List<dynamic> included, String type) {
-    for (var item in included) {
-      if (item['type'] == type) {
-        return item;
-      }
-    }
-    throw Exception('Game not found in included');
+  return false;
+}
+
+String getRegionPath(Incarnation incarnation) {
+  List<String> regionNames = [];
+  Region? currentRegion = incarnation.region;
+
+  while (currentRegion != null) {
+    regionNames.insert(0, currentRegion.name);
+    currentRegion = currentRegion.parentRegion;
   }
+
+  return regionNames.join(" > ");
 }

@@ -45,6 +45,46 @@ void main() {
               "attributes": {
                 "concept": "fill_in_the_blank",
                 "mask": "An enormous headline proclaims ____ quit!"
+              },
+              "relationships": {
+                "region": {
+                  "links": {
+                    "related":
+                        "${dotenv.env['API_ROOT']}/api/v1/regions/324fd8f9-cd25-48be-a761-b8680fa72737"
+                  },
+                  "data": {
+                    "type": "regions",
+                    "id": "324fd8f9-cd25-48be-a761-b8680fa72737"
+                  }
+                }
+              },
+            },
+            {
+              "id": "324fd8f9-cd25-48be-a761-b8680fa72737",
+              "type": "regions",
+              "attributes": {"name": "Food Court", "description": null},
+              "relationships": {
+                "parent": {
+                  "links": {
+                    "related":
+                        "${dotenv.env['API_ROOT']}/api/v1/regions/67cc2c5c-06c2-4e86-9aac-b575fc712862"
+                  },
+                  "data": {
+                    "type": "regions",
+                    "id": "67cc2c5c-06c2-4e86-9aac-b575fc712862"
+                  }
+                }
+              }
+            },
+            {
+              "id": "67cc2c5c-06c2-4e86-9aac-b575fc712862",
+              "type": "regions",
+              "attributes": {"name": "Portage Place", "description": null},
+              "relationships": {
+                "parent": {
+                  "links": {"related": null},
+                  "data": null
+                }
               }
             }
           ],
@@ -55,7 +95,7 @@ void main() {
 
     dioAdapter
       ..onPost(
-        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game,game.incarnation',
+        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game',
         (server) => server.reply(
           201,
           {
@@ -95,7 +135,7 @@ void main() {
         },
       )
       ..onPost(
-        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game,game.incarnation',
+        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game',
         (server) => server.reply(
           201,
           {
@@ -159,6 +199,8 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(home: RequestGameRoute(dio: dio)));
     await tester.pumpAndSettle();
+
+    expect(find.text('Portage Place > Food Court'), findsOneWidget);
 
     expect(find.text('fill_in_the_blank'), findsOneWidget);
     expect(
