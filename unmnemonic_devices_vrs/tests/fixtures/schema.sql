@@ -106,6 +106,20 @@ END) STORED
 
 
 --
+-- Name: user_identities; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_identities (
+    id uuid NOT NULL,
+    provider character varying(255) NOT NULL,
+    uid character varying(255) NOT NULL,
+    user_id uuid,
+    inserted_at timestamp(0) without time zone NOT NULL,
+    updated_at timestamp(0) without time zone NOT NULL
+);
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -126,7 +140,10 @@ CREATE TABLE public.users (
     attending boolean,
     voicepass character varying(255),
     remembered integer DEFAULT 0,
-    team_id uuid
+    team_id uuid,
+    invitation_token character varying(255),
+    invitation_accepted_at timestamp(0) without time zone,
+    invited_by_id uuid
 );
 
 
@@ -335,6 +352,14 @@ ALTER TABLE ONLY public.teams
 
 
 --
+-- Name: user_identities user_identities_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_identities
+    ADD CONSTRAINT user_identities_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -431,10 +456,24 @@ ALTER TABLE ONLY waydowntown.incarnations
 
 
 --
+-- Name: user_identities_uid_provider_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX user_identities_uid_provider_index ON public.user_identities USING btree (uid, provider);
+
+
+--
 -- Name: users_email_index; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE UNIQUE INDEX users_email_index ON public.users USING btree (email);
+
+
+--
+-- Name: users_invitation_token_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX users_invitation_token_index ON public.users USING btree (invitation_token);
 
 
 --
@@ -470,6 +509,22 @@ CREATE UNIQUE INDEX recordings_region_id_index ON unmnemonic_devices.recordings 
 --
 
 CREATE UNIQUE INDEX recordings_team_id_index ON unmnemonic_devices.recordings USING btree (team_id);
+
+
+--
+-- Name: user_identities user_identities_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_identities
+    ADD CONSTRAINT user_identities_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: users users_invited_by_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_invited_by_id_fkey FOREIGN KEY (invited_by_id) REFERENCES public.users(id);
 
 
 --
@@ -634,3 +689,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240630162715);
 INSERT INTO public."schema_migrations" (version) VALUES (20240703014400);
 INSERT INTO public."schema_migrations" (version) VALUES (20240703235731);
 INSERT INTO public."schema_migrations" (version) VALUES (20240714173901);
+INSERT INTO public."schema_migrations" (version) VALUES (20240721040506);
+INSERT INTO public."schema_migrations" (version) VALUES (20240722224559);
