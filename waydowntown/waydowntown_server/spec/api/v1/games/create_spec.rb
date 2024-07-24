@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe 'games#create' do
   subject(:make_request) do
     # FIXME: can the include be made default?
-    jsonapi_post '/api/v1/games?include=incarnation', payload
+    jsonapi_post '/api/v1/games?include=incarnation,incarnation.region,incarnation.region.parent', payload
   end
 
   let!(:incarnation) { create(:incarnation, concept: 'fill_in_the_blank', mask: 'This is a ____') }
@@ -29,6 +29,13 @@ RSpec.describe 'games#create' do
       d.sideload(:incarnation)
     end
 
+    let(:sideloaded_region) do
+      make_request
+      json['included'].find do |resource|
+        resource['type'] == 'regions' and resource['id'] == sideloaded_incarnation.relationships['region']['data']['id']
+      end
+    end
+
     it { expect { make_request }.to change(Game, :count).by(1) }
 
     it {
@@ -38,5 +45,7 @@ RSpec.describe 'games#create' do
 
     it { expect(sideloaded_incarnation.concept).to eq(incarnation.concept) }
     it { expect(sideloaded_incarnation.mask).to eq(incarnation.mask) }
+
+    it { expect(sideloaded_region['id']).to eq(incarnation.region.id) }
   end
 end

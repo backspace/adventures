@@ -5,6 +5,7 @@ Rails.application.routes.draw do
     resources :answers, only: %i[index create show]
     resources :games, only: %i[index create show]
     resources :incarnations, only: :show
+    resources :regions, only: :show
     mount VandalUi::Engine, at: '/vandal'
     # your routes go here
   end

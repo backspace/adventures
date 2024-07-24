@@ -190,6 +190,98 @@
         }
       },
       "relationships": {
+        "region": {
+          "type": "belongs_to",
+          "description": null,
+          "resource": "RegionResource"
+        }
+      },
+      "stats": {
+        "total": [
+          "count"
+        ]
+      }
+    },
+    {
+      "name": "RegionResource",
+      "type": "regions",
+      "graphql_entrypoint": "regions",
+      "description": null,
+      "attributes": {
+        "id": {
+          "type": "uuid",
+          "readable": true,
+          "writable": true,
+          "description": null
+        },
+        "name": {
+          "type": "string",
+          "readable": true,
+          "writable": true,
+          "description": null
+        },
+        "description": {
+          "type": "string",
+          "readable": true,
+          "writable": true,
+          "description": null
+        }
+      },
+      "extra_attributes": {
+      },
+      "sorts": {
+        "id": {
+        },
+        "name": {
+        },
+        "description": {
+        }
+      },
+      "filters": {
+        "id": {
+          "type": "uuid",
+          "operators": [
+            "eq",
+            "not_eq"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "operators": [
+            "eq",
+            "not_eq",
+            "eql",
+            "not_eql",
+            "prefix",
+            "not_prefix",
+            "suffix",
+            "not_suffix",
+            "match",
+            "not_match"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "operators": [
+            "eq",
+            "not_eq",
+            "eql",
+            "not_eql",
+            "prefix",
+            "not_prefix",
+            "suffix",
+            "not_suffix",
+            "match",
+            "not_match"
+          ]
+        }
+      },
+      "relationships": {
+        "parent": {
+          "type": "belongs_to",
+          "description": null,
+          "resource": "RegionResource"
+        }
       },
       "stats": {
         "total": [
@@ -229,6 +321,13 @@
       "actions": {
         "show": {
           "resource": "IncarnationResource"
+        }
+      }
+    },
+    "/api/v1/regions": {
+      "actions": {
+        "show": {
+          "resource": "RegionResource"
         }
       }
     }

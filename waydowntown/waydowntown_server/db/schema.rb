@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 20_240_714_173_901) do
+ActiveRecord::Schema[7.1].define(version: 20_240_723_045_728) do
   create_schema 'unmnemonic_devices'
   create_schema 'waydowntown'
 
@@ -40,6 +40,7 @@ ActiveRecord::Schema[7.1].define(version: 20_240_714_173_901) do
     t.string 'answer', limit: 255
     t.datetime 'inserted_at', precision: 0, null: false
     t.datetime 'updated_at', precision: 0, null: false
+    t.uuid 'region_id', null: false
   end
 
   create_table 'messages', id: :uuid, default: nil, force: :cascade do |t|
@@ -55,6 +56,12 @@ ActiveRecord::Schema[7.1].define(version: 20_240_714_173_901) do
     t.string 'from_address', limit: 255
   end
 
+  create_table 'regions', id: :uuid, default: -> { 'gen_random_uuid()' }, force: :cascade do |t|
+    t.string 'name', limit: 255
+    t.text 'description'
+    t.uuid 'parent_id'
+  end
+
   create_table 'teams', id: :uuid, default: nil, force: :cascade do |t|
     t.text 'name'
     t.integer 'risk_aversion'
@@ -65,6 +72,15 @@ ActiveRecord::Schema[7.1].define(version: 20_240_714_173_901) do
     t.integer 'listens', default: 0
     t.virtual 'name_truncated', type: :string, limit: 53,
                                 as: "\nCASE\n    WHEN (length(name) > 50) THEN (\"substring\"(name, 1, (50 - \"position\"(reverse(\"substring\"(name, 1, 50)), ' '::text))) || '…'::text)\n    ELSE name\nEND", stored: true
+  end
+
+  create_table 'user_identities', id: :uuid, default: nil, force: :cascade do |t|
+    t.string 'provider', limit: 255, null: false
+    t.string 'uid', limit: 255, null: false
+    t.uuid 'user_id'
+    t.datetime 'inserted_at', precision: 0, null: false
+    t.datetime 'updated_at', precision: 0, null: false
+    t.index %w[uid provider], name: 'user_identities_uid_provider_index', unique: true
   end
 
   create_table 'users', id: :uuid, default: nil, force: :cascade do |t|
@@ -84,12 +100,20 @@ ActiveRecord::Schema[7.1].define(version: 20_240_714_173_901) do
     t.string 'voicepass', limit: 255
     t.integer 'remembered', default: 0
     t.uuid 'team_id'
+    t.string 'invitation_token', limit: 255
+    t.datetime 'invitation_accepted_at', precision: 0
+    t.uuid 'invited_by_id'
     t.index ['email'], name: 'users_email_index', unique: true
+    t.index ['invitation_token'], name: 'users_invitation_token_index', unique: true
   end
 
   add_foreign_key 'answers', 'games', name: 'answers_game_id_fkey'
   add_foreign_key 'games', 'answers', column: 'winner_answer_id', name: 'games_winner_answer_id_fkey',
                                       on_delete: :nullify
   add_foreign_key 'games', 'incarnations', name: 'games_incarnation_id_fkey'
+  add_foreign_key 'incarnations', 'regions', name: 'incarnations_region_id_fkey', on_delete: :nullify
+  add_foreign_key 'regions', 'regions', column: 'parent_id', name: 'regions_parent_id_fkey', on_delete: :nullify
+  add_foreign_key 'user_identities', 'users', name: 'user_identities_user_id_fkey'
   add_foreign_key 'users', 'teams', name: 'users_team_id_fkey', on_delete: :nullify
+  add_foreign_key 'users', 'users', column: 'invited_by_id', name: 'users_invited_by_id_fkey'
 end

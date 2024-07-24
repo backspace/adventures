@@ -316,7 +316,20 @@ CREATE TABLE waydowntown.incarnations (
     mask character varying(255),
     answer character varying(255),
     inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL
+    updated_at timestamp(0) without time zone NOT NULL,
+    region_id uuid NOT NULL
+);
+
+
+--
+-- Name: regions; Type: TABLE; Schema: waydowntown; Owner: -
+--
+
+CREATE TABLE waydowntown.regions (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    name character varying(255),
+    description text,
+    parent_id uuid
 );
 
 
@@ -453,6 +466,14 @@ ALTER TABLE ONLY waydowntown.games
 
 ALTER TABLE ONLY waydowntown.incarnations
     ADD CONSTRAINT incarnations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: regions regions_pkey; Type: CONSTRAINT; Schema: waydowntown; Owner: -
+--
+
+ALTER TABLE ONLY waydowntown.regions
+    ADD CONSTRAINT regions_pkey PRIMARY KEY (id);
 
 
 --
@@ -640,6 +661,22 @@ ALTER TABLE ONLY waydowntown.games
 
 
 --
+-- Name: incarnations incarnations_region_id_fkey; Type: FK CONSTRAINT; Schema: waydowntown; Owner: -
+--
+
+ALTER TABLE ONLY waydowntown.incarnations
+    ADD CONSTRAINT incarnations_region_id_fkey FOREIGN KEY (region_id) REFERENCES waydowntown.regions(id) ON DELETE SET NULL;
+
+
+--
+-- Name: regions regions_parent_id_fkey; Type: FK CONSTRAINT; Schema: waydowntown; Owner: -
+--
+
+ALTER TABLE ONLY waydowntown.regions
+    ADD CONSTRAINT regions_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES waydowntown.regions(id) ON DELETE SET NULL;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -691,3 +728,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240703235731);
 INSERT INTO public."schema_migrations" (version) VALUES (20240714173901);
 INSERT INTO public."schema_migrations" (version) VALUES (20240721040506);
 INSERT INTO public."schema_migrations" (version) VALUES (20240722224559);
+INSERT INTO public."schema_migrations" (version) VALUES (20240723045728);
