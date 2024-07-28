@@ -16,10 +16,13 @@
       </dl>
     </div>
   </div>
+<% else %>
+  <%= render("relationships.html", user: @user, relationships: @relationships, title: true) %>
 <% end %>
 
 <div class="row card">
   <div class="small-12 columns">
+    <h2>Edit details</h2>
     <p><%= phrase("change_deadline") %></p>
   </div>
 </div>
@@ -123,7 +126,6 @@
     <% end %>
   </div>
 </div>
-<%= render("relationships.html", user: @user, relationships: @relationships) %>
 <div class="row card">
   <div class="small-12 columns">
     <%= link("Change your password",
