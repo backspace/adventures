@@ -4,6 +4,7 @@ defmodule Registrations.Mailer do
 
   import Swoosh.Email
   import RegistrationsWeb.SharedHelpers
+  import Ecto.Query, only: [from: 2]
 
   require Logger
 
@@ -13,7 +14,7 @@ defmodule Registrations.Mailer do
   def cast(%{user: user, subject: subject, text: text, html: html}) do
     %Swoosh.Email{}
     |> to({"", user.email})
-    |> from(adventure_from())
+    |> Swoosh.Email.from(adventure_from())
     |> subject("[#{phrase("email_title")}] #{subject}")
     |> html_body(html)
     |> text_body(text)
@@ -34,10 +35,28 @@ defmodule Registrations.Mailer do
     :ok
   end
 
+  def user_created(user) do
+    messages =
+      Registrations.Repo.all(
+        Ecto.Query.from(m in RegistrationsWeb.Message,
+          where: m.ready == true,
+          select: m,
+          order_by: :postmarked_at
+        )
+      )
+
+    unless Enum.empty?(messages) do
+      send_backlog(messages, user)
+    end
+
+    send_welcome_email(user.email)
+    send_registration(user)
+  end
+
   def send_welcome_email(email) do
     new()
     |> to(email)
-    |> from(adventure_from())
+    |> Swoosh.Email.from(adventure_from())
     |> subject("[#{phrase("email_title")}] Welcome!")
     |> html_body(welcome_html())
     |> text_body(welcome_text())
@@ -47,7 +66,7 @@ defmodule Registrations.Mailer do
   def send_question(attributes) do
     new()
     |> to(adventure_from())
-    |> from(adventure_from())
+    |> Swoosh.Email.from(adventure_from())
     |> subject(
       "Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}"
     )
@@ -58,7 +77,7 @@ defmodule Registrations.Mailer do
   def send_user_changes(user, changes) do
     new()
     |> to(adventure_from())
-    |> from(adventure_from())
+    |> Swoosh.Email.from(adventure_from())
     |> subject("#{user.email} details changed: #{Enum.join(Map.keys(changes), ", ")}")
     |> text_body(inspect(changes))
     |> deliver
@@ -67,7 +86,7 @@ defmodule Registrations.Mailer do
   def send_user_deletion(user) do
     new()
     |> to(adventure_from())
-    |> from(adventure_from())
+    |> Swoosh.Email.from(adventure_from())
     |> subject("#{user.email} deleted their account")
     |> text_body(inspect(user))
     |> deliver
@@ -78,7 +97,7 @@ defmodule Registrations.Mailer do
   def send_registration(user) do
     new()
     |> to(adventure_from())
-    |> from(adventure_from())
+    |> Swoosh.Email.from(adventure_from())
     |> subject("#{user.email} registered")
     |> text_body("Yes")
     |> deliver
@@ -87,7 +106,7 @@ defmodule Registrations.Mailer do
   def send_message(message, user, relationships, team) do
     new()
     |> to(user.email)
-    |> from(message_from(message.from_name, message.from_address))
+    |> Swoosh.Email.from(message_from(message.from_name, message.from_address))
     |> subject("[#{phrase("email_title")}] #{message.subject}")
     |> text_body(message_text(message, user, relationships, team))
     |> html_body(message_html(message, user, relationships, team))
@@ -103,7 +122,7 @@ defmodule Registrations.Mailer do
 
     new()
     |> to(user.email)
-    |> from(adventure_from())
+    |> Swoosh.Email.from(adventure_from())
     |> subject("[#{phrase("email_title")}] #{subject}")
     |> text_body(backlog_text(messages))
     |> html_body(backlog_html(messages))
