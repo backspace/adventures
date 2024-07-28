@@ -30,6 +30,9 @@ module.exports = (env, options) => {
       waydowntown: glob
         .sync("./vendor/waydowntown/**/*.js")
         .concat(["./js/waydowntown.js"]),
+      "waydowntown-email": glob
+        .sync("./vendor/waydowntown/**/*.js")
+        .concat(["./js/waydowntown-email.js"]),
     },
     externals: ["foundation-sites"],
     output: {
