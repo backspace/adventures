@@ -10,6 +10,14 @@
 
 @import 'waydowntown/marquee';
 
+@font-face {
+  font-family: 'waydowntown-heading';
+  src: url('../static/fonts/waydowntown/heading.woff2') format('woff2'),
+       url('../static/fonts/waydowntown/heading.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+}
+
 body {
   background: black;
 }
