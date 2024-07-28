@@ -1,5 +1,4 @@
 import "../css/waydowntown.scss";
-import "phoenix_html";
+import "./shared";
 
-import "./add-to-team-emails";
 import "./waydowntown/headings";

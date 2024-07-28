@@ -1,6 +1,5 @@
-import '../css/unmnemonic-devices.scss';
-import "phoenix_html"
+import "../css/unmnemonic-devices.scss";
+import "./shared";
 
-import './add-to-team-emails';
-import './unmnemonic-devices/moving-erasure';
-import './unmnemonic-devices/pi';
+import "./unmnemonic-devices/moving-erasure";
+import "./unmnemonic-devices/pi";
