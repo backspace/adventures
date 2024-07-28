@@ -1,0 +1,48 @@
+<div class="row hero">
+  <div class="small-12 columns">
+    <h1>
+      <span id="way">way</span><span id="down">down</span><span id="town">town</span>
+    </h1>
+  </div>
+</div>
+
+<div class="row card">
+  <div class="small-12 columns">
+    <p>
+      you’ve made it to the 28th day of the contest to see who can stay inside the downtown interconnected spaces the longest. you’ve moved beyond cabin fever into an unnameable state of dissociation, but you’re determined to win. you’re not sure how much longer you can last, but you’re going to try.
+    </p>
+  </div>
+</div>
+
+<div class="row highlight">
+  <div class="small-12 columns">
+    <p>
+      <%= location() %>
+      <br />
+      <%= start_time() %>, <%= ordinal_date() %>
+    </p>
+  </div>
+</div>
+
+<div class="row card">
+  <div class="small-12 columns">
+    <h2 class="marquee">What is it</h2>
+    <p>
+      etc etc yes yes
+    </p>
+  </div>
+</div>
+
+<div class="row card">
+  <div class="small-12 columns">
+    <h2 class="marquee">Who</h2>
+    <p>filler text etc</p>
+  </div>
+</div>
+
+<div class="row card">
+  <div class="small-12 columns">
+    <h2 class="marquee">Questions</h2>
+    <%= render(RegistrationsWeb.SharedView, "question.html", conn: @conn) %>
+  </div>
+</div>

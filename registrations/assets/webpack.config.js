@@ -27,6 +27,9 @@ module.exports = (env, options) => {
       "unmnemonic-devices-email": glob
         .sync("./vendor/unmnemonic-devices/**/*.js")
         .concat(["./js/unmnemonic-devices-email.js"]),
+      waydowntown: glob
+        .sync("./vendor/waydowntown/**/*.js")
+        .concat(["./js/waydowntown.js"]),
     },
     externals: ["foundation-sites"],
     output: {

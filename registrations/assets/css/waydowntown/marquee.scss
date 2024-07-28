@@ -1,0 +1,30 @@
+h2.marquee {
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-container {
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-text {
+  display: inline-block;
+  transform: translateX(-49%);
+  white-space: nowrap;
+}
+
+.marquee-word {
+  display: inline;
+}
+
+.colour-1 {
+  color: $warning-color;
+}
+
+.colour-2 {
+  color: $primary-color;
+}

@@ -1,0 +1,43 @@
+@import 'foundation-sites/scss/util/unit';
+@import 'foundation-sites/scss/util/util';
+@import 'waydowntown/settings';
+@import '_shared';
+
+@import '~foundation-sites/scss/foundation';
+
+@include foundation-everything;
+@include foundation-flex-grid;
+
+@import 'waydowntown/marquee';
+
+body {
+  background: black;
+}
+
+h1, h2, h3, h4, h5 {
+  text-transform: lowercase;
+  text-align: center;
+}
+
+h1 {
+  font-size: 3.5rem;
+  letter-spacing: -0.2rem;
+
+  #way {
+    color: $warning-color;
+  }
+
+  #down {
+    color: $primary-color;
+  }
+
+  #town {
+    color: $success-color;
+  }
+}
+
+.row.highlight {
+  background: $secondary-color;
+  margin: 1rem auto;
+  padding-top: 0.5rem;
+}
