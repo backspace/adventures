@@ -154,6 +154,9 @@ GEM
       guard (~> 2.1)
       guard-compat (~> 1.1)
       rspec (>= 2.99.0, < 4.0)
+    guard-rspec-graphiti (1.0.1)
+      graphiti
+      guard-rspec
     i18n (1.14.5)
       concurrent-ruby (~> 1.0)
     io-console (0.7.2)
@@ -360,6 +363,7 @@ DEPENDENCIES
   graphiti_spec_helpers
   guard
   guard-rspec
+  guard-rspec-graphiti
   kaminari (~> 1.1)
   pg (~> 1.5)
   puma (>= 5.0)

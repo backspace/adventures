@@ -47,6 +47,7 @@ group :development, :test do
 
   gem 'guard'
   gem 'guard-rspec', require: false
+  gem 'guard-rspec-graphiti', require: false
 end
 
 group :development do

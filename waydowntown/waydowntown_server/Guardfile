@@ -69,4 +69,14 @@ guard :rspec, cmd: 'bundle exec rspec' do # rubocop:disable Metrics/BlockLength
   watch(%r{^spec/acceptance/steps/(.+)_steps\.rb$}) do |m|
     Dir[File.join("**/#{m[1]}.feature")][0] || 'spec/acceptance'
   end
+
+  # Needed for inflections used by Guard::RSpec::Graphiti
+  # https://github.com/graphiti-api/guard-rspec-graphiti/issues/3#issue-637891061
+  require 'active_support'
+  require 'guard/rspec/graphiti/dsl'
+  require 'active_support/core_ext/string/inflections'
+  graphiti = Guard::RSpec::Graphiti::Dsl.new(self, dsl)
+
+  graphiti.watch_resources
+  graphiti.watch_models
 end
