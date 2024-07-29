@@ -88,6 +88,15 @@
                 <td class="symbol">✘</td>
                 <td class="text" colspan="2">
                   This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer.
+                  <%= unless(assigns[:email]) do %>
+                    <%= form_for @conn, Routes.pow_invitation_invitation_path(@conn, :create), [as: :user], fn f -> %>
+                      <%= hidden_input(f, :email, value: user.email) %>
+                      <%= submit("Send an invitation email",
+                        "data-test-invite": true,
+                        class: "button small"
+                      ) %>
+                    <% end %>
+                  <% end %>
                 </td>
               </tr>
             <% end %>

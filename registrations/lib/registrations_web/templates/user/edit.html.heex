@@ -17,7 +17,12 @@
     </div>
   </div>
 <% else %>
-  <%= render("relationships.html", user: @user, relationships: @relationships, title: true) %>
+  <%= render("relationships.html",
+    conn: @conn,
+    user: @user,
+    relationships: @relationships,
+    title: true
+  ) %>
 <% end %>
 
 <div class="row card">
@@ -121,7 +126,7 @@
         <p class="help-text" id="comments-help">Questions, concerns, problems, worries?</p>
       </div>
       <div class="form-group">
-        <%= submit("Save Details", class: "button") %>
+        <%= submit("Save Details", class: "button", id: "submit") %>
       </div>
     <% end %>
   </div>

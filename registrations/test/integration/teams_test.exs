@@ -126,14 +126,18 @@ defmodule Registrations.Integration.Teams do
     assert sabul.email == "sabul@example.com"
     assert sabul.symbol == "✘"
 
-    assert sabul.text ==
+    assert String.starts_with?(
+             sabul.text,
              "This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer."
+           )
 
     assert laia.email == "laia@example.com"
     assert sabul.symbol == "✘"
 
-    assert laia.text ==
+    assert String.starts_with?(
+             laia.text,
              "This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer."
+           )
 
     sadik.add.()
     Details.submit()

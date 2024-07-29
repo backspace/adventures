@@ -117,6 +117,16 @@ defmodule Registrations.Pages.Details do
     end
   end
 
+  defmodule InviteButton do
+    def present? do
+      element?(:css, "[data-test-invite]")
+    end
+
+    def click do
+      click({:css, "[data-test-invite]"})
+    end
+  end
+
   defmodule Attending do
     def present? do
       element?(:css, ".form-group.attending")
@@ -160,7 +170,7 @@ defmodule Registrations.Pages.Details do
   end
 
   def submit do
-    click({:class, "button"})
+    click({:id, "submit"})
   end
 
   defp email_and_text_row(row) do
