@@ -33,6 +33,11 @@ config :logger, level: :info
 
 config :registrations, :pow, cache_store_backend: RegistrationsWeb.Pow.RedisCache
 
+config :sentry,
+  environment_name: Mix.env(),
+  enable_source_code_context: true,
+  root_source_code_paths: [File.cwd!()]
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key

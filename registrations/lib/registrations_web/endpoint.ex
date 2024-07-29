@@ -1,4 +1,5 @@
 defmodule RegistrationsWeb.Endpoint do
+  use Sentry.PlugCapture
   use Phoenix.Endpoint, otp_app: :registrations
 
   socket("/socket", RegistrationsWeb.UserSocket, websocket: true)
@@ -32,6 +33,8 @@ defmodule RegistrationsWeb.Endpoint do
     pass: ["*/*"],
     json_decoder: Jason
   )
+
+  plug(Sentry.PlugContext)
 
   plug(Plug.MethodOverride)
   plug(Plug.Head)
