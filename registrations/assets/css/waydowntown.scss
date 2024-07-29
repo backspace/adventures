@@ -44,6 +44,12 @@ h1 {
   }
 }
 
+@media (max-width: 767px) {
+  h1 {
+    font-size: 3rem;
+  }
+}
+
 h2 {
   letter-spacing: -0.1rem;
 }
