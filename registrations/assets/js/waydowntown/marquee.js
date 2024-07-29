@@ -1,4 +1,4 @@
-let repetitions = 20;
+let repetitions = 50;
 let scrollRatio = 0.5;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   headlines.forEach((headline, index) => {
     headline.classList.add("marquee");
+    headline.setAttribute("aria-label", headline.innerText);
 
     let originalText = headline.innerText.split(" ");
     let marqueeContainer = document.createElement("div");
@@ -24,14 +25,10 @@ document.addEventListener("DOMContentLoaded", () => {
             : "colour-2"
         );
         span.innerText = word;
+        span.setAttribute("aria-hidden", "true");
         marqueeText.appendChild(span);
       });
     }
-
-    let beforeClone = marqueeText.cloneNode(true);
-    let afterClone = marqueeText.cloneNode(true);
-    marqueeText.insertBefore(beforeClone, marqueeText.firstChild);
-    marqueeText.appendChild(afterClone);
 
     marqueeContainer.appendChild(marqueeText);
     headline.innerHTML = "";
@@ -46,9 +43,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let direction = index % 2 === 0 ? 1 : -1;
 
-      marqueeText.style.transform = `translateX(${
-        scrollPosition * scrollRatio * direction
-      }px)`;
+      marqueeText.style.transform = `${
+        index % 2 === 0 ? "translateX(-50%)" : ""
+      } translateX(${scrollPosition * scrollRatio * direction}px)`;
     });
   };
 
