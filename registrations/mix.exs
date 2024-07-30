@@ -62,7 +62,8 @@ defmodule Registrations.Mixfile do
       {:junit_formatter, "~> 3.3", only: [:test]},
       {:wait_for_it, "~> 1.3", only: [:test]},
       {:sentry, "~> 10.0"},
-      {:hackney, "~> 1.19"}
+      {:hackney, "~> 1.19"},
+      {:assertions, "0.19.0", only: :test}
     ]
   end
 

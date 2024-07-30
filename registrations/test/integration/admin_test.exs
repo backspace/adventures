@@ -8,6 +8,9 @@ defmodule Registrations.Integration.Admin do
   alias Registrations.Pages.Users
   alias Registrations.Pages.Teams
 
+  require Assertions
+  import Assertions, only: [assert_lists_equal: 2]
+
   # Import Hound helpers
   use Hound.Helpers
 
@@ -97,13 +100,13 @@ defmodule Registrations.Integration.Admin do
     assert Users.teamed(b.id)
     refute Users.teamed(c.id)
 
-    assert Users.all_emails() == [
-             "c@example.com",
-             "octavia.butler@example.com",
-             "not-attending@example.com",
-             "a@example.com",
-             "b@example.com"
-           ]
+    assert_lists_equal(Users.all_emails(), [
+      "c@example.com",
+      "octavia.butler@example.com",
+      "not-attending@example.com",
+      "a@example.com",
+      "b@example.com"
+    ])
 
     Nav.teams_link().click
 

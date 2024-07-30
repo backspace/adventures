@@ -8,6 +8,9 @@ defmodule Registrations.Integration.Teams do
   alias Registrations.Pages.Nav
   alias Registrations.Pages.Details
 
+  require Assertions
+  import Assertions, only: [assert_lists_equal: 2]
+
   # Import Hound helpers
   use Hound.Helpers
 
@@ -248,7 +251,11 @@ defmodule Registrations.Integration.Teams do
     assert Details.Team.present?()
     assert Details.Team.name() == "A team"
     assert Details.Team.risk_aversion() == "Push me a little"
-    assert Details.Team.emails() == "takver@example.com, bedap@example.com"
+
+    assert_lists_equal(Details.Team.emails() |> String.split(", "), [
+      "takver@example.com",
+      "bedap@example.com"
+    ])
   end
 end
 
