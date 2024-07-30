@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let direction = index % 2 === 0 ? 1 : -1;
 
       marqueeText.style.transform = `${
-        index % 2 === 0 ? "translateX(-50%)" : ""
+        index % 2 === 0 ? "translateX(-50%)" : "translateX(-10%)"
       } translateX(${scrollPosition * scrollRatio * direction}px)`;
     });
   };
