@@ -47,6 +47,7 @@ defmodule RegistrationsWeb.Endpoint do
   )
 
   plug(Pow.Plug.Session, otp_app: :registrations)
+  plug(PowPersistentSession.Plug.Cookie)
 
   plug(RegistrationsWeb.Router)
 end

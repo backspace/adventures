@@ -36,7 +36,7 @@ config :phoenix, :json_library, Jason
 
 config :registrations, :pow,
   web_mailer_module: RegistrationsWeb,
-  extensions: [PowResetPassword, PowInvitation],
+  extensions: [PowResetPassword, PowInvitation, PowPersistentSession],
   controller_callbacks: Pow.Extension.Phoenix.ControllerCallbacks,
   web_module: RegistrationsWeb,
   user: RegistrationsWeb.User,

@@ -3,7 +3,9 @@ defmodule RegistrationsWeb.User do
 
   use Pow.Ecto.Schema
   use PowAssent.Ecto.Schema
-  use Pow.Extension.Ecto.Schema, extensions: [PowResetPassword, PowInvitation]
+
+  use Pow.Extension.Ecto.Schema,
+    extensions: [PowResetPassword, PowInvitation, PowPersistentSession]
 
   use RegistrationsWeb, :model
   alias Registrations.Repo

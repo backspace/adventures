@@ -1,6 +1,8 @@
 defmodule RegistrationsWeb.Pow.Messages do
   use Pow.Phoenix.Messages
-  use Pow.Extension.Phoenix.Messages, extensions: [PowResetPassword, PowInvitation, PowAssent]
+
+  use Pow.Extension.Phoenix.Messages,
+    extensions: [PowResetPassword, PowInvitation, PowAssent, PowPersistentSession]
 
   def user_has_been_created(_conn), do: "Your account was created"
 

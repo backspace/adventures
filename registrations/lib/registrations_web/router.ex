@@ -5,7 +5,7 @@ defmodule RegistrationsWeb.Router do
 
   use Pow.Extension.Phoenix.Router,
     otp_app: :registrations,
-    extensions: [PowResetPassword, PowInvitation]
+    extensions: [PowResetPassword, PowInvitation, PowPersistentSession]
 
   pipeline :browser do
     plug(:accepts, ["html"])
@@ -14,6 +14,10 @@ defmodule RegistrationsWeb.Router do
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
     plug(RegistrationsWeb.Plugs.Settings)
+
+    plug(PowAssent.Plug.Reauthorization,
+      handler: PowAssent.Phoenix.ReauthorizationPlugHandler
+    )
   end
 
   pipeline :api do
