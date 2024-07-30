@@ -63,3 +63,7 @@ h2 {
 table, thead {
   color: $black;
 }
+
+.alert-info.success, .alert-danger.alert {
+  color: black;
+}
