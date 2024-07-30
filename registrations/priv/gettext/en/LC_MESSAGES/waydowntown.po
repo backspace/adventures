@@ -1,0 +1,41 @@
+msgid "title"
+msgstr "waydowntown"
+
+msgid "email_title"
+msgstr "waydowntown"
+
+msgid "description"
+msgstr "can you make it to the end of the day?"
+
+msgid "change_deadline"
+msgstr " "
+
+msgid "team_emails_label"
+msgstr "collaborator emails"
+
+msgid "team_emails_help"
+msgstr "you can participate as a group, enter email addresses, space-separated"
+
+msgid "team_name_help"
+msgstr "how other teams will identify you"
+
+msgid "accessibility_help"
+msgstr "do you have any accessibility needs that might impact your participation?"
+
+msgid "source_help"
+msgstr "how did you hear about this?"
+
+msgid "risk_aversion_label_1"
+msgstr "i just got hired"
+
+msgid "risk_aversion_label_2"
+msgstr "i’ve been around"
+
+msgid "risk_aversion_label_3"
+msgstr "i’m a pro"
+
+msgid "risk_avoidance"
+msgstr "you can always decline a task"
+
+msgid "risk_scope"
+msgstr "the following are beyond the scope of the game:"
