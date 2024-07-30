@@ -22,6 +22,10 @@ body {
   background: $black;
 }
 
+body, .button {
+  text-transform: lowercase;
+}
+
 h1, h2, h3, h4, h5 {
   text-transform: lowercase;
   text-align: center;
