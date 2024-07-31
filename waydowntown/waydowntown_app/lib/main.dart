@@ -6,6 +6,8 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:waydowntown_app/routes/bluetooth_scanner_route.dart';
+
 var logger = Logger();
 
 Future main() async {
@@ -80,6 +82,15 @@ class _HomeState extends State<Home> {
                           builder: (context) => RequestGameRoute(
                                 dio: dio,
                               )));
+                }),
+            const SizedBox(height: 20),
+            ElevatedButton(
+                child: const Text('Bluetooth Scanner'),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => BluetoothScannerRoute()));
                 }),
           ],
         ),
