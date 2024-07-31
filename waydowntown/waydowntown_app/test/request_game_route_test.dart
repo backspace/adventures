@@ -5,8 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dio/dio.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:waydowntown_app/main.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:waydowntown_app/routes/request_game_route.dart';
 
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
