@@ -42,6 +42,10 @@ defmodule Registrations.Integration.Invitations do
 
     reset_path = URI.parse(url).path
 
+    # FIXME remove this when invitations don’t redirect
+    navigate_to("/details")
+    refute Details.InviteButton.present?()
+
     Hound.Helpers.Session.end_session()
 
     Hound.Helpers.Session.start_session(

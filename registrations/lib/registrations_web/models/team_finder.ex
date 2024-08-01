@@ -42,7 +42,14 @@ defmodule RegistrationsWeb.TeamFinder do
 
     proposees =
       ((emails -- invalids) -- Enum.map(users_with_current, & &1.email))
-      |> Enum.map(&%{email: &1})
+      |> Enum.map(fn email ->
+        registered_user = Enum.find(users, fn user -> user.email == email end)
+
+        case registered_user do
+          nil -> %{email: email, invited: false}
+          _ -> %{email: email, invited: registered_user.invited_by_id == current_user.id}
+        end
+      end)
 
     empty =
       Enum.all?([proposers, mutuals, proposals_by_mutuals, invalids, proposees], fn collection ->
