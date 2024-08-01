@@ -43,6 +43,8 @@ defmodule RegistrationsWeb.Router do
 
     pow_routes()
     pow_assent_routes()
+
+    post("/invitations", RegistrationsWeb.InvitationController, :create)
     pow_extension_routes()
   end
 

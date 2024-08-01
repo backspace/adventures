@@ -29,6 +29,8 @@ defmodule Registrations.Integration.Invitations do
 
     Details.InviteButton.click()
 
+    refute Details.InviteButton.present?()
+
     [invitation_email] = Registrations.SwooshHelper.sent_email()
     assert invitation_email.to == [{"", "bedap@example.com"}]
     assert invitation_email.from == {"", "b@events.chromatin.ca"}
@@ -41,10 +43,6 @@ defmodule Registrations.Integration.Invitations do
       |> Floki.attribute("href")
 
     reset_path = URI.parse(url).path
-
-    # FIXME remove this when invitations don’t redirect
-    navigate_to("/details")
-    refute Details.InviteButton.present?()
 
     Hound.Helpers.Session.end_session()
 
