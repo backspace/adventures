@@ -6,8 +6,8 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:logger/logger.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:waydowntown_app/routes/bluetooth_scanner_route.dart';
-import 'package:waydowntown_app/routes/request_game_route.dart';
+import 'package:waydowntown/routes/bluetooth_scanner_route.dart';
+import 'package:waydowntown/routes/request_game_route.dart';
 
 var logger = Logger();
 

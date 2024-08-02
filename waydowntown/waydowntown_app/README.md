@@ -1,4 +1,4 @@
-# waydowntown_app
+# waydowntown
 
 A new Flutter project.
 

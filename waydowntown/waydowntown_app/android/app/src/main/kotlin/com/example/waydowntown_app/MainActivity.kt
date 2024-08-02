@@ -1,4 +1,4 @@
-package com.example.waydowntown_app
+package ca.chromatin.waydowntown
 
 import io.flutter.embedding.android.FlutterActivity
 
