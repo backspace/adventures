@@ -16,6 +16,8 @@ class RequestGameRouteState extends State<RequestGameRoute> {
   String answer = 'answer';
   Game? game;
   bool isOver = false;
+  bool isRequestError = false;
+  bool isAnswerError = false;
 
   @override
   void initState() {
@@ -41,6 +43,9 @@ class RequestGameRouteState extends State<RequestGameRoute> {
         throw Exception('Failed to load game');
       }
     } catch (error) {
+      setState(() {
+        isRequestError = true;
+      });
       logger.e('Error fetching game from $endpoint: $error');
     }
   }
@@ -65,9 +70,13 @@ class RequestGameRouteState extends State<RequestGameRoute> {
       );
 
       setState(() {
+        isAnswerError = false;
         isOver = checkWinnerAnswerLink(response.data);
       });
     } catch (error) {
+      setState(() {
+        isAnswerError = true;
+      });
       logger.e('Error submitting answer: $error');
     }
   }
@@ -83,7 +92,9 @@ class RequestGameRouteState extends State<RequestGameRoute> {
       body: Center(
         child: Column(
           children: [
-            if (game != null)
+            if (isRequestError)
+              const Text('Error fetching game')
+            else if (game != null)
               Column(
                 children: [
                   Text(game!.incarnation.concept),
@@ -102,6 +113,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
                         await submitAnswer(answer);
                       },
                     ),
+                    if (isAnswerError) const Text('Error submitting answer'),
                     if (isOver)
                       const Text('Done!')
                     else
@@ -113,8 +125,9 @@ class RequestGameRouteState extends State<RequestGameRoute> {
                       )
                   ]))
                 ],
-              ),
-            if (game == null) const CircularProgressIndicator(),
+              )
+            else if (game == null)
+              const CircularProgressIndicator(),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
