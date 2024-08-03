@@ -6,7 +6,7 @@ import 'package:waydowntown/main.dart';
 class RequestGameRoute extends StatefulWidget {
   final Dio dio;
 
-  RequestGameRoute({Key? key, required this.dio}) : super(key: key);
+  const RequestGameRoute({super.key, required this.dio});
 
   @override
   RequestGameRouteState createState() => RequestGameRouteState();
