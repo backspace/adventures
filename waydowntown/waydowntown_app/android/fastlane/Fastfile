@@ -10,8 +10,12 @@ platform :android do
 
   desc 'Submit a new Alpha Build to Play Store'
   lane :alpha do
-    gradle(task: 'assemble', build_type: 'Release')
+    Dir.chdir '../..' do
+      sh('flutter', 'build', 'appbundle', '--release')
+    end
+    gradle(task: 'bundle', build_type: 'Release')
     upload_to_play_store(track: 'alpha', skip_upload_changelogs: true,
+                         version_code: flutter_version()['version_code'],
                          aab: '../build/app/outputs/bundle/release/app-release.aab')
   end
 
