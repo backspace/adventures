@@ -18,6 +18,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
   bool isOver = false;
   bool isRequestError = false;
   bool isAnswerError = false;
+  TextEditingController textFieldController = TextEditingController();
 
   @override
   void initState() {
@@ -72,6 +73,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
       setState(() {
         isAnswerError = false;
         isOver = checkWinnerAnswerLink(response.data);
+        textFieldController.clear();
       });
     } catch (error) {
       setState(() {
@@ -102,6 +104,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
                   Form(
                       child: Column(children: <Widget>[
                     TextFormField(
+                      controller: textFieldController,
                       decoration: const InputDecoration(
                         labelText: 'Answer',
                       ),

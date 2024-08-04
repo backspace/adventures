@@ -210,9 +210,14 @@ void main() {
     expect(
         find.text('An enormous headline proclaims ____ quit!'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField), 'incorrect');
+    final textField = find.byType(TextField);
+    final textFieldWidget = tester.widget<TextField>(textField);
+
+    await tester.enterText(textField, 'incorrect');
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
+
+    expect(textFieldWidget.controller?.text, '');
 
     await tester.enterText(find.byType(TextField), 'correct');
     await tester.tap(find.byType(ElevatedButton));
