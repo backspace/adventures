@@ -15,6 +15,7 @@ class RequestGameRoute extends StatefulWidget {
 class RequestGameRouteState extends State<RequestGameRoute> {
   String answer = 'answer';
   Game? game;
+  bool hasAnsweredIncorrectly = false;
   bool isOver = false;
   bool isRequestError = false;
   bool isAnswerError = false;
@@ -73,6 +74,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
       setState(() {
         isAnswerError = false;
         isOver = checkWinnerAnswerLink(response.data);
+        hasAnsweredIncorrectly = !isOver;
         textFieldController.clear();
       });
     } catch (error) {
@@ -116,7 +118,10 @@ class RequestGameRouteState extends State<RequestGameRoute> {
                         await submitAnswer(answer);
                       },
                     ),
-                    if (isAnswerError) const Text('Error submitting answer'),
+                    if (isAnswerError)
+                      const Text('Error submitting answer')
+                    else if (hasAnsweredIncorrectly)
+                      const Text('Wrong'),
                     if (isOver)
                       const Text('Done!')
                     else

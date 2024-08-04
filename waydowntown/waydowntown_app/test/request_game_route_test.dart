@@ -217,12 +217,14 @@ void main() {
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
 
+    expect(find.text('Wrong'), findsOneWidget);
     expect(textFieldWidget.controller?.text, '');
 
     await tester.enterText(find.byType(TextField), 'correct');
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
 
+    expect(find.text('Wrong'), findsNothing);
     expect(find.byType(ElevatedButton), findsNothing);
   });
 
