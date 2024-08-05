@@ -5,43 +5,13 @@ ExUnit.start()
 
 Ecto.Adapters.SQL.Sandbox.mode(Registrations.Repo, :manual)
 
-# FIXME the duplication below can surely be extracted
-
-defmodule Registrations.ResetRequestConfirmation do
+defmodule Registrations.ApplicationEnvHelpers do
   use ExUnit.CaseTemplate
 
-  setup do
-    request_confirmation_setting =
-      Application.get_env(:registrations, :request_confirmation)
-
-    on_exit(fn ->
-      Application.put_env(
-        :registrations,
-        :request_confirmation,
-        request_confirmation_setting
-      )
-    end)
-
-    :ok
-  end
-end
-
-defmodule Registrations.ResetRegistrationClosed do
-  use ExUnit.CaseTemplate
-
-  setup do
-    registration_closed_setting =
-      Application.get_env(:registrations, :registration_closed)
-
-    on_exit(fn ->
-      Application.put_env(
-        :registrations,
-        :registration_closed,
-        registration_closed_setting
-      )
-    end)
-
-    :ok
+  def put_application_env_for_test(app, key, value) do
+    previous_value = Application.get_env(app, key)
+    Application.put_env(app, key, value)
+    on_exit(fn -> Application.put_env(app, key, previous_value) end)
   end
 end
 
@@ -88,13 +58,11 @@ defmodule Registrations.ClandestineRendezvous do
   use ExUnit.CaseTemplate
 
   setup do
-    put_application_env_for_test(:registrations, :adventure, "clandestine-rendezvous")
-  end
-
-  defp put_application_env_for_test(app, key, value) do
-    previous_value = Application.get_env(app, key)
-    Application.put_env(app, key, value)
-    on_exit(fn -> Application.put_env(app, key, previous_value) end)
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :adventure,
+      "clandestine-rendezvous"
+    )
   end
 end
 
@@ -102,12 +70,10 @@ defmodule Registrations.UnmnemonicDevices do
   use ExUnit.CaseTemplate
 
   setup do
-    put_application_env_for_test(:registrations, :adventure, "unmnemonic-devices")
-  end
-
-  defp put_application_env_for_test(app, key, value) do
-    previous_value = Application.get_env(app, key)
-    Application.put_env(app, key, value)
-    on_exit(fn -> Application.put_env(app, key, previous_value) end)
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :adventure,
+      "unmnemonic-devices"
+    )
   end
 end

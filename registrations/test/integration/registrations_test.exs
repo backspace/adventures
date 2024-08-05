@@ -1,7 +1,6 @@
 defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.ResetRegistrationClosed
   use Registrations.ClandestineRendezvous
 
   alias Registrations.Pages.Register
@@ -229,7 +228,11 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
   end
 
   test "when registration is closed, a warning is displayed on the registration and details routes" do
-    Application.put_env(:registrations, :registration_closed, true)
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :registration_closed,
+      true
+    )
 
     navigate_to("/")
 
@@ -249,7 +252,6 @@ end
 defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.ResetRegistrationClosed
   use Registrations.UnmnemonicDevices
 
   alias Registrations.Pages.Register

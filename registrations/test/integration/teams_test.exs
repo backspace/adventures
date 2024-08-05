@@ -1,7 +1,6 @@
 defmodule Registrations.Integration.Teams do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.ResetRequestConfirmation
   use Registrations.ClandestineRendezvous
 
   alias Registrations.Pages.Login
@@ -186,7 +185,11 @@ defmodule Registrations.Integration.Teams do
   end
 
   test "when confirmation-requesting is enabled, show and require the fields" do
-    Application.put_env(:registrations, :request_confirmation, true)
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :request_confirmation,
+      true
+    )
 
     insert(:user,
       email: "takver@example.com",
@@ -262,7 +265,6 @@ end
 defmodule Registrations.Integration.UnmnemonicDevices.Teams do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.ResetRequestConfirmation
   use Registrations.UnmnemonicDevices
 
   alias Registrations.Pages.Login

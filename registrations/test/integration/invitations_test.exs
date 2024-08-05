@@ -1,7 +1,6 @@
 defmodule Registrations.Integration.Invitations do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.ResetRequestConfirmation
   use Registrations.ClandestineRendezvous
 
   alias Registrations.Pages.Login
