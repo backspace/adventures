@@ -394,16 +394,21 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: RequestGameRoute(dio: dio)));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), 'incorrect');
+    final textField = find.byType(TextField);
+    final textFieldWidget = tester.widget<TextField>(textField);
+
+    await tester.enterText(textField, 'incorrect');
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
 
+    expect(textFieldWidget.controller?.text, 'incorrect');
     expect(find.text('Error submitting answer'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField), 'correct');
+    await tester.enterText(textField, 'correct');
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
 
+    expect(textFieldWidget.controller?.text, '');
     expect(find.text('Error submitting answer'), findsNothing);
     expect(find.text('Done!'), findsOneWidget);
     expect(find.byType(ElevatedButton), findsNothing);
