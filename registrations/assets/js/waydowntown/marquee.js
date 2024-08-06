@@ -1,6 +1,13 @@
 let repetitions = 50;
 let scrollRatio = 0.5;
 
+let animate = true;
+
+let mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+mediaQuery.addEventListener("change", () => {
+  animate = false;
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   let headlines = document.querySelectorAll("h2");
 
@@ -36,6 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   let adjustMarqueePosition = () => {
+    if (!animate) return;
+
     let scrollPosition = window.scrollY;
 
     headlines.forEach((headline, index) => {
