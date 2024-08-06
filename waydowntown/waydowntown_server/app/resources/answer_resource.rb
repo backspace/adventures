@@ -5,4 +5,5 @@ class AnswerResource < ApplicationResource
 
   attribute :id, :uuid
   attribute :answer, :string
+  attribute :correct, :boolean
 end

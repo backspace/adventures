@@ -4,7 +4,9 @@ class Answer < ApplicationRecord
   belongs_to :game
 
   validate :game_cannot_have_winner, on: :create
-  around_create :check_for_winner
+
+  around_create :check_for_winner, unless: proc { game.incarnation.multi_answer? }
+  around_create :check_for_match, if: proc { game.incarnation.multi_answer? }
 
   private
 
@@ -15,9 +17,9 @@ class Answer < ApplicationRecord
   end
 
   def check_for_winner
-    answer_found = false
+    answer_found = game&.incarnation&.answer&.casecmp?(answer.strip)
 
-    answer_found = true if game&.incarnation&.answer&.casecmp?(answer.strip)
+    self.correct = answer_found
 
     yield answer
 
@@ -25,5 +27,11 @@ class Answer < ApplicationRecord
 
     game.winner_answer = self
     game.save!
+  end
+
+  def check_for_match
+    self.correct = game&.incarnation&.answers&.include?(answer)
+
+    yield answer
   end
 end

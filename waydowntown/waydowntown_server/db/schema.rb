@@ -12,7 +12,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 20_240_723_045_728) do
+ActiveRecord::Schema[7.1].define(version: 20_240_806_031_811) do
   create_schema 'unmnemonic_devices'
   create_schema 'waydowntown'
 
@@ -25,6 +25,7 @@ ActiveRecord::Schema[7.1].define(version: 20_240_723_045_728) do
     t.uuid 'game_id'
     t.datetime 'inserted_at', precision: 0, null: false
     t.datetime 'updated_at', precision: 0, null: false
+    t.boolean 'correct', default: false
   end
 
   create_table 'games', id: :uuid, default: -> { 'gen_random_uuid()' }, force: :cascade do |t|
@@ -41,6 +42,7 @@ ActiveRecord::Schema[7.1].define(version: 20_240_723_045_728) do
     t.datetime 'inserted_at', precision: 0, null: false
     t.datetime 'updated_at', precision: 0, null: false
     t.uuid 'region_id', null: false
+    t.string 'answers', limit: 255, array: true
   end
 
   create_table 'messages', id: :uuid, default: nil, force: :cascade do |t|
@@ -71,7 +73,7 @@ ActiveRecord::Schema[7.1].define(version: 20_240_723_045_728) do
     t.string 'voicepass', limit: 255
     t.integer 'listens', default: 0
     t.virtual 'name_truncated', type: :string, limit: 53,
-                                as: "\nCASE\n    WHEN (length(name) > 50) THEN (\"substring\"(name, 1, (50 - \"position\"(reverse(\"substring\"(name, 1, 50)), ' '::text))) || '…'::text)\n    ELSE name\nEND", stored: true
+                                as: "\nCASE\n    WHEN (length(name) > 50) THEN (SUBSTRING(name FROM 1 FOR (50 - POSITION((' '::text) IN (reverse(SUBSTRING(name FROM 1 FOR 50)))))) || '…'::text)\n    ELSE name\nEND", stored: true
   end
 
   create_table 'user_identities', id: :uuid, default: nil, force: :cascade do |t|

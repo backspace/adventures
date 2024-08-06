@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.13
--- Dumped by pg_dump version 16.1
+-- Dumped from database version 16.2 (Postgres.app)
+-- Dumped by pg_dump version 16.2 (Postgres.app)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -15,13 +15,6 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
-
---
--- Name: public; Type: SCHEMA; Schema: -; Owner: -
---
-
--- *not* creating schema, since initdb creates it
-
 
 --
 -- Name: unmnemonic_devices; Type: SCHEMA; Schema: -; Owner: -
@@ -99,7 +92,7 @@ CREATE TABLE public.teams (
     listens integer DEFAULT 0,
     name_truncated character varying(53) GENERATED ALWAYS AS (
 CASE
-    WHEN (length(name) > 50) THEN ("substring"(name, 1, (50 - "position"(reverse("substring"(name, 1, 50)), ' '::text))) || '…'::text)
+    WHEN (length(name) > 50) THEN (SUBSTRING(name FROM 1 FOR (50 - POSITION((' '::text) IN (reverse(SUBSTRING(name FROM 1 FOR 50)))))) || '…'::text)
     ELSE name
 END) STORED
 );
@@ -277,7 +270,8 @@ CREATE TABLE waydowntown.answers (
     answer character varying(255),
     game_id uuid,
     inserted_at timestamp(0) without time zone NOT NULL,
-    updated_at timestamp(0) without time zone NOT NULL
+    updated_at timestamp(0) without time zone NOT NULL,
+    correct boolean DEFAULT false
 );
 
 
@@ -317,7 +311,8 @@ CREATE TABLE waydowntown.incarnations (
     answer character varying(255),
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL,
-    region_id uuid NOT NULL
+    region_id uuid NOT NULL,
+    answers character varying(255)[] DEFAULT ARRAY[]::character varying[]
 );
 
 
@@ -729,3 +724,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240714173901);
 INSERT INTO public."schema_migrations" (version) VALUES (20240721040506);
 INSERT INTO public."schema_migrations" (version) VALUES (20240722224559);
 INSERT INTO public."schema_migrations" (version) VALUES (20240723045728);
+INSERT INTO public."schema_migrations" (version) VALUES (20240806025935);
+INSERT INTO public."schema_migrations" (version) VALUES (20240806031811);

@@ -3,9 +3,10 @@
 require 'rails_helper'
 
 RSpec.describe AnswerResource, type: :resource do
-  describe 'creating' do
-    let!(:incarnation) { create(:incarnation, answer: 'the answer') }
-    let!(:game) { create(:game, incarnation:) }
+  let(:game) { create(:game, incarnation:) }
+
+  describe 'for a fill_in_the_blank' do
+    let!(:incarnation) { create(:incarnation, concept: 'fill_in_the_blank', answer: 'the answer') }
 
     let(:payload) do
       {
@@ -34,6 +35,7 @@ RSpec.describe AnswerResource, type: :resource do
         game.reload
       end
 
+      it { expect(answer.data.correct).to be(true) }
       it { expect(game.winner_answer).to eq(answer.data) }
       it { expect(game.complete).to be(true) }
     end
@@ -46,6 +48,71 @@ RSpec.describe AnswerResource, type: :resource do
       end
 
       it { expect(answer.save).to be(false) }
+    end
+  end
+
+  describe 'for bluetooth_collector' do
+    let!(:incarnation) { create(:incarnation, concept: 'bluetooth_collector', answers: %w[device_a device_b]) }
+
+    describe 'when an answer matches' do
+      before do
+        answer.save
+        game.reload
+      end
+
+      let(:payload) do
+        {
+          data: {
+            type: 'answers',
+            attributes: attributes_for(:answer, answer: incarnation.answers.first),
+            relationships: {
+              game: {
+                data: {
+                  type: 'games',
+                  id: game.id
+                }
+              }
+            }
+          }
+        }
+      end
+
+      let!(:answer) do
+        described_class.build(payload)
+      end
+
+      it { expect(answer.data.correct).to be(true) }
+      it { expect(game.complete).to be(false) }
+    end
+
+    describe 'when an answer does not match' do
+      before do
+        answer.save
+        game.reload
+      end
+
+      let(:payload) do
+        {
+          data: {
+            type: 'answers',
+            attributes: attributes_for(:answer, answer: 'device_c'),
+            relationships: {
+              game: {
+                data: {
+                  type: 'games',
+                  id: game.id
+                }
+              }
+            }
+          }
+        }
+      end
+
+      let!(:answer) do
+        described_class.build(payload)
+      end
+
+      it { expect(answer.data.correct).to be(false) }
     end
   end
 end

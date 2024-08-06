@@ -17,6 +17,12 @@
           "readable": true,
           "writable": true,
           "description": null
+        },
+        "correct": {
+          "type": "boolean",
+          "readable": true,
+          "writable": true,
+          "description": null
         }
       },
       "extra_attributes": {
@@ -25,6 +31,8 @@
         "id": {
         },
         "answer": {
+        },
+        "correct": {
         }
       },
       "filters": {
@@ -49,6 +57,13 @@
             "match",
             "not_match"
           ]
+        },
+        "correct": {
+          "type": "boolean",
+          "operators": [
+            "eq"
+          ],
+          "single": true
         }
       },
       "relationships": {

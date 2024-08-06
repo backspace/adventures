@@ -19,3 +19,7 @@ Incarnation.create!(region: arena,
                     concept: 'fill_in_the_blank',
                     mask: 'An enormous headline proclaims ____ quit!',
                     answer: 'Huns')
+
+Incarnation.create!(region: food_court,
+                    concept: 'bluetooth_collector',
+                    answers: %w[device_a device_b])
