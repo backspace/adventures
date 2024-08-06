@@ -1,6 +1,10 @@
 defmodule Registrations.Pages.Login do
   use Hound.Helpers
 
+  def visit do
+    navigate_to("/session/new")
+  end
+
   def fill_email(email) do
     fill_field({:id, "email"}, email)
   end

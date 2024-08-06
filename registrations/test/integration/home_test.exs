@@ -125,13 +125,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
     refute(Home.placeholder_exists?())
   end
 
-  test "placeholder shows with a query parameter" do
-    navigate_to("/?placeholder=true")
-
-    assert(Home.placeholder_exists?())
-  end
-
-  test "placeholder shows when set in config" do
+  test "placeholder shows when set in config, nav is hidden" do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :placeholder,
@@ -139,6 +133,13 @@ defmodule Registrations.Waydowntown.Integration.Home do
     )
 
     navigate_to("/")
+
+    assert(Home.placeholder_exists?())
+    refute(Nav.present?())
+  end
+
+  test "placeholder shows with a query parameter" do
+    navigate_to("/?placeholder=true")
 
     assert(Home.placeholder_exists?())
   end
@@ -166,8 +167,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
 
     set_window_to_show_account()
 
-    navigate_to("/")
-    Nav.login_link().click
+    Login.visit()
     Login.fill_email("Octavia.butler@example.com")
     Login.fill_password("Xenogenesis")
     Login.submit()

@@ -1,6 +1,10 @@
 defmodule Registrations.Pages.Nav do
   use Hound.Helpers
 
+  def present? do
+    Hound.Matchers.element?(:css, ".row.nav")
+  end
+
   def info_text do
     visible_text({:css, ".alert-info"})
   end

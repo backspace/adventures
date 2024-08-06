@@ -32,69 +32,71 @@
   </head>
 
   <body>
-    <div class="row nav">
-      <div class="small-12 columns">
-        <nav class="top-bar">
-          <div class="top-bar-left">
-            <ul class="dropdown menu">
-              <li>
-                <%= active_link("Home", @conn, Routes.page_path(@conn, :index), class: "home") %>
-              </li>
-              <%= if logged_in?(@conn) do %>
+    <%= unless @conn.assigns[:placeholder] do %>
+      <div class="row nav">
+        <div class="small-12 columns">
+          <nav class="top-bar">
+            <div class="top-bar-left">
+              <ul class="dropdown menu">
                 <li>
-                  <%= link to: Routes.pow_session_path(@conn, :delete), method: :delete, class: "logout" do %>
-                    Log out
-                    <span class="show-for-medium session-email">
-                      <%= current_user(@conn).email %>
-                    </span>
-                  <% end %>
+                  <%= active_link("Home", @conn, Routes.page_path(@conn, :index), class: "home") %>
                 </li>
-                <li>
-                  <%= active_link("Edit details", @conn, Routes.user_path(@conn, :edit),
-                    class: "details"
-                  ) %>
-                </li>
-                <%= if admin?(@conn) do %>
+                <%= if logged_in?(@conn) do %>
                   <li>
-                    <%= active_link("Users", @conn, Routes.user_path(@conn, :index),
-                      class: "users"
-                    ) %>
+                    <%= link to: Routes.pow_session_path(@conn, :delete), method: :delete, class: "logout" do %>
+                      Log out
+                      <span class="show-for-medium session-email">
+                        <%= current_user(@conn).email %>
+                      </span>
+                    <% end %>
                   </li>
                   <li>
-                    <%= active_link("Teams", @conn, Routes.team_path(@conn, :index),
-                      class: "teams"
+                    <%= active_link("Edit details", @conn, Routes.user_path(@conn, :edit),
+                      class: "details"
                     ) %>
                   </li>
-                  <li>
-                    <%= active_link("Messages", @conn, Routes.message_path(@conn, :index),
-                      class: "messages"
-                    ) %>
-                  </li>
-                  <%= if is_unmnemonic_devices() do %>
+                  <%= if admin?(@conn) do %>
                     <li>
-                      <%= active_link("Settings", @conn, Routes.settings_path(@conn, :index),
-                        class: "settings"
+                      <%= active_link("Users", @conn, Routes.user_path(@conn, :index),
+                        class: "users"
                       ) %>
                     </li>
+                    <li>
+                      <%= active_link("Teams", @conn, Routes.team_path(@conn, :index),
+                        class: "teams"
+                      ) %>
+                    </li>
+                    <li>
+                      <%= active_link("Messages", @conn, Routes.message_path(@conn, :index),
+                        class: "messages"
+                      ) %>
+                    </li>
+                    <%= if is_unmnemonic_devices() do %>
+                      <li>
+                        <%= active_link("Settings", @conn, Routes.settings_path(@conn, :index),
+                          class: "settings"
+                        ) %>
+                      </li>
+                    <% end %>
                   <% end %>
+                <% else %>
+                  <li>
+                    <%= active_link("Register", @conn, Routes.pow_registration_path(@conn, :new),
+                      class: "register"
+                    ) %>
+                  </li>
+                  <li>
+                    <%= active_link("Log in", @conn, Routes.pow_session_path(@conn, :new),
+                      class: "login"
+                    ) %>
+                  </li>
                 <% end %>
-              <% else %>
-                <li>
-                  <%= active_link("Register", @conn, Routes.pow_registration_path(@conn, :new),
-                    class: "register"
-                  ) %>
-                </li>
-                <li>
-                  <%= active_link("Log in", @conn, Routes.pow_session_path(@conn, :new),
-                    class: "login"
-                  ) %>
-                </li>
-              <% end %>
-            </ul>
-          </div>
-        </nav>
+              </ul>
+            </div>
+          </nav>
+        </div>
       </div>
-    </div>
+    <% end %>
 
     <div class="everything">
       <%= if get_flash(@conn, :info) do %>
