@@ -170,13 +170,8 @@ void main() {
               {
                 "id": "22261813-2171-453f-a669-db08edc70d6d",
                 "type": "games",
-                "relationships": {
-                  "winner_answer": {
-                    "links": {
-                      "related":
-                          "${dotenv.env['API_ROOT']}/api/v1/answers/afdc23e8-2f50-4ce6-8407-a48f5fe2643c"
-                    }
-                  }
+                "attributes": {
+                  "complete": true,
                 }
               }
             ],
@@ -360,14 +355,7 @@ void main() {
               {
                 "id": "22261813-2171-453f-a669-db08edc70d6d",
                 "type": "games",
-                "relationships": {
-                  "winner_answer": {
-                    "links": {
-                      "related":
-                          "${dotenv.env['API_ROOT']}/api/v1/answers/afdc23e8-2f50-4ce6-8407-a48f5fe2643c"
-                    }
-                  }
-                }
+                "attributes": {"complete": true},
               }
             ],
             "meta": {}

@@ -73,7 +73,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
 
       setState(() {
         isAnswerError = false;
-        isOver = checkWinnerAnswerLink(response.data);
+        isOver = checkGameCompletion(response.data);
         hasAnsweredIncorrectly = !isOver;
         textFieldController.clear();
       });
@@ -256,15 +256,14 @@ class Game {
   }
 }
 
-bool checkWinnerAnswerLink(Map<String, dynamic> apiResponse) {
+bool checkGameCompletion(Map<String, dynamic> apiResponse) {
   if (apiResponse['included'] == null) return false;
 
   var included = apiResponse['included'] as List<dynamic>;
 
   for (var item in included) {
     if (item['type'] == 'games') {
-      return item['relationships']?['winner_answer']?['links']?['related'] !=
-          null;
+      return item['attributes']['complete'] == true;
     }
   }
 

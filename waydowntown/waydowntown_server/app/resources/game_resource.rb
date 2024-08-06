@@ -7,6 +7,10 @@ class GameResource < ApplicationResource
 
   attribute :id, :uuid
 
+  attribute :complete, :boolean do
+    @object.winner_answer.present?
+  end
+
   sideloads[:incarnation]
 
   # FIXME: should this be in the model? confused

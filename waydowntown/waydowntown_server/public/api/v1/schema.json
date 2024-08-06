@@ -75,12 +75,20 @@
           "readable": true,
           "writable": true,
           "description": null
+        },
+        "complete": {
+          "type": "boolean",
+          "readable": true,
+          "writable": true,
+          "description": null
         }
       },
       "extra_attributes": {
       },
       "sorts": {
         "id": {
+        },
+        "complete": {
         }
       },
       "filters": {
@@ -90,6 +98,13 @@
             "eq",
             "not_eq"
           ]
+        },
+        "complete": {
+          "type": "boolean",
+          "operators": [
+            "eq"
+          ],
+          "single": true
         }
       },
       "relationships": {

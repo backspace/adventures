@@ -35,6 +35,7 @@ RSpec.describe AnswerResource, type: :resource do
       end
 
       it { expect(game.winner_answer).to eq(answer.data) }
+      it { expect(game.complete).to be(true) }
     end
 
     describe 'when a game already has a winning answer' do
