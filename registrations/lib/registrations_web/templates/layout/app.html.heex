@@ -17,11 +17,6 @@
 
     <title><%= phrase("title") %></title>
     <link
-      href="//fonts.googleapis.com/css?family=Oswald:300,400,700"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link
       rel="stylesheet"
       href={
         Routes.static_path(@conn, "/css/#{Application.get_env(:registrations, :adventure)}.css")
