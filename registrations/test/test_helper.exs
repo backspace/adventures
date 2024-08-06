@@ -15,6 +15,14 @@ defmodule Registrations.ApplicationEnvHelpers do
   end
 end
 
+defmodule Registrations.WindowHelpers do
+  use Hound.Helpers
+
+  def set_window_to_show_account do
+    set_window_size(current_window_handle(), 720, 450)
+  end
+end
+
 defmodule Registrations.SwooshHelper do
   use ExUnit.CaseTemplate
 

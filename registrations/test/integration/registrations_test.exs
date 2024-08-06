@@ -16,12 +16,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
   # Start a Hound session
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
-  def set_window_to_show_account do
-    set_window_size(current_window_handle(), 720, 450)
-  end
-
   test "registering" do
-    set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
     Nav.register_link().click
@@ -67,7 +63,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
   test "logging in" do
     insert(:octavia)
 
-    set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
     Nav.login_link().click
@@ -97,7 +93,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
   test "changing password" do
     insert(:octavia)
 
-    set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
     Login.login_as_admin()
@@ -145,7 +141,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
   end
 
   test "forgot password" do
-    set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account()
 
     insert(:octavia)
 
@@ -263,12 +259,8 @@ defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
   # Start a Hound session
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
-  def set_window_to_show_account do
-    set_window_size(current_window_handle(), 720, 450)
-  end
-
   test "registering sends email from and to a different address" do
-    set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
     Nav.register_link().click

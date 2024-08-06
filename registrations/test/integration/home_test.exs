@@ -11,10 +11,6 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
 
   require WaitForIt
 
-  def set_window_to_show_account do
-    set_window_size(current_window_handle(), 720, 450)
-  end
-
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "head tags are correct" do
@@ -55,7 +51,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
     insert(:unmnemonic_devices_settings, compromised: true)
     insert(:octavia, voicepass: "acknowledgements")
 
-    set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
     Nav.login_link().click
@@ -72,7 +68,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
     insert(:unmnemonic_devices_settings, compromised: true)
     insert(:octavia)
 
-    set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
     Nav.login_link().click
@@ -112,10 +108,6 @@ defmodule Registrations.Waydowntown.Integration.Home do
   alias Registrations.Pages.Nav
 
   use Hound.Helpers
-
-  def set_window_to_show_account do
-    set_window_size(current_window_handle(), 720, 450)
-  end
 
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
@@ -165,7 +157,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
 
     insert(:octavia)
 
-    set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account()
 
     Login.visit()
     Login.fill_email("Octavia.butler@example.com")
