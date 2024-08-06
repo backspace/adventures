@@ -1,6 +1,10 @@
 defmodule Registrations.Pages.Home do
   use Hound.Helpers
 
+  def placeholder_exists?() do
+    Hound.Matchers.element?(:css, "[data-test-placeholder]")
+  end
+
   def fill_name(name) do
     fill_field({:id, "question_name"}, name)
   end

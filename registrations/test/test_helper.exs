@@ -77,3 +77,15 @@ defmodule Registrations.UnmnemonicDevices do
     )
   end
 end
+
+defmodule Registrations.Waydowntown do
+  use ExUnit.CaseTemplate
+
+  setup do
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :adventure,
+      "waydowntown"
+    )
+  end
+end

@@ -23,6 +23,7 @@ config :registrations, Registrations.Mailer,
   domain: "mg.chromatin.ca"
 
 config :registrations,
+  placeholder: false,
   start_time: [{{2017, 6, 8}, {18, 00, 00}}, "Canada/Pacific"],
   location: "Zagreb",
   base_url: "http://example.com"

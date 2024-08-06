@@ -24,25 +24,36 @@
   </div>
 </div>
 
-<div class="row card">
-  <div class="small-12 columns">
-    <h2 class="marquee">What is it</h2>
-    <p>
-      etc etc yes yes
-    </p>
+<%= if @placeholder do %>
+  <div class="row card" data-test-placeholder>
+    <div class="small-12 columns">
+      <h2 class="marquee">Placeholder</h2>
+      <p>
+        this is a placeholder
+      </p>
+    </div>
   </div>
-</div>
+<% else %>
+  <div class="row card">
+    <div class="small-12 columns">
+      <h2 class="marquee">What is it</h2>
+      <p>
+        etc etc yes yes
+      </p>
+    </div>
+  </div>
 
-<div class="row card">
-  <div class="small-12 columns">
-    <h2 class="marquee">Who</h2>
-    <p>filler text etc</p>
+  <div class="row card">
+    <div class="small-12 columns">
+      <h2 class="marquee">Who</h2>
+      <p>filler text etc</p>
+    </div>
   </div>
-</div>
 
-<div class="row card">
-  <div class="small-12 columns">
-    <h2 class="marquee">Questions</h2>
-    <%= render(RegistrationsWeb.SharedView, "question.html", conn: @conn) %>
+  <div class="row card">
+    <div class="small-12 columns">
+      <h2 class="marquee">Questions</h2>
+      <%= render(RegistrationsWeb.SharedView, "question.html", conn: @conn) %>
+    </div>
   </div>
-</div>
+<% end %>

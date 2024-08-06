@@ -101,3 +101,78 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
     assert Home.overlay().voicepass.text == new_voicepass
   end
 end
+
+defmodule Registrations.Waydowntown.Integration.Home do
+  use RegistrationsWeb.ConnCase
+  use Registrations.SwooshHelper
+  use Registrations.Waydowntown
+
+  alias Registrations.Pages.Home
+  alias Registrations.Pages.Login
+  alias Registrations.Pages.Nav
+
+  use Hound.Helpers
+
+  def set_window_to_show_account do
+    set_window_size(current_window_handle(), 720, 450)
+  end
+
+  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
+
+  test "placeholder does not show by default" do
+    navigate_to("/")
+
+    refute(Home.placeholder_exists?())
+  end
+
+  test "placeholder shows with a query parameter" do
+    navigate_to("/?placeholder=true")
+
+    assert(Home.placeholder_exists?())
+  end
+
+  test "placeholder shows when set in config" do
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :placeholder,
+      true
+    )
+
+    navigate_to("/")
+
+    assert(Home.placeholder_exists?())
+  end
+
+  test "placeholder can by bypassed with a query parameter" do
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :placeholder,
+      true
+    )
+
+    navigate_to("/?placeholder=false")
+
+    refute(Home.placeholder_exists?())
+  end
+
+  test "placeholder does not show when logged in" do
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :placeholder,
+      true
+    )
+
+    insert(:octavia)
+
+    set_window_to_show_account()
+
+    navigate_to("/")
+    Nav.login_link().click
+    Login.fill_email("Octavia.butler@example.com")
+    Login.fill_password("Xenogenesis")
+    Login.submit()
+
+    navigate_to("/")
+    refute(Home.placeholder_exists?())
+  end
+end

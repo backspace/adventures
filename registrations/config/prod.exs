@@ -25,6 +25,7 @@ config :registrations, Registrations.Repo,
   pool_size: 15
 
 config :registrations,
+  placeholder: true,
   request_confirmation: false,
   registration_closed: false
 
