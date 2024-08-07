@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
-import 'package:waydowntown/models/incarnation.dart';
-import 'package:waydowntown/models/region.dart';
+import 'package:waydowntown/routes/fill_in_the_blank_game.dart';
 
 class RequestGameRoute extends StatefulWidget {
   final Dio dio;
@@ -21,7 +20,6 @@ class RequestGameRouteState extends State<RequestGameRoute> {
   bool hasAnsweredIncorrectly = false;
   bool isOver = false;
   bool isRequestError = false;
-  bool isAnswerError = false;
   TextEditingController textFieldController = TextEditingController();
 
   @override
@@ -55,125 +53,29 @@ class RequestGameRouteState extends State<RequestGameRoute> {
     }
   }
 
-  Future<void> submitAnswer(String answer) async {
-    try {
-      final response = await widget.dio.post(
-        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game',
-        data: {
-          'data': {
-            'type': 'answers',
-            'attributes': {
-              'answer': answer,
-            },
-            'relationships': {
-              'game': {
-                'data': {'type': 'games', 'id': game!.id},
-              },
-            },
-          },
-        },
-      );
+  Widget _buildGameWidget() {
+    if (game == null) return Container();
 
-      setState(() {
-        isAnswerError = false;
-        isOver = checkGameCompletion(response.data);
-        hasAnsweredIncorrectly = !isOver;
-        textFieldController.clear();
-      });
-    } catch (error) {
-      setState(() {
-        isAnswerError = true;
-      });
-      logger.e('Error submitting answer: $error');
+    switch (game!.incarnation.concept) {
+      case 'fill_in_the_blank':
+        return FillInTheBlankGame(game: game!, dio: widget.dio);
+      default:
+        return Text('Unknown game type: ${game!.incarnation.concept}');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: game == null
-            ? const Text('Requested a game?')
-            : Text(getRegionPath(game!.incarnation)),
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            if (isRequestError)
-              const Text('Error fetching game')
-            else if (game != null)
-              Column(
-                children: [
-                  Text(game!.incarnation.concept),
-                  Text(game!.incarnation.mask),
-                  Form(
-                      child: Column(children: <Widget>[
-                    TextFormField(
-                      controller: textFieldController,
-                      decoration: const InputDecoration(
-                        labelText: 'Answer',
-                      ),
-                      onChanged: (value) {
-                        answer = value;
-                      },
-                      onFieldSubmitted: (value) async {
-                        answer = value;
-                        await submitAnswer(answer);
-                      },
-                    ),
-                    if (isAnswerError)
-                      const Text('Error submitting answer')
-                    else if (hasAnsweredIncorrectly)
-                      const Text('Wrong'),
-                    if (isOver)
-                      const Text('Done!')
-                    else
-                      ElevatedButton(
-                        onPressed: () async {
-                          await submitAnswer(answer);
-                        },
-                        child: const Text('Submit'),
-                      )
-                  ]))
-                ],
-              )
-            else if (game == null)
-              const CircularProgressIndicator(),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text('Go back!'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-bool checkGameCompletion(Map<String, dynamic> apiResponse) {
-  if (apiResponse['included'] == null) return false;
-
-  var included = apiResponse['included'] as List<dynamic>;
-
-  for (var item in included) {
-    if (item['type'] == 'games') {
-      return item['attributes']['complete'] == true;
+    if (isRequestError) {
+      return Scaffold(
+          appBar: AppBar(title: const Text('Game')),
+          body: const Center(child: Text('Error fetching game')));
+    } else if (game == null) {
+      return Scaffold(
+          appBar: AppBar(title: const Text('Game')),
+          body: const Center(child: CircularProgressIndicator()));
+    } else {
+      return _buildGameWidget();
     }
   }
-
-  return false;
-}
-
-String getRegionPath(Incarnation incarnation) {
-  List<String> regionNames = [];
-  Region? currentRegion = incarnation.region;
-
-  while (currentRegion != null) {
-    regionNames.insert(0, currentRegion.name);
-    currentRegion = currentRegion.parentRegion;
-  }
-
-  return regionNames.join(" > ");
 }
