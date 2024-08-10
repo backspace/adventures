@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/routes/bluetooth_collector_game.dart';
 import 'package:waydowntown/routes/fill_in_the_blank_game.dart';
 
 class RequestGameRoute extends StatefulWidget {
@@ -57,6 +58,8 @@ class RequestGameRouteState extends State<RequestGameRoute> {
     if (game == null) return Container();
 
     switch (game!.incarnation.concept) {
+      case 'bluetooth_collector':
+        return BluetoothCollectorGame(game: game!, dio: widget.dio);
       case 'fill_in_the_blank':
         return FillInTheBlankGame(game: game!, dio: widget.dio);
       default:
