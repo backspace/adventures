@@ -14,8 +14,7 @@ import 'package:waydowntown/routes/fill_in_the_blank_game.dart';
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
 
-  var submitAnswerRoute =
-      '${dotenv.env['API_ROOT']}/api/v1/answers?include=game';
+  var submitAnswerRoute = '/api/v1/answers?include=game';
 
   Game game = Game(
     id: '22261813-2171-453f-a669-db08edc70d6d',
@@ -38,7 +37,7 @@ void main() {
 
   testWidgets('Game is requested, displayed, and answers are posted',
       (WidgetTester tester) async {
-    final dio = Dio(BaseOptions());
+    final dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     final dioAdapter = DioAdapter(dio: dio);
 

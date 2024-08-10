@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/models/incarnation.dart';
@@ -32,7 +31,7 @@ class FillInTheBlankGameState extends State<FillInTheBlankGame> {
   Future<void> submitAnswer(String answer) async {
     try {
       final response = await widget.dio.post(
-        '${dotenv.env['API_ROOT']}/api/v1/answers?include=game',
+        '/api/v1/answers?include=game',
         data: {
           'data': {
             'type': 'answers',
