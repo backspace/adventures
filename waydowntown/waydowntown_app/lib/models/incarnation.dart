@@ -33,7 +33,7 @@ class Incarnation {
     return Incarnation(
       id: json['id'],
       concept: attributes['concept'],
-      mask: attributes['mask'],
+      mask: attributes['mask'] ?? '',
       region: Region.fromJson(regionJson, included),
     );
   }
