@@ -99,6 +99,8 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.text('Portage Place > Food Court'), findsOneWidget);
+
     expect(find.text(device1.platformName), findsOneWidget);
     expect(find.text('Device 2'), findsOneWidget);
   });

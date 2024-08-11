@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:waydowntown/flutter_blue_plus_mockable.dart';
+import 'package:waydowntown/get_region_path.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 
@@ -141,18 +142,24 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
       appBar: AppBar(
         title: const Text('Bluetooth Collector'),
       ),
-      body: ListView.builder(
-        itemCount: detectedDevices.length,
-        itemBuilder: (context, index) {
-          DetectedDevice detectedDevice = detectedDevices[index];
-          return ListTile(
-            title: Text(detectedDevice.device.platformName),
-            leading: _getIconForState(detectedDevice.state),
-            onTap: detectedDevice.state == DeviceSubmissionState.unsubmitted
-                ? () => submitDevice(detectedDevice)
-                : null,
-          );
-        },
+      body: Column(
+        children: [
+          Text(getRegionPath(widget.game.incarnation)),
+          Expanded(
+              child: ListView.builder(
+            itemCount: detectedDevices.length,
+            itemBuilder: (context, index) {
+              DetectedDevice detectedDevice = detectedDevices[index];
+              return ListTile(
+                title: Text(detectedDevice.device.platformName),
+                leading: _getIconForState(detectedDevice.state),
+                onTap: detectedDevice.state == DeviceSubmissionState.unsubmitted
+                    ? () => submitDevice(detectedDevice)
+                    : null,
+              );
+            },
+          )),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: isScanning ? stopScan : startScan,

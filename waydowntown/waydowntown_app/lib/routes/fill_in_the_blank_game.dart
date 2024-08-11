@@ -1,9 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:waydowntown/get_region_path.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
-import 'package:waydowntown/models/incarnation.dart';
-import 'package:waydowntown/models/region.dart';
 
 class FillInTheBlankGame extends StatefulWidget {
   final Dio dio;
@@ -130,16 +129,4 @@ bool checkGameCompletion(Map<String, dynamic> apiResponse) {
   }
 
   return false;
-}
-
-String getRegionPath(Incarnation incarnation) {
-  List<String> regionNames = [];
-  Region? currentRegion = incarnation.region;
-
-  while (currentRegion != null) {
-    regionNames.insert(0, currentRegion.name);
-    currentRegion = currentRegion.parentRegion;
-  }
-
-  return regionNames.join(" > ");
 }
