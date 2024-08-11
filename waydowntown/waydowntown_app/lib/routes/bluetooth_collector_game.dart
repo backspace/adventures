@@ -11,7 +11,7 @@ class BluetoothCollectorGame extends StatefulWidget {
   final Game game;
   final FlutterBluePlusMockable flutterBluePlus;
 
-  BluetoothCollectorGame({
+  BluetoothCollectorGame({super.key, 
     required this.dio,
     required this.game,
     FlutterBluePlusMockable? flutterBluePlus,

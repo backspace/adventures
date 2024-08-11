@@ -115,7 +115,7 @@ class _HomeState extends State<Home> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => BluetoothScannerRoute()));
+                          builder: (context) => const BluetoothScannerRoute()));
                 }),
           ],
         ),
