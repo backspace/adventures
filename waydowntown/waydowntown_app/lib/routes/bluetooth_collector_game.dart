@@ -12,14 +12,15 @@ class BluetoothCollectorGame extends StatefulWidget {
   final Game game;
   final FlutterBluePlusMockable flutterBluePlus;
 
-  BluetoothCollectorGame({super.key, 
+  BluetoothCollectorGame({
+    super.key,
     required this.dio,
     required this.game,
     FlutterBluePlusMockable? flutterBluePlus,
   }) : flutterBluePlus = flutterBluePlus ?? FlutterBluePlusMockable();
 
   @override
-  _BluetoothCollectorGameState createState() => _BluetoothCollectorGameState();
+  BluetoothCollectorGameState createState() => BluetoothCollectorGameState();
 }
 
 enum DeviceSubmissionState {
@@ -37,7 +38,7 @@ class DetectedDevice {
   DetectedDevice(this.device, {this.state = DeviceSubmissionState.unsubmitted});
 }
 
-class _BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
+class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
   List<DetectedDevice> detectedDevices = [];
   StreamSubscription<List<ScanResult>>? _scanResultsSubscription;
   bool isScanning = false;
