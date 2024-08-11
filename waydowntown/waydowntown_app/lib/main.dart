@@ -86,6 +86,30 @@ class _HomeState extends State<Home> {
                 }),
             const SizedBox(height: 20),
             ElevatedButton(
+                child: const Text('Request a bluetooth_collector game'),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => RequestGameRoute(
+                                dio: dio,
+                                concept: 'bluetooth_collector',
+                              )));
+                }),
+            const SizedBox(height: 20),
+            ElevatedButton(
+                child: const Text('Request a fill_in_the_blank game'),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => RequestGameRoute(
+                                dio: dio,
+                                concept: 'fill_in_the_blank',
+                              )));
+                }),
+            const SizedBox(height: 20),
+            ElevatedButton(
                 child: const Text('Bluetooth Scanner'),
                 onPressed: () {
                   Navigator.push(

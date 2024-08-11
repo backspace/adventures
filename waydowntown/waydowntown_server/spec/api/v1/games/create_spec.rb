@@ -48,4 +48,32 @@ RSpec.describe 'games#create' do
 
     it { expect(sideloaded_region['id']).to eq(incarnation.region.id) }
   end
+
+  describe 'create with filter' do
+    subject(:make_filtered_request) do
+      jsonapi_post "/api/v1/games?include=incarnation&incarnation_filter[concept]=#{bluetooth_incarnation.concept}",
+                   payload
+    end
+
+    let!(:bluetooth_incarnation) { create(:incarnation, concept: 'bluetooth_collector') }
+    let(:params) { attributes_for(:game) }
+    let(:payload) do
+      {
+        data: {
+          type: 'games',
+          attributes: params
+        }
+      }
+    end
+
+    let(:sideloaded_incarnation) do
+      make_filtered_request
+      d.sideload(:incarnation)
+    end
+
+    it 'returns an incarnation with the specified concept' do
+      make_filtered_request
+      expect(sideloaded_incarnation.concept).to eq('bluetooth_collector')
+    end
+  end
 end

@@ -12,10 +12,16 @@ class GamesController < ApplicationController
   end
 
   def create
-    game = GameResource.build(params)
+    incarnation_scope = if params.dig('incarnation_filter', 'concept')
+                          Incarnation.where(concept: params['incarnation_filter']['concept'])
+                        else
+                          Incarnation.all
+                        end
+
+    game = Game.new(incarnation: incarnation_scope.sample)
 
     if game.save
-      render jsonapi: game, status: :created
+      render jsonapi: GameResource.find(params.merge(id: game.id)), status: :created
     else
       render jsonapi_errors: game
     end

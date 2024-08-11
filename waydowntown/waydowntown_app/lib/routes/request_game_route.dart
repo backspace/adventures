@@ -9,7 +9,9 @@ import 'package:waydowntown/routes/fill_in_the_blank_game.dart';
 class RequestGameRoute extends StatefulWidget {
   final Dio dio;
 
-  const RequestGameRoute({super.key, required this.dio});
+  const RequestGameRoute({super.key, required this.dio, this.concept});
+
+  final String? concept;
 
   @override
   RequestGameRouteState createState() => RequestGameRouteState();
@@ -35,7 +37,9 @@ class RequestGameRouteState extends State<RequestGameRoute> {
       final response = await widget.dio.post(
         endpoint,
         queryParameters: {
-          'include': 'incarnation,incarnation.region,incarnation.region.parent'
+          'include': 'incarnation,incarnation.region,incarnation.region.parent',
+          if (widget.concept != null)
+            'incarnation_filter[concept]': widget.concept!,
         },
       );
 
