@@ -1,21 +1,22 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dio/dio.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:waydowntown/flutter_blue_plus_mockable.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/models/incarnation.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/routes/bluetooth_collector_game.dart';
-import 'package:waydowntown/flutter_blue_plus_mockable.dart';
+
 import './bluetooth_collector_game_test.mocks.dart';
-import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
 
 @GenerateMocks([
   FlutterBluePlusMockable,

@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:waydowntown/routes/request_game_route.dart';
 import 'package:waydowntown/routes/bluetooth_collector_game.dart';
 import 'package:waydowntown/routes/fill_in_the_blank_game.dart';
+import 'package:waydowntown/routes/request_game_route.dart';
 
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());

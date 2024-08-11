@@ -2,10 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:logger/logger.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:logger/logger.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/routes/bluetooth_scanner_route.dart';
 import 'package:waydowntown/routes/request_game_route.dart';
 
