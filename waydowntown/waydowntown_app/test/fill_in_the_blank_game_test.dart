@@ -16,6 +16,9 @@ void main() {
 
   var submitAnswerRoute = '/api/v1/answers?include=game';
 
+  late Dio dio;
+  late DioAdapter dioAdapter;
+
   Game game = Game(
     id: '22261813-2171-453f-a669-db08edc70d6d',
     incarnation: Incarnation(
@@ -35,12 +38,14 @@ void main() {
     ),
   );
 
+  setUp(() {
+    dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
+    dio.interceptors.add(PrettyDioLogger());
+    dioAdapter = DioAdapter(dio: dio);
+  });
+
   testWidgets('Game is requested, displayed, and answers are posted',
       (WidgetTester tester) async {
-    final dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
-    dio.interceptors.add(PrettyDioLogger());
-    final dioAdapter = DioAdapter(dio: dio);
-
     dioAdapter
       ..onPost(
         submitAnswerRoute,
@@ -170,10 +175,6 @@ void main() {
 
   testWidgets('An error is displayed when answering fails but can try again',
       (WidgetTester tester) async {
-    final dio = Dio(BaseOptions());
-    dio.interceptors.add(PrettyDioLogger());
-    final dioAdapter = DioAdapter(dio: dio);
-
     dioAdapter
       ..onPost(submitAnswerRoute, (server) => server.reply(500, {}))
       ..onPost(
