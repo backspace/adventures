@@ -49,7 +49,13 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
-    final dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
+    final dio = Dio(BaseOptions(
+      baseUrl: dotenv.env['API_ROOT']!,
+      headers: {
+        'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json',
+      },
+    ));
 
     dio.interceptors.add(PrettyDioLogger(
         requestHeader: true,

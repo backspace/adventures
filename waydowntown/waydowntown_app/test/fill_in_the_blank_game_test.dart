@@ -14,7 +14,7 @@ import 'package:waydowntown/routes/fill_in_the_blank_game.dart';
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
 
-  var submitAnswerRoute = '/api/v1/answers?include=game';
+  var submitAnswerRoute = '/waydowntown/answers?include=game';
 
   late Dio dio;
   late DioAdapter dioAdapter;

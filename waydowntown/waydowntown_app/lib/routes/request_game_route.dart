@@ -32,10 +32,16 @@ class RequestGameRouteState extends State<RequestGameRoute> {
   }
 
   Future<void> fetchGame() async {
-    final endpoint = '${dotenv.env['API_ROOT']}/api/v1/games';
+    final endpoint = '${dotenv.env['API_ROOT']}/waydowntown/games';
     try {
       final response = await widget.dio.post(
         endpoint,
+        data: {
+          'data': {
+            'type': 'games',
+            'attributes': {},
+          },
+        },
         queryParameters: {
           'include': 'incarnation,incarnation.region,incarnation.region.parent',
           if (widget.concept != null)

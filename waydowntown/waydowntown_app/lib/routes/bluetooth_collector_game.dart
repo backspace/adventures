@@ -88,7 +88,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
 
     try {
       final response = await widget.dio.post(
-        '/api/v1/answers?include=game',
+        '/waydowntown/answers?include=game',
         data: {
           'data': {
             'type': 'answers',

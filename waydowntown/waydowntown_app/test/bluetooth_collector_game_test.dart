@@ -24,7 +24,7 @@ import './bluetooth_collector_game_test.mocks.dart';
   ScanResult,
 ])
 void main() {
-  const submitAnswerRoute = '/api/v1/answers?include=game';
+  const submitAnswerRoute = '/waydowntown/answers?include=game';
 
   final ScanResult deviceResult1 = MockScanResult();
   final BluetoothDevice device1 = MockBluetoothDevice();

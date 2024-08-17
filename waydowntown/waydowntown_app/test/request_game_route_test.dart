@@ -13,7 +13,7 @@ import 'package:waydowntown/routes/request_game_route.dart';
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
 
-  var requestGameRoute = '${dotenv.env['API_ROOT']}/api/v1/games';
+  var requestGameRoute = '${dotenv.env['API_ROOT']}/waydowntown/games';
 
   testWidgets('RequestGameRoute delegates to BluetoothCollectorGame',
       (WidgetTester tester) async {
@@ -33,7 +33,7 @@ void main() {
               "incarnation": {
                 "links": {
                   "related":
-                      "${dotenv.env['API_ROOT']}/api/v1/incarnations/0091eb84-85c8-4e63-962b-39e1a19d2781"
+                      "${dotenv.env['API_ROOT']}/waydowntown/incarnations/0091eb84-85c8-4e63-962b-39e1a19d2781"
                 },
                 "data": {
                   "type": "incarnations",
@@ -54,7 +54,7 @@ void main() {
                 "region": {
                   "links": {
                     "related":
-                        "${dotenv.env['API_ROOT']}/api/v1/regions/324fd8f9-cd25-48be-a761-b8680fa72737"
+                        "${dotenv.env['API_ROOT']}/waydowntown/regions/324fd8f9-cd25-48be-a761-b8680fa72737"
                   },
                   "data": {
                     "type": "regions",
@@ -104,7 +104,7 @@ void main() {
               "incarnation": {
                 "links": {
                   "related":
-                      "${dotenv.env['API_ROOT']}/api/v1/incarnations/0091eb84-85c8-4e63-962b-39e1a19d2781"
+                      "${dotenv.env['API_ROOT']}/waydowntown/incarnations/0091eb84-85c8-4e63-962b-39e1a19d2781"
                 },
                 "data": {
                   "type": "incarnations",
@@ -125,7 +125,7 @@ void main() {
                 "region": {
                   "links": {
                     "related":
-                        "${dotenv.env['API_ROOT']}/api/v1/regions/324fd8f9-cd25-48be-a761-b8680fa72737"
+                        "${dotenv.env['API_ROOT']}/waydowntown/regions/324fd8f9-cd25-48be-a761-b8680fa72737"
                   },
                   "data": {
                     "type": "regions",
@@ -142,7 +142,7 @@ void main() {
                 "parent": {
                   "links": {
                     "related":
-                        "${dotenv.env['API_ROOT']}/api/v1/regions/67cc2c5c-06c2-4e86-9aac-b575fc712862"
+                        "${dotenv.env['API_ROOT']}/waydowntown/regions/67cc2c5c-06c2-4e86-9aac-b575fc712862"
                   },
                   "data": {
                     "type": "regions",
