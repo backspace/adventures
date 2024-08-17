@@ -6,11 +6,7 @@ defmodule RegistrationsWeb.GameControllerTest do
   alias Registrations.Waydowntown.Incarnation
   alias Registrations.Waydowntown.Region
 
-  require Logger
-
   setup %{conn: conn} do
-    Logger.info("Setting up test environment with header")
-
     {:ok,
      conn:
        put_req_header(conn, "accept", "application/vnd.api+json")
