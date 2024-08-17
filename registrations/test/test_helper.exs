@@ -86,7 +86,7 @@ defmodule Registrations.UnmnemonicDevices do
   end
 end
 
-defmodule Registrations.Waydowntown do
+defmodule Registrations.WaydowntownInstance do
   use ExUnit.CaseTemplate
 
   setup do

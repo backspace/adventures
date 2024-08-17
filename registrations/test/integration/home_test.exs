@@ -101,7 +101,7 @@ end
 defmodule Registrations.Waydowntown.Integration.Home do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.Waydowntown
+  use Registrations.WaydowntownInstance
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Login
