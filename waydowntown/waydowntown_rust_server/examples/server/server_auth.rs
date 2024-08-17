@@ -1,38 +1,32 @@
-use swagger::{
-    ApiError,
-    auth::{Basic, Bearer},
-    Has, 
-    XSpanIdString};
-use waydowntown_server::{AuthenticationApi, Claims};
 use crate::server::Server;
-use jsonwebtoken::{decode, errors as JwtError, decode_header, DecodingKey, TokenData, Validation};
+use jsonwebtoken::{decode, decode_header, errors as JwtError, DecodingKey, TokenData, Validation};
+use log::{debug, error};
 use swagger::auth::Authorization;
-use log::{error, debug};
+use swagger::{
+    auth::{Basic, Bearer},
+    ApiError, Has, XSpanIdString,
+};
+use waydowntown_server::{AuthenticationApi, Claims};
 
 // NOTE: Set environment variable RUST_LOG to the name of the executable (or "cargo run") to activate console logging for all loglevels.
 //     See https://docs.rs/env_logger/latest/env_logger/  for more details
 
-
 /// Get a dummy claim with full permissions (all scopes) for testing purposes
 fn full_permission_claim() -> Claims {
-        Claims {
-            sub: "tester@acme.com".to_owned(), 
-            company: "ACME".to_owned(),
-            iss: "mini-bank-IDP".to_owned(),
-            aud: "org.acme.Resource_Server".to_string(),
-            // added a very long expiry time
-            exp: 10000000000,
-            // In this example code all available Scopes are added, so the current Bearer Token gets fully authorization.
+    Claims {
+        sub: "tester@acme.com".to_owned(),
+        company: "ACME".to_owned(),
+        iss: "mini-bank-IDP".to_owned(),
+        aud: "org.acme.Resource_Server".to_string(),
+        // added a very long expiry time
+        exp: 10000000000,
         // In this example code all available Scopes are added, so the current Bearer Token gets fully authorization.
         scopes: Vec::<String>::new().join(", "),
     }
 }
 
-
-
-/// Extract the data from a Bearer token using the provided Key (secret) and using the HS512-algorithm in this example. 
+/// Extract the data from a Bearer token using the provided Key (secret) and using the HS512-algorithm in this example.
 fn extract_token_data(token: &str, key: &[u8]) -> Result<TokenData<Claims>, JwtError::Error> {
-    
     // Ensure that you set the correct algorithm and correct key.
     // See https://github.com/Keats/jsonwebtoken for more information.
     let header = decode_header(token)?;
@@ -43,11 +37,7 @@ fn extract_token_data(token: &str, key: &[u8]) -> Result<TokenData<Claims>, JwtE
         validation
     };
 
-    let token_data = decode::<Claims>(
-        &token,
-        &DecodingKey::from_secret(key),
-        &validation,
-    )?;
+    let token_data = decode::<Claims>(&token, &DecodingKey::from_secret(key), &validation)?;
 
     Ok(token_data)
 }
@@ -55,17 +45,16 @@ fn extract_token_data(token: &str, key: &[u8]) -> Result<TokenData<Claims>, JwtE
 /// Build a swagger-Authorization based on the claims (Assuming claims have been extracted from a validated token)
 fn build_authorization(claims: Claims) -> Authorization {
     let mut scopes = std::collections::BTreeSet::<String>::new();
-    claims
-        .scopes
-        .split(",")
-        .map(|s| s.trim())
-        .for_each(|s| {let _ = scopes.insert(s.to_string()); });
+    claims.scopes.split(",").map(|s| s.trim()).for_each(|s| {
+        let _ = scopes.insert(s.to_string());
+    });
     let scopes = swagger::auth::Scopes::Some(scopes);
 
-    Authorization{
-        subject: claims.sub, 
-        scopes, 
-        issuer: Some(claims.iss)}
+    Authorization {
+        subject: claims.sub,
+        scopes,
+        issuer: Some(claims.iss),
+    }
 }
 
 fn get_jwt_error_string(error: JwtError::Error) -> String {
@@ -76,13 +65,14 @@ fn get_jwt_error_string(error: JwtError::Error) -> String {
         JwtError::ErrorKind::Base64(e) => format!("Base64 decode failed: {e}"),
         JwtError::ErrorKind::Json(e) => format!("JSON decoding: {e}"),
         JwtError::ErrorKind::Utf8(e) => format!("Invalid UTF-8: {e}"),
-        _ => error.to_string()
+        _ => error.to_string(),
     }
 }
 
-
-impl<C> AuthenticationApi for Server<C> where C: Has<XSpanIdString> + Send + Sync {
-
+impl<C> AuthenticationApi for Server<C>
+where
+    C: Has<XSpanIdString> + Send + Sync,
+{
     /// Implementation of the method to map a Bearer-token to an Authorization
     fn bearer_authorization(&self, bearer: &Bearer) -> Result<Authorization, ApiError> {
         debug!("\tAuthorizationApi: Received Bearer-token, {bearer:#?}");
@@ -92,7 +82,7 @@ impl<C> AuthenticationApi for Server<C> where C: Has<XSpanIdString> + Send + Syn
                 debug!("\tUnpack auth_data as: {auth_data:#?}");
                 let authorization = build_authorization(auth_data.claims);
                 Ok(authorization)
-            },
+            }
             Err(err) => {
                 let msg = get_jwt_error_string(err);
                 error!("Failed to unpack Bearer-token: {msg}");
@@ -105,23 +95,21 @@ impl<C> AuthenticationApi for Server<C> where C: Has<XSpanIdString> + Send + Syn
     fn apikey_authorization(&self, api_key: &str) -> Result<Authorization, ApiError> {
         debug!("\tAuthorizationApi: Received api-key, {api_key:#?}");
 
-        // TODO: insert the logic to map received apikey to the set of claims 
+        // TODO: insert the logic to map received apikey to the set of claims
         let claims = full_permission_claim();
 
         // and build an authorization out of it
         Ok(build_authorization(claims))
     }
-    
+
     /// Implementation of the method to map a basic authentication (username and password) to an Authorization
     fn basic_authorization(&self, basic: &Basic) -> Result<Authorization, ApiError> {
         debug!("\tAuthorizationApi: Received Basic-token, {basic:#?}");
 
-        // TODO: insert the logic to map received apikey to the set of claims 
+        // TODO: insert the logic to map received apikey to the set of claims
         let claims = full_permission_claim();
 
         // and build an authorization out of it
         Ok(build_authorization(claims))
     }
-
-} 
-
+}
