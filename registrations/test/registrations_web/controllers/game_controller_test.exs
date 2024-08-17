@@ -2,7 +2,6 @@ defmodule RegistrationsWeb.GameControllerTest do
   use RegistrationsWeb.ConnCase
 
   alias Registrations.Waydowntown
-  alias Registrations.Waydowntown.Game
   alias Registrations.Waydowntown.Incarnation
   alias Registrations.Waydowntown.Region
 
