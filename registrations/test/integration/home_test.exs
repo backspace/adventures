@@ -1,7 +1,7 @@
 defmodule Registrations.UnmnemonicDevices.Integration.Home do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.UnmnemonicDevices
+  use Registrations.SetAdventure, adventure: "unmnemonic-devices"
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Login
@@ -101,7 +101,7 @@ end
 defmodule Registrations.Waydowntown.Integration.Home do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.WaydowntownInstance
+  use Registrations.SetAdventure, adventure: "waydowntown"
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Login

@@ -1,7 +1,7 @@
 defmodule Registrations.Integration.Messages do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.ClandestineRendezvous
+  use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
 
   alias Registrations.Pages.Login
   alias Registrations.Pages.Register
