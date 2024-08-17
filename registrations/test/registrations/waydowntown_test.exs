@@ -6,17 +6,15 @@ defmodule Registrations.WaydowntownTest do
   describe "games" do
     alias Registrations.Waydowntown.Game
 
-    import Registrations.WaydowntownFixtures
-
     @invalid_attrs %{complete: nil}
 
     test "list_games/0 returns all games" do
-      game = game_fixture()
+      game = insert(:game)
       assert Waydowntown.list_games() == [game]
     end
 
     test "get_game!/1 returns the game with given id" do
-      game = game_fixture()
+      game = insert(:game)
       assert Waydowntown.get_game!(game.id) == game
     end
 
@@ -32,7 +30,7 @@ defmodule Registrations.WaydowntownTest do
     end
 
     test "update_game/2 with valid data updates the game" do
-      game = game_fixture()
+      game = insert(:game)
       update_attrs = %{complete: false}
 
       assert {:ok, %Game{} = game} = Waydowntown.update_game(game, update_attrs)
@@ -40,19 +38,19 @@ defmodule Registrations.WaydowntownTest do
     end
 
     test "update_game/2 with invalid data returns error changeset" do
-      game = game_fixture()
+      game = insert(:game)
       assert {:error, %Ecto.Changeset{}} = Waydowntown.update_game(game, @invalid_attrs)
       assert game == Waydowntown.get_game!(game.id)
     end
 
     test "delete_game/1 deletes the game" do
-      game = game_fixture()
+      game = insert(:game)
       assert {:ok, %Game{}} = Waydowntown.delete_game(game)
       assert_raise Ecto.NoResultsError, fn -> Waydowntown.get_game!(game.id) end
     end
 
     test "change_game/1 returns a game changeset" do
-      game = game_fixture()
+      game = insert(:game)
       assert %Ecto.Changeset{} = Waydowntown.change_game(game)
     end
   end
@@ -60,22 +58,25 @@ defmodule Registrations.WaydowntownTest do
   describe "incarnations" do
     alias Registrations.Waydowntown.Incarnation
 
-    import Registrations.WaydowntownFixtures
-
     @invalid_attrs %{answer: nil, answers: nil, concept: nil, mask: nil}
 
     test "list_incarnations/0 returns all incarnations" do
-      incarnation = incarnation_fixture()
+      incarnation = insert(:incarnation)
       assert Waydowntown.list_incarnations() == [incarnation]
     end
 
     test "get_incarnation!/1 returns the incarnation with given id" do
-      incarnation = incarnation_fixture()
+      incarnation = insert(:incarnation)
       assert Waydowntown.get_incarnation!(incarnation.id) == incarnation
     end
 
     test "create_incarnation/1 with valid data creates a incarnation" do
-      valid_attrs = %{answer: "some answer", answers: [], concept: "some concept", mask: "some mask"}
+      valid_attrs = %{
+        answer: "some answer",
+        answers: [],
+        concept: "some concept",
+        mask: "some mask"
+      }
 
       assert {:ok, %Incarnation{} = incarnation} = Waydowntown.create_incarnation(valid_attrs)
       assert incarnation.answer == "some answer"
@@ -89,10 +90,18 @@ defmodule Registrations.WaydowntownTest do
     end
 
     test "update_incarnation/2 with valid data updates the incarnation" do
-      incarnation = incarnation_fixture()
-      update_attrs = %{answer: "some updated answer", answers: [], concept: "some updated concept", mask: "some updated mask"}
+      incarnation = insert(:incarnation)
 
-      assert {:ok, %Incarnation{} = incarnation} = Waydowntown.update_incarnation(incarnation, update_attrs)
+      update_attrs = %{
+        answer: "some updated answer",
+        answers: [],
+        concept: "some updated concept",
+        mask: "some updated mask"
+      }
+
+      assert {:ok, %Incarnation{} = incarnation} =
+               Waydowntown.update_incarnation(incarnation, update_attrs)
+
       assert incarnation.answer == "some updated answer"
       assert incarnation.answers == []
       assert incarnation.concept == "some updated concept"
@@ -100,19 +109,22 @@ defmodule Registrations.WaydowntownTest do
     end
 
     test "update_incarnation/2 with invalid data returns error changeset" do
-      incarnation = incarnation_fixture()
-      assert {:error, %Ecto.Changeset{}} = Waydowntown.update_incarnation(incarnation, @invalid_attrs)
+      incarnation = insert(:incarnation)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Waydowntown.update_incarnation(incarnation, @invalid_attrs)
+
       assert incarnation == Waydowntown.get_incarnation!(incarnation.id)
     end
 
     test "delete_incarnation/1 deletes the incarnation" do
-      incarnation = incarnation_fixture()
+      incarnation = insert(:incarnation)
       assert {:ok, %Incarnation{}} = Waydowntown.delete_incarnation(incarnation)
       assert_raise Ecto.NoResultsError, fn -> Waydowntown.get_incarnation!(incarnation.id) end
     end
 
     test "change_incarnation/1 returns a incarnation changeset" do
-      incarnation = incarnation_fixture()
+      incarnation = insert(:incarnation)
       assert %Ecto.Changeset{} = Waydowntown.change_incarnation(incarnation)
     end
   end
@@ -120,17 +132,15 @@ defmodule Registrations.WaydowntownTest do
   describe "regions" do
     alias Registrations.Waydowntown.Region
 
-    import Registrations.WaydowntownFixtures
-
     @invalid_attrs %{description: nil, name: nil}
 
     test "list_regions/0 returns all regions" do
-      region = region_fixture()
+      region = insert(:region)
       assert Waydowntown.list_regions() == [region]
     end
 
     test "get_region!/1 returns the region with given id" do
-      region = region_fixture()
+      region = insert(:region)
       assert Waydowntown.get_region!(region.id) == region
     end
 
@@ -147,7 +157,7 @@ defmodule Registrations.WaydowntownTest do
     end
 
     test "update_region/2 with valid data updates the region" do
-      region = region_fixture()
+      region = insert(:region)
       update_attrs = %{description: "some updated description", name: "some updated name"}
 
       assert {:ok, %Region{} = region} = Waydowntown.update_region(region, update_attrs)
@@ -156,19 +166,19 @@ defmodule Registrations.WaydowntownTest do
     end
 
     test "update_region/2 with invalid data returns error changeset" do
-      region = region_fixture()
+      region = insert(:region)
       assert {:error, %Ecto.Changeset{}} = Waydowntown.update_region(region, @invalid_attrs)
       assert region == Waydowntown.get_region!(region.id)
     end
 
     test "delete_region/1 deletes the region" do
-      region = region_fixture()
+      region = insert(:region)
       assert {:ok, %Region{}} = Waydowntown.delete_region(region)
       assert_raise Ecto.NoResultsError, fn -> Waydowntown.get_region!(region.id) end
     end
 
     test "change_region/1 returns a region changeset" do
-      region = region_fixture()
+      region = insert(:region)
       assert %Ecto.Changeset{} = Waydowntown.change_region(region)
     end
   end
@@ -176,17 +186,15 @@ defmodule Registrations.WaydowntownTest do
   describe "answers" do
     alias Registrations.Waydowntown.Answer
 
-    import Registrations.WaydowntownFixtures
-
     @invalid_attrs %{answer: nil, correct: nil}
 
     test "list_answers/0 returns all answers" do
-      answer = answer_fixture()
+      answer = insert(:answer)
       assert Waydowntown.list_answers() == [answer]
     end
 
     test "get_answer!/1 returns the answer with given id" do
-      answer = answer_fixture()
+      answer = insert(:answer)
       assert Waydowntown.get_answer!(answer.id) == answer
     end
 
@@ -203,7 +211,7 @@ defmodule Registrations.WaydowntownTest do
     end
 
     test "update_answer/2 with valid data updates the answer" do
-      answer = answer_fixture()
+      answer = insert(:answer)
       update_attrs = %{answer: "some updated answer", correct: false}
 
       assert {:ok, %Answer{} = answer} = Waydowntown.update_answer(answer, update_attrs)
@@ -212,19 +220,19 @@ defmodule Registrations.WaydowntownTest do
     end
 
     test "update_answer/2 with invalid data returns error changeset" do
-      answer = answer_fixture()
+      answer = insert(:answer)
       assert {:error, %Ecto.Changeset{}} = Waydowntown.update_answer(answer, @invalid_attrs)
       assert answer == Waydowntown.get_answer!(answer.id)
     end
 
     test "delete_answer/1 deletes the answer" do
-      answer = answer_fixture()
+      answer = insert(:answer)
       assert {:ok, %Answer{}} = Waydowntown.delete_answer(answer)
       assert_raise Ecto.NoResultsError, fn -> Waydowntown.get_answer!(answer.id) end
     end
 
     test "change_answer/1 returns a answer changeset" do
-      answer = answer_fixture()
+      answer = insert(:answer)
       assert %Ecto.Changeset{} = Waydowntown.change_answer(answer)
     end
   end

@@ -48,4 +48,20 @@ defmodule Registrations.Factory do
   def unmnemonic_devices_settings_factory do
     %RegistrationsWeb.UnmnemonicDevices.Settings{}
   end
+
+  def answer_factory do
+    %Registrations.Waydowntown.Answer{}
+  end
+
+  def game_factory do
+    %Registrations.Waydowntown.Game{}
+  end
+
+  def incarnation_factory do
+    %Registrations.Waydowntown.Incarnation{}
+  end
+
+  def region_factory do
+    %Registrations.Waydowntown.Region{}
+  end
 end

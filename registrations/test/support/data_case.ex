@@ -9,6 +9,7 @@ defmodule Registrations.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import Registrations.DataCase
+      import Registrations.Factory
     end
   end
 
