@@ -39,6 +39,7 @@ tokio = { version = "1", default-features = false, features = [
     "rt-multi-thread",
 ] }
 tracing = { version = "0.1", features = ["attributes"] }
+tracing-subscriber = "0.3"
 uuid = { version = "1", features = ["serde"] }
 validator = { version = "0.18", features = ["derive"] }
 
