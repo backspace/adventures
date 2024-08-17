@@ -9,11 +9,11 @@ edition = "2021"
 default = ["server"]
 server = []
 conversion = [
-    "frunk",
-    "frunk_derives",
-    "frunk_core",
-    "frunk-enum-core",
-    "frunk-enum-derive",
+  "frunk",
+  "frunk_derives",
+  "frunk_core",
+  "frunk-enum-core",
+  "frunk-enum-derive",
 ]
 
 [dependencies]
@@ -34,9 +34,15 @@ regex = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["raw_value"] }
 serde_urlencoded = "0.7"
+sqlx = { version = "0.7", features = [
+  "runtime-tokio-rustls",
+  "postgres",
+  "uuid",
+  "chrono",
+] }
 tokio = { version = "1", default-features = false, features = [
-    "signal",
-    "rt-multi-thread",
+  "signal",
+  "rt-multi-thread",
 ] }
 tracing = { version = "0.1", features = ["attributes"] }
 tracing-subscriber = "0.3"
