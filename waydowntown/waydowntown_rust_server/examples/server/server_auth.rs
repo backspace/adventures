@@ -23,9 +23,9 @@ fn full_permission_claim() -> Claims {
             // added a very long expiry time
             exp: 10000000000,
             // In this example code all available Scopes are added, so the current Bearer Token gets fully authorization.
-            scopes: [
-            ].join(", ")
-        }
+        // In this example code all available Scopes are added, so the current Bearer Token gets fully authorization.
+        scopes: Vec::<String>::new().join(", "),
+    }
 }
 
 
