@@ -7,6 +7,8 @@ defmodule Registrations.Repo.Migrations.AddWaydowntownRegions do
       add(:name, :string)
       add(:description, :text)
       add(:parent_id, references("regions", type: :uuid, on_delete: :nilify_all))
+
+      timestamps()
     end
 
     alter(table(:incarnations, prefix: "waydowntown")) do
