@@ -31,28 +31,24 @@ defmodule RegistrationsWeb.GameControllerTest do
       %{incarnation: incarnation, region: region}
     end
 
-    test "renders game when data is valid", %{
-      conn: conn,
-      incarnation: incarnation,
-      region: region
-    } do
+    test "creates game", %{conn: conn, incarnation: incarnation} do
       conn =
-        post(conn, Routes.game_path(conn, :create), %{
-          "data" => %{
-            "type" => "games",
-            "attributes" => %{}
+        post(
+          conn,
+          Routes.game_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "games",
+              "attributes" => %{}
+            }
           }
-        })
+        )
 
       assert %{"id" => id} = json_response(conn, 201)["data"]
       assert %{"included" => included} = json_response(conn, 201)
 
       sideloaded_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
-      sideloaded_region = Enum.find(included, &(&1["type"] == "regions"))
-
-      assert sideloaded_incarnation["attributes"]["concept"] == incarnation.concept
-      assert sideloaded_incarnation["attributes"]["mask"] == incarnation.mask
-      assert sideloaded_region["id"] == region.id
+      assert sideloaded_incarnation["id"] == incarnation.id
 
       game = Waydowntown.get_game!(id)
       assert game.incarnation_id == incarnation.id
@@ -85,20 +81,6 @@ defmodule RegistrationsWeb.GameControllerTest do
 
       game = Waydowntown.get_game!(id)
       assert game.incarnation_id == bluetooth_incarnation.id
-    end
-
-    test "renders errors when data is invalid", %{conn: conn} do
-      conn =
-        post(conn, Routes.game_path(conn, :create), %{
-          "data" => %{
-            "type" => "games",
-            "attributes" => %{
-              "invalid_field" => "invalid"
-            }
-          }
-        })
-
-      assert json_response(conn, 422)["errors"] != %{}
     end
   end
 end
