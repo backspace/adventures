@@ -1,20 +1,16 @@
 defmodule RegistrationsWeb.AnswerView do
-  use RegistrationsWeb, :view
+  use JSONAPI.View, type: "answers"
   alias RegistrationsWeb.AnswerView
 
-  def render("index.json", %{answers: answers}) do
-    %{data: render_many(answers, AnswerView, "answer.json")}
+  def fields do
+    [:answer, :correct]
   end
 
-  def render("show.json", %{answer: answer}) do
-    %{data: render_one(answer, AnswerView, "answer.json")}
+  def render("show.json", %{answer: answer, conn: conn, params: params}) do
+    AnswerView.show(answer, conn, params)
   end
 
-  def render("answer.json", %{answer: answer}) do
-    %{
-      id: answer.id,
-      answer: answer.answer,
-      correct: answer.correct
-    }
+  def relationships do
+    [game: {RegistrationsWeb.GameView, :include}]
   end
 end

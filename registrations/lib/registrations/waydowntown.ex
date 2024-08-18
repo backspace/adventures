@@ -338,7 +338,7 @@ defmodule Registrations.Waydowntown do
   def get_answer!(id), do: Repo.get!(Answer, id)
 
   @doc """
-  Creates a answer.
+  Creates an answer.
 
   ## Examples
 
@@ -349,10 +349,51 @@ defmodule Registrations.Waydowntown do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_answer(attrs \\ %{}) do
+  def create_answer(%{"answer" => answer_text, "game_id" => game_id}) do
+    game = get_game!(game_id)
+    incarnation = game.incarnation
+
     %Answer{}
-    |> Answer.changeset(attrs)
+    |> Answer.changeset(%{
+      "answer" => answer_text,
+      "correct" => check_answer_correctness(incarnation, answer_text),
+      "game_id" => game_id
+    })
     |> Repo.insert()
+    |> case do
+      {:ok, answer} ->
+        if answer.correct and single_answer_game?(incarnation) do
+          update_game_winner(game, answer)
+        end
+
+        {:ok, Repo.preload(answer, :game)}
+
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  defp check_answer_correctness(
+         %Incarnation{concept: "fill_in_the_blank", answer: correct_answer},
+         answer_text
+       ) do
+    String.downcase(String.trim(correct_answer)) == String.downcase(String.trim(answer_text))
+  end
+
+  defp check_answer_correctness(
+         %Incarnation{concept: "bluetooth_collector", answers: correct_answers},
+         answer_text
+       ) do
+    answer_text in correct_answers
+  end
+
+  defp single_answer_game?(%Incarnation{concept: "fill_in_the_blank"}), do: true
+  defp single_answer_game?(_), do: false
+
+  defp update_game_winner(game, answer) do
+    game
+    |> Game.changeset(%{winner_answer_id: answer.id})
+    |> Repo.update!()
   end
 
   @doc """

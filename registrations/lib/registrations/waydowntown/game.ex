@@ -7,6 +7,7 @@ defmodule Registrations.Waydowntown.Game do
 
   schema "games" do
     belongs_to(:incarnation, Registrations.Waydowntown.Incarnation, type: :binary_id)
+    belongs_to(:winner_answer, Registrations.Waydowntown.Answer, type: :binary_id)
 
     timestamps()
   end
@@ -14,8 +15,9 @@ defmodule Registrations.Waydowntown.Game do
   @doc false
   def changeset(game, attrs) do
     game
-    |> cast(attrs, [:incarnation_id])
+    |> cast(attrs, [:incarnation_id, :winner_answer_id])
     |> validate_required([:incarnation_id])
     |> assoc_constraint(:incarnation)
+    |> assoc_constraint(:winner_answer)
   end
 end

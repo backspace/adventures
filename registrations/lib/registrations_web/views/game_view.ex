@@ -3,7 +3,11 @@ defmodule RegistrationsWeb.GameView do
   alias RegistrationsWeb.GameView
 
   def fields do
-    []
+    [:complete]
+  end
+
+  def complete(data, _conn) do
+    data.winner_answer_id != nil
   end
 
   def render("index.json", %{games: games, conn: conn, params: params}) do
