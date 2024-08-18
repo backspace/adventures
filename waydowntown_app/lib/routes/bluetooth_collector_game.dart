@@ -43,6 +43,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
   List<DetectedDevice> detectedDevices = [];
   StreamSubscription<List<ScanResult>>? _scanResultsSubscription;
   bool isScanning = false;
+  Map<String, String> deviceErrors = {};
 
   @override
   void initState() {
@@ -115,11 +116,12 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
       logger.e('Error submitting device: $e');
       setState(() {
         detectedDevice.state = DeviceSubmissionState.error;
+        deviceErrors[detectedDevice.device.remoteId.toString()] = e.toString();
       });
     }
   }
 
-  Icon _getIconForState(DeviceSubmissionState state) {
+  Widget _getIconForState(DeviceSubmissionState state, String deviceId) {
     switch (state) {
       case DeviceSubmissionState.unsubmitted:
         return const Icon(Icons.radio_button_unchecked,
@@ -128,7 +130,30 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
         return const Icon(Icons.hourglass_empty,
             color: Colors.blue, size: 24.0);
       case DeviceSubmissionState.error:
-        return const Icon(Icons.error, color: Colors.red, size: 24.0);
+        return IconButton(
+          icon: const Icon(Icons.info, color: Colors.red, size: 24.0),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: const Text('Error'),
+                  content: Text(
+                    deviceErrors[deviceId] ?? 'Unknown error',
+                  ),
+                  actions: <Widget>[
+                    TextButton(
+                      child: const Text('Close'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
       case DeviceSubmissionState.correct:
         return const Icon(Icons.check_circle, color: Colors.green, size: 24.0);
       case DeviceSubmissionState.incorrect:
@@ -152,7 +177,8 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
               DetectedDevice detectedDevice = detectedDevices[index];
               return ListTile(
                 title: Text(detectedDevice.device.platformName),
-                leading: _getIconForState(detectedDevice.state),
+                leading: _getIconForState(detectedDevice.state,
+                    detectedDevice.device.remoteId.toString()),
                 onTap: detectedDevice.state == DeviceSubmissionState.unsubmitted
                     ? () => submitDevice(detectedDevice)
                     : null,

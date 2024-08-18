@@ -189,9 +189,12 @@ void main() {
       )
       ..onPost(
         submitAnswerRoute,
-        (server) => server.reply(
+        (server) => server.throws(
           500,
-          {},
+          DioException(
+            requestOptions: RequestOptions(path: submitAnswerRoute),
+            error: 'Server error',
+          ),
         ),
         data: {
           'data': {
@@ -268,8 +271,23 @@ void main() {
     expect(
         find.byWidgetPredicate((widget) =>
             widget is ListTile &&
-            widget.leading is Icon &&
-            (widget.leading as Icon).color == Colors.red),
+            widget.leading is IconButton &&
+            ((widget.leading as IconButton).icon as Icon).color == Colors.red),
         findsOneWidget);
+
+    final errorIcon = find.byIcon(Icons.info);
+    expect(errorIcon, findsOneWidget);
+
+    await tester.tap(errorIcon);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Error'), findsOneWidget);
+    expect(find.text("DioException [unknown]: null\nError: Server error"),
+        findsOneWidget);
+
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Error'), findsNothing);
   });
 }
