@@ -1,9 +1,6 @@
 defmodule Registrations.Repo.Migrations.MoveUsersToBelongToTeams do
   use Ecto.Migration
 
-  alias Registrations.Repo
-  alias RegistrationsWeb.Team
-
   def up do
     alter table(:users) do
       add(:team_id, references(:teams, type: :uuid, on_delete: :nilify_all))
