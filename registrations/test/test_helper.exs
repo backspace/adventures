@@ -79,8 +79,3 @@ defmodule Registrations.SetAdventure do
     end
   end
 end
-
-# Usage examples:
-# use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
-# use Registrations.SetAdventure, adventure: "unmnemonic-devices"
-# use Registrations.SetAdventure, adventure: "waydowntown"
