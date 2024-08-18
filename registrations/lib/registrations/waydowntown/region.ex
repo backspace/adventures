@@ -11,8 +11,7 @@ defmodule Registrations.Waydowntown.Region do
 
     belongs_to(:parent, __MODULE__, type: :binary_id, foreign_key: :parent_id)
 
-    # FIXME add timestamps
-    # timestamps()
+    timestamps()
   end
 
   @doc false
