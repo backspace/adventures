@@ -28,9 +28,9 @@ defmodule RegistrationsWeb.GameController do
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    game = Waydowntown.get_game!(id)
-    render(conn, "show.json", game: game)
+  def show(conn, params) do
+    game = Waydowntown.get_game!(params["id"])
+    render(conn, "show.json", %{game: game, conn: conn, params: params})
   end
 
   def update(conn, %{"id" => id, "game" => game_params}) do
