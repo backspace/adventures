@@ -43,7 +43,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
         },
         queryParameters: {
           if (widget.concept != null)
-            'incarnation_filter[concept]': widget.concept!,
+            'filter[incarnation.concept]': widget.concept!,
         },
       );
 

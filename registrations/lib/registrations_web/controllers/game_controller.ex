@@ -1,7 +1,13 @@
 defmodule RegistrationsWeb.GameController do
   use RegistrationsWeb, :controller
 
-  plug(JSONAPI.QueryParser, view: RegistrationsWeb.GameView)
+  # Without this the filter produces this error: not an already existing atom
+  _hack = String.to_atom("incarnation.concept")
+
+  plug(JSONAPI.QueryParser,
+    view: RegistrationsWeb.GameView,
+    filter: ["incarnation.concept"]
+  )
 
   alias Registrations.Waydowntown
   alias Registrations.Waydowntown.Game
@@ -16,7 +22,7 @@ defmodule RegistrationsWeb.GameController do
 
   def create(conn, params) do
     Logger.info("Creating game with params: #{inspect(params)}")
-    incarnation_filter = get_in(conn.params, ["incarnation_filter", "concept"])
+    incarnation_filter = get_in(conn.params, ["filter", "incarnation.concept"])
 
     with {:ok, %Game{} = game} <- Waydowntown.create_game(params, incarnation_filter) do
       game = Waydowntown.get_game!(game.id)

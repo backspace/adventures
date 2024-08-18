@@ -130,7 +130,7 @@ defmodule RegistrationsWeb.GameControllerTest do
       conn =
         post(
           conn,
-          Routes.game_path(conn, :create) <> "?incarnation_filter[concept]=bluetooth_collector",
+          Routes.game_path(conn, :create) <> "?filter[incarnation.concept]=bluetooth_collector",
           %{
             "data" => %{
               "type" => "games",
