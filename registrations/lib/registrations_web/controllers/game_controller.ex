@@ -32,20 +32,4 @@ defmodule RegistrationsWeb.GameController do
     game = Waydowntown.get_game!(params["id"])
     render(conn, "show.json", %{game: game, conn: conn, params: params})
   end
-
-  def update(conn, %{"id" => id, "game" => game_params}) do
-    game = Waydowntown.get_game!(id)
-
-    with {:ok, %Game{} = game} <- Waydowntown.update_game(game, game_params) do
-      render(conn, "show.json", game: game)
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    game = Waydowntown.get_game!(id)
-
-    with {:ok, %Game{}} <- Waydowntown.delete_game(game) do
-      send_resp(conn, :no_content, "")
-    end
-  end
 end

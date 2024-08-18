@@ -86,8 +86,7 @@ defmodule RegistrationsWeb.Router do
   scope "/waydowntown", RegistrationsWeb do
     pipe_through(:jsonapi)
 
-    resources("/answers", AnswerController, except: [:new, :edit, :delete, :update])
+    resources("/answers", AnswerController, except: [:index, :new, :edit, :delete, :update])
     resources("/games", GameController, except: [:new, :edit, :delete, :update])
-    resources("/incarnations", IncarnationController, except: [:new, :edit, :delete, :update])
   end
 end
