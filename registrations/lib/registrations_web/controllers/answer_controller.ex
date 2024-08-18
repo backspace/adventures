@@ -8,11 +8,6 @@ defmodule RegistrationsWeb.AnswerController do
 
   action_fallback(RegistrationsWeb.FallbackController)
 
-  def index(conn, _params) do
-    answers = Waydowntown.list_answers()
-    render(conn, "index.json", answers: answers)
-  end
-
   def create(conn, params) do
     case Waydowntown.create_answer(params) do
       {:ok, %Answer{} = answer} ->
@@ -32,21 +27,5 @@ defmodule RegistrationsWeb.AnswerController do
   def show(conn, %{"id" => id}) do
     answer = Waydowntown.get_answer!(id)
     render(conn, "show.json", answer: answer)
-  end
-
-  def update(conn, %{"id" => id, "answer" => answer_params}) do
-    answer = Waydowntown.get_answer!(id)
-
-    with {:ok, %Answer{} = answer} <- Waydowntown.update_answer(answer, answer_params) do
-      render(conn, "show.json", answer: answer)
-    end
-  end
-
-  def delete(conn, %{"id" => id}) do
-    answer = Waydowntown.get_answer!(id)
-
-    with {:ok, %Answer{}} <- Waydowntown.delete_answer(answer) do
-      send_resp(conn, :no_content, "")
-    end
   end
 end
