@@ -6,7 +6,7 @@ on:
       - main
   pull_request:
     paths:
-      - "waydowntown/waydowntown_app/**"
+      - "waydowntown_app/**"
       - ".github/workflows/ci-waydowntown-app.yml"
 
 jobs:
@@ -25,9 +25,9 @@ jobs:
           channel: "stable"
 
       - run: flutter pub get
-        working-directory: waydowntown/waydowntown_app
+        working-directory: waydowntown_app
       - run: flutter test
-        working-directory: waydowntown/waydowntown_app
+        working-directory: waydowntown_app
 
   test-android:
     runs-on: ubuntu-20.04
@@ -40,12 +40,12 @@ jobs:
           channel: "stable"
 
       - run: flutter pub get
-        working-directory: waydowntown/waydowntown_app
+        working-directory: waydowntown_app
 
       - name: Run integration tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          working-directory: waydowntown/waydowntown_app
+          working-directory: waydowntown_app
           api-level: 21
           arch: x86_64
           profile: Nexus 6

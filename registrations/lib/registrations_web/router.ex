@@ -25,6 +25,12 @@ defmodule RegistrationsWeb.Router do
     plug(:fetch_session)
   end
 
+  pipeline :jsonapi do
+    plug(JSONAPI.EnsureSpec)
+    plug(JSONAPI.Deserializer)
+    plug(JSONAPI.UnderscoreParameters)
+  end
+
   pipeline :skip_csrf_protection do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -75,5 +81,12 @@ defmodule RegistrationsWeb.Router do
 
     get("/teams", TeamController, :index_json)
     patch("/users/voicepass", UserController, :voicepass)
+  end
+
+  scope "/waydowntown", RegistrationsWeb do
+    pipe_through(:jsonapi)
+
+    resources("/answers", AnswerController, except: [:index, :new, :edit, :delete, :update])
+    resources("/games", GameController, except: [:new, :edit, :delete, :update])
   end
 end

@@ -1,7 +1,7 @@
 defmodule Registrations.ClandestineRendezvous.Integration.Questions do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.ClandestineRendezvous
+  use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Nav
@@ -40,7 +40,7 @@ end
 defmodule Registrations.UnmnemonicDevices.Integration.Questions do
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
-  use Registrations.UnmnemonicDevices
+  use Registrations.SetAdventure, adventure: "unmnemonic-devices"
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Nav

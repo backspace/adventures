@@ -62,38 +62,20 @@ defmodule Registrations.ChromeHeadlessHelper do
   end
 end
 
-defmodule Registrations.ClandestineRendezvous do
+defmodule Registrations.SetAdventure do
   use ExUnit.CaseTemplate
 
-  setup do
-    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
-      :registrations,
-      :adventure,
-      "clandestine-rendezvous"
-    )
-  end
-end
+  defmacro __using__(opts) do
+    adventure = Keyword.fetch!(opts, :adventure)
 
-defmodule Registrations.UnmnemonicDevices do
-  use ExUnit.CaseTemplate
-
-  setup do
-    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
-      :registrations,
-      :adventure,
-      "unmnemonic-devices"
-    )
-  end
-end
-
-defmodule Registrations.Waydowntown do
-  use ExUnit.CaseTemplate
-
-  setup do
-    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
-      :registrations,
-      :adventure,
-      "waydowntown"
-    )
+    quote do
+      setup do
+        Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+          :registrations,
+          :adventure,
+          unquote(adventure)
+        )
+      end
+    end
   end
 end
