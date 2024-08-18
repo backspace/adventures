@@ -2,7 +2,7 @@ defmodule RegistrationsWeb.GameController do
   use RegistrationsWeb, :controller
 
   # Without this the filter produces this error: not an already existing atom
-  _hack = String.to_atom("incarnation.concept")
+  hack = String.to_atom("incarnation.concept")
 
   plug(JSONAPI.QueryParser,
     view: RegistrationsWeb.GameView,
