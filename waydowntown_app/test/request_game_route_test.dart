@@ -27,63 +27,71 @@ void main() {
   testWidgets('RequestGameRoute delegates to BluetoothCollectorGame',
       (WidgetTester tester) async {
     dioAdapter.onPost(
-      requestGameRoute,
-      (server) => server.reply(
-        201,
-        {
-          "data": {
-            "id": "22261813-2171-453f-a669-db08edc70d6d",
-            "type": "games",
-            "relationships": {
-              "incarnation": {
-                "links": {
-                  "related":
-                      "${dotenv.env['API_ROOT']}/waydowntown/incarnations/0091eb84-85c8-4e63-962b-39e1a19d2781"
-                },
+        requestGameRoute,
+        (server) => server.reply(
+              201,
+              {
                 "data": {
-                  "type": "incarnations",
-                  "id": "0091eb84-85c8-4e63-962b-39e1a19d2781"
-                }
-              }
-            }
-          },
-          "included": [
-            {
-              "id": "0091eb84-85c8-4e63-962b-39e1a19d2781",
-              "type": "incarnations",
-              "attributes": {
-                "concept": "bluetooth_collector",
-                "mask": "not applicable"
-              },
-              "relationships": {
-                "region": {
-                  "links": {
-                    "related":
-                        "${dotenv.env['API_ROOT']}/waydowntown/regions/324fd8f9-cd25-48be-a761-b8680fa72737"
-                  },
-                  "data": {
-                    "type": "regions",
-                    "id": "324fd8f9-cd25-48be-a761-b8680fa72737"
+                  "id": "22261813-2171-453f-a669-db08edc70d6d",
+                  "type": "games",
+                  "relationships": {
+                    "incarnation": {
+                      "links": {
+                        "related":
+                            "${dotenv.env['API_ROOT']}/waydowntown/incarnations/0091eb84-85c8-4e63-962b-39e1a19d2781"
+                      },
+                      "data": {
+                        "type": "incarnations",
+                        "id": "0091eb84-85c8-4e63-962b-39e1a19d2781"
+                      }
+                    }
                   }
-                }
+                },
+                "included": [
+                  {
+                    "id": "0091eb84-85c8-4e63-962b-39e1a19d2781",
+                    "type": "incarnations",
+                    "attributes": {
+                      "concept": "bluetooth_collector",
+                      "mask": "not applicable"
+                    },
+                    "relationships": {
+                      "region": {
+                        "links": {
+                          "related":
+                              "${dotenv.env['API_ROOT']}/waydowntown/regions/324fd8f9-cd25-48be-a761-b8680fa72737"
+                        },
+                        "data": {
+                          "type": "regions",
+                          "id": "324fd8f9-cd25-48be-a761-b8680fa72737"
+                        }
+                      }
+                    },
+                  },
+                  {
+                    "id": "324fd8f9-cd25-48be-a761-b8680fa72737",
+                    "type": "regions",
+                    "attributes": {
+                      "name": "Place",
+                      "description": "it has one"
+                    },
+                    "relationships": {
+                      "parent": {
+                        "links": {"related": null},
+                        "data": null
+                      }
+                    }
+                  }
+                ],
+                "meta": {}
               },
-            },
-            {
-              "id": "324fd8f9-cd25-48be-a761-b8680fa72737",
-              "type": "regions",
-              "attributes": {"name": "Place", "description": "it has one"},
-              "relationships": {
-                "parent": {
-                  "links": {"related": null},
-                  "data": null
-                }
-              }
-            }
-          ],
-          "meta": {}
-        },
-      ),
-    );
+            ),
+        data: {
+          'data': {
+            'type': 'games',
+            'attributes': {},
+          },
+        });
 
     await tester.pumpWidget(MaterialApp(home: RequestGameRoute(dio: dio)));
     await tester.pumpAndSettle();
@@ -167,6 +175,12 @@ void main() {
           "meta": {}
         },
       ),
+      data: {
+        'data': {
+          'type': 'games',
+          'attributes': {},
+        },
+      },
     );
 
     await tester.pumpWidget(MaterialApp(home: RequestGameRoute(dio: dio)));

@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/routes/bluetooth_collector_game.dart';
@@ -32,7 +31,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
   }
 
   Future<void> fetchGame() async {
-    final endpoint = '${dotenv.env['API_ROOT']}/waydowntown/games';
+    const endpoint = '/waydowntown/games';
     try {
       final response = await widget.dio.post(
         endpoint,
@@ -43,7 +42,6 @@ class RequestGameRouteState extends State<RequestGameRoute> {
           },
         },
         queryParameters: {
-          'include': 'incarnation,incarnation.region,incarnation.region.parent',
           if (widget.concept != null)
             'incarnation_filter[concept]': widget.concept!,
         },
