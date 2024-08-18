@@ -11,16 +11,21 @@ import 'package:waydowntown/routes/fill_in_the_blank_game.dart';
 import 'package:waydowntown/routes/request_game_route.dart';
 
 void main() {
-  dotenv.testLoad(fileInput: File('.env').readAsStringSync());
+  late Dio dio;
+  late DioAdapter dioAdapter;
 
-  var requestGameRoute = '${dotenv.env['API_ROOT']}/waydowntown/games';
+  setUp(() {
+    dotenv.testLoad(fileInput: File('.env').readAsStringSync());
+
+    dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
+    dio.interceptors.add(PrettyDioLogger());
+    dioAdapter = DioAdapter(dio: dio);
+  });
+
+  const requestGameRoute = '/waydowntown/games';
 
   testWidgets('RequestGameRoute delegates to BluetoothCollectorGame',
       (WidgetTester tester) async {
-    final dio = Dio(BaseOptions());
-    dio.interceptors.add(PrettyDioLogger());
-    final dioAdapter = DioAdapter(dio: dio);
-
     dioAdapter.onPost(
       requestGameRoute,
       (server) => server.reply(
@@ -88,10 +93,6 @@ void main() {
 
   testWidgets('RequestGameRoute delegates to FillInTheBlankGame',
       (WidgetTester tester) async {
-    final dio = Dio(BaseOptions());
-    dio.interceptors.add(PrettyDioLogger());
-    final dioAdapter = DioAdapter(dio: dio);
-
     dioAdapter.onPost(
       requestGameRoute,
       (server) => server.reply(
@@ -176,10 +177,6 @@ void main() {
 
   testWidgets('An error is displayed when the game request fails',
       (WidgetTester tester) async {
-    final dio = Dio(BaseOptions());
-    dio.interceptors.add(PrettyDioLogger());
-    final dioAdapter = DioAdapter(dio: dio);
-
     dioAdapter.onPost(
       requestGameRoute,
       (server) => server.reply(500, {}),
