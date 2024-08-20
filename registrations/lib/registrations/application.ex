@@ -4,12 +4,17 @@ defmodule Registrations.Application do
   @moduledoc false
 
   use Application
+  require Logger
 
   @impl true
   def start(_type, _args) do
     :logger.add_handler(:my_sentry_handler, Sentry.LoggerHandler, %{
       config: %{metadata: [:file, :line]}
     })
+
+    # Without this the GameController filter produces this error: not an already existing atom
+    hack = String.to_atom("incarnation.concept")
+    Logger.info("Hack: #{inspect(hack)}")
 
     children = [
       # Start the Ecto repository
