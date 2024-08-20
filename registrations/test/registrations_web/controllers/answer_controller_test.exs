@@ -161,4 +161,79 @@ defmodule RegistrationsWeb.AnswerControllerTest do
       refute answer.correct
     end
   end
+
+  describe "create answer for code_collector" do
+    setup do
+      region = Repo.insert!(%Region{name: "Test Region"})
+
+      incarnation =
+        Repo.insert!(%Incarnation{
+          concept: "code_collector",
+          answers: ["code_a", "code_b"],
+          region: region
+        })
+
+      game = Repo.insert!(%Game{incarnation: incarnation})
+
+      %{game: game, incarnation: incarnation, region: region}
+    end
+
+    test "creates correct answer", %{conn: conn, game: game} do
+      conn =
+        post(
+          conn,
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "code_a"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+
+      assert %{
+               "included" => [
+                 %{"type" => "games", "id" => game_id, "attributes" => %{"complete" => complete}}
+               ]
+             } = json_response(conn, 201)
+
+      refute complete
+
+      game = Waydowntown.get_game!(game_id)
+      refute game.winner_answer_id
+
+      answer = Waydowntown.get_answer!(id)
+      assert answer.correct
+    end
+
+    test "creates incorrect answer", %{conn: conn, game: game} do
+      conn =
+        post(
+          conn,
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "code_c"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      answer = Waydowntown.get_answer!(id)
+      refute answer.correct
+    end
+  end
 end

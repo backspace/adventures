@@ -134,6 +134,14 @@ defmodule Registrations.Waydowntown do
     answer_text in correct_answers
   end
 
+  defp check_answer_correctness(
+         %Incarnation{concept: "code_collector", answers: correct_answers},
+         answer_text
+       ) do
+
+    answer_text in correct_answers
+  end
+
   defp single_answer_game?(%Incarnation{concept: "fill_in_the_blank"}), do: true
   defp single_answer_game?(_), do: false
 

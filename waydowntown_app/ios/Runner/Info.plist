@@ -6,6 +6,8 @@
     <string>play waydowntown bluetooth games</string>
     <key>NSBluetoothPeripheralUsageDescription</key>
     <string>play waydowntown bluetooth games</string>
+    <key>NSCameraUsageDescription</key>
+    <string>play waydowntown barcode-scanning games</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
     <key>CADisableMinimumFrameDurationOnPhone</key>

@@ -103,6 +103,18 @@ class _HomeState extends State<Home> {
                 }),
             const SizedBox(height: 20),
             ElevatedButton(
+                child: const Text('Request a code_collector game'),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => RequestGameRoute(
+                                dio: dio,
+                                concept: 'code_collector',
+                              )));
+                }),
+            const SizedBox(height: 20),
+            ElevatedButton(
                 child: const Text('Request a fill_in_the_blank game'),
                 onPressed: () {
                   Navigator.push(

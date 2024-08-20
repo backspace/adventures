@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/routes/bluetooth_collector_game.dart';
+import 'package:waydowntown/routes/code_collector_game.dart';
 import 'package:waydowntown/routes/fill_in_the_blank_game.dart';
 
 class RequestGameRoute extends StatefulWidget {
@@ -55,9 +56,11 @@ class RequestGameRouteState extends State<RequestGameRoute> {
         throw Exception('Failed to load game');
       }
     } catch (error) {
-      setState(() {
-        isRequestError = true;
-      });
+      if (mounted) {
+        setState(() {
+          isRequestError = true;
+        });
+      }
       logger.e('Error fetching game from $endpoint: $error');
     }
   }
@@ -68,6 +71,8 @@ class RequestGameRouteState extends State<RequestGameRoute> {
     switch (game!.incarnation.concept) {
       case 'bluetooth_collector':
         return BluetoothCollectorGame(game: game!, dio: widget.dio);
+      case 'code_collector':
+        return CodeCollectorGame(game: game!, dio: widget.dio);
       case 'fill_in_the_blank':
         return FillInTheBlankGame(game: game!, dio: widget.dio);
       default:

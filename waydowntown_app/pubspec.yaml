@@ -42,6 +42,7 @@ dependencies:
   logger: ^2.4.0
   flutter_svg: ^2.0.10+1
   flutter_blue_plus: ^1.32.11
+  mobile_scanner: ^5.1.1
 
 dev_dependencies:
   flutter_test:
