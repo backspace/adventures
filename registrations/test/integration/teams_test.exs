@@ -77,7 +77,7 @@ defmodule Registrations.Integration.Teams do
              "takver@example.com details changed: accessibility, comments, proposed_team_name, risk_aversion, source, team_emails"
 
     assert sent_email.text_body ==
-             "%{accessibility: \"Some accessibility information\", comments: \"Some comments\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\"}"
+             "[accessibility: \"Some accessibility information\", comments: \"Some comments\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\"]"
 
     [shevek, bedap] = Details.mutuals()
 
