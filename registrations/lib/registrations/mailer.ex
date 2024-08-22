@@ -78,7 +78,7 @@ defmodule Registrations.Mailer do
     new()
     |> to(adventure_from())
     |> Swoosh.Email.from(adventure_from())
-    |> subject("#{user.email} details changed: #{Enum.join(Map.keys(changes), ", ")}")
+    |> subject("#{user.email} details changed: #{Enum.join(Enum.sort(Map.keys(changes)), ", ")}")
     |> text_body(inspect(changes))
     |> deliver
   end
