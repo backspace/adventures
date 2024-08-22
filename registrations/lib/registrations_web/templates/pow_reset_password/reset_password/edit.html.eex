@@ -7,13 +7,13 @@
 
       <div class="form-group">
         <%= label f, :password %>
-        <%= password_input f, :password, id: 'new_password' %>
+        <%= password_input f, :password, id: "new_password" %>
         <%= error_tag f, :password %>
       </div>
 
       <div class="form-group">
         <%= label f, :password_confirmation %>
-        <%= password_input f, :password_confirmation, id: 'new_password_confirmation' %>
+        <%= password_input f, :password_confirmation, id: "new_password_confirmation" %>
         <%= error_tag f, :password_confirmation %>
       </div>
 

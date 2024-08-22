@@ -66,8 +66,8 @@ defmodule Registrations.Integration.Teams do
     assert Nav.info_text() == "Your details were saved"
 
     assert Details.accessibility_text() == "Some accessibility information"
-    assert Details.comments().value == "Some comments"
-    assert Details.source().value == "A source"
+    assert Details.comments().value() == "Some comments"
+    assert Details.source().value() == "A source"
 
     [sent_email] = Registrations.SwooshHelper.sent_email()
     assert sent_email.to == [{"", "b@events.chromatin.ca"}]

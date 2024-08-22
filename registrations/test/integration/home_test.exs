@@ -32,7 +32,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
 
     navigate_to("/")
 
-    refute Home.pi().present?
+    refute Home.pi().present?()
   end
 
   test "pi shows when compromised but cannot create a voicepass when not logged in" do
@@ -40,9 +40,9 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
 
     navigate_to("/")
 
-    assert Home.pi().present?
+    assert Home.pi().present?()
 
-    Home.pi().click
+    Home.pi().click()
 
     refute Home.overlay().regenerate.present?
   end
@@ -54,14 +54,14 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
     Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
-    Nav.login_link().click
+    Nav.login_link().click()
     Login.fill_email("Octavia.butler@example.com")
     Login.fill_password("Xenogenesis")
     Login.submit()
 
-    Home.pi().click
+    Home.pi().click()
 
-    assert Home.overlay().voicepass.text == "acknowledgements"
+    assert Home.overlay().voicepass.text() == "acknowledgements"
   end
 
   test "a logged-in user can generate a voicepass" do
@@ -71,19 +71,19 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
     Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
-    Nav.login_link().click
+    Nav.login_link().click()
     Login.fill_email("Octavia.butler@example.com")
     Login.fill_password("Xenogenesis")
     Login.submit()
 
-    Home.pi().click
+    Home.pi().click()
 
-    assert Home.overlay().voicepass.text == "generate a voicepass"
+    assert Home.overlay().voicepass.text() == "generate a voicepass"
 
     assert Home.overlay().regenerate.present?
     assert Home.overlay().regenerate.text == "generate"
 
-    Home.overlay().regenerate.click
+    Home.overlay().regenerate.click()
 
     WaitForIt.wait(String.length(Home.overlay().voicepass.text) == 16)
 
@@ -93,8 +93,8 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
     assert Home.overlay().regenerate.text == "regenerate"
 
     refresh_page()
-    Home.pi().click
-    assert Home.overlay().voicepass.text == new_voicepass
+    Home.pi().click()
+    assert Home.overlay().voicepass.text() == new_voicepass
   end
 end
 

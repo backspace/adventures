@@ -55,6 +55,6 @@ defmodule Registrations.Integration.Invitations do
     Register.fill_password_confirmation("simulteneity")
     Register.submit()
 
-    assert Nav.logout_link().text == "Log out bedap@example.com"
+    assert Nav.logout_link().text() == "Log out bedap@example.com"
   end
 end

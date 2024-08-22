@@ -205,7 +205,7 @@ defmodule Registrations.Integration.Messages do
     insert(:not_ready_message, subject: "Not ready", content: "Not ready")
 
     navigate_to("/")
-    Nav.register_link().click
+    Nav.register_link().click()
 
     Register.fill_email("registerer@example.com")
     Register.fill_password("abcdefghi")

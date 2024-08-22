@@ -30,7 +30,7 @@ defmodule Registrations.Integration.Admin do
 
     navigate_to("/")
 
-    Nav.login_link().click
+    Nav.login_link().click()
 
     Login.fill_email("octavia.butler@example.com")
     Login.fill_password("Xenogenesis")
@@ -38,7 +38,7 @@ defmodule Registrations.Integration.Admin do
 
     refute element?(:css, "a.settings")
 
-    Nav.users_link().click
+    Nav.users_link().click()
 
     assert Users.email(user.id) == "francine.pascal@example.com"
     assert Users.accessibility(user.id) == "Some accessibility text"
@@ -86,7 +86,7 @@ defmodule Registrations.Integration.Admin do
     navigate_to("/")
     Login.login_as_admin()
 
-    Nav.users_link().click
+    Nav.users_link().click()
 
     refute Users.teamed(a.id)
     refute Users.teamed(b.id)
@@ -108,7 +108,7 @@ defmodule Registrations.Integration.Admin do
       "b@example.com"
     ])
 
-    Nav.teams_link().click
+    Nav.teams_link().click()
 
     assert Teams.name(1) == "Team A"
     assert Teams.risk_aversion(1) == "3"
@@ -133,12 +133,12 @@ defmodule Registrations.Integration.Admin do
     navigate_to("/")
     Login.login_as_admin()
 
-    Nav.users_link().click
+    Nav.users_link().click()
     Users.build_team_from(a.id)
 
     assert Nav.error_text() == "Team built with placeholders!"
 
-    Nav.teams_link().click
+    Nav.teams_link().click()
 
     assert Teams.name(1) == "FIXME"
     assert Teams.risk_aversion(1) === "1"
@@ -185,7 +185,7 @@ defmodule Registrations.Integration.Admin do
   test "non-admins cannot access the user list or messages" do
     insert(:user, email: "francine.pascal@example.com")
 
-    assert Nav.users_link().absent?
+    assert Nav.users_link().absent?()
 
     navigate_to("/users")
 
@@ -219,13 +219,13 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
 
     navigate_to("/")
 
-    Nav.login_link().click
+    Nav.login_link().click()
 
     Login.fill_email("octavia.butler@example.com")
     Login.fill_password("Xenogenesis")
     Login.submit()
 
-    Nav.settings_link().click
+    Nav.settings_link().click()
 
     refute selected?({:id, "settings_begun"})
 
