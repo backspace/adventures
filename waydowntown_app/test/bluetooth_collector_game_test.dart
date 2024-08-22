@@ -189,13 +189,54 @@ void main() {
       )
       ..onPost(
         submitAnswerRoute,
-        (server) => server.throws(
-          500,
-          DioException(
-            requestOptions: RequestOptions(path: submitAnswerRoute),
-            error: 'Server error',
-          ),
-        ),
+        (server) {
+          server.reply(500, (request) {
+            // Override handler for resubmission after error
+            dioAdapter.onPost(
+              submitAnswerRoute,
+              (server) => server.reply(201, {
+                "data": {
+                  "id": "48cf441e-ab98-4da6-8980-69fba3b4417d",
+                  "type": "answers",
+                  "attributes": {
+                    "answer": "Device 3",
+                    "correct": false,
+                  },
+                  "relationships": {
+                    "game": {
+                      "data": {
+                        "type": "games",
+                        "id": "22261813-2171-453f-a669-db08edc70d6d"
+                      }
+                    }
+                  }
+                },
+                "meta": {}
+              }),
+              data: {
+                'data': {
+                  'type': 'answers',
+                  'attributes': {
+                    'answer': 'Device 3',
+                  },
+                  'relationships': {
+                    'game': {
+                      'data': {
+                        'type': 'games',
+                        'id': '22261813-2171-453f-a669-db08edc70d6d'
+                      }
+                    }
+                  }
+                }
+              },
+            );
+
+            throw DioException(
+              requestOptions: RequestOptions(path: submitAnswerRoute),
+              error: 'Server error',
+            );
+          });
+        },
         data: {
           'data': {
             'type': 'answers',
@@ -289,5 +330,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Error'), findsNothing);
+
+    await tester.tap(find.text('Device 3'));
+    await tester.pumpAndSettle();
+
+    expect(errorIcon, findsNothing);
   });
 }

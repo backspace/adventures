@@ -179,9 +179,11 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
                 title: Text(detectedDevice.device.platformName),
                 leading: _getIconForState(detectedDevice.state,
                     detectedDevice.device.remoteId.toString()),
-                onTap: detectedDevice.state == DeviceSubmissionState.unsubmitted
-                    ? () => submitDevice(detectedDevice)
-                    : null,
+                onTap:
+                    detectedDevice.state == DeviceSubmissionState.unsubmitted ||
+                            detectedDevice.state == DeviceSubmissionState.error
+                        ? () => submitDevice(detectedDevice)
+                        : null,
               );
             },
           )),

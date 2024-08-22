@@ -173,9 +173,11 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
                   title: Text(detectedCode.code),
                   leading:
                       _getIconForState(detectedCode.state, detectedCode.code),
-                  onTap: detectedCode.state == CodeSubmissionState.unsubmitted
-                      ? () => submitCode(detectedCode)
-                      : null,
+                  onTap:
+                      detectedCode.state == CodeSubmissionState.unsubmitted ||
+                              detectedCode.state == CodeSubmissionState.error
+                          ? () => submitCode(detectedCode)
+                          : null,
                 );
               },
             ),
