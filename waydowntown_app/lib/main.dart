@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/routes/bluetooth_scanner_route.dart';
+import 'package:waydowntown/routes/map_route.dart';
 import 'package:waydowntown/routes/request_game_route.dart';
 
 var logger = Logger();
@@ -133,6 +134,15 @@ class _HomeState extends State<Home> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => const BluetoothScannerRoute()));
+                }),
+            const SizedBox(height: 20),
+            ElevatedButton(
+                child: const Text('Map'),
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const MapRoute()));
                 }),
           ],
         ),
