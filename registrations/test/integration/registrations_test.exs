@@ -20,7 +20,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
-    Nav.register_link().click
+    Nav.register_link().click()
 
     Register.submit()
 
@@ -55,7 +55,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     assert String.contains?(welcome_email.text_body, "secret society")
     assert String.contains?(welcome_email.html_body, "secret society")
 
-    assert Nav.logout_link().text == "Log out samuel.delaney@example.com"
+    assert Nav.logout_link().text() == "Log out samuel.delaney@example.com"
 
     assert Details.active?()
   end
@@ -66,7 +66,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
-    Nav.login_link().click
+    Nav.login_link().click()
 
     Login.fill_email("Octavia.butler@example.com")
     Login.fill_password("Parable of the Talents")
@@ -79,15 +79,15 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.submit()
 
     assert Nav.info_text() == "Logged in"
-    assert Nav.logout_link().text == "Log out octavia.butler@example.com"
+    assert Nav.logout_link().text() == "Log out octavia.butler@example.com"
 
     assert Details.active?()
 
-    Nav.logout_link().click
+    Nav.logout_link().click()
 
     assert Nav.info_text() == "Logged out"
-    assert Nav.login_link().present?
-    assert Nav.register_link().present?
+    assert Nav.login_link().present?()
+    assert Nav.register_link().present?()
   end
 
   test "changing password" do
@@ -122,10 +122,10 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     assert Nav.info_text() == "Your account has been updated."
 
-    Nav.logout_link().click
+    Nav.logout_link().click()
 
     navigate_to("/")
-    Nav.login_link().click
+    Nav.login_link().click()
 
     Login.fill_email("octavia.butler@example.com")
     Login.fill_password("Xenogenesis")
@@ -147,7 +147,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     navigate_to("/")
 
-    Nav.login_link().click
+    Nav.login_link().click()
     Login.click_forgot_password()
 
     ForgotPassword.fill_email("octavia.butler@example.com")
@@ -192,14 +192,14 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.fill_password("anewpassword")
     Login.submit()
 
-    assert Nav.logout_link().text == "Log out octavia.butler@example.com"
+    assert Nav.logout_link().text() == "Log out octavia.butler@example.com"
 
-    Nav.logout_link().click
+    Nav.logout_link().click()
 
     Login.login_as("octavia.butler@example.com", "anewpassword")
-    assert Nav.logout_link().text == "Log out octavia.butler@example.com"
+    assert Nav.logout_link().text() == "Log out octavia.butler@example.com"
 
-    Nav.logout_link().click
+    Nav.logout_link().click()
 
     navigate_to(reset_path)
     assert Nav.error_text() == "The reset token has expired."
@@ -232,7 +232,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     navigate_to("/")
 
-    Nav.register_link().click
+    Nav.register_link().click()
 
     assert Nav.error_text() ==
              "Registration is closed; however, you may continue and we will email you"
@@ -263,7 +263,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
     Registrations.WindowHelpers.set_window_to_show_account()
 
     navigate_to("/")
-    Nav.register_link().click
+    Nav.register_link().click()
 
     Register.fill_email("samuel.delaney@example.com")
     Register.fill_password("nestofspiders")

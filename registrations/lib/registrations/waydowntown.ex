@@ -138,7 +138,6 @@ defmodule Registrations.Waydowntown do
          %Incarnation{concept: "code_collector", answers: correct_answers},
          answer_text
        ) do
-
     answer_text in correct_answers
   end
 
