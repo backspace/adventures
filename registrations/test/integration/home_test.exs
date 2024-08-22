@@ -44,7 +44,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
 
     Home.pi().click()
 
-    refute Home.overlay().regenerate.present?
+    refute Home.overlay().regenerate().present?()
   end
 
   test "overlay shows voicepass when it exists" do
@@ -61,7 +61,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
 
     Home.pi().click()
 
-    assert Home.overlay().voicepass.text() == "acknowledgements"
+    assert Home.overlay().voicepass().text() == "acknowledgements"
   end
 
   test "a logged-in user can generate a voicepass" do
@@ -78,23 +78,23 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
 
     Home.pi().click()
 
-    assert Home.overlay().voicepass.text() == "generate a voicepass"
+    assert Home.overlay().voicepass().text() == "generate a voicepass"
 
-    assert Home.overlay().regenerate.present?
-    assert Home.overlay().regenerate.text == "generate"
+    assert Home.overlay().regenerate().present?()
+    assert Home.overlay().regenerate().text() == "generate"
 
-    Home.overlay().regenerate.click()
+    Home.overlay().regenerate().click()
 
-    WaitForIt.wait(String.length(Home.overlay().voicepass.text) == 16)
+    WaitForIt.wait(String.length(Home.overlay().voicepass().text()) == 16)
 
-    new_voicepass = Home.overlay().voicepass.text
+    new_voicepass = Home.overlay().voicepass().text()
     assert String.length(new_voicepass) == 16
 
-    assert Home.overlay().regenerate.text == "regenerate"
+    assert Home.overlay().regenerate().text() == "regenerate"
 
     refresh_page()
     Home.pi().click()
-    assert Home.overlay().voicepass.text() == new_voicepass
+    assert Home.overlay().voicepass().text() == new_voicepass
   end
 end
 

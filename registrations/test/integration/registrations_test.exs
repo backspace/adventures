@@ -55,7 +55,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     assert String.contains?(welcome_email.text_body, "secret society")
     assert String.contains?(welcome_email.html_body, "secret society")
 
-    assert Nav.logout_link().text == "Log out samuel.delaney@example.com"
+    assert Nav.logout_link().text() == "Log out samuel.delaney@example.com"
 
     assert Details.active?()
   end
@@ -79,15 +79,15 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.submit()
 
     assert Nav.info_text() == "Logged in"
-    assert Nav.logout_link().text == "Log out octavia.butler@example.com"
+    assert Nav.logout_link().text() == "Log out octavia.butler@example.com"
 
     assert Details.active?()
 
     Nav.logout_link().click()
 
     assert Nav.info_text() == "Logged out"
-    assert Nav.login_link().present?
-    assert Nav.register_link().present?
+    assert Nav.login_link().present?()
+    assert Nav.register_link().present?()
   end
 
   test "changing password" do
@@ -192,12 +192,12 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.fill_password("anewpassword")
     Login.submit()
 
-    assert Nav.logout_link().text == "Log out octavia.butler@example.com"
+    assert Nav.logout_link().text() == "Log out octavia.butler@example.com"
 
     Nav.logout_link().click()
 
     Login.login_as("octavia.butler@example.com", "anewpassword")
-    assert Nav.logout_link().text == "Log out octavia.butler@example.com"
+    assert Nav.logout_link().text() == "Log out octavia.butler@example.com"
 
     Nav.logout_link().click()
 
