@@ -79,7 +79,7 @@ defmodule Registrations.Integration.Teams do
     assert sent_email.text_body ==
              "[accessibility: \"Some accessibility information\", comments: \"Some comments\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\"]"
 
-    [shevek, bedap] = Details.mutuals()
+    [bedap, shevek] = Details.mutuals() |> Enum.sort_by(& &1.email)
 
     assert shevek.email == "shevek@example.com"
     assert shevek.symbol == "✓"
@@ -104,7 +104,7 @@ defmodule Registrations.Integration.Teams do
     assert sadik.text ==
              "This person has you listed in their team. Add their address to your team emails list if you agree."
 
-    [rulag, tuio] = Details.proposals_by_mutuals()
+    [rulag, tuio] = Details.proposals_by_mutuals() |> Enum.sort_by(& &1.email)
 
     assert rulag.email == "rulag@example.com"
     assert rulag.symbol == "?"
@@ -123,7 +123,7 @@ defmodule Registrations.Integration.Teams do
     assert invalid.symbol == "✘"
     assert invalid.text == "This doesn’t seem like a valid email address!"
 
-    [sabul, laia] = Details.proposees()
+    [laia, sabul] = Details.proposees() |> Enum.sort_by(& &1.email)
 
     assert sabul.email == "sabul@example.com"
     assert sabul.symbol == "✘"
