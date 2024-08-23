@@ -80,6 +80,11 @@ void main() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
+
+    when(mockFlutterBluePlus.adapterState)
+        .thenAnswer((_) => Stream.fromIterable([BluetoothAdapterState.on]));
+
+    when(mockFlutterBluePlus.startScan()).thenAnswer((_) async {});
   });
 
   testWidgets('BluetoothCollectorGame displays scanned devices',

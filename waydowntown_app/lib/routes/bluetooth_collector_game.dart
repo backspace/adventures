@@ -51,7 +51,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
     startScan();
   }
 
-  void startScan() {
+  Future<void> startScan() async {
     setState(() {
       isScanning = true;
     });
@@ -71,6 +71,11 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
         }
       });
     }, onError: (e) => logger.e('Error scanning: $e'));
+
+    await FlutterBluePlus.adapterState
+        .where((state) => state == BluetoothAdapterState.on)
+        .first;
+
     FlutterBluePlus.startScan();
   }
 
