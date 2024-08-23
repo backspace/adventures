@@ -244,6 +244,48 @@ defmodule RegistrationsWeb.AnswerControllerTest do
       assert answer.correct
     end
 
+    test "duplicate correct answers are not counted", %{conn: conn, game: game} do
+      Repo.insert!(%Answer{game: game, answer: "code_a", correct: true})
+
+      conn =
+        post(
+          conn,
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "code_a"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+
+      assert %{
+               "included" => [
+                 %{
+                   "type" => "incarnations",
+                   "id" => _incarnation_id,
+                   "attributes" => _incarnation_attributes
+                 },
+                 %{
+                   "type" => "games",
+                   "id" => game_id,
+                   "attributes" => %{
+                     "complete" => complete,
+                     "correct_answers" => 1,
+                     "total_answers" => 2
+                   }
+                 }
+               ]
+             } = json_response(conn, 201)
+    end
+
     test "creates incorrect answer", %{conn: conn, game: game} do
       conn =
         post(

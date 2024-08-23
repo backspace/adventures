@@ -124,7 +124,11 @@ defmodule Registrations.Waydowntown do
   end
 
   def get_game_progress(game) do
-    correct_answers = Enum.count(game.answers, & &1.correct)
+    correct_answers =
+      game.answers
+      |> Enum.uniq_by(& &1.answer)
+      |> Enum.count(& &1.correct)
+
     total_answers = length(game.incarnation.answers)
 
     %{
