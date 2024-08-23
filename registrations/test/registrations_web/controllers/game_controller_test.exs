@@ -34,7 +34,7 @@ defmodule RegistrationsWeb.GameControllerTest do
       }
     end
 
-    test "returns game with nested incarnation and regions", %{
+    test "returns game with nested incarnation, regions, and progress attributes", %{
       conn: conn,
       game: game,
       incarnation: incarnation,
@@ -47,6 +47,9 @@ defmodule RegistrationsWeb.GameControllerTest do
                "data" => %{
                  "id" => game_id,
                  "type" => "games",
+                 "attributes" => %{
+                   "complete" => false
+                 },
                  "relationships" => %{
                    "incarnation" => %{
                      "data" => %{"id" => incarnation_id, "type" => "incarnations"}

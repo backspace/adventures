@@ -54,6 +54,11 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       assert %{
                "included" => [
+                 %{
+                   "type" => "incarnations",
+                   "id" => _incarnation_id,
+                   "attributes" => _incarnation_attributes
+                 },
                  %{"type" => "games", "id" => game_id, "attributes" => %{"complete" => complete}}
                ]
              } = json_response(conn, 201)
@@ -125,7 +130,20 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       assert %{
                "included" => [
-                 %{"type" => "games", "id" => game_id, "attributes" => %{"complete" => complete}}
+                 %{
+                   "type" => "incarnations",
+                   "id" => _incarnation_id,
+                   "attributes" => _incarnation_attributes
+                 },
+                 %{
+                   "type" => "games",
+                   "id" => game_id,
+                   "attributes" => %{
+                     "complete" => complete,
+                     "correct_answers" => 1,
+                     "total_answers" => 2
+                   }
+                 }
                ]
              } = json_response(conn, 201)
 
@@ -200,7 +218,20 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       assert %{
                "included" => [
-                 %{"type" => "games", "id" => game_id, "attributes" => %{"complete" => complete}}
+                 %{
+                   "type" => "incarnations",
+                   "id" => _incarnation_id,
+                   "attributes" => _incarnation_attributes
+                 },
+                 %{
+                   "type" => "games",
+                   "id" => game_id,
+                   "attributes" => %{
+                     "complete" => complete,
+                     "correct_answers" => 1,
+                     "total_answers" => 2
+                   }
+                 }
                ]
              } = json_response(conn, 201)
 
