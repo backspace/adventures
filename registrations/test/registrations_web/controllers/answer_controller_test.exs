@@ -264,8 +264,6 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-
       assert %{
                "included" => [
                  %{
@@ -275,9 +273,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
                  },
                  %{
                    "type" => "games",
-                   "id" => game_id,
+                   "id" => _game_id,
                    "attributes" => %{
-                     "complete" => complete,
+                     "complete" => false,
                      "correct_answers" => 1,
                      "total_answers" => 2
                    }
