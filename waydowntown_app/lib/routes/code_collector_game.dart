@@ -13,11 +13,11 @@ class CodeCollectorGame extends StatefulWidget {
   final MobileScannerController? scannerController;
 
   const CodeCollectorGame({
-    Key? key,
+    super.key,
     required this.dio,
     required this.game,
     this.scannerController,
-  }) : super(key: key);
+  });
 
   @override
   CodeCollectorGameState createState() => CodeCollectorGameState();

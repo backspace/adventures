@@ -38,7 +38,7 @@ class Game {
     return Game(
       id: data['id'],
       incarnation: incarnation ??
-          (throw FormatException('Game must have an incarnation')),
+          (throw const FormatException('Game must have an incarnation')),
       correctAnswers: data['attributes']['correct_answers'] ?? 0,
       totalAnswers: data['attributes']['total_answers'] ?? 0,
     );

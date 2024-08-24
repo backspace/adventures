@@ -151,7 +151,7 @@ class _HomeState extends State<Home> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MotionSensorsRoute()),
+                  MaterialPageRoute(builder: (context) => const MotionSensorsRoute()),
                 );
               },
             ),

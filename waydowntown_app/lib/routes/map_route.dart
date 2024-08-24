@@ -3,7 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 class MapRoute extends StatelessWidget {
-  const MapRoute({Key? key}) : super(key: key);
+  const MapRoute({super.key});
 
   @override
   Widget build(BuildContext context) {
