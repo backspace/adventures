@@ -7,6 +7,7 @@ import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/routes/bluetooth_scanner_route.dart';
 import 'package:waydowntown/routes/map_route.dart';
+import 'package:waydowntown/routes/motion_sensors_route.dart';
 import 'package:waydowntown/routes/request_game_route.dart';
 
 var logger = Logger();
@@ -144,6 +145,16 @@ class _HomeState extends State<Home> {
                       MaterialPageRoute(
                           builder: (context) => const MapRoute()));
                 }),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              child: const Text('Motion Sensors'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MotionSensorsRoute()),
+                );
+              },
+            ),
           ],
         ),
       ),
