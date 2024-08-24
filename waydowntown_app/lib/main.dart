@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:waydowntown/routes/request_game_route.dart';
 import 'package:waydowntown/tools/bluetooth_scanner_route.dart';
 import 'package:waydowntown/tools/map_route.dart';
@@ -15,6 +16,17 @@ var logger = Logger();
 Future main() async {
   await dotenv.load(fileName: '.env');
   Logger.level = kDebugMode ? Level.debug : Level.warning;
+
+  if (dotenv.env['SENTRY_DSN'] != null) {
+    await SentryFlutter.init(
+      (options) {
+        options.dsn = dotenv.env['SENTRY_DSN']!;
+        options.tracesSampleRate = 1.0;
+        options.profilesSampleRate = 1.0;
+      },
+      appRunner: () => runApp(const Waydowntown()),
+    );
+  }
   runApp(const Waydowntown());
 }
 
