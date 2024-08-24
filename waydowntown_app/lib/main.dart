@@ -5,10 +5,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:waydowntown/routes/bluetooth_scanner_route.dart';
-import 'package:waydowntown/routes/map_route.dart';
-import 'package:waydowntown/routes/motion_sensors_route.dart';
 import 'package:waydowntown/routes/request_game_route.dart';
+import 'package:waydowntown/tools/bluetooth_scanner_route.dart';
+import 'package:waydowntown/tools/map_route.dart';
+import 'package:waydowntown/tools/motion_sensors_route.dart';
 
 var logger = Logger();
 
