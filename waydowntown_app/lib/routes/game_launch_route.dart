@@ -12,8 +12,7 @@ class GameLaunchRoute extends StatelessWidget {
   final Game game;
   final Dio dio;
 
-  const GameLaunchRoute({Key? key, required this.game, required this.dio})
-      : super(key: key);
+  const GameLaunchRoute({super.key, required this.game, required this.dio});
 
   Future<String?> _loadInstructions() async {
     final yamlString = await rootBundle.loadString('assets/concepts.yaml');
