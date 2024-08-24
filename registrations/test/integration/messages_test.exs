@@ -1,20 +1,22 @@
 defmodule Registrations.Integration.Messages do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
+  use Hound.Helpers
 
+  alias Pow.Ecto.Schema.Password
   alias Registrations.Pages.Login
-  alias Registrations.Pages.Register
   alias Registrations.Pages.Messages
   alias Registrations.Pages.Nav
+  alias Registrations.Pages.Register
 
-  use Hound.Helpers
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "a message is sent to all registrants with their team information summarised" do
     insert(:admin,
       email: "admin@example.com",
-      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("admin")
+      password_hash: Password.pbkdf2_hash("admin")
     )
 
     insert(:user,
@@ -64,7 +66,7 @@ defmodule Registrations.Integration.Messages do
   test "a message can be sent to just the logged-in user" do
     insert(:admin,
       email: "admin@example.com",
-      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("admin")
+      password_hash: Password.pbkdf2_hash("admin")
     )
 
     insert(:user,
@@ -107,7 +109,7 @@ defmodule Registrations.Integration.Messages do
   test "message sender name/address can be overridden" do
     insert(:admin,
       email: "admin@example.com",
-      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("admin")
+      password_hash: Password.pbkdf2_hash("admin")
     )
 
     navigate_to("/")
@@ -139,7 +141,7 @@ defmodule Registrations.Integration.Messages do
   test "a message with show team enabled shows the actual team information instead of their details" do
     insert(:admin,
       email: "admin@example.com",
-      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("admin")
+      password_hash: Password.pbkdf2_hash("admin")
     )
 
     team =

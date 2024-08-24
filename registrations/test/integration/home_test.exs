@@ -1,13 +1,13 @@
 defmodule Registrations.UnmnemonicDevices.Integration.Home do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
+  use Hound.Helpers
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
-
-  use Hound.Helpers
 
   require WaitForIt
 
@@ -99,15 +99,15 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
 end
 
 defmodule Registrations.Waydowntown.Integration.Home do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "waydowntown"
+  use Hound.Helpers
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
-
-  use Hound.Helpers
 
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 

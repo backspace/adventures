@@ -33,16 +33,14 @@ defmodule RegistrationsWeb.UserController do
     current_user = Repo.preload(current_user_only, team: [:users])
 
     conn =
-      case Application.get_env(:registrations, :registration_closed) do
-        true ->
-          conn
-          |> put_flash(
-            :error,
-            "You may change your details but it’s too late to guarantee the changes can be integrated"
-          )
-
-        _ ->
-          conn
+      if Application.get_env(:registrations, :registration_closed) do
+        put_flash(
+          conn,
+          :error,
+          "You may change your details but it’s too late to guarantee the changes can be integrated"
+        )
+      else
+        conn
       end
 
     render(conn, "edit.html",

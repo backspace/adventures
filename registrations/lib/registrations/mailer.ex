@@ -1,10 +1,11 @@
 defmodule Registrations.Mailer do
+  @moduledoc false
   use Pow.Phoenix.Mailer
   use Swoosh.Mailer, otp_app: :registrations
 
-  import Swoosh.Email
-  import RegistrationsWeb.SharedHelpers
   import Ecto.Query, only: [from: 2]
+  import RegistrationsWeb.SharedHelpers
+  import Swoosh.Email
 
   require Logger
 
@@ -60,18 +61,16 @@ defmodule Registrations.Mailer do
     |> subject("[#{phrase("email_title")}] Welcome!")
     |> html_body(welcome_html())
     |> text_body(welcome_text())
-    |> deliver
+    |> deliver()
   end
 
   def send_question(attributes) do
     new()
     |> to(adventure_from())
     |> Swoosh.Email.from(adventure_from())
-    |> subject(
-      "Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}"
-    )
+    |> subject("Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}")
     |> text_body(attributes["question"])
-    |> deliver
+    |> deliver()
   end
 
   def waitlist_email(email, question) do
@@ -80,7 +79,7 @@ defmodule Registrations.Mailer do
     |> Swoosh.Email.from("mdrysdale@chromatin.ca")
     |> subject("Waitlist submission from #{email}")
     |> text_body("Email: #{email}\nQuestion: #{question}")
-    |> deliver
+    |> deliver()
   end
 
   def send_user_changes(user, changes) do
@@ -89,7 +88,7 @@ defmodule Registrations.Mailer do
     |> Swoosh.Email.from(adventure_from())
     |> subject("#{user.email} details changed: #{Enum.join(Enum.sort(Map.keys(changes)), ", ")}")
     |> text_body(inspect(Enum.sort_by(changes, fn {k, _v} -> k end)))
-    |> deliver
+    |> deliver()
   end
 
   def send_user_deletion(user) do
@@ -98,7 +97,7 @@ defmodule Registrations.Mailer do
     |> Swoosh.Email.from(adventure_from())
     |> subject("#{user.email} deleted their account")
     |> text_body(inspect(user))
-    |> deliver
+    |> deliver()
   end
 
   @spec send_registration(atom() | %{:email => any(), optional(any()) => any()}) ::
@@ -109,7 +108,7 @@ defmodule Registrations.Mailer do
     |> Swoosh.Email.from(adventure_from())
     |> subject("#{user.email} registered")
     |> text_body("Yes")
-    |> deliver
+    |> deliver()
   end
 
   def send_message(message, user, relationships, team) do
@@ -119,7 +118,7 @@ defmodule Registrations.Mailer do
     |> subject("[#{phrase("email_title")}] #{message.subject}")
     |> text_body(message_text(message, user, relationships, team))
     |> html_body(message_html(message, user, relationships, team))
-    |> deliver
+    |> deliver()
   end
 
   def send_backlog(messages, user) do
@@ -135,12 +134,12 @@ defmodule Registrations.Mailer do
     |> subject("[#{phrase("email_title")}] #{subject}")
     |> text_body(backlog_text(messages))
     |> html_body(backlog_html(messages))
-    |> deliver
+    |> deliver()
   end
 
   defp welcome_html do
-    Phoenix.View.render_to_string(
-      RegistrationsWeb.EmailView,
+    RegistrationsWeb.EmailView
+    |> Phoenix.View.render_to_string(
       "#{adventure()}-welcome.html",
       %{
         layout: email_layout()
@@ -154,7 +153,8 @@ defmodule Registrations.Mailer do
   end
 
   defp message_html(message, user, relationships, team) do
-    Phoenix.View.render_to_string(RegistrationsWeb.MessageView, "preview.html", %{
+    RegistrationsWeb.MessageView
+    |> Phoenix.View.render_to_string("preview.html", %{
       message: message,
       user: user,
       relationships: relationships,
@@ -169,7 +169,8 @@ defmodule Registrations.Mailer do
   end
 
   defp backlog_html(messages) do
-    Phoenix.View.render_to_string(RegistrationsWeb.MessageView, "backlog.html", %{
+    RegistrationsWeb.MessageView
+    |> Phoenix.View.render_to_string("backlog.html", %{
       messages: messages,
       layout: email_layout()
     })
@@ -192,7 +193,7 @@ defmodule Registrations.Mailer do
     end
   end
 
-  defp adventure_from() do
+  defp adventure_from do
     if RegistrationsWeb.SharedHelpers.is_unmnemonic_devices() do
       "knut@chromatin.ca"
     else

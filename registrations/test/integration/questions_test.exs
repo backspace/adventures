@@ -1,12 +1,12 @@
 defmodule Registrations.ClandestineRendezvous.Integration.Questions do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
+  use Hound.Helpers
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Nav
-
-  use Hound.Helpers
 
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
@@ -17,9 +17,7 @@ defmodule Registrations.ClandestineRendezvous.Integration.Questions do
     Home.fill_email("lucy@example.com")
     Home.fill_subject("A Word to Tramps")
 
-    Home.fill_question(
-      "Can you not see that it is the industrial system and not the \"boss\" which must be changed?"
-    )
+    Home.fill_question("Can you not see that it is the industrial system and not the \"boss\" which must be changed?")
 
     Home.submit_question()
 
@@ -38,14 +36,14 @@ defmodule Registrations.ClandestineRendezvous.Integration.Questions do
 end
 
 defmodule Registrations.UnmnemonicDevices.Integration.Questions do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
+  use Hound.Helpers
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Nav
-
-  use Hound.Helpers
 
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
@@ -56,9 +54,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Questions do
     Home.fill_email("lucy@example.com")
     Home.fill_subject("A Word to Tramps")
 
-    Home.fill_question(
-      "Can you not see that it is the industrial system and not the \"boss\" which must be changed?"
-    )
+    Home.fill_question("Can you not see that it is the industrial system and not the \"boss\" which must be changed?")
 
     Home.submit_question()
 

@@ -1,17 +1,18 @@
 defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
+  use Hound.Helpers
 
-  alias Registrations.Pages.Register
+  alias Registrations.Pages.Account
+  alias Registrations.Pages.Details
+  alias Registrations.Pages.ForgotPassword
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
-  alias Registrations.Pages.Details
-  alias Registrations.Pages.Account
-  alias Registrations.Pages.ForgotPassword
+  alias Registrations.Pages.Register
 
   # Import Hound helpers
-  use Hound.Helpers
 
   # Start a Hound session
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
@@ -163,7 +164,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     assert forgot_password_email.subject == "[rendezvous] Reset password link"
 
     [url] =
-      Floki.find(forgot_password_email.html_body, "a")
+      forgot_password_email.html_body
+      |> Floki.find("a")
       |> Floki.attribute("href")
 
     reset_path = URI.parse(url).path
@@ -246,15 +248,16 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 end
 
 defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
+  use Hound.Helpers
 
-  alias Registrations.Pages.Register
   alias Registrations.Pages.Nav
+  alias Registrations.Pages.Register
 
   # Import Hound helpers
-  use Hound.Helpers
 
   # Start a Hound session
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())

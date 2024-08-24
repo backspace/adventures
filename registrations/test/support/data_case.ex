@@ -1,15 +1,18 @@
 defmodule Registrations.DataCase do
+  @moduledoc false
   use ExUnit.CaseTemplate
+
+  alias Ecto.Adapters.SQL.Sandbox
 
   using do
     quote do
-      alias Registrations.Repo
-
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
       import Registrations.DataCase
       import Registrations.Factory
+
+      alias Registrations.Repo
     end
   end
 
@@ -19,8 +22,8 @@ defmodule Registrations.DataCase do
   end
 
   def setup_sandbox(tags) do
-    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(Registrations.Repo, shared: not tags[:async])
-    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
+    pid = Sandbox.start_owner!(Registrations.Repo, shared: not tags[:async])
+    on_exit(fn -> Sandbox.stop_owner(pid) end)
   end
 
   def errors_on(changeset) do

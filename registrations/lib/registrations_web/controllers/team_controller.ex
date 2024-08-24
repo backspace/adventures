@@ -1,21 +1,21 @@
 defmodule RegistrationsWeb.TeamController do
   use RegistrationsWeb, :controller
 
-  alias RegistrationsWeb.User
   alias RegistrationsWeb.Team
+  alias RegistrationsWeb.User
 
   plug RegistrationsWeb.Plugs.Admin
 
   plug :scrub_params, "team" when action in [:create, :update]
 
   def index(conn, _params) do
-    teams = Repo.all(Team) |> Repo.preload(:users)
+    teams = Team |> Repo.all() |> Repo.preload(:users)
     render(conn, "index.html", teams: teams)
   end
 
   # FIXME surely there’s a better way
   def index_json(conn, _params) do
-    teams = Repo.all(Team) |> Repo.preload(:users)
+    teams = Team |> Repo.all() |> Repo.preload(:users)
 
     json(conn, %{
       data:
@@ -79,11 +79,7 @@ defmodule RegistrationsWeb.TeamController do
       {:ok, team} ->
         team_user_ids = Enum.map(team_users, fn user -> user.id end)
 
-        from(u in User,
-          where: u.id in ^team_user_ids,
-          update: [set: [team_id: ^team.id]]
-        )
-        |> Repo.update_all([])
+        Repo.update_all(from(u in User, where: u.id in ^team_user_ids, update: [set: [team_id: ^team.id]]), [])
 
         flash_type =
           if fallbacks do

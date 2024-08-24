@@ -4,6 +4,7 @@ defmodule Registrations.Application do
   @moduledoc false
 
   use Application
+
   require Logger
 
   @impl true

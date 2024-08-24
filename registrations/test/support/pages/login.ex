@@ -1,4 +1,5 @@
 defmodule Registrations.Pages.Login do
+  @moduledoc false
   use Hound.Helpers
 
   def visit do
@@ -25,7 +26,7 @@ defmodule Registrations.Pages.Login do
     submit()
   end
 
-  def login_as_admin() do
+  def login_as_admin do
     login_as("octavia.butler@example.com", "Xenogenesis")
   end
 

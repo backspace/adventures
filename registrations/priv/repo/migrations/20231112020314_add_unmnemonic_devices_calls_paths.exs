@@ -1,4 +1,5 @@
 defmodule Registrations.Repo.Migrations.AddUnmnemonicDevicesCallsPaths do
+  @moduledoc false
   use Ecto.Migration
 
   def change do

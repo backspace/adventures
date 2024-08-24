@@ -1,4 +1,5 @@
 defmodule Registrations.Factory do
+  @moduledoc false
   use ExMachina.Ecto, repo: Registrations.Repo
 
   def user_factory do

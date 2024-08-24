@@ -1,4 +1,5 @@
 defmodule RegistrationsWeb.Pow.Routes do
+  @moduledoc false
   use Pow.Phoenix.Routes
 
   # FIXME how does confirmation affect this?

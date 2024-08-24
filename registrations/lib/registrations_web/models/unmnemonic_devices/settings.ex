@@ -1,4 +1,5 @@
 defmodule RegistrationsWeb.UnmnemonicDevices.Settings do
+  @moduledoc false
   use RegistrationsWeb, :model
 
   @schema_prefix "unmnemonic_devices"
@@ -16,15 +17,6 @@ defmodule RegistrationsWeb.UnmnemonicDevices.Settings do
   end
 
   def changeset(settings, attrs) do
-    settings
-    |> cast(attrs, [
-      :override,
-      :begun,
-      :compromised,
-      :ending,
-      :notify_supervisor,
-      :vrs_href,
-      :vrs_human
-    ])
+    cast(settings, attrs, [:override, :begun, :compromised, :ending, :notify_supervisor, :vrs_href, :vrs_human])
   end
 end

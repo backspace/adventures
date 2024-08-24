@@ -1,10 +1,10 @@
 defmodule RegistrationsWeb.AnswerController do
   use RegistrationsWeb, :controller
 
-  plug(JSONAPI.QueryParser, view: RegistrationsWeb.AnswerView)
-
   alias Registrations.Waydowntown
   alias Registrations.Waydowntown.Answer
+
+  plug(JSONAPI.QueryParser, view: RegistrationsWeb.AnswerView)
 
   action_fallback(RegistrationsWeb.FallbackController)
 

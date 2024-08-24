@@ -1,18 +1,20 @@
 defmodule Registrations.Integration.Admin do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
+  use Hound.Helpers
+
+  import Assertions, only: [assert_lists_equal: 2]
 
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
-  alias Registrations.Pages.Users
   alias Registrations.Pages.Teams
+  alias Registrations.Pages.Users
 
   require Assertions
-  import Assertions, only: [assert_lists_equal: 2]
 
   # Import Hound helpers
-  use Hound.Helpers
 
   # Start a Hound session
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
@@ -162,7 +164,7 @@ defmodule Registrations.Integration.Admin do
     Login.login_as_admin()
 
     navigate_to("/api/teams")
-    json = Floki.find(page_source(), "pre") |> Floki.text() |> Jason.decode!()
+    json = page_source() |> Floki.find("pre") |> Floki.text() |> Jason.decode!()
 
     assert json == %{
              "data" => [
@@ -203,14 +205,14 @@ defmodule Registrations.Integration.Admin do
 end
 
 defmodule Registrations.Integration.UnmnemonicDevices.Admin do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
+  use Hound.Helpers
 
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
-
-  use Hound.Helpers
 
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
@@ -266,7 +268,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
     Login.login_as_admin()
 
     navigate_to("/api/teams")
-    json = Floki.find(page_source(), "pre") |> Floki.text() |> Jason.decode!()
+    json = page_source() |> Floki.find("pre") |> Floki.text() |> Jason.decode!()
 
     assert json == %{
              "data" => [

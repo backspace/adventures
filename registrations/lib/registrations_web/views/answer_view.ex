@@ -1,5 +1,6 @@
 defmodule RegistrationsWeb.AnswerView do
   use JSONAPI.View, type: "answers"
+
   alias RegistrationsWeb.AnswerView
 
   def fields do

@@ -2,12 +2,16 @@ defmodule RegistrationsWeb.AnswerControllerTest do
   use RegistrationsWeb.ConnCase
 
   alias Registrations.Waydowntown
-  alias Registrations.Waydowntown.{Game, Incarnation, Answer, Region}
+  alias Registrations.Waydowntown.Answer
+  alias Registrations.Waydowntown.Game
+  alias Registrations.Waydowntown.Incarnation
+  alias Registrations.Waydowntown.Region
 
   setup %{conn: conn} do
     {:ok,
      conn:
-       put_req_header(conn, "accept", "application/vnd.api+json")
+       conn
+       |> put_req_header("accept", "application/vnd.api+json")
        |> put_req_header("content-type", "application/vnd.api+json")}
   end
 

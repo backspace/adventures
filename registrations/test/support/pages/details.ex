@@ -1,4 +1,5 @@
 defmodule Registrations.Pages.Details do
+  @moduledoc false
   use Hound.Helpers
 
   def edit_account do
@@ -11,12 +12,14 @@ defmodule Registrations.Pages.Details do
   end
 
   def proposers do
-    find_all_elements(:css, "[data-test-proposers]")
+    :css
+    |> find_all_elements("[data-test-proposers]")
     |> Enum.map(&email_and_text_row(&1))
   end
 
   def mutuals do
-    find_all_elements(:css, "[data-test-mutuals]")
+    :css
+    |> find_all_elements("[data-test-mutuals]")
     |> Enum.map(fn row ->
       proposed_team_name_element = find_within_element(row, :css, ".proposed-team-name")
       risk_aversion_element = find_within_element(row, :css, ".risk-aversion")
@@ -39,17 +42,20 @@ defmodule Registrations.Pages.Details do
   end
 
   def proposals_by_mutuals do
-    find_all_elements(:css, "[data-test-proposals-by-mutuals]")
+    :css
+    |> find_all_elements("[data-test-proposals-by-mutuals]")
     |> Enum.map(&email_and_text_row(&1))
   end
 
   def invalids do
-    find_all_elements(:css, "[data-test-invalids]")
+    :css
+    |> find_all_elements("[data-test-invalids]")
     |> Enum.map(&email_and_text_row(&1))
   end
 
   def proposees do
-    find_all_elements(:css, "[data-test-proposees]")
+    :css
+    |> find_all_elements("[data-test-proposees]")
     |> Enum.map(&email_and_text_row(&1))
   end
 
@@ -89,6 +95,7 @@ defmodule Registrations.Pages.Details do
   end
 
   defmodule Comments do
+    @moduledoc false
     @selector {:id, "user_comments"}
 
     def fill(comments) do
@@ -106,6 +113,7 @@ defmodule Registrations.Pages.Details do
 
   # FIXME this is just begging for DRYing!
   defmodule Source do
+    @moduledoc false
     @selector {:id, "user_source"}
 
     def fill(source) do
@@ -118,6 +126,7 @@ defmodule Registrations.Pages.Details do
   end
 
   defmodule InviteButton do
+    @moduledoc false
     def present? do
       element?(:css, "[data-test-invite]")
     end
@@ -128,6 +137,7 @@ defmodule Registrations.Pages.Details do
   end
 
   defmodule Attending do
+    @moduledoc false
     def present? do
       element?(:css, ".form-group.attending")
     end
@@ -141,6 +151,7 @@ defmodule Registrations.Pages.Details do
     end
 
     defmodule Error do
+      @moduledoc false
       def present? do
         element?(:css, ".errors .attending")
       end
@@ -148,6 +159,7 @@ defmodule Registrations.Pages.Details do
   end
 
   defmodule Team do
+    @moduledoc false
     def present? do
       element?(:css, "[data-test-assigned-team]")
     end

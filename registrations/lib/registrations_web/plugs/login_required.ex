@@ -1,4 +1,5 @@
 defmodule RegistrationsWeb.Plugs.LoginRequired do
+  @moduledoc false
   import Plug.Conn
 
   def init(options) do
@@ -14,10 +15,8 @@ defmodule RegistrationsWeb.Plugs.LoginRequired do
     else
       conn
       |> Phoenix.Controller.put_flash(:info, "Please log in to edit your details")
-      |> Phoenix.Controller.redirect(
-        to: RegistrationsWeb.Router.Helpers.pow_session_path(conn, :new)
-      )
-      |> halt
+      |> Phoenix.Controller.redirect(to: RegistrationsWeb.Router.Helpers.pow_session_path(conn, :new))
+      |> halt()
     end
   end
 end

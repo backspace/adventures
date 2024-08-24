@@ -1,4 +1,5 @@
 defmodule RegistrationsWeb.Pow.Messages do
+  @moduledoc false
   use Pow.Phoenix.Messages
 
   use Pow.Extension.Phoenix.Messages,

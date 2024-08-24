@@ -1,17 +1,21 @@
 defmodule Registrations.Integration.Teams do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
+  use Hound.Helpers
 
-  alias Registrations.Pages.Login
-  alias Registrations.Pages.Nav
-  alias Registrations.Pages.Details
-
-  require Assertions
   import Assertions, only: [assert_lists_equal: 2]
 
+  alias Pow.Ecto.Schema.Password
+  alias Registrations.Pages.Details
+  alias Registrations.Pages.Details.Attending.Error
+  alias Registrations.Pages.Login
+  alias Registrations.Pages.Nav
+
+  require Assertions
+
   # Import Hound helpers
-  use Hound.Helpers
 
   # Start a Hound session
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
@@ -40,7 +44,7 @@ defmodule Registrations.Integration.Teams do
 
     insert(:user,
       email: "takver@example.com",
-      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
+      password_hash: Password.pbkdf2_hash("Anarres")
     )
 
     navigate_to("/")
@@ -50,9 +54,7 @@ defmodule Registrations.Integration.Teams do
     refute Details.Attending.present?(), "Expected attending fields to be hidden unless enabled"
     refute Details.Team.present?(), "Expected no team block for an unassigned user"
 
-    Details.fill_team_emails(
-      "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"
-    )
+    Details.fill_team_emails("shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo")
 
     Details.fill_proposed_team_name("Simultaneity")
     Details.choose_risk_aversion("Don’t hold back")
@@ -77,9 +79,9 @@ defmodule Registrations.Integration.Teams do
              "takver@example.com details changed: accessibility, comments, proposed_team_name, risk_aversion, source, team_emails"
 
     assert sent_email.text_body ==
-             "[accessibility: \"Some accessibility information\", comments: \"Some comments\", proposed_team_name: \"Simultaneity\", risk_aversion: 3, source: \"A source\", team_emails: \"shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo\"]"
+             ~s([accessibility: "Some accessibility information", comments: "Some comments", proposed_team_name: "Simultaneity", risk_aversion: 3, source: "A source", team_emails: "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"])
 
-    [bedap, shevek] = Details.mutuals() |> Enum.sort_by(& &1.email)
+    [bedap, shevek] = Enum.sort_by(Details.mutuals(), & &1.email)
 
     assert shevek.email == "shevek@example.com"
     assert shevek.symbol == "✓"
@@ -104,7 +106,7 @@ defmodule Registrations.Integration.Teams do
     assert sadik.text ==
              "This person has you listed in their team. Add their address to your team emails list if you agree."
 
-    [rulag, tuio] = Details.proposals_by_mutuals() |> Enum.sort_by(& &1.email)
+    [rulag, tuio] = Enum.sort_by(Details.proposals_by_mutuals(), & &1.email)
 
     assert rulag.email == "rulag@example.com"
     assert rulag.symbol == "?"
@@ -123,7 +125,7 @@ defmodule Registrations.Integration.Teams do
     assert invalid.symbol == "✘"
     assert invalid.text == "This doesn’t seem like a valid email address!"
 
-    [laia, sabul] = Details.proposees() |> Enum.sort_by(& &1.email)
+    [laia, sabul] = Enum.sort_by(Details.proposees(), & &1.email)
 
     assert sabul.email == "sabul@example.com"
     assert sabul.symbol == "✘"
@@ -157,7 +159,7 @@ defmodule Registrations.Integration.Teams do
 
     insert(:user,
       email: "takver@example.com",
-      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
+      password_hash: Password.pbkdf2_hash("Anarres")
     )
 
     navigate_to("/")
@@ -174,7 +176,7 @@ defmodule Registrations.Integration.Teams do
   test "the table is hidden when empty" do
     insert(:user,
       email: "takver@example.com",
-      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
+      password_hash: Password.pbkdf2_hash("Anarres")
     )
 
     navigate_to("/")
@@ -193,7 +195,7 @@ defmodule Registrations.Integration.Teams do
 
     insert(:user,
       email: "takver@example.com",
-      password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
+      password_hash: Password.pbkdf2_hash("Anarres")
     )
 
     navigate_to("/")
@@ -204,19 +206,19 @@ defmodule Registrations.Integration.Teams do
 
     Details.submit()
 
-    assert Details.Attending.Error.present?(),
+    assert Error.present?(),
            "Expected an error about the attending field being blank"
 
     Details.Attending.yes()
     Details.submit()
 
-    refute Details.Attending.Error.present?(),
+    refute Error.present?(),
            "Expected no error when the person said they were attending"
 
     Details.Attending.no()
     Details.submit()
 
-    refute Details.Attending.Error.present?(),
+    refute Error.present?(),
            "Expected no error when the person said they were not attending"
   end
 
@@ -231,13 +233,13 @@ defmodule Registrations.Integration.Teams do
     takver =
       insert(:user,
         email: "takver@example.com",
-        password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
+        password_hash: Password.pbkdf2_hash("Anarres")
       )
 
     bedap =
       insert(:user,
         email: "bedap@example.com",
-        password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
+        password_hash: Password.pbkdf2_hash("Anarres")
       )
 
     insert(:team,
@@ -255,7 +257,7 @@ defmodule Registrations.Integration.Teams do
     assert Details.Team.name() == "A team"
     assert Details.Team.risk_aversion() == "Push me a little"
 
-    assert_lists_equal(Details.Team.emails() |> String.split(", "), [
+    assert_lists_equal(String.split(Details.Team.emails(), ", "), [
       "takver@example.com",
       "bedap@example.com"
     ])
@@ -263,15 +265,16 @@ defmodule Registrations.Integration.Teams do
 end
 
 defmodule Registrations.Integration.UnmnemonicDevices.Teams do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
+  use Hound.Helpers
 
-  alias Registrations.Pages.Login
   alias Registrations.Pages.Details
+  alias Registrations.Pages.Login
 
   # Import Hound helpers
-  use Hound.Helpers
 
   # Start a Hound session
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())

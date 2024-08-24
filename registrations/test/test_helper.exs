@@ -6,6 +6,7 @@ ExUnit.start()
 Ecto.Adapters.SQL.Sandbox.mode(Registrations.Repo, :manual)
 
 defmodule Registrations.ApplicationEnvHelpers do
+  @moduledoc false
   use ExUnit.CaseTemplate
 
   def put_application_env_for_test(app, key, value) do
@@ -16,6 +17,7 @@ defmodule Registrations.ApplicationEnvHelpers do
 end
 
 defmodule Registrations.WindowHelpers do
+  @moduledoc false
   use Hound.Helpers
 
   def set_window_to_show_account do
@@ -24,16 +26,19 @@ defmodule Registrations.WindowHelpers do
 end
 
 defmodule Registrations.SwooshHelper do
+  @moduledoc false
   use ExUnit.CaseTemplate
 
+  alias Swoosh.Adapters.Local.Storage.Memory
+
   setup do
-    Swoosh.Adapters.Local.Storage.Memory.delete_all()
+    Memory.delete_all()
 
     :ok
   end
 
   def sent_email do
-    Swoosh.Adapters.Local.Storage.Memory.all()
+    Memory.all()
   end
 
   def emails_sent? do
@@ -42,6 +47,7 @@ defmodule Registrations.SwooshHelper do
 end
 
 defmodule Registrations.ChromeHeadlessHelper do
+  @moduledoc false
   use ExUnit.CaseTemplate
 
   def additional_capabilities do
@@ -63,6 +69,7 @@ defmodule Registrations.ChromeHeadlessHelper do
 end
 
 defmodule Registrations.SetAdventure do
+  @moduledoc false
   use ExUnit.CaseTemplate
 
   defmacro __using__(opts) do

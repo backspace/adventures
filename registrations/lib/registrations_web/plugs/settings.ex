@@ -1,5 +1,8 @@
 defmodule RegistrationsWeb.Plugs.Settings do
+  @moduledoc false
   import Plug.Conn
+
+  alias RegistrationsWeb.UnmnemonicDevices.Settings
 
   def init(options) do
     options
@@ -13,12 +16,13 @@ defmodule RegistrationsWeb.Plugs.Settings do
     settings =
       case adventure_name do
         "unmnemonic-devices" ->
-          Ecto.Query.first(RegistrationsWeb.UnmnemonicDevices.Settings)
+          Settings
+          |> Ecto.Query.first()
           |> Registrations.Repo.one() ||
-            %RegistrationsWeb.UnmnemonicDevices.Settings{}
+            %Settings{}
 
         _ ->
-          %RegistrationsWeb.UnmnemonicDevices.Settings{}
+          %Settings{}
       end
 
     assign(conn, :settings, settings)

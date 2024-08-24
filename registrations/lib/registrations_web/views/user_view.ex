@@ -5,7 +5,7 @@ defmodule RegistrationsWeb.UserView do
     if length(mutuals) == 1 do
       "#{hd(mutuals).email} has this address in their team emails list."
     else
-      "#{Registrations.Cldr.List.to_string!(Enum.map(mutuals, & &1.email) |> Enum.sort())} have this address in their team emails lists."
+      "#{Registrations.Cldr.List.to_string!(mutuals |> Enum.map(& &1.email) |> Enum.sort())} have this address in their team emails lists."
     end
   end
 
@@ -33,7 +33,7 @@ defmodule RegistrationsWeb.UserView do
     end
   end
 
-  def risk_aversion_integer_to_string() do
+  def risk_aversion_integer_to_string do
     %{
       1 => phrase("risk_aversion_label_1"),
       2 => phrase("risk_aversion_label_2"),
@@ -42,10 +42,7 @@ defmodule RegistrationsWeb.UserView do
   end
 
   def risk_aversion_string_into_integer do
-    risk_aversion_integer_to_string()
-    |> Map.to_list()
-    |> Enum.map(fn {key, value} -> {value, key} end)
-    |> Enum.into(%{})
+    risk_aversion_integer_to_string() |> Map.to_list() |> Map.new(fn {key, value} -> {value, key} end)
   end
 
   def is_empty?(user) do

@@ -1,11 +1,11 @@
 defmodule RegistrationsWeb.PageController do
   use RegistrationsWeb, :controller
+
   require Logger
 
   def index(conn, _params) do
     placeholder =
-      case {conn.query_params["placeholder"],
-            Application.get_env(:registrations, :placeholder, false),
+      case {conn.query_params["placeholder"], Application.get_env(:registrations, :placeholder, false),
             RegistrationsWeb.Session.logged_in?(conn)} do
         {"true", _, _} ->
           true

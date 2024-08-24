@@ -1,4 +1,5 @@
 defmodule Registrations.Pages.Teams do
+  @moduledoc false
   use Hound.Helpers
 
   defp team_container(index) do

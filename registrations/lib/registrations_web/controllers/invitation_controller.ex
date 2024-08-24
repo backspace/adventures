@@ -1,7 +1,8 @@
 defmodule RegistrationsWeb.InvitationController do
   use RegistrationsWeb, :controller
 
-  alias PowInvitation.{Phoenix.Mailer, Plug}
+  alias PowInvitation.Phoenix.Mailer
+  alias PowInvitation.Plug
 
   def create(conn, %{"user" => user_params}) do
     case Plug.create_user(conn, user_params) do

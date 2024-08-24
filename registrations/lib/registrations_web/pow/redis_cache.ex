@@ -189,8 +189,8 @@ defmodule RegistrationsWeb.Pow.RedisCache do
       current_timestamp()
     ])
 
-    Stream.resource(
-      fn -> do_scan(config, prefix, compiled_match_spec, "0") end,
+    fn -> do_scan(config, prefix, compiled_match_spec, "0") end
+    |> Stream.resource(
       &stream_scan(config, prefix, compiled_match_spec, &1),
       fn _ -> :ok end
     )
@@ -207,8 +207,7 @@ defmodule RegistrationsWeb.Pow.RedisCache do
     stream_scan(config, prefix, compiled_match_spec, result)
   end
 
-  defp stream_scan(_config, _prefix, _compiled_match_spec, {keys, iterator}),
-    do: {keys, {[], iterator}}
+  defp stream_scan(_config, _prefix, _compiled_match_spec, {keys, iterator}), do: {keys, {[], iterator}}
 
   defp do_scan(config, prefix, compiled_match_spec, iterator) do
     prefix = to_binary_redis_key(prefix)
@@ -279,13 +278,7 @@ defmodule RegistrationsWeb.Pow.RedisCache do
   defp namespace(config), do: Config.get(config, :namespace, "cache")
 
   defp to_binary_redis_key(key) do
-    key
-    |> Enum.map(fn part ->
-      part
-      |> :erlang.term_to_binary()
-      |> Base.url_encode64(padding: false)
-    end)
-    |> Enum.join(":")
+    Enum.map_join(key, ":", fn part -> part |> :erlang.term_to_binary() |> Base.url_encode64(padding: false) end)
   end
 
   defp from_binary_redis_key(key) do
@@ -299,6 +292,5 @@ defmodule RegistrationsWeb.Pow.RedisCache do
   end
 
   @spec raise_ttl_error! :: no_return()
-  defp raise_ttl_error!,
-    do: Config.raise_error("`:ttl` configuration option is required for #{inspect(__MODULE__)}")
+  defp raise_ttl_error!, do: Config.raise_error("`:ttl` configuration option is required for #{inspect(__MODULE__)}")
 end

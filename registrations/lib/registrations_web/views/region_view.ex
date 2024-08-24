@@ -1,5 +1,6 @@
 defmodule RegistrationsWeb.RegionView do
   use JSONAPI.View, type: "regions"
+
   alias RegistrationsWeb.RegionView
 
   def fields do

@@ -1,4 +1,5 @@
 defmodule Registrations.Repo.Migrations.AddWaydowntownAnswers do
+  @moduledoc false
   use Ecto.Migration
 
   def change do

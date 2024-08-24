@@ -1,14 +1,16 @@
 defmodule Registrations.Integration.Invitations do
+  @moduledoc false
   use RegistrationsWeb.ConnCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
+  use Hound.Helpers
 
+  alias Hound.Helpers.Session
+  alias Registrations.Pages.Details
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
-  alias Registrations.Pages.Details
   alias Registrations.Pages.Register
 
-  use Hound.Helpers
   hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
   test "can invite a user, who can accept" do
@@ -38,16 +40,15 @@ defmodule Registrations.Integration.Invitations do
              "[rendezvous] You've been invited"
 
     [url] =
-      Floki.find(invitation_email.html_body, "a")
+      invitation_email.html_body
+      |> Floki.find("a")
       |> Floki.attribute("href")
 
     reset_path = URI.parse(url).path
 
-    Hound.Helpers.Session.end_session()
+    Session.end_session()
 
-    Hound.Helpers.Session.start_session(
-      Registrations.ChromeHeadlessHelper.additional_capabilities()
-    )
+    Session.start_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
 
     navigate_to(reset_path)
     Register.fill_email("bedap@example.com")

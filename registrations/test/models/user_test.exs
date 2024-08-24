@@ -1,8 +1,9 @@
 defmodule RegistrationsWeb.UserTest do
   use Registrations.ModelCase
 
-  alias RegistrationsWeb.User
   import Registrations.Factory
+
+  alias RegistrationsWeb.User
 
   @valid_attrs %{password: "some content", email: "some@content"}
   @invalid_attrs %{}

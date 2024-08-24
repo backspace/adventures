@@ -1,14 +1,15 @@
 defmodule RegistrationsWeb.GameController do
   use RegistrationsWeb, :controller
 
+  alias Registrations.Waydowntown
+  alias Registrations.Waydowntown.Game
+
+  require Logger
+
   plug(JSONAPI.QueryParser,
     view: RegistrationsWeb.GameView,
     filter: ["incarnation.concept"]
   )
-
-  alias Registrations.Waydowntown
-  alias Registrations.Waydowntown.Game
-  require Logger
 
   action_fallback(RegistrationsWeb.FallbackController)
 

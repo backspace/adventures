@@ -1,4 +1,5 @@
 defmodule Registrations.Repo.Migrations.MoveUsersToBelongToTeams do
+  @moduledoc false
   use Ecto.Migration
 
   def up do

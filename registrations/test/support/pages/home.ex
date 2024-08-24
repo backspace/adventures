@@ -1,7 +1,8 @@
 defmodule Registrations.Pages.Home do
+  @moduledoc false
   use Hound.Helpers
 
-  def placeholder_exists?() do
+  def placeholder_exists? do
     Hound.Matchers.element?(:css, "[data-test-placeholder]")
   end
 
@@ -42,6 +43,7 @@ defmodule Registrations.Pages.Home do
   end
 
   defmodule Pi do
+    @moduledoc false
     @selector {:id, "pi"}
 
     def present? do
@@ -58,11 +60,13 @@ defmodule Registrations.Pages.Home do
   end
 
   defmodule Overlay do
+    @moduledoc false
     def voicepass do
       Registrations.Pages.Home.Overlay.Voicepass
     end
 
     defmodule Voicepass do
+      @moduledoc false
       @selector {:css, "[data-test-voicepass]"}
 
       def present? do
@@ -79,6 +83,7 @@ defmodule Registrations.Pages.Home do
     end
 
     defmodule Regenerate do
+      @moduledoc false
       @selector {:css, "[data-test-regenerate]"}
 
       def present? do

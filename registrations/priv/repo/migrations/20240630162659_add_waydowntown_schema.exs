@@ -1,4 +1,5 @@
 defmodule Registrations.Repo.Migrations.AddWaydowntownSchema do
+  @moduledoc false
   use Ecto.Migration
 
   def up do

@@ -4,8 +4,8 @@ defmodule Registrations.Waydowntown do
   """
 
   import Ecto.Query, warn: false
-  alias Registrations.Repo
 
+  alias Registrations.Repo
   alias Registrations.Waydowntown.Answer
   alias Registrations.Waydowntown.Game
   alias Registrations.Waydowntown.Incarnation
@@ -20,7 +20,7 @@ defmodule Registrations.Waydowntown do
 
   """
   def list_games do
-    Repo.all(Game) |> Repo.preload(incarnation: [region: [:parent]])
+    Game |> Repo.all() |> Repo.preload(incarnation: [region: [:parent]])
   end
 
   @doc """
@@ -38,7 +38,8 @@ defmodule Registrations.Waydowntown do
 
   """
   def get_game!(id) do
-    Repo.get!(Game, id)
+    Game
+    |> Repo.get!(id)
     |> Repo.preload([:answers, incarnation: [region: [:parent]]])
   end
 
@@ -62,7 +63,7 @@ defmodule Registrations.Waydowntown do
     |> Repo.insert()
   end
 
-  defp get_random_incarnation(nil), do: Repo.all(Incarnation) |> Enum.random()
+  defp get_random_incarnation(nil), do: Incarnation |> Repo.all() |> Enum.random()
 
   defp get_random_incarnation(concept) do
     Incarnation
@@ -138,24 +139,15 @@ defmodule Registrations.Waydowntown do
     }
   end
 
-  defp check_answer_correctness(
-         %Incarnation{concept: "fill_in_the_blank", answer: correct_answer},
-         answer_text
-       ) do
+  defp check_answer_correctness(%Incarnation{concept: "fill_in_the_blank", answer: correct_answer}, answer_text) do
     String.downcase(String.trim(correct_answer)) == String.downcase(String.trim(answer_text))
   end
 
-  defp check_answer_correctness(
-         %Incarnation{concept: "bluetooth_collector", answers: correct_answers},
-         answer_text
-       ) do
+  defp check_answer_correctness(%Incarnation{concept: "bluetooth_collector", answers: correct_answers}, answer_text) do
     answer_text in correct_answers
   end
 
-  defp check_answer_correctness(
-         %Incarnation{concept: "code_collector", answers: correct_answers},
-         answer_text
-       ) do
+  defp check_answer_correctness(%Incarnation{concept: "code_collector", answers: correct_answers}, answer_text) do
     answer_text in correct_answers
   end
 

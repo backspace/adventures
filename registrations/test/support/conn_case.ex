@@ -15,29 +15,29 @@ defmodule RegistrationsWeb.ConnCase do
 
   use ExUnit.CaseTemplate
 
+  alias Ecto.Adapters.SQL.Sandbox
+
   using do
     quote do
+      import Ecto.Query, only: [from: 2]
+      import Phoenix.ConnTest
       # Import conveniences for testing with connections
       import Plug.Conn
-      import Phoenix.ConnTest
+      import Registrations.Factory
 
       alias Registrations.Repo
-      import Ecto.Query, only: [from: 2]
-
       alias RegistrationsWeb.Router.Helpers, as: Routes
 
       # The default endpoint for testing
       @endpoint RegistrationsWeb.Endpoint
-
-      import Registrations.Factory
     end
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Registrations.Repo)
+    :ok = Sandbox.checkout(Registrations.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Registrations.Repo, {:shared, self()})
+      Sandbox.mode(Registrations.Repo, {:shared, self()})
     end
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}

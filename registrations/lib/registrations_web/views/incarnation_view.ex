@@ -1,5 +1,6 @@
 defmodule RegistrationsWeb.IncarnationView do
   use JSONAPI.View, type: "incarnations"
+
   alias RegistrationsWeb.IncarnationView
 
   def fields do

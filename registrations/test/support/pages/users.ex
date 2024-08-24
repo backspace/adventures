@@ -1,4 +1,5 @@
 defmodule Registrations.Pages.Users do
+  @moduledoc false
   use Hound.Helpers
 
   defp user_container(id) do
@@ -29,7 +30,7 @@ defmodule Registrations.Pages.Users do
     click({:css, "#{user_container(id)} a"})
   end
 
-  def all_emails() do
-    Hound.Helpers.Page.find_all_elements(:css, "tr .email") |> Enum.map(&visible_text/1)
+  def all_emails do
+    :css |> Hound.Helpers.Page.find_all_elements("tr .email") |> Enum.map(&visible_text/1)
   end
 end

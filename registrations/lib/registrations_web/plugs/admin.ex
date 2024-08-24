@@ -1,4 +1,5 @@
 defmodule RegistrationsWeb.Plugs.Admin do
+  @moduledoc false
   import Plug.Conn
 
   def init(options) do
@@ -15,7 +16,7 @@ defmodule RegistrationsWeb.Plugs.Admin do
       conn
       |> Phoenix.Controller.put_flash(:error, "Who are you?")
       |> Phoenix.Controller.redirect(to: not_logged_in_url())
-      |> halt
+      |> halt()
     end
   end
 

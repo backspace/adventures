@@ -30,13 +30,12 @@ defmodule RegistrationsWeb do
     quote do
       use Phoenix.Controller, namespace: RegistrationsWeb
 
-      alias Registrations.Repo
       import Ecto
       import Ecto.Query, only: [from: 1, from: 2]
-
-      alias RegistrationsWeb.Router.Helpers, as: Routes
-
       import RegistrationsWeb.Pow.ControllerHelper
+
+      alias Registrations.Repo
+      alias RegistrationsWeb.Router.Helpers, as: Routes
     end
   end
 
@@ -46,12 +45,12 @@ defmodule RegistrationsWeb do
         root: "lib/registrations_web/templates",
         namespace: RegistrationsWeb
 
+      use Phoenix.HTML
+
       # Import convenience functions from controllers
       import Phoenix.Controller, only: [get_csrf_token: 0, get_flash: 2, view_module: 1]
 
       # Use all HTML functionality (forms, tags, etc)
-      use Phoenix.HTML
-
       import RegistrationsWeb.Session, only: [current_user: 1, logged_in?: 1, admin?: 1]
 
       # Adapter from http://stackoverflow.com/a/31577025/760389
@@ -60,8 +59,6 @@ defmodule RegistrationsWeb do
 
         if (String.starts_with?(current_path, path) && path != "/") || current_path == path do
           "active"
-        else
-          nil
         end
       end
 
@@ -104,9 +101,10 @@ defmodule RegistrationsWeb do
     quote do
       use Phoenix.Channel
 
-      alias Registrations.Repo
       import Ecto
       import Ecto.Query, only: [from: 1, from: 2]
+
+      alias Registrations.Repo
     end
   end
 
@@ -120,10 +118,10 @@ defmodule RegistrationsWeb do
 
       # Import basic rendering functionality (render, render_layout, etc)
       import Phoenix.View
-
       import RegistrationsWeb.ErrorHelpers
-      import RegistrationsWeb.SharedHelpers
       import RegistrationsWeb.Gettext
+      import RegistrationsWeb.SharedHelpers
+
       alias RegistrationsWeb.Router.Helpers, as: Routes
     end
   end

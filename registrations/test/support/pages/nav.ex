@@ -1,5 +1,8 @@
 defmodule Registrations.Pages.Nav do
+  @moduledoc false
   use Hound.Helpers
+
+  alias Hound.Helpers.Page
 
   def present? do
     Hound.Matchers.element?(:css, ".row.nav")
@@ -48,6 +51,7 @@ defmodule Registrations.Pages.Nav do
   end
 
   defmodule LogoutLink do
+    @moduledoc false
     @selector {:css, "a.logout"}
 
     def text do
@@ -60,6 +64,7 @@ defmodule Registrations.Pages.Nav do
   end
 
   defmodule LoginLink do
+    @moduledoc false
     @selector {:css, "a.login"}
 
     def click do
@@ -68,11 +73,12 @@ defmodule Registrations.Pages.Nav do
 
     def present? do
       # Is this reasonable?
-      apply(Hound.Helpers.Page, :find_element, Tuple.to_list(@selector))
+      apply(Page, :find_element, Tuple.to_list(@selector))
     end
   end
 
   defmodule RegisterLink do
+    @moduledoc false
     @selector {:css, "a.register"}
 
     def click do
@@ -80,11 +86,12 @@ defmodule Registrations.Pages.Nav do
     end
 
     def present? do
-      apply(Hound.Helpers.Page, :find_element, Tuple.to_list(@selector))
+      apply(Page, :find_element, Tuple.to_list(@selector))
     end
   end
 
   defmodule UsersLink do
+    @moduledoc false
     @selector {:css, "a.users"}
 
     def click do
@@ -97,6 +104,7 @@ defmodule Registrations.Pages.Nav do
   end
 
   defmodule TeamsLink do
+    @moduledoc false
     @selector {:css, "a.teams"}
 
     def click do
@@ -105,6 +113,7 @@ defmodule Registrations.Pages.Nav do
   end
 
   defmodule SettingsLink do
+    @moduledoc false
     @selector {:css, "a.settings"}
 
     def click do

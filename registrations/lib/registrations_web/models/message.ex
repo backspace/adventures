@@ -1,4 +1,5 @@
 defmodule RegistrationsWeb.Message do
+  @moduledoc false
   use RegistrationsWeb, :model
 
   @primary_key {:id, :binary_id, autogenerate: true}

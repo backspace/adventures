@@ -60,7 +60,7 @@ defmodule Registrations.Release do
 
   defp pad(content, pad) do
     content
-    |> to_string
+    |> to_string()
     |> String.pad_trailing(pad)
   end
 end

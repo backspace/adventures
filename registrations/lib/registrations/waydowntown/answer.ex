@@ -1,5 +1,7 @@
 defmodule Registrations.Waydowntown.Answer do
+  @moduledoc false
   use Ecto.Schema
+
   import Ecto.Changeset
 
   alias Registrations.Waydowntown.Game
@@ -33,7 +35,8 @@ defmodule Registrations.Waydowntown.Answer do
         changeset
 
       game_id ->
-        Registrations.Repo.get(Game, game_id)
+        Game
+        |> Registrations.Repo.get(game_id)
         |> case do
           %Game{winner_answer_id: nil} -> changeset
           %Game{} -> add_error(changeset, :game_id, "game already has a winner")

@@ -1,6 +1,6 @@
 defmodule RegistrationsWeb.User do
+  @moduledoc false
   use Ecto.Schema
-
   use Pow.Ecto.Schema
   use PowAssent.Ecto.Schema
 
@@ -8,6 +8,7 @@ defmodule RegistrationsWeb.User do
     extensions: [PowResetPassword, PowInvitation, PowPersistentSession]
 
   use RegistrationsWeb, :model
+
   alias Registrations.Repo
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -78,9 +79,10 @@ defmodule RegistrationsWeb.User do
 
   def details_changeset(model, params \\ %{}) do
     required_fields =
-      case Application.get_env(:registrations, :request_confirmation) do
-        true -> ~w(attending)a
-        _ -> []
+      if Application.get_env(:registrations, :request_confirmation) do
+        ~w(attending)a
+      else
+        []
       end
 
     model
@@ -105,14 +107,12 @@ defmodule RegistrationsWeb.User do
   end
 
   def deletion_changeset(model, params \\ %{}) do
-    model
-    |> cast(params, ~w(current_password)a, [])
+    cast(model, params, ~w(current_password)a, [])
   end
 
   def reset_changeset(model) do
     if model do
-      model
-      |> cast(%{}, [], ~w(recovery_hash)a)
+      cast(model, %{}, [], ~w(recovery_hash)a)
     end
   end
 
@@ -123,16 +123,15 @@ defmodule RegistrationsWeb.User do
     |> validate_confirmation(:new_password)
   end
 
-  def voicepass_candidates() do
+  def voicepass_candidates do
     file = File.open!("config/sixteen.txt")
     all_voicepasses = Enum.map(IO.stream(file, :line), &String.trim/1)
 
     existing_voicepasse_prefixes =
-      Repo.all(
-        from(u in RegistrationsWeb.User,
-          select: u.voicepass
-        )
+      from(u in RegistrationsWeb.User,
+        select: u.voicepass
       )
+      |> Repo.all()
       |> Enum.filter(& &1)
       |> Enum.map(fn str -> String.slice(str, 0, 4) end)
 

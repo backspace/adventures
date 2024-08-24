@@ -64,7 +64,8 @@ defmodule Registrations.Mixfile do
       {:sentry, "~> 10.0"},
       {:hackney, "~> 1.19"},
       {:assertions, "0.19.0", only: :test},
-      {:jsonapi, "~> 1.8"}
+      {:jsonapi, "~> 1.8"},
+      {:styler, "~> 1.0.0"}
     ]
   end
 

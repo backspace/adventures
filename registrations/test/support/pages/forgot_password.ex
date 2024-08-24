@@ -1,4 +1,5 @@
 defmodule Registrations.Pages.ForgotPassword do
+  @moduledoc false
   use Hound.Helpers
 
   def fill_email(email) do

@@ -1,4 +1,5 @@
 defmodule Registrations.Pages.Account do
+  @moduledoc false
   use Hound.Helpers
 
   def fill_current_password(password) do

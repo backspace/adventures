@@ -15,13 +15,16 @@ defmodule RegistrationsWeb.ChannelCase do
 
   use ExUnit.CaseTemplate
 
+  alias Ecto.Adapters.SQL.Sandbox
+
   using do
     quote do
       # Import conveniences for testing with channels
       use Phoenix.ChannelTest
 
-      alias Registrations.Repo
       import Ecto.Query, only: [from: 2]
+
+      alias Registrations.Repo
 
       # The default endpoint for testing
       @endpoint RegistrationsWeb.Endpoint
@@ -29,10 +32,10 @@ defmodule RegistrationsWeb.ChannelCase do
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Registrations.Repo)
+    :ok = Sandbox.checkout(Registrations.Repo)
 
     unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Registrations.Repo, {:shared, self()})
+      Sandbox.mode(Registrations.Repo, {:shared, self()})
     end
 
     :ok

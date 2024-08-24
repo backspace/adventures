@@ -1,7 +1,8 @@
 defmodule RegistrationsWeb.GameView do
   use JSONAPI.View, type: "games"
-  alias RegistrationsWeb.GameView
+
   alias Registrations.Waydowntown
+  alias RegistrationsWeb.GameView
 
   def fields do
     [:complete, :correct_answers, :total_answers]

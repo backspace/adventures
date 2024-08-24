@@ -1,4 +1,5 @@
 defmodule RegistrationsWeb.PowAssent.UserIdentities do
+  @moduledoc false
   use PowAssent.Ecto.UserIdentities.Context,
     repo: Registrations.Repo,
     user: RegistrationsWeb.User

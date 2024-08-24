@@ -1,4 +1,5 @@
 defmodule Registrations.Pages.Messages do
+  @moduledoc false
   use Hound.Helpers
 
   def new_message do

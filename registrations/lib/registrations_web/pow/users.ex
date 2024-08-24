@@ -1,4 +1,5 @@
 defmodule RegistrationsWeb.Pow.Users do
+  @moduledoc false
   use Pow.Ecto.Context,
     repo: Registrations.Repo,
     user: RegistrationsWeb.User

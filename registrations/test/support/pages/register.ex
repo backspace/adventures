@@ -1,4 +1,5 @@
 defmodule Registrations.Pages.Register do
+  @moduledoc false
   use Hound.Helpers
 
   def fill_email(email) do

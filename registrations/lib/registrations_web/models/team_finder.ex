@@ -1,4 +1,5 @@
 defmodule RegistrationsWeb.TeamFinder do
+  @moduledoc false
   def users_from_email_list(email_list, users) do
     email_list
     |> String.split()
@@ -25,8 +26,7 @@ defmodule RegistrationsWeb.TeamFinder do
         not_mutuals = (user_proposals -- mutuals) -- [current_user]
 
         proposers_for_this_mutual =
-          Enum.map(not_mutuals, fn not_mutual -> {not_mutual, [user]} end)
-          |> Enum.into(%{})
+          Map.new(not_mutuals, fn not_mutual -> {not_mutual, [user]} end)
 
         merged = Map.merge(proposers_for_this_mutual, acc, fn _key, c1, c2 -> c2 ++ c1 end)
 
@@ -41,8 +41,7 @@ defmodule RegistrationsWeb.TeamFinder do
       end)
 
     proposees =
-      ((emails -- invalids) -- Enum.map(users_with_current, & &1.email))
-      |> Enum.map(fn email ->
+      Enum.map((emails -- invalids) -- Enum.map(users_with_current, & &1.email), fn email ->
         registered_user = Enum.find(users, fn user -> user.email == email end)
 
         case registered_user do

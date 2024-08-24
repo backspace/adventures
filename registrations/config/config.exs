@@ -5,7 +5,15 @@
 # is restricted to this project.
 import Config
 
-# Configures the endpoint
+config :logger, :console,
+  # Configures the endpoint
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:request_id]
+
+config :registrations, Registrations.Mailer,
+  adapter: Swoosh.Adapters.Mailgun,
+  domain: "mg.chromatin.ca"
+
 config :registrations, RegistrationsWeb.Endpoint,
   url: [host: "localhost"],
   root: Path.dirname(__DIR__),
@@ -14,14 +22,6 @@ config :registrations, RegistrationsWeb.Endpoint,
   pubsub_server: Registrations.PubSub
 
 # Configures Elixir's Logger
-config :logger, :console,
-  format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
-
-config :registrations, Registrations.Mailer,
-  adapter: Swoosh.Adapters.Mailgun,
-  domain: "mg.chromatin.ca"
-
 config :registrations,
   placeholder: false,
   start_time: [{{2017, 6, 8}, {18, 00, 00}}, "Canada/Pacific"],
@@ -31,8 +31,13 @@ config :registrations,
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
-# Use Jason for JSON parsing in Phoenix
+config :phoenix, :generators,
+  # Use Jason for JSON parsing in Phoenix
+  migration: true,
+  binary_id: false
+
 config :phoenix, :json_library, Jason
 
 config :registrations, :pow,
@@ -47,14 +52,7 @@ config :registrations, :pow,
   messages_backend: RegistrationsWeb.Pow.Messages,
   users_context: RegistrationsWeb.Pow.Users
 
-config :registrations, :pow_assent,
-  user_identities_context: RegistrationsWeb.PowAssent.UserIdentities
+config :registrations, :pow_assent, user_identities_context: RegistrationsWeb.PowAssent.UserIdentities
 
 # Configure phoenix generators
-config :phoenix, :generators,
-  migration: true,
-  binary_id: false
-
-config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
-
 config :registrations, ecto_repos: [Registrations.Repo]

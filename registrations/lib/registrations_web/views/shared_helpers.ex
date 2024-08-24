@@ -1,5 +1,6 @@
 defmodule RegistrationsWeb.SharedHelpers do
   # Adapted from https://stackoverflow.com/a/42835944/760389
+  @moduledoc false
   def truncate(text, opts \\ []) do
     max_length = opts[:length] || 50
     omission = opts[:omission] || "…"
@@ -22,7 +23,7 @@ defmodule RegistrationsWeb.SharedHelpers do
   end
 
   def team_emails(team) do
-    Enum.map(team.users, fn user -> user.email end) |> Enum.sort() |> Enum.join(", ")
+    team.users |> Enum.map(fn user -> user.email end) |> Enum.sort() |> Enum.join(", ")
   end
 
   def adventure do
@@ -59,13 +60,13 @@ defmodule RegistrationsWeb.SharedHelpers do
 
   def start_time do
     if parsed_start_time().minute > 0 do
-      formatted_start_time("%-I:%M%p") |> String.downcase()
+      "%-I:%M%p" |> formatted_start_time() |> String.downcase()
     else
-      formatted_start_time("%-I%p") |> String.downcase()
+      "%-I%p" |> formatted_start_time() |> String.downcase()
     end
   end
 
-  def is_unmnemonic_devices() do
+  def is_unmnemonic_devices do
     Application.get_env(:registrations, :adventure) == "unmnemonic-devices"
   end
 

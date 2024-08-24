@@ -7,7 +7,7 @@ defmodule RegistrationsWeb.MessageController do
   plug(:scrub_params, "message" when action in [:create, :update])
 
   def index(conn, _params) do
-    messages = Repo.all(Message |> Ecto.Query.order_by(:postmarked_at))
+    messages = Repo.all(Ecto.Query.order_by(Message, :postmarked_at))
     render(conn, "index.html", messages: messages)
   end
 
@@ -66,12 +66,14 @@ defmodule RegistrationsWeb.MessageController do
   def deliver(conn, %{"id" => id, "me" => me}) do
     message = Repo.get!(Message, id)
 
-    users =
+    if_result =
       if(me == "true",
         do: [conn.assigns[:current_user]],
         else: Repo.all(RegistrationsWeb.User)
       )
-      |> Repo.preload(team: [:users])
+
+    users =
+      Repo.preload(if_result, team: [:users])
 
     Enum.each(users, fn user ->
       relationships = RegistrationsWeb.TeamFinder.relationships(user, users)
@@ -106,10 +108,7 @@ defmodule RegistrationsWeb.MessageController do
     message = Repo.get!(Message, id)
 
     conn
-    |> put_layout(
-      {RegistrationsWeb.EmailView,
-       "#{Application.get_env(:registrations, :adventure)}-layout.html"}
-    )
+    |> put_layout({RegistrationsWeb.EmailView, "#{Application.get_env(:registrations, :adventure)}-layout.html"})
     |> render("preview.html", message: message)
   end
 end

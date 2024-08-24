@@ -40,13 +40,10 @@ defmodule RegistrationsWeb.TeamFinderTest do
     assert relationships.mutuals == [mutual_one, mutual_two]
 
     assert relationships.proposals_by_mutuals ==
-             Enum.into(
-               [
-                 {mutual_proposal_one, [mutual_one, mutual_two]},
-                 {mutual_proposal_two, [mutual_one]}
-               ],
-               %{}
-             )
+             Map.new([
+               {mutual_proposal_one, [mutual_one, mutual_two]},
+               {mutual_proposal_two, [mutual_one]}
+             ])
 
     assert relationships.proposees == [
              %{email: proposee_uninvited.email, invited: false},
