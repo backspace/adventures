@@ -6,10 +6,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:waydowntown/games/fill_in_the_blank.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/models/incarnation.dart';
 import 'package:waydowntown/models/region.dart';
-import 'package:waydowntown/routes/fill_in_the_blank_game.dart';
 
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());

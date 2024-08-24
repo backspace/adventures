@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:waydowntown/games/bluetooth_collector.dart';
+import 'package:waydowntown/games/code_collector.dart';
+import 'package:waydowntown/games/fill_in_the_blank.dart';
 import 'package:waydowntown/get_region_path.dart';
 import 'package:waydowntown/models/game.dart';
-import 'package:waydowntown/routes/bluetooth_collector_game.dart';
-import 'package:waydowntown/routes/code_collector_game.dart';
-import 'package:waydowntown/routes/fill_in_the_blank_game.dart';
 import 'package:yaml/yaml.dart';
 
 class GameLaunchRoute extends StatelessWidget {

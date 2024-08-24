@@ -10,12 +10,12 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:waydowntown/games/code_collector.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/models/incarnation.dart';
 import 'package:waydowntown/models/region.dart';
-import 'package:waydowntown/routes/code_collector_game.dart';
 
-import './code_collector_game_test.mocks.dart';
+import 'code_collector_test.mocks.dart';
 
 @GenerateMocks([MobileScannerController])
 void main() {
