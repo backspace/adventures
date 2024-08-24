@@ -45,6 +45,7 @@ dependencies:
   mobile_scanner: ^5.1.1
   latlong2: ^0.9.1
   flutter_map: ^7.0.2
+  flutter_native_splash: ^2.4.1
 
 dev_dependencies:
   flutter_test:
@@ -90,3 +91,7 @@ flutter:
     - family: Roadgeek
       fonts:
         - asset: fonts/roadgeek-2w.ttf
+
+flutter_native_splash:
+  color: "#479CBE"
+  image: assets/images/logo.png
