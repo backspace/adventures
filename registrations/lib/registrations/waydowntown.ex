@@ -37,7 +37,10 @@ defmodule Registrations.Waydowntown do
       ** (Ecto.NoResultsError)
 
   """
-  def get_game!(id), do: Repo.get!(Game, id) |> Repo.preload(incarnation: [region: [:parent]])
+  def get_game!(id) do
+    Repo.get!(Game, id)
+    |> Repo.preload([:answers, incarnation: [region: [:parent]]])
+  end
 
   @doc """
   Creates a game.
@@ -113,11 +116,26 @@ defmodule Registrations.Waydowntown do
           update_game_winner(game, answer)
         end
 
-        {:ok, Repo.preload(answer, :game)}
+        {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
 
       {:error, changeset} ->
         {:error, changeset}
     end
+  end
+
+  def get_game_progress(game) do
+    correct_answers =
+      game.answers
+      |> Enum.uniq_by(& &1.answer)
+      |> Enum.count(& &1.correct)
+
+    total_answers = length(game.incarnation.answers)
+
+    %{
+      correct_answers: correct_answers,
+      total_answers: total_answers,
+      complete: game.winner_answer_id != nil
+    }
   end
 
   defp check_answer_correctness(

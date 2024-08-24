@@ -45,9 +45,12 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
   bool isScanning = false;
   Map<String, String> deviceErrors = {};
 
+  late Game currentGame;
+
   @override
   void initState() {
     super.initState();
+    currentGame = widget.game;
     startScan();
   }
 
@@ -103,7 +106,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
             },
             'relationships': {
               'game': {
-                'data': {'type': 'games', 'id': widget.game.id},
+                'data': {'type': 'games', 'id': currentGame.id},
               },
             },
           },
@@ -115,6 +118,19 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
           detectedDevice.state = DeviceSubmissionState.correct;
         } else {
           detectedDevice.state = DeviceSubmissionState.incorrect;
+        }
+
+        if (response.data['included'] != null) {
+          final gameData = response.data['included'].firstWhere(
+            (included) =>
+                included['type'] == 'games' && included['id'] == currentGame.id,
+            orElse: () => null,
+          );
+          if (gameData != null) {
+            currentGame = Game.fromJson(
+                {'data': gameData, 'included': response.data['included']},
+                existingIncarnation: currentGame.incarnation);
+          }
         }
       });
     } catch (e) {
@@ -174,7 +190,13 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
       ),
       body: Column(
         children: [
-          Text(getRegionPath(widget.game.incarnation)),
+          Text(getRegionPath(currentGame.incarnation)),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Progress: ${currentGame.correctAnswers}/${currentGame.totalAnswers}',
+            ),
+          ),
           Expanded(
               child: ListView.builder(
             itemCount: detectedDevices.length,

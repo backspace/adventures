@@ -1,13 +1,29 @@
 defmodule RegistrationsWeb.GameView do
   use JSONAPI.View, type: "games"
   alias RegistrationsWeb.GameView
+  alias Registrations.Waydowntown
 
   def fields do
-    [:complete]
+    [:complete, :correct_answers, :total_answers]
   end
 
-  def complete(data, _conn) do
-    data.winner_answer_id != nil
+  def hidden(game) do
+    case game.incarnation.concept do
+      "fill_in_the_blank" -> [:correct_answers, :total_answers]
+      _ -> []
+    end
+  end
+
+  def complete(game, _conn) do
+    Waydowntown.get_game_progress(game).complete
+  end
+
+  def correct_answers(game, _conn) do
+    Waydowntown.get_game_progress(game).correct_answers
+  end
+
+  def total_answers(game, _conn) do
+    Waydowntown.get_game_progress(game).total_answers
   end
 
   def render("index.json", %{games: games, conn: conn, params: params}) do

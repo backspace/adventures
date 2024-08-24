@@ -35,6 +35,10 @@ void main() {
                 "data": {
                   "id": "22261813-2171-453f-a669-db08edc70d6d",
                   "type": "games",
+                  "attributes": {
+                    "correct_answers": 2,
+                    "total_answers": 3,
+                  },
                   "relationships": {
                     "incarnation": {
                       "links": {
@@ -110,6 +114,10 @@ void main() {
                 "data": {
                   "id": "22261813-2171-453f-a669-db08edc70d6d",
                   "type": "games",
+                  "attributes": {
+                    "correct_answers": 2,
+                    "total_answers": 3,
+                  },
                   "relationships": {
                     "incarnation": {
                       "links": {
@@ -185,6 +193,10 @@ void main() {
           "data": {
             "id": "22261813-2171-453f-a669-db08edc70d6d",
             "type": "games",
+            "attributes": {
+              "correct_answers": 2,
+              "total_answers": 3,
+            },
             "relationships": {
               "incarnation": {
                 "links": {
