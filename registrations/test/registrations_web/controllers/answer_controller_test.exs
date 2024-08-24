@@ -22,7 +22,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
       incarnation =
         Repo.insert!(%Incarnation{
           concept: "fill_in_the_blank",
-          answer: "the answer",
+          answers: ["the answer"],
           region: region
         })
 

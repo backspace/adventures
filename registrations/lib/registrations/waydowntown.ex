@@ -139,7 +139,7 @@ defmodule Registrations.Waydowntown do
     }
   end
 
-  defp check_answer_correctness(%Incarnation{concept: "fill_in_the_blank", answer: correct_answer}, answer_text) do
+  defp check_answer_correctness(%Incarnation{concept: "fill_in_the_blank", answers: [correct_answer]}, answer_text) do
     String.downcase(String.trim(correct_answer)) == String.downcase(String.trim(answer_text))
   end
 

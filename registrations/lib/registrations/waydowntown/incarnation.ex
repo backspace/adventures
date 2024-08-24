@@ -8,7 +8,6 @@ defmodule Registrations.Waydowntown.Incarnation do
   @schema_prefix "waydowntown"
 
   schema "incarnations" do
-    field(:answer, :string)
     field(:answers, {:array, :string})
     field(:concept, :string)
     field(:mask, :string)
@@ -22,7 +21,7 @@ defmodule Registrations.Waydowntown.Incarnation do
   @doc false
   def changeset(incarnation, attrs) do
     incarnation
-    |> cast(attrs, [:concept, :mask, :answer, :answers])
-    |> validate_required([:concept, :mask, :answer, :answers])
+    |> cast(attrs, [:concept, :mask, :answers])
+    |> validate_required([:concept, :mask, :answers])
   end
 end
