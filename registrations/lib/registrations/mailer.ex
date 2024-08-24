@@ -75,8 +75,8 @@ defmodule Registrations.Mailer do
 
   def waitlist_email(email, question) do
     new()
-    |> to(email)
-    |> Swoosh.Email.from("mdrysdale@chromatin.ca")
+    |> to(adventure_from())
+    |> Swoosh.Email.from(adventure_from())
     |> subject("Waitlist submission from #{email}")
     |> text_body("Email: #{email}\nQuestion: #{question}")
     |> deliver()

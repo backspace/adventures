@@ -186,8 +186,8 @@ defmodule Registrations.Waydowntown.Integration.Home do
     assert Nav.info_text() == "we’ll let you know when registration opens"
 
     [sent_email] = Registrations.SwooshHelper.sent_email()
-    assert sent_email.to == [{"", "interested@example.com"}]
-    assert sent_email.from == {"", "mdrysdale@chromatin.ca"}
+    assert sent_email.to == [{"", "b@events.chromatin.ca"}]
+    assert sent_email.from == {"", "b@events.chromatin.ca"}
 
     assert sent_email.subject == "Waitlist submission from interested@example.com"
 
