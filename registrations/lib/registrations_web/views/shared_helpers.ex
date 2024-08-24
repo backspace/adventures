@@ -22,7 +22,7 @@ defmodule RegistrationsWeb.SharedHelpers do
   end
 
   def team_emails(team) do
-    Enum.map(team.users, fn user -> user.email end) |> Enum.join(", ")
+    Enum.map(team.users, fn user -> user.email end) |> Enum.sort() |> Enum.join(", ")
   end
 
   def adventure do
