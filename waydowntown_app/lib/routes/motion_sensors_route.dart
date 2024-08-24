@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
@@ -10,10 +12,10 @@ class MotionSensorsRoute extends StatefulWidget {
   const MotionSensorsRoute({super.key});
 
   @override
-  _MotionSensorsRouteState createState() => _MotionSensorsRouteState();
+  MotionSensorsRouteState createState() => MotionSensorsRouteState();
 }
 
-class _MotionSensorsRouteState extends State<MotionSensorsRoute> {
+class MotionSensorsRouteState extends State<MotionSensorsRoute> {
   final Vector3 _accelerometer = Vector3.zero();
   final Vector3 _gyroscope = Vector3.zero();
   final Vector3 _magnetometer = Vector3.zero();
@@ -25,25 +27,45 @@ class _MotionSensorsRouteState extends State<MotionSensorsRoute> {
 
   int? _groupValue = 0;
 
+  // Add these variables to store the stream subscriptions
+  late StreamSubscription<GyroscopeEvent> _gyroscopeSubscription;
+  late StreamSubscription<AccelerometerEvent> _accelerometerSubscription;
+  late StreamSubscription<UserAccelerometerEvent>
+      _userAccelerometerSubscription;
+  late StreamSubscription<MagnetometerEvent> _magnetometerSubscription;
+  StreamSubscription<OrientationEvent>? _orientationSubscription;
+  late StreamSubscription<AbsoluteOrientationEvent>
+      _absoluteOrientationSubscription;
+  late StreamSubscription<ScreenOrientationEvent>
+      _screenOrientationSubscription;
+
   @override
   void initState() {
     super.initState();
-    motionSensors.gyroscope.listen((GyroscopeEvent event) {
+
+    _gyroscopeSubscription =
+        motionSensors.gyroscope.listen((GyroscopeEvent event) {
       setState(() {
         _gyroscope.setValues(event.x, event.y, event.z);
       });
     });
-    motionSensors.accelerometer.listen((AccelerometerEvent event) {
+
+    _accelerometerSubscription =
+        motionSensors.accelerometer.listen((AccelerometerEvent event) {
       setState(() {
         _accelerometer.setValues(event.x, event.y, event.z);
       });
     });
-    motionSensors.userAccelerometer.listen((UserAccelerometerEvent event) {
+
+    _userAccelerometerSubscription =
+        motionSensors.userAccelerometer.listen((UserAccelerometerEvent event) {
       setState(() {
         _userAaccelerometer.setValues(event.x, event.y, event.z);
       });
     });
-    motionSensors.magnetometer.listen((MagnetometerEvent event) {
+
+    _magnetometerSubscription =
+        motionSensors.magnetometer.listen((MagnetometerEvent event) {
       setState(() {
         _magnetometer.setValues(event.x, event.y, event.z);
         var matrix =
@@ -51,25 +73,43 @@ class _MotionSensorsRouteState extends State<MotionSensorsRoute> {
         _absoluteOrientation2.setFrom(motionSensors.getOrientation(matrix));
       });
     });
+
     motionSensors.isOrientationAvailable().then((available) {
       if (available) {
-        motionSensors.orientation.listen((OrientationEvent event) {
+        _orientationSubscription =
+            motionSensors.orientation.listen((OrientationEvent event) {
           setState(() {
             _orientation.setValues(event.yaw, event.pitch, event.roll);
           });
         });
       }
     });
-    motionSensors.absoluteOrientation.listen((AbsoluteOrientationEvent event) {
+
+    _absoluteOrientationSubscription = motionSensors.absoluteOrientation
+        .listen((AbsoluteOrientationEvent event) {
       setState(() {
         _absoluteOrientation.setValues(event.yaw, event.pitch, event.roll);
       });
     });
-    motionSensors.screenOrientation.listen((ScreenOrientationEvent event) {
+
+    _screenOrientationSubscription =
+        motionSensors.screenOrientation.listen((ScreenOrientationEvent event) {
       setState(() {
         _screenOrientation = event.angle;
       });
     });
+  }
+
+  @override
+  void dispose() {
+    _gyroscopeSubscription.cancel();
+    _accelerometerSubscription.cancel();
+    _userAccelerometerSubscription.cancel();
+    _magnetometerSubscription.cancel();
+    _orientationSubscription?.cancel();
+    _absoluteOrientationSubscription.cancel();
+    _screenOrientationSubscription.cancel();
+    super.dispose();
   }
 
   void setUpdateInterval(int? groupValue, int interval) {
