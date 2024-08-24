@@ -116,7 +116,7 @@ defmodule Registrations.Integration.Teams do
     assert rulag.symbol == "?"
 
     assert tuio.text ==
-             "shevek@example.com and bedap@example.com have this address in their team emails lists. Add it if you agree."
+             "bedap@example.com and shevek@example.com have this address in their team emails lists. Add it if you agree."
 
     [invalid] = Details.invalids()
     assert invalid.email == "nooo"

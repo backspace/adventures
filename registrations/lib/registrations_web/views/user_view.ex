@@ -5,7 +5,7 @@ defmodule RegistrationsWeb.UserView do
     if length(mutuals) == 1 do
       "#{hd(mutuals).email} has this address in their team emails list."
     else
-      "#{Registrations.Cldr.List.to_string!(Enum.map(mutuals, & &1.email))} have this address in their team emails lists."
+      "#{Registrations.Cldr.List.to_string!(Enum.map(mutuals, & &1.email) |> Enum.sort())} have this address in their team emails lists."
     end
   end
 
