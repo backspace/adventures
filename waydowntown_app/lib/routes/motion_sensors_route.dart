@@ -86,117 +86,112 @@ class _MotionSensorsRouteState extends State<MotionSensorsRoute> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Motion Sensors'),
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text('Update Interval'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Radio(
-                    value: 1,
-                    groupValue: _groupValue,
-                    onChanged: (dynamic value) => setUpdateInterval(
-                        value, Duration.microsecondsPerSecond ~/ 1),
-                  ),
-                  const Text("1 FPS"),
-                  Radio(
-                    value: 2,
-                    groupValue: _groupValue,
-                    onChanged: (dynamic value) => setUpdateInterval(
-                        value, Duration.microsecondsPerSecond ~/ 30),
-                  ),
-                  const Text("30 FPS"),
-                  Radio(
-                    value: 3,
-                    groupValue: _groupValue,
-                    onChanged: (dynamic value) => setUpdateInterval(
-                        value, Duration.microsecondsPerSecond ~/ 60),
-                  ),
-                  const Text("60 FPS"),
-                ],
-              ),
-              const Text('Accelerometer'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text(_accelerometer.x.toStringAsFixed(4)),
-                  Text(_accelerometer.y.toStringAsFixed(4)),
-                  Text(_accelerometer.z.toStringAsFixed(4)),
-                ],
-              ),
-              const Text('Magnetometer'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text(_magnetometer.x.toStringAsFixed(4)),
-                  Text(_magnetometer.y.toStringAsFixed(4)),
-                  Text(_magnetometer.z.toStringAsFixed(4)),
-                ],
-              ),
-              const Text('Gyroscope'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text(_gyroscope.x.toStringAsFixed(4)),
-                  Text(_gyroscope.y.toStringAsFixed(4)),
-                  Text(_gyroscope.z.toStringAsFixed(4)),
-                ],
-              ),
-              const Text('User Accelerometer'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text(_userAaccelerometer.x.toStringAsFixed(4)),
-                  Text(_userAaccelerometer.y.toStringAsFixed(4)),
-                  Text(_userAaccelerometer.z.toStringAsFixed(4)),
-                ],
-              ),
-              const Text('Orientation'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text(degrees(_orientation.x).toStringAsFixed(4)),
-                  Text(degrees(_orientation.y).toStringAsFixed(4)),
-                  Text(degrees(_orientation.z).toStringAsFixed(4)),
-                ],
-              ),
-              const Text('Absolute Orientation'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text(degrees(_absoluteOrientation.x).toStringAsFixed(4)),
-                  Text(degrees(_absoluteOrientation.y).toStringAsFixed(4)),
-                  Text(degrees(_absoluteOrientation.z).toStringAsFixed(4)),
-                ],
-              ),
-              const Text('Orientation (accelerometer + magnetometer)'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text(
-                      degrees(_absoluteOrientation2.x).toStringAsFixed(4)),
-                  Text(
-                      degrees(_absoluteOrientation2.y).toStringAsFixed(4)),
-                  Text(
-                      degrees(_absoluteOrientation2.z).toStringAsFixed(4)),
-                ],
-              ),
-              const Text('Screen Orientation'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Text(_screenOrientation!.toStringAsFixed(4)),
-                ],
-              ),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Motion Sensors'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text('Update Interval'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Radio(
+                  value: 1,
+                  groupValue: _groupValue,
+                  onChanged: (dynamic value) => setUpdateInterval(
+                      value, Duration.microsecondsPerSecond ~/ 1),
+                ),
+                const Text("1 FPS"),
+                Radio(
+                  value: 2,
+                  groupValue: _groupValue,
+                  onChanged: (dynamic value) => setUpdateInterval(
+                      value, Duration.microsecondsPerSecond ~/ 30),
+                ),
+                const Text("30 FPS"),
+                Radio(
+                  value: 3,
+                  groupValue: _groupValue,
+                  onChanged: (dynamic value) => setUpdateInterval(
+                      value, Duration.microsecondsPerSecond ~/ 60),
+                ),
+                const Text("60 FPS"),
+              ],
+            ),
+            const Text('Accelerometer'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Text(_accelerometer.x.toStringAsFixed(4)),
+                Text(_accelerometer.y.toStringAsFixed(4)),
+                Text(_accelerometer.z.toStringAsFixed(4)),
+              ],
+            ),
+            const Text('Magnetometer'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Text(_magnetometer.x.toStringAsFixed(4)),
+                Text(_magnetometer.y.toStringAsFixed(4)),
+                Text(_magnetometer.z.toStringAsFixed(4)),
+              ],
+            ),
+            const Text('Gyroscope'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Text(_gyroscope.x.toStringAsFixed(4)),
+                Text(_gyroscope.y.toStringAsFixed(4)),
+                Text(_gyroscope.z.toStringAsFixed(4)),
+              ],
+            ),
+            const Text('User Accelerometer'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Text(_userAaccelerometer.x.toStringAsFixed(4)),
+                Text(_userAaccelerometer.y.toStringAsFixed(4)),
+                Text(_userAaccelerometer.z.toStringAsFixed(4)),
+              ],
+            ),
+            const Text('Orientation'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Text(degrees(_orientation.x).toStringAsFixed(4)),
+                Text(degrees(_orientation.y).toStringAsFixed(4)),
+                Text(degrees(_orientation.z).toStringAsFixed(4)),
+              ],
+            ),
+            const Text('Absolute Orientation'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Text(degrees(_absoluteOrientation.x).toStringAsFixed(4)),
+                Text(degrees(_absoluteOrientation.y).toStringAsFixed(4)),
+                Text(degrees(_absoluteOrientation.z).toStringAsFixed(4)),
+              ],
+            ),
+            const Text('Orientation (accelerometer + magnetometer)'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Text(degrees(_absoluteOrientation2.x).toStringAsFixed(4)),
+                Text(degrees(_absoluteOrientation2.y).toStringAsFixed(4)),
+                Text(degrees(_absoluteOrientation2.z).toStringAsFixed(4)),
+              ],
+            ),
+            const Text('Screen Orientation'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Text(_screenOrientation!.toStringAsFixed(4)),
+              ],
+            ),
+          ],
         ),
       ),
     );
