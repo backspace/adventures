@@ -37,12 +37,14 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
   List<DetectedCode> detectedCodes = [];
   late MobileScannerController controller;
   Map<String, String> codeErrors = {};
+  late Game currentGame;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     controller = widget.scannerController ?? MobileScannerController();
+    currentGame = widget.game;
     startScanner();
   }
 
@@ -70,7 +72,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
             },
             'relationships': {
               'game': {
-                'data': {'type': 'games', 'id': widget.game.id},
+                'data': {'type': 'games', 'id': currentGame.id},
               },
             },
           },
@@ -83,6 +85,20 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
             detectedCode.state = CodeSubmissionState.correct;
           } else {
             detectedCode.state = CodeSubmissionState.incorrect;
+          }
+
+          if (response.data['included'] != null) {
+            final gameData = response.data['included'].firstWhere(
+              (included) =>
+                  included['type'] == 'games' &&
+                  included['id'] == currentGame.id,
+              orElse: () => null,
+            );
+            if (gameData != null) {
+              currentGame = Game.fromJson(
+                  {'data': gameData, 'included': response.data['included']},
+                  existingIncarnation: currentGame.incarnation);
+            }
           }
         });
       }
@@ -143,7 +159,13 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
       ),
       body: Column(
         children: [
-          Text(getRegionPath(widget.game.incarnation)),
+          Text(getRegionPath(currentGame.incarnation)),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Progress: ${currentGame.correctAnswers}/${currentGame.totalAnswers}',
+            ),
+          ),
           Expanded(
             child: MobileScanner(
               controller: controller,

@@ -55,6 +55,8 @@ void main() {
         ),
       ),
     ),
+    correctAnswers: 1,
+    totalAnswers: 3,
   );
 
   late FlutterBluePlusMockable mockFlutterBluePlus;
@@ -126,11 +128,21 @@ void main() {
                 "game": {
                   "data": {
                     "type": "games",
-                    "id": "22261813-2171-453f-a669-db08edc70d6d"
+                    "id": "22261813-2171-453f-a669-db08edc70d6d",
                   }
                 }
               }
             },
+            "included": [
+              {
+                "id": "22261813-2171-453f-a669-db08edc70d6d",
+                "type": "games",
+                "attributes": {
+                  "correct_answers": 2,
+                  "total_answers": 3,
+                }
+              }
+            ],
             "meta": {}
           },
         ),
@@ -167,11 +179,21 @@ void main() {
                 "game": {
                   "data": {
                     "type": "games",
-                    "id": "22261813-2171-453f-a669-db08edc70d6d"
+                    "id": "22261813-2171-453f-a669-db08edc70d6d",
                   }
                 }
               }
             },
+            "included": [
+              {
+                "id": "22261813-2171-453f-a669-db08edc70d6d",
+                "type": "games",
+                "attributes": {
+                  "correct_answers": 2,
+                  "total_answers": 3,
+                }
+              }
+            ],
             "meta": {}
           },
         ),
@@ -211,11 +233,21 @@ void main() {
                     "game": {
                       "data": {
                         "type": "games",
-                        "id": "22261813-2171-453f-a669-db08edc70d6d"
+                        "id": "22261813-2171-453f-a669-db08edc70d6d",
                       }
                     }
                   }
                 },
+                "included": [
+                  {
+                    "id": "22261813-2171-453f-a669-db08edc70d6d",
+                    "type": "games",
+                    "attributes": {
+                      "correct_answers": 2,
+                      "total_answers": 3,
+                    }
+                  }
+                ],
                 "meta": {}
               }),
               data: {
@@ -275,6 +307,8 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.text('Progress: 1/3'), findsOneWidget);
+
     expect(
         find.byWidgetPredicate((widget) =>
             widget is ListTile &&
@@ -293,6 +327,8 @@ void main() {
         findsOneWidget);
 
     await tester.pumpAndSettle();
+
+    expect(find.text('Progress: 2/3'), findsOneWidget);
 
     expect(
         find.byWidgetPredicate((widget) =>

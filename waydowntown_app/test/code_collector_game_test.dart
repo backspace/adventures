@@ -41,6 +41,8 @@ void main() {
         ),
       ),
     ),
+    correctAnswers: 0,
+    totalAnswers: 5,
   );
 
   late MockMobileScannerController mockController;
@@ -104,11 +106,21 @@ void main() {
                 "game": {
                   "data": {
                     "type": "games",
-                    "id": "22261813-2171-453f-a669-db08edc70d6d"
+                    "id": "22261813-2171-453f-a669-db08edc70d6d",
                   }
                 }
               }
             },
+            "included": [
+              {
+                "id": "22261813-2171-453f-a669-db08edc70d6d",
+                "type": "games",
+                "attributes": {
+                  "correct_answers": 1,
+                  "total_answers": 5,
+                }
+              }
+            ],
             "meta": {}
           },
         ),
@@ -145,11 +157,21 @@ void main() {
                 "game": {
                   "data": {
                     "type": "games",
-                    "id": "22261813-2171-453f-a669-db08edc70d6d"
+                    "id": "22261813-2171-453f-a669-db08edc70d6d",
                   }
                 }
               }
             },
+            "included": [
+              {
+                "id": "22261813-2171-453f-a669-db08edc70d6d",
+                "type": "games",
+                "attributes": {
+                  "correct_answers": 1,
+                  "total_answers": 5,
+                }
+              }
+            ],
             "meta": {}
           },
         ),
@@ -194,6 +216,16 @@ void main() {
                     }
                   }
                 },
+                "included": [
+                  {
+                    "id": "22261813-2171-453f-a669-db08edc70d6d",
+                    "type": "games",
+                    "attributes": {
+                      "correct_answers": 1,
+                      "total_answers": 5,
+                    }
+                  }
+                ],
                 "meta": {}
               }),
               data: {
@@ -206,7 +238,7 @@ void main() {
                     'game': {
                       'data': {
                         'type': 'games',
-                        'id': '22261813-2171-453f-a669-db08edc70d6d'
+                        'id': '22261813-2171-453f-a669-db08edc70d6d',
                       }
                     }
                   }
@@ -266,6 +298,8 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.text('Progress: 0/5'), findsOneWidget);
+
     expect(
         find.byWidgetPredicate((widget) =>
             widget is ListTile &&
@@ -284,6 +318,8 @@ void main() {
         findsOneWidget);
 
     await tester.pumpAndSettle();
+
+    expect(find.text('Progress: 1/5'), findsOneWidget);
 
     expect(
         find.byWidgetPredicate((widget) =>
