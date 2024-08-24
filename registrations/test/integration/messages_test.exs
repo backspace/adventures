@@ -178,18 +178,28 @@ defmodule Registrations.Integration.Messages do
 
     assert Nav.info_text() == "Message was sent"
 
-    [has_no_team_email, _, has_team_email, _] = Registrations.SwooshHelper.sent_email()
+    sent_emails = Registrations.SwooshHelper.sent_email()
 
-    assert has_team_email.to == [{"", "user-with-team@example.com"}]
+    has_team_email =
+      Enum.find(sent_emails, fn email ->
+        email.to == [{"", "user-with-team@example.com"}]
+      end)
+
+    has_no_team_email =
+      Enum.find(sent_emails, fn email ->
+        email.to == [{"", "teamless-user@example.com"}]
+      end)
+
+    assert has_team_email
     assert String.contains?(has_team_email.text_body, "True team name")
     assert String.contains?(has_team_email.text_body, "Go easy on me")
 
     assert String.contains?(
              has_team_email.text_body,
-             "user-with-team@example.com, teammate@example.com"
+             "teammate@example.com, user-with-team@example.com"
            )
 
-    assert has_no_team_email.to == [{"", "teamless-user@example.com"}]
+    assert has_no_team_email
     assert String.contains?(has_no_team_email.text_body, "You have no team assigned!")
   end
 
