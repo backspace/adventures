@@ -21,6 +21,8 @@ void main() {
 
   Game game = Game(
     id: '22261813-2171-453f-a669-db08edc70d6d',
+    correctAnswers: 0,
+    totalAnswers: 0,
     incarnation: Incarnation(
       id: '0091eb84-85c8-4e63-962b-39e1a19d2781',
       concept: 'fill_in_the_blank',
