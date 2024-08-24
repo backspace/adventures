@@ -73,6 +73,7 @@ defmodule RegistrationsWeb.Router do
     resources "/settings", SettingsController
 
     post("/questions", PageController, :questions)
+    post("/waitlist", PageController, :waitlist)
     get("/", PageController, :index)
   end
 

@@ -21,7 +21,19 @@ defmodule Registrations.Pages.Home do
     fill_field({:id, "question_question"}, question)
   end
 
+  def fill_waitlist_email(email) do
+    fill_field({:id, "waitlist_email"}, email)
+  end
+
+  def fill_waitlist_question(question) do
+    fill_field({:id, "waitlist_question"}, question)
+  end
+
   def submit_question do
+    click({:class, "button"})
+  end
+
+  def submit_waitlist do
     click({:class, "button"})
   end
 

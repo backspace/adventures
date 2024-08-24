@@ -1,0 +1,21 @@
+<%= form_for @conn, Routes.page_path(@conn, :waitlist), [as: :waitlist], fn f -> %>
+  <div class="row">
+    <div class="small-12 columns">
+      <%= label f, :email, "Email" %>
+      <%= email_input f, :email, required: true %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="small-12 columns">
+      <%= label f, :question, "Question (optional)" %>
+      <%= textarea f, :question %>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="small-12 columns">
+      <%= submit "Join Waitlist", class: "button" %>
+    </div>
+  </div>
+<% end %>

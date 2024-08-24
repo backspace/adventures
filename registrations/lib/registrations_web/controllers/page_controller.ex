@@ -34,4 +34,15 @@ defmodule RegistrationsWeb.PageController do
     |> put_flash(:info, "Your question has been submitted.")
     |> redirect(to: "/")
   end
+
+  def waitlist(conn, %{"waitlist" => waitlist_params}) do
+    email = waitlist_params["email"]
+    question = waitlist_params["question"]
+
+    Registrations.Mailer.waitlist_email(email, question)
+
+    conn
+    |> put_flash(:info, "we’ll let you know when registration opens")
+    |> redirect(to: Routes.page_path(conn, :index))
+  end
 end

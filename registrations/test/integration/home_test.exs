@@ -167,4 +167,31 @@ defmodule Registrations.Waydowntown.Integration.Home do
     navigate_to("/")
     refute(Home.placeholder_exists?())
   end
+
+  test "placeholder page has waitlist form" do
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :placeholder,
+      true
+    )
+
+    navigate_to("/")
+
+    assert Home.placeholder_exists?()
+
+    Home.fill_waitlist_email("interested@example.com")
+    Home.fill_waitlist_question("When will the event take place?")
+    Home.submit_waitlist()
+
+    assert Nav.info_text() == "we’ll let you know when registration opens"
+
+    [sent_email] = Registrations.SwooshHelper.sent_email()
+    assert sent_email.to == [{"", "interested@example.com"}]
+    assert sent_email.from == {"", "mdrysdale@chromatin.ca"}
+
+    assert sent_email.subject == "Waitlist submission from interested@example.com"
+
+    assert sent_email.text_body ==
+             "Email: interested@example.com\nQuestion: When will the event take place?"
+  end
 end
