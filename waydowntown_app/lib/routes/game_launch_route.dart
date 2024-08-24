@@ -14,23 +14,31 @@ class GameLaunchRoute extends StatelessWidget {
 
   const GameLaunchRoute({super.key, required this.game, required this.dio});
 
-  Future<String?> _loadInstructions() async {
+  Future<Map<String, String?>> _loadGameInfo() async {
     final yamlString = await rootBundle.loadString('assets/concepts.yaml');
     final yamlMap = loadYaml(yamlString);
-    return yamlMap[game.incarnation.concept]?['instructions'];
+    final conceptInfo = yamlMap[game.incarnation.concept];
+    return {
+      'name': conceptInfo?['name'],
+      'instructions': conceptInfo?['instructions'],
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String?>(
-      future: _loadInstructions(),
+    return FutureBuilder<Map<String, String?>>(
+      future: _loadGameInfo(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
         }
 
+        final gameInfo = snapshot.data;
+        final gameName = gameInfo?['name'];
+        final instructions = gameInfo?['instructions'];
+
         return Scaffold(
-          appBar: AppBar(title: const Text('Game Instructions')),
+          appBar: AppBar(title: Text(gameName ?? 'Game Instructions')),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -39,10 +47,10 @@ class GameLaunchRoute extends StatelessWidget {
                 Text('Location: ${getRegionPath(game.incarnation)}',
                     style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 16),
-                if (snapshot.data != null) ...[
+                if (instructions != null) ...[
                   Text('Instructions:',
                       style: Theme.of(context).textTheme.headlineMedium),
-                  Text(snapshot.data!),
+                  Text(instructions),
                   const Spacer(),
                   Center(
                     child: ElevatedButton(

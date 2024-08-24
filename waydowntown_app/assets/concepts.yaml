@@ -1,8 +1,11 @@
 bluetooth_collector:
+  name: "Bluetooth Collector"
   instructions: "find all the bluetooth devices. when one is detected, tap it to submit."
 
 code_collector:
+  name: "Code Collector"
   instructions: "scan all the barcodes. when one is detected, tap it to submit."
 
 fill_in_the_blank:
+  name: "Fill in the Blank"
   instructions: "submit the correct answer to fill in the blank."

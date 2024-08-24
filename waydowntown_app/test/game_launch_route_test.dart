@@ -40,6 +40,7 @@ void main() {
 
     final yamlString = await rootBundle.loadString('assets/concepts.yaml');
     final yamlMap = loadYaml(yamlString);
+    final expectedName = yamlMap['bluetooth_collector']['name'];
     final expectedInstructions = yamlMap['bluetooth_collector']['instructions'];
 
     await tester
@@ -47,6 +48,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Location: Test Region'), findsOneWidget);
+    expect(find.text(expectedName), findsOneWidget);
     expect(find.text('Instructions:'), findsOneWidget);
     expect(find.text(expectedInstructions), findsOneWidget);
     expect(find.text('Start Game'), findsOneWidget);
