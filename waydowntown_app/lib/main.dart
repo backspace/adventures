@@ -38,7 +38,7 @@ class Waydowntown extends StatelessWidget {
     return MaterialApp(
       title: 'waydowntown',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF479CBE)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF059FC2)),
         fontFamily: 'Roadgeek',
         textTheme: const TextTheme(
           displayLarge:
