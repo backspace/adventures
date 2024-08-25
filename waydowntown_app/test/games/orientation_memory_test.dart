@@ -150,6 +150,14 @@ void main() {
           'attributes': {
             'answer': 'up|right',
           },
+          'relationships': {
+            'game': {
+              'data': {
+                'type': 'games',
+                'id': '22261813-2171-453f-a669-db08edc70d6d'
+              }
+            }
+          }
         }
       },
     );
@@ -194,6 +202,14 @@ void main() {
           'attributes': {
             'answer': 'up|right|left',
           },
+          'relationships': {
+            'game': {
+              'data': {
+                'type': 'games',
+                'id': '22261813-2171-453f-a669-db08edc70d6d'
+              }
+            }
+          }
         }
       },
     );

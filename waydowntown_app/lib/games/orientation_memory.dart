@@ -64,40 +64,35 @@ class _OrientationMemoryGameState extends State<OrientationMemoryGame> {
       final Response response;
       final newPattern = [...pattern, currentOrientation];
 
+      final data = {
+        'data': {
+          ...(lastAnswerId != null ? {'id': lastAnswerId} : {}),
+          'type': 'answers',
+          'attributes': {
+            'answer': newPattern.join('|'),
+          },
+          'relationships': {
+            'game': {
+              'data': {
+                'type': 'games',
+                'id': widget.game.id,
+              }
+            }
+          }
+        }
+      };
+
       if (lastAnswerId != null) {
         // PATCH if we have a previous correct answer
         response = await widget.dio.patch(
           '/waydowntown/answers/${lastAnswerId}?include=game',
-          data: {
-            'data': {
-              'type': 'answers',
-              'id': lastAnswerId,
-              'attributes': {
-                'answer': newPattern.join('|'),
-              },
-            }
-          },
+          data: data,
         );
       } else {
         // POST for the first answer or after an incorrect answer
         response = await widget.dio.post(
           '/waydowntown/answers?include=game',
-          data: {
-            'data': {
-              'type': 'answers',
-              'attributes': {
-                'answer': newPattern.join('|'),
-              },
-              'relationships': {
-                'game': {
-                  'data': {
-                    'type': 'games',
-                    'id': widget.game.id,
-                  }
-                }
-              }
-            }
-          },
+          data: data,
         );
       }
 
