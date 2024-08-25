@@ -65,7 +65,8 @@ defmodule Registrations.Mixfile do
       {:hackney, "~> 1.19"},
       {:assertions, "0.19.0", only: :test},
       {:jsonapi, "~> 1.8"},
-      {:styler, "~> 1.0.0"}
+      {:styler, "~> 1.0.0"},
+      {:yaml_elixir, "~> 2.11"}
     ]
   end
 

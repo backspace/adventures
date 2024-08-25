@@ -56,21 +56,128 @@ defmodule Registrations.Waydowntown do
 
   """
   def create_game(attrs \\ %{}, incarnation_filter \\ nil) do
-    incarnation = get_random_incarnation(incarnation_filter)
+    case_result =
+      case incarnation_filter do
+        %{"placed" => "false"} ->
+          create_game_with_new_incarnation(attrs)
+
+        %{"placed" => "true"} ->
+          create_game_with_placed_incarnation(attrs)
+
+        %{"concept" => concept} ->
+          create_game_with_concept(attrs, concept)
+
+        nil ->
+          create_game_with_placed_incarnation(attrs)
+      end
+
+    case case_result do
+      {:ok, game} -> {:ok, game}
+      {:error, :no_placed_incarnation_available} -> {:error, "No placed incarnation available"}
+      {:error, :no_incarnation_with_concept_available} -> {:error, "No incarnation with the specified concept available"}
+      {:error, changeset} -> {:error, changeset}
+    end
+  end
+
+  defp create_game_with_placed_incarnation(attrs) do
+    case get_random_incarnation(%{"placed" => true}) do
+      nil ->
+        {:error, :no_placed_incarnation_available}
+
+      incarnation ->
+        %Game{}
+        |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
+        |> Repo.insert()
+    end
+  end
+
+  defp create_game_with_concept(attrs, concept) do
+    case get_random_incarnation(%{"concept" => concept}) do
+      nil ->
+        {:error, :no_incarnation_with_concept_available}
+
+      incarnation ->
+        %Game{}
+        |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
+        |> Repo.insert()
+    end
+  end
+
+  defp create_game_with_new_incarnation(attrs) do
+    {concept_key, concept} = choose_unplaced_concept()
+    answers = generate_answers(concept)
+
+    {:ok, incarnation} =
+      create_incarnation(%{
+        concept: concept_key,
+        mask: concept["instructions"],
+        answers: answers,
+        placed: false
+      })
 
     %Game{}
     |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
     |> Repo.insert()
   end
 
-  defp get_random_incarnation(nil), do: Incarnation |> Repo.all() |> Enum.random()
+  defp create_incarnation(attrs) do
+    %Incarnation{}
+    |> Incarnation.changeset(attrs)
+    |> Repo.insert()
+  end
 
-  defp get_random_incarnation(concept) do
-    Incarnation
-    |> where([i], i.concept == ^concept)
-    |> Repo.all()
+  defp choose_unplaced_concept do
+    concepts = YamlElixir.read_from_file!("priv/concepts.yaml")
+
+    concepts
+    |> Enum.filter(fn {_, v} -> v["placed"] == false end)
     |> Enum.random()
   end
+
+  defp generate_answers(concept) do
+    options = concept["options"]
+    length = Enum.random(4..6)
+    Enum.take_random(options, length)
+  end
+
+  defp get_random_incarnation(filter) do
+    query = from(i in Incarnation)
+
+    query =
+      case filter do
+        %{"placed" => placed} when is_boolean(placed) ->
+          where(query, [i], i.placed == ^placed)
+
+        %{"concept" => concept} when is_binary(concept) ->
+          where(query, [i], i.concept == ^concept)
+
+        nil ->
+          query
+      end
+
+    query
+    |> Repo.all()
+    |> case do
+      [] -> nil
+      incarnations -> Enum.random(incarnations)
+    end
+  end
+
+  @doc """
+  Gets a single incarnation.
+
+  Raises `Ecto.NoResultsError` if the Incarnation does not exist.
+
+  ## Examples
+
+      iex> get_incarnation!(123)
+      %Incarnation{}
+
+      iex> get_incarnation!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_incarnation!(id), do: Repo.get!(Incarnation, id)
 
   @doc """
   Gets a single answer.
@@ -89,28 +196,38 @@ defmodule Registrations.Waydowntown do
   def get_answer!(id), do: Repo.get!(Answer, id)
 
   @doc """
-  Creates an answer.
+  Upserts an answer.
 
   ## Examples
 
-      iex> create_answer(%{field: value})
+      iex> upsert_answer(%{field: value})
       {:ok, %Answer{}}
 
-      iex> create_answer(%{field: bad_value})
+      iex> upsert_answer(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_answer(%{"answer" => answer_text, "game_id" => game_id}) do
+  def upsert_answer(%{"answer" => answer_text, "game_id" => game_id}) do
     game = get_game!(game_id)
     incarnation = game.incarnation
 
-    %Answer{}
-    |> Answer.changeset(%{
+    correct = check_answer_correctness(incarnation, answer_text)
+
+    attrs = %{
       "answer" => answer_text,
-      "correct" => check_answer_correctness(incarnation, answer_text),
+      "correct" => correct,
       "game_id" => game_id
-    })
-    |> Repo.insert()
+    }
+
+    case_result =
+      case Repo.get_by(Answer, game_id: game_id) do
+        nil -> %Answer{}
+        existing -> existing
+      end
+
+    case_result
+    |> Answer.changeset(attrs)
+    |> Repo.insert_or_update()
     |> case do
       {:ok, answer} ->
         if answer.correct and single_answer_game?(incarnation) do
@@ -149,6 +266,14 @@ defmodule Registrations.Waydowntown do
 
   defp check_answer_correctness(%Incarnation{concept: "code_collector", answers: correct_answers}, answer_text) do
     answer_text in correct_answers
+  end
+
+  defp check_answer_correctness(%Incarnation{concept: concept, answers: expected_answers}, answer_text)
+       when concept in ["orientation_memory", "cardinal_memory"] do
+    expected_answer = Enum.join(expected_answers, "|")
+
+    String.starts_with?(expected_answer, answer_text) and
+      String.length(answer_text) <= String.length(expected_answer)
   end
 
   defp single_answer_game?(%Incarnation{concept: "fill_in_the_blank"}), do: true

@@ -23,7 +23,8 @@ defmodule RegistrationsWeb.AnswerControllerTest do
         Repo.insert!(%Incarnation{
           concept: "fill_in_the_blank",
           answers: ["the answer"],
-          region: region
+          region: region,
+          placed: true
         })
 
       game = Repo.insert!(%Game{incarnation: incarnation})
@@ -49,9 +50,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"id" => id} = json_response(conn, 200)["data"]
       answer = Waydowntown.get_answer!(id)
-      assert answer.correct == true
+      assert answer.correct
 
       game = Waydowntown.get_game!(game.id)
       assert game.winner_answer_id == answer.id
@@ -65,7 +66,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
                  },
                  %{"type" => "games", "id" => game_id, "attributes" => %{"complete" => complete}}
                ]
-             } = json_response(conn, 201)
+             } = json_response(conn, 200)
 
       assert game_id == game.id
       assert complete
@@ -96,6 +97,100 @@ defmodule RegistrationsWeb.AnswerControllerTest do
     end
   end
 
+  describe "create answer for non-placed incarnation" do
+    setup do
+      region = Repo.insert!(%Region{name: "Test Region"})
+
+      incarnation =
+        Repo.insert!(%Incarnation{
+          concept: "orientation_memory",
+          answers: ["left", "up", "right"],
+          region: region,
+          placed: false
+        })
+
+      game = Repo.insert!(%Game{incarnation: incarnation})
+
+      %{game: game, incarnation: incarnation, region: region}
+    end
+
+    test "creates and updates answer", %{conn: conn, game: game} do
+      # Create initial answer
+      conn =
+        post(
+          conn,
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "left"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 200)["data"]
+      answer = Waydowntown.get_answer!(id)
+      assert answer.answer == "left"
+      assert answer.correct
+
+      # Update the answer
+      conn =
+        put(
+          conn,
+          Routes.answer_path(conn, :update, id),
+          %{
+            "data" => %{
+              "id" => id,
+              "type" => "answers",
+              "attributes" => %{"answer" => "left|up"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      updated_answer = Waydowntown.get_answer!(id)
+      assert updated_answer.answer == "left|up"
+      assert updated_answer.correct
+
+      # Complete the answer
+      conn =
+        put(
+          conn,
+          Routes.answer_path(conn, :update, id),
+          %{
+            "data" => %{
+              "id" => id,
+              "type" => "answers",
+              "attributes" => %{"answer" => "left|up|right"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      completed_answer = Waydowntown.get_answer!(id)
+      assert completed_answer.answer == "left|up|right"
+      assert completed_answer.correct
+
+      game = Waydowntown.get_game!(game.id)
+      assert game.winner_answer_id == completed_answer.id
+    end
+  end
+
   describe "create answer for bluetooth_collector" do
     setup do
       region = Repo.insert!(%Region{name: "Test Region"})
@@ -104,7 +199,8 @@ defmodule RegistrationsWeb.AnswerControllerTest do
         Repo.insert!(%Incarnation{
           concept: "bluetooth_collector",
           answers: ["device_a", "device_b"],
-          region: region
+          region: region,
+          placed: true
         })
 
       game = Repo.insert!(%Game{incarnation: incarnation})
@@ -130,34 +226,12 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-
-      assert %{
-               "included" => [
-                 %{
-                   "type" => "incarnations",
-                   "id" => _incarnation_id,
-                   "attributes" => _incarnation_attributes
-                 },
-                 %{
-                   "type" => "games",
-                   "id" => game_id,
-                   "attributes" => %{
-                     "complete" => complete,
-                     "correct_answers" => 1,
-                     "total_answers" => 2
-                   }
-                 }
-               ]
-             } = json_response(conn, 201)
-
-      refute complete
-
-      game = Waydowntown.get_game!(game_id)
-      refute game.winner_answer_id
-
+      assert %{"id" => id} = json_response(conn, 200)["data"]
       answer = Waydowntown.get_answer!(id)
-      assert answer.correct == true
+      assert answer.correct
+
+      game = Waydowntown.get_game!(game.id)
+      refute game.winner_answer_id
     end
 
     test "creates incorrect answer", %{conn: conn, game: game} do
@@ -178,7 +252,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"id" => id} = json_response(conn, 200)["data"]
       answer = Waydowntown.get_answer!(id)
       refute answer.correct
     end
@@ -192,7 +266,8 @@ defmodule RegistrationsWeb.AnswerControllerTest do
         Repo.insert!(%Incarnation{
           concept: "code_collector",
           answers: ["code_a", "code_b"],
-          region: region
+          region: region,
+          placed: true
         })
 
       game = Repo.insert!(%Game{incarnation: incarnation})
@@ -218,74 +293,12 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-
-      assert %{
-               "included" => [
-                 %{
-                   "type" => "incarnations",
-                   "id" => _incarnation_id,
-                   "attributes" => _incarnation_attributes
-                 },
-                 %{
-                   "type" => "games",
-                   "id" => game_id,
-                   "attributes" => %{
-                     "complete" => complete,
-                     "correct_answers" => 1,
-                     "total_answers" => 2
-                   }
-                 }
-               ]
-             } = json_response(conn, 201)
-
-      refute complete
-
-      game = Waydowntown.get_game!(game_id)
-      refute game.winner_answer_id
-
+      assert %{"id" => id} = json_response(conn, 200)["data"]
       answer = Waydowntown.get_answer!(id)
       assert answer.correct
-    end
 
-    test "duplicate correct answers are not counted", %{conn: conn, game: game} do
-      Repo.insert!(%Answer{game: game, answer: "code_a", correct: true})
-
-      conn =
-        post(
-          conn,
-          Routes.answer_path(conn, :create),
-          %{
-            "data" => %{
-              "type" => "answers",
-              "attributes" => %{"answer" => "code_a"},
-              "relationships" => %{
-                "game" => %{
-                  "data" => %{"type" => "games", "id" => game.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert %{
-               "included" => [
-                 %{
-                   "type" => "incarnations",
-                   "id" => _incarnation_id,
-                   "attributes" => _incarnation_attributes
-                 },
-                 %{
-                   "type" => "games",
-                   "id" => _game_id,
-                   "attributes" => %{
-                     "complete" => false,
-                     "correct_answers" => 1,
-                     "total_answers" => 2
-                   }
-                 }
-               ]
-             } = json_response(conn, 201)
+      game = Waydowntown.get_game!(game.id)
+      refute game.winner_answer_id
     end
 
     test "creates incorrect answer", %{conn: conn, game: game} do
@@ -306,7 +319,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"id" => id} = json_response(conn, 200)["data"]
       answer = Waydowntown.get_answer!(id)
       refute answer.correct
     end

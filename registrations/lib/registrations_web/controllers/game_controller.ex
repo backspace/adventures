@@ -8,7 +8,7 @@ defmodule RegistrationsWeb.GameController do
 
   plug(JSONAPI.QueryParser,
     view: RegistrationsWeb.GameView,
-    filter: ["incarnation.concept"]
+    filter: ["incarnation.concept", "incarnation.placed"]
   )
 
   action_fallback(RegistrationsWeb.FallbackController)
@@ -20,7 +20,7 @@ defmodule RegistrationsWeb.GameController do
 
   def create(conn, params) do
     Logger.info("Creating game with params: #{inspect(params)}")
-    incarnation_filter = get_in(conn.params, ["filter", "incarnation.concept"])
+    incarnation_filter = get_incarnation_filter(conn.params)
 
     with {:ok, %Game{} = game} <- Waydowntown.create_game(params, incarnation_filter) do
       game = Waydowntown.get_game!(game.id)
@@ -29,6 +29,19 @@ defmodule RegistrationsWeb.GameController do
       |> put_status(:created)
       |> put_resp_header("location", Routes.game_path(conn, :show, game))
       |> render("show.json", %{game: game, conn: conn, params: params})
+    end
+  end
+
+  defp get_incarnation_filter(params) do
+    case params["filter"] do
+      %{"incarnation.placed" => placed} when placed in ["true", "false"] ->
+        %{"placed" => placed}
+
+      %{"incarnation.concept" => concept} when is_binary(concept) ->
+        %{"concept" => concept}
+
+      _ ->
+        nil
     end
   end
 
