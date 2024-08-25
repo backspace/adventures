@@ -244,10 +244,7 @@ defmodule Registrations.Waydowntown do
     |> Repo.insert()
     |> case do
       {:ok, answer} ->
-        if answer.correct and single_answer_game?(incarnation) do
-          update_game_winner(game, answer)
-        end
-
+        check_and_update_game_winner(game, answer)
         {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
 
       {:error, changeset} ->
@@ -292,10 +289,7 @@ defmodule Registrations.Waydowntown do
         |> Repo.update()
         |> case do
           {:ok, updated_answer} ->
-            if updated_answer.correct and single_answer_game?(incarnation) do
-              update_game_winner(game, updated_answer)
-            end
-
+            game = check_and_update_game_winner(game, updated_answer)
             {:ok, Repo.preload(updated_answer, game: [:answers, :incarnation])}
 
           {:error, changeset} ->
@@ -346,5 +340,37 @@ defmodule Registrations.Waydowntown do
     game
     |> Game.changeset(%{winner_answer_id: answer.id})
     |> Repo.update!()
+  end
+
+  # New helper function to check and update game winner
+  defp check_and_update_game_winner(game, answer) do
+    if answer.correct and check_win_condition(game, answer) do
+      update_game_winner(game, answer)
+    else
+      game
+    end
+  end
+
+  # New helper function to check win condition
+  defp check_win_condition(game, answer) do
+    case game.incarnation.concept do
+      "fill_in_the_blank" ->
+        true
+
+      "bluetooth_collector" ->
+        Enum.count(game.answers, & &1.correct) == length(game.incarnation.answers)
+
+      "code_collector" ->
+        Enum.count(game.answers, & &1.correct) == length(game.incarnation.answers)
+
+      "orientation_memory" ->
+        answer.answer == Enum.join(game.incarnation.answers, "|")
+
+      "cardinal_memory" ->
+        answer.answer == Enum.join(game.incarnation.answers, "|")
+
+      _ ->
+        false
+    end
   end
 end
