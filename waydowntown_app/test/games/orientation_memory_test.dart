@@ -276,6 +276,8 @@ void main() {
 
     expect(find.text('Current pattern: '), findsOneWidget);
     expect(find.byKey(const Key('pattern-arrows')), findsOneWidget);
+    expect(find.byKey(const Key('progress-display')), findsOneWidget);
+    expect(find.text('Progress: 0 / 3'), findsOneWidget);
 
     // First submission (POST)
     streamController.add(ScreenOrientationEvent(0));
@@ -288,6 +290,7 @@ void main() {
     expect(
         tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '5');
     expect(find.text('Correct! Keep going.'), findsOneWidget);
+    expect(find.text('Progress: 1 / 3'), findsOneWidget);
 
     // Second submission (PATCH)
     streamController.add(ScreenOrientationEvent(-90));
@@ -300,6 +303,7 @@ void main() {
     expect(tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data,
         '5 #');
     expect(find.text('Correct! Keep going.'), findsOneWidget);
+    expect(find.text('Progress: 2 / 3'), findsOneWidget);
 
     // Third submission (PATCH - incorrect)
     streamController.add(ScreenOrientationEvent(90));
@@ -312,6 +316,7 @@ void main() {
     expect(
         tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '');
     expect(find.text('Incorrect. Start over.'), findsOneWidget);
+    expect(find.text('Progress: 0 / 3'), findsOneWidget);
 
     // Fourth submission (POST - after incorrect, with new orientation)
     streamController.add(ScreenOrientationEvent(-90));
@@ -324,6 +329,7 @@ void main() {
     expect(
         tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '#');
     expect(find.text('Correct! Keep going.'), findsOneWidget);
+    expect(find.text('Progress: 1 / 3'), findsOneWidget);
   });
 
   testWidgets(
@@ -445,6 +451,8 @@ void main() {
 
     expect(find.text('Current pattern: '), findsOneWidget);
     expect(find.byKey(const Key('pattern-arrows')), findsOneWidget);
+    expect(find.byKey(const Key('progress-display')), findsOneWidget);
+    expect(find.text('Progress: 0 / 3'), findsOneWidget);
 
     // First submission (POST - incorrect)
     streamController.add(ScreenOrientationEvent(0));
@@ -459,6 +467,7 @@ void main() {
         tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '');
     expect(find.text('Incorrect.'), findsOneWidget);
     expect(find.text('Start over.'), findsNothing);
+    expect(find.text('Progress: 0 / 1'), findsOneWidget);
 
     // Second submission (POST - correct and winning)
     streamController.add(ScreenOrientationEvent(-90));
@@ -472,6 +481,7 @@ void main() {
     expect(
         tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '#');
     expect(find.text('Congratulations!'), findsOneWidget);
+    expect(find.text('Progress: 1 / 1'), findsOneWidget);
 
     expect(tester.widget<ElevatedButton>(find.byType(ElevatedButton)).enabled,
         false);

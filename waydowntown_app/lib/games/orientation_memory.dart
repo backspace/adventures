@@ -31,6 +31,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
   String? submissionMessage;
   late MotionSensors _motionSensors;
   String? winningAnswerId;
+  int totalAnswers = 0;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
         currentOrientation = getOrientation();
       });
     });
+    totalAnswers = widget.game.totalAnswers;
   }
 
   @override
@@ -119,6 +121,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
             pattern = newPattern;
             lastAnswerId = answerData['id'];
             submissionMessage = 'Correct! Keep going.';
+            totalAnswers = gameData['attributes']['total_answers'];
             if (gameData['attributes']['complete'] == true) {
               isGameOver = true;
               submissionMessage = 'Congratulations!';
@@ -154,6 +157,12 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Text(
+              'Progress: ${pattern.length} / $totalAnswers',
+              key: const Key('progress-display'),
+              style: Theme.of(context).textTheme.displaySmall,
+            ),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
