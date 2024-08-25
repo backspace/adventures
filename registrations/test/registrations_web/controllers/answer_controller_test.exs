@@ -7,12 +7,10 @@ defmodule RegistrationsWeb.AnswerControllerTest do
   alias Registrations.Waydowntown.Incarnation
   alias Registrations.Waydowntown.Region
 
-  setup %{conn: conn} do
-    {:ok,
-     conn:
-       conn
-       |> put_req_header("accept", "application/vnd.api+json")
-       |> put_req_header("content-type", "application/vnd.api+json")}
+  defp setup_conn(conn) do
+    conn
+    |> put_req_header("accept", "application/vnd.api+json")
+    |> put_req_header("content-type", "application/vnd.api+json")
   end
 
   describe "create answer for fill_in_the_blank" do
@@ -34,8 +32,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
     test "creates correct answer", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -77,8 +76,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
       game = Repo.update!(Game.changeset(game, %{winner_answer_id: existing_answer.id}))
 
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -99,8 +99,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
     test "fails to update an existing answer for a placed incarnation", %{conn: conn, game: game} do
       # First, create an answer
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -119,8 +120,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       # Now, try to update the answer
       conn =
-        patch(
-          conn,
+        build_conn()
+        |> setup_conn()
+        |> patch(
           Routes.answer_path(conn, :update, id),
           %{
             "data" => %{
@@ -160,8 +162,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
     test "creates and updates answer", %{conn: conn, game: game} do
       # Create initial answer
       conn =
-        post(
-          conn,
+        build_conn()
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -183,8 +186,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       # Update the answer
       conn =
-        patch(
-          conn,
+        build_conn()
+        |> setup_conn()
+        |> patch(
           Routes.answer_path(conn, :update, id),
           %{
             "data" => %{
@@ -207,8 +211,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       # Complete the answer
       conn =
-        patch(
-          conn,
+        build_conn()
+        |> setup_conn()
+        |> patch(
           Routes.answer_path(conn, :update, id),
           %{
             "data" => %{
@@ -235,8 +240,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
     test "always creates a new answer on POST, even if incorrect", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        build_conn()
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -260,8 +266,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
     test "returns 422 when updating an incorrect answer", %{conn: conn, game: game} do
       # First, create an incorrect answer
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -280,8 +287,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       # Now, try to update the incorrect answer
       conn =
-        patch(
-          conn,
+        build_conn()
+        |> setup_conn()
+        |> patch(
           Routes.answer_path(conn, :update, id),
           %{
             "data" => %{
@@ -320,8 +328,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
     test "creates correct answer", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -346,8 +355,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
     test "creates incorrect answer", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -387,8 +397,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
     test "creates correct answer", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -413,8 +424,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
     test "creates incorrect answer", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
