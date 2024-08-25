@@ -8,17 +8,32 @@ defmodule RegistrationsWeb.AnswerController do
 
   action_fallback(RegistrationsWeb.FallbackController)
 
-  def create(conn, params), do: upsert(conn, params)
-
-  def update(conn, params), do: upsert(conn, params)
-
-  defp upsert(conn, params) do
+  def create(conn, params) do
     case Waydowntown.upsert_answer(params) do
       {:ok, %Answer{} = answer} ->
-        # FIXME this should be :created if it doesn't yet exist
+        conn
+        |> put_status(:created)
+        |> put_resp_header("location", Routes.answer_path(conn, :show, answer))
+        |> render("show.json", %{answer: answer, conn: conn, params: params})
+
+      {:error, :cannot_update_incorrect_answer} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: [%{detail: "Cannot update an incorrect answer"}]})
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> put_view(RegistrationsWeb.ChangesetView)
+        |> render("error.json", %{changeset: changeset})
+    end
+  end
+
+  def update(conn, params) do
+    case Waydowntown.upsert_answer(params) do
+      {:ok, %Answer{} = answer} ->
         conn
         |> put_status(:ok)
-        |> put_resp_header("location", Routes.answer_path(conn, :show, answer))
         |> render("show.json", %{answer: answer, conn: conn, params: params})
 
       {:error, :cannot_update_incorrect_answer} ->

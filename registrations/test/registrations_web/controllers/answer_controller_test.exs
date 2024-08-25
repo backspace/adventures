@@ -50,7 +50,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
       answer = Waydowntown.get_answer!(id)
       assert answer.correct
 
@@ -66,7 +66,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
                  },
                  %{"type" => "games", "id" => game_id, "attributes" => %{"complete" => complete}}
                ]
-             } = json_response(conn, 200)
+             } = json_response(conn, 201)
 
       assert game_id == game.id
       assert complete
@@ -115,11 +115,11 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
 
       # Now, try to update the incorrect answer
       conn =
-        put(
+        patch(
           conn,
           Routes.answer_path(conn, :update, id),
           %{
@@ -176,14 +176,14 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
       answer = Waydowntown.get_answer!(id)
       assert answer.answer == "left"
       assert answer.correct
 
       # Update the answer
       conn =
-        put(
+        patch(
           conn,
           Routes.answer_path(conn, :update, id),
           %{
@@ -207,7 +207,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       # Complete the answer
       conn =
-        put(
+        patch(
           conn,
           Routes.answer_path(conn, :update, id),
           %{
@@ -269,7 +269,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
       answer = Waydowntown.get_answer!(id)
       assert answer.correct
 
@@ -295,7 +295,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
       answer = Waydowntown.get_answer!(id)
       refute answer.correct
     end
@@ -336,7 +336,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
       answer = Waydowntown.get_answer!(id)
       assert answer.correct
 
@@ -362,7 +362,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
       answer = Waydowntown.get_answer!(id)
       refute answer.correct
     end
