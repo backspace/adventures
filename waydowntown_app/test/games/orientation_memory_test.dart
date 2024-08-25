@@ -198,7 +198,7 @@ void main() {
       },
     );
 
-    // Mock POST response (fourth submission - after incorrect)
+    // Mock POST response (fourth submission - after incorrect, with new orientation)
     dioAdapter.onPost(
       submitAnswerRoute,
       (server) => server.reply(
@@ -207,7 +207,7 @@ void main() {
           "data": {
             "id": "8cfe9e24-fe4c-472e-b2eb-3e2c169b11c5",
             "type": "answers",
-            "attributes": {"answer": "up", "correct": true},
+            "attributes": {"answer": "right", "correct": true},
             "relationships": {
               "game": {
                 "data": {
@@ -235,7 +235,7 @@ void main() {
         'data': {
           'type': 'answers',
           'attributes': {
-            'answer': 'up',
+            'answer': 'right',
           },
           'relationships': {
             'game': {
@@ -262,39 +262,43 @@ void main() {
     expect(find.text('Submit Orientation'), findsOneWidget);
 
     // First submission (POST)
-    streamController.add(ScreenOrientationEvent(0)); // up
+    streamController.add(ScreenOrientationEvent(0));
     await tester.pump();
     expect(find.text('Current orientation: up'), findsOneWidget);
+
     await tester.tap(find.text('Submit Orientation'));
     await tester.pumpAndSettle();
     expect(find.text('Current pattern: up'), findsOneWidget);
     expect(find.text('Correct! Keep going.'), findsOneWidget);
 
     // Second submission (PATCH)
-    streamController.add(ScreenOrientationEvent(90)); // right
-    await tester.pump();
+    streamController.add(ScreenOrientationEvent(90));
+    await tester.pumpAndSettle();
     expect(find.text('Current orientation: right'), findsOneWidget);
+
     await tester.tap(find.text('Submit Orientation'));
     await tester.pumpAndSettle();
     expect(find.text('Current pattern: up|right'), findsOneWidget);
     expect(find.text('Correct! Keep going.'), findsOneWidget);
 
     // Third submission (PATCH - incorrect)
-    streamController.add(ScreenOrientationEvent(-90)); // left
-    await tester.pump();
+    streamController.add(ScreenOrientationEvent(-90));
+    await tester.pumpAndSettle();
     expect(find.text('Current orientation: left'), findsOneWidget);
+
     await tester.tap(find.text('Submit Orientation'));
     await tester.pumpAndSettle();
     expect(find.text('Current pattern: '), findsOneWidget);
     expect(find.text('Incorrect. Start over.'), findsOneWidget);
 
-    // Fourth submission (POST - after incorrect)
-    streamController.add(ScreenOrientationEvent(0)); // up
-    await tester.pump();
-    expect(find.text('Current orientation: up'), findsOneWidget);
+    // Fourth submission (POST - after incorrect, with new orientation)
+    streamController.add(ScreenOrientationEvent(90));
+    await tester.pumpAndSettle();
+    expect(find.text('Current orientation: right'), findsOneWidget);
+
     await tester.tap(find.text('Submit Orientation'));
     await tester.pumpAndSettle();
-    expect(find.text('Current pattern: up'), findsOneWidget);
+    expect(find.text('Current pattern: right'), findsOneWidget);
     expect(find.text('Correct! Keep going.'), findsOneWidget);
   });
 }
