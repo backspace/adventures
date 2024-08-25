@@ -349,6 +349,7 @@ void main() {
             }
           },
           "included": [
+            {},
             {
               "id": "22261813-2171-453f-a669-db08edc70d6d",
               "type": "games",
@@ -356,7 +357,6 @@ void main() {
                 "correct_answers": 1,
                 "total_answers": 1,
                 "complete": true,
-                "winner_answer_id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4"
               }
             }
           ],

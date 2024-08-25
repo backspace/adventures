@@ -97,13 +97,11 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
       };
 
       if (lastAnswerId != null) {
-        // PATCH if we have a previous correct answer
         response = await widget.dio.patch(
           '/waydowntown/answers/$lastAnswerId?include=game',
           data: data,
         );
       } else {
-        // POST for the first answer or after an incorrect answer
         response = await widget.dio.post(
           '/waydowntown/answers?include=game',
           data: data,
@@ -113,15 +111,15 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = response.data;
         final answerData = responseData['data'];
-        final gameData = responseData['included'][0];
+        final gameData = (responseData['included'] as List<dynamic>)
+            .firstWhere((included) => included['type'] == 'games');
 
         if (answerData['attributes']['correct'] == true) {
           setState(() {
             pattern = newPattern;
             lastAnswerId = answerData['id'];
             submissionMessage = 'Correct! Keep going.';
-            winningAnswerId = gameData['attributes']['winner_answer_id'];
-            if (winningAnswerId != null) {
+            if (gameData['attributes']['complete'] == true) {
               isGameOver = true;
               submissionMessage = 'Congratulations! You completed the pattern.';
             }
