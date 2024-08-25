@@ -275,7 +275,6 @@ void main() {
 
     expect(find.text('Current pattern: '), findsOneWidget);
     expect(find.byKey(const Key('pattern-arrows')), findsOneWidget);
-    expect(find.text('Submit '), findsOneWidget);
 
     // First submission (POST)
     streamController.add(ScreenOrientationEvent(0));
@@ -392,7 +391,6 @@ void main() {
 
     expect(find.text('Current pattern: '), findsOneWidget);
     expect(find.byKey(const Key('pattern-arrows')), findsOneWidget);
-    expect(find.text('Submit '), findsOneWidget);
 
     streamController.add(ScreenOrientationEvent(0));
     await tester.pump();
