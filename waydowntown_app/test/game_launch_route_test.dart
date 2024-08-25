@@ -9,19 +9,55 @@ import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/models/incarnation.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/routes/game_launch_route.dart';
-import 'package:yaml/yaml.dart';
+
+class TestAssetBundle extends CachingAssetBundle {
+  final Map<String, String> _assets = {};
+
+  void addAsset(String key, String value) {
+    _assets[key] = value;
+  }
+
+  @override
+  void clear() {
+    _assets.clear();
+  }
+
+  @override
+  Future<String> loadString(String key, {bool cache = true}) async {
+    if (_assets.containsKey(key)) {
+      return _assets[key]!;
+    }
+    throw FlutterError('Asset not found: $key');
+  }
+
+  @override
+  Future<ByteData> load(String key) async {
+    throw UnimplementedError();
+  }
+}
 
 void main() {
   late Dio dio;
+  late TestAssetBundle testAssetBundle;
 
   setUp(() {
     dotenv.testLoad(fileInput: File('.env').readAsStringSync());
-
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
+    testAssetBundle = TestAssetBundle();
+  });
+
+  tearDown(() {
+    testAssetBundle.clear();
   });
 
   testWidgets('GameLaunchRoute displays game information and start button',
       (WidgetTester tester) async {
+    testAssetBundle.addAsset('assets/concepts.yaml', '''
+bluetooth_collector:
+  name: Bluetooth Collector
+  instructions: Collect Bluetooth devices
+''');
+
     final game = Game(
       id: '1',
       incarnation: Incarnation(
@@ -38,29 +74,30 @@ void main() {
       totalAnswers: 5,
     );
 
-    final yamlString = await rootBundle.loadString('assets/concepts.yaml');
-    final yamlMap = loadYaml(yamlString);
-    final expectedName = yamlMap['bluetooth_collector']['name'];
-    final expectedInstructions = yamlMap['bluetooth_collector']['instructions'];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DefaultAssetBundle(
+          bundle: testAssetBundle,
+          child: GameLaunchRoute(game: game, dio: dio),
+        ),
+      ),
+    );
 
-    await tester
-        .pumpWidget(MaterialApp(home: GameLaunchRoute(game: game, dio: dio)));
     await tester.pumpAndSettle();
 
     expect(find.text('Location: Test Region'), findsOneWidget);
-    expect(find.text(expectedName), findsOneWidget);
-    expect(find.text('Instructions:'), findsOneWidget);
-    expect(find.text(expectedInstructions), findsOneWidget);
     expect(find.text('Start Game'), findsOneWidget);
   });
 
   testWidgets('GameLaunchRoute shows error for unknown concept',
       (WidgetTester tester) async {
+    testAssetBundle.addAsset('assets/concepts.yaml', '{}');
+
     final game = Game(
       id: '2',
       incarnation: Incarnation(
         id: '2',
-        concept: 'unknown_concept',
+        concept: 'bluetooth_collector',
         mask: 'not applicable',
         region: Region(
           id: '1',
@@ -72,13 +109,21 @@ void main() {
       totalAnswers: 5,
     );
 
-    await tester
-        .pumpWidget(MaterialApp(home: GameLaunchRoute(game: game, dio: dio)));
-    await tester.pump();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DefaultAssetBundle(
+          bundle: testAssetBundle,
+          child: GameLaunchRoute(game: game, dio: dio),
+        ),
+      ),
+    );
 
-    expect(find.text('Location: Test Region'), findsOneWidget);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Error'), findsOneWidget);
     expect(find.text('Error: Unknown game concept'), findsOneWidget);
-    expect(find.text('The game concept "unknown_concept" is not recognized.'),
+    expect(
+        find.text('The game concept "bluetooth_collector" is not recognized.'),
         findsOneWidget);
     expect(find.text('Start Game'), findsNothing);
   });

@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/games/code_collector.dart';
 import 'package:waydowntown/games/fill_in_the_blank.dart';
@@ -14,26 +13,41 @@ class GameLaunchRoute extends StatelessWidget {
 
   const GameLaunchRoute({super.key, required this.game, required this.dio});
 
-  Future<Map<String, String?>> _loadGameInfo() async {
-    final yamlString = await rootBundle.loadString('assets/concepts.yaml');
+  Future<Map<String, String?>> _loadGameInfo(BuildContext context) async {
+    final yamlString =
+        await DefaultAssetBundle.of(context).loadString('assets/concepts.yaml');
     final yamlMap = loadYaml(yamlString);
     final conceptInfo = yamlMap[game.incarnation.concept];
+
+    if (conceptInfo == null) {
+      return {'error': 'Unknown game concept'};
+    }
+
     return {
-      'name': conceptInfo?['name'],
-      'instructions': conceptInfo?['instructions'],
+      'name': conceptInfo['name'],
+      'instructions': conceptInfo['instructions'],
     };
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, String?>>(
-      future: _loadGameInfo(),
+      future: _loadGameInfo(context),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
 
         final gameInfo = snapshot.data;
+        if (gameInfo?['error'] != null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Error')),
+            body: _buildErrorWidget(context),
+          );
+        }
+
         final gameName = gameInfo?['name'];
         final instructions = gameInfo?['instructions'];
 
