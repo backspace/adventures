@@ -92,25 +92,39 @@ defmodule Registrations.Waydowntown do
   end
 
   defp create_game_with_concept(attrs, concept) do
-    case get_random_incarnation(%{"concept" => concept}) do
-      nil ->
-        {:error, :no_incarnation_with_concept_available}
+    concepts = YamlElixir.read_from_file!("priv/concepts.yaml")
+    concept_data = concepts[concept]
 
-      incarnation ->
-        %Game{}
-        |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
-        |> Repo.insert()
+    if concept_data["placed"] == false do
+      create_game_with_new_incarnation(attrs, concept)
+    else
+      case get_random_incarnation(%{"concept" => concept}) do
+        nil ->
+          {:error, :no_incarnation_with_concept_available}
+
+        incarnation ->
+          %Game{}
+          |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
+          |> Repo.insert()
+      end
     end
   end
 
-  defp create_game_with_new_incarnation(attrs) do
-    {concept_key, concept} = choose_unplaced_concept()
-    answers = generate_answers(concept)
+  defp create_game_with_new_incarnation(attrs, concept \\ nil) do
+    {concept_key, concept_data} =
+      if concept do
+        concepts = YamlElixir.read_from_file!("priv/concepts.yaml")
+        {concept, concepts[concept]}
+      else
+        choose_unplaced_concept()
+      end
+
+    answers = generate_answers(concept_data)
 
     {:ok, incarnation} =
       create_incarnation(%{
         concept: concept_key,
-        mask: concept["instructions"],
+        mask: concept_data["instructions"],
         answers: answers,
         placed: false
       })

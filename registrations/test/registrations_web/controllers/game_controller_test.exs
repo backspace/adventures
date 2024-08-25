@@ -183,5 +183,40 @@ defmodule RegistrationsWeb.GameControllerTest do
       assert incarnation.placed == false
       assert incarnation.concept in ["orientation_memory", "cardinal_memory"]
     end
+
+    test "creates new incarnation for unplaced concept even if one exists", %{conn: conn} do
+      existing_incarnation =
+        Repo.insert!(%Incarnation{
+          concept: "orientation_memory",
+          mask: "Existing mask",
+          region_id: Repo.insert!(%Region{}).id,
+          placed: false
+        })
+
+      conn =
+        post(
+          conn,
+          Routes.game_path(conn, :create) <> "?filter[incarnation.concept]=orientation_memory",
+          %{
+            "data" => %{
+              "type" => "games",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
+      assert sideloaded_incarnation["attributes"]["concept"] == "orientation_memory"
+      assert sideloaded_incarnation["id"] != existing_incarnation.id
+
+      game = Waydowntown.get_game!(id)
+      new_incarnation = Waydowntown.get_incarnation!(game.incarnation_id)
+      assert new_incarnation.id != existing_incarnation.id
+      assert new_incarnation.concept == "orientation_memory"
+      assert new_incarnation.placed == false
+    end
   end
 end
