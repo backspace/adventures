@@ -216,18 +216,18 @@ defmodule Registrations.Waydowntown do
   def get_answer!(id), do: Repo.get!(Answer, id)
 
   @doc """
-  Upserts an answer.
+  Creates an answer.
 
   ## Examples
 
-      iex> upsert_answer(%{field: value})
+      iex> create_answer(%{field: value})
       {:ok, %Answer{}}
 
-      iex> upsert_answer(%{field: bad_value})
+      iex> create_answer(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def upsert_answer(%{"answer" => answer_text, "game_id" => game_id}) do
+  def create_answer(%{"answer" => answer_text, "game_id" => game_id}) do
     game = get_game!(game_id)
     incarnation = game.incarnation
 
@@ -239,30 +239,64 @@ defmodule Registrations.Waydowntown do
       "game_id" => game_id
     }
 
-    case_result =
-      case Repo.get_by(Answer, game_id: game_id) do
-        nil ->
-          %Answer{}
+    %Answer{}
+    |> Answer.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, answer} ->
+        if answer.correct and single_answer_game?(incarnation) do
+          update_game_winner(game, answer)
+        end
 
-        existing ->
-          if existing.correct, do: existing, else: {:error, :cannot_update_incorrect_answer}
-      end
+        {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
 
-    case case_result do
-      {:error, :cannot_update_incorrect_answer} ->
+      {:error, changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  @doc """
+  Updates an answer.
+
+  ## Examples
+
+      iex> update_answer(%{id: id, field: new_value})
+      {:ok, %Answer{}}
+
+      iex> update_answer(%{id: id, field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_answer(%{"id" => id, "answer" => answer_text}) do
+    answer = get_answer!(id)
+    game = get_game!(answer.game_id)
+    incarnation = game.incarnation
+
+    cond do
+      incarnation.placed ->
+        {:error, :cannot_update_placed_incarnation_answer}
+
+      not answer.correct ->
         {:error, :cannot_update_incorrect_answer}
 
-      answer ->
+      true ->
+        correct = check_answer_correctness(incarnation, answer_text)
+
+        attrs = %{
+          "answer" => answer_text,
+          "correct" => correct
+        }
+
         answer
         |> Answer.changeset(attrs)
-        |> Repo.insert_or_update()
+        |> Repo.update()
         |> case do
-          {:ok, answer} ->
-            if answer.correct and single_answer_game?(incarnation) do
-              update_game_winner(game, answer)
+          {:ok, updated_answer} ->
+            if updated_answer.correct and single_answer_game?(incarnation) do
+              update_game_winner(game, updated_answer)
             end
 
-            {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
+            {:ok, Repo.preload(updated_answer, game: [:answers, :incarnation])}
 
           {:error, changeset} ->
             {:error, changeset}

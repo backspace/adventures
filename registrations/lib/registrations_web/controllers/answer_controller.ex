@@ -9,17 +9,12 @@ defmodule RegistrationsWeb.AnswerController do
   action_fallback(RegistrationsWeb.FallbackController)
 
   def create(conn, params) do
-    case Waydowntown.upsert_answer(params) do
+    case Waydowntown.create_answer(params) do
       {:ok, %Answer{} = answer} ->
         conn
         |> put_status(:created)
         |> put_resp_header("location", Routes.answer_path(conn, :show, answer))
         |> render("show.json", %{answer: answer, conn: conn, params: params})
-
-      {:error, :cannot_update_incorrect_answer} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: [%{detail: "Cannot update an incorrect answer"}]})
 
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
@@ -30,11 +25,16 @@ defmodule RegistrationsWeb.AnswerController do
   end
 
   def update(conn, params) do
-    case Waydowntown.upsert_answer(params) do
+    case Waydowntown.update_answer(params) do
       {:ok, %Answer{} = answer} ->
         conn
         |> put_status(:ok)
         |> render("show.json", %{answer: answer, conn: conn, params: params})
+
+      {:error, :cannot_update_placed_incarnation_answer} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: [%{detail: "Cannot update answer for placed incarnation"}]})
 
       {:error, :cannot_update_incorrect_answer} ->
         conn
