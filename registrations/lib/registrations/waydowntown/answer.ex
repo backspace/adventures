@@ -34,7 +34,7 @@ defmodule Registrations.Waydowntown.Answer do
   defp validate_answer_overwrite(changeset) do
     with game_id when not is_nil(game_id) <- get_field(changeset, :game_id),
          %{incarnation: %{placed: false}} = game <- Game |> Repo.get(game_id) |> Repo.preload(:incarnation),
-         %Answer{} = existing_answer <- Repo.get_by(Answer, game_id: game_id) do
+         %Answer{} = existing_answer <- Repo.get_by(Answer, game_id: game_id, correct: true) do
       change(changeset, %{id: existing_answer.id})
     else
       _ -> changeset
