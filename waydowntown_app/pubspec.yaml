@@ -99,6 +99,9 @@ flutter:
     - family: Roadgeek
       fonts:
         - asset: fonts/roadgeek-2w.ttf
+    - family: Arrows
+      fonts:
+        - asset: fonts/roadgeek-arrows.ttf
 
 flutter_native_splash:
   color: "#479CBE"

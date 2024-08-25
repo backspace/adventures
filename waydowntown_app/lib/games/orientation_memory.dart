@@ -57,6 +57,19 @@ class _OrientationMemoryGameState extends State<OrientationMemoryGame> {
     return '';
   }
 
+  String getOrientationArrow(String orientation) {
+    switch (orientation) {
+      case 'left':
+        return '3';
+      case 'up':
+        return '5';
+      case 'right':
+        return '#';
+      default:
+        return '';
+    }
+  }
+
   Future<void> submitOrientation() async {
     if (currentOrientation.isEmpty) return;
 
@@ -140,13 +153,31 @@ class _OrientationMemoryGameState extends State<OrientationMemoryGame> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('Current pattern: ${pattern.join("|")}'),
-            SizedBox(height: 20),
-            Text('Current orientation: $currentOrientation'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Current pattern: '),
+                Text(
+                  pattern.map(getOrientationArrow).join(),
+                  key: Key('pattern-arrows'),
+                  style: TextStyle(fontFamily: 'arrows', fontSize: 24),
+                ),
+              ],
+            ),
             SizedBox(height: 20),
             ElevatedButton(
+              key: Key('submit-${currentOrientation}'),
               onPressed: isGameOver ? null : submitOrientation,
-              child: Text(isGameOver ? 'Game Over' : 'Submit Orientation'),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Submit '),
+                  Text(
+                    getOrientationArrow(currentOrientation),
+                    style: TextStyle(fontFamily: 'arrows', fontSize: 24),
+                  ),
+                ],
+              ),
             ),
             if (submissionMessage != null)
               Padding(

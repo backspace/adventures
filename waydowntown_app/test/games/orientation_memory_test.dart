@@ -274,47 +274,55 @@ void main() {
     ));
 
     expect(find.text('Current pattern: '), findsOneWidget);
-    expect(find.text('Current orientation: '), findsOneWidget);
-    expect(find.text('Submit Orientation'), findsOneWidget);
+    expect(find.byKey(const Key('pattern-arrows')), findsOneWidget);
+    expect(find.text('Submit '), findsOneWidget);
 
     // First submission (POST)
     streamController.add(ScreenOrientationEvent(0));
     await tester.pump();
-    expect(find.text('Current orientation: up'), findsOneWidget);
+    expect(find.byKey(const Key('submit-up')), findsOneWidget);
 
-    await tester.tap(find.text('Submit Orientation'));
+    await tester.tap(find.byKey(const Key('submit-up')));
     await tester.pumpAndSettle();
-    expect(find.text('Current pattern: up'), findsOneWidget);
+    expect(find.byKey(const Key('pattern-arrows')), findsWidgets);
+    expect(
+        tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '5');
     expect(find.text('Correct! Keep going.'), findsOneWidget);
 
     // Second submission (PATCH)
     streamController.add(ScreenOrientationEvent(-90));
     await tester.pumpAndSettle();
-    expect(find.text('Current orientation: right'), findsOneWidget);
+    expect(find.byKey(const Key('submit-right')), findsOneWidget);
 
-    await tester.tap(find.text('Submit Orientation'));
+    await tester.tap(find.byKey(const Key('submit-right')));
     await tester.pumpAndSettle();
-    expect(find.text('Current pattern: up|right'), findsOneWidget);
+    expect(find.byKey(const Key('pattern-arrows')), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data,
+        '5#');
     expect(find.text('Correct! Keep going.'), findsOneWidget);
 
     // Third submission (PATCH - incorrect)
     streamController.add(ScreenOrientationEvent(90));
     await tester.pumpAndSettle();
-    expect(find.text('Current orientation: left'), findsOneWidget);
+    expect(find.byKey(const Key('submit-left')), findsOneWidget);
 
-    await tester.tap(find.text('Submit Orientation'));
+    await tester.tap(find.byKey(const Key('submit-left')));
     await tester.pumpAndSettle();
-    expect(find.text('Current pattern: '), findsOneWidget);
+    expect(find.byKey(const Key('pattern-arrows')), findsWidgets);
+    expect(
+        tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '');
     expect(find.text('Incorrect. Start over.'), findsOneWidget);
 
     // Fourth submission (POST - after incorrect, with new orientation)
     streamController.add(ScreenOrientationEvent(-90));
     await tester.pumpAndSettle();
-    expect(find.text('Current orientation: right'), findsOneWidget);
+    expect(find.byKey(const Key('submit-right')), findsOneWidget);
 
-    await tester.tap(find.text('Submit Orientation'));
+    await tester.tap(find.byKey(const Key('submit-right')));
     await tester.pumpAndSettle();
-    expect(find.text('Current pattern: right'), findsOneWidget);
+    expect(find.byKey(const Key('pattern-arrows')), findsWidgets);
+    expect(
+        tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '#');
     expect(find.text('Correct! Keep going.'), findsOneWidget);
   });
 }
