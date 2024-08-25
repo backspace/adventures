@@ -95,49 +95,6 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       assert json_response(conn, 422)["errors"] != %{}
     end
-
-    test "returns 422 when updating an incorrect answer", %{conn: conn, game: game} do
-      # First, create an incorrect answer
-      conn =
-        post(
-          conn,
-          Routes.answer_path(conn, :create),
-          %{
-            "data" => %{
-              "type" => "answers",
-              "attributes" => %{"answer" => "WRONG ANSWER"},
-              "relationships" => %{
-                "game" => %{
-                  "data" => %{"type" => "games", "id" => game.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-
-      # Now, try to update the incorrect answer
-      conn =
-        patch(
-          conn,
-          Routes.answer_path(conn, :update, id),
-          %{
-            "data" => %{
-              "id" => id,
-              "type" => "answers",
-              "attributes" => %{"answer" => "ANOTHER WRONG ANSWER"},
-              "relationships" => %{
-                "game" => %{
-                  "data" => %{"type" => "games", "id" => game.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert json_response(conn, 422)["errors"] == [%{"detail" => "Cannot update an incorrect answer"}]
-    end
   end
 
   describe "create answer for non-placed incarnation" do
@@ -231,6 +188,49 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       game = Waydowntown.get_game!(game.id)
       assert game.winner_answer_id == completed_answer.id
+    end
+
+    test "returns 422 when updating an incorrect answer", %{conn: conn, game: game} do
+      # First, create an incorrect answer
+      conn =
+        post(
+          conn,
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "WRONG ANSWER"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+
+      # Now, try to update the incorrect answer
+      conn =
+        patch(
+          conn,
+          Routes.answer_path(conn, :update, id),
+          %{
+            "data" => %{
+              "id" => id,
+              "type" => "answers",
+              "attributes" => %{"answer" => "ANOTHER WRONG ANSWER"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Cannot update an incorrect answer"}]
     end
   end
 
