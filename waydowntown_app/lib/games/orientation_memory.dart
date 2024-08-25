@@ -18,10 +18,10 @@ class OrientationMemoryGame extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _OrientationMemoryGameState createState() => _OrientationMemoryGameState();
+  OrientationMemoryGameState createState() => OrientationMemoryGameState();
 }
 
-class _OrientationMemoryGameState extends State<OrientationMemoryGame> {
+class OrientationMemoryGameState extends State<OrientationMemoryGame> {
   double _screenOrientation = 0.0;
   late StreamSubscription<ScreenOrientationEvent> _orientationSubscription;
   List<String> pattern = [];
