@@ -85,83 +85,93 @@ class _HomeState extends State<Home> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            SvgPicture.asset("assets/images/logo.svg",
-                width: 200, semanticsLabel: 'Winnipeg Walkway logo'),
-            const Text("waydowntown", style: TextStyle(color: Colors.white)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              child: const Text('Request a game'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RequestGameRoute(dio: dio),
-                  ),
-                );
-              },
+      body: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                SvgPicture.asset("assets/images/logo.svg",
+                    width: 200, semanticsLabel: 'Winnipeg Walkway logo'),
+                const Text("waydowntown",
+                    style: TextStyle(color: Colors.white)),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  child: const Text('Request a game'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RequestGameRoute(dio: dio),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                _buildButtonRow([
+                  ('Bluetooth\nCollector', 'bluetooth_collector'),
+                  ('Code\nCollector', 'code_collector'),
+                  ('Fill in the\nBlank', 'fill_in_the_blank'),
+                ], (concept) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RequestGameRoute(
+                        dio: dio,
+                        concept: concept,
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 20),
+                _buildButtonRow([
+                  ('Orientation\nMemory', 'orientation_memory'),
+                ], (concept) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RequestGameRoute(
+                        dio: dio,
+                        concept: concept,
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 20),
+                _buildButtonRow([
+                  ('Bluetooth\nScanner', 'bluetooth_scanner'),
+                  ('Map', 'map'),
+                  ('Motion\nSensors', 'motion_sensors'),
+                ], (tool) {
+                  switch (tool) {
+                    case 'bluetooth_scanner':
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const BluetoothScannerRoute()));
+                      break;
+                    case 'map':
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const MapRoute()));
+                      break;
+                    case 'motion_sensors':
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const MotionSensorsRoute()));
+                      break;
+                  }
+                }),
+              ],
             ),
-            const SizedBox(height: 20),
-            _buildButtonRow([
-              ('Bluetooth\nCollector', 'bluetooth_collector'),
-              ('Code\nCollector', 'code_collector'),
-              ('Fill in the\nBlank', 'fill_in_the_blank'),
-            ], (concept) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => RequestGameRoute(
-                    dio: dio,
-                    concept: concept,
-                  ),
-                ),
-              );
-            }),
-            const SizedBox(height: 20),
-            _buildButtonRow([
-              ('Orientation\nMemory', 'orientation_memory'),
-            ], (concept) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => RequestGameRoute(
-                    dio: dio,
-                    concept: concept,
-                  ),
-                ),
-              );
-            }),
-            const SizedBox(height: 20),
-            _buildButtonRow([
-              ('Bluetooth\nScanner', 'bluetooth_scanner'),
-              ('Map', 'map'),
-              ('Motion\nSensors', 'motion_sensors'),
-            ], (tool) {
-              switch (tool) {
-                case 'bluetooth_scanner':
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const BluetoothScannerRoute()));
-                  break;
-                case 'map':
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const MapRoute()));
-                  break;
-                case 'motion_sensors':
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const MotionSensorsRoute()));
-                  break;
-              }
-            }),
-          ],
+          ),
         ),
       ),
     );
