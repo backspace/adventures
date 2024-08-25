@@ -39,10 +39,17 @@ defmodule RegistrationsWeb.PageController do
     email = waitlist_params["email"]
     question = waitlist_params["question"]
 
-    Registrations.Mailer.waitlist_email(email, question)
+    flash_message =
+      if EmailChecker.Check.Format.valid?(email) do
+        Registrations.Mailer.waitlist_email(email, question)
+
+        "we’ll let you know when registration opens"
+      else
+        "was that an email address?"
+      end
 
     conn
-    |> put_flash(:info, "we’ll let you know when registration opens")
+    |> put_flash(:info, flash_message)
     |> redirect(to: Routes.page_path(conn, :index))
   end
 end

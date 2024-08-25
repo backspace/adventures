@@ -66,7 +66,8 @@ defmodule Registrations.Mixfile do
       {:assertions, "0.19.0", only: :test},
       {:jsonapi, "~> 1.8"},
       {:styler, "~> 1.0.0"},
-      {:yaml_elixir, "~> 2.11"}
+      {:yaml_elixir, "~> 2.11"},
+      {:email_checker, "~> 0.2"}
     ]
   end
 

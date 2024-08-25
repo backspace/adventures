@@ -194,4 +194,28 @@ defmodule Registrations.Waydowntown.Integration.Home do
     assert sent_email.text_body ==
              "Email: interested@example.com\nQuestion: When will the event take place?"
   end
+
+  test "placeholder page shows error for invalid email in waitlist form" do
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :placeholder,
+      true
+    )
+
+    navigate_to("/")
+
+    assert Home.placeholder_exists?()
+
+    Home.fill_waitlist_email("not_an_email")
+    Home.fill_waitlist_question("When will the event take place?")
+
+    # This bypasses client-side validation
+    execute_script("document.getElementById('waitlist_email').type = 'text';")
+
+    Home.submit_waitlist()
+
+    assert Nav.info_text() == "was that an email address?"
+
+    assert Registrations.SwooshHelper.sent_email() == []
+  end
 end
