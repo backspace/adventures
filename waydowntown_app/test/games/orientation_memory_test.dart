@@ -288,7 +288,7 @@ void main() {
     expect(find.text('Correct! Keep going.'), findsOneWidget);
 
     // Second submission (PATCH)
-    streamController.add(ScreenOrientationEvent(90));
+    streamController.add(ScreenOrientationEvent(-90));
     await tester.pumpAndSettle();
     expect(find.text('Current orientation: right'), findsOneWidget);
 
@@ -298,7 +298,7 @@ void main() {
     expect(find.text('Correct! Keep going.'), findsOneWidget);
 
     // Third submission (PATCH - incorrect)
-    streamController.add(ScreenOrientationEvent(-90));
+    streamController.add(ScreenOrientationEvent(90));
     await tester.pumpAndSettle();
     expect(find.text('Current orientation: left'), findsOneWidget);
 
@@ -308,7 +308,7 @@ void main() {
     expect(find.text('Incorrect. Start over.'), findsOneWidget);
 
     // Fourth submission (POST - after incorrect, with new orientation)
-    streamController.add(ScreenOrientationEvent(90));
+    streamController.add(ScreenOrientationEvent(-90));
     await tester.pumpAndSettle();
     expect(find.text('Current orientation: right'), findsOneWidget);
 

@@ -51,9 +51,9 @@ class _OrientationMemoryGameState extends State<OrientationMemoryGame> {
   }
 
   String getOrientation() {
-    if (_screenOrientation > -15 && _screenOrientation < 15) return 'up';
-    if (_screenOrientation > 75 && _screenOrientation < 105) return 'right';
-    if (_screenOrientation < -75 && _screenOrientation > -105) return 'left';
+    if (_screenOrientation == 90) return 'left';
+    if (_screenOrientation == 0) return 'up';
+    if (_screenOrientation == -90) return 'right';
     return '';
   }
 
