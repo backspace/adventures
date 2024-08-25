@@ -3,7 +3,10 @@ defmodule Registrations.Waydowntown.Answer do
   use Ecto.Schema
 
   import Ecto.Changeset
+  import Ecto.Query
 
+  alias Registrations.Repo
+  alias Registrations.Waydowntown.Answer
   alias Registrations.Waydowntown.Game
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -25,6 +28,17 @@ defmodule Registrations.Waydowntown.Answer do
     |> validate_required([:answer, :correct, :game_id])
     |> assoc_constraint(:game)
     |> validate_game_has_no_winner()
+    |> validate_answer_overwrite()
+  end
+
+  defp validate_answer_overwrite(changeset) do
+    with game_id when not is_nil(game_id) <- get_field(changeset, :game_id),
+         %{incarnation: %{placed: false}} = game <- Game |> Repo.get(game_id) |> Repo.preload(:incarnation),
+         %Answer{} = existing_answer <- Repo.get_by(Answer, game_id: game_id, correct: true) do
+      change(changeset, %{id: existing_answer.id})
+    else
+      _ -> changeset
+    end
   end
 
   defp validate_game_has_no_winner(changeset) do

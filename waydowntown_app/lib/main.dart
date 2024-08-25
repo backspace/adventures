@@ -122,6 +122,20 @@ class _HomeState extends State<Home> {
             }),
             const SizedBox(height: 20),
             _buildButtonRow([
+              ('Orientation\nMemory', 'orientation_memory'),
+            ], (concept) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RequestGameRoute(
+                    dio: dio,
+                    concept: concept,
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 20),
+            _buildButtonRow([
               ('Bluetooth\nScanner', 'bluetooth_scanner'),
               ('Map', 'map'),
               ('Motion\nSensors', 'motion_sensors'),

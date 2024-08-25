@@ -63,6 +63,7 @@ bluetooth_collector:
       incarnation: Incarnation(
         id: '1',
         concept: 'bluetooth_collector',
+        placed: true,
         mask: 'not applicable',
         region: Region(
           id: '1',
@@ -98,6 +99,7 @@ bluetooth_collector:
       incarnation: Incarnation(
         id: '2',
         concept: 'bluetooth_collector',
+        placed: true,
         mask: 'not applicable',
         region: Region(
           id: '1',

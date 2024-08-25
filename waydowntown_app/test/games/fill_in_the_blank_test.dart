@@ -26,6 +26,7 @@ void main() {
     incarnation: Incarnation(
       id: '0091eb84-85c8-4e63-962b-39e1a19d2781',
       concept: 'fill_in_the_blank',
+      placed: true,
       mask: 'An enormous headline proclaims ____ quit!',
       region: Region(
         id: '324fd8f9-cd25-48be-a761-b8680fa72737',

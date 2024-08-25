@@ -29,6 +29,7 @@ void main() {
     incarnation: Incarnation(
       id: '0091eb84-85c8-4e63-962b-39e1a19d2781',
       concept: 'code_collector',
+      placed: true,
       mask: 'not applicable',
       region: Region(
         id: '324fd8f9-cd25-48be-a761-b8680fa72737',

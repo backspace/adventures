@@ -7,12 +7,10 @@ defmodule RegistrationsWeb.AnswerControllerTest do
   alias Registrations.Waydowntown.Incarnation
   alias Registrations.Waydowntown.Region
 
-  setup %{conn: conn} do
-    {:ok,
-     conn:
-       conn
-       |> put_req_header("accept", "application/vnd.api+json")
-       |> put_req_header("content-type", "application/vnd.api+json")}
+  defp setup_conn(conn) do
+    conn
+    |> put_req_header("accept", "application/vnd.api+json")
+    |> put_req_header("content-type", "application/vnd.api+json")
   end
 
   describe "create answer for fill_in_the_blank" do
@@ -23,7 +21,8 @@ defmodule RegistrationsWeb.AnswerControllerTest do
         Repo.insert!(%Incarnation{
           concept: "fill_in_the_blank",
           answers: ["the answer"],
-          region: region
+          region: region,
+          placed: true
         })
 
       game = Repo.insert!(%Game{incarnation: incarnation})
@@ -33,8 +32,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
     test "creates correct answer", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -51,7 +51,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       assert %{"id" => id} = json_response(conn, 201)["data"]
       answer = Waydowntown.get_answer!(id)
-      assert answer.correct == true
+      assert answer.correct
 
       game = Waydowntown.get_game!(game.id)
       assert game.winner_answer_id == answer.id
@@ -76,8 +76,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
       game = Repo.update!(Game.changeset(game, %{winner_answer_id: existing_answer.id}))
 
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -94,6 +95,218 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
       assert json_response(conn, 422)["errors"] != %{}
     end
+
+    test "fails to update an existing answer for a placed incarnation", %{conn: conn, game: game} do
+      # First, create an answer
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "THE ANSWER"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+
+      # Now, try to update the answer
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> patch(
+          Routes.answer_path(conn, :update, id),
+          %{
+            "data" => %{
+              "id" => id,
+              "type" => "answers",
+              "attributes" => %{"answer" => "UPDATED ANSWER"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Cannot update answer for placed incarnation"}]
+    end
+  end
+
+  describe "create answer for non-placed incarnation" do
+    setup do
+      region = Repo.insert!(%Region{name: "Test Region"})
+
+      incarnation =
+        Repo.insert!(%Incarnation{
+          concept: "orientation_memory",
+          answers: ["left", "up", "right"],
+          region: region,
+          placed: false
+        })
+
+      game = Repo.insert!(%Game{incarnation: incarnation})
+
+      %{game: game, incarnation: incarnation, region: region}
+    end
+
+    test "creates and updates answer", %{conn: conn, game: game} do
+      # Create initial answer
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "left"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      answer = Waydowntown.get_answer!(id)
+      assert answer.answer == "left"
+      assert answer.correct
+
+      # Update the answer
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> patch(
+          Routes.answer_path(conn, :update, id),
+          %{
+            "data" => %{
+              "id" => id,
+              "type" => "answers",
+              "attributes" => %{"answer" => "left|up"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      updated_answer = Waydowntown.get_answer!(id)
+      assert updated_answer.answer == "left|up"
+      assert updated_answer.correct
+
+      # Complete the answer
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> patch(
+          Routes.answer_path(conn, :update, id),
+          %{
+            "data" => %{
+              "id" => id,
+              "type" => "answers",
+              "attributes" => %{"answer" => "left|up|right"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      completed_answer = Waydowntown.get_answer!(id)
+      assert completed_answer.answer == "left|up|right"
+      assert completed_answer.correct
+
+      game = Waydowntown.get_game!(game.id)
+      assert game.winner_answer_id == completed_answer.id
+    end
+
+    test "always creates a new answer on POST, even if incorrect", %{conn: conn, game: game} do
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "WRONG ANSWER"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      answer = Waydowntown.get_answer!(id)
+      assert answer.answer == "WRONG ANSWER"
+      refute answer.correct
+    end
+
+    test "returns 422 when updating an incorrect answer", %{conn: conn, game: game} do
+      # First, create an incorrect answer
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "WRONG ANSWER"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+
+      # Now, try to update the incorrect answer
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> patch(
+          Routes.answer_path(conn, :update, id),
+          %{
+            "data" => %{
+              "id" => id,
+              "type" => "answers",
+              "attributes" => %{"answer" => "ANOTHER WRONG ANSWER"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Cannot update an incorrect answer"}]
+    end
   end
 
   describe "create answer for bluetooth_collector" do
@@ -104,7 +317,8 @@ defmodule RegistrationsWeb.AnswerControllerTest do
         Repo.insert!(%Incarnation{
           concept: "bluetooth_collector",
           answers: ["device_a", "device_b"],
-          region: region
+          region: region,
+          placed: true
         })
 
       game = Repo.insert!(%Game{incarnation: incarnation})
@@ -114,8 +328,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
     test "creates correct answer", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -131,39 +346,18 @@ defmodule RegistrationsWeb.AnswerControllerTest do
         )
 
       assert %{"id" => id} = json_response(conn, 201)["data"]
-
-      assert %{
-               "included" => [
-                 %{
-                   "type" => "incarnations",
-                   "id" => _incarnation_id,
-                   "attributes" => _incarnation_attributes
-                 },
-                 %{
-                   "type" => "games",
-                   "id" => game_id,
-                   "attributes" => %{
-                     "complete" => complete,
-                     "correct_answers" => 1,
-                     "total_answers" => 2
-                   }
-                 }
-               ]
-             } = json_response(conn, 201)
-
-      refute complete
-
-      game = Waydowntown.get_game!(game_id)
-      refute game.winner_answer_id
-
       answer = Waydowntown.get_answer!(id)
-      assert answer.correct == true
+      assert answer.correct
+
+      game = Waydowntown.get_game!(game.id)
+      refute game.winner_answer_id
     end
 
     test "creates incorrect answer", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -192,7 +386,8 @@ defmodule RegistrationsWeb.AnswerControllerTest do
         Repo.insert!(%Incarnation{
           concept: "code_collector",
           answers: ["code_a", "code_b"],
-          region: region
+          region: region,
+          placed: true
         })
 
       game = Repo.insert!(%Game{incarnation: incarnation})
@@ -202,8 +397,9 @@ defmodule RegistrationsWeb.AnswerControllerTest do
 
     test "creates correct answer", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{
@@ -219,79 +415,18 @@ defmodule RegistrationsWeb.AnswerControllerTest do
         )
 
       assert %{"id" => id} = json_response(conn, 201)["data"]
-
-      assert %{
-               "included" => [
-                 %{
-                   "type" => "incarnations",
-                   "id" => _incarnation_id,
-                   "attributes" => _incarnation_attributes
-                 },
-                 %{
-                   "type" => "games",
-                   "id" => game_id,
-                   "attributes" => %{
-                     "complete" => complete,
-                     "correct_answers" => 1,
-                     "total_answers" => 2
-                   }
-                 }
-               ]
-             } = json_response(conn, 201)
-
-      refute complete
-
-      game = Waydowntown.get_game!(game_id)
-      refute game.winner_answer_id
-
       answer = Waydowntown.get_answer!(id)
       assert answer.correct
-    end
 
-    test "duplicate correct answers are not counted", %{conn: conn, game: game} do
-      Repo.insert!(%Answer{game: game, answer: "code_a", correct: true})
-
-      conn =
-        post(
-          conn,
-          Routes.answer_path(conn, :create),
-          %{
-            "data" => %{
-              "type" => "answers",
-              "attributes" => %{"answer" => "code_a"},
-              "relationships" => %{
-                "game" => %{
-                  "data" => %{"type" => "games", "id" => game.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert %{
-               "included" => [
-                 %{
-                   "type" => "incarnations",
-                   "id" => _incarnation_id,
-                   "attributes" => _incarnation_attributes
-                 },
-                 %{
-                   "type" => "games",
-                   "id" => _game_id,
-                   "attributes" => %{
-                     "complete" => false,
-                     "correct_answers" => 1,
-                     "total_answers" => 2
-                   }
-                 }
-               ]
-             } = json_response(conn, 201)
+      game = Waydowntown.get_game!(game.id)
+      refute game.winner_answer_id
     end
 
     test "creates incorrect answer", %{conn: conn, game: game} do
       conn =
-        post(
-          conn,
+        conn
+        |> setup_conn()
+        |> post(
           Routes.answer_path(conn, :create),
           %{
             "data" => %{

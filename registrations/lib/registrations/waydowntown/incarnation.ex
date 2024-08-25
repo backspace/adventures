@@ -11,6 +11,7 @@ defmodule Registrations.Waydowntown.Incarnation do
     field(:answers, {:array, :string})
     field(:concept, :string)
     field(:mask, :string)
+    field(:placed, :boolean, default: true)
 
     belongs_to(:region, Registrations.Waydowntown.Region, type: :binary_id)
     has_many(:games, Registrations.Waydowntown.Game)
@@ -21,7 +22,7 @@ defmodule Registrations.Waydowntown.Incarnation do
   @doc false
   def changeset(incarnation, attrs) do
     incarnation
-    |> cast(attrs, [:concept, :mask, :answers])
-    |> validate_required([:concept, :mask, :answers])
+    |> cast(attrs, [:concept, :mask, :answers, :placed, :region_id])
+    |> validate_required([:concept, :mask, :answers, :placed])
   end
 end

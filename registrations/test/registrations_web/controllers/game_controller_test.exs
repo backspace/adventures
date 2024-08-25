@@ -22,10 +22,11 @@ defmodule RegistrationsWeb.GameControllerTest do
         Repo.insert!(%Incarnation{
           concept: "fill_in_the_blank",
           mask: "This is a ____",
-          region_id: child_region.id
+          region_id: child_region.id,
+          placed: true
         })
 
-      {:ok, game} = Waydowntown.create_game(%{}, incarnation.concept)
+      {:ok, game} = Waydowntown.create_game(%{}, %{"concept" => incarnation.concept})
 
       %{
         game: game,
@@ -68,6 +69,7 @@ defmodule RegistrationsWeb.GameControllerTest do
                  item["id"] == incarnation.id &&
                  item["attributes"]["concept"] == "fill_in_the_blank" &&
                  item["attributes"]["mask"] == "This is a ____" &&
+                 item["attributes"]["placed"] == true &&
                  item["relationships"]["region"]["data"]["id"] == child_region.id
              end)
 
@@ -95,7 +97,8 @@ defmodule RegistrationsWeb.GameControllerTest do
         Repo.insert!(%Incarnation{
           concept: "fill_in_the_blank",
           mask: "This is a ____",
-          region: region
+          region: region,
+          placed: true
         })
 
       %{incarnation: incarnation, region: region}
@@ -128,7 +131,8 @@ defmodule RegistrationsWeb.GameControllerTest do
       bluetooth_incarnation =
         Repo.insert!(%Incarnation{
           concept: "bluetooth_collector",
-          region_id: Repo.insert!(%Region{}).id
+          region_id: Repo.insert!(%Region{}).id,
+          placed: true
         })
 
       conn =
@@ -151,6 +155,68 @@ defmodule RegistrationsWeb.GameControllerTest do
 
       game = Waydowntown.get_game!(id)
       assert game.incarnation_id == bluetooth_incarnation.id
+    end
+
+    test "creates game with non-placed incarnation", %{conn: conn} do
+      conn =
+        post(
+          conn,
+          Routes.game_path(conn, :create) <> "?filter[incarnation.placed]=false",
+          %{
+            "data" => %{
+              "type" => "games",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
+      assert sideloaded_incarnation["attributes"]["placed"] == false
+      assert sideloaded_incarnation["attributes"]["concept"] in ["orientation_memory", "cardinal_memory"]
+      assert sideloaded_incarnation["attributes"]["mask"] != nil
+
+      game = Waydowntown.get_game!(id)
+      incarnation = Waydowntown.get_incarnation!(game.incarnation_id)
+      assert incarnation.placed == false
+      assert incarnation.concept in ["orientation_memory", "cardinal_memory"]
+    end
+
+    test "creates new incarnation for unplaced concept even if one exists", %{conn: conn} do
+      existing_incarnation =
+        Repo.insert!(%Incarnation{
+          concept: "orientation_memory",
+          mask: "Existing mask",
+          region_id: Repo.insert!(%Region{}).id,
+          placed: false
+        })
+
+      conn =
+        post(
+          conn,
+          Routes.game_path(conn, :create) <> "?filter[incarnation.concept]=orientation_memory",
+          %{
+            "data" => %{
+              "type" => "games",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
+      assert sideloaded_incarnation["attributes"]["concept"] == "orientation_memory"
+      assert sideloaded_incarnation["id"] != existing_incarnation.id
+
+      game = Waydowntown.get_game!(id)
+      new_incarnation = Waydowntown.get_incarnation!(game.incarnation_id)
+      assert new_incarnation.id != existing_incarnation.id
+      assert new_incarnation.concept == "orientation_memory"
+      assert new_incarnation.placed == false
     end
   end
 end

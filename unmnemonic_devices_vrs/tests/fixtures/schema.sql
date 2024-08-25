@@ -308,11 +308,11 @@ CREATE TABLE waydowntown.incarnations (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     concept character varying(255),
     mask character varying(255),
-    answer character varying(255),
     inserted_at timestamp(0) without time zone NOT NULL,
     updated_at timestamp(0) without time zone NOT NULL,
-    region_id uuid NOT NULL,
-    answers character varying(255)[] DEFAULT ARRAY[]::character varying[]
+    region_id uuid,
+    answers character varying(255)[] DEFAULT ARRAY[]::character varying[],
+    placed boolean DEFAULT true NOT NULL
 );
 
 
@@ -324,7 +324,9 @@ CREATE TABLE waydowntown.regions (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     name character varying(255),
     description text,
-    parent_id uuid
+    parent_id uuid,
+    inserted_at timestamp(0) without time zone,
+    updated_at timestamp(0) without time zone
 );
 
 
@@ -528,6 +530,13 @@ CREATE UNIQUE INDEX recordings_team_id_index ON unmnemonic_devices.recordings US
 
 
 --
+-- Name: incarnations_placed_index; Type: INDEX; Schema: waydowntown; Owner: -
+--
+
+CREATE INDEX incarnations_placed_index ON waydowntown.incarnations USING btree (placed);
+
+
+--
 -- Name: user_identities user_identities_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -726,3 +735,5 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240722224559);
 INSERT INTO public."schema_migrations" (version) VALUES (20240723045728);
 INSERT INTO public."schema_migrations" (version) VALUES (20240806025935);
 INSERT INTO public."schema_migrations" (version) VALUES (20240806031811);
+INSERT INTO public."schema_migrations" (version) VALUES (20240824211544);
+INSERT INTO public."schema_migrations" (version) VALUES (20240825045118);
