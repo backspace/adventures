@@ -98,7 +98,7 @@ class _OrientationMemoryGameState extends State<OrientationMemoryGame> {
       if (lastAnswerId != null) {
         // PATCH if we have a previous correct answer
         response = await widget.dio.patch(
-          '/waydowntown/answers/${lastAnswerId}?include=game',
+          '/waydowntown/answers/$lastAnswerId?include=game',
           data: data,
         );
       } else {
@@ -147,7 +147,7 @@ class _OrientationMemoryGameState extends State<OrientationMemoryGame> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Orientation Memory'),
+        title: const Text('Orientation Memory'),
       ),
       body: Center(
         child: Column(
@@ -156,26 +156,26 @@ class _OrientationMemoryGameState extends State<OrientationMemoryGame> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Current pattern: '),
+                const Text('Current pattern: '),
                 Text(
                   pattern.map(getOrientationArrow).join(),
-                  key: Key('pattern-arrows'),
-                  style: TextStyle(fontFamily: 'arrows', fontSize: 24),
+                  key: const Key('pattern-arrows'),
+                  style: const TextStyle(fontFamily: 'arrows', fontSize: 24),
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              key: Key('submit-${currentOrientation}'),
+              key: Key('submit-$currentOrientation'),
               onPressed: isGameOver ? null : submitOrientation,
-              child: Row(
+              child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Submit '),
                   Text(
                     getOrientationArrow(currentOrientation),
-                    style: TextStyle(fontFamily: 'arrows', fontSize: 24),
+                    style: const TextStyle(fontFamily: 'arrows', fontSize: 72),
                   ),
+                  const Text('Submit'),
                 ],
               ),
             ),
