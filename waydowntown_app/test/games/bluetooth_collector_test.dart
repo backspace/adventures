@@ -42,6 +42,7 @@ void main() {
     id: '22261813-2171-453f-a669-db08edc70d6d',
     incarnation: Incarnation(
       id: '0091eb84-85c8-4e63-962b-39e1a19d2781',
+      placed: true,
       concept: 'bluetooth_collector',
       mask: 'not applicable',
       region: Region(

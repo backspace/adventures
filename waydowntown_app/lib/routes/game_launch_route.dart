@@ -4,6 +4,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/games/code_collector.dart';
 import 'package:waydowntown/games/fill_in_the_blank.dart';
+import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/get_region_path.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:yaml/yaml.dart';
@@ -126,6 +127,8 @@ class GameLaunchRoute extends StatelessWidget {
         return CodeCollectorGame(game: game, dio: dio);
       case 'fill_in_the_blank':
         return FillInTheBlankGame(game: game, dio: dio);
+      case 'orientation_memory':
+        return OrientationMemoryGame(game: game, dio: dio);
       default:
         throw Exception('Unknown game type: ${game.incarnation.concept}');
     }
