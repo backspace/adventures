@@ -126,9 +126,10 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
           });
         } else {
           setState(() {
+            submissionMessage =
+                pattern.isEmpty ? 'Incorrect.' : 'Incorrect. Start over.';
             pattern = [];
             lastAnswerId = null;
-            submissionMessage = 'Incorrect. Start over.';
           });
         }
       } else {
