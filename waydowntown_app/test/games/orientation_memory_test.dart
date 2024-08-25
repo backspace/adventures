@@ -402,8 +402,7 @@ void main() {
     expect(find.byKey(const Key('pattern-arrows')), findsOneWidget);
     expect(
         tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '5');
-    expect(find.text('Congratulations! You completed the pattern.'),
-        findsOneWidget);
+    expect(find.text('Congratulations!'), findsOneWidget);
 
     expect(tester.widget<ElevatedButton>(find.byType(ElevatedButton)).enabled,
         false);

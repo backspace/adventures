@@ -121,7 +121,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
             submissionMessage = 'Correct! Keep going.';
             if (gameData['attributes']['complete'] == true) {
               isGameOver = true;
-              submissionMessage = 'Congratulations! You completed the pattern.';
+              submissionMessage = 'Congratulations!';
             }
           });
         } else {
