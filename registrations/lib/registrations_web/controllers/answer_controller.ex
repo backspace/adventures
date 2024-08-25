@@ -21,6 +21,11 @@ defmodule RegistrationsWeb.AnswerController do
         |> put_resp_header("location", Routes.answer_path(conn, :show, answer))
         |> render("show.json", %{answer: answer, conn: conn, params: params})
 
+      {:error, :cannot_update_incorrect_answer} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: [%{detail: "Cannot update an incorrect answer"}]})
+
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> put_status(:unprocessable_entity)

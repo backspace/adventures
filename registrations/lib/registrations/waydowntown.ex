@@ -241,23 +241,32 @@ defmodule Registrations.Waydowntown do
 
     case_result =
       case Repo.get_by(Answer, game_id: game_id) do
-        nil -> %Answer{}
-        existing -> existing
+        nil ->
+          %Answer{}
+
+        existing ->
+          if existing.correct, do: existing, else: {:error, :cannot_update_incorrect_answer}
       end
 
-    case_result
-    |> Answer.changeset(attrs)
-    |> Repo.insert_or_update()
-    |> case do
-      {:ok, answer} ->
-        if answer.correct and single_answer_game?(incarnation) do
-          update_game_winner(game, answer)
+    case case_result do
+      {:error, :cannot_update_incorrect_answer} ->
+        {:error, :cannot_update_incorrect_answer}
+
+      answer ->
+        answer
+        |> Answer.changeset(attrs)
+        |> Repo.insert_or_update()
+        |> case do
+          {:ok, answer} ->
+            if answer.correct and single_answer_game?(incarnation) do
+              update_game_winner(game, answer)
+            end
+
+            {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
+
+          {:error, changeset} ->
+            {:error, changeset}
         end
-
-        {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
-
-      {:error, changeset} ->
-        {:error, changeset}
     end
   end
 
