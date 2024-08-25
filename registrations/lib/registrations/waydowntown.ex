@@ -137,7 +137,13 @@ defmodule Registrations.Waydowntown do
   defp generate_answers(concept) do
     options = concept["options"]
     length = Enum.random(4..6)
-    Enum.take_random(options, length)
+
+    1..length
+    |> Enum.reduce([], fn i, acc ->
+      available_options = if i > 1, do: options, else: options -- [List.last(acc)]
+      [Enum.random(available_options) | acc]
+    end)
+    |> Enum.reverse()
   end
 
   defp get_random_incarnation(filter) do
