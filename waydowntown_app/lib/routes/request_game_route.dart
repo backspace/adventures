@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:sentry/sentry.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/routes/game_launch_route.dart';
@@ -56,6 +57,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
     } catch (error) {
       if (mounted) {
         setState(() {
+          Sentry.captureException(error);
           isRequestError = true;
         });
       }

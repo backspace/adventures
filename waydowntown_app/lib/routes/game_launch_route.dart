@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:sentry/sentry.dart';
 import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/games/code_collector.dart';
 import 'package:waydowntown/games/fill_in_the_blank.dart';
@@ -79,6 +80,7 @@ class GameLaunchRoute extends StatelessWidget {
                             ),
                           );
                         } catch (e) {
+                          Sentry.captureException(e);
                           _showErrorDialog(
                               context,
                               'Error: Game widget not found',
