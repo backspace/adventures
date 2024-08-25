@@ -158,7 +158,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
               children: [
                 const Text('Current pattern: '),
                 Text(
-                  pattern.map(getOrientationArrow).join(),
+                  pattern.map(getOrientationArrow).join(" "),
                   key: const Key('pattern-arrows'),
                   style: const TextStyle(fontFamily: 'arrows', fontSize: 24),
                 ),

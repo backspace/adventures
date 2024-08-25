@@ -297,7 +297,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('pattern-arrows')), findsOneWidget);
     expect(tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data,
-        '5#');
+        '5 #');
     expect(find.text('Correct! Keep going.'), findsOneWidget);
 
     // Third submission (PATCH - incorrect)
