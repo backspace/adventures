@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_confetti/flutter_confetti.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:waydowntown/models/game.dart';
 
@@ -123,6 +124,35 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
             submissionMessage = 'Correct! Keep going.';
             totalAnswers = gameData['attributes']['total_answers'];
             if (gameData['attributes']['complete'] == true) {
+              const options = ConfettiOptions(
+                  spread: 360,
+                  ticks: 50,
+                  gravity: 0,
+                  decay: 0.94,
+                  startVelocity: 30,
+                  colors: [
+                    Color(0xffFFE400),
+                    Color(0xffFFBD00),
+                    Color(0xffE89400),
+                    Color(0xffFFCA6C),
+                    Color(0xffFDFFB8)
+                  ]);
+
+              shoot() {
+                Confetti.launch(context,
+                    options: options.copyWith(particleCount: 40, scalar: 1.2),
+                    particleBuilder: (index) => Star());
+                Confetti.launch(context,
+                    options: options.copyWith(
+                      particleCount: 10,
+                      scalar: 0.75,
+                    ));
+              }
+
+              Timer(Duration.zero, shoot);
+              Timer(const Duration(milliseconds: 100), shoot);
+              Timer(const Duration(milliseconds: 200), shoot);
+
               isGameOver = true;
               submissionMessage = 'Congratulations!';
             }

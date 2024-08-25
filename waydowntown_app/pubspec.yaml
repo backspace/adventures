@@ -53,6 +53,7 @@ dependencies:
       ref: 6dafc3639b3e96460fabc639768a60b431b53610
   vector_math: ^2.1.4
   yaml: ^3.1.2
+  flutter_confetti: ^0.3.0
 
 dev_dependencies:
   flutter_test:
