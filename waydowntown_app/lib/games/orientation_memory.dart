@@ -30,6 +30,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
   String? lastAnswerId;
   String? submissionMessage;
   late MotionSensors _motionSensors;
+  String? winningAnswerId;
 
   @override
   void initState() {
@@ -119,7 +120,8 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
             pattern = newPattern;
             lastAnswerId = answerData['id'];
             submissionMessage = 'Correct! Keep going.';
-            if (gameData['attributes']['complete'] == true) {
+            winningAnswerId = gameData['attributes']['winner_answer_id'];
+            if (winningAnswerId != null) {
               isGameOver = true;
               submissionMessage = 'Congratulations! You completed the pattern.';
             }

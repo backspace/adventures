@@ -325,4 +325,89 @@ void main() {
         tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '#');
     expect(find.text('Correct! Keep going.'), findsOneWidget);
   });
+
+  testWidgets('OrientationMemoryGame can be won', (WidgetTester tester) async {
+    final streamController = StreamController<ScreenOrientationEvent>();
+    when(mockMotionSensors.screenOrientation)
+        .thenAnswer((_) => streamController.stream);
+
+    dioAdapter.onPost(
+      submitAnswerRoute,
+      (server) => server.reply(
+        201,
+        {
+          "data": {
+            "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
+            "type": "answers",
+            "attributes": {"answer": "up", "correct": true},
+            "relationships": {
+              "game": {
+                "data": {
+                  "type": "games",
+                  "id": "22261813-2171-453f-a669-db08edc70d6d",
+                }
+              }
+            }
+          },
+          "included": [
+            {
+              "id": "22261813-2171-453f-a669-db08edc70d6d",
+              "type": "games",
+              "attributes": {
+                "correct_answers": 1,
+                "total_answers": 1,
+                "complete": true,
+                "winner_answer_id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4"
+              }
+            }
+          ],
+          "meta": {}
+        },
+      ),
+      data: {
+        'data': {
+          'type': 'answers',
+          'attributes': {
+            'answer': 'up',
+          },
+          'relationships': {
+            'game': {
+              'data': {
+                'type': 'games',
+                'id': '22261813-2171-453f-a669-db08edc70d6d'
+              }
+            }
+          }
+        }
+      },
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: OrientationMemoryGame(
+        dio: dio,
+        game: game,
+        motionSensors: mockMotionSensors,
+      ),
+    ));
+
+    expect(find.text('Current pattern: '), findsOneWidget);
+    expect(find.byKey(const Key('pattern-arrows')), findsOneWidget);
+    expect(find.text('Submit '), findsOneWidget);
+
+    streamController.add(ScreenOrientationEvent(0));
+    await tester.pump();
+    expect(find.byKey(const Key('submit-up')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('submit-up')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('pattern-arrows')), findsOneWidget);
+    expect(
+        tester.widget<Text>(find.byKey(const Key('pattern-arrows'))).data, '5');
+    expect(find.text('Congratulations! You completed the pattern.'),
+        findsOneWidget);
+
+    expect(tester.widget<ElevatedButton>(find.byType(ElevatedButton)).enabled,
+        false);
+  });
 }
