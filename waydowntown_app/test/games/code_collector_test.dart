@@ -369,4 +369,91 @@ void main() {
 
     expect(errorIcon, findsNothing);
   });
+  testWidgets('CodeCollectorGame completes and stops scanning',
+      (WidgetTester tester) async {
+    dioAdapter.onPost(
+      submitAnswerRoute,
+      (server) => server.reply(
+        201,
+        {
+          "data": {
+            "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
+            "type": "answers",
+            "attributes": {"answer": "Code5", "correct": true},
+            "relationships": {
+              "game": {
+                "data": {
+                  "type": "games",
+                  "id": "22261813-2171-453f-a669-db08edc70d6d",
+                }
+              }
+            }
+          },
+          "included": [
+            {
+              "id": "22261813-2171-453f-a669-db08edc70d6d",
+              "type": "games",
+              "attributes": {
+                "correct_answers": 5,
+                "total_answers": 5,
+              }
+            }
+          ],
+          "meta": {}
+        },
+      ),
+      data: {
+        'data': {
+          'type': 'answers',
+          'attributes': {
+            'answer': 'Code5',
+          },
+          'relationships': {
+            'game': {
+              'data': {
+                'type': 'games',
+                'id': '22261813-2171-453f-a669-db08edc70d6d'
+              }
+            }
+          }
+        }
+      },
+    );
+
+    when(mockController.start()).thenAnswer((_) async => ());
+    when(mockController.autoStart).thenReturn(true);
+    when(mockController.value).thenReturn(const MobileScannerState(
+        availableCameras: 1,
+        cameraDirection: CameraFacing.back,
+        isInitialized: true,
+        isRunning: true,
+        size: Size(100, 100),
+        torchState: TorchState.off,
+        zoomScale: 1.0));
+
+    final streamController = StreamController<BarcodeCapture>();
+    when(mockController.barcodes).thenAnswer((_) => streamController.stream);
+
+    await tester.pumpWidget(MaterialApp(
+      home: CodeCollectorGame(
+          dio: dio, game: game, scannerController: mockController),
+    ));
+
+    streamController.add(const BarcodeCapture(
+        barcodes: [Barcode(rawValue: 'Code5', format: BarcodeFormat.qrCode)]));
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Code5'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Progress: 5/5'), findsOneWidget);
+    expect(find.text('Congratulations! You have completed the game.'),
+        findsOneWidget);
+
+    // This is called automatically when MobileScanner is disposed of
+    verify(mockController.stop()).called(1);
+
+    expect(find.byType(MobileScanner), findsNothing);
+  });
 }

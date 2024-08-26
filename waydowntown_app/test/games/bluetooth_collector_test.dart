@@ -378,4 +378,82 @@ void main() {
 
     expect(errorIcon, findsNothing);
   });
+
+  testWidgets('BluetoothCollectorGame completes and stops scanning',
+      (WidgetTester tester) async {
+    dioAdapter.onPost(
+      submitAnswerRoute,
+      (server) => server.reply(
+        201,
+        {
+          "data": {
+            "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
+            "type": "answers",
+            "attributes": {"answer": "Device 3", "correct": true},
+            "relationships": {
+              "game": {
+                "data": {
+                  "type": "games",
+                  "id": "22261813-2171-453f-a669-db08edc70d6d",
+                }
+              }
+            }
+          },
+          "included": [
+            {
+              "id": "22261813-2171-453f-a669-db08edc70d6d",
+              "type": "games",
+              "attributes": {
+                "correct_answers": 3,
+                "total_answers": 3,
+              }
+            }
+          ],
+          "meta": {}
+        },
+      ),
+      data: {
+        'data': {
+          'type': 'answers',
+          'attributes': {
+            'answer': 'Device 3',
+          },
+          'relationships': {
+            'game': {
+              'data': {
+                'type': 'games',
+                'id': '22261813-2171-453f-a669-db08edc70d6d'
+              }
+            }
+          }
+        }
+      },
+    );
+
+    List<List<ScanResult>> results = [
+      [deviceResult3],
+    ];
+
+    when(mockFlutterBluePlus.onScanResults).thenAnswer((_) {
+      return Stream.fromIterable(results);
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      home: BluetoothCollectorGame(
+          dio: dio, game: game, flutterBluePlus: mockFlutterBluePlus),
+    ));
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Device 3'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Progress: 3/3'), findsOneWidget);
+    expect(find.text('Congratulations! You have completed the game.'),
+        findsOneWidget);
+
+    verify(mockFlutterBluePlus.stopScan()).called(1);
+
+    expect(find.byType(FloatingActionButton), findsNothing);
+  });
 }

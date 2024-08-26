@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:flutter_confetti/flutter_confetti.dart';
 import 'package:waydowntown/flutter_blue_plus_mockable.dart';
 import 'package:waydowntown/get_region_path.dart';
 import 'package:waydowntown/main.dart';
@@ -44,6 +45,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
   StreamSubscription<List<ScanResult>>? _scanResultsSubscription;
   bool isScanning = false;
   Map<String, String> deviceErrors = {};
+  bool isGameComplete = false;
 
   late Game currentGame;
 
@@ -90,6 +92,38 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
     });
   }
 
+  void _showCompletionAnimation() {
+    const options = ConfettiOptions(
+      spread: 360,
+      ticks: 50,
+      gravity: 0,
+      decay: 0.94,
+      startVelocity: 30,
+      colors: [
+        Color(0xffFFE400),
+        Color(0xffFFBD00),
+        Color(0xffE89400),
+        Color(0xffFFCA6C),
+        Color(0xffFDFFB8)
+      ],
+    );
+
+    void shoot() {
+      Confetti.launch(context,
+          options: options.copyWith(particleCount: 40, scalar: 1.2),
+          particleBuilder: (index) => Star());
+      Confetti.launch(context,
+          options: options.copyWith(
+            particleCount: 10,
+            scalar: 0.75,
+          ));
+    }
+
+    Timer(Duration.zero, shoot);
+    Timer(const Duration(milliseconds: 100), shoot);
+    Timer(const Duration(milliseconds: 200), shoot);
+  }
+
   Future<void> submitDevice(DetectedDevice detectedDevice) async {
     setState(() {
       detectedDevice.state = DeviceSubmissionState.submitting;
@@ -131,6 +165,12 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
                 {'data': gameData, 'included': response.data['included']},
                 existingIncarnation: currentGame.incarnation);
           }
+        }
+
+        if (currentGame.correctAnswers == currentGame.totalAnswers) {
+          isGameComplete = true;
+          stopScan();
+          _showCompletionAnimation();
         }
       });
     } catch (e) {
@@ -197,6 +237,14 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
               'Progress: ${currentGame.correctAnswers}/${currentGame.totalAnswers}',
             ),
           ),
+          if (isGameComplete)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Congratulations! You have completed the game.',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
           Expanded(
               child: ListView.builder(
             itemCount: detectedDevices.length,
@@ -216,10 +264,12 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
           )),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: isScanning ? stopScan : startScan,
-        child: Icon(isScanning ? Icons.stop : Icons.refresh),
-      ),
+      floatingActionButton: isGameComplete
+          ? null
+          : FloatingActionButton(
+              onPressed: isScanning ? stopScan : startScan,
+              child: Icon(isScanning ? Icons.stop : Icons.refresh),
+            ),
     );
   }
 

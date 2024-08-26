@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_confetti/flutter_confetti.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:waydowntown/get_region_path.dart';
 import 'package:waydowntown/main.dart';
@@ -38,6 +39,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
   late MobileScannerController controller;
   Map<String, String> codeErrors = {};
   late Game currentGame;
+  bool isGameComplete = false;
 
   @override
   void initState() {
@@ -54,6 +56,38 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
 
   void stopScanner() {
     controller.stop();
+  }
+
+  void _showCompletionAnimation() {
+    const options = ConfettiOptions(
+      spread: 360,
+      ticks: 50,
+      gravity: 0,
+      decay: 0.94,
+      startVelocity: 30,
+      colors: [
+        Color(0xffFFE400),
+        Color(0xffFFBD00),
+        Color(0xffE89400),
+        Color(0xffFFCA6C),
+        Color(0xffFDFFB8)
+      ],
+    );
+
+    void shoot() {
+      Confetti.launch(context,
+          options: options.copyWith(particleCount: 40, scalar: 1.2),
+          particleBuilder: (index) => Star());
+      Confetti.launch(context,
+          options: options.copyWith(
+            particleCount: 10,
+            scalar: 0.75,
+          ));
+    }
+
+    Timer(Duration.zero, shoot);
+    Timer(const Duration(milliseconds: 100), shoot);
+    Timer(const Duration(milliseconds: 200), shoot);
   }
 
   Future<void> submitCode(DetectedCode detectedCode) async {
@@ -99,6 +133,11 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
                   {'data': gameData, 'included': response.data['included']},
                   existingIncarnation: currentGame.incarnation);
             }
+          }
+
+          if (currentGame.correctAnswers == currentGame.totalAnswers) {
+            isGameComplete = true;
+            _showCompletionAnimation();
           }
         });
       }
@@ -166,26 +205,37 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
               'Progress: ${currentGame.correctAnswers}/${currentGame.totalAnswers}',
             ),
           ),
-          Expanded(
-            child: MobileScanner(
-              controller: controller,
-              onDetect: (capture) {
-                final List<Barcode> barcodes = capture.barcodes;
-                for (final barcode in barcodes) {
-                  final code = barcode.rawValue ?? '';
-                  if (code.isNotEmpty &&
-                      !detectedCodes.any((element) => element.code == code)) {
-                    logger.d('detected new code $code');
-                    if (mounted) {
-                      setState(() {
-                        detectedCodes.add(DetectedCode(code));
-                      });
-                    }
-                  }
-                }
-              },
+          if (isGameComplete)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                'Congratulations! You have completed the game.',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
+          isGameComplete
+              ? const SizedBox()
+              : Expanded(
+                  child: MobileScanner(
+                    controller: controller,
+                    onDetect: (capture) {
+                      final List<Barcode> barcodes = capture.barcodes;
+                      for (final barcode in barcodes) {
+                        final code = barcode.rawValue ?? '';
+                        if (code.isNotEmpty &&
+                            !detectedCodes
+                                .any((element) => element.code == code)) {
+                          logger.d('detected new code $code');
+                          if (mounted) {
+                            setState(() {
+                              detectedCodes.add(DetectedCode(code));
+                            });
+                          }
+                        }
+                      }
+                    },
+                  ),
+                ),
           Expanded(
             child: ListView.builder(
               itemCount: detectedCodes.length,
