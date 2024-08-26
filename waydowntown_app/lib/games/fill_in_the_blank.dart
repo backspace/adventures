@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:waydowntown/get_region_path.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/widgets/completion_animation.dart';
 
 class FillInTheBlankGame extends StatefulWidget {
   final Dio dio;
@@ -20,7 +21,12 @@ class FillInTheBlankGameState extends State<FillInTheBlankGame> {
   bool isOver = false;
   bool isRequestError = false;
   bool isAnswerError = false;
+  bool isGameComplete = false;
   TextEditingController textFieldController = TextEditingController();
+
+  void _showCompletionAnimation() {
+    CompletionAnimation.show(context);
+  }
 
   @override
   void initState() {
@@ -51,6 +57,11 @@ class FillInTheBlankGameState extends State<FillInTheBlankGame> {
         isOver = checkGameCompletion(response.data);
         hasAnsweredIncorrectly = !isOver;
         textFieldController.clear();
+
+        if (isOver) {
+          isGameComplete = true;
+          _showCompletionAnimation();
+        }
       });
     } catch (error) {
       setState(() {
@@ -104,6 +115,14 @@ class FillInTheBlankGameState extends State<FillInTheBlankGame> {
                 ]))
               ],
             ),
+            if (isGameComplete)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Congratulations! You have completed the game.',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);

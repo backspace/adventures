@@ -10,6 +10,7 @@ import 'package:waydowntown/games/fill_in_the_blank.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/models/incarnation.dart';
 import 'package:waydowntown/models/region.dart';
+import 'package:waydowntown/widgets/completion_animation.dart';
 
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
@@ -174,6 +175,9 @@ void main() {
 
     expect(find.text('Wrong'), findsNothing);
     expect(find.byType(ElevatedButton), findsNothing);
+    expect(find.text('Congratulations! You have completed the game.'),
+        findsOneWidget);
+    expect(find.byType(CompletionAnimation), findsOneWidget);
   });
 
   testWidgets('An error is displayed when answering fails but can try again',
