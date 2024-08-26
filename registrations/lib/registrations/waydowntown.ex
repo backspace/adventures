@@ -10,6 +10,11 @@ defmodule Registrations.Waydowntown do
   alias Registrations.Waydowntown.Game
   alias Registrations.Waydowntown.Incarnation
 
+  @doc false
+  defp concepts_yaml do
+    YamlElixir.read_from_file!(Path.join(:code.priv_dir(:registrations), "concepts.yaml"))
+  end
+
   @doc """
   Returns the list of games.
 
@@ -92,8 +97,7 @@ defmodule Registrations.Waydowntown do
   end
 
   defp create_game_with_concept(attrs, concept) do
-    concepts = YamlElixir.read_from_file!("priv/concepts.yaml")
-    concept_data = concepts[concept]
+    concept_data = concepts_yaml()[concept]
 
     if concept_data["placed"] == false do
       create_game_with_new_incarnation(attrs, concept)
@@ -113,8 +117,7 @@ defmodule Registrations.Waydowntown do
   defp create_game_with_new_incarnation(attrs, concept \\ nil) do
     {concept_key, concept_data} =
       if concept do
-        concepts = YamlElixir.read_from_file!("priv/concepts.yaml")
-        {concept, concepts[concept]}
+        {concept, concepts_yaml()[concept]}
       else
         choose_unplaced_concept()
       end
@@ -141,9 +144,7 @@ defmodule Registrations.Waydowntown do
   end
 
   defp choose_unplaced_concept do
-    concepts = YamlElixir.read_from_file!("priv/concepts.yaml")
-
-    concepts
+    concepts_yaml()
     |> Enum.filter(fn {_, v} -> v["placed"] == false end)
     |> Enum.random()
   end
