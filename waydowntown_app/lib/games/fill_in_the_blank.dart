@@ -36,7 +36,7 @@ class FillInTheBlankGameState extends State<FillInTheBlankGame> {
   Future<void> submitAnswer(String answer) async {
     try {
       final response = await widget.dio.post(
-        '/waydowntown/answers?include=game',
+        '/waydowntown/answers',
         data: {
           'data': {
             'type': 'answers',

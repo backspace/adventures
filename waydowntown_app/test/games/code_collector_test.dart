@@ -19,7 +19,7 @@ import 'code_collector_test.mocks.dart';
 
 @GenerateMocks([MobileScannerController])
 void main() {
-  const submitAnswerRoute = '/waydowntown/answers?include=game';
+  const submitAnswerRoute = '/waydowntown/answers';
 
   late Dio dio;
   late DioAdapter dioAdapter;

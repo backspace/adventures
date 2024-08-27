@@ -69,7 +69,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
 
     try {
       final response = await widget.dio.post(
-        '/waydowntown/answers?include=game',
+        '/waydowntown/answers',
         data: {
           'data': {
             'type': 'answers',

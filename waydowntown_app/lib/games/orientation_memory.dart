@@ -101,12 +101,12 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
 
       if (lastAnswerId != null) {
         response = await widget.dio.patch(
-          '/waydowntown/answers/$lastAnswerId?include=game',
+          '/waydowntown/answers/$lastAnswerId',
           data: data,
         );
       } else {
         response = await widget.dio.post(
-          '/waydowntown/answers?include=game',
+          '/waydowntown/answers',
           data: data,
         );
       }

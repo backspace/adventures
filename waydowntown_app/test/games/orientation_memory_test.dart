@@ -21,7 +21,7 @@ import 'orientation_memory_test.mocks.dart';
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
 
-  const submitAnswerRoute = '/waydowntown/answers?include=game';
+  const submitAnswerRoute = '/waydowntown/answers';
 
   late Dio dio;
   late DioAdapter dioAdapter;
@@ -51,7 +51,7 @@ void main() {
     final ids2 = TestHelpers.setupMockAnswerResponse(
         dioAdapter,
         AnswerRequest(
-            route: '/waydowntown/answers/${ids1['answerId']}?include=game',
+            route: '/waydowntown/answers/${ids1['answerId']}',
             answer: 'up|right',
             correct: true,
             correctAnswers: 2,
@@ -63,7 +63,7 @@ void main() {
     TestHelpers.setupMockAnswerResponse(
         dioAdapter,
         AnswerRequest(
-            route: '/waydowntown/answers/${ids2['answerId']}?include=game',
+            route: '/waydowntown/answers/${ids2['answerId']}',
             answer: 'up|right|left',
             correct: false,
             method: 'PATCH',

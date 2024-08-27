@@ -14,7 +14,7 @@ import '../test_helpers.dart';
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
 
-  var submitAnswerRoute = '/waydowntown/answers?include=game';
+  var submitAnswerRoute = '/waydowntown/answers';
 
   late Dio dio;
   late DioAdapter dioAdapter;
