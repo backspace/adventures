@@ -12,8 +12,8 @@ import 'package:motion_sensors/motion_sensors.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/models/game.dart';
-import 'package:waydowntown/models/incarnation.dart';
-import 'package:waydowntown/models/region.dart';
+
+import '../test_helpers.dart';
 
 import 'orientation_memory_test.mocks.dart';
 
@@ -25,24 +25,7 @@ void main() {
 
   late Dio dio;
   late DioAdapter dioAdapter;
-
-  final Game game = Game(
-    id: '22261813-2171-453f-a669-db08edc70d6d',
-    incarnation: Incarnation(
-      id: '0091eb84-85c8-4e63-962b-39e1a19d2781',
-      placed: false,
-      concept: 'orientation_memory',
-      mask: 'not applicable',
-      region: Region(
-        id: '324fd8f9-cd25-48be-a761-b8680fa72737',
-        name: 'Test Region',
-        description: null,
-      ),
-    ),
-    correctAnswers: 0,
-    totalAnswers: 3,
-  );
-
+  late Game game;
   late MockMotionSensors mockMotionSensors;
 
   setUp(() {
@@ -50,221 +33,57 @@ void main() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
-    dio.httpClientAdapter = dioAdapter;
+    game = TestHelpers.createMockGame(concept: 'orientation_memory');
   });
 
   testWidgets('OrientationMemoryGame displays and submits pattern',
       (WidgetTester tester) async {
+    final ids1 = TestHelpers.setupMockAnswerResponse(
+        dioAdapter,
+        AnswerRequest(
+            route: submitAnswerRoute,
+            answer: 'up',
+            correct: true,
+            correctAnswers: 1,
+            totalAnswers: 3,
+            method: 'POST'));
+
+    final ids2 = TestHelpers.setupMockAnswerResponse(
+        dioAdapter,
+        AnswerRequest(
+            route: '/waydowntown/answers/${ids1['answerId']}?include=game',
+            answer: 'up|right',
+            correct: true,
+            correctAnswers: 2,
+            totalAnswers: 3,
+            method: 'PATCH',
+            gameId: ids1['gameId'],
+            answerId: ids1['answerId']));
+
+    TestHelpers.setupMockAnswerResponse(
+        dioAdapter,
+        AnswerRequest(
+            route: '/waydowntown/answers/${ids2['answerId']}?include=game',
+            answer: 'up|right|left',
+            correct: false,
+            method: 'PATCH',
+            gameId: ids1['gameId'],
+            answerId: ids2['answerId']));
+
+    TestHelpers.setupMockAnswerResponse(
+        dioAdapter,
+        AnswerRequest(
+            route: submitAnswerRoute,
+            answer: 'right',
+            correct: true,
+            correctAnswers: 1,
+            totalAnswers: 3,
+            answerId: '8cfe9e24-fe4c-472e-b2eb-3e2c169b11c',
+            method: 'POST'));
+
     final streamController = StreamController<ScreenOrientationEvent>();
     when(mockMotionSensors.screenOrientation)
         .thenAnswer((_) => streamController.stream);
-
-    // Mock POST response (first submission)
-    dioAdapter.onPost(
-      submitAnswerRoute,
-      (server) => server.reply(
-        201,
-        {
-          "data": {
-            "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
-            "type": "answers",
-            "attributes": {"answer": "up", "correct": true},
-            "relationships": {
-              "game": {
-                "data": {
-                  "type": "games",
-                  "id": "22261813-2171-453f-a669-db08edc70d6d",
-                }
-              }
-            }
-          },
-          "included": [
-            {},
-            {
-              "id": "22261813-2171-453f-a669-db08edc70d6d",
-              "type": "games",
-              "attributes": {
-                "correct_answers": 1,
-                "total_answers": 3,
-                "complete": false,
-              }
-            }
-          ],
-          "meta": {}
-        },
-      ),
-      data: {
-        'data': {
-          'type': 'answers',
-          'attributes': {
-            'answer': 'up',
-          },
-          'relationships': {
-            'game': {
-              'data': {
-                'type': 'games',
-                'id': '22261813-2171-453f-a669-db08edc70d6d'
-              }
-            }
-          }
-        }
-      },
-    );
-
-    // Mock PATCH response (second submission)
-    dioAdapter.onPatch(
-      RegExp(r'/waydowntown/answers/.*\?include=game'),
-      (server) => server.reply(
-        200,
-        {
-          "data": {
-            "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
-            "type": "answers",
-            "attributes": {"answer": "up|right", "correct": true},
-            "relationships": {
-              "game": {
-                "data": {
-                  "type": "games",
-                  "id": "22261813-2171-453f-a669-db08edc70d6d",
-                }
-              }
-            }
-          },
-          "included": [
-            {
-              "id": "22261813-2171-453f-a669-db08edc70d6d",
-              "type": "games",
-              "attributes": {
-                "correct_answers": 2,
-                "total_answers": 3,
-                "complete": false,
-              }
-            }
-          ],
-          "meta": {}
-        },
-      ),
-      data: {
-        'data': {
-          'type': 'answers',
-          'id': '7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4',
-          'attributes': {
-            'answer': 'up|right',
-          },
-          'relationships': {
-            'game': {
-              'data': {
-                'type': 'games',
-                'id': '22261813-2171-453f-a669-db08edc70d6d'
-              }
-            }
-          }
-        }
-      },
-    );
-
-    // Mock PATCH response (third submission - incorrect)
-    dioAdapter.onPatch(
-      RegExp(r'/waydowntown/answers/.*\?include=game'),
-      (server) => server.reply(
-        200,
-        {
-          "data": {
-            "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
-            "type": "answers",
-            "attributes": {"answer": "up|right|left", "correct": false},
-            "relationships": {
-              "game": {
-                "data": {
-                  "type": "games",
-                  "id": "22261813-2171-453f-a669-db08edc70d6d",
-                }
-              }
-            }
-          },
-          "included": [
-            {
-              "id": "22261813-2171-453f-a669-db08edc70d6d",
-              "type": "games",
-              "attributes": {
-                "correct_answers": 2,
-                "total_answers": 3,
-                "complete": false,
-              }
-            }
-          ],
-          "meta": {}
-        },
-      ),
-      data: {
-        'data': {
-          'type': 'answers',
-          'id': '7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4',
-          'attributes': {
-            'answer': 'up|right|left',
-          },
-          'relationships': {
-            'game': {
-              'data': {
-                'type': 'games',
-                'id': '22261813-2171-453f-a669-db08edc70d6d'
-              }
-            }
-          }
-        }
-      },
-    );
-
-    // Mock POST response (fourth submission - after incorrect, with new orientation)
-    dioAdapter.onPost(
-      submitAnswerRoute,
-      (server) => server.reply(
-        201,
-        {
-          "data": {
-            "id": "8cfe9e24-fe4c-472e-b2eb-3e2c169b11c5",
-            "type": "answers",
-            "attributes": {"answer": "right", "correct": true},
-            "relationships": {
-              "game": {
-                "data": {
-                  "type": "games",
-                  "id": "22261813-2171-453f-a669-db08edc70d6d",
-                }
-              }
-            }
-          },
-          "included": [
-            {
-              "id": "22261813-2171-453f-a669-db08edc70d6d",
-              "type": "games",
-              "attributes": {
-                "correct_answers": 1,
-                "total_answers": 3,
-                "complete": false,
-              }
-            }
-          ],
-          "meta": {}
-        },
-      ),
-      data: {
-        'data': {
-          'type': 'answers',
-          'attributes': {
-            'answer': 'right',
-          },
-          'relationships': {
-            'game': {
-              'data': {
-                'type': 'games',
-                'id': '22261813-2171-453f-a669-db08edc70d6d'
-              }
-            }
-          }
-        }
-      },
-    );
 
     await tester.pumpWidget(MaterialApp(
       home: OrientationMemoryGame(
@@ -339,107 +158,23 @@ void main() {
     when(mockMotionSensors.screenOrientation)
         .thenAnswer((_) => streamController.stream);
 
-    // Mock POST response (first submission - incorrect)
-    dioAdapter.onPost(
-      submitAnswerRoute,
-      (server) => server.reply(
-        201,
-        {
-          "data": {
-            "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
-            "type": "answers",
-            "attributes": {"answer": "up", "correct": false},
-            "relationships": {
-              "game": {
-                "data": {
-                  "type": "games",
-                  "id": "22261813-2171-453f-a669-db08edc70d6d",
-                }
-              }
-            }
-          },
-          "included": [
-            {
-              "id": "22261813-2171-453f-a669-db08edc70d6d",
-              "type": "games",
-              "attributes": {
-                "correct_answers": 0,
-                "total_answers": 1,
-                "complete": false,
-              }
-            }
-          ],
-          "meta": {}
-        },
-      ),
-      data: {
-        'data': {
-          'type': 'answers',
-          'attributes': {
-            'answer': 'up',
-          },
-          'relationships': {
-            'game': {
-              'data': {
-                'type': 'games',
-                'id': '22261813-2171-453f-a669-db08edc70d6d'
-              }
-            }
-          }
-        }
-      },
-    );
-
-    // Mock POST response (second submission - correct and winning)
-    dioAdapter.onPost(
-      submitAnswerRoute,
-      (server) => server.reply(
-        201,
-        {
-          "data": {
-            "id": "8cfe9e24-fe4c-472e-b2eb-3e2c169b11c5",
-            "type": "answers",
-            "attributes": {"answer": "right", "correct": true},
-            "relationships": {
-              "game": {
-                "data": {
-                  "type": "games",
-                  "id": "22261813-2171-453f-a669-db08edc70d6d",
-                }
-              }
-            }
-          },
-          "included": [
-            {
-              "id": "22261813-2171-453f-a669-db08edc70d6d",
-              "type": "games",
-              "attributes": {
-                "correct_answers": 1,
-                "total_answers": 1,
-                "complete": true,
-              }
-            }
-          ],
-          "meta": {}
-        },
-      ),
-      data: {
-        'data': {
-          'type': 'answers',
-          'attributes': {
-            'answer': 'right',
-          },
-          'relationships': {
-            'game': {
-              'data': {
-                'type': 'games',
-                'id': '22261813-2171-453f-a669-db08edc70d6d'
-              }
-            }
-          }
-        }
-      },
-    );
+    TestHelpers.setupMockAnswerResponse(
+        dioAdapter,
+        AnswerRequest(
+            route: submitAnswerRoute,
+            answer: 'up',
+            correct: false,
+            method: 'POST'));
+    TestHelpers.setupMockAnswerResponse(
+        dioAdapter,
+        AnswerRequest(
+            route: submitAnswerRoute,
+            answer: 'right',
+            correct: true,
+            correctAnswers: 1,
+            totalAnswers: 1,
+            isComplete: true,
+            method: 'POST'));
 
     await tester.pumpWidget(MaterialApp(
       home: OrientationMemoryGame(

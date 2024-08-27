@@ -12,8 +12,8 @@ import 'package:mockito/mockito.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/games/code_collector.dart';
 import 'package:waydowntown/models/game.dart';
-import 'package:waydowntown/models/incarnation.dart';
-import 'package:waydowntown/models/region.dart';
+
+import '../test_helpers.dart';
 
 import 'code_collector_test.mocks.dart';
 
@@ -23,28 +23,7 @@ void main() {
 
   late Dio dio;
   late DioAdapter dioAdapter;
-
-  final Game game = Game(
-    id: '22261813-2171-453f-a669-db08edc70d6d',
-    incarnation: Incarnation(
-      id: '0091eb84-85c8-4e63-962b-39e1a19d2781',
-      concept: 'code_collector',
-      placed: true,
-      mask: 'not applicable',
-      region: Region(
-        id: '324fd8f9-cd25-48be-a761-b8680fa72737',
-        name: 'Food Court',
-        description: null,
-        parentRegion: Region(
-          id: '67cc2c5c-06c2-4e86-9aac-b575fc712862',
-          name: 'Portage Place',
-          description: null,
-        ),
-      ),
-    ),
-    correctAnswers: 0,
-    totalAnswers: 5,
-  );
+  late Game game;
 
   late MockMobileScannerController mockController;
 
@@ -55,6 +34,8 @@ void main() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
+    game = TestHelpers.createMockGame(
+        concept: 'code_collector', correctAnswers: 0, totalAnswers: 5);
   });
 
   testWidgets('CodeCollectorGame displays scanned codes',
@@ -78,7 +59,7 @@ void main() {
           dio: dio, game: game, scannerController: mockController),
     ));
 
-    expect(find.text('Portage Place > Food Court'), findsOneWidget);
+    expect(find.text('Parent Region > Test Region'), findsOneWidget);
 
     streamController.add(const BarcodeCapture(
         barcodes: [Barcode(rawValue: 'Code1', format: BarcodeFormat.qrCode)]));
@@ -93,183 +74,47 @@ void main() {
 
   testWidgets('CodeCollectorGame submits code and updates state',
       (WidgetTester tester) async {
-    dioAdapter
-      ..onPost(
-        submitAnswerRoute,
-        (server) => server.reply(
-          201,
-          {
-            "data": {
-              "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
-              "type": "answers",
-              "attributes": {"answer": "Code1", "correct": true},
-              "relationships": {
-                "game": {
-                  "data": {
-                    "type": "games",
-                    "id": "22261813-2171-453f-a669-db08edc70d6d",
-                  }
-                }
-              }
-            },
-            "included": [
-              {
-                "id": "22261813-2171-453f-a669-db08edc70d6d",
-                "type": "games",
-                "attributes": {
-                  "correct_answers": 1,
-                  "total_answers": 5,
-                }
-              }
-            ],
-            "meta": {}
-          },
-        ),
-        data: {
-          'data': {
-            'type': 'answers',
-            'attributes': {
-              'answer': 'Code1',
-            },
-            'relationships': {
-              'game': {
-                'data': {
-                  'type': 'games',
-                  'id': '22261813-2171-453f-a669-db08edc70d6d'
-                }
-              }
-            }
-          }
-        },
-      )
-      ..onPost(
-        submitAnswerRoute,
-        (server) => server.reply(
-          201,
-          {
-            "data": {
-              "id": "afdc23e8-2f50-4ce6-8407-a48f5fe2643c",
-              "type": "answers",
-              "attributes": {
-                "answer": "Code2",
-                "correct": false,
-              },
-              "relationships": {
-                "game": {
-                  "data": {
-                    "type": "games",
-                    "id": "22261813-2171-453f-a669-db08edc70d6d",
-                  }
-                }
-              }
-            },
-            "included": [
-              {
-                "id": "22261813-2171-453f-a669-db08edc70d6d",
-                "type": "games",
-                "attributes": {
-                  "correct_answers": 1,
-                  "total_answers": 5,
-                }
-              }
-            ],
-            "meta": {}
-          },
-        ),
-        data: {
-          'data': {
-            'type': 'answers',
-            'attributes': {
-              'answer': 'Code2',
-            },
-            'relationships': {
-              'game': {
-                'data': {
-                  'type': 'games',
-                  'id': '22261813-2171-453f-a669-db08edc70d6d'
-                }
-              }
-            }
-          }
-        },
-      )
-      ..onPost(
-        submitAnswerRoute,
-        (server) {
-          server.reply(500, (request) {
-            // Override handler for resubmission after error
-            dioAdapter.onPost(
-              submitAnswerRoute,
-              (server) => server.reply(201, {
-                "data": {
-                  "id": "48cf441e-ab98-4da6-8980-69fba3b4417d",
-                  "type": "answers",
-                  "attributes": {
-                    "answer": "Code3",
-                    "correct": false,
-                  },
-                  "relationships": {
-                    "game": {
-                      "data": {
-                        "type": "games",
-                        "id": "22261813-2171-453f-a669-db08edc70d6d"
-                      }
-                    }
-                  }
-                },
-                "included": [
-                  {
-                    "id": "22261813-2171-453f-a669-db08edc70d6d",
-                    "type": "games",
-                    "attributes": {
-                      "correct_answers": 1,
-                      "total_answers": 5,
-                    }
-                  }
-                ],
-                "meta": {}
-              }),
-              data: {
-                'data': {
-                  'type': 'answers',
-                  'attributes': {
-                    'answer': 'Code3',
-                  },
-                  'relationships': {
-                    'game': {
-                      'data': {
-                        'type': 'games',
-                        'id': '22261813-2171-453f-a669-db08edc70d6d',
-                      }
-                    }
-                  }
-                }
-              },
-            );
+    TestHelpers.setupMockAnswerResponse(
+        dioAdapter,
+        AnswerRequest(
+            route: submitAnswerRoute,
+            answer: 'Code1',
+            correct: true,
+            correctAnswers: 1,
+            totalAnswers: 5));
+    TestHelpers.setupMockAnswerResponse(
+        dioAdapter,
+        AnswerRequest(
+            route: submitAnswerRoute, answer: 'Code2', correct: false));
 
-            throw DioException(
-              requestOptions: RequestOptions(path: submitAnswerRoute),
-              error: 'Server error',
-            );
-          });
-        },
-        data: {
-          'data': {
-            'type': 'answers',
-            'attributes': {
-              'answer': 'Code3',
-            },
-            'relationships': {
-              'game': {
-                'data': {
-                  'type': 'games',
-                  'id': '22261813-2171-453f-a669-db08edc70d6d'
-                }
-              }
-            }
-          }
-        },
-      );
+    dioAdapter.onPost(
+      submitAnswerRoute,
+      (server) {
+        server.reply(500, (request) {
+          // Override handler for resubmission after error
+          dioAdapter.onPost(
+            submitAnswerRoute,
+            (server) => server.reply(
+                201,
+                TestHelpers.generateAnswerResponseJson(AnswerResponse(
+                  answerId: '48cf441e-ab98-4da6-8980-69fba3b4417d',
+                  answer: 'Code3',
+                  correct: true,
+                  gameId: game.id,
+                  correctAnswers: 1,
+                  totalAnswers: 3,
+                ))),
+            data: TestHelpers.generateAnswerRequestJson('Code3', game.id),
+          );
+
+          throw DioException(
+            requestOptions: RequestOptions(path: submitAnswerRoute),
+            error: 'Server error',
+          );
+        });
+      },
+      data: TestHelpers.generateAnswerRequestJson('Code3', game.id),
+    );
 
     when(mockController.start()).thenAnswer((_) async => ());
     when(mockController.autoStart).thenReturn(true);
@@ -369,56 +214,18 @@ void main() {
 
     expect(errorIcon, findsNothing);
   });
+
   testWidgets('CodeCollectorGame completes and stops scanning',
       (WidgetTester tester) async {
-    dioAdapter.onPost(
-      submitAnswerRoute,
-      (server) => server.reply(
-        201,
-        {
-          "data": {
-            "id": "7bfe9e24-fe4c-472e-b2eb-3e2c169b11c4",
-            "type": "answers",
-            "attributes": {"answer": "Code5", "correct": true},
-            "relationships": {
-              "game": {
-                "data": {
-                  "type": "games",
-                  "id": "22261813-2171-453f-a669-db08edc70d6d",
-                }
-              }
-            }
-          },
-          "included": [
-            {
-              "id": "22261813-2171-453f-a669-db08edc70d6d",
-              "type": "games",
-              "attributes": {
-                "correct_answers": 5,
-                "total_answers": 5,
-              }
-            }
-          ],
-          "meta": {}
-        },
-      ),
-      data: {
-        'data': {
-          'type': 'answers',
-          'attributes': {
-            'answer': 'Code5',
-          },
-          'relationships': {
-            'game': {
-              'data': {
-                'type': 'games',
-                'id': '22261813-2171-453f-a669-db08edc70d6d'
-              }
-            }
-          }
-        }
-      },
-    );
+    TestHelpers.setupMockAnswerResponse(
+        dioAdapter,
+        AnswerRequest(
+            route: submitAnswerRoute,
+            answer: 'Code5',
+            correct: true,
+            correctAnswers: 5,
+            totalAnswers: 5,
+            isComplete: true));
 
     when(mockController.start()).thenAnswer((_) async => ());
     when(mockController.autoStart).thenReturn(true);

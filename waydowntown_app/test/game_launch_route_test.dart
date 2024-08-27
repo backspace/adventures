@@ -5,10 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:waydowntown/models/game.dart';
-import 'package:waydowntown/models/incarnation.dart';
-import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/routes/game_launch_route.dart';
+import './test_helpers.dart';
 
 class TestAssetBundle extends CachingAssetBundle {
   final Map<String, String> _assets = {};
@@ -58,22 +56,7 @@ bluetooth_collector:
   instructions: Collect Bluetooth devices
 ''');
 
-    final game = Game(
-      id: '1',
-      incarnation: Incarnation(
-        id: '1',
-        concept: 'bluetooth_collector',
-        placed: true,
-        mask: 'not applicable',
-        region: Region(
-          id: '1',
-          name: 'Test Region',
-          description: 'Test Description',
-        ),
-      ),
-      correctAnswers: 0,
-      totalAnswers: 5,
-    );
+    final game = TestHelpers.createMockGame(concept: 'bluetooth_collector');
 
     await tester.pumpWidget(
       MaterialApp(
@@ -86,7 +69,7 @@ bluetooth_collector:
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Location: Test Region'), findsOneWidget);
+    expect(find.text('Location: Parent Region > Test Region'), findsOneWidget);
     expect(find.text('Start Game'), findsOneWidget);
   });
 
@@ -94,22 +77,7 @@ bluetooth_collector:
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '{}');
 
-    final game = Game(
-      id: '2',
-      incarnation: Incarnation(
-        id: '2',
-        concept: 'bluetooth_collector',
-        placed: true,
-        mask: 'not applicable',
-        region: Region(
-          id: '1',
-          name: 'Test Region',
-          description: 'Test Description',
-        ),
-      ),
-      correctAnswers: 0,
-      totalAnswers: 5,
-    );
+    final game = TestHelpers.createMockGame(concept: 'unknown_concept');
 
     await tester.pumpWidget(
       MaterialApp(
@@ -124,8 +92,7 @@ bluetooth_collector:
 
     expect(find.text('Error'), findsOneWidget);
     expect(find.text('Error: Unknown game concept'), findsOneWidget);
-    expect(
-        find.text('The game concept "bluetooth_collector" is not recognized.'),
+    expect(find.text('The game concept "unknown_concept" is not recognized.'),
         findsOneWidget);
     expect(find.text('Start Game'), findsNothing);
   });
