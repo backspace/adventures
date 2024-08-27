@@ -40,6 +40,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
   Map<String, String> codeErrors = {};
   late Game currentGame;
   bool isGameComplete = false;
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   @override
   void initState() {
@@ -162,6 +163,36 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
     }
   }
 
+  void _addCode(DetectedCode code) {
+    setState(() {
+      int index = detectedCodes.length;
+      detectedCodes.add(code);
+      _listKey.currentState?.insertItem(index);
+    });
+  }
+
+  Widget _buildItem(
+      BuildContext context, int index, Animation<double> animation) {
+    DetectedCode detectedCode = detectedCodes[index];
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(1, 0),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeInOutCubic,
+      )),
+      child: ListTile(
+        title: Text(detectedCode.code),
+        leading: _getIconForState(detectedCode.state, detectedCode.code),
+        onTap: detectedCode.state == CodeSubmissionState.unsubmitted ||
+                detectedCode.state == CodeSubmissionState.error
+            ? () => submitCode(detectedCode)
+            : null,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,9 +230,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
                                 .any((element) => element.code == code)) {
                           logger.d('detected new code $code');
                           if (mounted) {
-                            setState(() {
-                              detectedCodes.add(DetectedCode(code));
-                            });
+                            _addCode(DetectedCode(code));
                           }
                         }
                       }
@@ -209,20 +238,11 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
                   ),
                 ),
           Expanded(
-            child: ListView.builder(
-              itemCount: detectedCodes.length,
-              itemBuilder: (context, index) {
-                DetectedCode detectedCode = detectedCodes[index];
-                return ListTile(
-                  title: Text(detectedCode.code),
-                  leading:
-                      _getIconForState(detectedCode.state, detectedCode.code),
-                  onTap:
-                      detectedCode.state == CodeSubmissionState.unsubmitted ||
-                              detectedCode.state == CodeSubmissionState.error
-                          ? () => submitCode(detectedCode)
-                          : null,
-                );
+            child: AnimatedList(
+              key: _listKey,
+              initialItemCount: detectedCodes.length,
+              itemBuilder: (context, index, animation) {
+                return _buildItem(context, index, animation);
               },
             ),
           ),

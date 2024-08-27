@@ -8,6 +8,7 @@ import 'package:waydowntown/location_header.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
+import 'package:flutter/animation.dart';
 
 class BluetoothCollectorGame extends StatefulWidget {
   final Dio dio;
@@ -49,6 +50,8 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
 
   late Game currentGame;
 
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+
   @override
   void initState() {
     super.initState();
@@ -62,19 +65,17 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
     });
     _scanResultsSubscription =
         widget.flutterBluePlus.onScanResults.listen((results) {
-      setState(() {
-        for (var result in results) {
-          if (result.device.platformName.isNotEmpty) {
-            var existingDevice = detectedDevices.firstWhere(
-                (d) => d.device.remoteId == result.device.remoteId,
-                orElse: () => DetectedDevice(result.device));
-            if (!detectedDevices.contains(existingDevice)) {
-              logger.i('Adding device ${existingDevice.device.platformName}');
-              detectedDevices.add(existingDevice);
-            }
+      for (var result in results) {
+        if (result.device.platformName.isNotEmpty) {
+          var existingDevice = detectedDevices.firstWhere(
+              (d) => d.device.remoteId == result.device.remoteId,
+              orElse: () => DetectedDevice(result.device));
+          if (!detectedDevices.contains(existingDevice)) {
+            logger.i('Adding device ${existingDevice.device.platformName}');
+            _addDevice(existingDevice);
           }
         }
-      });
+      }
     }, onError: (e) => logger.e('Error scanning: $e'));
 
     await FlutterBluePlus.adapterState
@@ -194,6 +195,37 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
     }
   }
 
+  void _addDevice(DetectedDevice device) {
+    setState(() {
+      int index = detectedDevices.length;
+      detectedDevices.add(device);
+      _listKey.currentState?.insertItem(index);
+    });
+  }
+
+  Widget _buildItem(
+      BuildContext context, int index, Animation<double> animation) {
+    DetectedDevice detectedDevice = detectedDevices[index];
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(1, 0),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeInOutCubic,
+      )),
+      child: ListTile(
+        title: Text(detectedDevice.device.platformName),
+        leading: _getIconForState(
+            detectedDevice.state, detectedDevice.device.remoteId.toString()),
+        onTap: detectedDevice.state == DeviceSubmissionState.unsubmitted ||
+                detectedDevice.state == DeviceSubmissionState.error
+            ? () => submitDevice(detectedDevice)
+            : null,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -218,22 +250,14 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
               ),
             ),
           Expanded(
-              child: ListView.builder(
-            itemCount: detectedDevices.length,
-            itemBuilder: (context, index) {
-              DetectedDevice detectedDevice = detectedDevices[index];
-              return ListTile(
-                title: Text(detectedDevice.device.platformName),
-                leading: _getIconForState(detectedDevice.state,
-                    detectedDevice.device.remoteId.toString()),
-                onTap:
-                    detectedDevice.state == DeviceSubmissionState.unsubmitted ||
-                            detectedDevice.state == DeviceSubmissionState.error
-                        ? () => submitDevice(detectedDevice)
-                        : null,
-              );
-            },
-          )),
+            child: AnimatedList(
+              key: _listKey,
+              initialItemCount: detectedDevices.length,
+              itemBuilder: (context, index, animation) {
+                return _buildItem(context, index, animation);
+              },
+            ),
+          ),
         ],
       ),
       floatingActionButton: isGameComplete
