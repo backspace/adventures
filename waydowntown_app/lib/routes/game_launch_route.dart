@@ -5,7 +5,7 @@ import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/games/code_collector.dart';
 import 'package:waydowntown/games/fill_in_the_blank.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
-import 'package:waydowntown/get_region_path.dart';
+import 'package:waydowntown/location_header.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:yaml/yaml.dart';
 
@@ -60,8 +60,7 @@ class GameLaunchRoute extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Location: ${getRegionPath(game.incarnation)}',
-                    style: Theme.of(context).textTheme.headlineMedium),
+                LocationHeader(game: game),
                 const SizedBox(height: 16),
                 if (instructions != null) ...[
                   Text('Instructions:',

@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:waydowntown/flutter_blue_plus_mockable.dart';
-import 'package:waydowntown/get_region_path.dart';
+import 'package:waydowntown/location_header.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
@@ -202,7 +202,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
       ),
       body: Column(
         children: [
-          Text(getRegionPath(currentGame.incarnation)),
+          LocationHeader(game: currentGame),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(

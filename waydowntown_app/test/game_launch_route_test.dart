@@ -69,7 +69,7 @@ bluetooth_collector:
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Location: Parent Region > Test Region'), findsOneWidget);
+    expect(find.text('Parent Region > Test Region'), findsOneWidget);
     expect(find.text('Start Game'), findsOneWidget);
   });
 

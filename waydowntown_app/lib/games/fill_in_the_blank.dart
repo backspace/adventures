@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:waydowntown/get_region_path.dart';
+import 'package:waydowntown/location_header.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
@@ -75,13 +75,14 @@ class FillInTheBlankGameState extends State<FillInTheBlankGame> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(getRegionPath(widget.game.incarnation)),
+        title: Text("Fill in the blank"),
       ),
       body: Center(
         child: Column(
           children: [
             Column(
               children: [
+                LocationHeader(game: widget.game),
                 Text(widget.game.incarnation.concept),
                 Text(widget.game.incarnation.mask),
                 Form(
