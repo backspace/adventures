@@ -88,6 +88,7 @@ class FillInTheBlankGameState extends State<FillInTheBlankGame> {
                     child: Column(children: <Widget>[
                   TextFormField(
                     controller: textFieldController,
+                    autofocus: true,
                     decoration: const InputDecoration(
                       labelText: 'Answer',
                     ),

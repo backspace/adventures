@@ -49,6 +49,8 @@ void main() {
         MaterialApp(home: FillInTheBlankGame(game: game, dio: dio)));
     await tester.pumpAndSettle();
 
+    expect(tester.testTextInput.isRegistered, isTrue);
+
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
 
     expect(find.text('fill_in_the_blank'), findsOneWidget);
