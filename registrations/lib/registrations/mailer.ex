@@ -194,10 +194,10 @@ defmodule Registrations.Mailer do
   end
 
   defp adventure_from do
-    if RegistrationsWeb.SharedHelpers.is_unmnemonic_devices() do
-      "knut@chromatin.ca"
-    else
-      @from
+    case RegistrationsWeb.SharedHelpers.adventure() do
+      "unmnemonic-devices" -> "knut@chromatin.ca"
+      "waydowntown" -> "mdrysdale@waydown.town"
+      _ -> @from
     end
   end
 
