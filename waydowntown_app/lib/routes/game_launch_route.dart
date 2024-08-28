@@ -67,7 +67,7 @@ class GameLaunchRoute extends StatelessWidget {
                       style: Theme.of(context).textTheme.headlineSmall),
                 ],
                 if (instructions != null) ...[
-                  Text('Instructions:',
+                  Text('Instructions',
                       style: Theme.of(context).textTheme.headlineMedium),
                   Text(instructions),
                   const Spacer(),
