@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 16.2 (Postgres.app)
--- Dumped by pg_dump version 16.2 (Postgres.app)
+-- Dumped from database version 16.4 (Postgres.app)
+-- Dumped by pg_dump version 16.4 (Postgres.app)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -312,7 +312,8 @@ CREATE TABLE waydowntown.incarnations (
     updated_at timestamp(0) without time zone NOT NULL,
     region_id uuid,
     answers character varying(255)[] DEFAULT ARRAY[]::character varying[],
-    placed boolean DEFAULT true NOT NULL
+    placed boolean DEFAULT true NOT NULL,
+    start text
 );
 
 
@@ -737,3 +738,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240806025935);
 INSERT INTO public."schema_migrations" (version) VALUES (20240806031811);
 INSERT INTO public."schema_migrations" (version) VALUES (20240824211544);
 INSERT INTO public."schema_migrations" (version) VALUES (20240825045118);
+INSERT INTO public."schema_migrations" (version) VALUES (20240828005430);

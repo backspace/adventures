@@ -62,6 +62,10 @@ class GameLaunchRoute extends StatelessWidget {
               children: [
                 LocationHeader(game: game),
                 const SizedBox(height: 16),
+                if (game.incarnation.start != null) ...[
+                  Text('Starting point: ${game.incarnation.start}',
+                      style: Theme.of(context).textTheme.headlineSmall),
+                ],
                 if (instructions != null) ...[
                   Text('Instructions:',
                       style: Theme.of(context).textTheme.headlineMedium),

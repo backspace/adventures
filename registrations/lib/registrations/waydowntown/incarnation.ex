@@ -12,6 +12,7 @@ defmodule Registrations.Waydowntown.Incarnation do
     field(:concept, :string)
     field(:mask, :string)
     field(:placed, :boolean, default: true)
+    field(:start, :string)
 
     belongs_to(:region, Registrations.Waydowntown.Region, type: :binary_id)
     has_many(:games, Registrations.Waydowntown.Game)

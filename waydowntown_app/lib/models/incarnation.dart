@@ -6,6 +6,7 @@ class Incarnation {
   final String mask;
   final Region? region;
   final bool placed;
+  final String? start;
 
   const Incarnation({
     required this.id,
@@ -13,6 +14,7 @@ class Incarnation {
     required this.mask,
     this.region,
     required this.placed,
+    this.start,
   });
 
   factory Incarnation.fromJson(
@@ -43,6 +45,7 @@ class Incarnation {
       mask: attributes['mask'] ?? '',
       region: region,
       placed: attributes['placed'] ?? false,
+      start: attributes['start'],
     );
   }
 }

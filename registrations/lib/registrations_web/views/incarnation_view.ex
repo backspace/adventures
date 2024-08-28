@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.IncarnationView do
   alias RegistrationsWeb.IncarnationView
 
   def fields do
-    [:concept, :mask, :placed]
+    [:concept, :mask, :placed, :start]
   end
 
   def render("index.json", %{incarnations: incarnations, conn: conn, params: params}) do
