@@ -17,7 +17,9 @@ import 'package:vector_tile_renderer/vector_tile_renderer.dart'
 
 import 'package:waydowntown/main.dart';
 
-final lightTheme = vector_tile_renderer.ProvidedThemes.lightTheme();
+import './map_theme.dart';
+
+final theme = vector_tile_renderer.ThemeReader().read(mapThemeData());
 
 Future<File> copyAssetToFile(String assetFile) async {
   final tempDir = await getTemporaryDirectory();
@@ -76,7 +78,7 @@ class _MapRouteState extends State<MapRoute> {
                   ),
                   children: [
                     VectorTileLayer(
-                      theme: lightTheme,
+                      theme: theme,
                       tileProviders: TileProviders({
                         'openmaptiles': tileProvider,
                       }),
