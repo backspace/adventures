@@ -20,30 +20,60 @@ additional_languages = {}
 
 
 local walkway_buildings = {
+  "155 Carlton at Lakeview Square",
   "201 Portage",
-  "Avenue Building",
+  "Bestlands Building",
   "Canada Life Centre",
   "Cityplace",
+  "Convention Centre Expansion",
+  "CTV",
+  "Delta Hotels",
+  "Fred Douglas Place",
+  "Grain Exchange Building",
+  "Manitoba Hydro Place",
   "Manitoba Metis Federation",
-  "MEC Mountain Equipment Company",
   "Millennium Library",
   "MTS Place",
+  "Newport Centre",
+  "One Canada Centre",
   "Portage Place",
   "Radisson Hotel Winnipeg Downtown",
+  "RBC Convention Centre Winnipeg",
   "Richardson Building",
+  "Somerset Building",
+  "Tavern United",
+  "The Fairmont",
   "True North Square",
   "True North Square Appartments",
-  "Wawanesa Insurance",
   "Winnipeg Police Service Headquarters",
   "Winnipeg Square",
+  "YMCA Winnipeg",
 }
 
 local walkway_addresses = {
+  ["Carlton Street"] = {
+    "236", -- Wawanesa but not the one on Broadway
+    "300",
+  },
+  ["Ellice"] = {
+    "400", -- former IBM
+  },
   ["Graham Avenue"] = {
-    "200", "240",
+    "200",
+    "240", -- Cargill
   },
   ["Main Street"] = {
     "300",
+  },
+  ["Portage Avenue"] = {
+    "428", -- Power Building
+    "450", -- former HBC
+  },
+  ["Portage Avenue East"] = {
+    "161", -- off Richardson Centre
+  },
+  ["Saint Mary Avenue"] = {
+    "330",
   },
 }
 
@@ -51,10 +81,30 @@ local walkway_building_way_ids = {
   -- Canada Post
   "307463844",
   "306637812",
+  -- 189 Carlton
+  "33068607",
+  -- west of Newport Centre
+  "307185173",
+  "307185174",
+  "307185175",
+  "307185176",
+  -- Webb Place, no addresses?
+  "33167162",
+  "307748507",
+  "39492647",
+  "307748506",
+  "39492645",
+  "243989499",
+  "39492644",
+  "243989498",
+  "33167155",
 }
 
 local surrounding_buildings = {
+  "Avenue Building",
   "Holy Trinity Anglican Church",
+  "MEC Mountain Equipment Company",
+  "The Metropolitan Entertainment Centre",
 }
 
 local function has_value(tab, val)
