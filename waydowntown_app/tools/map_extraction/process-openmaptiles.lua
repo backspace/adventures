@@ -298,8 +298,17 @@ pathValues         = Set { "footway", "cycleway", "bridleway", "path", "steps", 
 linkValues         = Set { "motorway_link", "trunk_link", "primary_link", "secondary_link", "tertiary_link" }
 pavedValues        = Set { "paved", "asphalt", "cobblestone", "concrete", "concrete:lanes", "concrete:plates", "metal", "paving_stones", "sett", "unhewn_cobblestone", "wood" }
 unpavedValues      = Set { "unpaved", "compacted", "dirt", "earth", "fine_gravel", "grass", "grass_paver", "gravel", "gravel_turf", "ground", "ice", "mud", "pebblestone", "salt", "sand", "snow", "woodchips" }
-railwayClasses     = { rail = "rail", narrow_gauge = "rail", preserved = "rail", funicular = "rail", subway = "transit", light_rail =
-"transit", monorail = "transit", tram = "transit" }
+railwayClasses     = {
+  rail = "rail",
+  narrow_gauge = "rail",
+  preserved = "rail",
+  funicular = "rail",
+  subway = "transit",
+  light_rail =
+  "transit",
+  monorail = "transit",
+  tram = "transit"
+}
 
 aerowayBuildings   = Set { "terminal", "gate", "tower" }
 landuseKeys        = Set { "school", "university", "kindergarten", "college", "library", "hospital",
