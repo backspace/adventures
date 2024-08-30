@@ -45,7 +45,6 @@ dependencies:
   flutter_blue_plus: ^1.32.11
   mobile_scanner: ^5.1.1
   latlong2: ^0.9.1
-  flutter_map: ^7.0.2
   flutter_native_splash: ^2.4.1
   motion_sensors:
     git:
@@ -54,6 +53,13 @@ dependencies:
   vector_math: ^2.1.4
   yaml: ^3.1.2
   flutter_confetti: ^0.3.0
+
+  flutter_map: ^6.1.0
+  vector_map_tiles: ^7.3.0
+  vector_map_tiles_mbtiles: ^1.1.0
+  mbtiles: ^0.4.0
+  vector_tile_renderer: ^5.2.0
+  path_provider: ^2.1.4
 
 dev_dependencies:
   flutter_test:
@@ -89,6 +95,7 @@ flutter:
     - .env
     - assets/images/
     - assets/concepts.yaml
+    - assets/walkway.mbtiles
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
