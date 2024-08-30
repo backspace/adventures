@@ -18,6 +18,51 @@ default_language_attribute = "name_int"
 additional_languages = {}
 --------
 
+-- FIXME missing:
+-- former Canada Post skywalk
+
+local walkway_buildings = {
+  "201 Portage",
+  "Avenue Building",
+  "Canada Life Centre",
+  "Cityplace",
+  "Manitoba Metis Federation",
+  "MEC Mountain Equipment Company",
+  "Millennium Library",
+  "MTS Place",
+  "Portage Place",
+  "Radisson Hotel Winnipeg Downtown",
+  "Richardson Building",
+  "True North Square",
+  "True North Square Appartments",
+  "Wawanesa Insurance",
+  "Winnipeg Police Service Headquarters",
+  "Winnipeg Square",
+}
+
+local walkway_addresses = {
+  ["Graham Avenue"] = {
+    "200", "240",
+  },
+  ["Main Street"] = {
+    "300",
+  },
+}
+
+local surrounding_buildings = {
+  "Holy Trinity Anglican Church",
+}
+
+local function has_value(tab, val)
+  for index, value in ipairs(tab) do
+    if value == val then
+      return true
+    end
+  end
+
+  return false
+end
+
 -- Enter/exit Tilemaker
 function init_function()
 end
@@ -783,10 +828,33 @@ function way_function()
   end
 
   -- Set 'building' and associated
+
   if building ~= "" then
-    Layer("building", true)
-    SetBuildingHeightAttributes()
-    SetMinZoomByArea()
+    local building_name = Find("name")
+    local housenumber = Find("addr:housenumber")
+    local street = Find("addr:street")
+
+    local function is_walkway_address(str, num)
+      if walkway_addresses[str] then
+        for _, allowed_number in ipairs(walkway_addresses[str]) do
+          if num == allowed_number then
+            return true
+          end
+        end
+      end
+      return false
+    end
+
+    if (building_name and has_value(surrounding_buildings, building_name)) then
+      Layer("surrounding_building", true)
+      SetBuildingHeightAttributes()
+      SetMinZoomByArea()
+    elseif (building_name and has_value(walkway_buildings, building_name)) or
+        (street ~= "" and housenumber ~= "" and is_walkway_address(street, housenumber)) then
+      Layer("building", true)
+      SetBuildingHeightAttributes()
+      SetMinZoomByArea()
+    end
   end
 
   -- Set 'housenumber'

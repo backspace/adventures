@@ -33,6 +33,7 @@
     "transportation_name": { "minzoom": 8, "maxzoom": 14 },
 
     "building": { "minzoom": 13, "maxzoom": 14 },
+    "surrounding_building": { "minzoom": 13, "maxzoom": 14 },
 
     "water": {
       "minzoom": 6,
