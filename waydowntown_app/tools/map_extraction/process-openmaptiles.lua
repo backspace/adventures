@@ -18,8 +18,6 @@ default_language_attribute = "name_int"
 additional_languages = {}
 --------
 
--- FIXME missing:
--- former Canada Post skywalk
 
 local walkway_buildings = {
   "201 Portage",
@@ -47,6 +45,12 @@ local walkway_addresses = {
   ["Main Street"] = {
     "300",
   },
+}
+
+local walkway_building_way_ids = {
+  -- Canada Post
+  "307463844",
+  "306637812",
 }
 
 local surrounding_buildings = {
@@ -531,6 +535,7 @@ end
 -- Process way tags
 
 function way_function()
+  local id               = Id()
   local route            = Find("route")
   local highway          = Find("highway")
   local waterway         = Find("waterway")
@@ -838,7 +843,7 @@ function way_function()
 
   -- Set 'building' and associated
 
-  if building ~= "" then
+  if building ~= "" or has_value(walkway_building_way_ids, id) then
     local building_name = Find("name")
     local housenumber = Find("addr:housenumber")
     local street = Find("addr:street")
@@ -859,7 +864,8 @@ function way_function()
       SetBuildingHeightAttributes()
       SetMinZoomByArea()
     elseif (building_name and has_value(walkway_buildings, building_name)) or
-        (street ~= "" and housenumber ~= "" and is_walkway_address(street, housenumber)) then
+        (street ~= "" and housenumber ~= "" and is_walkway_address(street, housenumber))
+        or has_value(walkway_building_way_ids, id) then
       Layer("building", true)
       SetBuildingHeightAttributes()
       SetMinZoomByArea()
