@@ -53,6 +53,9 @@ class GameMap extends StatelessWidget {
               mbtiles: MbTiles(mbtilesPath: snapshot.data!));
           return FlutterMap(
             options: MapOptions(
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+              ),
               initialCenter: centre,
               initialZoom: 16.0,
               minZoom: 13.0,
