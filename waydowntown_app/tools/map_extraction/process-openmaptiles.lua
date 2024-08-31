@@ -204,6 +204,8 @@ local function has_value(tab, val)
   return false
 end
 
+local accessMinzoom = 9
+
 -- Enter/exit Tilemaker
 function init_function()
 end
@@ -235,18 +237,16 @@ BUILDING_FLOOR_HEIGHT = 3.66
 INVALID_ZOOM          = 99
 
 -- Process node/way tags
-aerodromeValues       = Set { "international", "public", "regional", "military", "private" }
-pavedValues           = Set { "paved", "asphalt", "cobblestone", "concrete", "concrete:lanes", "concrete:plates", "metal", "paving_stones", "sett", "unhewn_cobblestone", "wood" }
-unpavedValues         = Set { "unpaved", "compacted", "dirt", "earth", "fine_gravel", "grass", "grass_paver", "gravel", "gravel_turf", "ground", "ice", "mud", "pebblestone", "salt", "sand", "snow", "woodchips" }
+local aerodromeValues = Set { "international", "public", "regional", "military", "private" }
 
 -- Process node tags
 
-node_keys             = { "addr:housenumber", "aerialway", "aeroway", "amenity", "barrier", "highway", "historic",
+local node_keys       = { "addr:housenumber", "aerialway", "aeroway", "amenity", "barrier", "highway", "historic",
   "leisure", "natural", "office", "place", "railway", "shop", "sport", "tourism", "waterway" }
 
 -- Get admin level which the place node is capital of.
 -- Returns nil in case of invalid capital and for places which are not capitals.
-function capitalLevel(capital)
+local function capitalLevel(capital)
   local capital_al = tonumber(capital) or 0
   if capital == "yes" then
     capital_al = 2
@@ -261,7 +261,7 @@ end
 -- place: value of place=*
 -- popuplation: population as number
 -- capital_al: result of capitalLevel()
-function calcRank(place, population, capital_al)
+local function calcRank(place, population, capital_al)
   local rank = 0
   if capital_al and capital_al >= 2 and capital_al <= 4 then
     rank = capital_al
@@ -426,20 +426,20 @@ end
 
 -- Process way tags
 
-majorRoadValues    = Set { "motorway", "trunk", "primary" }
-z9RoadValues       = Set { "secondary", "motorway_link", "trunk_link" }
-z10RoadValues      = Set { "primary_link", "secondary_link" }
-z11RoadValues      = Set { "tertiary", "tertiary_link", "busway", "bus_guideway" }
+local majorRoadValues    = Set { "motorway", "trunk", "primary" }
+local z9RoadValues       = Set { "secondary", "motorway_link", "trunk_link" }
+local z10RoadValues      = Set { "primary_link", "secondary_link" }
+local z11RoadValues      = Set { "tertiary", "tertiary_link", "busway", "bus_guideway" }
 -- On zoom 12, various road classes are merged into "minor"
-z12MinorRoadValues = Set { "unclassified", "residential", "road", "living_street" }
-z12OtherRoadValues = Set { "raceway" }
-z13RoadValues      = Set { "track", "service" }
-manMadeRoadValues  = Set { "pier", "bridge" }
-pathValues         = Set { "footway", "cycleway", "bridleway", "path", "steps", "pedestrian", "platform" }
-linkValues         = Set { "motorway_link", "trunk_link", "primary_link", "secondary_link", "tertiary_link" }
-pavedValues        = Set { "paved", "asphalt", "cobblestone", "concrete", "concrete:lanes", "concrete:plates", "metal", "paving_stones", "sett", "unhewn_cobblestone", "wood" }
-unpavedValues      = Set { "unpaved", "compacted", "dirt", "earth", "fine_gravel", "grass", "grass_paver", "gravel", "gravel_turf", "ground", "ice", "mud", "pebblestone", "salt", "sand", "snow", "woodchips" }
-railwayClasses     = {
+local z12MinorRoadValues = Set { "unclassified", "residential", "road", "living_street" }
+local z12OtherRoadValues = Set { "raceway" }
+local z13RoadValues      = Set { "track", "service" }
+local manMadeRoadValues  = Set { "pier", "bridge" }
+local pathValues         = Set { "footway", "cycleway", "bridleway", "path", "steps", "pedestrian", "platform" }
+local linkValues         = Set { "motorway_link", "trunk_link", "primary_link", "secondary_link", "tertiary_link" }
+local pavedValues        = Set { "paved", "asphalt", "cobblestone", "concrete", "concrete:lanes", "concrete:plates", "metal", "paving_stones", "sett", "unhewn_cobblestone", "wood" }
+local unpavedValues      = Set { "unpaved", "compacted", "dirt", "earth", "fine_gravel", "grass", "grass_paver", "gravel", "gravel_turf", "ground", "ice", "mud", "pebblestone", "salt", "sand", "snow", "woodchips" }
+local railwayClasses     = {
   rail = "rail",
   narrow_gauge = "rail",
   preserved = "rail",
@@ -451,11 +451,11 @@ railwayClasses     = {
   tram = "transit"
 }
 
-aerowayBuildings   = Set { "terminal", "gate", "tower" }
-landuseKeys        = Set { "school", "university", "kindergarten", "college", "library", "hospital",
+local aerowayBuildings   = Set { "terminal", "gate", "tower" }
+local landuseKeys        = Set { "school", "university", "kindergarten", "college", "library", "hospital",
   "railway", "cemetery", "military", "residential", "commercial", "industrial",
   "retail", "stadium", "pitch", "playground", "theme_park", "bus_station", "zoo" }
-landcoverKeys      = {
+local landcoverKeys      = {
   wood = "wood",
   forest = "wood",
   wetland = "wetland",
@@ -485,11 +485,10 @@ landcoverKeys      = {
   tundra = "grass",
   garden = "grass",
   golf_course = "grass",
-  park = "grass"
 }
 
 -- POI key/value pairs: based on https://github.com/openmaptiles/openmaptiles/blob/master/layers/poi/mapping.yaml
-poiTags            = {
+local poiTags            = {
   aerialway = Set { "station" },
   amenity = Set { "arts_centre", "bank", "bar", "bbq", "bicycle_parking", "bicycle_rental", "biergarten", "bus_station", "cafe", "cinema", "clinic", "college", "community_centre", "courthouse", "dentist", "doctors", "embassy", "fast_food", "ferry_terminal", "fire_station", "food_court", "fuel", "grave_yard", "hospital", "ice_cream", "kindergarten", "library", "marketplace", "motorcycle_parking", "nightclub", "nursing_home", "parking", "pharmacy", "place_of_worship", "police", "post_box", "post_office", "prison", "pub", "public_building", "recycling", "restaurant", "school", "shelter", "swimming_pool", "taxi", "telephone", "theatre", "toilets", "townhall", "university", "veterinary", "waste_basket" },
   barrier = Set { "bollard", "border_control", "cycle_barrier", "gate", "lift_gate", "sally_port", "stile", "toll_booth" },
@@ -506,7 +505,7 @@ poiTags            = {
 }
 
 -- POI "class" values: based on https://github.com/openmaptiles/openmaptiles/blob/master/layers/poi/poi.yaml
-poiClasses         = {
+local poiClasses         = {
   townhall = "town_hall",
   public_building = "town_hall",
   courthouse = "town_hall",
@@ -587,8 +586,8 @@ poiClasses         = {
   ruins = "castle"
 }
 -- POI classes where class is the matching value and subclass is the value of a separate key
-poiSubClasses      = { information = "information", place_of_worship = "religion", pitch = "sport" }
-poiClassRanks      = {
+local poiSubClasses      = { information = "information", place_of_worship = "religion", pitch = "sport" }
+local poiClassRanks      = {
   hospital = 1,
   railway = 2,
   bus = 3,
@@ -612,8 +611,8 @@ poiClassRanks      = {
   clothing_store = 21,
   bar = 22
 }
-waterClasses       = Set { "river", "riverbank", "stream", "canal", "drain", "ditch", "dock" }
-waterwayClasses    = Set { "stream", "river", "canal", "drain", "ditch" }
+local waterClasses       = Set { "river", "riverbank", "stream", "canal", "drain", "ditch", "dock" }
+local waterwayClasses    = Set { "stream", "river", "canal", "drain", "ditch" }
 
 -- Scan relations for use in ways
 
@@ -643,7 +642,6 @@ function write_to_transportation_layer(minzoom, highway_class, subclass, ramp, s
   -- Service
   if (is_rail or highway_class == "service") and (service and service ~= "") then Attribute("service", service) end
 
-  local accessMinzoom = 9
   if is_road then
     local oneway = Find("oneway")
     if oneway == "yes" or oneway == "1" then
@@ -837,7 +835,7 @@ function way_function()
     -- Links (ramp)
     local ramp = false
     if linkValues[h] then
-      splitHighway = split(highway, "_")
+      local splitHighway = split(highway, "_")
       highway = splitHighway[1]; h = highway
       ramp = true
     end
@@ -1034,6 +1032,7 @@ function way_function()
     local class = "lake"; if waterway ~= "" then class = "river" end
     if class == "lake" and Find("wikidata") == "Q192770" then return end
     Layer("water", true)
+    ---@diagnostic disable-next-line: redundant-parameter
     SetMinZoomByArea(way)
     Attribute("class", class)
 
@@ -1165,7 +1164,8 @@ end
 
 -- Set name attributes on any object
 function SetNameAttributes()
-  local name = Find("name"), iname
+  local name = Find("name")
+  local iname
   local main_written = name
   -- if we have a preferred language, then write that (if available), and additionally write the base name tag
   if preferred_language and Holds("name:" .. preferred_language) then
@@ -1240,7 +1240,7 @@ end
 -- Calculate POIs (typically rank 1-4 go to 'poi' z12-14, rank 5+ to 'poi_detail' z14)
 -- returns rank, class, subclass
 function GetPOIRank()
-  local k, list, v, class, rank
+  local k, list, v, class, rank, subclassKey
 
   -- Can we find the tag?
   for k, list in pairs(poiTags) do
@@ -1336,7 +1336,8 @@ function split(inputstr, sep) -- https://stackoverflow.com/a/7615129/4288232
   if sep == nil then
     sep = "%s"
   end
-  local t = {}; i = 1
+  local t = {};
+  local i = 1
   for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do
     t[i] = str
     i = i + 1
