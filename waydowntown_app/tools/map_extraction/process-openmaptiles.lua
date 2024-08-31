@@ -98,6 +98,13 @@ local walkway_building_way_ids = {
   "39492644",
   "243989498",
   "33167155",
+  -- 400 St. Mary
+  "111834501",
+  -- 444 St. Mary
+  "306714275",
+  "28151922",
+  -- former HBC parking
+  "25123629",
 }
 
 local surrounding_buildings = {
