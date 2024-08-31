@@ -31,6 +31,15 @@ unless config_env() == :test do
     adventure: adventure
 end
 
+spam_strings =
+  "SPAM_STRINGS"
+  |> System.get_env("")
+  |> String.split(",", trim: true)
+  |> Enum.map(&String.trim/1)
+
+config :registrations,
+  spam_strings: spam_strings
+
 if config_env() == :prod do
   location =
     System.get_env("LOCATION") ||

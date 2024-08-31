@@ -186,8 +186,8 @@ defmodule Registrations.Waydowntown.Integration.Home do
     assert Nav.info_text() == "we’ll let you know when registration opens"
 
     [sent_email] = Registrations.SwooshHelper.sent_email()
-    assert sent_email.to == [{"", "b@events.chromatin.ca"}]
-    assert sent_email.from == {"", "b@events.chromatin.ca"}
+    assert sent_email.to == [{"", "mdrysdale@waydown.town"}]
+    assert sent_email.from == {"", "mdrysdale@waydown.town"}
 
     assert sent_email.subject == "Waitlist submission from interested@example.com"
 
@@ -215,6 +215,58 @@ defmodule Registrations.Waydowntown.Integration.Home do
     Home.submit_waitlist()
 
     assert Nav.info_text() == "was that an email address?"
+
+    assert Registrations.SwooshHelper.sent_email() == []
+  end
+
+  test "placeholder page doesn't send email when spam is detected in email" do
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :placeholder,
+      true
+    )
+
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :spam_strings,
+      ["spam", "unwanted"]
+    )
+
+    navigate_to("/")
+
+    assert Home.placeholder_exists?()
+
+    Home.fill_waitlist_email("spam@example.com")
+    Home.fill_waitlist_question("When will the event take place?")
+    Home.submit_waitlist()
+
+    assert Nav.info_text() == "we’ll let you know when registration opens"
+
+    assert Registrations.SwooshHelper.sent_email() == []
+  end
+
+  test "placeholder page doesn't send email when spam is detected in question" do
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :placeholder,
+      true
+    )
+
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :spam_strings,
+      ["spam", "unwanted"]
+    )
+
+    navigate_to("/")
+
+    assert Home.placeholder_exists?()
+
+    Home.fill_waitlist_email("interested@example.com")
+    Home.fill_waitlist_question("When will this unwanted event take place?")
+    Home.submit_waitlist()
+
+    assert Nav.info_text() == "we’ll let you know when registration opens"
 
     assert Registrations.SwooshHelper.sent_email() == []
   end
