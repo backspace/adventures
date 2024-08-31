@@ -10,12 +10,9 @@ class LocationHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(
-        getRegionPath(game.incarnation),
-        style: Theme.of(context).textTheme.titleLarge,
-      ),
+    return Text(
+      getRegionPath(game.incarnation),
+      style: Theme.of(context).textTheme.titleLarge,
     );
   }
 }

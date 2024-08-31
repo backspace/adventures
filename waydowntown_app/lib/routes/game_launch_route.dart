@@ -60,47 +60,53 @@ class GameLaunchRoute extends StatelessWidget {
           appBar: AppBar(title: Text(gameName ?? 'Game Instructions')),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: ListView(
               children: [
-                const SizedBox(height: 16),
-                if (game.incarnation.start != null) ...[
-                  Text('Starting point: ${game.incarnation.start}',
-                      style: Theme.of(context).textTheme.headlineSmall),
-                ],
-                if (instructions != null) ...[
-                  Text('Instructions',
-                      style: Theme.of(context).textTheme.headlineMedium),
-                  Text(instructions),
-                  const SizedBox(height: 16),
-                  LocationHeader(game: game),
-                  Expanded(
-                    child: _buildMap(game),
+                if (instructions != null)
+                  _buildInfoCard(
+                    context,
+                    'Instructions',
+                    instructions,
                   ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: ElevatedButton(
-                      child: const Text('Start Game'),
-                      onPressed: () {
-                        try {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => _buildGameWidget(game),
-                            ),
-                          );
-                        } catch (e) {
-                          Sentry.captureException(e);
-                          _showErrorDialog(
-                              context,
-                              'Error: Game widget not found',
-                              'The widget for game concept "${game.incarnation.concept}" is missing.');
-                        }
-                      },
-                    ),
+                if (game.incarnation.start != null)
+                  _buildInfoCard(
+                    context,
+                    'Starting point',
+                    game.incarnation.start!,
                   ),
-                ] else
-                  _buildErrorWidget(context),
+                _buildInfoCard(
+                  context,
+                  'Location',
+                  null,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      LocationHeader(game: game),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 100,
+                        child: _buildMap(game),
+                      ),
+                    ],
+                  ),
+                ),
+                ElevatedButton(
+                  child: const Text('Start Game'),
+                  onPressed: () {
+                    try {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => _buildGameWidget(game),
+                        ),
+                      );
+                    } catch (e) {
+                      Sentry.captureException(e);
+                      _showErrorDialog(context, 'Error: Game widget not found',
+                          'The widget for game concept "${game.incarnation.concept}" is missing.');
+                    }
+                  },
+                ),
               ],
             ),
           ),
@@ -179,5 +185,26 @@ class GameLaunchRoute extends StatelessWidget {
       default:
         throw Exception('Unknown game type: ${game.incarnation.concept}');
     }
+  }
+
+  Widget _buildInfoCard(BuildContext context, String title, String? content,
+      {Widget? child}) {
+    return Card(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            const SizedBox(height: 8),
+            if (content != null) Text(content) else if (child != null) child,
+          ],
+        ),
+      ),
+    );
   }
 }

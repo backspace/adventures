@@ -108,7 +108,7 @@ bluetooth_collector:
     await tester.pump();
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
-    expect(find.text('Starting point: test_start'), findsOneWidget);
+    expect(find.text('test_start'), findsOneWidget);
     expect(find.text('Start Game'), findsOneWidget);
 
     // It never settles because the map never loads… why?
@@ -157,7 +157,7 @@ bluetooth_collector:
     await tester.pumpAndSettle();
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
-    expect(find.text('Starting point: test_start'), findsOneWidget);
+    expect(find.text('test_start'), findsOneWidget);
     expect(find.text('Start Game'), findsOneWidget);
 
     expect(find.byType(FlutterMap), findsNothing);
