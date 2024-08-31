@@ -43,15 +43,12 @@ class GameMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Building GameMap widget');
     final theme = vector_tile_renderer.ThemeReader().read(mapThemeData());
 
     return FutureBuilder<String>(
       future: copyAssetToFile(context, 'assets/walkway.mbtiles'),
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        print('FutureBuilder state: ${snapshot.connectionState}');
         if (snapshot.connectionState == ConnectionState.done) {
-          print('MBTiles file path: ${snapshot.data}');
           final tileProvider = MbTilesVectorTileProvider(
               mbtiles: MbTiles(mbtilesPath: snapshot.data!));
           return FlutterMap(
