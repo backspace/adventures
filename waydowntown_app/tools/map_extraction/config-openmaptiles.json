@@ -31,6 +31,30 @@
       "simplify_level": 0.0003
     },
     "transportation_name": { "minzoom": 8, "maxzoom": 14 },
+    "graham_skywalk": {
+      "minzoom": 4,
+      "maxzoom": 14,
+      "simplify_below": 13,
+      "simplify_level": 0.0003
+    },
+    "main_underground": {
+      "minzoom": 4,
+      "maxzoom": 14,
+      "simplify_below": 13,
+      "simplify_level": 0.0003
+    },
+    "portage_skywalk": {
+      "minzoom": 4,
+      "maxzoom": 14,
+      "simplify_below": 13,
+      "simplify_level": 0.0003
+    },
+    "st_mary_skywalk": {
+      "minzoom": 4,
+      "maxzoom": 14,
+      "simplify_below": 13,
+      "simplify_level": 0.0003
+    },
 
     "building": { "minzoom": 13, "maxzoom": 14 },
     "surrounding_building": { "minzoom": 13, "maxzoom": 14 },

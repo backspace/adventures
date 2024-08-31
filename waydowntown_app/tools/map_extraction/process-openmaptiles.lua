@@ -107,6 +107,86 @@ local surrounding_buildings = {
   "The Metropolitan Entertainment Centre",
 }
 
+local walkway_relations = {
+  ["Winnipeg Walkway"] = {},
+  ["Graham Skywalk"] = {
+    "432635029",
+    "15546401",
+    "15546395",
+    "15546361",
+    "15546354",
+    "15546317",
+    "1227509937",
+    "15546278",
+    "15546261",
+    "306591442",
+    "875866735",
+    "15546220",
+    "239370862",
+    "655293498",
+    "655293497",
+    "944380636",
+    "33166120",
+    "33166121",
+    "1301424810",
+    "1301424808",
+    "1301424809",
+  },
+  ["Main Underground"] = {
+    "96776541",
+    "15546434",
+    "432635030",
+    "96776520",
+    "432632615",
+    "136693110",
+    "102584982",
+    "875866729",
+    "432595577",
+    "136693109",
+    "1089138773",
+    "102584981",
+    "432595578",
+  },
+  ["Portage Skywalk"] = {
+    "438689265",
+    "26474613",
+    "61134709",
+    "25696590",
+    "27143007",
+    "15545528",
+    "875866731",
+    "15546081",
+    "15546171",
+    "985965690",
+    "15546184",
+    "985965689",
+    "985965688",
+    "226602235",
+    "607148039",
+    "61134724",
+    "27825652",
+    "39492814",
+    "39492816",
+    "33167503",
+    "25071919",
+    "875866732",
+    "61134702",
+  },
+  ["St. Mary Skywalk"] = {
+    "875866736",
+    "61134705",
+    "25941620",
+    "484590310",
+    "875866734",
+    "27073622",
+    "27142989",
+    "61134718",
+    "875866733",
+    "875866730",
+    "111475529",
+  },
+}
+
 local function has_value(tab, val)
   for index, value in ipairs(tab) do
     if value == val then
@@ -585,7 +665,21 @@ end
 -- Process way tags
 
 function way_function()
-  local id               = Id()
+  local id = Id()
+  local is_closed = IsClosed()
+
+  -- Is this a Winnipeg Walkway segment?
+  for relation_name, way_ids in pairs(walkway_relations) do
+    if has_value(way_ids, tostring(id)) then
+      local layer_name = relation_name:gsub("%s+", "_"):gsub("%.", ""):lower()
+      Layer(layer_name, is_closed)
+      SetNameAttributes()
+      SetBuildingHeightAttributes()
+      SetMinZoomByArea()
+      return
+    end
+  end
+
   local route            = Find("route")
   local highway          = Find("highway")
   local waterway         = Find("waterway")
@@ -607,7 +701,6 @@ function way_function()
   local aerialway        = Find("aerialway")
   local public_transport = Find("public_transport")
   local place            = Find("place")
-  local is_closed        = IsClosed()
   local housenumber      = Find("addr:housenumber")
   local write_name       = false
   local construction     = Find("construction")

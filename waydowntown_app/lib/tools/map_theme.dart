@@ -1,5 +1,12 @@
 // Adapted from https://github.com/greensopinion/dart-vector-tile-renderer/blob/85261f80344ca1d521bacfcb0ef58040720662f7/lib/src/themes/light_theme.dart
 
+Map<String, String> walkwaySegments = {
+  "portage_skywalk": "rgb(0, 154, 170)",
+  "graham_skywalk": "rgb(44, 1, 144)",
+  "st_mary_skywalk": "rgb(236, 0, 140)",
+  "main_underground": "rgb(161, 129, 8)",
+};
+
 Map<String, dynamic> mapThemeData() {
 // ## Code License
 // The Mapbox GL Style JSON file is originally derived from [OSM Bright from
@@ -1929,6 +1936,24 @@ Map<String, dynamic> mapThemeData() {
           }
         }
       },
+      ...walkwaySegments.entries.map((entry) => ({
+            "id": entry.key,
+            "type": "line",
+            "source": "openmaptiles",
+            "source-layer": entry.key,
+            "minzoom": 14,
+            "layout": {"line-join": "round"},
+            "paint": {
+              "line-color": entry.value,
+              "line-width": {
+                "base": 1.2,
+                "stops": [
+                  [14, 1.5],
+                  [20, 10]
+                ]
+              }
+            }
+          })),
       {
         "id": "water_name_line",
         "type": "symbol",
