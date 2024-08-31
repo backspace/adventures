@@ -64,8 +64,8 @@ class _MapRouteState extends State<MapRoute> {
                 FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
-                    initialCenter: const LatLng(49.8951, -97.1384),
-                    initialZoom: 15.0,
+                    initialCenter: const LatLng(49.891725, -97.143130),
+                    initialZoom: 16.0,
                     minZoom: 13.0,
                     maxZoom: 18.0,
                     onMapEvent: (event) {
@@ -87,20 +87,6 @@ class _MapRouteState extends State<MapRoute> {
                       textCacheMaxSize: 0,
                       memoryTileCacheMaxSize: 0,
                       memoryTileDataCacheMaxSize: 0,
-                    ),
-                    const MarkerLayer(
-                      markers: [
-                        Marker(
-                          width: 80.0,
-                          height: 80.0,
-                          point: LatLng(49.8951, -97.1384),
-                          child: Icon(
-                            Icons.location_on,
-                            color: Colors.red,
-                            size: 40.0,
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
