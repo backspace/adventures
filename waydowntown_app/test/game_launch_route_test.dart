@@ -188,6 +188,43 @@ bluetooth_collector:
         findsOneWidget);
     expect(find.text('Start Game'), findsNothing);
   });
+
+  testWidgets(
+      'GameLaunchRoute does not display location for unplaced game concepts',
+      (WidgetTester tester) async {
+    testAssetBundle.addAsset('assets/concepts.yaml', '''
+cardinal_memory:
+  name: Cardinal Memory
+  instructions: Face north, east, south, or west
+  placed: false
+''');
+
+    final game = TestHelpers.createMockGame(
+      concept: 'cardinal_memory',
+      latitude: 49.895305538809,
+      longitude: -97.13854044484164,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DefaultAssetBundle(
+          bundle: testAssetBundle,
+          child: GameLaunchRoute(game: game, dio: dio),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cardinal Memory'), findsOneWidget);
+    expect(find.text('Face north, east, south, or west'), findsOneWidget);
+    expect(find.text('Start Game'), findsOneWidget);
+
+    // Verify that location information is not displayed
+    expect(find.text('Parent Region > Test Region'), findsNothing);
+    expect(find.byType(FlutterMap), findsNothing);
+    expect(find.text('Map unavailable - location not specified'), findsNothing);
+  });
 }
 
 const String kTemporaryPath = 'temporaryPath';

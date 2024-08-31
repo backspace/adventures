@@ -18,7 +18,7 @@ class GameLaunchRoute extends StatelessWidget {
 
   const GameLaunchRoute({super.key, required this.game, required this.dio});
 
-  Future<Map<String, String?>> _loadGameInfo(BuildContext context) async {
+  Future<Map<String, dynamic>> _loadGameInfo(BuildContext context) async {
     final yamlString =
         await DefaultAssetBundle.of(context).loadString('assets/concepts.yaml');
     final yamlMap = loadYaml(yamlString);
@@ -31,12 +31,13 @@ class GameLaunchRoute extends StatelessWidget {
     return {
       'name': conceptInfo['name'],
       'instructions': conceptInfo['instructions'],
+      'placed': conceptInfo['placed'] ?? true,
     };
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, String?>>(
+    return FutureBuilder<Map<String, dynamic>>(
       future: _loadGameInfo(context),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -55,6 +56,7 @@ class GameLaunchRoute extends StatelessWidget {
 
         final gameName = gameInfo?['name'];
         final instructions = gameInfo?['instructions'];
+        final isPlaced = gameInfo?['placed'] ?? true;
 
         return Scaffold(
           appBar: AppBar(title: Text(gameName ?? 'Game Instructions')),
@@ -74,22 +76,23 @@ class GameLaunchRoute extends StatelessWidget {
                     'Starting point',
                     game.incarnation.start!,
                   ),
-                _buildInfoCard(
-                  context,
-                  'Location',
-                  null,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      LocationHeader(game: game),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        height: 100,
-                        child: _buildMap(game),
-                      ),
-                    ],
+                if (isPlaced)
+                  _buildInfoCard(
+                    context,
+                    'Location',
+                    null,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        LocationHeader(game: game),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 100,
+                          child: _buildMap(game),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
                 ElevatedButton(
                   child: const Text('Start Game'),
                   onPressed: () {
