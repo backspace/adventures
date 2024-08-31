@@ -15,15 +15,23 @@ defmodule RegistrationsWeb.GameControllerTest do
 
   describe "show game" do
     setup do
-      parent_region = Repo.insert!(%Region{name: "Parent Region"})
-      child_region = Repo.insert!(%Region{name: "Child Region", parent_id: parent_region.id})
+      parent_region = Repo.insert!(%Region{name: "Parent Region", latitude: 40.1, longitude: -97.0})
+
+      child_region =
+        Repo.insert!(%Region{
+          name: "Child Region",
+          parent_id: parent_region.id,
+          latitude: 49.891725,
+          longitude: -97.143130
+        })
 
       incarnation =
         Repo.insert!(%Incarnation{
           concept: "fill_in_the_blank",
           mask: "This is a ____",
           region_id: child_region.id,
-          placed: true
+          placed: true,
+          start: "Outside the coat check"
         })
 
       {:ok, game} = Waydowntown.create_game(%{}, %{"concept" => incarnation.concept})
@@ -70,6 +78,7 @@ defmodule RegistrationsWeb.GameControllerTest do
                  item["attributes"]["concept"] == "fill_in_the_blank" &&
                  item["attributes"]["mask"] == "This is a ____" &&
                  item["attributes"]["placed"] == true &&
+                 item["attributes"]["start"] == "Outside the coat check" &&
                  item["relationships"]["region"]["data"]["id"] == child_region.id
              end)
 
@@ -77,13 +86,17 @@ defmodule RegistrationsWeb.GameControllerTest do
                item["type"] == "regions" &&
                  item["id"] == child_region.id &&
                  item["attributes"]["name"] == "Child Region" &&
-                 item["relationships"]["parent"]["data"]["id"] == parent_region.id
+                 item["relationships"]["parent"]["data"]["id"] == parent_region.id &&
+                 item["attributes"]["latitude"] == "49.891725" &&
+                 item["attributes"]["longitude"] == "-97.14313"
              end)
 
       assert Enum.any?(included, fn item ->
                item["type"] == "regions" &&
                  item["id"] == parent_region.id &&
                  item["attributes"]["name"] == "Parent Region" &&
+                 item["attributes"]["latitude"] == "40.1" &&
+                 item["attributes"]["longitude"] == "-97.0" &&
                  item["relationships"]["parent"]["data"] == nil
              end)
     end

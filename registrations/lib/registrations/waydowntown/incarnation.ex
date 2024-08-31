@@ -23,7 +23,7 @@ defmodule Registrations.Waydowntown.Incarnation do
   @doc false
   def changeset(incarnation, attrs) do
     incarnation
-    |> cast(attrs, [:concept, :mask, :answers, :placed, :region_id])
+    |> cast(attrs, [:concept, :mask, :answers, :placed, :region_id, :start])
     |> validate_required([:concept, :mask, :answers, :placed])
   end
 end

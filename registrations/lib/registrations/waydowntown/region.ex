@@ -10,6 +10,8 @@ defmodule Registrations.Waydowntown.Region do
   schema "regions" do
     field(:description, :string)
     field(:name, :string)
+    field(:latitude, :decimal)
+    field(:longitude, :decimal)
 
     belongs_to(:parent, __MODULE__, type: :binary_id, foreign_key: :parent_id)
 
@@ -19,7 +21,7 @@ defmodule Registrations.Waydowntown.Region do
   @doc false
   def changeset(region, attrs) do
     region
-    |> cast(attrs, [:name, :description])
+    |> cast(attrs, [:name, :description, :latitude, :longitude])
     |> validate_required([:name, :description])
   end
 end

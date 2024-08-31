@@ -154,12 +154,15 @@ class TestHelpers {
     };
   }
 
-  static Game createMockGame(
-      {String concept = 'test_concept',
-      String mask = 'test_mask',
-      String start = 'test_start',
-      int correctAnswers = 0,
-      int totalAnswers = 3}) {
+  static Game createMockGame({
+    String concept = 'test_concept',
+    String mask = 'test_mask',
+    String start = 'test_start',
+    int correctAnswers = 0,
+    int totalAnswers = 3,
+    double? latitude,
+    double? longitude,
+  }) {
     return Game(
       id: '22261813-2171-453f-a669-db08edc70d6d',
       incarnation: Incarnation(
@@ -172,6 +175,8 @@ class TestHelpers {
           id: '324fd8f9-cd25-48be-a761-b8680fa72737',
           name: 'Test Region',
           description: null,
+          latitude: latitude,
+          longitude: longitude,
           parentRegion: Region(
             id: '67cc2c5c-06c2-4e86-9aac-b575fc712862',
             name: 'Parent Region',

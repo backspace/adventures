@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/games/code_collector.dart';
@@ -7,6 +9,7 @@ import 'package:waydowntown/games/fill_in_the_blank.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/location_header.dart';
 import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';
 
 class GameLaunchRoute extends StatelessWidget {
@@ -60,7 +63,6 @@ class GameLaunchRoute extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                LocationHeader(game: game),
                 const SizedBox(height: 16),
                 if (game.incarnation.start != null) ...[
                   Text('Starting point: ${game.incarnation.start}',
@@ -70,7 +72,12 @@ class GameLaunchRoute extends StatelessWidget {
                   Text('Instructions',
                       style: Theme.of(context).textTheme.headlineMedium),
                   Text(instructions),
-                  const Spacer(),
+                  const SizedBox(height: 16),
+                  LocationHeader(game: game),
+                  Expanded(
+                    child: _buildMap(game),
+                  ),
+                  const SizedBox(height: 16),
                   Center(
                     child: ElevatedButton(
                       child: const Text('Start Game'),
@@ -100,6 +107,27 @@ class GameLaunchRoute extends StatelessWidget {
         );
       },
     );
+  }
+
+  Widget _buildMap(Game game) {
+    if (game.incarnation.region?.latitude != null &&
+        game.incarnation.region?.longitude != null) {
+      return GameMap(
+        centre: LatLng(game.incarnation.region!.latitude!,
+            game.incarnation.region!.longitude!),
+        markers: [
+          Marker(
+            point: LatLng(game.incarnation.region!.latitude!,
+                game.incarnation.region!.longitude!),
+            child: const Icon(Icons.location_on, color: Colors.red, size: 30),
+          ),
+        ],
+      );
+    } else {
+      return const Center(
+        child: Text('Map unavailable - location not specified'),
+      );
+    }
   }
 
   Widget _buildErrorWidget(BuildContext context) {

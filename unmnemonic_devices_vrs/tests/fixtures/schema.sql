@@ -327,7 +327,9 @@ CREATE TABLE waydowntown.regions (
     description text,
     parent_id uuid,
     inserted_at timestamp(0) without time zone,
-    updated_at timestamp(0) without time zone
+    updated_at timestamp(0) without time zone,
+    latitude numeric,
+    longitude numeric
 );
 
 
@@ -739,3 +741,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240806031811);
 INSERT INTO public."schema_migrations" (version) VALUES (20240824211544);
 INSERT INTO public."schema_migrations" (version) VALUES (20240825045118);
 INSERT INTO public."schema_migrations" (version) VALUES (20240828005430);
+INSERT INTO public."schema_migrations" (version) VALUES (20240831183915);
