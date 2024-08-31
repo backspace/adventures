@@ -1848,7 +1848,7 @@ Map<String, dynamic> mapThemeData() {
             "source": "openmaptiles",
             "source-layer": entry.key,
             "minzoom": 14,
-            "layout": {"line-join": "round"},
+            "layout": {"line-cap": "round", "line-join": "round"},
             "paint": {
               "line-color": entry.value,
               "line-width": {
