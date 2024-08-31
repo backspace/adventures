@@ -12,11 +12,11 @@ class OrientationMemoryGame extends StatefulWidget {
   final MotionSensors? motionSensors;
 
   const OrientationMemoryGame({
-    Key? key,
+    super.key,
     required this.game,
     required this.dio,
     this.motionSensors,
-  }) : super(key: key);
+  });
 
   @override
   OrientationMemoryGameState createState() => OrientationMemoryGameState();

@@ -64,12 +64,12 @@ void main() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     testAssetBundle = TestAssetBundle();
 
-    const TEST_MOCK_STORAGE = './test/fixtures/core';
+    const testMockStorage = './test/fixtures/core';
     const channel = MethodChannel(
       'plugins.flutter.io/path_provider',
     );
     channel.setMockMethodCallHandler((MethodCall methodCall) async {
-      return TEST_MOCK_STORAGE;
+      return testMockStorage;
     });
   });
 

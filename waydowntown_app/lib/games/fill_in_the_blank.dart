@@ -75,7 +75,7 @@ class FillInTheBlankGameState extends State<FillInTheBlankGame> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Fill in the blank"),
+        title: const Text("Fill in the blank"),
       ),
       body: Center(
         child: Column(

@@ -8,7 +8,6 @@ import 'package:waydowntown/location_header.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
-import 'package:flutter/animation.dart';
 
 class BluetoothCollectorGame extends StatefulWidget {
   final Dio dio;
