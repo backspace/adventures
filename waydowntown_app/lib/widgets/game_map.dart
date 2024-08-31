@@ -12,6 +12,13 @@ import 'package:vector_tile_renderer/vector_tile_renderer.dart'
 
 import '../tools/map_theme.dart';
 
+final north_grain_exchange = 49.89684619087244;
+final east_grain_exchange = -97.13601201018146;
+final south_convention_centre_parking = 49.88737391678073;
+final west_one_canada_centre = -97.15091617244872;
+
+final boundary_padding = 0.001;
+
 Future<String> copyAssetToFile(BuildContext context, String assetPath) async {
   final assetBundle = DefaultAssetBundle.of(context);
   final data = await assetBundle.load('assets/walkway.mbtiles');
@@ -53,6 +60,14 @@ class GameMap extends StatelessWidget {
               mbtiles: MbTiles(mbtilesPath: snapshot.data!));
           return FlutterMap(
             options: MapOptions(
+              cameraConstraint: CameraConstraint.contain(
+                bounds: LatLngBounds(
+                  LatLng(north_grain_exchange + boundary_padding,
+                      east_grain_exchange + boundary_padding),
+                  LatLng(south_convention_centre_parking - boundary_padding,
+                      west_one_canada_centre - boundary_padding),
+                ),
+              ),
               interactionOptions: const InteractionOptions(
                 flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
               ),
