@@ -2,6 +2,16 @@ bluetooth_collector:
   name: "Bluetooth Collector"
   instructions: "find all the bluetooth devices. when one is detected, tap it to submit."
 
+cardinal_memory:
+  name: "Cardinal memory"
+  placed: false
+  instructions: "face north, east, south, or west and submit your guess until you learn the full pattern. if you make a mistake, start over!"
+  options:
+    - north
+    - east
+    - south
+    - west
+
 code_collector:
   name: "Code Collector"
   instructions: "scan all the barcodes. when one is detected, tap it to submit."
@@ -18,13 +28,3 @@ orientation_memory:
     - left
     - up
     - right
-
-cardinal_memory:
-  name: "Cardinal memory"
-  placed: false
-  instructions: "face north, east, south, or west and submit your guess until you learn the full pattern. if you make a mistake, start over!"
-  options:
-    - north
-    - east
-    - south
-    - west

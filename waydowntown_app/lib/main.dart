@@ -129,6 +129,7 @@ class _HomeState extends State<Home> {
                 const SizedBox(height: 20),
                 _buildButtonRow([
                   ('Orientation\nMemory', 'orientation_memory'),
+                  ('Cardinal\nMemory', 'cardinal_memory'),
                 ], (concept) {
                   Navigator.push(
                     context,

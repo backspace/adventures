@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:waydowntown/games/bluetooth_collector.dart';
+import 'package:waydowntown/games/cardinal_memory.dart';
 import 'package:waydowntown/games/code_collector.dart';
 import 'package:waydowntown/games/fill_in_the_blank.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
@@ -179,6 +180,8 @@ class GameLaunchRoute extends StatelessWidget {
     switch (game.incarnation.concept) {
       case 'bluetooth_collector':
         return BluetoothCollectorGame(game: game, dio: dio);
+      case 'cardinal_memory':
+        return CardinalMemoryGame(game: game, dio: dio);
       case 'code_collector':
         return CodeCollectorGame(game: game, dio: dio);
       case 'fill_in_the_blank':
