@@ -551,29 +551,6 @@ Map<String, dynamic> mapThemeData() {
         }
       },
       {
-        "id": "tunnel_path_pedestrian",
-        "type": "line",
-        "source": "openmaptiles",
-        "source-layer": "transportation",
-        "filter": [
-          "all",
-          ["==", "\$type", "LineString"],
-          ["==", "brunnel", "tunnel"],
-          ["in", "class", "path", "pedestrian"]
-        ],
-        "paint": {
-          "line-color": "hsl(0, 0%, 100%)",
-          "line-dasharray": [1, 0.75],
-          "line-width": {
-            "base": 1.2,
-            "stops": [
-              [14, 0.5],
-              [20, 10]
-            ]
-          }
-        }
-      },
-      {
         "id": "tunnel_motorway_link",
         "type": "line",
         "source": "openmaptiles",
@@ -1028,31 +1005,6 @@ Map<String, dynamic> mapThemeData() {
         }
       },
       {
-        "id": "road_path_pedestrian",
-        "type": "line",
-        "source": "openmaptiles",
-        "source-layer": "transportation",
-        "minzoom": 14,
-        "filter": [
-          "all",
-          ["==", "\$type", "LineString"],
-          ["!in", "brunnel", "bridge", "tunnel"],
-          ["in", "class", "path", "pedestrian"]
-        ],
-        "layout": {"line-join": "round"},
-        "paint": {
-          "line-color": "hsl(0, 0%, 100%)",
-          "line-dasharray": [1, 0.7],
-          "line-width": {
-            "base": 1.2,
-            "stops": [
-              [14, 1],
-              [20, 10]
-            ]
-          }
-        }
-      },
-      {
         "id": "road_motorway_link",
         "type": "line",
         "source": "openmaptiles",
@@ -1443,29 +1395,6 @@ Map<String, dynamic> mapThemeData() {
         }
       },
       {
-        "id": "bridge_path_pedestrian_casing",
-        "type": "line",
-        "source": "openmaptiles",
-        "source-layer": "transportation",
-        "filter": [
-          "all",
-          ["==", "\$type", "LineString"],
-          ["==", "brunnel", "bridge"],
-          ["in", "class", "path", "pedestrian"]
-        ],
-        "paint": {
-          "line-color": "hsl(35, 6%, 80%)",
-          "line-dasharray": [1, 0],
-          "line-width": {
-            "base": 1.2,
-            "stops": [
-              [14, 1.5],
-              [20, 18]
-            ]
-          }
-        }
-      },
-      {
         "id": "bridge_secondary_tertiary_casing",
         "type": "line",
         "source": "openmaptiles",
@@ -1532,29 +1461,6 @@ Map<String, dynamic> mapThemeData() {
               [6, 0.7],
               [7, 1.75],
               [20, 22]
-            ]
-          }
-        }
-      },
-      {
-        "id": "bridge_path_pedestrian",
-        "type": "line",
-        "source": "openmaptiles",
-        "source-layer": "transportation",
-        "filter": [
-          "all",
-          ["==", "\$type", "LineString"],
-          ["==", "brunnel", "bridge"],
-          ["in", "class", "path", "pedestrian"]
-        ],
-        "paint": {
-          "line-color": "hsl(0, 0%, 100%)",
-          "line-dasharray": [1, 0.3],
-          "line-width": {
-            "base": 1.2,
-            "stops": [
-              [14, 0.5],
-              [20, 10]
             ]
           }
         }
