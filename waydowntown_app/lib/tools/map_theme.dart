@@ -2017,14 +2017,14 @@ Map<String, dynamic> mapThemeData() {
         "layout": {
           "symbol-placement": "line",
           "text-anchor": "center",
-          "text-field": "{name}",
-          "text-font": ["Roboto Regular"],
+          "text-field": "{name:latin}",
+          "text-font": ["Roadgeek"],
           "text-offset": [0, 0.15],
           "text-size": {
             "base": 1,
             "stops": [
-              [13, 12],
-              [14, 13]
+              [13, 10],
+              [14, 12]
             ]
           }
         },
