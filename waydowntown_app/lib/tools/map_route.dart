@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:sentry/sentry.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/incarnation.dart';
 import 'package:waydowntown/widgets/game_map.dart';
-import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 class MapRoute extends StatefulWidget {
   final Dio dio;
@@ -99,7 +98,7 @@ class _MapRouteState extends State<MapRoute> {
         body: Stack(
           children: [
             GameMap(
-              centre: LatLng(49.891725, -97.143130),
+              centre: const LatLng(49.891725, -97.143130),
               markers: _buildMarkers(),
             ),
           ],

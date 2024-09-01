@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mbtiles/mbtiles.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,16 +10,15 @@ import 'package:vector_map_tiles/vector_map_tiles.dart';
 import 'package:vector_map_tiles_mbtiles/vector_map_tiles_mbtiles.dart';
 import 'package:vector_tile_renderer/vector_tile_renderer.dart'
     as vector_tile_renderer;
-import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 import '../tools/map_theme.dart';
 
-final north_grain_exchange = 49.89684619087244;
-final east_grain_exchange = -97.13601201018146;
-final south_convention_centre_parking = 49.88737391678073;
-final west_one_canada_centre = -97.15091617244872;
+const north_grain_exchange = 49.89684619087244;
+const east_grain_exchange = -97.13601201018146;
+const south_convention_centre_parking = 49.88737391678073;
+const west_one_canada_centre = -97.15091617244872;
 
-final boundary_padding = 0.001;
+const boundary_padding = 0.001;
 
 Future<String> copyAssetToFile(BuildContext context, String assetPath) async {
   final assetBundle = DefaultAssetBundle.of(context);
@@ -63,9 +63,9 @@ class GameMap extends StatelessWidget {
             options: MapOptions(
               cameraConstraint: CameraConstraint.contain(
                 bounds: LatLngBounds(
-                  LatLng(north_grain_exchange + boundary_padding,
+                  const LatLng(north_grain_exchange + boundary_padding,
                       east_grain_exchange + boundary_padding),
-                  LatLng(south_convention_centre_parking - boundary_padding,
+                  const LatLng(south_convention_centre_parking - boundary_padding,
                       west_one_canada_centre - boundary_padding),
                 ),
               ),
@@ -89,7 +89,7 @@ class GameMap extends StatelessWidget {
                 options: MarkerClusterLayerOptions(
                   maxClusterRadius: 45,
                   size: const Size(20, 20),
-                  padding: EdgeInsets.all(50),
+                  padding: const EdgeInsets.all(50),
                   markers: markers,
                   builder: (context, markers) {
                     return Container(
