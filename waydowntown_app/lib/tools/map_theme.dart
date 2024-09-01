@@ -1758,6 +1758,32 @@ Map<String, dynamic> mapThemeData() {
         }
       },
       {
+        "id": "building_label",
+        "type": "symbol",
+        "source": "openmaptiles",
+        "source-layer": "building_name",
+        "filter": ["all"],
+        "layout": {
+          "symbol-placement": "line-center",
+          "text-anchor": "center",
+          "text-field": "{name:latin}",
+          "text-font": ["Roadgeek"],
+          "text-offset": [0, 0.15],
+          "text-size": {
+            "base": 1,
+            "stops": [
+              [13, 10],
+              [14, 12]
+            ]
+          }
+        },
+        "paint": {
+          "text-color": "#765",
+          "text-halo-blur": 0.5,
+          "text-halo-width": 1
+        }
+      },
+      {
         "id": "boundary_3",
         "type": "line",
         "source": "openmaptiles",

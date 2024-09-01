@@ -1017,6 +1017,12 @@ function way_function()
       Layer("building", true)
       SetBuildingHeightAttributes()
       SetMinZoomByArea()
+
+      if HasNames() then
+        LayerAsCentroid("building_name")
+        MinZoom(12)
+        SetNameAttributes()
+      end
     end
   end
 
