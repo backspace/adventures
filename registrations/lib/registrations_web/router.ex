@@ -88,6 +88,7 @@ defmodule RegistrationsWeb.Router do
     pipe_through(:jsonapi)
 
     resources("/answers", AnswerController, except: [:index, :new, :edit, :delete])
+    resources("/incarnations", IncarnationController, only: [:index])
     resources("/games", GameController, except: [:new, :edit, :delete, :update])
   end
 end

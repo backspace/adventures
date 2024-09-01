@@ -185,6 +185,19 @@ defmodule Registrations.Waydowntown do
   end
 
   @doc """
+  Returns the list of incarnations.
+
+  ## Examples
+
+      iex> list_incarnations()
+      [%Incarnation{}, ...]
+
+  """
+  def list_incarnations do
+    Incarnation |> Repo.all() |> Repo.preload(region: [:parent])
+  end
+
+  @doc """
   Gets a single incarnation.
 
   Raises `Ecto.NoResultsError` if the Incarnation does not exist.

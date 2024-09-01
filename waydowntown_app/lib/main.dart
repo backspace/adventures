@@ -159,7 +159,7 @@ class _HomeState extends State<Home> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const MapRoute()));
+                              builder: (context) => MapRoute(dio: dio)));
                       break;
                     case 'motion_sensors':
                       Navigator.push(
