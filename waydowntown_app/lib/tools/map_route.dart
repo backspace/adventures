@@ -6,6 +6,7 @@ import 'package:sentry/sentry.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/incarnation.dart';
 import 'package:waydowntown/widgets/game_map.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 class MapRoute extends StatefulWidget {
   final Dio dio;
@@ -66,8 +67,8 @@ class _MapRouteState extends State<MapRoute> {
         .map((incarnation) {
       final region = incarnation.region!;
       return Marker(
-        width: 80.0,
-        height: 80.0,
+        width: 40.0,
+        height: 40.0,
         point: LatLng(region.latitude!, region.longitude!),
         child: const Icon(
           Icons.location_on,

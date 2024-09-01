@@ -9,6 +9,7 @@ import 'package:vector_map_tiles/vector_map_tiles.dart';
 import 'package:vector_map_tiles_mbtiles/vector_map_tiles_mbtiles.dart';
 import 'package:vector_tile_renderer/vector_tile_renderer.dart'
     as vector_tile_renderer;
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 
 import '../tools/map_theme.dart';
 
@@ -84,7 +85,28 @@ class GameMap extends StatelessWidget {
                 }),
                 maximumZoom: 18,
               ),
-              MarkerLayer(markers: markers),
+              MarkerClusterLayerWidget(
+                options: MarkerClusterLayerOptions(
+                  maxClusterRadius: 45,
+                  size: const Size(20, 20),
+                  padding: EdgeInsets.all(50),
+                  markers: markers,
+                  builder: (context, markers) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          markers.length.toString(),
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
           );
         } else {
