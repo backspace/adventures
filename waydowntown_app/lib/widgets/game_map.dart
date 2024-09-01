@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mbtiles/mbtiles.dart';
@@ -65,7 +66,8 @@ class GameMap extends StatelessWidget {
                 bounds: LatLngBounds(
                   const LatLng(north_grain_exchange + boundary_padding,
                       east_grain_exchange + boundary_padding),
-                  const LatLng(south_convention_centre_parking - boundary_padding,
+                  const LatLng(
+                      south_convention_centre_parking - boundary_padding,
                       west_one_canada_centre - boundary_padding),
                 ),
               ),
@@ -107,6 +109,7 @@ class GameMap extends StatelessWidget {
                   },
                 ),
               ),
+              CurrentLocationLayer(),
             ],
           );
         } else {
