@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sentry/sentry.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/incarnation.dart';
 import 'package:waydowntown/widgets/game_map.dart';
+import 'package:yaml/yaml.dart';
 
 class MapRoute extends StatefulWidget {
   final Dio dio;
@@ -20,11 +22,13 @@ class _MapRouteState extends State<MapRoute> {
   List<Incarnation> incarnations = [];
   bool isLoading = true;
   bool isRequestError = false;
+  Map<String, String> conceptMarkers = {};
 
   @override
   void initState() {
     super.initState();
     fetchIncarnations();
+    loadConceptMarkers();
   }
 
   Future<void> fetchIncarnations() async {
@@ -57,6 +61,17 @@ class _MapRouteState extends State<MapRoute> {
     }
   }
 
+  Future<void> loadConceptMarkers() async {
+    final yamlString = await rootBundle.loadString('assets/concepts.yaml');
+    final yamlMap = loadYaml(yamlString) as YamlMap;
+
+    conceptMarkers = Map.fromEntries(yamlMap.entries.map((entry) {
+      final conceptName = entry.key as String;
+      final conceptData = entry.value as YamlMap;
+      return MapEntry(conceptName, conceptData['marker'] as String);
+    }));
+  }
+
   List<Marker> _buildMarkers() {
     return incarnations
         .where((incarnation) =>
@@ -65,14 +80,23 @@ class _MapRouteState extends State<MapRoute> {
             incarnation.region!.longitude != null)
         .map((incarnation) {
       final region = incarnation.region!;
+      final marker = conceptMarkers[incarnation.concept] ?? '📍';
       return Marker(
-        width: 40.0,
-        height: 40.0,
+        width: 20.0,
+        height: 20.0,
         point: LatLng(region.latitude!, region.longitude!),
-        child: const Icon(
-          Icons.location_on,
-          color: Colors.red,
-          size: 40.0,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.black, width: 1),
+          ),
+          child: Center(
+            child: Text(
+              marker,
+              style: const TextStyle(fontSize: 12, color: Colors.black),
+            ),
+          ),
         ),
       );
     }).toList();

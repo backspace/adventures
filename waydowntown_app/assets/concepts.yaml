@@ -1,9 +1,11 @@
 bluetooth_collector:
   name: "Bluetooth Collector"
+  marker: "ᛒ"
   instructions: "find all the bluetooth devices. when one is detected, tap it to submit."
 
 cardinal_memory:
   name: "Cardinal memory"
+  marker: "🧭"
   placed: false
   instructions: "face north, east, south, or west and submit your guess until you learn the full pattern. if you make a mistake, start over!"
   options:
@@ -14,14 +16,17 @@ cardinal_memory:
 
 code_collector:
   name: "Code Collector"
+  marker: "𝄃𝄃𝄂𝄀𝄁𝄃𝄂𝄂𝄃"
   instructions: "scan all the barcodes. when one is detected, tap it to submit."
 
 fill_in_the_blank:
   name: "Fill in the Blank"
+  marker: "a_c"
   instructions: "submit the correct answer to fill in the blank."
 
 orientation_memory:
   name: "Orientation memory"
+  marker: "🔄"
   placed: false
   instructions: "rotate the phone and learn the secret pattern. if you make a mistake, start over!"
   options:
