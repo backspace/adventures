@@ -50,61 +50,71 @@ local walkway_buildings = {
   "YMCA Winnipeg",
 }
 
+-- New table for building name overrides
+local building_name_overrides = {
+  ["155 Carlton at Lakeview Square"] = "155 Carlton",
+  ["Cityplace"] = "cityplace",
+  ["Radisson Hotel Winnipeg Downtown"] = "Radisson",
+  ["True North Square Appartments"] = false,
+  ["YMCA Winnipeg"] = "waydowntown Y",
+  ["Winnipeg Police Service Headquarters"] = false, -- no label
+}
+
 local walkway_addresses = {
   ["Carlton Street"] = {
-    "236", -- Wawanesa but not the one on Broadway
-    "300",
+    ["236"] = "Wawanesa", -- to exclude the one on Broadway
+    ["300"] = true,
   },
   ["Ellice"] = {
-    "400", -- former IBM
+    ["400"] = "Former IBM Building",
   },
   ["Graham Avenue"] = {
-    "200",
-    "240", -- Cargill
+    ["200"] = true,
+    ["240"] = "Cargill Building",
   },
   ["Main Street"] = {
-    "300",
+    ["300"] = "300 Main",
   },
   ["Portage Avenue"] = {
-    "428", -- Power Building
-    "450", -- former HBC
+    ["428"] = "Power Building",
+    ["450"] = "Wehwehneh Bahgahkinahgohn",
   },
   ["Portage Avenue East"] = {
-    "161", -- off Richardson Centre
+    ["161"] = "161 Portage East",
   },
   ["Saint Mary Avenue"] = {
-    "330",
+    ["330"] = true,
   },
 }
 
 local walkway_building_way_ids = {
   -- Canada Post
-  "307463844",
-  "306637812",
+  ["306637812"] = "ACAB lobby",
+  ["307463844"] = true,
   -- 189 Carlton
-  "33068607",
+  ["33068607"] = "189 Carlton",
   -- west of Newport Centre
-  "307185173",
-  "307185174",
-  "307185175",
-  "307185176",
+  ["307185173"] = true,
+  ["307185174"] = true,
+  ["307185175"] = true,
+  ["307185176"] = true,
   -- Webb Place, no addresses?
-  "33167162",
-  "307748507",
-  "39492647",
-  "307748506",
-  "39492645",
-  "243989499",
-  "39492644",
-  "243989498",
-  "33167155",
+  ["33167162"] = true,
+  ["307748507"] = true,
+  ["39492647"] = true,
+  ["307748506"] = true,
+  ["39492645"] = true,
+  ["243989499"] = true,
+  ["39492644"] = true,
+  ["243989498"] = true,
+  ["33167155"] = true,
   -- 400 St. Mary
-  "111834501",
+  ["111834501"] = true,
   -- 444 St. Mary
-  "306714275",
-  "28151922",
+  ["306714275"] = true,
+  ["28151922"] = true,
   -- former HBC parking
-  "25123629",
+  ["25123629"] = true,
 }
 
 local surrounding_buildings = {
@@ -990,19 +1000,14 @@ function way_function()
   end
 
   -- Set 'building' and associated
-
-  if building ~= "" or has_value(walkway_building_way_ids, id) then
+  if building ~= "" or walkway_building_way_ids[tostring(id)] then
     local building_name = Find("name")
     local housenumber = Find("addr:housenumber")
     local street = Find("addr:street")
 
     local function is_walkway_address(str, num)
       if walkway_addresses[str] then
-        for _, allowed_number in ipairs(walkway_addresses[str]) do
-          if num == allowed_number then
-            return true
-          end
-        end
+        return walkway_addresses[str][num] ~= nil
       end
       return false
     end
@@ -1013,15 +1018,32 @@ function way_function()
       SetMinZoomByArea()
     elseif (building_name and has_value(walkway_buildings, building_name)) or
         (street ~= "" and housenumber ~= "" and is_walkway_address(street, housenumber))
-        or has_value(walkway_building_way_ids, id) then
+        or walkway_building_way_ids[tostring(id)] then
       Layer("building", true)
       SetBuildingHeightAttributes()
       SetMinZoomByArea()
 
-      if HasNames() then
-        LayerAsCentroid("building_name")
-        MinZoom(12)
-        SetNameAttributes()
+      -- Add custom name to building_name layer
+      LayerAsCentroid("building_name")
+      MinZoom(12)
+      local custom_name
+      if walkway_addresses[street] and walkway_addresses[street][housenumber] then
+        custom_name = walkway_addresses[street][housenumber]
+      elseif walkway_building_way_ids[tostring(id)] then
+        custom_name = walkway_building_way_ids[tostring(id)]
+      elseif building_name_overrides[building_name] ~= nil then
+        custom_name = building_name_overrides[building_name]
+      else
+        custom_name = building_name
+      end
+
+      if custom_name and custom_name ~= false then
+        if type(custom_name) == "string" then
+          Attribute("name", custom_name)
+          Attribute("name:latin", custom_name)
+        else
+          SetNameAttributes()
+        end
       end
     end
   end
