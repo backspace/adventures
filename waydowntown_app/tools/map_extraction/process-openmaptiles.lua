@@ -53,6 +53,7 @@ local walkway_buildings = {
 -- New table for building name overrides
 local building_name_overrides = {
   ["155 Carlton at Lakeview Square"] = "155 Carlton",
+  ["Canada Life Centre"] = "Eaton’s",
   ["Cityplace"] = "cityplace",
   ["Radisson Hotel Winnipeg Downtown"] = "Radisson",
   ["True North Square Appartments"] = false,
