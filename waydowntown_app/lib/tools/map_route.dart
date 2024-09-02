@@ -6,8 +6,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:sentry/sentry.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/incarnation.dart';
-import 'package:waydowntown/widgets/game_map.dart';
 import 'package:waydowntown/routes/request_game_route.dart';
+import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';
 
 class MapRoute extends StatefulWidget {
