@@ -78,6 +78,17 @@ class GameLaunchRoute extends StatelessWidget {
                     'Starting point',
                     game.incarnation.start!,
                   ),
+                if (game.totalAnswers > 1)
+                  _buildInfoCard(
+                    context,
+                    'Goal',
+                    null,
+                    child: Text(
+                      '${game.totalAnswers} answers',
+                      key: const Key('total_answers'),
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
                 if (isPlaced)
                   _buildInfoCard(
                     context,

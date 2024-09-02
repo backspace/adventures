@@ -78,7 +78,7 @@ void main() {
   });
 
   testWidgets(
-      'GameLaunchRoute displays game information, start button, and map when location is available',
+      'GameLaunchRoute displays game information, start button, progress, and map when location is available',
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '''
 bluetooth_collector:
@@ -94,6 +94,7 @@ bluetooth_collector:
       concept: 'bluetooth_collector',
       latitude: 49.895305538809,
       longitude: -97.13854044484164,
+      totalAnswers: 334455,
     );
 
     await tester.pumpWidget(
@@ -109,6 +110,11 @@ bluetooth_collector:
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
     expect(find.text('test_start'), findsOneWidget);
+    expect(find.byKey(const Key('total_answers')), findsOneWidget);
+    expect(find.text('334455 answers'), findsOneWidget);
+
+    // scroll the container so the start button shows
+    await tester.scrollUntilVisible(find.text('Start Game'), 100);
     expect(find.text('Start Game'), findsOneWidget);
 
     // It never settles because the map never loads… why?
@@ -131,7 +137,8 @@ bluetooth_collector:
         */
   });
 
-  testWidgets('GameLaunchRoute displays message when location is not available',
+  testWidgets(
+      'GameLaunchRoute displays message when location is not available and does not show answer count when there is only one',
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '''
 bluetooth_collector:
@@ -143,6 +150,7 @@ bluetooth_collector:
       concept: 'bluetooth_collector',
       latitude: null,
       longitude: null,
+      totalAnswers: 1,
     );
 
     await tester.pumpWidget(
@@ -159,6 +167,7 @@ bluetooth_collector:
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
     expect(find.text('test_start'), findsOneWidget);
     expect(find.text('Start Game'), findsOneWidget);
+    expect(find.byKey(const Key('total_answers')), findsNothing);
 
     expect(find.byType(FlutterMap), findsNothing);
     expect(
