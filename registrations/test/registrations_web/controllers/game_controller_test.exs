@@ -16,13 +16,13 @@ defmodule RegistrationsWeb.GameControllerTest do
   describe "show game" do
     setup do
       parent_region =
-        Repo.insert!(%Region{name: "Parent Region", geom: %Geo.Point{coordinates: {40.1, -97.0}, srid: 4326}})
+        Repo.insert!(%Region{name: "Parent Region", geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}})
 
       child_region =
         Repo.insert!(%Region{
           name: "Child Region",
           parent_id: parent_region.id,
-          geom: %Geo.Point{coordinates: {49.891725, -97.143130}, srid: 4326}
+          geom: %Geo.Point{coordinates: {-97.143130, 49.891725}, srid: 4326}
         })
 
       incarnation =
@@ -274,8 +274,11 @@ defmodule RegistrationsWeb.GameControllerTest do
     end
 
     test "creates game with nearest incarnation", %{conn: conn} do
-      closer_region = Repo.insert!(%Region{name: "Region 1", geom: %Geo.Point{coordinates: {48.1, -96.1}, srid: 4326}})
-      farther_region = Repo.insert!(%Region{name: "Region 2", geom: %Geo.Point{coordinates: {48.2, -96.2}, srid: 4326}})
+      closer_region = Repo.insert!(%Region{name: "Region 1", geom: %Geo.Point{coordinates: {-96.1, 48.1}, srid: 4326}})
+      farther_region = Repo.insert!(%Region{name: "Region 2", geom: %Geo.Point{coordinates: {-96.2, 48.2}, srid: 4326}})
+
+      reversed_lat_lon_region =
+        Repo.insert!(%Region{name: "Region 3", geom: %Geo.Point{coordinates: {48.2, -96.2}, srid: 4326}})
 
       closer_incarnation =
         Repo.insert!(%Incarnation{
@@ -288,6 +291,12 @@ defmodule RegistrationsWeb.GameControllerTest do
       Repo.insert!(%Incarnation{
         concept: "bluetooth_collector",
         region: farther_region,
+        placed: true
+      })
+
+      Repo.insert!(%Incarnation{
+        concept: "bluetooth_collector",
+        region: reversed_lat_lon_region,
         placed: true
       })
 

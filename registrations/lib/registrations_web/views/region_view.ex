@@ -9,7 +9,7 @@ defmodule RegistrationsWeb.RegionView do
 
   def latitude(region, _conn) do
     case region.geom do
-      %Geo.Point{coordinates: {latitude, _}} ->
+      %Geo.Point{coordinates: {_, latitude}} ->
         "#{latitude}"
 
       _ ->
@@ -19,7 +19,7 @@ defmodule RegistrationsWeb.RegionView do
 
   def longitude(region, _conn) do
     case region.geom do
-      %Geo.Point{coordinates: {_, longitude}} ->
+      %Geo.Point{coordinates: {longitude, _}} ->
         "#{longitude}"
 
       _ ->

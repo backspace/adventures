@@ -15,13 +15,13 @@ defmodule RegistrationsWeb.IncarnationControllerTest do
   describe "list incarnations" do
     setup do
       parent_region =
-        Repo.insert!(%Region{name: "Parent Region", geom: %Geo.Point{coordinates: {40.1, -97.0}, srid: 4326}})
+        Repo.insert!(%Region{name: "Parent Region", geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}})
 
       child_region =
         Repo.insert!(%Region{
           name: "Child Region",
           parent_id: parent_region.id,
-          geom: %Geo.Point{coordinates: {49.891725, -97.143130}, srid: 4326}
+          geom: %Geo.Point{coordinates: {-97.143130, 49.891725}, srid: 4326}
         })
 
       incarnation =
