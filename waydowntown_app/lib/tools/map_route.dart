@@ -7,6 +7,7 @@ import 'package:sentry/sentry.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/incarnation.dart';
 import 'package:waydowntown/widgets/game_map.dart';
+import 'package:waydowntown/routes/request_game_route.dart';
 import 'package:yaml/yaml.dart';
 
 class MapRoute extends StatefulWidget {
@@ -85,21 +86,35 @@ class _MapRouteState extends State<MapRoute> {
         width: 20.0,
         height: 20.0,
         point: LatLng(region.latitude!, region.longitude!),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.black, width: 1),
-          ),
-          child: Center(
-            child: Text(
-              marker,
-              style: const TextStyle(fontSize: 12, color: Colors.black),
+        child: GestureDetector(
+          onTap: () => _onMarkerTap(incarnation),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.black, width: 1),
+            ),
+            child: Center(
+              child: Text(
+                marker,
+                style: const TextStyle(fontSize: 24, color: Colors.black),
+              ),
             ),
           ),
         ),
       );
     }).toList();
+  }
+
+  void _onMarkerTap(Incarnation incarnation) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => RequestGameRoute(
+          dio: widget.dio,
+          incarnationId: incarnation.id,
+        ),
+      ),
+    );
   }
 
   @override

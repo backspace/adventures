@@ -72,22 +72,34 @@ defmodule Registrations.Waydowntown do
         %{"concept" => concept} ->
           create_game_with_concept(attrs, concept)
 
+        %{"incarnation_id" => id} ->
+          create_game_with_specific_incarnation(attrs, id)
+
         nil ->
           create_game_with_placed_incarnation(attrs)
       end
 
     case case_result do
-      {:ok, game} -> {:ok, game}
-      {:error, :no_placed_incarnation_available} -> {:error, "No placed incarnation available"}
-      {:error, :no_incarnation_with_concept_available} -> {:error, "No incarnation with the specified concept available"}
-      {:error, changeset} -> {:error, changeset}
+      {:ok, game} ->
+        {:ok, game}
+
+      {:error, error_message} when is_binary(error_message) ->
+        changeset =
+          %Game{}
+          |> Game.changeset(attrs)
+          |> Ecto.Changeset.add_error(:base, error_message)
+
+        {:error, changeset}
+
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 
   defp create_game_with_placed_incarnation(attrs) do
     case get_random_incarnation(%{"placed" => true}) do
       nil ->
-        {:error, :no_placed_incarnation_available}
+        {:error, "No placed incarnation available"}
 
       incarnation ->
         %Game{}
@@ -102,15 +114,27 @@ defmodule Registrations.Waydowntown do
     if concept_data["placed"] == false do
       create_game_with_new_incarnation(attrs, concept)
     else
-      case get_random_incarnation(%{"concept" => concept}) do
+      case get_random_incarnation(%{"concept" => concept, "placed" => true}) do
         nil ->
-          {:error, :no_incarnation_with_concept_available}
+          {:error, "No incarnation with the specified concept available"}
 
         incarnation ->
           %Game{}
           |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
           |> Repo.insert()
       end
+    end
+  end
+
+  defp create_game_with_specific_incarnation(attrs, incarnation_id) do
+    case Repo.get(Incarnation, incarnation_id) do
+      nil ->
+        {:error, "Specified incarnation not found"}
+
+      incarnation ->
+        %Game{}
+        |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
+        |> Repo.insert()
     end
   end
 
@@ -165,16 +189,16 @@ defmodule Registrations.Waydowntown do
     query = from(i in Incarnation)
 
     query =
-      case filter do
-        %{"placed" => placed} when is_boolean(placed) ->
+      Enum.reduce(filter, query, fn
+        {"placed", placed}, query when is_boolean(placed) ->
           where(query, [i], i.placed == ^placed)
 
-        %{"concept" => concept} when is_binary(concept) ->
+        {"concept", concept}, query when is_binary(concept) ->
           where(query, [i], i.concept == ^concept)
 
-        nil ->
+        _, query ->
           query
-      end
+      end)
 
     query
     |> Repo.all()

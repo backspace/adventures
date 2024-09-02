@@ -231,5 +231,46 @@ defmodule RegistrationsWeb.GameControllerTest do
       assert new_incarnation.concept == "orientation_memory"
       assert new_incarnation.placed == false
     end
+
+    test "creates game with specific incarnation id", %{conn: conn, incarnation: incarnation} do
+      conn =
+        post(
+          conn,
+          Routes.game_path(conn, :create) <> "?filter[incarnation.id]=#{incarnation.id}",
+          %{
+            "data" => %{
+              "type" => "games",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
+      assert sideloaded_incarnation["id"] == incarnation.id
+
+      game = Waydowntown.get_game!(id)
+      assert game.incarnation_id == incarnation.id
+    end
+
+    test "returns 422 when incarnation id does not exist", %{conn: conn} do
+      non_existent_incarnation_id = "0de26579-1f4f-48cb-9ad5-9ed1a72f4878"
+
+      conn =
+        post(
+          conn,
+          Routes.game_path(conn, :create) <> "?filter[incarnation.id]=#{non_existent_incarnation_id}",
+          %{
+            "data" => %{
+              "type" => "games",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert json_response(conn, 422)["errors"] != %{}
+    end
   end
 end

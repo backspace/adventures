@@ -7,10 +7,15 @@ import 'package:waydowntown/routes/game_launch_route.dart';
 
 class RequestGameRoute extends StatefulWidget {
   final Dio dio;
-
-  const RequestGameRoute({super.key, required this.dio, this.concept});
-
   final String? concept;
+  final String? incarnationId;
+
+  const RequestGameRoute({
+    super.key,
+    required this.dio,
+    this.concept,
+    this.incarnationId,
+  });
 
   @override
   RequestGameRouteState createState() => RequestGameRouteState();
@@ -33,6 +38,14 @@ class RequestGameRouteState extends State<RequestGameRoute> {
   Future<void> fetchGame() async {
     const endpoint = '/waydowntown/games';
     try {
+      final queryParameters = <String, String>{};
+      if (widget.concept != null) {
+        queryParameters['filter[incarnation.concept]'] = widget.concept!;
+      }
+      if (widget.incarnationId != null) {
+        queryParameters['filter[incarnation.id]'] = widget.incarnationId!;
+      }
+
       final response = await widget.dio.post(
         endpoint,
         data: {
@@ -41,10 +54,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
             'attributes': {},
           },
         },
-        queryParameters: {
-          if (widget.concept != null)
-            'filter[incarnation.concept]': widget.concept!,
-        },
+        queryParameters: queryParameters,
       );
 
       if (response.statusCode == 201) {

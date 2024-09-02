@@ -14,15 +14,25 @@ defmodule Registrations.Waydowntown.Game do
     belongs_to(:winner_answer, Answer, type: :binary_id)
     has_many(:answers, Answer)
 
+    field(:custom_error, :string, virtual: true)
+
     timestamps()
   end
 
   @doc false
   def changeset(game, attrs) do
     game
-    |> cast(attrs, [:incarnation_id, :winner_answer_id])
+    |> cast(attrs, [:incarnation_id, :winner_answer_id, :custom_error])
     |> validate_required([:incarnation_id])
     |> assoc_constraint(:incarnation)
     |> assoc_constraint(:winner_answer)
+    |> validate_custom_error()
+  end
+
+  defp validate_custom_error(changeset) do
+    case get_change(changeset, :custom_error) do
+      nil -> changeset
+      error -> add_error(changeset, :base, error)
+    end
   end
 end

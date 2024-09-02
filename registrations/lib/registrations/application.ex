@@ -15,9 +15,11 @@ defmodule Registrations.Application do
 
     # Without this the GameController filter produces this error: not an already existing atom
     incarnation_concept_hack = String.to_atom("incarnation.concept")
+    incarnation_id_hack = String.to_atom("incarnation.id")
     incarnation_placed_hack = String.to_atom("incarnation.placed")
 
     Logger.info("Hack: #{inspect(incarnation_concept_hack)}")
+    Logger.info("Hack: #{inspect(incarnation_id_hack)}")
     Logger.info("Hack: #{inspect(incarnation_placed_hack)}")
 
     children = [

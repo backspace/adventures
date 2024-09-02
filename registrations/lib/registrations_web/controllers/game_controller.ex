@@ -8,7 +8,7 @@ defmodule RegistrationsWeb.GameController do
 
   plug(JSONAPI.QueryParser,
     view: RegistrationsWeb.GameView,
-    filter: ["incarnation.concept", "incarnation.placed"]
+    filter: ["incarnation.concept", "incarnation.id", "incarnation.placed"]
   )
 
   action_fallback(RegistrationsWeb.FallbackController)
@@ -22,13 +22,20 @@ defmodule RegistrationsWeb.GameController do
     Logger.info("Creating game with params: #{inspect(params)}")
     incarnation_filter = get_incarnation_filter(conn.params)
 
-    with {:ok, %Game{} = game} <- Waydowntown.create_game(params, incarnation_filter) do
-      game = Waydowntown.get_game!(game.id)
+    case Waydowntown.create_game(params, incarnation_filter) do
+      {:ok, %Game{} = game} ->
+        game = Waydowntown.get_game!(game.id)
 
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", Routes.game_path(conn, :show, game))
-      |> render("show.json", %{game: game, conn: conn, params: params})
+        conn
+        |> put_status(:created)
+        |> put_resp_header("location", Routes.game_path(conn, :show, game))
+        |> render("show.json", %{game: game, conn: conn, params: params})
+
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> put_view(RegistrationsWeb.ChangesetView)
+        |> render("error.json", %{changeset: changeset})
     end
   end
 
@@ -36,6 +43,9 @@ defmodule RegistrationsWeb.GameController do
     case params["filter"] do
       %{"incarnation.placed" => placed} when placed in ["true", "false"] ->
         %{"placed" => placed}
+
+      %{"incarnation.id" => id} when is_binary(id) ->
+        %{"incarnation_id" => id}
 
       %{"incarnation.concept" => concept} when is_binary(concept) ->
         %{"concept" => concept}

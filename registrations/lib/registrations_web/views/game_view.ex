@@ -9,8 +9,9 @@ defmodule RegistrationsWeb.GameView do
   end
 
   def hidden(game) do
-    case game.incarnation.concept do
-      "fill_in_the_blank" -> [:correct_answers, :total_answers]
+    case game.incarnation do
+      %{"concept" => "fill_in_the_blank"} -> [:correct_answers, :total_answers]
+      nil -> [:complete, :correct_answers, :total_answers]
       _ -> []
     end
   end
