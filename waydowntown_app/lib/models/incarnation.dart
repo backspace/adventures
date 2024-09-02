@@ -7,6 +7,7 @@ class Incarnation {
   final Region? region;
   final bool placed;
   final String? start;
+  final List<String>? answerLabels;
 
   const Incarnation({
     required this.id,
@@ -15,6 +16,7 @@ class Incarnation {
     this.region,
     required this.placed,
     this.start,
+    this.answerLabels,
   });
 
   factory Incarnation.fromJson(
@@ -46,6 +48,9 @@ class Incarnation {
       region: region,
       placed: attributes['placed'] ?? false,
       start: attributes['start'],
+      answerLabels: attributes['answer_labels'] != null
+          ? List<String>.from(attributes['answer_labels'])
+          : null,
     );
   }
 }

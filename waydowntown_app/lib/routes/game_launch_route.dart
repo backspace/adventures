@@ -7,6 +7,7 @@ import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/games/cardinal_memory.dart';
 import 'package:waydowntown/games/code_collector.dart';
 import 'package:waydowntown/games/fill_in_the_blank.dart';
+import 'package:waydowntown/games/food_court_frenzy.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/games/string_collector.dart';
 import 'package:waydowntown/location_header.dart';
@@ -198,6 +199,8 @@ class GameLaunchRoute extends StatelessWidget {
         return CodeCollectorGame(game: game, dio: dio);
       case 'fill_in_the_blank':
         return FillInTheBlankGame(game: game, dio: dio);
+      case 'food_court_frenzy':
+        return FoodCourtFrenzyGame(game: game, dio: dio);
       case 'orientation_memory':
         return OrientationMemoryGame(game: game, dio: dio);
       case 'string_collector':

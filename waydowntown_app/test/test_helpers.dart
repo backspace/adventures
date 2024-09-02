@@ -158,6 +158,11 @@ class TestHelpers {
     String concept = 'test_concept',
     String mask = 'test_mask',
     String start = 'test_start',
+    List<String> answerLabels = const [
+      'test_answer_label_1',
+      'test_answer_label_2',
+      'test_answer_label_3'
+    ],
     int correctAnswers = 0,
     int totalAnswers = 3,
     double? latitude,
@@ -171,6 +176,7 @@ class TestHelpers {
         concept: concept,
         mask: mask,
         start: start,
+        answerLabels: answerLabels,
         region: Region(
           id: '324fd8f9-cd25-48be-a761-b8680fa72737',
           name: 'Test Region',
