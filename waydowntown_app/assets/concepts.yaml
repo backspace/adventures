@@ -19,6 +19,11 @@ code_collector:
   marker: "𝄃𝄃𝄂𝄀𝄁𝄃𝄂𝄂𝄃"
   instructions: "scan all the barcodes. when one is detected, tap it to submit."
 
+string_collector:
+  name: "String Collector"
+  marker: "📋"
+  instructions: "enter the strings of text described until you’ve found them all."
+
 fill_in_the_blank:
   name: "Fill in the Blank"
   marker: "a_c"

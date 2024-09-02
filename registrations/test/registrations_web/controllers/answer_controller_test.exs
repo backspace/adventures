@@ -608,4 +608,113 @@ defmodule RegistrationsWeb.AnswerControllerTest do
       assert json_response(conn, 422)["errors"] == [%{"detail" => "Cannot update an incorrect answer"}]
     end
   end
+
+  describe "create answer for string_collector" do
+    setup do
+      incarnation =
+        Repo.insert!(%Incarnation{
+          concept: "string_collector",
+          mask: "Collect all the strings",
+          answers: ["first string", "second string", "third string"],
+          placed: true
+        })
+
+      game = Repo.insert!(%Game{incarnation: incarnation})
+
+      %{game: game}
+    end
+
+    test "creates answer and returns 201 for correct answer", %{conn: conn, game: game} do
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "  First String  "},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"correct" => true} = json_response(conn, 201)["data"]["attributes"]
+    end
+
+    test "creates answer and returns 201 for incorrect answer", %{conn: conn, game: game} do
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "Wrong String"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            },
+            "game_id" => game.id
+          }
+        )
+
+      assert %{"correct" => false} = json_response(conn, 201)["data"]["attributes"]
+    end
+
+    test "completes game when all strings are collected", %{game: game} do
+      Enum.each(["First String", "SECOND string", "  third STRING  "], fn answer ->
+        conn =
+          setup_conn(build_conn())
+
+        post(conn, Routes.answer_path(conn, :create), %{
+          "data" => %{
+            "type" => "answers",
+            "attributes" => %{"answer" => answer},
+            "relationships" => %{
+              "game" => %{
+                "data" => %{"type" => "games", "id" => game.id}
+              }
+            }
+          }
+        })
+      end)
+
+      updated_game = Waydowntown.get_game!(game.id)
+
+      assert updated_game.winner_answer_id != nil
+    end
+
+    test "rejects a duplicate answer", %{conn: conn, game: game} do
+      Repo.insert!(%Answer{
+        answer: "first string",
+        game_id: game.id,
+        correct: true
+      })
+
+      conn =
+        conn
+        |> setup_conn()
+        |> post(Routes.answer_path(conn, :create), %{
+          "data" => %{
+            "type" => "answers",
+            "attributes" => %{"answer" => " first string "},
+            "relationships" => %{
+              "game" => %{
+                "data" => %{"type" => "games", "id" => game.id}
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 422)["errors"] == %{"detail" => ["Answer already submitted"]}
+    end
+  end
 end

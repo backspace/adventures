@@ -295,24 +295,44 @@ defmodule Registrations.Waydowntown do
     game = get_game!(game_id)
     incarnation = game.incarnation
 
-    correct = check_answer_correctness(incarnation, answer_text)
+    is_duplicate =
+      case incarnation.concept do
+        "string_collector" ->
+          normalized_answer = normalize_string(answer_text)
+          existing_answers = Enum.map(game.answers, &normalize_string(&1.answer))
+          normalized_answer in existing_answers
 
-    attrs = %{
-      "answer" => answer_text,
-      "correct" => correct,
-      "game_id" => game_id
-    }
+        _ ->
+          false
+      end
 
-    %Answer{}
-    |> Answer.changeset(attrs)
-    |> Repo.insert()
-    |> case do
-      {:ok, answer} ->
-        check_and_update_game_winner(game, answer)
-        {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
+    if is_duplicate do
+      changeset =
+        %Answer{}
+        |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
+        |> Ecto.Changeset.add_error(:detail, "Answer already submitted")
 
-      {:error, changeset} ->
-        {:error, changeset}
+      {:error, changeset}
+    else
+      correct = check_answer_correctness(incarnation, answer_text)
+
+      attrs = %{
+        "answer" => answer_text,
+        "correct" => correct,
+        "game_id" => game_id
+      }
+
+      %Answer{}
+      |> Answer.changeset(attrs)
+      |> Repo.insert()
+      |> case do
+        {:ok, answer} ->
+          check_and_update_game_winner(game, answer)
+          {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
+
+        {:error, changeset} ->
+          {:error, changeset}
+      end
     end
   end
 
@@ -378,15 +398,13 @@ defmodule Registrations.Waydowntown do
   end
 
   defp check_answer_correctness(%Incarnation{concept: "fill_in_the_blank", answers: [correct_answer]}, answer_text) do
-    String.downcase(String.trim(correct_answer)) == String.downcase(String.trim(answer_text))
+    normalize_string(correct_answer) == normalize_string(answer_text)
   end
 
-  defp check_answer_correctness(%Incarnation{concept: "bluetooth_collector", answers: correct_answers}, answer_text) do
-    answer_text in correct_answers
-  end
-
-  defp check_answer_correctness(%Incarnation{concept: "code_collector", answers: correct_answers}, answer_text) do
-    answer_text in correct_answers
+  defp check_answer_correctness(%Incarnation{concept: concept, answers: correct_answers}, answer_text)
+       when concept in ["bluetooth_collector", "code_collector", "string_collector"] do
+    normalized_answer = if concept == "string_collector", do: normalize_string(answer_text), else: answer_text
+    normalized_answer in correct_answers
   end
 
   defp check_answer_correctness(%Incarnation{concept: concept, answers: expected_answers}, answer_text)
@@ -421,10 +439,8 @@ defmodule Registrations.Waydowntown do
       "fill_in_the_blank" ->
         true
 
-      "bluetooth_collector" ->
-        Enum.count(game.answers, & &1.correct) == length(game.incarnation.answers)
-
-      "code_collector" ->
+      concept when concept in ["bluetooth_collector", "code_collector", "string_collector"] ->
+        game = get_game!(game.id)
         Enum.count(game.answers, & &1.correct) == length(game.incarnation.answers)
 
       "orientation_memory" ->
@@ -436,5 +452,11 @@ defmodule Registrations.Waydowntown do
       _ ->
         false
     end
+  end
+
+  defp normalize_string(string) do
+    string
+    |> String.trim()
+    |> String.downcase()
   end
 end
