@@ -105,6 +105,8 @@ void main() {
     expect(find.text('Progress: 3/3'), findsOneWidget);
     expect(find.text('Congratulations! You have completed the game.'),
         findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.byType(ElevatedButton), findsNothing);
 
     // Check that the items are in reverse order
     final listItems = find.byType(ListTile);

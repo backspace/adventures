@@ -75,6 +75,8 @@ void main() {
     expect(find.byType(ElevatedButton), findsNothing);
     expect(find.text('Congratulations! You have completed the game.'),
         findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.byType(ElevatedButton), findsNothing);
   });
 
   testWidgets('An error is displayed when answering fails but can try again',
@@ -112,7 +114,9 @@ void main() {
 
     expect(textFieldWidget.controller?.text, '');
     expect(find.text('Error submitting answer'), findsNothing);
-    expect(find.text('Done!'), findsOneWidget);
+    expect(find.text('Congratulations! You have completed the game.'),
+        findsOneWidget);
+    expect(find.byType(TextField), findsNothing);
     expect(find.byType(ElevatedButton), findsNothing);
   });
 }

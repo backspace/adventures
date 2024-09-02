@@ -207,31 +207,36 @@ class StringCollectorGameState extends State<StringCollectorGame> {
                 'Congratulations! You have completed the game.',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
+            )
+          else
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    controller: textFieldController,
+                    focusNode: _focusNode,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Enter a string',
+                    ),
+                    onSubmitted: (value) {
+                      if (value.isNotEmpty) {
+                        submitString(value);
+                      }
+                    },
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (textFieldController.text.isNotEmpty) {
+                      submitString(textFieldController.text);
+                    }
+                  },
+                  child: const Text('Submit'),
+                ),
+              ],
             ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: textFieldController,
-              focusNode: _focusNode,
-              autofocus: true,
-              decoration: const InputDecoration(
-                labelText: 'Enter a string',
-              ),
-              onSubmitted: (value) {
-                if (value.isNotEmpty) {
-                  submitString(value);
-                }
-              },
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (textFieldController.text.isNotEmpty) {
-                submitString(textFieldController.text);
-              }
-            },
-            child: const Text('Submit'),
-          ),
           Expanded(
             child: AnimatedList(
               key: _listKey,

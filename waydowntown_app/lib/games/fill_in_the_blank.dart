@@ -85,36 +85,35 @@ class FillInTheBlankGameState extends State<FillInTheBlankGame> {
                 LocationHeader(game: widget.game),
                 Text(widget.game.incarnation.concept),
                 Text(widget.game.incarnation.mask),
-                Form(
+                if (!isGameComplete)
+                  Form(
                     child: Column(children: <Widget>[
-                  TextFormField(
-                    controller: textFieldController,
-                    autofocus: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Answer',
-                    ),
-                    onChanged: (value) {
-                      answer = value;
-                    },
-                    onFieldSubmitted: (value) async {
-                      answer = value;
-                      await submitAnswer(answer);
-                    },
+                      TextFormField(
+                        controller: textFieldController,
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Answer',
+                        ),
+                        onChanged: (value) {
+                          answer = value;
+                        },
+                        onFieldSubmitted: (value) async {
+                          answer = value;
+                          await submitAnswer(answer);
+                        },
+                      ),
+                      if (isAnswerError)
+                        const Text('Error submitting answer')
+                      else if (hasAnsweredIncorrectly)
+                        const Text('Wrong'),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await submitAnswer(answer);
+                        },
+                        child: const Text('Submit'),
+                      )
+                    ]),
                   ),
-                  if (isAnswerError)
-                    const Text('Error submitting answer')
-                  else if (hasAnsweredIncorrectly)
-                    const Text('Wrong'),
-                  if (isOver)
-                    const Text('Done!')
-                  else
-                    ElevatedButton(
-                      onPressed: () async {
-                        await submitAnswer(answer);
-                      },
-                      child: const Text('Submit'),
-                    )
-                ]))
               ],
             ),
             if (isGameComplete)
