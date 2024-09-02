@@ -35,6 +35,7 @@ class StringCollectorGameState extends State<StringCollectorGame> {
   bool isGameComplete = false;
   TextEditingController textFieldController = TextEditingController();
   Map<String, String> stringErrors = {};
+  late FocusNode _focusNode;
 
   late Game currentGame;
 
@@ -44,6 +45,13 @@ class StringCollectorGameState extends State<StringCollectorGame> {
   void initState() {
     super.initState();
     currentGame = widget.game;
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   void _showCompletionAnimation() {
@@ -101,6 +109,8 @@ class StringCollectorGameState extends State<StringCollectorGame> {
           _showCompletionAnimation();
         }
       });
+
+      _focusNode.requestFocus();
     } catch (e) {
       logger.e('Error submitting string: $e');
       final submittedString =
@@ -202,6 +212,8 @@ class StringCollectorGameState extends State<StringCollectorGame> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: textFieldController,
+              focusNode: _focusNode,
+              autofocus: true,
               decoration: const InputDecoration(
                 labelText: 'Enter a string',
               ),

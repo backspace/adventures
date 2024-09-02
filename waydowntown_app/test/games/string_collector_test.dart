@@ -10,6 +10,7 @@ import 'package:waydowntown/games/string_collector.dart';
 import 'package:waydowntown/models/game.dart';
 
 import '../test_helpers.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
@@ -77,6 +78,10 @@ void main() {
 
     expect(find.text('correct1'), findsOneWidget);
     expect(find.text('Progress: 1/3'), findsOneWidget);
+
+    final textField =
+        (find.byType(TextField).first.evaluate().first.widget as TextField);
+    expect(textField.focusNode?.hasFocus, isTrue);
 
     await tester.enterText(find.byType(TextField), 'incorrect');
     await tester.tap(find.byType(ElevatedButton));
