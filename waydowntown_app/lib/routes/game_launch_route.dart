@@ -8,6 +8,7 @@ import 'package:waydowntown/games/cardinal_memory.dart';
 import 'package:waydowntown/games/code_collector.dart';
 import 'package:waydowntown/games/fill_in_the_blank.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
+import 'package:waydowntown/games/string_collector.dart';
 import 'package:waydowntown/location_header.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/game_map.dart';
@@ -188,6 +189,8 @@ class GameLaunchRoute extends StatelessWidget {
         return FillInTheBlankGame(game: game, dio: dio);
       case 'orientation_memory':
         return OrientationMemoryGame(game: game, dio: dio);
+      case 'string_collector':
+        return StringCollectorGame(game: game, dio: dio);
       default:
         throw Exception('Unknown game type: ${game.incarnation.concept}');
     }

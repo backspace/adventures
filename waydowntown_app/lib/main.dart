@@ -147,6 +147,7 @@ class _HomeState extends State<Home> {
                   ('Bluetooth\nCollector', 'bluetooth_collector'),
                   ('Code\nCollector', 'code_collector'),
                   ('Fill in the\nBlank', 'fill_in_the_blank'),
+                  ('String\nCollector', 'string_collector'),
                 ], (concept) {
                   Navigator.push(
                     context,
