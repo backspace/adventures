@@ -717,4 +717,136 @@ defmodule RegistrationsWeb.AnswerControllerTest do
       assert json_response(conn, 422)["errors"] == %{"detail" => ["Answer already submitted"]}
     end
   end
+
+  describe "create answer for food_court_frenzy" do
+    setup do
+      region = Repo.insert!(%Region{name: "Test Region"})
+
+      incarnation =
+        Repo.insert!(%Incarnation{
+          concept: "food_court_frenzy",
+          answers: ["burger|5.99", "fries|2.99", "soda|1.99"],
+          region: region,
+          placed: true
+        })
+
+      game = Repo.insert!(%Game{incarnation: incarnation})
+
+      %{game: game, incarnation: incarnation, region: region}
+    end
+
+    test "creates correct answer", %{conn: conn, game: game} do
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "burger|5.99"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      answer = Waydowntown.get_answer!(id)
+      assert answer.correct
+
+      game = Waydowntown.get_game!(game.id)
+      refute game.winner_answer_id
+    end
+
+    test "creates incorrect answer", %{conn: conn, game: game} do
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "burger|6.99"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      answer = Waydowntown.get_answer!(id)
+      refute answer.correct
+    end
+
+    test "returns 422 when submitting an unknown label", %{conn: conn, game: game} do
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "unknown|5.99"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert json_response(conn, 422)["errors"] == %{"detail" => ["Unknown label: unknown"]}
+    end
+
+    test "returns 422 when submitting an answer for a label that already had a correct answer", %{conn: conn, game: game} do
+      # Submit a correct answer
+      conn
+      |> setup_conn()
+      |> post(
+        Routes.answer_path(conn, :create),
+        %{
+          "data" => %{
+            "type" => "answers",
+            "attributes" => %{"answer" => "burger|5.99"},
+            "relationships" => %{
+              "game" => %{
+                "data" => %{"type" => "games", "id" => game.id}
+              }
+            }
+          }
+        }
+      )
+
+      # Submit another answer for the same label
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "burger|6.99"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert json_response(conn, 422)["errors"] == %{"detail" => ["Answer already submitted for label: burger"]}
+    end
+  end
 end

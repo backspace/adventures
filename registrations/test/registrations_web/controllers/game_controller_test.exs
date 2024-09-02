@@ -326,5 +326,42 @@ defmodule RegistrationsWeb.GameControllerTest do
       game = Waydowntown.get_game!(id)
       assert game.incarnation_id == closer_incarnation.id
     end
+
+    test "creates game with food_court_frenzy concept and virtual fields for its answer labels", %{conn: conn} do
+      Repo.insert!(%Incarnation{
+        concept: "food_court_frenzy",
+        answers: ["Burger|6.99", "Pizza|7.99", "Salad|5.99", "Soda|3.99"],
+        region: Repo.insert!(%Region{}),
+        placed: true
+      })
+
+      conn =
+        post(
+          conn,
+          Routes.game_path(conn, :create) <> "?filter[incarnation.concept]=food_court_frenzy",
+          %{
+            "data" => %{
+              "type" => "games",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
+      assert sideloaded_incarnation["attributes"]["concept"] == "food_court_frenzy"
+      assert sideloaded_incarnation["attributes"]["placed"] == true
+
+      assert Enum.all?(sideloaded_incarnation["attributes"]["answer_labels"], fn item ->
+               item in ["Burger", "Pizza", "Salad", "Soda"]
+             end)
+
+      game = Waydowntown.get_game!(id)
+      incarnation = Waydowntown.get_incarnation!(game.incarnation_id)
+      assert incarnation.concept == "food_court_frenzy"
+      assert incarnation.placed == true
+    end
   end
 end

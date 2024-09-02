@@ -4,7 +4,14 @@ defmodule RegistrationsWeb.IncarnationView do
   alias RegistrationsWeb.IncarnationView
 
   def fields do
-    [:concept, :mask, :placed, :start]
+    [:concept, :mask, :placed, :start, :answer_labels]
+  end
+
+  def answer_labels(incarnation, _conn) do
+    case incarnation.concept do
+      "food_court_frenzy" -> Registrations.Waydowntown.incarnation_answer_labels(incarnation)
+      _ -> []
+    end
   end
 
   def render("index.json", %{incarnations: incarnations, conn: conn, params: params}) do

@@ -295,44 +295,76 @@ defmodule Registrations.Waydowntown do
     game = get_game!(game_id)
     incarnation = game.incarnation
 
-    is_duplicate =
-      case incarnation.concept do
-        "string_collector" ->
-          normalized_answer = normalize_string(answer_text)
-          existing_answers = Enum.map(game.answers, &normalize_string(&1.answer))
-          normalized_answer in existing_answers
+    case incarnation.concept do
+      "string_collector" ->
+        normalized_answer = normalize_string(answer_text)
+        existing_answers = Enum.map(game.answers, &normalize_string(&1.answer))
 
-        _ ->
-          false
-      end
+        if normalized_answer in existing_answers do
+          changeset =
+            %Answer{}
+            |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
+            |> Ecto.Changeset.add_error(:detail, "Answer already submitted")
 
-    if is_duplicate do
-      changeset =
-        %Answer{}
-        |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
-        |> Ecto.Changeset.add_error(:detail, "Answer already submitted")
-
-      {:error, changeset}
-    else
-      correct = check_answer_correctness(incarnation, answer_text)
-
-      attrs = %{
-        "answer" => answer_text,
-        "correct" => correct,
-        "game_id" => game_id
-      }
-
-      %Answer{}
-      |> Answer.changeset(attrs)
-      |> Repo.insert()
-      |> case do
-        {:ok, answer} ->
-          check_and_update_game_winner(game, answer)
-          {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
-
-        {:error, changeset} ->
           {:error, changeset}
-      end
+        else
+          create_answer_helper(answer_text, game_id, incarnation)
+        end
+
+      "food_court_frenzy" ->
+        [label, _] = String.split(answer_text, "|")
+        known_labels = incarnation_answer_labels(incarnation)
+
+        cond do
+          label not in known_labels ->
+            changeset =
+              %Answer{}
+              |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
+              |> Ecto.Changeset.add_error(:detail, "Unknown label: #{label}")
+
+            {:error, changeset}
+
+          Enum.any?(game.answers, fn a -> a.correct and String.starts_with?(a.answer, label <> "|") end) ->
+            changeset =
+              %Answer{}
+              |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
+              |> Ecto.Changeset.add_error(:detail, "Answer already submitted for label: #{label}")
+
+            {:error, changeset}
+
+          true ->
+            create_answer_helper(answer_text, game_id, incarnation)
+        end
+
+      _ ->
+        create_answer_helper(answer_text, game_id, incarnation)
+    end
+  end
+
+  def incarnation_answer_labels(incarnation) do
+    Enum.map(incarnation.answers, fn a -> List.first(String.split(a, "|")) end)
+  end
+
+  defp create_answer_helper(answer_text, game_id, incarnation) do
+    correct = check_answer_correctness(incarnation, answer_text)
+
+    attrs = %{
+      "answer" => answer_text,
+      "correct" => correct,
+      "game_id" => game_id
+    }
+
+    %Answer{}
+    |> Answer.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, answer} ->
+        game = get_game!(game_id)
+        check_and_update_game_winner(game, answer)
+        {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
+
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 
@@ -419,6 +451,12 @@ defmodule Registrations.Waydowntown do
       String.length(answer_text) <= String.length(expected_answer)
   end
 
+  defp check_answer_correctness(%Incarnation{concept: "food_court_frenzy", answers: correct_answers}, answer_text) do
+    [label, price] = String.split(answer_text, "|")
+    correct_answer = Enum.find(correct_answers, fn ca -> String.starts_with?(ca, label <> "|") end)
+    correct_answer == answer_text
+  end
+
   defp single_answer_game?(%Incarnation{concept: "fill_in_the_blank"}), do: true
   defp single_answer_game?(_), do: false
 
@@ -452,6 +490,12 @@ defmodule Registrations.Waydowntown do
 
       "cardinal_memory" ->
         answer.answer == Enum.join(game.incarnation.answers, "|")
+
+      "food_court_frenzy" ->
+        game = get_game!(game.id)
+        correct_answers = Enum.count(game.answers, & &1.correct)
+        total_answers = length(game.incarnation.answers)
+        correct_answers == total_answers
 
       _ ->
         false

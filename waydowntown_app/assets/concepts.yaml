@@ -19,6 +19,11 @@ code_collector:
   marker: "𝄃𝄃𝄂𝄀𝄁𝄃𝄂𝄂𝄃"
   instructions: "scan all the barcodes. when one is detected, tap it to submit."
 
+food_court_frenzy:
+  name: "Food Court Frenzy"
+  marker: "🍛"
+  instructions: "enter the prices for the listed menu items."
+
 string_collector:
   name: "String Collector"
   marker: "📋"
