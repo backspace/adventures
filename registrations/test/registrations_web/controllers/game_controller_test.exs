@@ -15,14 +15,14 @@ defmodule RegistrationsWeb.GameControllerTest do
 
   describe "show game" do
     setup do
-      parent_region = Repo.insert!(%Region{name: "Parent Region", latitude: 40.1, longitude: -97.0})
+      parent_region =
+        Repo.insert!(%Region{name: "Parent Region", geom: %Geo.Point{coordinates: {40.1, -97.0}, srid: 4326}})
 
       child_region =
         Repo.insert!(%Region{
           name: "Child Region",
           parent_id: parent_region.id,
-          latitude: 49.891725,
-          longitude: -97.143130
+          geom: %Geo.Point{coordinates: {49.891725, -97.143130}, srid: 4326}
         })
 
       incarnation =
@@ -271,6 +271,51 @@ defmodule RegistrationsWeb.GameControllerTest do
         )
 
       assert json_response(conn, 422)["errors"] != %{}
+    end
+
+    test "creates game with nearest incarnation", %{conn: conn} do
+      closer_region = Repo.insert!(%Region{name: "Region 1", geom: %Geo.Point{coordinates: {48.1, -96.1}, srid: 4326}})
+      farther_region = Repo.insert!(%Region{name: "Region 2", geom: %Geo.Point{coordinates: {48.2, -96.2}, srid: 4326}})
+
+      closer_incarnation =
+        Repo.insert!(%Incarnation{
+          concept: "fill_in_the_blank",
+          mask: "This is a ____",
+          region: closer_region,
+          placed: true
+        })
+
+      Repo.insert!(%Incarnation{
+        concept: "bluetooth_collector",
+        region: farther_region,
+        placed: true
+      })
+
+      conn =
+        post(
+          conn,
+          Routes.game_path(conn, :create) <> "?filter[incarnation.position]=48.0,-96.0",
+          %{
+            "data" => %{
+              "type" => "games",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
+      assert sideloaded_incarnation["id"] == closer_incarnation.id
+
+      sideloaded_region = Enum.find(included, &(&1["type"] == "regions"))
+      assert sideloaded_region["id"] == closer_region.id
+      assert sideloaded_region["attributes"]["latitude"] == "48.1"
+      assert sideloaded_region["attributes"]["longitude"] == "-96.1"
+
+      game = Waydowntown.get_game!(id)
+      assert game.incarnation_id == closer_incarnation.id
     end
   end
 end

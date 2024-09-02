@@ -8,7 +8,7 @@ defmodule RegistrationsWeb.GameController do
 
   plug(JSONAPI.QueryParser,
     view: RegistrationsWeb.GameView,
-    filter: ["incarnation.concept", "incarnation.id", "incarnation.placed"]
+    filter: ["incarnation.concept", "incarnation.id", "incarnation.placed", "incarnation.position"]
   )
 
   action_fallback(RegistrationsWeb.FallbackController)
@@ -41,6 +41,17 @@ defmodule RegistrationsWeb.GameController do
 
   defp get_incarnation_filter(params) do
     case params["filter"] do
+      %{"incarnation.position" => position} when is_binary(position) ->
+        case String.split(position, ",") do
+          [lat, lon] ->
+            {latitude, _} = Float.parse(lat)
+            {longitude, _} = Float.parse(lon)
+            %{"position" => {latitude, longitude}}
+
+          _ ->
+            nil
+        end
+
       %{"incarnation.placed" => placed} when placed in ["true", "false"] ->
         %{"placed" => placed}
 

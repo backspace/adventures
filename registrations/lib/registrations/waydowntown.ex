@@ -69,6 +69,9 @@ defmodule Registrations.Waydowntown do
         %{"placed" => "true"} ->
           create_game_with_placed_incarnation(attrs)
 
+        %{"position" => {latitude, longitude}} ->
+          create_game_with_nearest_incarnation(attrs, latitude, longitude)
+
         %{"concept" => concept} ->
           create_game_with_concept(attrs, concept)
 
@@ -106,6 +109,29 @@ defmodule Registrations.Waydowntown do
         |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
         |> Repo.insert()
     end
+  end
+
+  defp create_game_with_nearest_incarnation(attrs, latitude, longitude) do
+    case get_nearest_incarnation(latitude, longitude) do
+      nil ->
+        {:error, "No incarnation found near the specified position"}
+
+      incarnation ->
+        %Game{}
+        |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
+        |> Repo.insert()
+    end
+  end
+
+  defp get_nearest_incarnation(latitude, longitude) do
+    point = %Geo.Point{coordinates: {longitude, latitude}, srid: 4326}
+
+    Incarnation
+    |> join(:inner, [i], r in assoc(i, :region))
+    |> where([i], i.placed == true)
+    |> order_by([i, r], fragment("ST_Distance(?, ?)", r.geom, ^point))
+    |> limit(1)
+    |> Repo.one()
   end
 
   defp create_game_with_concept(attrs, concept) do

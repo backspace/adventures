@@ -44,6 +44,20 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
 COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
 
 
+--
+-- Name: postgis; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION postgis; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -328,8 +342,7 @@ CREATE TABLE waydowntown.regions (
     parent_id uuid,
     inserted_at timestamp(0) without time zone,
     updated_at timestamp(0) without time zone,
-    latitude numeric,
-    longitude numeric
+    geom public.geometry
 );
 
 
@@ -540,6 +553,13 @@ CREATE INDEX incarnations_placed_index ON waydowntown.incarnations USING btree (
 
 
 --
+-- Name: regions_geom_idx; Type: INDEX; Schema: waydowntown; Owner: -
+--
+
+CREATE INDEX regions_geom_idx ON waydowntown.regions USING gist (geom);
+
+
+--
 -- Name: user_identities user_identities_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -742,3 +762,4 @@ INSERT INTO public."schema_migrations" (version) VALUES (20240824211544);
 INSERT INTO public."schema_migrations" (version) VALUES (20240825045118);
 INSERT INTO public."schema_migrations" (version) VALUES (20240828005430);
 INSERT INTO public."schema_migrations" (version) VALUES (20240831183915);
+INSERT INTO public."schema_migrations" (version) VALUES (20240902173313);

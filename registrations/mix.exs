@@ -67,7 +67,9 @@ defmodule Registrations.Mixfile do
       {:jsonapi, "~> 1.8"},
       {:styler, "~> 1.0.0"},
       {:yaml_elixir, "~> 2.11"},
-      {:email_checker, "~> 0.2"}
+      {:email_checker, "~> 0.2"},
+      {:geo, "~> 3.6"},
+      {:geo_postgis, "~> 3.7"}
     ]
   end
 

@@ -40,6 +40,8 @@ config :phoenix, :generators,
 
 config :phoenix, :json_library, Jason
 
+config :registrations, Registrations.Repo, types: Registrations.Waydowntown.PostgresTypes
+
 config :registrations, :pow,
   web_mailer_module: RegistrationsWeb,
   extensions: [PowResetPassword, PowInvitation, PowPersistentSession],

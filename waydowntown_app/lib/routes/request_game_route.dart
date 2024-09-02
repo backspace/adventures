@@ -9,12 +9,14 @@ class RequestGameRoute extends StatefulWidget {
   final Dio dio;
   final String? concept;
   final String? incarnationId;
+  final String? position;
 
   const RequestGameRoute({
     super.key,
     required this.dio,
     this.concept,
     this.incarnationId,
+    this.position,
   });
 
   @override
@@ -44,6 +46,9 @@ class RequestGameRouteState extends State<RequestGameRoute> {
       }
       if (widget.incarnationId != null) {
         queryParameters['filter[incarnation.id]'] = widget.incarnationId!;
+      }
+      if (widget.position != null) {
+        queryParameters['filter[incarnation.position]'] = widget.position!;
       }
 
       final response = await widget.dio.post(

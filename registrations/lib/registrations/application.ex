@@ -17,10 +17,12 @@ defmodule Registrations.Application do
     incarnation_concept_hack = String.to_atom("incarnation.concept")
     incarnation_id_hack = String.to_atom("incarnation.id")
     incarnation_placed_hack = String.to_atom("incarnation.placed")
+    incarnation_position_hack = String.to_atom("incarnation.position")
 
     Logger.info("Hack: #{inspect(incarnation_concept_hack)}")
     Logger.info("Hack: #{inspect(incarnation_id_hack)}")
     Logger.info("Hack: #{inspect(incarnation_placed_hack)}")
+    Logger.info("Hack: #{inspect(incarnation_position_hack)}")
 
     children = [
       # Start the Ecto repository

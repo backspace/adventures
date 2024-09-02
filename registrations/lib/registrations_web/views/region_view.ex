@@ -7,6 +7,26 @@ defmodule RegistrationsWeb.RegionView do
     [:name, :description, :latitude, :longitude]
   end
 
+  def latitude(region, _conn) do
+    case region.geom do
+      %Geo.Point{coordinates: {latitude, _}} ->
+        "#{latitude}"
+
+      _ ->
+        nil
+    end
+  end
+
+  def longitude(region, _conn) do
+    case region.geom do
+      %Geo.Point{coordinates: {_, longitude}} ->
+        "#{longitude}"
+
+      _ ->
+        nil
+    end
+  end
+
   def render("index.json", %{regions: regions, conn: conn, params: params}) do
     RegionView.index(regions, conn, params)
   end

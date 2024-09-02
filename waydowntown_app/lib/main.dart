@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -99,16 +100,47 @@ class _HomeState extends State<Home> {
                 const Text("waydowntown",
                     style: TextStyle(color: Colors.white)),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  child: const Text('Request a game'),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => RequestGameRoute(dio: dio),
-                      ),
-                    );
-                  },
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      child: const Text('Request any game'),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RequestGameRoute(dio: dio),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 20),
+                    ElevatedButton(
+                      child: const Text('Request nearby game'),
+                      onPressed: () async {
+                        try {
+                          Position position = await _determinePosition();
+                          if (!context.mounted) return;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RequestGameRoute(
+                                dio: dio,
+                                position:
+                                    '${position.latitude},${position.longitude}',
+                              ),
+                            ),
+                          );
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: ${e.toString()}')),
+                            );
+                          }
+                        }
+                      },
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
                 _buildButtonRow([
@@ -205,5 +237,29 @@ class _HomeState extends State<Home> {
         );
       }).toList(),
     );
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      throw 'Location services are disabled.';
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw 'Location permissions are denied';
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      throw 'Location permissions are permanently denied, we cannot request permissions.';
+    }
+
+    return await Geolocator.getCurrentPosition();
   }
 }
