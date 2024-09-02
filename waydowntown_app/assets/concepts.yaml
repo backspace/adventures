@@ -22,7 +22,7 @@ code_collector:
 string_collector:
   name: "String Collector"
   marker: "📋"
-  instructions: "enter the strings of text described until you’ve found them all."
+  instructions: "enter the strings of text described until you’ve found them all. caps are ignored."
 
 fill_in_the_blank:
   name: "Fill in the Blank"
