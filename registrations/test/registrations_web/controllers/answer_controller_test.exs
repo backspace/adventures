@@ -615,7 +615,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
         Repo.insert!(%Incarnation{
           concept: "string_collector",
           mask: "Collect all the strings",
-          answers: ["first string", "second string", "third string"],
+          answers: ["first string", "second string", "THIRD string"],
           placed: true
         })
 
@@ -669,7 +669,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
       assert %{"correct" => false} = json_response(conn, 201)["data"]["attributes"]
     end
 
-    test "completes game when all strings are collected", %{game: game} do
+    test "completes game when all strings are collected, correct answers are normalised", %{game: game} do
       Enum.each(["First String", "SECOND string", "  third STRING  "], fn answer ->
         conn =
           setup_conn(build_conn())

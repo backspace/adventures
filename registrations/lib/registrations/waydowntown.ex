@@ -404,6 +404,10 @@ defmodule Registrations.Waydowntown do
   defp check_answer_correctness(%Incarnation{concept: concept, answers: correct_answers}, answer_text)
        when concept in ["bluetooth_collector", "code_collector", "string_collector"] do
     normalized_answer = if concept == "string_collector", do: normalize_string(answer_text), else: answer_text
+
+    correct_answers =
+      if concept == "string_collector", do: Enum.map(correct_answers, &normalize_string(&1)), else: correct_answers
+
     normalized_answer in correct_answers
   end
 
