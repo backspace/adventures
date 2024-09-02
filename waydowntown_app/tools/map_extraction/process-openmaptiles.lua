@@ -690,7 +690,6 @@ function way_function()
       local layer_name = relation_name:gsub("%s+", "_"):gsub("%.", ""):lower()
       Layer(layer_name, is_closed)
       SetNameAttributes()
-      SetBuildingHeightAttributes()
       SetMinZoomByArea()
       return
     end
