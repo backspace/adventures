@@ -143,7 +143,10 @@ class _HomeState extends State<Home> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                _buildButtonRow([
+                const Divider(color: Colors.white),
+                const Text("Location-specific Games",
+                    style: TextStyle(color: Colors.white)),
+                _buildFlexibleButtonGrid([
                   ('Bluetooth\nCollector', 'bluetooth_collector'),
                   ('Code\nCollector', 'code_collector'),
                   ('Fill in the\nBlank', 'fill_in_the_blank'),
@@ -161,7 +164,10 @@ class _HomeState extends State<Home> {
                   );
                 }),
                 const SizedBox(height: 20),
-                _buildButtonRow([
+                const Divider(color: Colors.white),
+                const Text("Placeless Games",
+                    style: TextStyle(color: Colors.white)),
+                _buildFlexibleButtonGrid([
                   ('Orientation\nMemory', 'orientation_memory'),
                   ('Cardinal\nMemory', 'cardinal_memory'),
                 ], (concept) {
@@ -176,7 +182,9 @@ class _HomeState extends State<Home> {
                   );
                 }),
                 const SizedBox(height: 20),
-                _buildButtonRow([
+                const Divider(color: Colors.white),
+                const Text("Tools", style: TextStyle(color: Colors.white)),
+                _buildFlexibleButtonGrid([
                   ('Bluetooth\nScanner', 'bluetooth_scanner'),
                   ('Map', 'map'),
                   ('Motion\nSensors', 'motion_sensors'),
@@ -212,28 +220,28 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _buildButtonRow(
+  Widget _buildFlexibleButtonGrid(
       List<(String, String)> buttons, Function(String) onPressed) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8.0,
+      runSpacing: 8.0,
       children: buttons.map((button) {
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: ElevatedButton(
-              onPressed: () => onPressed(button.$2),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Theme.of(context).colorScheme.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+        return SizedBox(
+          width: 100,
+          child: ElevatedButton(
+            onPressed: () => onPressed(button.$2),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                button.$1,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12),
-              ),
+            ),
+            child: Text(
+              button.$1,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12),
             ),
           ),
         );
