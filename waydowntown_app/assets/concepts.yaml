@@ -1,11 +1,11 @@
 bluetooth_collector:
   name: "Bluetooth Collector"
-  marker: "ᛒ"
+  marker: bluetooth_searching
   instructions: "find all the bluetooth devices. when one is detected, tap it to submit."
 
 cardinal_memory:
   name: "Cardinal memory"
-  marker: "🧭"
+  marker: compass
   placed: false
   instructions: "face north, east, south, or west and submit your guess until you learn the full pattern. if you make a mistake, start over!"
   options:
@@ -16,27 +16,27 @@ cardinal_memory:
 
 code_collector:
   name: "Code Collector"
-  marker: "𝄃𝄃𝄂𝄀𝄁𝄃𝄂𝄂𝄃"
+  marker: scan_barcode
   instructions: "scan all the barcodes. when one is detected, tap it to submit."
 
 food_court_frenzy:
   name: "Food Court Frenzy"
-  marker: "🍛"
+  marker: utensils_crossed
   instructions: "enter the prices for the listed menu items."
 
 string_collector:
   name: "String Collector"
-  marker: "📋"
+  marker: list_checks
   instructions: "enter the strings of text described until you’ve found them all. caps are ignored."
 
 fill_in_the_blank:
   name: "Fill in the Blank"
-  marker: "a_c"
+  marker: rectangle_ellipsis
   instructions: "submit the correct answer to fill in the blank."
 
 orientation_memory:
   name: "Orientation memory"
-  marker: "🔄"
+  marker: ratio
   placed: false
   instructions: "rotate the phone and learn the secret pattern. if you make a mistake, start over!"
   options:

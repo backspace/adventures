@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sentry/sentry.dart';
@@ -83,8 +84,8 @@ class _MapRouteState extends State<MapRoute> {
       final region = incarnation.region!;
       final marker = conceptMarkers[incarnation.concept] ?? '📍';
       return Marker(
-        width: 20.0,
-        height: 20.0,
+        width: 40.0,
+        height: 40.0,
         point: LatLng(region.latitude!, region.longitude!),
         child: GestureDetector(
           onTap: () => _onMarkerTap(incarnation),
@@ -95,10 +96,7 @@ class _MapRouteState extends State<MapRoute> {
               border: Border.all(color: Colors.black, width: 1),
             ),
             child: Center(
-              child: Text(
-                marker,
-                style: const TextStyle(fontSize: 24, color: Colors.black),
-              ),
+              child: Icon(iconFromName(marker)),
             ),
           ),
         ),
@@ -144,5 +142,26 @@ class _MapRouteState extends State<MapRoute> {
         ),
       );
     }
+  }
+}
+
+IconData iconFromName(String name) {
+  switch (name) {
+    case 'bluetooth_searching':
+      return LucideIcons.bluetooth_searching;
+    case 'compass':
+      return LucideIcons.compass;
+    case 'scan_barcode':
+      return LucideIcons.scan_barcode;
+    case 'utensils_crossed':
+      return LucideIcons.utensils_crossed;
+    case 'list_checks':
+      return LucideIcons.list_checks;
+    case 'rectangle_ellipsis':
+      return LucideIcons.rectangle_ellipsis;
+    case 'ratio':
+      return LucideIcons.ratio;
+    default:
+      return LucideIcons.badge_help;
   }
 }
