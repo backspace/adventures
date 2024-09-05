@@ -53,7 +53,6 @@ void main() {
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
 
-    expect(find.text('fill_in_the_blank'), findsOneWidget);
     expect(
         find.text('An enormous headline proclaims ____ quit!'), findsOneWidget);
 
