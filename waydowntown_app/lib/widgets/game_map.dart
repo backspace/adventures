@@ -14,12 +14,12 @@ import 'package:vector_tile_renderer/vector_tile_renderer.dart'
 
 import '../tools/map_theme.dart';
 
-const north_grain_exchange = 49.89684619087244;
-const east_grain_exchange = -97.13601201018146;
-const south_convention_centre_parking = 49.88737391678073;
-const west_one_canada_centre = -97.15091617244872;
+const northGrainExchange = 49.89684619087244;
+const eastGrainExchange = -97.13601201018146;
+const southConventionCentreParking = 49.88737391678073;
+const westOneCanadaCentre = -97.15091617244872;
 
-const boundary_padding = 0.001;
+const boundaryPadding = 0.001;
 
 Future<String> copyAssetToFile(BuildContext context, String assetPath) async {
   final assetBundle = DefaultAssetBundle.of(context);
@@ -64,11 +64,10 @@ class GameMap extends StatelessWidget {
             options: MapOptions(
               cameraConstraint: CameraConstraint.contain(
                 bounds: LatLngBounds(
-                  const LatLng(north_grain_exchange + boundary_padding,
-                      east_grain_exchange + boundary_padding),
-                  const LatLng(
-                      south_convention_centre_parking - boundary_padding,
-                      west_one_canada_centre - boundary_padding),
+                  const LatLng(northGrainExchange + boundaryPadding,
+                      eastGrainExchange + boundaryPadding),
+                  const LatLng(southConventionCentreParking - boundaryPadding,
+                      westOneCanadaCentre - boundaryPadding),
                 ),
               ),
               interactionOptions: const InteractionOptions(
