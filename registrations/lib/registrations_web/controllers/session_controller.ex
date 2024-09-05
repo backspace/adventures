@@ -5,6 +5,11 @@ defmodule RegistrationsWeb.SessionController do
     render(conn, "new.html")
   end
 
+  # FIXME can this be tested? It uses HTTPOnly cookie
+  def show(conn, params) do
+    render(conn, "show.json", %{conn: conn, params: params})
+  end
+
   def create(conn, %{"session" => session_params}) do
     case RegistrationsWeb.Session.login(session_params, Registrations.Repo) do
       {:ok, user} ->

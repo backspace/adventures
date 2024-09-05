@@ -31,6 +31,11 @@ defmodule RegistrationsWeb.Router do
     plug(JSONAPI.UnderscoreParameters)
   end
 
+  pipeline :jsonapi_with_session do
+    plug(:fetch_session)
+    plug(:jsonapi)
+  end
+
   pipeline :skip_csrf_protection do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -90,5 +95,11 @@ defmodule RegistrationsWeb.Router do
     resources("/answers", AnswerController, except: [:index, :new, :edit, :delete])
     resources("/incarnations", IncarnationController, only: [:index])
     resources("/games", GameController, except: [:new, :edit, :delete, :update])
+  end
+
+  scope "/fixme", RegistrationsWeb do
+    pipe_through(:jsonapi_with_session)
+
+    get("/session", SessionController, :show)
   end
 end
