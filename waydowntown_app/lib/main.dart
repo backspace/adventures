@@ -8,6 +8,7 @@ import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:waydowntown/routes/request_game_route.dart';
+import 'package:waydowntown/tools/auth_webview.dart';
 import 'package:waydowntown/tools/bluetooth_scanner_route.dart';
 import 'package:waydowntown/tools/map_route.dart';
 import 'package:waydowntown/tools/motion_sensors_route.dart';
@@ -185,6 +186,7 @@ class _HomeState extends State<Home> {
                 const Divider(color: Colors.white),
                 const Text("Tools", style: TextStyle(color: Colors.white)),
                 _buildFlexibleButtonGrid([
+                  ('Auth', 'auth_webview'),
                   ('Bluetooth\nScanner', 'bluetooth_scanner'),
                   ('Map', 'map'),
                   ('Motion\nSensors', 'motion_sensors'),
@@ -209,6 +211,14 @@ class _HomeState extends State<Home> {
                           MaterialPageRoute(
                               builder: (context) =>
                                   const MotionSensorsRoute()));
+                      break;
+                    case 'auth_webview':
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AuthWebView(
+                                  apiBaseUrl: dotenv.env['API_ROOT']!,
+                                  dio: dio)));
                       break;
                   }
                 }),
