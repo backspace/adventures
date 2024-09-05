@@ -6,9 +6,9 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/games/cardinal_memory.dart';
 import 'package:waydowntown/games/code_collector.dart';
-import 'package:waydowntown/games/fill_in_the_blank.dart';
 import 'package:waydowntown/games/food_court_frenzy.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
+import 'package:waydowntown/games/single_string_input_game.dart';
 import 'package:waydowntown/games/string_collector.dart';
 import 'package:waydowntown/location_header.dart';
 import 'package:waydowntown/models/game.dart';
@@ -197,8 +197,9 @@ class GameLaunchRoute extends StatelessWidget {
         return CardinalMemoryGame(game: game, dio: dio);
       case 'code_collector':
         return CodeCollectorGame(game: game, dio: dio);
+      case 'count_the_items':
       case 'fill_in_the_blank':
-        return FillInTheBlankGame(game: game, dio: dio);
+        return SingleStringInputGame(game: game, dio: dio);
       case 'food_court_frenzy':
         return FoodCourtFrenzyGame(game: game, dio: dio);
       case 'orientation_memory':

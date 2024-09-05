@@ -5,17 +5,18 @@ import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
-class FillInTheBlankGame extends StatefulWidget {
+class SingleStringInputGame extends StatefulWidget {
   final Dio dio;
   final Game game;
 
-  const FillInTheBlankGame({super.key, required this.dio, required this.game});
+  const SingleStringInputGame(
+      {super.key, required this.dio, required this.game});
 
   @override
-  FillInTheBlankGameState createState() => FillInTheBlankGameState();
+  SingleStringInputGameState createState() => SingleStringInputGameState();
 }
 
-class FillInTheBlankGameState extends State<FillInTheBlankGame> {
+class SingleStringInputGameState extends State<SingleStringInputGame> {
   String answer = 'answer';
   bool hasAnsweredIncorrectly = false;
   bool isOver = false;
@@ -75,7 +76,9 @@ class FillInTheBlankGameState extends State<FillInTheBlankGame> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Fill in the blank"),
+        title: Text(widget.game.incarnation.concept == 'fill_in_the_blank'
+            ? 'Fill in the Blank'
+            : 'Count the Items'),
       ),
       body: Center(
         child: Column(

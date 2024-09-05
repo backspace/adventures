@@ -429,7 +429,8 @@ defmodule Registrations.Waydowntown do
     }
   end
 
-  defp check_answer_correctness(%Incarnation{concept: "fill_in_the_blank", answers: [correct_answer]}, answer_text) do
+  defp check_answer_correctness(%Incarnation{concept: concept, answers: [correct_answer]}, answer_text)
+       when concept in ["fill_in_the_blank", "count_the_items"] do
     normalize_string(correct_answer) == normalize_string(answer_text)
   end
 
@@ -479,6 +480,9 @@ defmodule Registrations.Waydowntown do
   defp check_win_condition(game, answer) do
     case game.incarnation.concept do
       "fill_in_the_blank" ->
+        true
+
+      "count_the_items" ->
         true
 
       concept when concept in ["bluetooth_collector", "code_collector", "string_collector"] ->

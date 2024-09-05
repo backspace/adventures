@@ -718,6 +718,89 @@ defmodule RegistrationsWeb.AnswerControllerTest do
     end
   end
 
+  describe "create answer for count_the_items" do
+    setup do
+      region = Repo.insert!(%Region{name: "Test Region"})
+
+      incarnation =
+        Repo.insert!(%Incarnation{
+          concept: "count_the_items",
+          answers: ["42"],
+          region: region,
+          placed: true
+        })
+
+      game = Repo.insert!(%Game{incarnation: incarnation})
+
+      %{game: game, incarnation: incarnation, region: region}
+    end
+
+    test "creates correct answer", %{conn: conn, game: game} do
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "42"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      answer = Waydowntown.get_answer!(id)
+      assert answer.correct
+
+      game = Waydowntown.get_game!(game.id)
+      assert game.winner_answer_id == answer.id
+
+      assert %{
+               "included" => [
+                 %{
+                   "type" => "incarnations",
+                   "id" => _incarnation_id,
+                   "attributes" => _incarnation_attributes
+                 },
+                 %{"type" => "games", "id" => game_id, "attributes" => %{"complete" => complete}}
+               ]
+             } = json_response(conn, 201)
+
+      assert game_id == game.id
+      assert complete
+    end
+
+    test "creates incorrect answer", %{conn: conn, game: game} do
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.answer_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "answers",
+              "attributes" => %{"answer" => "24"},
+              "relationships" => %{
+                "game" => %{
+                  "data" => %{"type" => "games", "id" => game.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      answer = Waydowntown.get_answer!(id)
+      refute answer.correct
+    end
+  end
+
   describe "create answer for food_court_frenzy" do
     setup do
       region = Repo.insert!(%Region{name: "Test Region"})

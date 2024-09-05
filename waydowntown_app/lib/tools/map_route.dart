@@ -161,6 +161,8 @@ IconData iconFromName(String name) {
       return LucideIcons.rectangle_ellipsis;
     case 'ratio':
       return LucideIcons.ratio;
+    case 'tally_5':
+      return LucideIcons.tally_5;
     default:
       return LucideIcons.badge_help;
   }

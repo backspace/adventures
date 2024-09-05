@@ -19,6 +19,11 @@ code_collector:
   marker: scan_barcode
   instructions: "scan all the barcodes. when one is detected, tap it to submit."
 
+count_the_items:
+  name: "Count the Items"
+  marker: tally_5
+  instructions: "count the items described."
+
 food_court_frenzy:
   name: "Food Court Frenzy"
   marker: utensils_crossed

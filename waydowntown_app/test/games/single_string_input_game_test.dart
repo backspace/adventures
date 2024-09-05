@@ -6,7 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:waydowntown/games/fill_in_the_blank.dart';
+import 'package:waydowntown/games/single_string_input_game.dart';
 import 'package:waydowntown/models/game.dart';
 
 import '../test_helpers.dart';
@@ -46,7 +46,7 @@ void main() {
             isComplete: true));
 
     await tester.pumpWidget(
-        MaterialApp(home: FillInTheBlankGame(game: game, dio: dio)));
+        MaterialApp(home: SingleStringInputGame(game: game, dio: dio)));
     await tester.pumpAndSettle();
 
     expect(tester.testTextInput.isRegistered, isTrue);
@@ -95,7 +95,7 @@ void main() {
             isComplete: true));
 
     await tester.pumpWidget(
-        MaterialApp(home: FillInTheBlankGame(game: game, dio: dio)));
+        MaterialApp(home: SingleStringInputGame(game: game, dio: dio)));
     await tester.pumpAndSettle();
 
     final textField = find.byType(TextField);
@@ -118,5 +118,18 @@ void main() {
         findsOneWidget);
     expect(find.byType(TextField), findsNothing);
     expect(find.byType(ElevatedButton), findsNothing);
+  });
+
+  testWidgets('count_the_items game shows that in the header',
+      (WidgetTester tester) async {
+    game = TestHelpers.createMockGame(
+        concept: 'count_the_items',
+        mask: 'How many trees can you see in the courtyard?');
+
+    await tester.pumpWidget(
+        MaterialApp(home: SingleStringInputGame(game: game, dio: dio)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Count the Items'), findsOneWidget);
   });
 }
