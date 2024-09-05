@@ -236,6 +236,10 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
           LocationHeader(game: currentGame),
           Padding(
             padding: const EdgeInsets.all(8.0),
+            child: Text(currentGame.incarnation.mask),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
             child: Text(
               'Progress: ${currentGame.correctAnswers}/${currentGame.totalAnswers}',
             ),

@@ -69,6 +69,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
+    expect(find.text('Collect strings'), findsOneWidget);
     expect(find.text('Progress: 0/3'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'correct1');

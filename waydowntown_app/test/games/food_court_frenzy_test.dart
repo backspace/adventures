@@ -71,6 +71,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
+    expect(find.text('Find food court items'), findsOneWidget);
     expect(find.text('Progress: 0/3'), findsOneWidget);
 
     // Submit first answer
