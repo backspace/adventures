@@ -138,6 +138,42 @@ bluetooth_collector:
   });
 
   testWidgets(
+      'The launcher can be returned to after starting the game and it will not start over',
+      (WidgetTester tester) async {
+    testAssetBundle.addAsset('assets/concepts.yaml', '''
+fill_in_the_blank:
+  name: Fill in the Blank
+  instructions: Fill in the blank!
+''');
+
+    final game = TestHelpers.createMockGame(
+      concept: 'fill_in_the_blank',
+      totalAnswers: 1,
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DefaultAssetBundle(
+          bundle: testAssetBundle,
+          child: GameLaunchRoute(game: game, dio: dio),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Start Game'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fill in the Blank'), findsOneWidget);
+    expect(find.text('Fill in the blank!'), findsOneWidget);
+    // expect(find.text('Resume Game'), findsOneWidget);
+  });
+
+  testWidgets(
       'GameLaunchRoute displays message when location is not available and does not show answer count when there is only one',
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '''

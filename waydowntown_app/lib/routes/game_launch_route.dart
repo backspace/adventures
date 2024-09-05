@@ -111,7 +111,7 @@ class GameLaunchRoute extends StatelessWidget {
                   child: const Text('Start Game'),
                   onPressed: () {
                     try {
-                      Navigator.pushReplacement(
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => _buildGameWidget(game),
