@@ -26,6 +26,8 @@ class _AuthWebViewState extends State<AuthWebView> {
   void initState() {
     super.initState();
     _controller = WebViewController()
+      ..setUserAgent(
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_6_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1')
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
