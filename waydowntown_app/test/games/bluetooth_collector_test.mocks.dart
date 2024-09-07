@@ -163,6 +163,7 @@ class MockFlutterBluePlusMockable extends _i1.Mock
     List<_i2.Guid>? withServices = const [],
     Duration? timeout,
     Duration? removeIfGone,
+    bool? continuousUpdates = false,
     bool? oneByOne = false,
     bool? androidUsesFineLocation = false,
   }) =>
@@ -174,6 +175,7 @@ class MockFlutterBluePlusMockable extends _i1.Mock
             #withServices: withServices,
             #timeout: timeout,
             #removeIfGone: removeIfGone,
+            #continuousUpdates: continuousUpdates,
             #oneByOne: oneByOne,
             #androidUsesFineLocation: androidUsesFineLocation,
           },

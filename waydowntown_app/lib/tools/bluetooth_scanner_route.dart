@@ -11,6 +11,7 @@ class BluetoothScannerRoute extends StatefulWidget {
 
 class BluetoothScannerRouteState extends State<BluetoothScannerRoute> {
   var names = <String>{};
+  var resultsLength = 0;
   var isScanning = false;
 
   @override
@@ -34,6 +35,7 @@ class BluetoothScannerRouteState extends State<BluetoothScannerRoute> {
         child: Column(
           children: [
             const Text('Bluetooth Scanner'),
+            Text('Scan results: $resultsLength'),
             isScanning
                 ? ElevatedButton(
                     child: const Text('Stop'),
@@ -66,8 +68,12 @@ class BluetoothScannerRouteState extends State<BluetoothScannerRoute> {
   }
 
   Future<void> requestBluetooth() async {
-    var subscription = FlutterBluePlus.scanResults.listen(
+    var subscription = FlutterBluePlus.onScanResults.listen(
       (results) {
+        setState(() {
+          resultsLength = results.length;
+        });
+
         if (results.isNotEmpty) {
           ScanResult r = results.last;
           logger.i(
@@ -89,7 +95,8 @@ class BluetoothScannerRouteState extends State<BluetoothScannerRoute> {
         .where((val) => val == BluetoothAdapterState.on)
         .first;
 
-    await FlutterBluePlus.startScan();
+    await FlutterBluePlus.startScan(
+        continuousUpdates: true, removeIfGone: const Duration(seconds: 15));
 
     setState(() {
       isScanning = true;

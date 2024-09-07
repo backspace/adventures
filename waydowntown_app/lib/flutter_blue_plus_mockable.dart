@@ -9,6 +9,7 @@ class FlutterBluePlusMockable {
     List<Guid> withServices = const [],
     Duration? timeout,
     Duration? removeIfGone,
+    bool continuousUpdates = false,
     bool oneByOne = false,
     bool androidUsesFineLocation = false,
   }) {
@@ -16,6 +17,7 @@ class FlutterBluePlusMockable {
         withServices: withServices,
         timeout: timeout,
         removeIfGone: removeIfGone,
+        continuousUpdates: continuousUpdates,
         oneByOne: oneByOne,
         androidUsesFineLocation: androidUsesFineLocation);
   }
