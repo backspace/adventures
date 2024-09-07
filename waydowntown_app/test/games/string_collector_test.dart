@@ -25,7 +25,7 @@ void main() {
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
     game = TestHelpers.createMockGame(
-        concept: 'string_collector', mask: 'Collect strings');
+        concept: 'string_collector', description: 'Collect strings');
   });
 
   testWidgets('StringCollectorGame displays and submits strings',

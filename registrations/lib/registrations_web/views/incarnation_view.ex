@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.IncarnationView do
   alias RegistrationsWeb.IncarnationView
 
   def fields do
-    [:concept, :mask, :placed, :start, :answer_labels]
+    [:concept, :description, :placed, :start, :answer_labels]
   end
 
   def answer_labels(incarnation, _conn) do

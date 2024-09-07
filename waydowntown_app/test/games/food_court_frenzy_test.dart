@@ -26,7 +26,7 @@ void main() {
     dioAdapter = DioAdapter(dio: dio);
     game = TestHelpers.createMockGame(
       concept: 'food_court_frenzy',
-      mask: 'Find food court items',
+      description: 'Find food court items',
       answerLabels: ['Burger', 'Pizza', 'Sushi'],
     );
   });
@@ -151,7 +151,7 @@ void main() {
   testWidgets('FoodCourtFrenzyGame shows errors', (WidgetTester tester) async {
     Game singleAnswerGame = TestHelpers.createMockGame(
       concept: 'food_court_frenzy',
-      mask: 'Find food court items',
+      description: 'Find food court items',
       answerLabels: ['Burger'],
     );
 

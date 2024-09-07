@@ -614,7 +614,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
       incarnation =
         Repo.insert!(%Incarnation{
           concept: "string_collector",
-          mask: "Collect all the strings",
+          description: "Collect all the strings",
           answers: ["first string", "second string", "THIRD string"],
           placed: true
         })

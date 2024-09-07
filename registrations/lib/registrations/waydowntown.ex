@@ -177,7 +177,7 @@ defmodule Registrations.Waydowntown do
     {:ok, incarnation} =
       create_incarnation(%{
         concept: concept_key,
-        mask: concept_data["instructions"],
+        description: concept_data["instructions"],
         answers: answers,
         placed: false
       })

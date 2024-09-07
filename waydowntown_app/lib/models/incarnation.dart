@@ -3,7 +3,7 @@ import 'package:waydowntown/models/region.dart';
 class Incarnation {
   final String id;
   final String concept;
-  final String mask;
+  final String description;
   final Region? region;
   final bool placed;
   final String? start;
@@ -12,7 +12,7 @@ class Incarnation {
   const Incarnation({
     required this.id,
     required this.concept,
-    required this.mask,
+    required this.description,
     this.region,
     required this.placed,
     this.start,
@@ -44,7 +44,7 @@ class Incarnation {
     return Incarnation(
       id: json['id'],
       concept: attributes['concept'],
-      mask: attributes['mask'] ?? '',
+      description: attributes['description'] ?? '',
       region: region,
       placed: attributes['placed'] ?? false,
       start: attributes['start'],

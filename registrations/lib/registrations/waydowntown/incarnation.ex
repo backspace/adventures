@@ -10,7 +10,7 @@ defmodule Registrations.Waydowntown.Incarnation do
   schema "incarnations" do
     field(:answers, {:array, :string})
     field(:concept, :string)
-    field(:mask, :string)
+    field(:description, :string)
     field(:placed, :boolean, default: true)
     field(:start, :string)
 
@@ -23,7 +23,7 @@ defmodule Registrations.Waydowntown.Incarnation do
   @doc false
   def changeset(incarnation, attrs) do
     incarnation
-    |> cast(attrs, [:concept, :mask, :answers, :placed, :region_id, :start])
-    |> validate_required([:concept, :mask, :answers, :placed])
+    |> cast(attrs, [:concept, :description, :answers, :placed, :region_id, :start])
+    |> validate_required([:concept, :description, :answers, :placed])
   end
 end

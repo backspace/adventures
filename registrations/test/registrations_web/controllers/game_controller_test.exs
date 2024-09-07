@@ -28,7 +28,7 @@ defmodule RegistrationsWeb.GameControllerTest do
       incarnation =
         Repo.insert!(%Incarnation{
           concept: "fill_in_the_blank",
-          mask: "This is a ____",
+          description: "This is a ____",
           region_id: child_region.id,
           placed: true,
           start: "Outside the coat check"
@@ -76,7 +76,7 @@ defmodule RegistrationsWeb.GameControllerTest do
                item["type"] == "incarnations" &&
                  item["id"] == incarnation.id &&
                  item["attributes"]["concept"] == "fill_in_the_blank" &&
-                 item["attributes"]["mask"] == "This is a ____" &&
+                 item["attributes"]["description"] == "This is a ____" &&
                  item["attributes"]["placed"] == true &&
                  item["attributes"]["start"] == "Outside the coat check" &&
                  item["relationships"]["region"]["data"]["id"] == child_region.id
@@ -109,7 +109,7 @@ defmodule RegistrationsWeb.GameControllerTest do
       incarnation =
         Repo.insert!(%Incarnation{
           concept: "fill_in_the_blank",
-          mask: "This is a ____",
+          description: "This is a ____",
           region: region,
           placed: true
         })
@@ -189,7 +189,7 @@ defmodule RegistrationsWeb.GameControllerTest do
       sideloaded_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
       assert sideloaded_incarnation["attributes"]["placed"] == false
       assert sideloaded_incarnation["attributes"]["concept"] in ["orientation_memory", "cardinal_memory"]
-      assert sideloaded_incarnation["attributes"]["mask"] != nil
+      assert sideloaded_incarnation["attributes"]["description"] != nil
 
       game = Waydowntown.get_game!(id)
       incarnation = Waydowntown.get_incarnation!(game.incarnation_id)
@@ -201,7 +201,7 @@ defmodule RegistrationsWeb.GameControllerTest do
       existing_incarnation =
         Repo.insert!(%Incarnation{
           concept: "orientation_memory",
-          mask: "Existing mask",
+          description: "Existing description",
           region_id: Repo.insert!(%Region{}).id,
           placed: false
         })
@@ -283,7 +283,7 @@ defmodule RegistrationsWeb.GameControllerTest do
       closer_incarnation =
         Repo.insert!(%Incarnation{
           concept: "fill_in_the_blank",
-          mask: "This is a ____",
+          description: "This is a ____",
           region: closer_region,
           placed: true
         })

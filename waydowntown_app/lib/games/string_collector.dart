@@ -196,7 +196,7 @@ class StringCollectorGameState extends State<StringCollectorGame> {
           LocationHeader(game: currentGame),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(currentGame.incarnation.mask),
+            child: Text(currentGame.incarnation.description),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),

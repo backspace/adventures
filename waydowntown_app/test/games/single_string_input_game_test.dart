@@ -26,7 +26,7 @@ void main() {
     dioAdapter = DioAdapter(dio: dio);
     game = TestHelpers.createMockGame(
         concept: 'fill_in_the_blank',
-        mask: 'An enormous headline proclaims ____ quit!');
+        description: 'An enormous headline proclaims ____ quit!');
   });
 
   testWidgets('Game is requested, displayed, and answers are posted',
@@ -123,7 +123,7 @@ void main() {
       (WidgetTester tester) async {
     game = TestHelpers.createMockGame(
         concept: 'count_the_items',
-        mask: 'How many trees can you see in the courtyard?');
+        description: 'How many trees can you see in the courtyard?');
 
     await tester.pumpWidget(
         MaterialApp(home: SingleStringInputGame(game: game, dio: dio)));

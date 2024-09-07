@@ -33,7 +33,7 @@ class TestHelpers {
               "type": "incarnations",
               "attributes": {
                 "concept": game.incarnation.concept,
-                "mask": game.incarnation.mask
+                "description": game.incarnation.description
               },
               "relationships": {
                 "region": {
@@ -156,7 +156,7 @@ class TestHelpers {
 
   static Game createMockGame({
     String concept = 'test_concept',
-    String mask = 'test_mask',
+    String description = 'test_description',
     String start = 'test_start',
     List<String> answerLabels = const [
       'test_answer_label_1',
@@ -174,7 +174,7 @@ class TestHelpers {
         id: '0091eb84-85c8-4e63-962b-39e1a19d2781',
         placed: true,
         concept: concept,
-        mask: mask,
+        description: description,
         start: start,
         answerLabels: answerLabels,
         region: Region(
