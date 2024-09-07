@@ -119,12 +119,24 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
               ],
             ),
             if (isGameComplete)
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(
-                  'Congratulations! You have completed the game.',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+              Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Correct answer: $answer',
+                      style: const TextStyle(color: Colors.green),
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'Congratulations! You have completed the game.',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
             TextButton(
               onPressed: () {

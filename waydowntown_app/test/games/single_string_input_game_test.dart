@@ -72,8 +72,10 @@ void main() {
 
     expect(find.text('Wrong'), findsNothing);
     expect(find.byType(ElevatedButton), findsNothing);
+    expect(find.text('Correct answer: correct'), findsOneWidget);
     expect(find.text('Congratulations! You have completed the game.'),
         findsOneWidget);
+
     expect(find.byType(TextField), findsNothing);
     expect(find.byType(ElevatedButton), findsNothing);
   });
