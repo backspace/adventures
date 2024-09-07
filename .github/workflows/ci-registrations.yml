@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-20.04
     services:
       db:
-        image: postgres:latest
+        image: postgis/postgis:16-3.4
         ports: ["5432:5432"]
         env:
           POSTGRES_PASSWORD: postgres
