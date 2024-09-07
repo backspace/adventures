@@ -8,10 +8,10 @@ class AuthWebView extends StatefulWidget {
   final Dio dio;
 
   const AuthWebView({
-    Key? key,
+    super.key,
     required this.apiBaseUrl,
     required this.dio,
-  }) : super(key: key);
+  });
 
   @override
   _AuthWebViewState createState() => _AuthWebViewState();
@@ -67,7 +67,7 @@ class _AuthWebViewState extends State<AuthWebView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login'),
+        title: const Text('Login'),
       ),
       body: Column(
         children: [
