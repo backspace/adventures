@@ -15,17 +15,22 @@ import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';
 
-class GameLaunchRoute extends StatelessWidget {
-  final Game game;
+class GameLaunchRoute extends StatefulWidget {
+  Game game;
   final Dio dio;
 
-  const GameLaunchRoute({super.key, required this.game, required this.dio});
+  GameLaunchRoute({super.key, required this.game, required this.dio});
 
+  @override
+  State<GameLaunchRoute> createState() => _GameLaunchRouteState();
+}
+
+class _GameLaunchRouteState extends State<GameLaunchRoute> {
   Future<Map<String, dynamic>> _loadGameInfo(BuildContext context) async {
     final yamlString =
         await DefaultAssetBundle.of(context).loadString('assets/concepts.yaml');
     final yamlMap = loadYaml(yamlString);
-    final conceptInfo = yamlMap[game.incarnation.concept];
+    final conceptInfo = yamlMap[widget.game.incarnation.concept];
 
     if (conceptInfo == null) {
       return {'error': 'Unknown game concept'};
@@ -73,19 +78,19 @@ class GameLaunchRoute extends StatelessWidget {
                     'Instructions',
                     instructions,
                   ),
-                if (game.incarnation.start != null)
+                if (widget.game.incarnation.start != null)
                   _buildInfoCard(
                     context,
                     'Starting point',
-                    game.incarnation.start!,
+                    widget.game.incarnation.start!,
                   ),
-                if (game.totalAnswers > 1)
+                if (widget.game.totalAnswers > 1)
                   _buildInfoCard(
                     context,
                     'Goal',
                     null,
                     child: Text(
-                      '${game.totalAnswers} answers',
+                      '${widget.game.totalAnswers} answers',
                       key: const Key('total_answers'),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
@@ -98,29 +103,47 @@ class GameLaunchRoute extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        LocationHeader(game: game),
+                        LocationHeader(game: widget.game),
                         const SizedBox(height: 8),
                         SizedBox(
                           height: 100,
-                          child: _buildMap(game),
+                          child: _buildMap(widget.game),
                         ),
                       ],
                     ),
                   ),
                 ElevatedButton(
-                  child: const Text('Start Game'),
-                  onPressed: () {
+                  child: Text(widget.game.startedAt != null
+                      ? 'Resume Game'
+                      : 'Start Game'),
+                  onPressed: () async {
                     try {
+                      if (widget.game.startedAt == null) {
+                        final response = await widget.dio.post(
+                          '/waydowntown/games/${widget.game.id}/start',
+                          data: {
+                            'data': {
+                              'type': 'games',
+                              'id': widget.game.id,
+                            },
+                          },
+                        );
+                        if (response.statusCode == 200) {
+                          setState(() {
+                            widget.game = Game.fromJson(response.data);
+                          });
+                        }
+                      }
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => _buildGameWidget(game),
+                          builder: (context) => _buildGameWidget(widget.game),
                         ),
                       );
                     } catch (e) {
                       Sentry.captureException(e);
-                      _showErrorDialog(context, 'Error: Game widget not found',
-                          'The widget for game concept "${game.incarnation.concept}" is missing.');
+                      _showErrorDialog(
+                          context, 'Error starting game', e.toString());
                     }
                   },
                 ),
@@ -164,7 +187,7 @@ class GameLaunchRoute extends StatelessWidget {
                 ?.copyWith(color: Colors.red)),
         const SizedBox(height: 8),
         Text(
-            'The game concept "${game.incarnation.concept}" is not recognized.'),
+            'The game concept "${widget.game.incarnation.concept}" is not recognized.'),
       ],
     );
   }
@@ -192,20 +215,20 @@ class GameLaunchRoute extends StatelessWidget {
   Widget _buildGameWidget(Game game) {
     switch (game.incarnation.concept) {
       case 'bluetooth_collector':
-        return BluetoothCollectorGame(game: game, dio: dio);
+        return BluetoothCollectorGame(game: game, dio: widget.dio);
       case 'cardinal_memory':
-        return CardinalMemoryGame(game: game, dio: dio);
+        return CardinalMemoryGame(game: game, dio: widget.dio);
       case 'code_collector':
-        return CodeCollectorGame(game: game, dio: dio);
+        return CodeCollectorGame(game: game, dio: widget.dio);
       case 'count_the_items':
       case 'fill_in_the_blank':
-        return SingleStringInputGame(game: game, dio: dio);
+        return SingleStringInputGame(game: game, dio: widget.dio);
       case 'food_court_frenzy':
-        return FoodCourtFrenzyGame(game: game, dio: dio);
+        return FoodCourtFrenzyGame(game: game, dio: widget.dio);
       case 'orientation_memory':
-        return OrientationMemoryGame(game: game, dio: dio);
+        return OrientationMemoryGame(game: game, dio: widget.dio);
       case 'string_collector':
-        return StringCollectorGame(game: game, dio: dio);
+        return StringCollectorGame(game: game, dio: widget.dio);
       default:
         throw Exception('Unknown game type: ${game.incarnation.concept}');
     }

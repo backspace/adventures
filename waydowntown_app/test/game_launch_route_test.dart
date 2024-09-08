@@ -6,8 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/routes/game_launch_route.dart';
 
 import './test_helpers.dart';
@@ -58,10 +60,14 @@ void main() {
 
   late Dio dio;
   late TestAssetBundle testAssetBundle;
+  late DioAdapter dioAdapter;
 
   setUp(() async {
     dotenv.testLoad(fileInput: File('.env').readAsStringSync());
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
+    dio.interceptors.add(PrettyDioLogger());
+    dioAdapter = DioAdapter(dio: dio);
+    dio.httpClientAdapter = dioAdapter;
     testAssetBundle = TestAssetBundle();
 
     const testMockStorage = './test/fixtures/core';
@@ -151,6 +157,8 @@ fill_in_the_blank:
       totalAnswers: 1,
     );
 
+    TestHelpers.setupMockStartGameResponse(dioAdapter, game);
+
     await tester.pumpWidget(
       MaterialApp(
         home: DefaultAssetBundle(
@@ -170,7 +178,6 @@ fill_in_the_blank:
 
     expect(find.text('Fill in the Blank'), findsOneWidget);
     expect(find.text('Fill in the blank!'), findsOneWidget);
-    // expect(find.text('Resume Game'), findsOneWidget);
   });
 
   testWidgets(
@@ -269,6 +276,31 @@ cardinal_memory:
     expect(find.text('Parent Region > Test Region'), findsNothing);
     expect(find.byType(FlutterMap), findsNothing);
     expect(find.text('Map unavailable - location not specified'), findsNothing);
+  });
+
+  testWidgets('GameLaunchRoute displays Resume Game button for started games',
+      (WidgetTester tester) async {
+    testAssetBundle.addAsset('assets/concepts.yaml', '''
+fill_in_the_blank:
+  name: Fill in the Blank
+  instructions: Fill in the blank!
+''');
+
+    final game = TestHelpers.createMockGame(
+      concept: 'fill_in_the_blank',
+      totalAnswers: 1,
+      startedAt: DateTime.now(),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: GameLaunchRoute(game: game, dio: dio),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Resume Game'), findsOneWidget);
   });
 }
 

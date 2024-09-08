@@ -167,6 +167,7 @@ class TestHelpers {
     int totalAnswers = 3,
     double? latitude,
     double? longitude,
+    DateTime? startedAt,
   }) {
     return Game(
       id: '22261813-2171-453f-a669-db08edc70d6d',
@@ -192,6 +193,64 @@ class TestHelpers {
       ),
       correctAnswers: correctAnswers,
       totalAnswers: totalAnswers,
+      startedAt: startedAt,
+    );
+  }
+
+  static void setupMockStartGameResponse(DioAdapter dioAdapter, Game game) {
+    dioAdapter.onPost(
+      '/waydowntown/games/${game.id}/start',
+      (server) => server.reply(
+        200,
+        {
+          "data": {
+            "id": game.id,
+            "type": "games",
+            "attributes": {
+              "correct_answers": game.correctAnswers,
+              "total_answers": game.totalAnswers,
+              "started_at": DateTime.now().toUtc().toIso8601String(),
+            },
+            "relationships": {
+              "incarnation": {
+                "data": {"type": "incarnations", "id": game.incarnation.id}
+              }
+            }
+          },
+          "included": [
+            {
+              "id": game.incarnation.id,
+              "type": "incarnations",
+              "attributes": {
+                "concept": game.incarnation.concept,
+                "description": game.incarnation.description
+              },
+              "relationships": {
+                "region": {
+                  "data": {"type": "regions", "id": game.incarnation.region!.id}
+                }
+              },
+            },
+            {
+              "id": game.incarnation.region!.id,
+              "type": "regions",
+              "attributes": {
+                "name": game.incarnation.region!.name,
+                "description": game.incarnation.region!.description
+              },
+              "relationships": {
+                "parent": {"data": null}
+              }
+            }
+          ],
+        },
+      ),
+      data: {
+        'data': {
+          'type': 'games',
+          'id': game.id,
+        },
+      },
     );
   }
 }

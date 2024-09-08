@@ -5,12 +5,14 @@ class Game {
   final Incarnation incarnation;
   final int correctAnswers;
   final int totalAnswers;
+  DateTime? startedAt;
 
   Game({
     required this.id,
     required this.incarnation,
     required this.correctAnswers,
     required this.totalAnswers,
+    this.startedAt,
   });
 
   factory Game.fromJson(Map<String, dynamic> json,
@@ -41,6 +43,9 @@ class Game {
           (throw const FormatException('Game must have an incarnation')),
       correctAnswers: data['attributes']['correct_answers'] ?? 0,
       totalAnswers: data['attributes']['total_answers'] ?? 0,
+      startedAt: data['attributes']['started_at'] != null
+          ? DateTime.parse(data['attributes']['started_at'])
+          : null,
     );
   }
 }
