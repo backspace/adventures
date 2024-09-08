@@ -88,7 +88,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
-    expect(find.text('test_description'), findsOneWidget);
 
     expect(find.text(device1.platformName), findsOneWidget);
     expect(find.text('Device 2'), findsOneWidget);

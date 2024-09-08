@@ -204,10 +204,6 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
           GameHeader(game: currentGame),
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(currentGame.incarnation.description),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
             child: Text(
               'Progress: ${currentGame.correctAnswers}/${currentGame.totalAnswers}',
             ),

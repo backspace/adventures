@@ -33,7 +33,6 @@ class TestHelpers {
               "type": "incarnations",
               "attributes": {
                 "concept": game.incarnation.concept,
-                "description": game.incarnation.description
               },
               "relationships": {
                 "region": {
@@ -156,7 +155,7 @@ class TestHelpers {
 
   static Game createMockGame({
     String concept = 'test_concept',
-    String description = 'test_description',
+    String? description,
     String start = 'test_start',
     List<String> answerLabels = const [
       'test_answer_label_1',
@@ -175,13 +174,11 @@ class TestHelpers {
         id: '0091eb84-85c8-4e63-962b-39e1a19d2781',
         placed: true,
         concept: concept,
-        description: description,
         start: start,
         answerLabels: answerLabels,
         region: Region(
           id: '324fd8f9-cd25-48be-a761-b8680fa72737',
           name: 'Test Region',
-          description: null,
           latitude: latitude,
           longitude: longitude,
           parentRegion: Region(
@@ -194,6 +191,7 @@ class TestHelpers {
       correctAnswers: correctAnswers,
       totalAnswers: totalAnswers,
       startedAt: startedAt,
+      description: description,
     );
   }
 
@@ -210,6 +208,7 @@ class TestHelpers {
               "correct_answers": game.correctAnswers,
               "total_answers": game.totalAnswers,
               "started_at": DateTime.now().toUtc().toIso8601String(),
+              "description": game.description,
             },
             "relationships": {
               "incarnation": {
@@ -223,7 +222,6 @@ class TestHelpers {
               "type": "incarnations",
               "attributes": {
                 "concept": game.incarnation.concept,
-                "description": game.incarnation.description
               },
               "relationships": {
                 "region": {

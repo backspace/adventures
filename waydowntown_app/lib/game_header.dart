@@ -16,6 +16,11 @@ class GameHeader extends StatelessWidget {
           getRegionPath(game.incarnation),
           style: Theme.of(context).textTheme.titleLarge,
         ),
+        if (game.description != null)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(game.description!),
+          ),
         if (game.startedAt != null && game.incarnation.durationSeconds != null)
           CountdownTimer(game: game),
       ],

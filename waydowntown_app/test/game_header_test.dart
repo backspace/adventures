@@ -6,13 +6,13 @@ import 'package:waydowntown/models/incarnation.dart';
 import 'package:waydowntown/models/region.dart';
 
 void main() {
-  testWidgets('GameHeader displays region path', (WidgetTester tester) async {
+  testWidgets('GameHeader displays region path and description',
+      (WidgetTester tester) async {
     final game = Game(
       id: '1',
       incarnation: Incarnation(
         id: '1',
         concept: 'Test',
-        description: 'Test description',
         placed: true,
         region: Region(
             id: '1',
@@ -22,21 +22,23 @@ void main() {
       ),
       correctAnswers: 0,
       totalAnswers: 0,
+      description: 'Test description',
     );
 
     await tester.pumpWidget(MaterialApp(home: GameHeader(game: game)));
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
+    expect(find.text('Test description'), findsOneWidget);
   });
 
   testWidgets('GameHeader displays countdown when duration is set',
       (WidgetTester tester) async {
     final game = Game(
       id: '1',
+      description: 'Test description',
       incarnation: Incarnation(
         id: '1',
         concept: 'Test',
-        description: 'Test description',
         placed: true,
         region: Region(id: '1', name: 'Test Region', parentRegion: null),
         durationSeconds: 300,
@@ -58,10 +60,10 @@ void main() {
       (WidgetTester tester) async {
     final game = Game(
       id: '1',
+      description: 'Test description',
       incarnation: Incarnation(
         id: '1',
         concept: 'Test',
-        description: 'Test description',
         placed: true,
         region: Region(id: '1', name: 'Test Region', parentRegion: null),
       ),
@@ -80,10 +82,10 @@ void main() {
       (WidgetTester tester) async {
     final game = Game(
       id: '1',
+      description: 'Test description',
       incarnation: Incarnation(
         id: '1',
         concept: 'Test',
-        description: 'Test description',
         placed: true,
         region: Region(id: '1', name: 'Test Region', parentRegion: null),
         durationSeconds: 3,

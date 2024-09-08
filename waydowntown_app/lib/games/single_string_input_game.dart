@@ -86,7 +86,6 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
             Column(
               children: [
                 GameHeader(game: widget.game),
-                Text(widget.game.incarnation.description),
                 if (!isGameComplete)
                   Form(
                     child: Column(children: <Widget>[

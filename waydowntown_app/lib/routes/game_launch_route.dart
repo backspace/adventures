@@ -11,6 +11,7 @@ import 'package:waydowntown/games/food_court_frenzy.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/games/single_string_input_game.dart';
 import 'package:waydowntown/games/string_collector.dart';
+import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';

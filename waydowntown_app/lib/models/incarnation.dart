@@ -3,7 +3,6 @@ import 'package:waydowntown/models/region.dart';
 class Incarnation {
   final String id;
   final String concept;
-  final String description;
   final int? durationSeconds;
   final Region? region;
   final bool placed;
@@ -13,7 +12,6 @@ class Incarnation {
   const Incarnation({
     required this.id,
     required this.concept,
-    required this.description,
     this.region,
     this.durationSeconds,
     required this.placed,
@@ -46,7 +44,6 @@ class Incarnation {
     return Incarnation(
       id: json['id'],
       concept: attributes['concept'],
-      description: attributes['description'] ?? '',
       region: region,
       placed: attributes['placed'] ?? false,
       durationSeconds: attributes['duration_seconds'],

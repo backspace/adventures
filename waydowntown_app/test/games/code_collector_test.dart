@@ -60,7 +60,6 @@ void main() {
     ));
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
-    expect(find.text('test_description'), findsOneWidget);
 
     streamController.add(const BarcodeCapture(
         barcodes: [Barcode(rawValue: 'Code1', format: BarcodeFormat.qrCode)]));
