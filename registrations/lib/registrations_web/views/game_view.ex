@@ -5,15 +5,28 @@ defmodule RegistrationsWeb.GameView do
   alias RegistrationsWeb.GameView
 
   def fields do
-    [:complete, :correct_answers, :total_answers, :started_at]
+    [:complete, :correct_answers, :total_answers, :description, :started_at]
   end
 
   def hidden(game) do
-    case game.incarnation do
-      %{"concept" => "fill_in_the_blank"} -> [:correct_answers, :total_answers]
-      nil -> [:complete, :correct_answers, :total_answers]
-      _ -> []
-    end
+    description_inclusion =
+      case game.started_at do
+        nil -> [:description]
+        _ -> []
+      end
+
+    answers =
+      case game.incarnation do
+        %{"concept" => "fill_in_the_blank"} -> [:correct_answers, :total_answers]
+        nil -> [:complete, :correct_answers, :total_answers]
+        _ -> []
+      end
+
+    description_inclusion ++ answers
+  end
+
+  def description(game, _conn) do
+    game.incarnation.description
   end
 
   def complete(game, _conn) do

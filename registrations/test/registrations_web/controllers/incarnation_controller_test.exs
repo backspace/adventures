@@ -56,7 +56,6 @@ defmodule RegistrationsWeb.IncarnationControllerTest do
       assert incarnation_data["id"] == incarnation.id
       assert incarnation_data["type"] == "incarnations"
       assert incarnation_data["attributes"]["concept"] == "fill_in_the_blank"
-      assert incarnation_data["attributes"]["description"] == "This is a ____"
       assert incarnation_data["attributes"]["placed"] == true
       assert incarnation_data["attributes"]["start"] == "Outside the coat check"
       assert incarnation_data["relationships"]["region"]["data"]["id"] == child_region.id

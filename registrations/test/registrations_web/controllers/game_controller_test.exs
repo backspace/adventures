@@ -45,13 +45,14 @@ defmodule RegistrationsWeb.GameControllerTest do
       }
     end
 
-    test "returns game with nested incarnation, regions, and progress attributes", %{
-      conn: conn,
-      game: game,
-      incarnation: incarnation,
-      child_region: child_region,
-      parent_region: parent_region
-    } do
+    test "returns game with nested incarnation, regions, and progress attributes, but no description before the game has started",
+         %{
+           conn: conn,
+           game: game,
+           incarnation: incarnation,
+           child_region: child_region,
+           parent_region: parent_region
+         } do
       conn = get(conn, Routes.game_path(conn, :show, game.id))
 
       assert %{
@@ -77,12 +78,14 @@ defmodule RegistrationsWeb.GameControllerTest do
                item["type"] == "incarnations" &&
                  item["id"] == incarnation.id &&
                  item["attributes"]["concept"] == "fill_in_the_blank" &&
-                 item["attributes"]["description"] == "This is a ____" &&
                  item["attributes"]["placed"] == true &&
                  item["attributes"]["start"] == "Outside the coat check" &&
                  item["attributes"]["duration_seconds"] == 300 &&
                  item["relationships"]["region"]["data"]["id"] == child_region.id
              end)
+
+      included_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
+      refute included_incarnation["attributes"]["description"]
 
       assert Enum.any?(included, fn item ->
                item["type"] == "regions" &&
@@ -101,6 +104,36 @@ defmodule RegistrationsWeb.GameControllerTest do
                  item["attributes"]["longitude"] == "-97.0" &&
                  item["relationships"]["parent"]["data"] == nil
              end)
+    end
+
+    test "description is included in the game when the it has started",
+         %{
+           conn: conn,
+           game: game,
+           incarnation: incarnation
+         } do
+      Waydowntown.start_game(game)
+      conn = get(conn, Routes.game_path(conn, :show, game.id))
+
+      assert %{
+               "data" => %{
+                 "id" => game_id,
+                 "type" => "games",
+                 "attributes" => %{
+                   "complete" => false,
+                   "description" => "This is a ____"
+                 },
+                 "relationships" => %{
+                   "incarnation" => %{
+                     "data" => %{"id" => incarnation_id, "type" => "incarnations"}
+                   }
+                 }
+               },
+               "included" => included
+             } = json_response(conn, 200)
+
+      included_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
+      refute included_incarnation["attributes"]["description"]
     end
   end
 
@@ -191,7 +224,6 @@ defmodule RegistrationsWeb.GameControllerTest do
       sideloaded_incarnation = Enum.find(included, &(&1["type"] == "incarnations"))
       assert sideloaded_incarnation["attributes"]["placed"] == false
       assert sideloaded_incarnation["attributes"]["concept"] in ["orientation_memory", "cardinal_memory"]
-      assert sideloaded_incarnation["attributes"]["description"] != nil
 
       game = Waydowntown.get_game!(id)
       incarnation = Waydowntown.get_incarnation!(game.incarnation_id)
