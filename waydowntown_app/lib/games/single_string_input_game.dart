@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:waydowntown/location_header.dart';
+import 'package:waydowntown/game_header.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
@@ -85,7 +85,7 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
           children: [
             Column(
               children: [
-                LocationHeader(game: widget.game),
+                GameHeader(game: widget.game),
                 Text(widget.game.incarnation.description),
                 if (!isGameComplete)
                   Form(

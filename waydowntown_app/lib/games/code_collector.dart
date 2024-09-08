@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:waydowntown/location_header.dart';
+import 'package:waydowntown/game_header.dart';
 import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
@@ -201,7 +201,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
       ),
       body: Column(
         children: [
-          LocationHeader(game: currentGame),
+          GameHeader(game: currentGame),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(currentGame.incarnation.description),

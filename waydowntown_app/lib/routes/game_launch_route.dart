@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:waydowntown/game_header.dart';
 import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/games/cardinal_memory.dart';
 import 'package:waydowntown/games/code_collector.dart';
@@ -10,7 +11,6 @@ import 'package:waydowntown/games/food_court_frenzy.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/games/single_string_input_game.dart';
 import 'package:waydowntown/games/string_collector.dart';
-import 'package:waydowntown/location_header.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';
@@ -103,7 +103,7 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        LocationHeader(game: widget.game),
+                        GameHeader(game: widget.game),
                         const SizedBox(height: 8),
                         SizedBox(
                           height: 100,

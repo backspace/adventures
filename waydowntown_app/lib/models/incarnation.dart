@@ -4,6 +4,7 @@ class Incarnation {
   final String id;
   final String concept;
   final String description;
+  final int? durationSeconds;
   final Region? region;
   final bool placed;
   final String? start;
@@ -14,6 +15,7 @@ class Incarnation {
     required this.concept,
     required this.description,
     this.region,
+    this.durationSeconds,
     required this.placed,
     this.start,
     this.answerLabels,
@@ -47,6 +49,7 @@ class Incarnation {
       description: attributes['description'] ?? '',
       region: region,
       placed: attributes['placed'] ?? false,
+      durationSeconds: attributes['duration_seconds'],
       start: attributes['start'],
       answerLabels: attributes['answer_labels'] != null
           ? List<String>.from(attributes['answer_labels'])

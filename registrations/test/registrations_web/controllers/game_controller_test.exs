@@ -31,7 +31,8 @@ defmodule RegistrationsWeb.GameControllerTest do
           description: "This is a ____",
           region_id: child_region.id,
           placed: true,
-          start: "Outside the coat check"
+          start: "Outside the coat check",
+          duration_seconds: 300
         })
 
       {:ok, game} = Waydowntown.create_game(%{}, %{"concept" => incarnation.concept})
@@ -79,6 +80,7 @@ defmodule RegistrationsWeb.GameControllerTest do
                  item["attributes"]["description"] == "This is a ____" &&
                  item["attributes"]["placed"] == true &&
                  item["attributes"]["start"] == "Outside the coat check" &&
+                 item["attributes"]["duration_seconds"] == 300 &&
                  item["relationships"]["region"]["data"]["id"] == child_region.id
              end)
 
