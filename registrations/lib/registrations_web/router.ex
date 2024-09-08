@@ -94,7 +94,10 @@ defmodule RegistrationsWeb.Router do
 
     resources("/answers", AnswerController, except: [:index, :new, :edit, :delete])
     resources("/incarnations", IncarnationController, only: [:index])
-    resources("/games", GameController, except: [:new, :edit, :delete, :update])
+
+    resources("/games", GameController, except: [:new, :edit, :delete, :update]) do
+      post "/start", GameController, :start, as: :start
+    end
   end
 
   scope "/fixme", RegistrationsWeb do

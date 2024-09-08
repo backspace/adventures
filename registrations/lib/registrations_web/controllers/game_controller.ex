@@ -70,4 +70,23 @@ defmodule RegistrationsWeb.GameController do
     game = Waydowntown.get_game!(params["id"])
     render(conn, "show.json", %{game: game, conn: conn, params: params})
   end
+
+  def start(conn, %{"id" => id}) do
+    game = Waydowntown.get_game!(id)
+
+    case Waydowntown.start_game(game) do
+      {:ok, started_game} ->
+        render(conn, "show.json", %{game: started_game, conn: conn, params: %{}})
+
+      {:error, message} when is_binary(message) ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: [%{detail: message}]})
+
+      {:error, _changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render("error.json", message: "Unable to start the game")
+    end
+  end
 end

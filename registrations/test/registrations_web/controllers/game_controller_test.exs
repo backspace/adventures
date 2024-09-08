@@ -364,4 +364,24 @@ defmodule RegistrationsWeb.GameControllerTest do
       assert incarnation.placed == true
     end
   end
+
+  describe "start game" do
+    setup do
+      incarnation = Repo.insert!(%Incarnation{concept: "fill_in_the_blank", answers: ["answer"], duration_seconds: 300})
+      {:ok, game} = Waydowntown.create_game(%{}, %{"concept" => incarnation.concept})
+      %{game: game}
+    end
+
+    test "starts the game", %{conn: conn, game: game} do
+      conn = post(conn, Routes.game_start_path(conn, :start, game), %{"data" => %{"type" => "games", "id" => game.id}})
+      assert %{"data" => %{"id" => _id, "attributes" => %{"started_at" => started_at}}} = json_response(conn, 200)
+      assert started_at != nil
+    end
+
+    test "returns error when starting an already started game", %{conn: conn, game: game} do
+      Waydowntown.start_game(game)
+      conn = post(conn, Routes.game_start_path(conn, :start, game), %{"data" => %{"type" => "games", "id" => game.id}})
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+  end
 end

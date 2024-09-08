@@ -21,6 +21,11 @@ defmodule RegistrationsWeb.AnswerController do
         |> put_status(:unprocessable_entity)
         |> put_view(RegistrationsWeb.ChangesetView)
         |> render("error.json", %{changeset: changeset})
+
+      {:error, message} when is_binary(message) ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: [%{detail: message}]})
     end
   end
 
@@ -46,6 +51,11 @@ defmodule RegistrationsWeb.AnswerController do
         |> put_status(:unprocessable_entity)
         |> put_view(RegistrationsWeb.ChangesetView)
         |> render("error.json", %{changeset: changeset})
+
+      {:error, message} when is_binary(message) ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: [%{detail: message}]})
     end
   end
 

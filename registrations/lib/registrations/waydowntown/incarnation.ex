@@ -11,6 +11,7 @@ defmodule Registrations.Waydowntown.Incarnation do
     field(:answers, {:array, :string})
     field(:concept, :string)
     field(:description, :string)
+    field(:duration_seconds, :integer)
     field(:placed, :boolean, default: true)
     field(:start, :string)
 
@@ -23,7 +24,7 @@ defmodule Registrations.Waydowntown.Incarnation do
   @doc false
   def changeset(incarnation, attrs) do
     incarnation
-    |> cast(attrs, [:concept, :description, :answers, :placed, :region_id, :start])
+    |> cast(attrs, [:concept, :description, :answers, :placed, :region_id, :start, :duration_seconds])
     |> validate_required([:concept, :description, :answers, :placed])
   end
 end

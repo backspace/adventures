@@ -13,6 +13,59 @@ defmodule RegistrationsWeb.AnswerControllerTest do
     |> put_req_header("content-type", "application/vnd.api+json")
   end
 
+  describe "create answer with timeouts" do
+    setup do
+      incarnation =
+        Repo.insert!(%Incarnation{
+          concept: "fill_in_the_blank",
+          answers: ["the answer"],
+          placed: true,
+          duration_seconds: 300
+        })
+
+      game = Repo.insert!(%Game{incarnation: incarnation})
+
+      %{game: game}
+    end
+
+    test "returns error when game has not been started", %{conn: conn, game: game} do
+      conn =
+        conn
+        |> setup_conn()
+        |> post(Routes.answer_path(conn, :create), %{
+          "data" => %{
+            "type" => "answers",
+            "attributes" => %{"answer" => "test answer"},
+            "relationships" => %{
+              "game" => %{"data" => %{"type" => "games", "id" => game.id}}
+            }
+          }
+        })
+
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Game has not been started"}]
+    end
+
+    test "returns error when game has expired", %{conn: conn, game: game} do
+      expired_game =
+        game |> Ecto.Changeset.change(started_at: DateTime.add(DateTime.utc_now(), -301, :second)) |> Repo.update!()
+
+      conn =
+        conn
+        |> setup_conn()
+        |> post(Routes.answer_path(conn, :create), %{
+          "data" => %{
+            "type" => "answers",
+            "attributes" => %{"answer" => "test answer"},
+            "relationships" => %{
+              "game" => %{"data" => %{"type" => "games", "id" => expired_game.id}}
+            }
+          }
+        })
+
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Game has expired"}]
+    end
+  end
+
   describe "create answer for fill_in_the_blank" do
     setup do
       region = Repo.insert!(%Region{name: "Test Region"})
@@ -25,7 +78,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           placed: true
         })
 
-      game = Repo.insert!(%Game{incarnation: incarnation})
+      game = Repo.insert!(%Game{incarnation: incarnation, started_at: DateTime.utc_now()})
 
       %{game: game, incarnation: incarnation, region: region}
     end
@@ -154,7 +207,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           placed: false
         })
 
-      game = Repo.insert!(%Game{incarnation: incarnation})
+      game = Repo.insert!(%Game{incarnation: incarnation, started_at: DateTime.utc_now()})
 
       %{game: game, incarnation: incarnation, region: region}
     end
@@ -321,7 +374,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           placed: true
         })
 
-      game = Repo.insert!(%Game{incarnation: incarnation})
+      game = Repo.insert!(%Game{incarnation: incarnation, started_at: DateTime.utc_now()})
 
       %{game: game, incarnation: incarnation, region: region}
     end
@@ -390,7 +443,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           placed: true
         })
 
-      game = Repo.insert!(%Game{incarnation: incarnation})
+      game = Repo.insert!(%Game{incarnation: incarnation, started_at: DateTime.utc_now()})
 
       %{game: game, incarnation: incarnation, region: region}
     end
@@ -459,7 +512,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           placed: false
         })
 
-      game = Repo.insert!(%Game{incarnation: incarnation})
+      game = Repo.insert!(%Game{incarnation: incarnation, started_at: DateTime.utc_now()})
 
       %{game: game, incarnation: incarnation, region: region}
     end
@@ -619,7 +672,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           placed: true
         })
 
-      game = Repo.insert!(%Game{incarnation: incarnation})
+      game = Repo.insert!(%Game{incarnation: incarnation, started_at: DateTime.utc_now()})
 
       %{game: game}
     end
@@ -730,7 +783,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           placed: true
         })
 
-      game = Repo.insert!(%Game{incarnation: incarnation})
+      game = Repo.insert!(%Game{incarnation: incarnation, started_at: DateTime.utc_now()})
 
       %{game: game, incarnation: incarnation, region: region}
     end
@@ -813,7 +866,7 @@ defmodule RegistrationsWeb.AnswerControllerTest do
           placed: true
         })
 
-      game = Repo.insert!(%Game{incarnation: incarnation})
+      game = Repo.insert!(%Game{incarnation: incarnation, started_at: DateTime.utc_now()})
 
       %{game: game, incarnation: incarnation, region: region}
     end

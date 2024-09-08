@@ -293,51 +293,61 @@ defmodule Registrations.Waydowntown do
   """
   def create_answer(%{"answer" => answer_text, "game_id" => game_id}) do
     game = get_game!(game_id)
-    incarnation = game.incarnation
 
-    case incarnation.concept do
-      "string_collector" ->
-        normalized_answer = normalize_string(answer_text)
-        existing_answers = Enum.map(game.answers, &normalize_string(&1.answer))
+    cond do
+      is_nil(game.started_at) ->
+        {:error, "Game has not been started"}
 
-        if normalized_answer in existing_answers do
-          changeset =
-            %Answer{}
-            |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
-            |> Ecto.Changeset.add_error(:detail, "Answer already submitted")
+      game_expired?(game) ->
+        {:error, "Game has expired"}
 
-          {:error, changeset}
-        else
-          create_answer_helper(answer_text, game_id, incarnation)
-        end
+      true ->
+        incarnation = game.incarnation
 
-      "food_court_frenzy" ->
-        [label, _] = String.split(answer_text, "|")
-        known_labels = incarnation_answer_labels(incarnation)
+        case incarnation.concept do
+          "string_collector" ->
+            normalized_answer = normalize_string(answer_text)
+            existing_answers = Enum.map(game.answers, &normalize_string(&1.answer))
 
-        cond do
-          label not in known_labels ->
-            changeset =
-              %Answer{}
-              |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
-              |> Ecto.Changeset.add_error(:detail, "Unknown label: #{label}")
+            if normalized_answer in existing_answers do
+              changeset =
+                %Answer{}
+                |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
+                |> Ecto.Changeset.add_error(:detail, "Answer already submitted")
 
-            {:error, changeset}
+              {:error, changeset}
+            else
+              create_answer_helper(answer_text, game_id, incarnation)
+            end
 
-          Enum.any?(game.answers, fn a -> a.correct and String.starts_with?(a.answer, label <> "|") end) ->
-            changeset =
-              %Answer{}
-              |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
-              |> Ecto.Changeset.add_error(:detail, "Answer already submitted for label: #{label}")
+          "food_court_frenzy" ->
+            [label, _] = String.split(answer_text, "|")
+            known_labels = incarnation_answer_labels(incarnation)
 
-            {:error, changeset}
+            cond do
+              label not in known_labels ->
+                changeset =
+                  %Answer{}
+                  |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
+                  |> Ecto.Changeset.add_error(:detail, "Unknown label: #{label}")
 
-          true ->
+                {:error, changeset}
+
+              Enum.any?(game.answers, fn a -> a.correct and String.starts_with?(a.answer, label <> "|") end) ->
+                changeset =
+                  %Answer{}
+                  |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
+                  |> Ecto.Changeset.add_error(:detail, "Answer already submitted for label: #{label}")
+
+                {:error, changeset}
+
+              true ->
+                create_answer_helper(answer_text, game_id, incarnation)
+            end
+
+          _ ->
             create_answer_helper(answer_text, game_id, incarnation)
         end
-
-      _ ->
-        create_answer_helper(answer_text, game_id, incarnation)
     end
   end
 
@@ -367,6 +377,14 @@ defmodule Registrations.Waydowntown do
         {:error, changeset}
     end
   end
+
+  defp game_expired?(%Game{started_at: started_at, incarnation: %Incarnation{duration_seconds: duration}})
+       when not is_nil(started_at) and not is_nil(duration) do
+    expiration_time = DateTime.add(started_at, duration, :second)
+    DateTime.after?(DateTime.utc_now(), expiration_time)
+  end
+
+  defp game_expired?(_), do: false
 
   @doc """
   Updates an answer.
@@ -510,5 +528,17 @@ defmodule Registrations.Waydowntown do
     string
     |> String.trim()
     |> String.downcase()
+  end
+
+  def start_game(%Game{} = game) do
+    case game.started_at do
+      nil ->
+        game
+        |> Game.changeset(%{started_at: DateTime.utc_now()})
+        |> Repo.update()
+
+      _ ->
+        {:error, "Game already started"}
+    end
   end
 end

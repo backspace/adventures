@@ -5,7 +5,7 @@ defmodule RegistrationsWeb.GameView do
   alias RegistrationsWeb.GameView
 
   def fields do
-    [:complete, :correct_answers, :total_answers]
+    [:complete, :correct_answers, :total_answers, :started_at]
   end
 
   def hidden(game) do

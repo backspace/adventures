@@ -14,6 +14,8 @@ defmodule Registrations.Waydowntown.Game do
     belongs_to(:winner_answer, Answer, type: :binary_id)
     has_many(:answers, Answer)
 
+    field(:started_at, :utc_datetime_usec)
+
     field(:custom_error, :string, virtual: true)
 
     timestamps()
@@ -22,7 +24,7 @@ defmodule Registrations.Waydowntown.Game do
   @doc false
   def changeset(game, attrs) do
     game
-    |> cast(attrs, [:incarnation_id, :winner_answer_id, :custom_error])
+    |> cast(attrs, [:incarnation_id, :winner_answer_id, :started_at, :custom_error])
     |> validate_required([:incarnation_id])
     |> assoc_constraint(:incarnation)
     |> assoc_constraint(:winner_answer)
