@@ -101,6 +101,7 @@ bluetooth_collector:
       latitude: 49.895305538809,
       longitude: -97.13854044484164,
       totalAnswers: 334455,
+      durationSeconds: 300,
     );
 
     await tester.pumpWidget(
@@ -118,6 +119,7 @@ bluetooth_collector:
     expect(find.text('test_start'), findsOneWidget);
     expect(find.byKey(const Key('total_answers')), findsOneWidget);
     expect(find.text('334455 answers'), findsOneWidget);
+    expect(find.text('5 minutes'), findsOneWidget);
 
     // scroll the container so the start button shows
     await tester.scrollUntilVisible(find.text('Start Game'), 100);
@@ -169,7 +171,7 @@ fill_in_the_blank:
     );
 
     await tester.pumpAndSettle();
-
+    await tester.scrollUntilVisible(find.text('Start Game'), 100);
     await tester.tap(find.text('Start Game'));
     await tester.pumpAndSettle();
 
@@ -181,7 +183,7 @@ fill_in_the_blank:
   });
 
   testWidgets(
-      'GameLaunchRoute displays message when location is not available and does not show answer count when there is only one',
+      'GameLaunchRoute displays message when location is not available and does not show answer count when there is only one or duration when there is none',
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '''
 bluetooth_collector:
@@ -194,6 +196,7 @@ bluetooth_collector:
       latitude: null,
       longitude: null,
       totalAnswers: 1,
+      durationSeconds: null,
     );
 
     await tester.pumpWidget(
@@ -207,14 +210,19 @@ bluetooth_collector:
 
     await tester.pumpAndSettle();
 
+    debugDumpApp();
+
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
     expect(find.text('test_start'), findsOneWidget);
-    expect(find.text('Start Game'), findsOneWidget);
     expect(find.byKey(const Key('total_answers')), findsNothing);
+    expect(find.text('Duration'), findsNothing);
 
     expect(find.byType(FlutterMap), findsNothing);
     expect(
         find.text('Map unavailable - location not specified'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Start Game'), 100);
+    expect(find.text('Start Game'), findsOneWidget);
   });
 
   testWidgets('GameLaunchRoute shows error for unknown concept',
@@ -255,6 +263,7 @@ cardinal_memory:
       concept: 'cardinal_memory',
       latitude: 49.895305538809,
       longitude: -97.13854044484164,
+      durationSeconds: 20,
     );
 
     await tester.pumpWidget(
@@ -270,6 +279,8 @@ cardinal_memory:
 
     expect(find.text('Cardinal Memory'), findsOneWidget);
     expect(find.text('Face north, east, south, or west'), findsOneWidget);
+    expect(find.text('20 seconds'), findsOneWidget);
+
     expect(find.text('Start Game'), findsOneWidget);
 
     // Verify that location information is not displayed
@@ -299,6 +310,7 @@ fill_in_the_blank:
     );
 
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Resume Game'), 100);
 
     expect(find.text('Resume Game'), findsOneWidget);
   });

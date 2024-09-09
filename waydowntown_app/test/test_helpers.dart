@@ -167,6 +167,7 @@ class TestHelpers {
     double? latitude,
     double? longitude,
     DateTime? startedAt,
+    int? durationSeconds = 300,
   }) {
     return Game(
       id: '22261813-2171-453f-a669-db08edc70d6d',
@@ -176,6 +177,7 @@ class TestHelpers {
         concept: concept,
         start: start,
         answerLabels: answerLabels,
+        durationSeconds: durationSeconds,
         region: Region(
           id: '324fd8f9-cd25-48be-a761-b8680fa72737',
           name: 'Test Region',

@@ -85,32 +85,53 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
                     'Starting point',
                     widget.game.incarnation.start!,
                   ),
-                if (widget.game.totalAnswers > 1)
-                  _buildInfoCard(
-                    context,
-                    'Goal',
-                    null,
-                    child: Text(
-                      '${widget.game.totalAnswers} answers',
-                      key: const Key('total_answers'),
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ),
-                if (isPlaced)
-                  _buildInfoCard(
-                    context,
-                    'Location',
-                    null,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        GameHeader(game: widget.game),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          height: 100,
-                          child: _buildMap(widget.game),
+                Row(
+                  children: [
+                    if (widget.game.totalAnswers > 1)
+                      Expanded(
+                        child: _buildInfoCard(
+                          context,
+                          'Goal',
+                          '${widget.game.totalAnswers} answers',
+                          key: const Key('total_answers'),
                         ),
-                      ],
+                      ),
+                    if (widget.game.totalAnswers > 1 &&
+                        widget.game.incarnation.durationSeconds != null)
+                      const SizedBox(width: 2),
+                    if (widget.game.incarnation.durationSeconds != null)
+                      Expanded(
+                        child: _buildInfoCard(
+                          context,
+                          'Duration',
+                          _formatDuration(
+                              widget.game.incarnation.durationSeconds!),
+                          key: const Key('duration'),
+                        ),
+                      ),
+                  ],
+                ),
+                if (isPlaced)
+                  Card(
+                    color: Colors.white,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Location',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                          const SizedBox(height: 8),
+                          GameHeader(game: widget.game),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            height: 100,
+                            child: _buildMap(widget.game),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ElevatedButton(
@@ -131,6 +152,7 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
                         );
                         if (response.statusCode == 200) {
                           setState(() {
+                            logger.d('Game started: ${response.data}');
                             widget.game = Game.fromJson(response.data);
                           });
                         }
@@ -154,6 +176,17 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
         );
       },
     );
+  }
+
+  String _formatDuration(int seconds) {
+    final duration = Duration(seconds: seconds);
+    if (duration.inHours > 0) {
+      return '${duration.inHours} hour${duration.inHours > 1 ? 's' : ''}';
+    } else if (duration.inMinutes > 0) {
+      return '${duration.inMinutes} minute${duration.inMinutes > 1 ? 's' : ''}';
+    } else {
+      return '${duration.inSeconds} second${duration.inSeconds > 1 ? 's' : ''}';
+    }
   }
 
   Widget _buildMap(Game game) {
@@ -235,9 +268,10 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
     }
   }
 
-  Widget _buildInfoCard(BuildContext context, String title, String? content,
-      {Widget? child}) {
+  Widget _buildInfoCard(BuildContext context, String title, String content,
+      {Key? key}) {
     return Card(
+      key: key,
       color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -246,10 +280,10 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
           children: [
             Text(
               title,
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
-            if (content != null) Text(content) else if (child != null) child,
+            Text(content),
           ],
         ),
       ),
