@@ -148,6 +148,7 @@
       "type": "baselayer",
       "format": "pbf",
       "tiles": ["https://example.com/liechtenstein/{z}/{x}/{y}.pbf"]
-    }
+    },
+    "bounding_box": [-97.15313, 49.885123, -97.134805, 49.897288]
   }
 }
