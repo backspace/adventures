@@ -10,6 +10,7 @@ flavors:
       bundleId: "ca.chromatin.waydowntown-local"
     macos:
       bundleId: "ca.chromatin.waydowntown-local"
+
   production:
     app:
       name: "waydown"
