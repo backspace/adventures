@@ -25,7 +25,7 @@ jobs:
           channel: "stable"
 
       # Create asset file in .gitignore
-      - run: touch assets/.env.local
+      - run: touch .env.local
         working-directory: waydowntown_app
 
       - run: flutter pub get
@@ -44,7 +44,7 @@ jobs:
           channel: "stable"
 
       # Create asset file in .gitignore
-      - run: touch assets/.env.local
+      - run: touch .env.local
         working-directory: waydowntown_app
 
       - run: flutter pub get
