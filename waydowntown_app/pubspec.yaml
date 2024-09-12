@@ -104,6 +104,7 @@ flutter:
 
   assets:
     - .env
+    - .env.local
     - assets/images/
     - assets/concepts.yaml
     - assets/walkway.mbtiles

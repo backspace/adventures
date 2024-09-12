@@ -7,8 +7,6 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter/foundation.dart';
 
 FutureOr<void> main() async {
-  await dotenv.load(fileName: '.env');
-
   Logger.level = kDebugMode ? Level.debug : Level.warning;
 
   if (dotenv.env['SENTRY_DSN'] != null) {
