@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.AnswerView do
   alias RegistrationsWeb.AnswerView
 
   def fields do
-    [:answer, :correct]
+    [:label]
   end
 
   def render("show.json", %{answer: answer, conn: conn, params: params}) do
@@ -12,6 +12,6 @@ defmodule RegistrationsWeb.AnswerView do
   end
 
   def relationships do
-    [game: {RegistrationsWeb.GameView, :include}]
+    [specification: {RegistrationsWeb.SpecificationView, :include}]
   end
 end

@@ -1,20 +1,20 @@
-defmodule RegistrationsWeb.AnswerController do
+defmodule RegistrationsWeb.SubmissionController do
   use RegistrationsWeb, :controller
 
   alias Registrations.Waydowntown
-  alias Registrations.Waydowntown.Answer
+  alias Registrations.Waydowntown.Submission
 
-  plug(JSONAPI.QueryParser, view: RegistrationsWeb.AnswerView)
+  plug(JSONAPI.QueryParser, view: RegistrationsWeb.SubmissionView)
 
   action_fallback(RegistrationsWeb.FallbackController)
 
   def create(conn, params) do
-    case Waydowntown.create_answer(params) do
-      {:ok, %Answer{} = answer} ->
+    case Waydowntown.create_submission(params) do
+      {:ok, %Submission{} = submission} ->
         conn
         |> put_status(:created)
-        |> put_resp_header("location", Routes.answer_path(conn, :show, answer))
-        |> render("show.json", %{answer: answer, conn: conn, params: params})
+        |> put_resp_header("location", Routes.submission_path(conn, :show, submission))
+        |> render("show.json", %{submission: submission, conn: conn, params: params})
 
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
@@ -30,21 +30,21 @@ defmodule RegistrationsWeb.AnswerController do
   end
 
   def update(conn, params) do
-    case Waydowntown.update_answer(params) do
-      {:ok, %Answer{} = answer} ->
+    case Waydowntown.update_submission(params) do
+      {:ok, %Submission{} = submission} ->
         conn
         |> put_status(:ok)
-        |> render("show.json", %{answer: answer, conn: conn, params: params})
+        |> render("show.json", %{submission: submission, conn: conn, params: params})
 
-      {:error, :cannot_update_placed_incarnation_answer} ->
+      {:error, :cannot_update_placed_incarnation_submission} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(%{errors: [%{detail: "Cannot update answer for placed incarnation"}]})
+        |> json(%{errors: [%{detail: "Cannot update submission for placed incarnation"}]})
 
-      {:error, :cannot_update_incorrect_answer} ->
+      {:error, :cannot_update_incorrect_submission} ->
         conn
         |> put_status(:unprocessable_entity)
-        |> json(%{errors: [%{detail: "Cannot update an incorrect answer"}]})
+        |> json(%{errors: [%{detail: "Cannot update an incorrect submission"}]})
 
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
@@ -60,7 +60,7 @@ defmodule RegistrationsWeb.AnswerController do
   end
 
   def show(conn, %{"id" => id}) do
-    answer = Waydowntown.get_answer!(id)
-    render(conn, "show.json", answer: answer)
+    submission = Waydowntown.get_submission!(id)
+    render(conn, "show.json", submission: submission)
   end
 end
