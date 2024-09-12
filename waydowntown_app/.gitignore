@@ -10,6 +10,8 @@
 .svn/
 migrate_working_dir/
 
+.env.local
+
 # IntelliJ related
 *.iml
 *.ipr
@@ -41,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+## Obj-C/Swift specific
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# fastlane
+**/fastlane/report.xml
