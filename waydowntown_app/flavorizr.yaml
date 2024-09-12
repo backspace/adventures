@@ -5,7 +5,7 @@ flavors:
       name: "LOCAL"
 
     android:
-      applicationId: "ca.chromatin.waydowntown-local"
+      applicationId: "ca.chromatin.waydowntown_local"
     ios:
       bundleId: "ca.chromatin.waydowntown-local"
     macos:
