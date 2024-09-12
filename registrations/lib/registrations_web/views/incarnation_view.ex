@@ -24,8 +24,7 @@ defmodule RegistrationsWeb.IncarnationView do
 
   def relationships do
     [
-      region: {RegistrationsWeb.RegionView, :include},
-      "region.parent": {:region, RegistrationsWeb.RegionView, :include}
+      region: {RegistrationsWeb.RegionView, :include}
     ]
   end
 end
