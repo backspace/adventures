@@ -121,7 +121,3 @@ flutter:
     - family: Arrows
       fonts:
         - asset: fonts/roadgeek-arrows.ttf
-
-flutter_native_splash:
-  color: "#059FC2"
-  image: assets/images/logo.png
