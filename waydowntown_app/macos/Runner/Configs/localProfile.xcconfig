@@ -1,0 +1,7 @@
+#include "../../Flutter/localProfile.xcconfig"
+#include "Warnings.xcconfig"
+
+FLUTTER_TARGET=lib/main_local.dart
+ASSET_PREFIX=local
+BUNDLE_NAME=LOCAL
+BUNDLE_DISPLAY_NAME=LOCAL

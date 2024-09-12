@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:waydowntown/main.dart';
+import 'package:waydowntown/app.dart';
 
 class BluetoothScannerRoute extends StatefulWidget {
   const BluetoothScannerRoute({super.key});

@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:waydowntown/app.dart';
 import 'package:waydowntown/flutter_blue_plus_mockable.dart';
 import 'package:waydowntown/game_header.dart';
-import 'package:waydowntown/main.dart';
 import 'package:waydowntown/models/game.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 

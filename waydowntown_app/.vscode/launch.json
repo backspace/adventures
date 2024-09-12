@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "local Debug",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "args": ["--flavor", "local"],
+      "program": "lib/main_local.dart"
+    },
+    {
+      "name": "local Profile",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "args": ["--flavor", "local"],
+      "program": "lib/main_local.dart"
+    },
+    {
+      "name": "local Release",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "args": ["--flavor", "local"],
+      "program": "lib/main_local.dart"
+    },
+    {
+      "name": "production Debug",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "debug",
+      "args": ["--flavor", "production"],
+      "program": "lib/main_production.dart"
+    },
+    {
+      "name": "production Profile",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "profile",
+      "args": ["--flavor", "production"],
+      "program": "lib/main_production.dart"
+    },
+    {
+      "name": "production Release",
+      "request": "launch",
+      "type": "dart",
+      "flutterMode": "release",
+      "args": ["--flavor", "production"],
+      "program": "lib/main_production.dart"
+    }
+  ]
+}

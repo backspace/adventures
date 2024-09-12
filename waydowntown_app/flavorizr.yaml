@@ -1,0 +1,22 @@
+ide: vscode
+flavors:
+  local:
+    app:
+      name: "LOCAL"
+
+    android:
+      applicationId: "ca.chromatin.waydowntown-local"
+    ios:
+      bundleId: "ca.chromatin.waydowntown-local"
+    macos:
+      bundleId: "ca.chromatin.waydowntown-local"
+  production:
+    app:
+      name: "waydown"
+
+    android:
+      applicationId: "ca.chromatin.waydowntown"
+    ios:
+      bundleId: "ca.chromatin.waydowntown"
+    macos:
+      bundleId: "ca.chromatin.waydowntown"
