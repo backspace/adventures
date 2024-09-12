@@ -24,6 +24,10 @@ jobs:
         with:
           channel: "stable"
 
+      # Create asset file in .gitignore
+      - run: touch assets/.env.local
+        working-directory: waydowntown_app
+
       - run: flutter pub get
         working-directory: waydowntown_app
       - run: flutter test
@@ -38,6 +42,10 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: "stable"
+
+      # Create asset file in .gitignore
+      - run: touch assets/.env.local
+        working-directory: waydowntown_app
 
       - run: flutter pub get
         working-directory: waydowntown_app
