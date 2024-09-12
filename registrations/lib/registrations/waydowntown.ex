@@ -25,7 +25,7 @@ defmodule Registrations.Waydowntown do
 
   """
   def list_games do
-    Game |> Repo.all() |> Repo.preload(incarnation: [region: [:parent]])
+    Game |> Repo.all() |> Repo.preload(incarnation: [region: [parent: [parent: [:parent]]]])
   end
 
   @doc """
@@ -45,7 +45,7 @@ defmodule Registrations.Waydowntown do
   def get_game!(id) do
     Game
     |> Repo.get!(id)
-    |> Repo.preload([:answers, incarnation: [region: [:parent]]])
+    |> Repo.preload([:answers, incarnation: [region: [parent: [parent: [:parent]]]]])
   end
 
   @doc """
@@ -244,7 +244,7 @@ defmodule Registrations.Waydowntown do
 
   """
   def list_incarnations do
-    Incarnation |> Repo.all() |> Repo.preload(region: [:parent])
+    Incarnation |> Repo.all() |> Repo.preload(region: [parent: [parent: [:parent]]])
   end
 
   @doc """
