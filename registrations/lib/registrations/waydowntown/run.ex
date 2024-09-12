@@ -1,20 +1,19 @@
-defmodule Registrations.Waydowntown.Game do
+defmodule Registrations.Waydowntown.Run do
   @moduledoc false
   use Ecto.Schema
 
   import Ecto.Changeset
 
-  alias Registrations.Waydowntown.Answer
-
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "waydowntown"
 
-  schema "games" do
-    belongs_to(:incarnation, Registrations.Waydowntown.Incarnation, type: :binary_id)
-    belongs_to(:winner_answer, Answer, type: :binary_id)
-    has_many(:answers, Answer)
+  schema "runs" do
+    belongs_to(:specification, Registrations.Waydowntown.Specification, type: :binary_id)
+    has_many(:answers, Registrations.Waydowntown.Answer)
 
     field(:started_at, :utc_datetime_usec)
+
+    belongs_to(:winner_submission, Registrations.Waydowntown.Submission, type: :binary_id)
 
     field(:custom_error, :string, virtual: true)
 
@@ -24,10 +23,10 @@ defmodule Registrations.Waydowntown.Game do
   @doc false
   def changeset(game, attrs) do
     game
-    |> cast(attrs, [:incarnation_id, :winner_answer_id, :started_at, :custom_error])
-    |> validate_required([:incarnation_id])
-    |> assoc_constraint(:incarnation)
-    |> assoc_constraint(:winner_answer)
+    |> cast(attrs, [:specification_id, :winner_submission_id, :started_at, :custom_error])
+    |> validate_required([:specification_id])
+    |> assoc_constraint(:specification)
+    |> assoc_constraint(:winner_submission)
     |> validate_custom_error()
   end
 

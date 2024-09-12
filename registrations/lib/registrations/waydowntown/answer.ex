@@ -3,20 +3,16 @@ defmodule Registrations.Waydowntown.Answer do
   use Ecto.Schema
 
   import Ecto.Changeset
-  import Ecto.Query
-
-  alias Registrations.Repo
-  alias Registrations.Waydowntown.Answer
-  alias Registrations.Waydowntown.Game
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "waydowntown"
 
   schema "answers" do
+    field(:label, :string)
     field(:answer, :string)
-    field(:correct, :boolean, default: false)
+    field(:order, :integer)
 
-    belongs_to(:game, Game, type: :binary_id)
+    belongs_to(:specification, Registrations.Waydowntown.Specification, type: :binary_id)
 
     timestamps()
   end
@@ -24,38 +20,8 @@ defmodule Registrations.Waydowntown.Answer do
   @doc false
   def changeset(answer, attrs) do
     answer
-    |> cast(attrs, [:answer, :correct, :game_id])
-    |> validate_required([:answer, :correct, :game_id])
-    |> assoc_constraint(:game)
-    |> validate_game_has_no_winner()
-    |> validate_answer_overwrite()
-  end
-
-  defp validate_answer_overwrite(changeset) do
-    with game_id when not is_nil(game_id) <- get_field(changeset, :game_id),
-         %{incarnation: %{placed: false}} = game <- Game |> Repo.get(game_id) |> Repo.preload(:incarnation),
-         %Answer{} = existing_answer <- Repo.get_by(Answer, game_id: game_id, correct: true) do
-      change(changeset, %{id: existing_answer.id})
-    else
-      _ -> changeset
-    end
-  end
-
-  defp validate_game_has_no_winner(changeset) do
-    changeset
-    |> get_field(:game_id)
-    |> case do
-      nil ->
-        changeset
-
-      game_id ->
-        Game
-        |> Registrations.Repo.get(game_id)
-        |> case do
-          %Game{winner_answer_id: nil} -> changeset
-          %Game{} -> add_error(changeset, :game_id, "game already has a winner")
-          nil -> changeset
-        end
-    end
+    |> cast(attrs, [:answer, :order, :specification_id])
+    |> validate_required([:answer, :order, :specification_id])
+    |> assoc_constraint(:specification)
   end
 end

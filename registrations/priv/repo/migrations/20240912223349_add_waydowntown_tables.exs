@@ -52,7 +52,7 @@ defmodule Registrations.Repo.Migrations.AddWaydowntownTables do
     create table(:submissions, prefix: "waydowntown", primary_key: false) do
       add(:id, :uuid, primary_key: true, default: fragment("gen_random_uuid()"))
 
-      add(:answer, :text)
+      add(:submission, :text)
       add(:correct, :boolean)
 
       add(:run_id, references(:runs, type: :uuid, on_delete: :nilify_all))
