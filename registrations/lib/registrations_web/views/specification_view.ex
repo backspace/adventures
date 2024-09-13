@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.SpecificationView do
   alias RegistrationsWeb.SpecificationView
 
   def fields do
-    [:concept, :placed, :start_description, :duration]
+    [:concept, :start_description, :duration]
   end
 
   def render("index.json", %{specifications: specifications, conn: conn, params: params}) do
