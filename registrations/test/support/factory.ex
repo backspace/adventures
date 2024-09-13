@@ -54,15 +54,19 @@ defmodule Registrations.Factory do
     %Registrations.Waydowntown.Answer{}
   end
 
-  def game_factory do
-    %Registrations.Waydowntown.Game{}
-  end
-
-  def incarnation_factory do
-    %Registrations.Waydowntown.Incarnation{}
-  end
-
   def region_factory do
     %Registrations.Waydowntown.Region{}
+  end
+
+  def run_factory do
+    %Registrations.Waydowntown.Run{}
+  end
+
+  def specification_factory do
+    %Registrations.Waydowntown.Specification{}
+  end
+
+  def submission_factory do
+    %Registrations.Waydowntown.Submission{}
   end
 end
