@@ -129,7 +129,6 @@ defmodule Registrations.Waydowntown do
 
     Specification
     |> join(:inner, [i], r in assoc(i, :region))
-    |> where([i], i.placed == true)
     |> order_by([i, r], fragment("ST_Distance(?, ?)", r.geom, ^point))
     |> limit(1)
     |> Repo.one()
