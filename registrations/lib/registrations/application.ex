@@ -14,15 +14,15 @@ defmodule Registrations.Application do
     })
 
     # Without this the GameController filter produces this error: not an already existing atom
-    incarnation_concept_hack = String.to_atom("incarnation.concept")
-    incarnation_id_hack = String.to_atom("incarnation.id")
-    incarnation_placed_hack = String.to_atom("incarnation.placed")
-    incarnation_position_hack = String.to_atom("incarnation.position")
+    specification_concept_hack = String.to_atom("specification.concept")
+    specification_id_hack = String.to_atom("specification.id")
+    specification_placed_hack = String.to_atom("specification.placed")
+    specification_position_hack = String.to_atom("specification.position")
 
-    Logger.info("Hack: #{inspect(incarnation_concept_hack)}")
-    Logger.info("Hack: #{inspect(incarnation_id_hack)}")
-    Logger.info("Hack: #{inspect(incarnation_placed_hack)}")
-    Logger.info("Hack: #{inspect(incarnation_position_hack)}")
+    Logger.info("Hack: #{inspect(specification_concept_hack)}")
+    Logger.info("Hack: #{inspect(specification_id_hack)}")
+    Logger.info("Hack: #{inspect(specification_placed_hack)}")
+    Logger.info("Hack: #{inspect(specification_position_hack)}")
 
     children = [
       # Start the Ecto repository
