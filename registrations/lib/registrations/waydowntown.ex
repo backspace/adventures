@@ -80,7 +80,7 @@ defmodule Registrations.Waydowntown do
           create_run_with_specific_specification(attrs, id)
 
         nil ->
-          create_run_with_new_specification(attrs)
+          create_run_with_placed_specification(attrs)
       end
 
     case case_result do
