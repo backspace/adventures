@@ -46,7 +46,7 @@ defmodule Registrations.Waydowntown do
   def get_run!(id) do
     Run
     |> Repo.get!(id)
-    |> Repo.preload([:submissions, specification: [:answers]])
+    |> Repo.preload([:submissions, specification: [:answers, region: [parent: [parent: [parent: :parent]]]]])
   end
 
   @doc """

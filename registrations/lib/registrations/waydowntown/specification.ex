@@ -26,5 +26,6 @@ defmodule Registrations.Waydowntown.Specification do
     specification
     |> cast(attrs, [:concept, :start_description, :task_description, :duration, :region_id])
     |> validate_required([:concept, :task_description])
+    |> assoc_constraint(:region)
   end
 end

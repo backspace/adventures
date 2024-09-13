@@ -74,16 +74,13 @@ defmodule RegistrationsWeb.RunControllerTest do
       assert run_id == run.id
       assert specification_id == specification.id
 
-      assert Enum.any?(included, fn item ->
-               item["type"] == "specifications" &&
-                 item["id"] == specification.id &&
-                 item["attributes"]["concept"] == "fill_in_the_blank" &&
-                 item["attributes"]["start_description"] == "Outside the coat check" &&
-                 item["attributes"]["duration_seconds"] == 300 &&
-                 item["relationships"]["region"]["data"]["id"] == child_region.id
-             end)
-
       included_specification = Enum.find(included, &(&1["type"] == "specifications"))
+
+      assert included_specification["id"] == specification.id
+      assert included_specification["attributes"]["concept"] == "fill_in_the_blank"
+      assert included_specification["attributes"]["start_description"] == "Outside the coat check"
+      assert included_specification["attributes"]["duration"] == 300
+      assert included_specification["relationships"]["region"]["data"]["id"] == child_region.id
       refute included_specification["attributes"]["task_description"]
 
       assert Enum.any?(included, fn item ->
