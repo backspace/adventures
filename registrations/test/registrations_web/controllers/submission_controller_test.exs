@@ -2,6 +2,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
   use RegistrationsWeb.ConnCase
 
   alias Registrations.Waydowntown
+  alias Registrations.Waydowntown.Answer
   alias Registrations.Waydowntown.Region
   alias Registrations.Waydowntown.Run
   alias Registrations.Waydowntown.Specification
@@ -19,7 +20,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
         Repo.insert!(%Specification{
           concept: "fill_in_the_blank",
           answers: [%Answer{answer: "the answer"}],
-          duration_seconds: 300
+          duration: 300
         })
 
       run = Repo.insert!(%Run{specification: specification})
@@ -801,8 +802,8 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
         )
 
       assert %{"id" => id} = json_response(conn, 201)["data"]
-      answer = Waydowntown.get_answer!(id)
-      assert answer.correct
+      submission = Waydowntown.get_submission!(id)
+      assert submission.correct
 
       run = Waydowntown.get_run!(run.id)
       assert run.winner_submission_id == submission.id
@@ -926,7 +927,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       refute submission.correct
     end
 
-    test "returns 422 when submitting an unknown label", %{conn: conn, run: run, burger: burger} do
+    test "returns 422 when submitting an unknown label", %{conn: conn, run: run} do
       conn =
         conn
         |> setup_conn()

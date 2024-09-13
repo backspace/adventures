@@ -317,7 +317,7 @@ defmodule Registrations.Waydowntown do
 
               {:error, changeset}
             else
-              create_submission_helper(submission_text, run_id)
+              create_submission_helper(submission_text, run_id, specification)
             end
 
           # FIXME handle submissions with attached answers
@@ -343,21 +343,21 @@ defmodule Registrations.Waydowntown do
                 {:error, changeset}
 
               true ->
-                create_submission_helper(submission_text, run_id)
+                create_submission_helper(submission_text, run_id, specification)
             end
 
           _ ->
-            create_submission_helper(submission_text, run_id)
+            create_submission_helper(submission_text, run_id, specification)
         end
     end
   end
 
-  def submission_answer_labels(specification) do
+  defp specification_answer_labels(specification) do
     Enum.map(specification.answers, fn a -> a.label end)
   end
 
-  defp create_submission_helper(submission_text, run_id) do
-    correct = check_submission_correctness(run, submission_text)
+  defp create_submission_helper(submission_text, run_id, specification) do
+    correct = check_submission_correctness(specification, submission_text)
 
     attrs = %{
       "submission" => submission_text,
@@ -379,7 +379,7 @@ defmodule Registrations.Waydowntown do
     end
   end
 
-  defp run_expired?(%Run{started_at: started_at, specification: %Specification{duration_seconds: duration}})
+  defp run_expired?(%Run{started_at: started_at, specification: %Specification{duration: duration}})
        when not is_nil(started_at) and not is_nil(duration) do
     expiration_time = DateTime.add(started_at, duration, :second)
     DateTime.after?(DateTime.utc_now(), expiration_time)
@@ -424,7 +424,7 @@ defmodule Registrations.Waydowntown do
         |> Repo.update()
         |> case do
           {:ok, updated_submission} ->
-            run = check_and_update_run_winner(run, updated_submission)
+            check_and_update_run_winner(run, updated_submission)
             {:ok, Repo.preload(updated_submission, run: [:submissions, :specification])}
 
           {:error, changeset} ->
@@ -461,12 +461,12 @@ defmodule Registrations.Waydowntown do
          submission_text
        )
        when concept in ["bluetooth_collector", "code_collector", "string_collector"] do
-    normalized_answer = if concept == "string_collector", do: normalize_string(answer_text), else: answer_text
+    normalized_answer = if concept == "string_collector", do: normalize_string(submission_text), else: submission_text
 
     correct_answers =
       if concept == "string_collector",
-        do: Enum.map(correct_answers, &normalize_string(&1.answer)),
-        else: Enum.map(correct_answers, & &1.answer)
+        do: Enum.map(answers, &normalize_string(&1.answer)),
+        else: Enum.map(answers, & &1.answer)
 
     normalized_answer in correct_answers
   end
@@ -478,8 +478,8 @@ defmodule Registrations.Waydowntown do
        when concept in ["orientation_memory", "cardinal_memory"] do
     expected_answer = Enum.join(expected_answers, "|")
 
-    String.starts_with?(expected_answer, answer_text) and
-      String.length(answer_text) <= String.length(expected_answer)
+    String.starts_with?(expected_answer, submission_text) and
+      String.length(submission_text) <= String.length(expected_answer)
   end
 
   # FIXME needs adjustment for checking answer relation
@@ -532,7 +532,7 @@ defmodule Registrations.Waydowntown do
         run = get_run!(run.id)
         correct_submissions = Enum.count(run.submissions, & &1.correct)
         total_answers = length(run.specification.answers)
-        correct_answers == total_answers
+        correct_submissions == total_answers
 
       _ ->
         false

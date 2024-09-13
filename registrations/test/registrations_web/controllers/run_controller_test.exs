@@ -2,6 +2,7 @@ defmodule RegistrationsWeb.RunControllerTest do
   use RegistrationsWeb.ConnCase
 
   alias Registrations.Waydowntown
+  alias Registrations.Waydowntown.Answer
   alias Registrations.Waydowntown.Region
   alias Registrations.Waydowntown.Specification
 
@@ -229,7 +230,7 @@ defmodule RegistrationsWeb.RunControllerTest do
       existing_specification =
         Repo.insert!(%Specification{
           concept: "orientation_memory",
-          description: "Existing description",
+          task_description: "Existing description",
           region_id: Repo.insert!(%Region{}).id
         })
 
@@ -309,7 +310,7 @@ defmodule RegistrationsWeb.RunControllerTest do
       closer_specification =
         Repo.insert!(%Specification{
           concept: "fill_in_the_blank",
-          description: "This is a ____",
+          task_description: "This is a ____",
           region: closer_region
         })
 
@@ -355,10 +356,10 @@ defmodule RegistrationsWeb.RunControllerTest do
       Repo.insert!(%Specification{
         concept: "food_court_frenzy",
         answers: [
-          %Answer{label: "Burger", price: "6.99"},
-          %Answer{label: "Pizza", price: "7.99"},
-          %Answer{label: "Salad", price: "5.99"},
-          %Answer{label: "Soda", price: "3.99"}
+          %Answer{label: "Burger", answer: "6.99"},
+          %Answer{label: "Pizza", answer: "7.99"},
+          %Answer{label: "Salad", answer: "5.99"},
+          %Answer{label: "Soda", answer: "3.99"}
         ],
         region: Repo.insert!(%Region{})
       })
