@@ -7,8 +7,9 @@ defmodule Registrations.Waydowntown do
 
   alias Registrations.Repo
   alias Registrations.Waydowntown.Answer
-  alias Registrations.Waydowntown.Game
-  alias Registrations.Waydowntown.Incarnation
+  alias Registrations.Waydowntown.Run
+  alias Registrations.Waydowntown.Specification
+  alias Registrations.Waydowntown.Submission
 
   @doc false
   defp concepts_yaml do
@@ -16,80 +17,80 @@ defmodule Registrations.Waydowntown do
   end
 
   @doc """
-  Returns the list of games.
+  Returns the list of runs.
 
   ## Examples
 
-      iex> list_games()
-      [%Game{}, ...]
+      iex> list_runs()
+      [%Run{}, ...]
 
   """
-  def list_games do
-    Game |> Repo.all() |> Repo.preload(incarnation: [region: [parent: [parent: [:parent]]]])
+  def list_runs do
+    Run |> Repo.all() |> Repo.preload(specification: [region: [parent: [parent: [:parent]]]])
   end
 
   @doc """
-  Gets a single game.
+  Gets a single run.
 
-  Raises `Ecto.NoResultsError` if the Game does not exist.
+  Raises `Ecto.NoResultsError` if the Run does not exist.
 
   ## Examples
 
-      iex> get_game!(123)
-      %Game{}
+      iex> get_run!(123)
+      %Run{}
 
-      iex> get_game!(456)
+      iex> get_run!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_game!(id) do
-    Game
+  def get_run!(id) do
+    Run
     |> Repo.get!(id)
-    |> Repo.preload([:answers, incarnation: [region: [parent: [parent: [:parent]]]]])
+    |> Repo.preload([:submissions, specification: [:answers]])
   end
 
   @doc """
-  Creates a game.
+  Creates a run.
 
   ## Examples
 
-      iex> create_game(%{field: value})
-      {:ok, %Game{}}
+      iex> create_run(%{field: value})
+      {:ok, %Run{}}
 
-      iex> create_game(%{field: bad_value})
+      iex> create_run(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_game(attrs \\ %{}, incarnation_filter \\ nil) do
+  def create_run(attrs \\ %{}, specification_filter \\ nil) do
     case_result =
-      case incarnation_filter do
+      case specification_filter do
         %{"placed" => "false"} ->
-          create_game_with_new_incarnation(attrs)
+          create_run_with_new_specification(attrs)
 
         %{"placed" => "true"} ->
-          create_game_with_placed_incarnation(attrs)
+          create_run_with_placed_specification(attrs)
 
         %{"position" => {latitude, longitude}} ->
-          create_game_with_nearest_incarnation(attrs, latitude, longitude)
+          create_run_with_nearest_specification(attrs, latitude, longitude)
 
         %{"concept" => concept} ->
-          create_game_with_concept(attrs, concept)
+          create_run_with_concept(attrs, concept)
 
-        %{"incarnation_id" => id} ->
-          create_game_with_specific_incarnation(attrs, id)
+        %{"specification_id" => id} ->
+          create_run_with_specific_specification(attrs, id)
 
         nil ->
-          create_game_with_placed_incarnation(attrs)
+          create_run_with_new_specification(attrs)
       end
 
     case case_result do
-      {:ok, game} ->
-        {:ok, game}
+      {:ok, run} ->
+        {:ok, run}
 
       {:error, error_message} when is_binary(error_message) ->
         changeset =
-          %Game{}
-          |> Game.changeset(attrs)
+          %Run{}
+          |> Run.changeset(attrs)
           |> Ecto.Changeset.add_error(:base, error_message)
 
         {:error, changeset}
@@ -99,34 +100,34 @@ defmodule Registrations.Waydowntown do
     end
   end
 
-  defp create_game_with_placed_incarnation(attrs) do
-    case get_random_incarnation(%{"placed" => true}) do
+  defp create_run_with_placed_specification(attrs) do
+    case get_random_specification(%{"placed" => true}) do
       nil ->
-        {:error, "No placed incarnation available"}
+        {:error, "No placed specification available"}
 
-      incarnation ->
-        %Game{}
-        |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
+      specification ->
+        %Run{}
+        |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
         |> Repo.insert()
     end
   end
 
-  defp create_game_with_nearest_incarnation(attrs, latitude, longitude) do
-    case get_nearest_incarnation(latitude, longitude) do
+  defp create_run_with_nearest_specification(attrs, latitude, longitude) do
+    case get_nearest_specification(latitude, longitude) do
       nil ->
-        {:error, "No incarnation found near the specified position"}
+        {:error, "No specification found near the specified position"}
 
-      incarnation ->
-        %Game{}
-        |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
+      specification ->
+        %Run{}
+        |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
         |> Repo.insert()
     end
   end
 
-  defp get_nearest_incarnation(latitude, longitude) do
+  defp get_nearest_specification(latitude, longitude) do
     point = %Geo.Point{coordinates: {longitude, latitude}, srid: 4326}
 
-    Incarnation
+    Specification
     |> join(:inner, [i], r in assoc(i, :region))
     |> where([i], i.placed == true)
     |> order_by([i, r], fragment("ST_Distance(?, ?)", r.geom, ^point))
@@ -134,37 +135,37 @@ defmodule Registrations.Waydowntown do
     |> Repo.one()
   end
 
-  defp create_game_with_concept(attrs, concept) do
+  defp create_run_with_concept(attrs, concept) do
     concept_data = concepts_yaml()[concept]
 
     if concept_data["placed"] == false do
-      create_game_with_new_incarnation(attrs, concept)
+      create_run_with_new_specification(attrs, concept)
     else
-      case get_random_incarnation(%{"concept" => concept, "placed" => true}) do
+      case get_random_specification(%{"concept" => concept, "placed" => true}) do
         nil ->
-          {:error, "No incarnation with the specified concept available"}
+          {:error, "No specification with the specified concept available"}
 
-        incarnation ->
-          %Game{}
-          |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
+        specification ->
+          %Run{}
+          |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
           |> Repo.insert()
       end
     end
   end
 
-  defp create_game_with_specific_incarnation(attrs, incarnation_id) do
-    case Repo.get(Incarnation, incarnation_id) do
+  defp create_run_with_specific_specification(attrs, specification_id) do
+    case Repo.get(Specification, specification_id) do
       nil ->
-        {:error, "Specified incarnation not found"}
+        {:error, "Specified specification not found"}
 
-      incarnation ->
-        %Game{}
-        |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
+      specification ->
+        %Run{}
+        |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
         |> Repo.insert()
     end
   end
 
-  defp create_game_with_new_incarnation(attrs, concept \\ nil) do
+  defp create_run_with_new_specification(attrs, concept \\ nil) do
     {concept_key, concept_data} =
       if concept do
         {concept, concepts_yaml()[concept]}
@@ -174,22 +175,21 @@ defmodule Registrations.Waydowntown do
 
     answers = generate_answers(concept_data)
 
-    {:ok, incarnation} =
-      create_incarnation(%{
+    {:ok, specification} =
+      create_specification(%{
         concept: concept_key,
-        description: concept_data["instructions"],
-        answers: answers,
-        placed: false
+        task_description: concept_data["instructions"],
+        answers: Enum.map(answers, &%Answer{answer: &1})
       })
 
-    %Game{}
-    |> Game.changeset(Map.put(attrs, "incarnation_id", incarnation.id))
+    %Run{}
+    |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
     |> Repo.insert()
   end
 
-  defp create_incarnation(attrs) do
-    %Incarnation{}
-    |> Incarnation.changeset(attrs)
+  defp create_specification(attrs) do
+    %Specification{}
+    |> Specification.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -211,8 +211,8 @@ defmodule Registrations.Waydowntown do
     |> Enum.reverse()
   end
 
-  defp get_random_incarnation(filter) do
-    query = from(i in Incarnation)
+  defp get_random_specification(filter) do
+    query = from(i in Specification)
 
     query =
       Enum.reduce(filter, query, fn
@@ -230,201 +230,202 @@ defmodule Registrations.Waydowntown do
     |> Repo.all()
     |> case do
       [] -> nil
-      incarnations -> Enum.random(incarnations)
+      specifications -> Enum.random(specifications)
     end
   end
 
   @doc """
-  Returns the list of incarnations.
+  Returns the list of specifications.
 
   ## Examples
 
-      iex> list_incarnations()
-      [%Incarnation{}, ...]
+      iex> list_specifications()
+      [%Specification{}, ...]
 
   """
-  def list_incarnations do
-    Incarnation |> Repo.all() |> Repo.preload(region: [parent: [parent: [:parent]]])
+  def list_specifications do
+    Specification |> Repo.all() |> Repo.preload(region: [parent: [parent: [:parent]]])
   end
 
   @doc """
-  Gets a single incarnation.
+  Gets a single specification.
 
-  Raises `Ecto.NoResultsError` if the Incarnation does not exist.
+  Raises `Ecto.NoResultsError` if the Specification does not exist.
 
   ## Examples
 
-      iex> get_incarnation!(123)
-      %Incarnation{}
+      iex> get_specification!(123)
+      %Specification{}
 
-      iex> get_incarnation!(456)
+      iex> get_specification!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_incarnation!(id), do: Repo.get!(Incarnation, id)
+  def get_specification!(id), do: Repo.get!(Specification, id)
 
   @doc """
-  Gets a single answer.
+  Gets a single submission.
 
-  Raises `Ecto.NoResultsError` if the Answer does not exist.
+  Raises `Ecto.NoResultsError` if the Submission does not exist.
 
   ## Examples
 
-      iex> get_answer!(123)
-      %Answer{}
+      iex> get_submission!(123)
+      %Submission{}
 
-      iex> get_answer!(456)
+      iex> get_submission!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_answer!(id), do: Repo.get!(Answer, id)
+  def get_submission!(id), do: Repo.get!(Submission, id)
 
   @doc """
-  Creates an answer.
+  Creates a submission.
 
   ## Examples
 
-      iex> create_answer(%{field: value})
-      {:ok, %Answer{}}
+      iex> create_submission(%{field: value})
+      {:ok, %Submission{}}
 
-      iex> create_answer(%{field: bad_value})
+      iex> create_submission(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_answer(%{"answer" => answer_text, "game_id" => game_id}) do
-    game = get_game!(game_id)
+  def create_submission(%{"submission" => submission_text, "run_id" => run_id}) do
+    run = get_run!(run_id)
 
     cond do
-      is_nil(game.started_at) ->
-        {:error, "Game has not been started"}
+      is_nil(run.started_at) ->
+        {:error, "Run has not been started"}
 
-      game_expired?(game) ->
-        {:error, "Game has expired"}
+      run_expired?(run) ->
+        {:error, "Run has expired"}
 
       true ->
-        incarnation = game.incarnation
+        specification = run.specification
 
-        case incarnation.concept do
+        case specification.concept do
           "string_collector" ->
-            normalized_answer = normalize_string(answer_text)
-            existing_answers = Enum.map(game.answers, &normalize_string(&1.answer))
+            normalized_submission = normalize_string(submission_text)
+            existing_submissions = Enum.map(run.submissions, &normalize_string(&1.submission))
 
-            if normalized_answer in existing_answers do
+            if normalized_submission in existing_submissions do
               changeset =
-                %Answer{}
-                |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
-                |> Ecto.Changeset.add_error(:detail, "Answer already submitted")
+                %Submission{}
+                |> Submission.changeset(%{"submission" => submission_text, "run_id" => run_id})
+                |> Ecto.Changeset.add_error(:detail, "Submission already submitted")
 
               {:error, changeset}
             else
-              create_answer_helper(answer_text, game_id, incarnation)
+              create_submission_helper(submission_text, run_id)
             end
 
+          # FIXME handle submissions with attached answers
           "food_court_frenzy" ->
-            [label, _] = String.split(answer_text, "|")
-            known_labels = incarnation_answer_labels(incarnation)
+            [label, _] = String.split(submission_text, "|")
+            known_labels = specification_answer_labels(specification)
 
             cond do
               label not in known_labels ->
                 changeset =
-                  %Answer{}
-                  |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
+                  %Submission{}
+                  |> Submission.changeset(%{"submission" => submission_text, "run_id" => run_id})
                   |> Ecto.Changeset.add_error(:detail, "Unknown label: #{label}")
 
                 {:error, changeset}
 
-              Enum.any?(game.answers, fn a -> a.correct and String.starts_with?(a.answer, label <> "|") end) ->
+              Enum.any?(run.submissions, fn s -> s.submission == submission_text end) ->
                 changeset =
-                  %Answer{}
-                  |> Answer.changeset(%{"answer" => answer_text, "game_id" => game_id})
-                  |> Ecto.Changeset.add_error(:detail, "Answer already submitted for label: #{label}")
+                  %Submission{}
+                  |> Submission.changeset(%{"submission" => submission_text, "run_id" => run_id})
+                  |> Ecto.Changeset.add_error(:detail, "Submission already submitted")
 
                 {:error, changeset}
 
               true ->
-                create_answer_helper(answer_text, game_id, incarnation)
+                create_submission_helper(submission_text, run_id)
             end
 
           _ ->
-            create_answer_helper(answer_text, game_id, incarnation)
+            create_submission_helper(submission_text, run_id)
         end
     end
   end
 
-  def incarnation_answer_labels(incarnation) do
-    Enum.map(incarnation.answers, fn a -> List.first(String.split(a, "|")) end)
+  def submission_answer_labels(specification) do
+    Enum.map(specification.answers, fn a -> a.label end)
   end
 
-  defp create_answer_helper(answer_text, game_id, incarnation) do
-    correct = check_answer_correctness(incarnation, answer_text)
+  defp create_submission_helper(submission_text, run_id) do
+    correct = check_submission_correctness(run, submission_text)
 
     attrs = %{
-      "answer" => answer_text,
+      "submission" => submission_text,
       "correct" => correct,
-      "game_id" => game_id
+      "run_id" => run_id
     }
 
-    %Answer{}
-    |> Answer.changeset(attrs)
+    %Submission{}
+    |> Submission.changeset(attrs)
     |> Repo.insert()
     |> case do
-      {:ok, answer} ->
-        game = get_game!(game_id)
-        check_and_update_game_winner(game, answer)
-        {:ok, Repo.preload(answer, game: [:answers, :incarnation])}
+      {:ok, submission} ->
+        run = get_run!(run_id)
+        check_and_update_run_winner(run, submission)
+        {:ok, Repo.preload(submission, run: [:submissions, :specification])}
 
       {:error, changeset} ->
         {:error, changeset}
     end
   end
 
-  defp game_expired?(%Game{started_at: started_at, incarnation: %Incarnation{duration_seconds: duration}})
+  defp run_expired?(%Run{started_at: started_at, specification: %Specification{duration_seconds: duration}})
        when not is_nil(started_at) and not is_nil(duration) do
     expiration_time = DateTime.add(started_at, duration, :second)
     DateTime.after?(DateTime.utc_now(), expiration_time)
   end
 
-  defp game_expired?(_), do: false
+  defp run_expired?(_), do: false
 
   @doc """
-  Updates an answer.
+  Updates a submission.
 
   ## Examples
 
-      iex> update_answer(%{id: id, field: new_value})
-      {:ok, %Answer{}}
+      iex> update_submission(%{id: id, field: new_value})
+      {:ok, %Submission{}}
 
-      iex> update_answer(%{id: id, field: bad_value})
+      iex> update_submission(%{id: id, field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_answer(%{"id" => id, "answer" => answer_text}) do
-    answer = get_answer!(id)
-    game = get_game!(answer.game_id)
-    incarnation = game.incarnation
+  def update_submission(%{"id" => id, "submission" => submission_text}) do
+    submission = get_submission!(id)
+    run = get_run!(submission.run_id)
+    specification = run.specification
 
     cond do
-      incarnation.placed ->
-        {:error, :cannot_update_placed_incarnation_answer}
+      specification.placed ->
+        {:error, :cannot_update_placed_specification_submission}
 
-      not answer.correct ->
-        {:error, :cannot_update_incorrect_answer}
+      not submission.correct ->
+        {:error, :cannot_update_incorrect_submission}
 
       true ->
-        correct = check_answer_correctness(incarnation, answer_text)
+        correct = check_submission_correctness(run, submission_text)
 
         attrs = %{
-          "answer" => answer_text,
+          "submission" => submission_text,
           "correct" => correct
         }
 
-        answer
-        |> Answer.changeset(attrs)
+        submission
+        |> Submission.changeset(attrs)
         |> Repo.update()
         |> case do
-          {:ok, updated_answer} ->
-            game = check_and_update_game_winner(game, updated_answer)
-            {:ok, Repo.preload(updated_answer, game: [:answers, :incarnation])}
+          {:ok, updated_submission} ->
+            run = check_and_update_run_winner(run, updated_submission)
+            {:ok, Repo.preload(updated_submission, run: [:submissions, :specification])}
 
           {:error, changeset} ->
             {:error, changeset}
@@ -432,37 +433,48 @@ defmodule Registrations.Waydowntown do
     end
   end
 
-  def get_game_progress(game) do
-    correct_answers =
-      game.answers
+  def get_run_progress(run) do
+    correct_submissions =
+      run.submissions
       |> Enum.uniq_by(& &1.answer)
       |> Enum.count(& &1.correct)
 
-    total_answers = length(game.incarnation.answers)
+    total_submissions = length(run.submissions)
 
     %{
-      correct_answers: correct_answers,
-      total_answers: total_answers,
-      complete: game.winner_answer_id != nil
+      correct_submissions: correct_submissions,
+      total_submissions: total_submissions,
+      complete: run.winner_submission_id != nil
     }
   end
 
-  defp check_answer_correctness(%Incarnation{concept: concept, answers: [correct_answer]}, answer_text)
+  defp check_submission_correctness(
+         %Run{specification: %Specification{concept: concept, answers: [%Answer{answer: correct_answer}]}},
+         submission_text
+       )
        when concept in ["fill_in_the_blank", "count_the_items"] do
-    normalize_string(correct_answer) == normalize_string(answer_text)
+    normalize_string(correct_answer) == normalize_string(submission_text)
   end
 
-  defp check_answer_correctness(%Incarnation{concept: concept, answers: correct_answers}, answer_text)
+  defp check_submission_correctness(
+         %Run{specification: %Specification{concept: concept, answers: answers}},
+         submission_text
+       )
        when concept in ["bluetooth_collector", "code_collector", "string_collector"] do
     normalized_answer = if concept == "string_collector", do: normalize_string(answer_text), else: answer_text
 
     correct_answers =
-      if concept == "string_collector", do: Enum.map(correct_answers, &normalize_string(&1)), else: correct_answers
+      if concept == "string_collector",
+        do: Enum.map(correct_answers, &normalize_string(&1.answer)),
+        else: Enum.map(correct_answers, & &1.answer)
 
     normalized_answer in correct_answers
   end
 
-  defp check_answer_correctness(%Incarnation{concept: concept, answers: expected_answers}, answer_text)
+  defp check_submission_correctness(
+         %Run{specification: %Specification{concept: concept, answers: expected_answers}},
+         submission_text
+       )
        when concept in ["orientation_memory", "cardinal_memory"] do
     expected_answer = Enum.join(expected_answers, "|")
 
@@ -470,33 +482,35 @@ defmodule Registrations.Waydowntown do
       String.length(answer_text) <= String.length(expected_answer)
   end
 
-  defp check_answer_correctness(%Incarnation{concept: "food_court_frenzy", answers: correct_answers}, answer_text) do
-    [label, price] = String.split(answer_text, "|")
-    correct_answer = Enum.find(correct_answers, fn ca -> String.starts_with?(ca, label <> "|") end)
-    correct_answer == answer_text
+  # FIXME needs adjustment for checking answer relation
+  defp check_submission_correctness(
+         %Run{specification: %Specification{concept: "food_court_frenzy", answers: correct_answers}},
+         submission_text
+       ) do
+    [label, price] = String.split(submission_text, "|")
+    correct_answer = Enum.find(correct_answers, fn ca -> String.starts_with?(ca.answer, label) end)
+    correct_answer != nil
   end
 
-  defp single_answer_game?(%Incarnation{concept: "fill_in_the_blank"}), do: true
-  defp single_answer_game?(_), do: false
+  defp single_answer_run?(%Run{specification: %Specification{concept: "fill_in_the_blank"}}), do: true
+  defp single_answer_run?(_), do: false
 
-  defp update_game_winner(game, answer) do
-    game
-    |> Game.changeset(%{winner_answer_id: answer.id})
+  defp update_run_winner(run, submission) do
+    run
+    |> Run.changeset(%{winner_submission_id: submission.id})
     |> Repo.update!()
   end
 
-  # New helper function to check and update game winner
-  defp check_and_update_game_winner(game, answer) do
-    if answer.correct and check_win_condition(game, answer) do
-      update_game_winner(game, answer)
+  defp check_and_update_run_winner(run, submission) do
+    if submission.correct and check_win_condition(run, submission) do
+      update_run_winner(run, submission)
     else
-      game
+      run
     end
   end
 
-  # New helper function to check win condition
-  defp check_win_condition(game, answer) do
-    case game.incarnation.concept do
+  defp check_win_condition(run, submission) do
+    case run.specification.concept do
       "fill_in_the_blank" ->
         true
 
@@ -504,19 +518,20 @@ defmodule Registrations.Waydowntown do
         true
 
       concept when concept in ["bluetooth_collector", "code_collector", "string_collector"] ->
-        game = get_game!(game.id)
-        Enum.count(game.answers, & &1.correct) == length(game.incarnation.answers)
+        run = get_run!(run.id)
+        Enum.count(run.submissions, & &1.correct) == length(run.specification.answers)
 
+      # FIXME these all need fixing, and order is missing
       "orientation_memory" ->
-        answer.answer == Enum.join(game.incarnation.answers, "|")
+        submission.answer == Enum.join(run.specification.answers, "|")
 
       "cardinal_memory" ->
-        answer.answer == Enum.join(game.incarnation.answers, "|")
+        submission.answer == Enum.join(run.specification.answers, "|")
 
       "food_court_frenzy" ->
-        game = get_game!(game.id)
-        correct_answers = Enum.count(game.answers, & &1.correct)
-        total_answers = length(game.incarnation.answers)
+        run = get_run!(run.id)
+        correct_submissions = Enum.count(run.submissions, & &1.correct)
+        total_answers = length(run.specification.answers)
         correct_answers == total_answers
 
       _ ->
@@ -530,15 +545,15 @@ defmodule Registrations.Waydowntown do
     |> String.downcase()
   end
 
-  def start_game(%Game{} = game) do
-    case game.started_at do
+  def start_run(%Run{} = run) do
+    case run.started_at do
       nil ->
-        game
-        |> Game.changeset(%{started_at: DateTime.utc_now()})
+        run
+        |> Run.changeset(%{started_at: DateTime.utc_now()})
         |> Repo.update()
 
       _ ->
-        {:error, "Game already started"}
+        {:error, "Run already started"}
     end
   end
 end
