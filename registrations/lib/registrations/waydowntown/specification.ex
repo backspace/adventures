@@ -25,6 +25,6 @@ defmodule Registrations.Waydowntown.Specification do
   def changeset(specification, attrs) do
     specification
     |> cast(attrs, [:concept, :start_description, :task_description, :duration, :region_id])
-    |> validate_required([:concept, :start_description, :task_description, :duration])
+    |> validate_required([:concept, :task_description])
   end
 end
