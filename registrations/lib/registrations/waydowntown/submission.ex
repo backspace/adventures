@@ -20,8 +20,8 @@ defmodule Registrations.Waydowntown.Submission do
   @doc false
   def changeset(submission, attrs) do
     submission
-    |> cast(attrs, [:answer, :correct, :run_id, :answer_id])
-    |> validate_required([:answer, :correct, :run_id, :answer_id])
+    |> cast(attrs, [:submission, :correct, :run_id, :answer_id])
+    |> validate_required([:submission, :correct, :run_id, :answer_id])
     |> assoc_constraint(:run)
     |> assoc_constraint(:answer)
   end
