@@ -216,9 +216,6 @@ defmodule Registrations.Waydowntown do
 
     query =
       Enum.reduce(filter, query, fn
-        {"placed", placed}, query when is_boolean(placed) ->
-          where(query, [i], i.placed == ^placed)
-
         {"concept", concept}, query when is_binary(concept) ->
           where(query, [i], i.concept == ^concept)
 
