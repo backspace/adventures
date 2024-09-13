@@ -5,13 +5,13 @@ defmodule RegistrationsWeb.RunView do
   alias RegistrationsWeb.RunView
 
   def fields do
-    [:complete, :correct_submissions, :total_answers, :description, :started_at]
+    [:complete, :correct_submissions, :total_answers, :task_description, :started_at]
   end
 
   def hidden(run) do
     description_inclusion =
       case run.started_at do
-        nil -> [:description]
+        nil -> [:task_description]
         _ -> []
       end
 
@@ -25,8 +25,8 @@ defmodule RegistrationsWeb.RunView do
     description_inclusion ++ answers
   end
 
-  def description(run, _conn) do
-    run.specification.description
+  def task_description(run, _conn) do
+    run.specification.task_description
   end
 
   def complete(run, _conn) do
