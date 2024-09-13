@@ -351,8 +351,7 @@ defmodule RegistrationsWeb.RunControllerTest do
       assert run.specification_id == closer_specification.id
     end
 
-    # FIXME no virtual fields
-    test "creates run with food_court_frenzy concept and virtual fields for its answer labels", %{conn: conn} do
+    test "creates run with food_court_frenzy concept", %{conn: conn} do
       Repo.insert!(%Specification{
         concept: "food_court_frenzy",
         answers: [
@@ -382,9 +381,19 @@ defmodule RegistrationsWeb.RunControllerTest do
       sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
       assert sideloaded_specification["attributes"]["concept"] == "food_court_frenzy"
 
-      # FIXME these should be included in the response as their own resources, not as part of the specification
-      assert Enum.all?(sideloaded_specification["attributes"]["answer_labels"], fn item ->
-               item in ["Burger", "Pizza", "Salad", "Soda"]
+      sideloaded_answers = sideloaded_specification["relationships"]["answers"]["data"]
+      assert Enum.count(sideloaded_answers) == 4
+
+      answer_data =
+        included
+        |> Enum.map(fn item ->
+          if item["type"] == "answers", do: item["attributes"]
+        end)
+        |> Enum.reject(&is_nil/1)
+
+      assert Enum.all?(answer_data, fn answer ->
+               answer["label"] in ["Burger", "Pizza", "Salad", "Soda"] and
+                 is_nil(answer["answer"])
              end)
 
       run = Waydowntown.get_run!(id)

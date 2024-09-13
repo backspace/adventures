@@ -4,15 +4,7 @@ defmodule RegistrationsWeb.SpecificationView do
   alias RegistrationsWeb.SpecificationView
 
   def fields do
-    [:concept, :placed, :answer_labels, :start_description, :duration]
-  end
-
-  # FIXME this will be separate
-  def answer_labels(specification, _conn) do
-    case specification.concept do
-      "food_court_frenzy" -> Registrations.Waydowntown.specification_answer_labels(specification)
-      _ -> []
-    end
+    [:concept, :placed, :start_description, :duration]
   end
 
   def render("index.json", %{specifications: specifications, conn: conn, params: params}) do
@@ -25,7 +17,8 @@ defmodule RegistrationsWeb.SpecificationView do
 
   def relationships do
     [
-      region: {RegistrationsWeb.RegionView, :include}
+      region: {RegistrationsWeb.RegionView, :include},
+      answers: {RegistrationsWeb.AnswerView, :include}
     ]
   end
 end
