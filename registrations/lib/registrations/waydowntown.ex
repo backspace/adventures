@@ -436,11 +436,11 @@ defmodule Registrations.Waydowntown do
       |> Enum.uniq_by(& &1.answer)
       |> Enum.count(& &1.correct)
 
-    total_submissions = length(run.submissions)
+    total_answers = length(run.specification.answers)
 
     %{
       correct_submissions: correct_submissions,
-      total_submissions: total_submissions,
+      total_answers: total_answers,
       complete: run.winner_submission_id != nil
     }
   end

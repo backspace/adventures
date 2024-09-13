@@ -5,7 +5,7 @@ defmodule RegistrationsWeb.RunView do
   alias RegistrationsWeb.RunView
 
   def fields do
-    [:complete, :correct_answers, :total_answers, :description, :started_at]
+    [:complete, :correct_submissions, :total_answers, :description, :started_at]
   end
 
   def hidden(run) do
@@ -17,8 +17,8 @@ defmodule RegistrationsWeb.RunView do
 
     answers =
       case run.specification do
-        %{"concept" => "fill_in_the_blank"} -> [:correct_answers, :total_answers]
-        nil -> [:complete, :correct_answers, :total_answers]
+        %{"concept" => "fill_in_the_blank"} -> [:correct_submissions, :total_answers]
+        nil -> [:complete, :correct_submissions, :total_answers]
         _ -> []
       end
 
@@ -33,8 +33,8 @@ defmodule RegistrationsWeb.RunView do
     Waydowntown.get_run_progress(run).complete
   end
 
-  def correct_answers(run, _conn) do
-    Waydowntown.get_run_progress(run).correct_answers
+  def correct_submissions(run, _conn) do
+    Waydowntown.get_run_progress(run).correct_submissions
   end
 
   def total_answers(run, _conn) do
