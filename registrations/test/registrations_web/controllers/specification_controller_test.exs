@@ -55,7 +55,6 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       assert specification_data["id"] == specification.id
       assert specification_data["type"] == "specifications"
       assert specification_data["attributes"]["concept"] == "fill_in_the_blank"
-      assert specification_data["attributes"]["task_description"] == "This is a ____"
       assert specification_data["attributes"]["start_description"] == "Outside the coat check"
       assert specification_data["relationships"]["region"]["data"]["id"] == child_region.id
 

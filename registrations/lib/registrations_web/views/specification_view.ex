@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.SpecificationView do
   alias RegistrationsWeb.SpecificationView
 
   def fields do
-    [:concept, :placed, :answer_labels, :start, :duration]
+    [:concept, :placed, :answer_labels, :start_description, :duration]
   end
 
   # FIXME this will be separate
