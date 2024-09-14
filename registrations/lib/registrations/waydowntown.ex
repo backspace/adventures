@@ -293,7 +293,13 @@ defmodule Registrations.Waydowntown do
     run = get_run!(run_id)
 
     specification_requires_paired_answer =
-      if run.specification.concept in ["orientation_memory", "cardinal_memory"] do
+      if run.specification.concept in [
+           "orientation_memory",
+           "cardinal_memory",
+           "food_court_frenzy",
+           "fill_in_the_blank",
+           "count_the_items"
+         ] do
         true
       else
         false
