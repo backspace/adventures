@@ -487,6 +487,8 @@ defmodule Registrations.Waydowntown do
   end
 
   defp check_and_update_run_winner(run, submission) do
+    run = get_run!(run.id)
+
     if submission.correct and check_win_condition(run, submission) do
       update_run_winner(run, submission)
     else
