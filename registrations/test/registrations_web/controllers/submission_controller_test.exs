@@ -73,16 +73,18 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       specification =
         Repo.insert!(%Specification{
           concept: "fill_in_the_blank",
-          answers: [%Answer{answer: "the answer"}],
+          answers: [%Answer{label: "fill in ___ ______", answer: "the answer"}],
           region: region
         })
 
       run = Repo.insert!(%Run{specification: specification, started_at: DateTime.utc_now()})
 
-      %{run: run, specification: specification, region: region}
+      answer = List.first(specification.answers)
+
+      %{run: run, specification: specification, region: region, answer: answer}
     end
 
-    test "creates correct submission", %{conn: conn, run: run} do
+    test "creates correct submission", %{conn: conn, run: run, answer: answer} do
       conn =
         conn
         |> setup_conn()
@@ -95,6 +97,9 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
               "relationships" => %{
                 "run" => %{
                   "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer.id}
                 }
               }
             }
@@ -104,23 +109,25 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       assert %{"id" => id} = json_response(conn, 201)["data"]
       submission = Waydowntown.get_submission!(id)
       assert submission.submission == " THE ANSWER "
+      assert submission.answer_id == answer.id
+      assert submission.correct
 
       run = Waydowntown.get_run!(run.id)
       assert run.winner_submission_id == submission.id
 
-      assert %{
-               "included" => [
-                 %{
-                   "type" => "specifications",
-                   "id" => _specification_id,
-                   "attributes" => _specification_attributes
-                 },
-                 %{"type" => "runs", "id" => run_id, "attributes" => %{"complete" => complete}}
-               ]
-             } = json_response(conn, 201)
+      included = json_response(conn, 201)["included"]
 
-      assert run_id == run.id
-      assert complete
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
+      assert sideloaded_specification["id"] == run.specification.id
+
+      sideloaded_run = Enum.find(included, &(&1["type"] == "runs"))
+      assert sideloaded_run["id"] == run.id
+      assert sideloaded_run["attributes"]["complete"]
+
+      sideloaded_answer = Enum.find(included, &(&1["type"] == "answers"))
+      assert sideloaded_answer["id"] == answer.id
     end
 
     test "does not create submission if run already has a winning submission", %{conn: conn, run: run} do
@@ -147,51 +154,6 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
       assert json_response(conn, 422)["errors"] != %{}
     end
-
-    test "fails to update an existing submission for a run", %{conn: conn, run: run} do
-      # First, create an submission
-      conn =
-        conn
-        |> setup_conn()
-        |> post(
-          Routes.submission_path(conn, :create),
-          %{
-            "data" => %{
-              "type" => "submissions",
-              "attributes" => %{"submission" => "THE ANSWER"},
-              "relationships" => %{
-                "run" => %{
-                  "data" => %{"type" => "runs", "id" => run.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-
-      # Now, try to update the submission
-      conn =
-        build_conn()
-        |> setup_conn()
-        |> patch(
-          Routes.submission_path(conn, :update, id),
-          %{
-            "data" => %{
-              "id" => id,
-              "type" => "submissions",
-              "attributes" => %{"submission" => "UPDATED SUBMISSION"},
-              "relationships" => %{
-                "run" => %{
-                  "data" => %{"type" => "runs", "id" => run.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert json_response(conn, 422)["errors"] == [%{"detail" => "Cannot update submission for run"}]
-    end
   end
 
   describe "create submission for non-placed specification" do
@@ -201,7 +163,11 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       specification =
         Repo.insert!(%Specification{
           concept: "orientation_memory",
-          answers: [%Answer{answer: "left"}, %Answer{answer: "up"}, %Answer{answer: "right"}],
+          answers: [
+            %Answer{order: 1, answer: "left"},
+            %Answer{order: 2, answer: "up"},
+            %Answer{order: 3, answer: "right"}
+          ],
           region: region
         })
 
@@ -210,8 +176,9 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       %{run: run, specification: specification, region: region}
     end
 
-    test "creates and updates submission", %{conn: conn, run: run} do
-      # Create initial submission
+    test "creates submissions and completes the run", %{conn: conn, run: run, specification: specification} do
+      [answer_1, answer_2, answer_3] = specification.answers
+
       conn =
         build_conn()
         |> setup_conn()
@@ -220,10 +187,13 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
           %{
             "data" => %{
               "type" => "submissions",
-              "attributes" => %{"submission" => "left"},
+              "attributes" => %{"submission" => answer_1.answer},
               "relationships" => %{
                 "run" => %{
                   "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer_1.id}
                 }
               }
             }
@@ -232,64 +202,70 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
       assert %{"id" => id} = json_response(conn, 201)["data"]
       submission = Waydowntown.get_submission!(id)
-      assert submission.submission == "left"
+      assert submission.submission == answer_1.answer
       assert submission.correct
 
-      # Update the submission
       conn =
         build_conn()
         |> setup_conn()
-        |> patch(
-          Routes.submission_path(conn, :update, id),
+        |> post(
+          Routes.submission_path(conn, :create),
           %{
             "data" => %{
               "id" => id,
               "type" => "submissions",
-              "attributes" => %{"submission" => "left|up"},
+              "attributes" => %{"submission" => answer_2.answer},
               "relationships" => %{
                 "run" => %{
                   "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer_2.id}
                 }
               }
             }
           }
         )
 
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
-      updated_submission = Waydowntown.get_submission!(id)
-      assert updated_submission.submission == "left|up"
-      assert updated_submission.correct
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      created_submission = Waydowntown.get_submission!(id)
+      assert created_submission.submission == answer_2.answer
+      assert created_submission.correct
 
-      # Complete the submission
       conn =
         build_conn()
         |> setup_conn()
-        |> patch(
-          Routes.submission_path(conn, :update, id),
+        |> post(
+          Routes.submission_path(conn, :create),
           %{
             "data" => %{
               "id" => id,
               "type" => "submissions",
-              "attributes" => %{"submission" => "left|up|right"},
+              "attributes" => %{"submission" => answer_3.answer},
               "relationships" => %{
                 "run" => %{
                   "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer_3.id}
                 }
               }
             }
           }
         )
 
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      assert %{"id" => id} = json_response(conn, 201)["data"]
       completed_submission = Waydowntown.get_submission!(id)
-      assert completed_submission.submission == "left|up|right"
+      assert completed_submission.submission == answer_3.answer
       assert completed_submission.correct
 
       run = Waydowntown.get_run!(run.id)
       assert run.winner_submission_id == completed_submission.id
     end
 
-    test "always creates a new submission on POST, even if incorrect", %{conn: conn, run: run} do
+    test "creates incorrect first submission", %{conn: conn, run: run, specification: specification} do
+      answer_1 = List.first(specification.answers)
+
       conn =
         build_conn()
         |> setup_conn()
@@ -302,6 +278,9 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
               "relationships" => %{
                 "run" => %{
                   "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer_1.id}
                 }
               }
             }
@@ -314,8 +293,9 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       refute submission.correct
     end
 
-    test "returns 422 when updating an incorrect submission", %{conn: conn, run: run} do
-      # First, create an incorrect submission
+    test "returns 422 when answer is not in correct order", %{conn: conn, run: run, specification: specification} do
+      [answer_1, answer_2, answer_3] = specification.answers
+
       conn =
         conn
         |> setup_conn()
@@ -328,35 +308,88 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
               "relationships" => %{
                 "run" => %{
                   "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer_2.id}
                 }
               }
             }
           }
         )
 
-      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert json_response(conn, 422)["errors"] == [
+               %{"detail" => "Expected submission for answer of order 1, id #{answer_1.id}"}
+             ]
 
-      # Now, try to update the incorrect answer
       conn =
         build_conn()
         |> setup_conn()
-        |> patch(
-          Routes.submission_path(conn, :update, id),
+        |> post(Routes.submission_path(conn, :create), %{
+          "data" => %{
+            "type" => "submissions",
+            "attributes" => %{"submission" => answer_1.answer},
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              },
+              "answer" => %{
+                "data" => %{"type" => "answers", "id" => answer_1.id}
+              }
+            }
+          }
+        })
+
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> post(Routes.submission_path(conn, :create), %{
+          "data" => %{
+            "type" => "submissions",
+            "attributes" => %{"submission" => answer_1.answer},
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              },
+              "answer" => %{
+                "data" => %{"type" => "answers", "id" => answer_1.id}
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 422)["errors"] == [
+               %{"detail" => "Expected submission for answer of order 2, id #{answer_2.id}"}
+             ]
+    end
+
+    test "returns 422 when answer does not belong to specification", %{conn: conn, run: run, specification: specification} do
+      other_specification =
+        Repo.insert!(%Specification{concept: "other_concept", answers: [%Answer{answer: "other_answer"}]})
+
+      other_answer = List.first(other_specification.answers)
+
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.submission_path(conn, :create),
           %{
             "data" => %{
-              "id" => id,
               "type" => "submissions",
-              "attributes" => %{"submission" => "ANOTHER WRONG ANSWER"},
+              "attributes" => %{"submission" => "left"},
               "relationships" => %{
                 "run" => %{
                   "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => other_answer.id}
                 }
               }
             }
           }
         )
 
-      assert json_response(conn, 422)["errors"] == [%{"detail" => "Cannot update an incorrect submission"}]
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Answer does not belong to specification"}]
     end
   end
 
@@ -556,7 +589,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
           }
         )
 
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      assert %{"id" => ^id} = json_response(conn, 201)["data"]
       updated_submission = Waydowntown.get_submission!(id)
       assert updated_submission.submission == "north|east"
       assert updated_submission.correct
@@ -580,7 +613,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
           }
         )
 
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      assert %{"id" => ^id} = json_response(conn, 201)["data"]
       completed_submission = Waydowntown.get_submission!(id)
       assert completed_submission.submission == "north|east|south"
       assert completed_submission.correct
@@ -773,16 +806,18 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       specification =
         Repo.insert!(%Specification{
           concept: "count_the_items",
-          answers: ["42"],
+          answers: [%Answer{label: "how many?", answer: "42"}],
           region: region
         })
 
       run = Repo.insert!(%Run{specification: specification, started_at: DateTime.utc_now()})
 
-      %{run: run, specification: specification, region: region}
+      answer = List.first(specification.answers)
+
+      %{run: run, specification: specification, region: region, answer: answer}
     end
 
-    test "creates correct submission", %{conn: conn, run: run} do
+    test "creates correct submission", %{conn: conn, run: run, answer: answer} do
       conn =
         conn
         |> setup_conn()
@@ -795,6 +830,9 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
               "relationships" => %{
                 "run" => %{
                   "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer.id}
                 }
               }
             }
@@ -808,22 +846,22 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       run = Waydowntown.get_run!(run.id)
       assert run.winner_submission_id == submission.id
 
-      assert %{
-               "included" => [
-                 %{
-                   "type" => "specifications",
-                   "id" => _specification_id,
-                   "attributes" => _specification_attributes
-                 },
-                 %{"type" => "runs", "id" => run_id, "attributes" => %{"complete" => complete}}
-               ]
-             } = json_response(conn, 201)
+      included = json_response(conn, 201)["included"]
 
-      assert run_id == run.id
-      assert complete
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
+      assert sideloaded_specification["id"] == run.specification.id
+
+      sideloaded_run = Enum.find(included, &(&1["type"] == "runs"))
+      assert sideloaded_run["id"] == run.id
+      assert sideloaded_run["attributes"]["complete"]
+
+      sideloaded_answer = Enum.find(included, &(&1["type"] == "answers"))
+      assert sideloaded_answer["id"] == answer.id
     end
 
-    test "creates incorrect submission", %{conn: conn, run: run} do
+    test "creates incorrect submission", %{conn: conn, run: run, answer: answer} do
       conn =
         conn
         |> setup_conn()
@@ -836,6 +874,9 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
               "relationships" => %{
                 "run" => %{
                   "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer.id}
                 }
               }
             }

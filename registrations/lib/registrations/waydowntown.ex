@@ -299,11 +299,14 @@ defmodule Registrations.Waydowntown do
       run_expired?(run) ->
         {:error, "Run has expired"}
 
+      answer_id not in Enum.map(run.specification.answers, & &1.id) ->
+        {:error, "Answer does not belong to specification"}
+
       true ->
         specification = run.specification
 
-        case specification.concept do
-          "string_collector" ->
+        cond do
+          specification.concept == "string_collector" ->
             normalized_submission = normalize_string(submission_text)
             existing_submissions = Enum.map(run.submissions, &normalize_string(&1.submission))
 
@@ -318,7 +321,7 @@ defmodule Registrations.Waydowntown do
               create_submission_helper(run, submission_text)
             end
 
-          "food_court_frenzy" ->
+          specification.concept in ["food_court_frenzy", "fill_in_the_blank", "count_the_items"] ->
             answer_with_submitted_id = Enum.find(specification.answers, fn a -> a.id == answer_id end)
 
             cond do
@@ -338,7 +341,30 @@ defmodule Registrations.Waydowntown do
                 create_submission_helper(run, submission_text, answer_id)
             end
 
-          _ ->
+          specification.concept in ["orientation_memory", "cardinal_memory"] ->
+            answer_with_submitted_id = Enum.find(specification.answers, fn a -> a.id == answer_id end)
+            latest_submission = run.submissions |> Enum.sort_by(&{&1.inserted_at, &1.answer.order}, :desc) |> List.first()
+
+            expected_answer_order =
+              cond do
+                is_nil(latest_submission) ->
+                  1
+
+                latest_submission.correct ->
+                  latest_submission.answer.order + 1
+
+                true ->
+                  1
+              end
+
+            if answer_with_submitted_id.order == expected_answer_order do
+              create_submission_helper(run, submission_text, answer_id)
+            else
+              {:error,
+               "Expected submission for answer of order #{expected_answer_order}, id #{Enum.find(specification.answers, fn a -> a.order == expected_answer_order end).id}"}
+            end
+
+          true ->
             create_submission_helper(run, submission_text, answer_id)
         end
     end
@@ -360,8 +386,9 @@ defmodule Registrations.Waydowntown do
     |> Repo.insert()
     |> case do
       {:ok, submission} ->
+        submission = Repo.preload(submission, [:answer, run: [:submissions, specification: [:answers]]])
         check_and_update_run_winner(run, submission)
-        {:ok, Repo.preload(submission, :answer, run: [:submissions, specification: [:answers]])}
+        {:ok, submission}
 
       {:error, changeset} ->
         {:error, changeset}
@@ -375,52 +402,6 @@ defmodule Registrations.Waydowntown do
   end
 
   defp run_expired?(_), do: false
-
-  @doc """
-  Updates a submission.
-
-  ## Examples
-
-      iex> update_submission(%{id: id, field: new_value})
-      {:ok, %Submission{}}
-
-      iex> update_submission(%{id: id, field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_submission(%{"id" => id, "submission" => submission_text}) do
-    submission = get_submission!(id)
-    run = get_run!(submission.run_id)
-    specification = run.specification
-
-    cond do
-      specification.placed ->
-        {:error, :cannot_update_placed_specification_submission}
-
-      not submission.correct ->
-        {:error, :cannot_update_incorrect_submission}
-
-      true ->
-        correct = check_submission_correctness(run, submission_text)
-
-        attrs = %{
-          "submission" => submission_text,
-          "correct" => correct
-        }
-
-        submission
-        |> Submission.changeset(attrs)
-        |> Repo.update()
-        |> case do
-          {:ok, updated_submission} ->
-            check_and_update_run_winner(run, updated_submission)
-            {:ok, Repo.preload(updated_submission, run: [:submissions, :specification])}
-
-          {:error, changeset} ->
-            {:error, changeset}
-        end
-    end
-  end
 
   def get_run_progress(run) do
     correct_submissions =
@@ -439,7 +420,8 @@ defmodule Registrations.Waydowntown do
 
   defp check_submission_correctness(
          %Run{specification: %Specification{concept: concept, answers: [%Answer{answer: correct_answer}]}},
-         submission_text
+         submission_text,
+         _answer_id
        )
        when concept in ["fill_in_the_blank", "count_the_items"] do
     normalize_string(correct_answer) == normalize_string(submission_text)
@@ -447,7 +429,8 @@ defmodule Registrations.Waydowntown do
 
   defp check_submission_correctness(
          %Run{specification: %Specification{concept: concept, answers: answers}},
-         submission_text
+         submission_text,
+         _answer_id
        )
        when concept in ["bluetooth_collector", "code_collector", "string_collector"] do
     normalized_answer = if concept == "string_collector", do: normalize_string(submission_text), else: submission_text
@@ -462,13 +445,13 @@ defmodule Registrations.Waydowntown do
 
   defp check_submission_correctness(
          %Run{specification: %Specification{concept: concept, answers: expected_answers}},
-         submission_text
+         submission_text,
+         answer_id
        )
        when concept in ["orientation_memory", "cardinal_memory"] do
-    expected_answer = Enum.join(expected_answers, "|")
+    answer = Enum.find(expected_answers, fn a -> a.id == answer_id end)
 
-    String.starts_with?(expected_answer, submission_text) and
-      String.length(submission_text) <= String.length(expected_answer)
+    submission_text == answer.answer
   end
 
   defp check_submission_correctness(
@@ -510,10 +493,10 @@ defmodule Registrations.Waydowntown do
 
       # FIXME these all need fixing, and order is missing
       "orientation_memory" ->
-        submission.answer == Enum.join(run.specification.answers, "|")
+        check_ordered_win_condition(run, submission)
 
       "cardinal_memory" ->
-        submission.answer == Enum.join(run.specification.answers, "|")
+        check_ordered_win_condition(run, submission)
 
       "food_court_frenzy" ->
         correct_submissions = Enum.count(run.submissions, & &1.correct)
@@ -523,6 +506,11 @@ defmodule Registrations.Waydowntown do
       _ ->
         false
     end
+  end
+
+  defp check_ordered_win_condition(run, submission) do
+    answer_count = length(run.specification.answers)
+    submission.answer.order == answer_count
   end
 
   defp normalize_string(string) do

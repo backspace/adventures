@@ -33,34 +33,4 @@ defmodule RegistrationsWeb.SubmissionController do
     submission = Waydowntown.get_submission!(id)
     render(conn, "show.json", %{submission: submission, conn: conn, params: params})
   end
-
-  def update(conn, params) do
-    case Waydowntown.update_submission(params) do
-      {:ok, %Submission{} = submission} ->
-        conn
-        |> put_status(:ok)
-        |> render("show.json", %{submission: submission, conn: conn, params: params})
-
-      {:error, :cannot_update_placed_incarnation_submission} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: [%{detail: "Cannot update submission for placed incarnation"}]})
-
-      {:error, :cannot_update_incorrect_submission} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: [%{detail: "Cannot update an incorrect submission"}]})
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> put_view(RegistrationsWeb.ChangesetView)
-        |> render("error.json", %{changeset: changeset})
-
-      {:error, message} when is_binary(message) ->
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: [%{detail: message}]})
-    end
-  end
 end
