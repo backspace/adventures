@@ -1001,7 +1001,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
           }
         )
 
-      assert json_response(conn, 422)["errors"] == %{"detail" => ["Answer already submitted for label: burger"]}
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Submission already exists for label: burger"}]
     end
   end
 end
