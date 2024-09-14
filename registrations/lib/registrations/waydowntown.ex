@@ -292,6 +292,13 @@ defmodule Registrations.Waydowntown do
 
     run = get_run!(run_id)
 
+    specification_requires_paired_answer =
+      if run.specification.concept in ["orientation_memory", "cardinal_memory"] do
+        true
+      else
+        false
+      end
+
     cond do
       is_nil(run.started_at) ->
         {:error, "Run has not been started"}
@@ -299,7 +306,8 @@ defmodule Registrations.Waydowntown do
       run_expired?(run) ->
         {:error, "Run has expired"}
 
-      answer_id not in Enum.map(run.specification.answers, & &1.id) ->
+      specification_requires_paired_answer and
+          (is_nil(answer_id) or answer_id not in Enum.map(run.specification.answers, & &1.id)) ->
         {:error, "Answer does not belong to specification"}
 
       true ->
