@@ -26,7 +26,7 @@ defmodule Registrations.Waydowntown do
 
   """
   def list_runs do
-    Run |> Repo.all() |> Repo.preload(specification: [region: [parent: [parent: [:parent]]]])
+    Run |> Repo.all() |> Repo.preload(specification: [:answers, region: [parent: [parent: [:parent]]]])
   end
 
   @doc """
@@ -46,7 +46,7 @@ defmodule Registrations.Waydowntown do
   def get_run!(id) do
     Run
     |> Repo.get!(id)
-    |> Repo.preload([:submissions, specification: [:answers, region: [parent: [parent: [parent: :parent]]]]])
+    |> Repo.preload(submissions: [:answer], specification: [:answers, region: [parent: [parent: [parent: :parent]]]])
   end
 
   @doc """
@@ -273,7 +273,7 @@ defmodule Registrations.Waydowntown do
       ** (Ecto.NoResultsError)
 
   """
-  def get_submission!(id), do: Repo.get!(Submission, id)
+  def get_submission!(id), do: Submission |> Repo.get!(id) |> Repo.preload(:answer)
 
   @doc """
   Creates a submission.
@@ -287,7 +287,9 @@ defmodule Registrations.Waydowntown do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_submission(%{"submission" => submission_text, "run_id" => run_id}) do
+  def create_submission(%{"submission" => submission_text, "run_id" => run_id} = params) do
+    answer_id = Map.get(params, "answer_id")
+
     run = get_run!(run_id)
 
     cond do
@@ -313,52 +315,41 @@ defmodule Registrations.Waydowntown do
 
               {:error, changeset}
             else
-              create_submission_helper(submission_text, run_id, specification)
+              create_submission_helper(run, submission_text)
             end
 
-          # FIXME handle submissions with attached answers
           "food_court_frenzy" ->
-            [label, _] = String.split(submission_text, "|")
-            known_labels = specification_answer_labels(specification)
+            answer_with_submitted_id = Enum.find(specification.answers, fn a -> a.id == answer_id end)
 
             cond do
-              label not in known_labels ->
-                changeset =
-                  %Submission{}
-                  |> Submission.changeset(%{"submission" => submission_text, "run_id" => run_id})
-                  |> Ecto.Changeset.add_error(:detail, "Unknown label: #{label}")
+              is_nil(answer_id) ->
+                {:error, "Answer is required"}
 
-                {:error, changeset}
+              is_nil(answer_with_submitted_id) ->
+                {:error, "Unknown answer: #{answer_id}"}
 
               Enum.any?(run.submissions, fn s -> s.submission == submission_text end) ->
-                changeset =
-                  %Submission{}
-                  |> Submission.changeset(%{"submission" => submission_text, "run_id" => run_id})
-                  |> Ecto.Changeset.add_error(:detail, "Submission already submitted")
-
-                {:error, changeset}
+                {:error, "Submission already submitted"}
 
               true ->
-                create_submission_helper(submission_text, run_id, specification)
+                create_submission_helper(run, submission_text, answer_id)
             end
 
           _ ->
-            create_submission_helper(submission_text, run_id, specification)
+            create_submission_helper(run, submission_text, answer_id)
         end
     end
   end
 
-  defp specification_answer_labels(specification) do
-    Enum.map(specification.answers, fn a -> a.label end)
-  end
-
-  defp create_submission_helper(submission_text, run_id, specification) do
-    correct = check_submission_correctness(specification, submission_text)
+  # FIXME rename
+  defp create_submission_helper(run, submission_text, answer_id \\ nil) do
+    correct = check_submission_correctness(run, submission_text, answer_id)
 
     attrs = %{
       "submission" => submission_text,
       "correct" => correct,
-      "run_id" => run_id
+      "run_id" => run.id,
+      "answer_id" => answer_id
     }
 
     %Submission{}
@@ -366,9 +357,8 @@ defmodule Registrations.Waydowntown do
     |> Repo.insert()
     |> case do
       {:ok, submission} ->
-        run = get_run!(run_id)
         check_and_update_run_winner(run, submission)
-        {:ok, Repo.preload(submission, run: [:submissions, :specification])}
+        {:ok, Repo.preload(submission, :answer, run: [:submissions, specification: [:answers]])}
 
       {:error, changeset} ->
         {:error, changeset}
@@ -478,14 +468,13 @@ defmodule Registrations.Waydowntown do
       String.length(submission_text) <= String.length(expected_answer)
   end
 
-  # FIXME needs adjustment for checking answer relation
   defp check_submission_correctness(
          %Run{specification: %Specification{concept: "food_court_frenzy", answers: correct_answers}},
-         submission_text
+         submission_text,
+         answer_id
        ) do
-    [label, price] = String.split(submission_text, "|")
-    correct_answer = Enum.find(correct_answers, fn ca -> String.starts_with?(ca.answer, label) end)
-    correct_answer != nil
+    correct_answer = Enum.find(correct_answers, fn ca -> ca.id == answer_id end)
+    normalize_string(correct_answer.answer) == normalize_string(submission_text)
   end
 
   defp single_answer_run?(%Run{specification: %Specification{concept: "fill_in_the_blank"}}), do: true
@@ -514,7 +503,6 @@ defmodule Registrations.Waydowntown do
         true
 
       concept when concept in ["bluetooth_collector", "code_collector", "string_collector"] ->
-        run = get_run!(run.id)
         Enum.count(run.submissions, & &1.correct) == length(run.specification.answers)
 
       # FIXME these all need fixing, and order is missing
@@ -525,7 +513,6 @@ defmodule Registrations.Waydowntown do
         submission.answer == Enum.join(run.specification.answers, "|")
 
       "food_court_frenzy" ->
-        run = get_run!(run.id)
         correct_submissions = Enum.count(run.submissions, & &1.correct)
         total_answers = length(run.specification.answers)
         correct_submissions == total_answers

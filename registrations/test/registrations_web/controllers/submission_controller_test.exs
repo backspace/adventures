@@ -895,6 +895,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       assert %{"id" => id} = json_response(conn, 201)["data"]
       submission = Waydowntown.get_submission!(id)
       assert submission.correct
+      assert submission.answer_id == burger.id
 
       run = Waydowntown.get_run!(run.id)
       refute run.winner_submission_id
@@ -936,7 +937,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
           %{
             "data" => %{
               "type" => "submissions",
-              "attributes" => %{"submission" => "unknown|5.99"},
+              "attributes" => %{"submission" => "5.99"},
               "relationships" => %{
                 "run" => %{
                   "data" => %{"type" => "runs", "id" => run.id}
@@ -949,7 +950,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
           }
         )
 
-      assert json_response(conn, 422)["errors"] == %{"detail" => ["Unknown label: e21cf719-ec8a-49d7-99fb-c9a356b73d95"]}
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Unknown answer: e21cf719-ec8a-49d7-99fb-c9a356b73d95"}]
     end
 
     test "returns 422 when submitting an answer for a label that already had a correct answer", %{
@@ -965,7 +966,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
         %{
           "data" => %{
             "type" => "submissions",
-            "attributes" => %{"submission" => "burger|5.99"},
+            "attributes" => %{"submission" => "5.99"},
             "relationships" => %{
               "run" => %{
                 "data" => %{"type" => "runs", "id" => run.id}

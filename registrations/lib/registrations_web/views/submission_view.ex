@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.SubmissionView do
   alias RegistrationsWeb.SubmissionView
 
   def fields do
-    [:answer, :correct]
+    [:correct]
   end
 
   def render("show.json", %{submission: submission, conn: conn, params: params}) do
@@ -12,6 +12,6 @@ defmodule RegistrationsWeb.SubmissionView do
   end
 
   def relationships do
-    [run: {RegistrationsWeb.RunView, :include}]
+    [answer: {RegistrationsWeb.AnswerView, :include}, run: {RegistrationsWeb.RunView, :include}]
   end
 end

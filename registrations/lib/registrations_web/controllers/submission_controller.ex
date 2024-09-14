@@ -29,6 +29,11 @@ defmodule RegistrationsWeb.SubmissionController do
     end
   end
 
+  def show(conn, %{"id" => id} = params) do
+    submission = Waydowntown.get_submission!(id)
+    render(conn, "show.json", %{submission: submission, conn: conn, params: params})
+  end
+
   def update(conn, params) do
     case Waydowntown.update_submission(params) do
       {:ok, %Submission{} = submission} ->
@@ -57,10 +62,5 @@ defmodule RegistrationsWeb.SubmissionController do
         |> put_status(:unprocessable_entity)
         |> json(%{errors: [%{detail: message}]})
     end
-  end
-
-  def show(conn, %{"id" => id}) do
-    submission = Waydowntown.get_submission!(id)
-    render(conn, "show.json", submission: submission)
   end
 end
