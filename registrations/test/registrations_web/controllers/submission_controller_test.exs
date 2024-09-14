@@ -635,7 +635,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
           }
         })
 
-      assert json_response(conn, 422)["errors"] == %{"detail" => ["Answer already submitted"]}
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Submission already submitted"}]
     end
   end
 
@@ -809,7 +809,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       refute submission.correct
     end
 
-    test "returns 422 when submitting an unknown label", %{conn: conn, run: run} do
+    test "returns 422 when submitting an unknown answer", %{conn: conn, run: run} do
       conn =
         conn
         |> setup_conn()
@@ -831,7 +831,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
           }
         )
 
-      assert json_response(conn, 422)["errors"] == [%{"detail" => "Unknown answer: e21cf719-ec8a-49d7-99fb-c9a356b73d95"}]
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Answer does not belong to specification"}]
     end
 
     test "returns 422 when submitting an answer for a label that already had a correct answer", %{
