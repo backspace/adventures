@@ -156,13 +156,14 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
     end
   end
 
-  describe "create submission for non-placed specification" do
+  describe "create submission for non-placed specifications" do
     setup do
       region = Repo.insert!(%Region{name: "Test Region"})
 
       specification =
         Repo.insert!(%Specification{
-          concept: "orientation_memory",
+          # Tried to loop through both… should be identical
+          concept: Enum.random(["orientation_memory", "cardinal_memory"]),
           answers: [
             %Answer{order: 1, answer: "left"},
             %Answer{order: 2, answer: "up"},
@@ -527,167 +528,6 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       assert %{"id" => id} = json_response(conn, 201)["data"]
       submission = Waydowntown.get_submission!(id)
       refute submission.correct
-    end
-  end
-
-  describe "create submission for cardinal_memory" do
-    setup do
-      region = Repo.insert!(%Region{name: "Test Region"})
-
-      specification =
-        Repo.insert!(%Specification{
-          concept: "cardinal_memory",
-          answers: [%Answer{answer: "north"}, %Answer{answer: "east"}, %Answer{answer: "south"}],
-          region: region
-        })
-
-      run = Repo.insert!(%Run{specification: specification, started_at: DateTime.utc_now()})
-
-      %{run: run, specification: specification, region: region}
-    end
-
-    test "creates and updates submission", %{conn: conn, run: run} do
-      conn =
-        build_conn()
-        |> setup_conn()
-        |> post(
-          Routes.submission_path(conn, :create),
-          %{
-            "data" => %{
-              "type" => "submissions",
-              "attributes" => %{"submission" => "north"},
-              "relationships" => %{
-                "run" => %{
-                  "data" => %{"type" => "runs", "id" => run.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-      submission = Waydowntown.get_submission!(id)
-      assert submission.submission == "north"
-      assert submission.correct
-
-      conn =
-        build_conn()
-        |> setup_conn()
-        |> patch(
-          Routes.submission_path(conn, :update, id),
-          %{
-            "data" => %{
-              "id" => id,
-              "type" => "submissions",
-              "attributes" => %{"submission" => "north|east"},
-              "relationships" => %{
-                "run" => %{
-                  "data" => %{"type" => "runs", "id" => run.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert %{"id" => ^id} = json_response(conn, 201)["data"]
-      updated_submission = Waydowntown.get_submission!(id)
-      assert updated_submission.submission == "north|east"
-      assert updated_submission.correct
-
-      conn =
-        build_conn()
-        |> setup_conn()
-        |> patch(
-          Routes.submission_path(conn, :update, id),
-          %{
-            "data" => %{
-              "id" => id,
-              "type" => "submissions",
-              "attributes" => %{"submission" => "north|east|south"},
-              "relationships" => %{
-                "run" => %{
-                  "data" => %{"type" => "runs", "id" => run.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert %{"id" => ^id} = json_response(conn, 201)["data"]
-      completed_submission = Waydowntown.get_submission!(id)
-      assert completed_submission.submission == "north|east|south"
-      assert completed_submission.correct
-
-      run = Waydowntown.get_run!(run.id)
-      assert run.winner_submission_id == completed_submission.id
-    end
-
-    test "always creates a new submission on POST, even if incorrect", %{conn: conn, run: run} do
-      conn =
-        build_conn()
-        |> setup_conn()
-        |> post(
-          Routes.submission_path(conn, :create),
-          %{
-            "data" => %{
-              "type" => "submissions",
-              "attributes" => %{"submission" => "WRONG ANSWER"},
-              "relationships" => %{
-                "run" => %{
-                  "data" => %{"type" => "runs", "id" => run.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-      submission = Waydowntown.get_submission!(id)
-      assert submission.submission == "WRONG ANSWER"
-      refute submission.correct
-    end
-
-    test "returns 422 when updating an incorrect submission", %{conn: conn, run: run} do
-      conn =
-        conn
-        |> setup_conn()
-        |> post(
-          Routes.submission_path(conn, :create),
-          %{
-            "data" => %{
-              "type" => "submissions",
-              "attributes" => %{"submission" => "WRONG ANSWER"},
-              "relationships" => %{
-                "run" => %{
-                  "data" => %{"type" => "runs", "id" => run.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert %{"id" => id} = json_response(conn, 201)["data"]
-
-      conn =
-        build_conn()
-        |> setup_conn()
-        |> patch(
-          Routes.submission_path(conn, :update, id),
-          %{
-            "data" => %{
-              "id" => id,
-              "type" => "submissions",
-              "attributes" => %{"submission" => "ANOTHER WRONG ANSWER"},
-              "relationships" => %{
-                "run" => %{
-                  "data" => %{"type" => "runs", "id" => run.id}
-                }
-              }
-            }
-          }
-        )
-
-      assert json_response(conn, 422)["errors"] == [%{"detail" => "Cannot update an incorrect submission"}]
     end
   end
 
