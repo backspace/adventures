@@ -204,19 +204,6 @@ defmodule Registrations.Waydowntown do
 
     run = get_run!(run_id)
 
-    specification_requires_paired_answer =
-      if run.specification.concept in [
-           "orientation_memory",
-           "cardinal_memory",
-           "food_court_frenzy",
-           "fill_in_the_blank",
-           "count_the_items"
-         ] do
-        true
-      else
-        false
-      end
-
     cond do
       is_nil(run.started_at) ->
         {:error, "Run has not been started"}
@@ -224,7 +211,7 @@ defmodule Registrations.Waydowntown do
       run_expired?(run) ->
         {:error, "Run has expired"}
 
-      specification_requires_paired_answer and
+      concept_requires_paired_answer?(run.specification.concept) and
           (is_nil(answer_id) or answer_id not in Enum.map(run.specification.answers, & &1.id)) ->
         {:error, "Answer does not belong to specification"}
 
@@ -233,66 +220,88 @@ defmodule Registrations.Waydowntown do
 
         cond do
           specification.concept == "string_collector" ->
-            normalized_submission = normalize_string(submission_text)
-            existing_submissions = Enum.map(run.submissions, &normalize_string(&1.submission))
-
-            if normalized_submission in existing_submissions do
-              {:error, "Submission already submitted"}
-            else
-              create_submission_helper(run, submission_text)
-            end
+            check_for_duplicate_normalised_submission(run, submission_text)
 
           specification.concept in ["food_court_frenzy", "fill_in_the_blank", "count_the_items"] ->
-            answer_with_submitted_id = Enum.find(specification.answers, fn a -> a.id == answer_id end)
-
-            cond do
-              is_nil(answer_id) ->
-                {:error, "Answer is required"}
-
-              is_nil(answer_with_submitted_id) ->
-                {:error, "Unknown answer: #{answer_id}"}
-
-              Enum.any?(run.submissions, fn s -> s.correct && s.answer_id end) ->
-                {:error, "Submission already exists for label: #{answer_with_submitted_id.label}"}
-
-              Enum.any?(run.submissions, fn s -> s.submission == submission_text end) ->
-                {:error, "Submission already submitted"}
-
-              true ->
-                create_submission_helper(run, submission_text, answer_id)
-            end
+            check_for_paired_answer(run, specification, submission_text, answer_id)
 
           specification.concept in ["orientation_memory", "cardinal_memory"] ->
-            answer_with_submitted_id = Enum.find(specification.answers, fn a -> a.id == answer_id end)
-            latest_submission = run.submissions |> Enum.sort_by(&{&1.inserted_at, &1.answer.order}, :desc) |> List.first()
-
-            expected_answer_order =
-              cond do
-                is_nil(latest_submission) ->
-                  1
-
-                latest_submission.correct ->
-                  latest_submission.answer.order + 1
-
-                true ->
-                  1
-              end
-
-            if answer_with_submitted_id.order == expected_answer_order do
-              create_submission_helper(run, submission_text, answer_id)
-            else
-              {:error,
-               "Expected submission for answer of order #{expected_answer_order}, id #{Enum.find(specification.answers, fn a -> a.order == expected_answer_order end).id}"}
-            end
+            check_for_ordered_answer(run, specification, submission_text, answer_id)
 
           true ->
-            create_submission_helper(run, submission_text, answer_id)
+            insert_submission(run, submission_text, answer_id)
         end
     end
   end
 
+  defp concept_requires_paired_answer?(concept) do
+    concept in [
+      "orientation_memory",
+      "cardinal_memory",
+      "food_court_frenzy",
+      "fill_in_the_blank",
+      "count_the_items"
+    ]
+  end
+
+  defp check_for_duplicate_normalised_submission(run, submission_text) do
+    normalized_submission = normalize_string(submission_text)
+    existing_submissions = Enum.map(run.submissions, &normalize_string(&1.submission))
+
+    if normalized_submission in existing_submissions do
+      {:error, "Submission already submitted"}
+    else
+      insert_submission(run, submission_text)
+    end
+  end
+
+  defp check_for_paired_answer(run, specification, submission_text, answer_id) do
+    answer_with_submitted_id = Enum.find(specification.answers, fn a -> a.id == answer_id end)
+
+    cond do
+      is_nil(answer_id) ->
+        {:error, "Answer is required"}
+
+      is_nil(answer_with_submitted_id) ->
+        {:error, "Unknown answer: #{answer_id}"}
+
+      Enum.any?(run.submissions, fn s -> s.correct && s.answer_id end) ->
+        {:error, "Submission already exists for label: #{answer_with_submitted_id.label}"}
+
+      Enum.any?(run.submissions, fn s -> s.submission == submission_text end) ->
+        {:error, "Submission already submitted"}
+
+      true ->
+        insert_submission(run, submission_text, answer_id)
+    end
+  end
+
+  def check_for_ordered_answer(run, specification, submission_text, answer_id) do
+    answer_with_submitted_id = Enum.find(specification.answers, fn a -> a.id == answer_id end)
+    latest_submission = run.submissions |> Enum.sort_by(&{&1.inserted_at, &1.answer.order}, :desc) |> List.first()
+
+    expected_answer_order =
+      cond do
+        is_nil(latest_submission) ->
+          1
+
+        latest_submission.correct ->
+          latest_submission.answer.order + 1
+
+        true ->
+          1
+      end
+
+    if answer_with_submitted_id.order == expected_answer_order do
+      insert_submission(run, submission_text, answer_id)
+    else
+      {:error,
+       "Expected submission for answer of order #{expected_answer_order}, id #{Enum.find(specification.answers, fn a -> a.order == expected_answer_order end).id}"}
+    end
+  end
+
   # FIXME rename
-  defp create_submission_helper(run, submission_text, answer_id \\ nil) do
+  defp insert_submission(run, submission_text, answer_id \\ nil) do
     correct = check_submission_correctness(run, submission_text, answer_id)
 
     attrs = %{
@@ -384,9 +393,6 @@ defmodule Registrations.Waydowntown do
     correct_answer = Enum.find(correct_answers, fn ca -> ca.id == answer_id end)
     normalize_string(correct_answer.answer) == normalize_string(submission_text)
   end
-
-  defp single_answer_run?(%Run{specification: %Specification{concept: "fill_in_the_blank"}}), do: true
-  defp single_answer_run?(_), do: false
 
   defp update_run_winner(run, submission) do
     run
