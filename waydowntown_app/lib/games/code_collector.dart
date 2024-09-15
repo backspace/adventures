@@ -108,7 +108,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
             }
           }
 
-          if (currentGame.correctAnswers == currentGame.totalAnswers) {
+          if (currentGame.correctSubmissions == currentGame.totalAnswers) {
             isGameComplete = true;
             _showCompletionAnimation();
           }
@@ -205,7 +205,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Progress: ${currentGame.correctAnswers}/${currentGame.totalAnswers}',
+              'Progress: ${currentGame.correctSubmissions}/${currentGame.totalAnswers}',
             ),
           ),
           if (isGameComplete)

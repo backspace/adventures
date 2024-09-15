@@ -18,7 +18,7 @@ class TestHelpers {
             "id": run.id,
             "type": "runs",
             "attributes": {
-              "correct_answers": run.correctAnswers,
+              "correct_submissions": run.correctSubmissions,
               "total_answers": run.totalAnswers,
             },
             "relationships": {
@@ -147,7 +147,7 @@ class TestHelpers {
           "id": response.runId,
           "type": "runs",
           "attributes": {
-            "correct_answers": response.correctAnswers,
+            "correct_submissions": response.correctAnswers,
             "total_answers": response.totalAnswers,
             "complete": response.isComplete,
           }
@@ -194,7 +194,7 @@ class TestHelpers {
           ),
         ),
       ),
-      correctAnswers: correctAnswers,
+      correctSubmissions: correctAnswers,
       totalAnswers: totalAnswers,
       startedAt: startedAt,
       taskDescription: description,
@@ -211,7 +211,7 @@ class TestHelpers {
             "id": run.id,
             "type": "runs",
             "attributes": {
-              "correct_answers": run.correctAnswers,
+              "correct_submissions": run.correctSubmissions,
               "total_answers": run.totalAnswers,
               "started_at": DateTime.now().toUtc().toIso8601String(),
               "description": run.taskDescription,

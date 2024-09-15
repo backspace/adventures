@@ -3,7 +3,7 @@ import 'package:waydowntown/models/specification.dart';
 class Run {
   final String id;
   final Specification specification;
-  final int correctAnswers;
+  final int correctSubmissions;
   final int totalAnswers;
   final DateTime? startedAt;
   final String? taskDescription;
@@ -11,7 +11,7 @@ class Run {
   Run({
     required this.id,
     required this.specification,
-    required this.correctAnswers,
+    required this.correctSubmissions,
     required this.totalAnswers,
     this.startedAt,
     this.taskDescription,
@@ -44,7 +44,7 @@ class Run {
       specification: specification ??
           (throw const FormatException('Run must have a specification')),
       taskDescription: data['attributes']['task_description'],
-      correctAnswers: data['attributes']['correct_answers'] ?? 0,
+      correctSubmissions: data['attributes']['correct_submissions'] ?? 0,
       totalAnswers: data['attributes']['total_answers'] ?? 0,
       startedAt: data['attributes']['started_at'] != null
           ? DateTime.parse(data['attributes']['started_at'])

@@ -102,7 +102,7 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
           }
         }
 
-        if (currentGame.correctAnswers == currentGame.totalAnswers) {
+        if (currentGame.correctSubmissions == currentGame.totalAnswers) {
           isGameComplete = true;
           _showCompletionAnimation();
         }
@@ -162,7 +162,7 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Progress: ${currentGame.correctAnswers}/${currentGame.totalAnswers}',
+              'Progress: ${currentGame.correctSubmissions}/${currentGame.totalAnswers}',
             ),
           ),
           if (isGameComplete)

@@ -139,7 +139,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
           }
         }
 
-        if (currentGame.correctAnswers == currentGame.totalAnswers) {
+        if (currentGame.correctSubmissions == currentGame.totalAnswers) {
           isGameComplete = true;
           stopScan();
           _showCompletionAnimation();
@@ -237,7 +237,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Progress: ${currentGame.correctAnswers}/${currentGame.totalAnswers}',
+              'Progress: ${currentGame.correctSubmissions}/${currentGame.totalAnswers}',
             ),
           ),
           if (isGameComplete)

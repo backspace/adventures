@@ -104,7 +104,7 @@ class StringCollectorGameState extends State<StringCollectorGame> {
           }
         }
 
-        if (currentRun.correctAnswers == currentRun.totalAnswers) {
+        if (currentRun.correctSubmissions == currentRun.totalAnswers) {
           isRunComplete = true;
           _showCompletionAnimation();
         }
@@ -197,7 +197,7 @@ class StringCollectorGameState extends State<StringCollectorGame> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Progress: ${currentRun.correctAnswers}/${currentRun.totalAnswers}',
+              'Progress: ${currentRun.correctSubmissions}/${currentRun.totalAnswers}',
             ),
           ),
           if (isRunComplete)

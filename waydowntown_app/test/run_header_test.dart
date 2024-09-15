@@ -20,7 +20,7 @@ void main() {
             parentRegion:
                 Region(id: '2', name: 'Parent Region', parentRegion: null)),
       ),
-      correctAnswers: 0,
+      correctSubmissions: 0,
       totalAnswers: 0,
       taskDescription: 'Test description',
     );
@@ -43,7 +43,7 @@ void main() {
         region: Region(id: '1', name: 'Test Region', parentRegion: null),
         duration: 300,
       ),
-      correctAnswers: 0,
+      correctSubmissions: 0,
       totalAnswers: 0,
       startedAt: DateTime.now().subtract(const Duration(seconds: 5)),
     );
@@ -67,7 +67,7 @@ void main() {
         placed: true,
         region: Region(id: '1', name: 'Test Region', parentRegion: null),
       ),
-      correctAnswers: 0,
+      correctSubmissions: 0,
       totalAnswers: 0,
       startedAt: DateTime.now(),
     );
@@ -90,7 +90,7 @@ void main() {
         region: Region(id: '1', name: 'Test Region', parentRegion: null),
         duration: 3,
       ),
-      correctAnswers: 0,
+      correctSubmissions: 0,
       totalAnswers: 0,
       startedAt: DateTime.now().subtract(const Duration(seconds: 2)),
     );
