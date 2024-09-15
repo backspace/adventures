@@ -1,8 +1,5 @@
 defmodule Registrations.Waydowntown do
-  @moduledoc """
-  The Waydowntown context.
-  """
-
+  @moduledoc false
   import Ecto.Query, warn: false
 
   alias Registrations.Repo
@@ -11,56 +8,20 @@ defmodule Registrations.Waydowntown do
   alias Registrations.Waydowntown.Specification
   alias Registrations.Waydowntown.Submission
 
-  @doc false
   defp concepts_yaml do
     YamlElixir.read_from_file!(Path.join(:code.priv_dir(:registrations), "concepts.yaml"))
   end
 
-  @doc """
-  Returns the list of runs.
-
-  ## Examples
-
-      iex> list_runs()
-      [%Run{}, ...]
-
-  """
   def list_runs do
     Run |> Repo.all() |> Repo.preload(specification: [:answers, region: [parent: [parent: [:parent]]]])
   end
 
-  @doc """
-  Gets a single run.
-
-  Raises `Ecto.NoResultsError` if the Run does not exist.
-
-  ## Examples
-
-      iex> get_run!(123)
-      %Run{}
-
-      iex> get_run!(456)
-      ** (Ecto.NoResultsError)
-
-  """
   def get_run!(id) do
     Run
     |> Repo.get!(id)
     |> Repo.preload(submissions: [:answer], specification: [:answers, region: [parent: [parent: [parent: :parent]]]])
   end
 
-  @doc """
-  Creates a run.
-
-  ## Examples
-
-      iex> create_run(%{field: value})
-      {:ok, %Run{}}
-
-      iex> create_run(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
   def create_run(attrs \\ %{}, specification_filter \\ nil) do
     case_result =
       case specification_filter do
@@ -230,65 +191,16 @@ defmodule Registrations.Waydowntown do
     end
   end
 
-  @doc """
-  Returns the list of specifications.
-
-  ## Examples
-
-      iex> list_specifications()
-      [%Specification{}, ...]
-
-  """
   def list_specifications do
     Specification |> Repo.all() |> Repo.preload(region: [parent: [parent: [:parent]]])
   end
 
-  @doc """
-  Gets a single specification.
-
-  Raises `Ecto.NoResultsError` if the Specification does not exist.
-
-  ## Examples
-
-      iex> get_specification!(123)
-      %Specification{}
-
-      iex> get_specification!(456)
-      ** (Ecto.NoResultsError)
-
-  """
   def get_specification!(id), do: Repo.get!(Specification, id)
 
-  @doc """
-  Gets a single submission.
-
-  Raises `Ecto.NoResultsError` if the Submission does not exist.
-
-  ## Examples
-
-      iex> get_submission!(123)
-      %Submission{}
-
-      iex> get_submission!(456)
-      ** (Ecto.NoResultsError)
-
-  """
   # FIXME consolidate preloads
   def get_submission!(id),
     do: Submission |> Repo.get!(id) |> Repo.preload([:answer, run: [specification: [:answers], submissions: [:answer]]])
 
-  @doc """
-  Creates a submission.
-
-  ## Examples
-
-      iex> create_submission(%{field: value})
-      {:ok, %Submission{}}
-
-      iex> create_submission(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
   def create_submission(%{"submission" => submission_text, "run_id" => run_id} = params) do
     answer_id = Map.get(params, "answer_id")
 
