@@ -116,7 +116,7 @@ defmodule Registrations.Waydowntown do
   defp create_run_with_specific_specification(attrs, specification_id) do
     case Repo.get(Specification, specification_id) do
       nil ->
-        {:error, "Specified specification not found"}
+        {:error, "Specification not found"}
 
       specification ->
         %Run{}
