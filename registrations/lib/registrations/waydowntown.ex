@@ -13,13 +13,13 @@ defmodule Registrations.Waydowntown do
   end
 
   def list_runs do
-    Run |> Repo.all() |> Repo.preload(specification: [:answers, region: [parent: [parent: [:parent]]]])
+    Run |> Repo.all() |> Repo.preload(run_preloads())
   end
 
   def get_run!(id) do
     Run
     |> Repo.get!(id)
-    |> Repo.preload(submissions: [:answer], specification: [:answers, region: [parent: [parent: [parent: :parent]]]])
+    |> Repo.preload(run_preloads())
   end
 
   def create_run(attrs \\ %{}, specification_filter \\ nil) do
@@ -197,9 +197,7 @@ defmodule Registrations.Waydowntown do
 
   def get_specification!(id), do: Repo.get!(Specification, id)
 
-  # FIXME consolidate preloads
-  def get_submission!(id),
-    do: Submission |> Repo.get!(id) |> Repo.preload([:answer, run: [specification: [:answers], submissions: [:answer]]])
+  def get_submission!(id), do: Submission |> Repo.get!(id) |> Repo.preload(submission_preloads())
 
   def create_submission(%{"submission" => submission_text, "run_id" => run_id} = params) do
     answer_id = Map.get(params, "answer_id")
@@ -309,7 +307,7 @@ defmodule Registrations.Waydowntown do
     |> Repo.insert()
     |> case do
       {:ok, submission} ->
-        submission = Repo.preload(submission, [:answer, run: [:submissions, specification: [:answers]]])
+        submission = Repo.preload(submission, submission_preloads())
         check_and_update_run_winner(run, submission)
         submission = get_submission!(submission.id)
         {:ok, submission}
@@ -450,5 +448,13 @@ defmodule Registrations.Waydowntown do
       _ ->
         {:error, "Run already started"}
     end
+  end
+
+  defp run_preloads do
+    [submissions: [:answer], specification: [:answers, region: [parent: [parent: [:parent]]]]]
+  end
+
+  defp submission_preloads do
+    [:answer, run: [specification: [:answers], submissions: [:answer]]]
   end
 end
