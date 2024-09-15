@@ -588,22 +588,28 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       assert %{"correct" => false} = json_response(conn, 201)["data"]["attributes"]
     end
 
-    test "completes run when all strings are collected, correct answers are normalised", %{run: run} do
-      Enum.each(["First String", "SECOND string", "  third STRING  "], fn submission ->
+    test "completes run when all strings are collected, correct answers are normalised, progress is reported", %{run: run} do
+      ["First String", "SECOND string", "  third STRING  "]
+      |> Enum.with_index()
+      |> Enum.each(fn {submission, index} ->
         conn =
           setup_conn(build_conn())
 
-        post(conn, Routes.submission_path(conn, :create), %{
-          "data" => %{
-            "type" => "submissions",
-            "attributes" => %{"submission" => submission},
-            "relationships" => %{
-              "run" => %{
-                "data" => %{"type" => "runs", "id" => run.id}
+        conn =
+          post(conn, Routes.submission_path(conn, :create), %{
+            "data" => %{
+              "type" => "submissions",
+              "attributes" => %{"submission" => submission},
+              "relationships" => %{
+                "run" => %{
+                  "data" => %{"type" => "runs", "id" => run.id}
+                }
               }
             }
-          }
-        })
+          })
+
+        sideloaded_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+        assert sideloaded_run["attributes"]["correct_submissions"] == index + 1
       end)
 
       updated_run = Waydowntown.get_run!(run.id)
