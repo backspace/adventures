@@ -325,12 +325,7 @@ defmodule Registrations.Waydowntown do
             existing_submissions = Enum.map(run.submissions, &normalize_string(&1.submission))
 
             if normalized_submission in existing_submissions do
-              changeset =
-                %Submission{}
-                |> Submission.changeset(%{"submission" => submission_text, "run_id" => run_id})
-                |> Ecto.Changeset.add_error(:detail, "Submission already submitted")
-
-              {:error, changeset}
+              {:error, "Submission already submitted"}
             else
               create_submission_helper(run, submission_text)
             end
