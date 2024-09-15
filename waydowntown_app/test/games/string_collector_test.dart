@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/games/string_collector.dart';
-import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
 
@@ -18,7 +18,7 @@ void main() {
 
   late Dio dio;
   late DioAdapter dioAdapter;
-  late Game game;
+  late Run game;
 
   setUp(() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));

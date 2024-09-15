@@ -2,20 +2,20 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:sentry/sentry.dart';
 import 'package:waydowntown/app.dart';
-import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/routes/game_launch_route.dart';
 
 class RequestGameRoute extends StatefulWidget {
   final Dio dio;
   final String? concept;
-  final String? incarnationId;
+  final String? specificationId;
   final String? position;
 
   const RequestGameRoute({
     super.key,
     required this.dio,
     this.concept,
-    this.incarnationId,
+    this.specificationId,
     this.position,
   });
 
@@ -25,7 +25,7 @@ class RequestGameRoute extends StatefulWidget {
 
 class RequestGameRouteState extends State<RequestGameRoute> {
   String answer = 'answer';
-  Game? game;
+  Run? game;
   bool hasAnsweredIncorrectly = false;
   bool isOver = false;
   bool isRequestError = false;
@@ -42,13 +42,13 @@ class RequestGameRouteState extends State<RequestGameRoute> {
     try {
       final queryParameters = <String, String>{};
       if (widget.concept != null) {
-        queryParameters['filter[incarnation.concept]'] = widget.concept!;
+        queryParameters['filter[specification.concept]'] = widget.concept!;
       }
-      if (widget.incarnationId != null) {
-        queryParameters['filter[incarnation.id]'] = widget.incarnationId!;
+      if (widget.specificationId != null) {
+        queryParameters['filter[specification.id]'] = widget.specificationId!;
       }
       if (widget.position != null) {
-        queryParameters['filter[incarnation.position]'] = widget.position!;
+        queryParameters['filter[specification.position]'] = widget.position!;
       }
 
       final response = await widget.dio.post(
@@ -64,7 +64,7 @@ class RequestGameRouteState extends State<RequestGameRoute> {
 
       if (response.statusCode == 201) {
         setState(() {
-          game = Game.fromJson(response.data);
+          game = Run.fromJson(response.data);
         });
       } else {
         throw Exception('Failed to load game');

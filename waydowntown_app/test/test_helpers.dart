@@ -1,13 +1,13 @@
 import 'package:http_mock_adapter/http_mock_adapter.dart';
-import 'package:waydowntown/models/game.dart';
-import 'package:waydowntown/models/incarnation.dart';
+import 'package:waydowntown/models/run.dart';
+import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/models/region.dart';
 
 class TestHelpers {
   static void setupMockGameResponse(
     DioAdapter dioAdapter, {
     required String route,
-    required Game game,
+    required Run game,
   }) {
     dioAdapter.onPost(
       route,
@@ -22,30 +22,33 @@ class TestHelpers {
               "total_answers": game.totalAnswers,
             },
             "relationships": {
-              "incarnation": {
-                "data": {"type": "incarnations", "id": game.incarnation.id}
+              "specification": {
+                "data": {"type": "specifications", "id": game.specification.id}
               }
             }
           },
           "included": [
             {
-              "id": game.incarnation.id,
-              "type": "incarnations",
+              "id": game.specification.id,
+              "type": "specifications",
               "attributes": {
-                "concept": game.incarnation.concept,
+                "concept": game.specification.concept,
               },
               "relationships": {
                 "region": {
-                  "data": {"type": "regions", "id": game.incarnation.region!.id}
+                  "data": {
+                    "type": "regions",
+                    "id": game.specification.region!.id
+                  }
                 }
               },
             },
             {
-              "id": game.incarnation.region!.id,
+              "id": game.specification.region!.id,
               "type": "regions",
               "attributes": {
-                "name": game.incarnation.region!.name,
-                "description": game.incarnation.region!.description
+                "name": game.specification.region!.name,
+                "description": game.specification.region!.description
               },
               "relationships": {
                 "parent": {"data": null}
@@ -153,7 +156,7 @@ class TestHelpers {
     };
   }
 
-  static Game createMockGame({
+  static Run createMockGame({
     String concept = 'test_concept',
     String? description,
     String start = 'test_start',
@@ -169,15 +172,15 @@ class TestHelpers {
     DateTime? startedAt,
     int? durationSeconds = 300,
   }) {
-    return Game(
+    return Run(
       id: '22261813-2171-453f-a669-db08edc70d6d',
-      incarnation: Incarnation(
+      specification: Specification(
         id: '0091eb84-85c8-4e63-962b-39e1a19d2781',
         placed: true,
         concept: concept,
         start: start,
         answerLabels: answerLabels,
-        durationSeconds: durationSeconds,
+        duration: durationSeconds,
         region: Region(
           id: '324fd8f9-cd25-48be-a761-b8680fa72737',
           name: 'Test Region',
@@ -197,7 +200,7 @@ class TestHelpers {
     );
   }
 
-  static void setupMockStartGameResponse(DioAdapter dioAdapter, Game game) {
+  static void setupMockStartGameResponse(DioAdapter dioAdapter, Run game) {
     dioAdapter.onPost(
       '/waydowntown/games/${game.id}/start',
       (server) => server.reply(
@@ -213,30 +216,33 @@ class TestHelpers {
               "description": game.description,
             },
             "relationships": {
-              "incarnation": {
-                "data": {"type": "incarnations", "id": game.incarnation.id}
+              "specification": {
+                "data": {"type": "specifications", "id": game.specification.id}
               }
             }
           },
           "included": [
             {
-              "id": game.incarnation.id,
-              "type": "incarnations",
+              "id": game.specification.id,
+              "type": "specifications",
               "attributes": {
-                "concept": game.incarnation.concept,
+                "concept": game.specification.concept,
               },
               "relationships": {
                 "region": {
-                  "data": {"type": "regions", "id": game.incarnation.region!.id}
+                  "data": {
+                    "type": "regions",
+                    "id": game.specification.region!.id
+                  }
                 }
               },
             },
             {
-              "id": game.incarnation.region!.id,
+              "id": game.specification.region!.id,
               "type": "regions",
               "attributes": {
-                "name": game.incarnation.region!.name,
-                "description": game.incarnation.region!.description
+                "name": game.specification.region!.name,
+                "description": game.specification.region!.description
               },
               "relationships": {
                 "parent": {"data": null}

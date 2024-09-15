@@ -2,12 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/game_header.dart';
-import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class SingleStringInputGame extends StatefulWidget {
   final Dio dio;
-  final Game game;
+  final Run game;
 
   const SingleStringInputGame(
       {super.key, required this.dio, required this.game});
@@ -76,7 +76,7 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.game.incarnation.concept == 'fill_in_the_blank'
+        title: Text(widget.game.specification.concept == 'fill_in_the_blank'
             ? 'Fill in the Blank'
             : 'Count the Items'),
       ),

@@ -11,7 +11,7 @@ import 'package:mockito/mockito.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/games/cardinal_memory.dart';
-import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
 
@@ -25,7 +25,7 @@ void main() {
 
   late Dio dio;
   late DioAdapter dioAdapter;
-  late Game game;
+  late Run game;
   late MockMotionSensors mockMotionSensors;
 
   setUp(() {

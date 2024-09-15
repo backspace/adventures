@@ -2,12 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/game_header.dart';
-import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class FoodCourtFrenzyGame extends StatefulWidget {
   final Dio dio;
-  final Game game;
+  final Run game;
 
   const FoodCourtFrenzyGame({super.key, required this.dio, required this.game});
 
@@ -41,13 +41,13 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
   late List<Answer> answers;
   bool isGameComplete = false;
   Map<String, String> answerErrors = {};
-  late Game currentGame;
+  late Run currentGame;
 
   @override
   void initState() {
     super.initState();
     currentGame = widget.game;
-    answers = currentGame.incarnation.answerLabels
+    answers = currentGame.specification.answerLabels
             ?.map((label) => Answer(label))
             .toList() ??
         [];
@@ -96,9 +96,9 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
             orElse: () => null,
           );
           if (gameData != null) {
-            currentGame = Game.fromJson(
+            currentGame = Run.fromJson(
                 {'data': gameData, 'included': response.data['included']},
-                existingIncarnation: currentGame.incarnation);
+                existingSpecification: currentGame.specification);
           }
         }
 

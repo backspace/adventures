@@ -1,25 +1,25 @@
 import 'package:waydowntown/models/region.dart';
 
-class Incarnation {
+class Specification {
   final String id;
   final String concept;
-  final int? durationSeconds;
+  final int? duration;
   final Region? region;
   final bool placed;
   final String? start;
   final List<String>? answerLabels;
 
-  const Incarnation({
+  const Specification({
     required this.id,
     required this.concept,
     this.region,
-    this.durationSeconds,
+    this.duration,
     required this.placed,
     this.start,
     this.answerLabels,
   });
 
-  factory Incarnation.fromJson(
+  factory Specification.fromJson(
       Map<String, dynamic> json, List<dynamic> included) {
     final attributes = json['attributes'];
     final relationships = json['relationships'];
@@ -29,7 +29,7 @@ class Incarnation {
       if (relationships == null ||
           relationships['region'] == null ||
           relationships['region']['data'] == null) {
-        throw const FormatException('Placed incarnation must have a region');
+        throw const FormatException('Placed specification must have a region');
       }
 
       final regionData = relationships['region']['data'];
@@ -41,12 +41,12 @@ class Incarnation {
       region = Region.fromJson(regionJson, included);
     }
 
-    return Incarnation(
+    return Specification(
       id: json['id'],
       concept: attributes['concept'],
       region: region,
       placed: attributes['placed'] ?? false,
-      durationSeconds: attributes['duration_seconds'],
+      duration: attributes['duration'],
       start: attributes['start'],
       answerLabels: attributes['answer_labels'] != null
           ? List<String>.from(attributes['answer_labels'])

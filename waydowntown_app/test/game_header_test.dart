@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:waydowntown/game_header.dart';
-import 'package:waydowntown/models/game.dart';
-import 'package:waydowntown/models/incarnation.dart';
+import 'package:waydowntown/models/run.dart';
+import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/models/region.dart';
 
 void main() {
   testWidgets('GameHeader displays region path and description',
       (WidgetTester tester) async {
-    final game = Game(
+    final game = Run(
       id: '1',
-      incarnation: Incarnation(
+      specification: Specification(
         id: '1',
         concept: 'Test',
         placed: true,
@@ -33,15 +33,15 @@ void main() {
 
   testWidgets('GameHeader displays countdown when duration is set',
       (WidgetTester tester) async {
-    final game = Game(
+    final game = Run(
       id: '1',
       description: 'Test description',
-      incarnation: Incarnation(
+      specification: Specification(
         id: '1',
         concept: 'Test',
         placed: true,
         region: Region(id: '1', name: 'Test Region', parentRegion: null),
-        durationSeconds: 300,
+        duration: 300,
       ),
       correctAnswers: 0,
       totalAnswers: 0,
@@ -58,10 +58,10 @@ void main() {
 
   testWidgets('GameHeader does not display countdown when duration is not set',
       (WidgetTester tester) async {
-    final game = Game(
+    final game = Run(
       id: '1',
       description: 'Test description',
-      incarnation: Incarnation(
+      specification: Specification(
         id: '1',
         concept: 'Test',
         placed: true,
@@ -80,15 +80,15 @@ void main() {
 
   testWidgets('GameHeader displays "Out of time!" when timer runs out',
       (WidgetTester tester) async {
-    final game = Game(
+    final game = Run(
       id: '1',
       description: 'Test description',
-      incarnation: Incarnation(
+      specification: Specification(
         id: '1',
         concept: 'Test',
         placed: true,
         region: Region(id: '1', name: 'Test Region', parentRegion: null),
-        durationSeconds: 3,
+        duration: 3,
       ),
       correctAnswers: 0,
       totalAnswers: 0,

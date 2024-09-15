@@ -6,7 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sentry/sentry.dart';
 import 'package:waydowntown/app.dart';
-import 'package:waydowntown/models/incarnation.dart';
+import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/routes/request_game_route.dart';
 import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';
@@ -21,7 +21,7 @@ class MapRoute extends StatefulWidget {
 }
 
 class _MapRouteState extends State<MapRoute> {
-  List<Incarnation> incarnations = [];
+  List<Specification> specifications = [];
   bool isLoading = true;
   bool isRequestError = false;
   Map<String, String> conceptMarkers = {};
@@ -29,12 +29,12 @@ class _MapRouteState extends State<MapRoute> {
   @override
   void initState() {
     super.initState();
-    fetchIncarnations();
+    fetchSpecifications();
     loadConceptMarkers();
   }
 
-  Future<void> fetchIncarnations() async {
-    const endpoint = '/waydowntown/incarnations';
+  Future<void> fetchSpecifications() async {
+    const endpoint = '/waydowntown/specifications';
     try {
       final response = await widget.dio.get(endpoint);
 
@@ -42,14 +42,14 @@ class _MapRouteState extends State<MapRoute> {
         final List<dynamic> data = response.data['data'];
         final List<dynamic> included = response.data['included'];
         setState(() {
-          incarnations = data
-              .map((json) => Incarnation.fromJson(json, included))
-              .where((incarnation) => incarnation.region != null)
+          specifications = data
+              .map((json) => Specification.fromJson(json, included))
+              .where((specification) => specification.region != null)
               .toList();
           isLoading = false;
         });
       } else {
-        throw Exception('Failed to load incarnations');
+        throw Exception('Failed to load specifications');
       }
     } catch (error) {
       if (mounted) {
@@ -59,7 +59,7 @@ class _MapRouteState extends State<MapRoute> {
           isLoading = false;
         });
       }
-      logger.e('Error fetching incarnations from $endpoint: $error');
+      logger.e('Error fetching specifications from $endpoint: $error');
     }
   }
 
@@ -75,20 +75,20 @@ class _MapRouteState extends State<MapRoute> {
   }
 
   List<Marker> _buildMarkers() {
-    return incarnations
-        .where((incarnation) =>
-            incarnation.region != null &&
-            incarnation.region!.latitude != null &&
-            incarnation.region!.longitude != null)
-        .map((incarnation) {
-      final region = incarnation.region!;
-      final marker = conceptMarkers[incarnation.concept] ?? '📍';
+    return specifications
+        .where((specification) =>
+            specification.region != null &&
+            specification.region!.latitude != null &&
+            specification.region!.longitude != null)
+        .map((specification) {
+      final region = specification.region!;
+      final marker = conceptMarkers[specification.concept] ?? '📍';
       return Marker(
         width: 40.0,
         height: 40.0,
         point: LatLng(region.latitude!, region.longitude!),
         child: GestureDetector(
-          onTap: () => _onMarkerTap(incarnation),
+          onTap: () => _onMarkerTap(specification),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -104,12 +104,12 @@ class _MapRouteState extends State<MapRoute> {
     }).toList();
   }
 
-  void _onMarkerTap(Incarnation incarnation) {
+  void _onMarkerTap(Specification specification) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => RequestGameRoute(
           dio: widget.dio,
-          incarnationId: incarnation.id,
+          specificationId: specification.id,
         ),
       ),
     );
@@ -120,7 +120,7 @@ class _MapRouteState extends State<MapRoute> {
     if (isRequestError) {
       return Scaffold(
         appBar: AppBar(title: const Text('Map')),
-        body: const Center(child: Text('Error fetching incarnations')),
+        body: const Center(child: Text('Error fetching specifications')),
       );
     } else if (isLoading) {
       return Scaffold(

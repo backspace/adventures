@@ -12,12 +12,12 @@ import 'package:waydowntown/games/food_court_frenzy.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/games/single_string_input_game.dart';
 import 'package:waydowntown/games/string_collector.dart';
-import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';
 
 class GameLaunchRoute extends StatefulWidget {
-  Game game;
+  Run game;
   final Dio dio;
 
   GameLaunchRoute({super.key, required this.game, required this.dio});
@@ -31,7 +31,7 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
     final yamlString =
         await DefaultAssetBundle.of(context).loadString('assets/concepts.yaml');
     final yamlMap = loadYaml(yamlString);
-    final conceptInfo = yamlMap[widget.game.incarnation.concept];
+    final conceptInfo = yamlMap[widget.game.specification.concept];
 
     if (conceptInfo == null) {
       return {'error': 'Unknown game concept'};
@@ -79,11 +79,11 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
                     'Instructions',
                     instructions,
                   ),
-                if (widget.game.incarnation.start != null)
+                if (widget.game.specification.start != null)
                   _buildInfoCard(
                     context,
                     'Starting point',
-                    widget.game.incarnation.start!,
+                    widget.game.specification.start!,
                   ),
                 Row(
                   children: [
@@ -97,15 +97,14 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
                         ),
                       ),
                     if (widget.game.totalAnswers > 1 &&
-                        widget.game.incarnation.durationSeconds != null)
+                        widget.game.specification.duration != null)
                       const SizedBox(width: 2),
-                    if (widget.game.incarnation.durationSeconds != null)
+                    if (widget.game.specification.duration != null)
                       Expanded(
                         child: _buildInfoCard(
                           context,
                           'Duration',
-                          _formatDuration(
-                              widget.game.incarnation.durationSeconds!),
+                          _formatDuration(widget.game.specification.duration!),
                           key: const Key('duration'),
                         ),
                       ),
@@ -153,7 +152,7 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
                         if (response.statusCode == 200) {
                           setState(() {
                             logger.d('Game started: ${response.data}');
-                            widget.game = Game.fromJson(response.data);
+                            widget.game = Run.fromJson(response.data);
                           });
                         }
                       }
@@ -189,16 +188,16 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
     }
   }
 
-  Widget _buildMap(Game game) {
-    if (game.incarnation.region?.latitude != null &&
-        game.incarnation.region?.longitude != null) {
+  Widget _buildMap(Run game) {
+    if (game.specification.region?.latitude != null &&
+        game.specification.region?.longitude != null) {
       return GameMap(
-        centre: LatLng(game.incarnation.region!.latitude!,
-            game.incarnation.region!.longitude!),
+        centre: LatLng(game.specification.region!.latitude!,
+            game.specification.region!.longitude!),
         markers: [
           Marker(
-            point: LatLng(game.incarnation.region!.latitude!,
-                game.incarnation.region!.longitude!),
+            point: LatLng(game.specification.region!.latitude!,
+                game.specification.region!.longitude!),
             child: const Icon(Icons.location_on, color: Colors.red, size: 30),
           ),
         ],
@@ -221,7 +220,7 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
                 ?.copyWith(color: Colors.red)),
         const SizedBox(height: 8),
         Text(
-            'The game concept "${widget.game.incarnation.concept}" is not recognized.'),
+            'The game concept "${widget.game.specification.concept}" is not recognized.'),
       ],
     );
   }
@@ -246,8 +245,8 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
     );
   }
 
-  Widget _buildGameWidget(Game game) {
-    switch (game.incarnation.concept) {
+  Widget _buildGameWidget(Run game) {
+    switch (game.specification.concept) {
       case 'bluetooth_collector':
         return BluetoothCollectorGame(game: game, dio: widget.dio);
       case 'cardinal_memory':
@@ -264,7 +263,7 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
       case 'string_collector':
         return StringCollectorGame(game: game, dio: widget.dio);
       default:
-        throw Exception('Unknown game type: ${game.incarnation.concept}');
+        throw Exception('Unknown game type: ${game.specification.concept}');
     }
   }
 

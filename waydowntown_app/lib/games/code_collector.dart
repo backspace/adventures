@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/game_header.dart';
-import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class CodeCollectorGame extends StatefulWidget {
   final Dio dio;
-  final Game game;
+  final Run game;
   final MobileScannerController? scannerController;
 
   const CodeCollectorGame({
@@ -38,7 +38,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
   List<DetectedCode> detectedCodes = [];
   late MobileScannerController controller;
   Map<String, String> codeErrors = {};
-  late Game currentGame;
+  late Run currentGame;
   bool isGameComplete = false;
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
@@ -102,9 +102,9 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
               orElse: () => null,
             );
             if (gameData != null) {
-              currentGame = Game.fromJson(
+              currentGame = Run.fromJson(
                   {'data': gameData, 'included': response.data['included']},
-                  existingIncarnation: currentGame.incarnation);
+                  existingSpecification: currentGame.specification);
             }
           }
 

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:waydowntown/models/game.dart';
-import 'package:waydowntown/models/incarnation.dart';
+import 'package:waydowntown/models/run.dart';
+import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/models/region.dart';
 
 class GameHeader extends StatelessWidget {
-  final Game game;
+  final Run game;
 
   const GameHeader({super.key, required this.game});
 
@@ -13,7 +13,7 @@ class GameHeader extends StatelessWidget {
     return Column(
       children: [
         Text(
-          getRegionPath(game.incarnation),
+          getRegionPath(game.specification),
           style: Theme.of(context).textTheme.titleLarge,
         ),
         if (game.description != null)
@@ -21,16 +21,16 @@ class GameHeader extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Text(game.description!),
           ),
-        if (game.startedAt != null && game.incarnation.durationSeconds != null)
+        if (game.startedAt != null && game.specification.duration != null)
           CountdownTimer(game: game),
       ],
     );
   }
 }
 
-String getRegionPath(Incarnation incarnation) {
+String getRegionPath(Specification specification) {
   List<String> regionNames = [];
-  Region? currentRegion = incarnation.region;
+  Region? currentRegion = specification.region;
 
   while (currentRegion != null) {
     regionNames.insert(0, currentRegion.name);
@@ -41,7 +41,7 @@ String getRegionPath(Incarnation incarnation) {
 }
 
 class CountdownTimer extends StatefulWidget {
-  final Game game;
+  final Run game;
 
   const CountdownTimer({super.key, required this.game});
 
@@ -57,7 +57,7 @@ class _CountdownTimerState extends State<CountdownTimer> {
     super.initState();
     _timerStream = Stream.periodic(const Duration(seconds: 1), (i) {
       final endTime = widget.game.startedAt!.add(
-        Duration(seconds: widget.game.incarnation.durationSeconds!),
+        Duration(seconds: widget.game.specification.duration!),
       );
       return endTime.difference(DateTime.now()).inSeconds;
     }).takeWhile((seconds) => seconds >= 0);

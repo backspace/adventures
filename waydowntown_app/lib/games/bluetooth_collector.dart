@@ -6,12 +6,12 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/flutter_blue_plus_mockable.dart';
 import 'package:waydowntown/game_header.dart';
-import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class BluetoothCollectorGame extends StatefulWidget {
   final Dio dio;
-  final Game game;
+  final Run game;
   final FlutterBluePlusMockable flutterBluePlus;
 
   BluetoothCollectorGame({
@@ -47,7 +47,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
   Map<String, String> deviceErrors = {};
   bool isGameComplete = false;
 
-  late Game currentGame;
+  late Run currentGame;
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
@@ -133,9 +133,9 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
             orElse: () => null,
           );
           if (gameData != null) {
-            currentGame = Game.fromJson(
+            currentGame = Run.fromJson(
                 {'data': gameData, 'included': response.data['included']},
-                existingIncarnation: currentGame.incarnation);
+                existingSpecification: currentGame.specification);
           }
         }
 

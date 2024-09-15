@@ -12,7 +12,7 @@ import 'package:mockito/mockito.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/flutter_blue_plus_mockable.dart';
 import 'package:waydowntown/games/bluetooth_collector.dart';
-import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
 
@@ -38,7 +38,7 @@ void main() {
   late Dio dio;
   late DioAdapter dioAdapter;
 
-  final Game game = TestHelpers.createMockGame(concept: 'bluetooth_collector');
+  final Run game = TestHelpers.createMockGame(concept: 'bluetooth_collector');
 
   late FlutterBluePlusMockable mockFlutterBluePlus;
 

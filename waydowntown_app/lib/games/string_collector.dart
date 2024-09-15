@@ -2,12 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/game_header.dart';
-import 'package:waydowntown/models/game.dart';
+import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class StringCollectorGame extends StatefulWidget {
   final Dio dio;
-  final Game game;
+  final Run game;
 
   const StringCollectorGame({super.key, required this.dio, required this.game});
 
@@ -37,7 +37,7 @@ class StringCollectorGameState extends State<StringCollectorGame> {
   Map<String, String> stringErrors = {};
   late FocusNode _focusNode;
 
-  late Game currentGame;
+  late Run currentGame;
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
@@ -98,9 +98,9 @@ class StringCollectorGameState extends State<StringCollectorGame> {
             orElse: () => null,
           );
           if (gameData != null) {
-            currentGame = Game.fromJson(
+            currentGame = Run.fromJson(
                 {'data': gameData, 'included': response.data['included']},
-                existingIncarnation: currentGame.incarnation);
+                existingSpecification: currentGame.specification);
           }
         }
 
