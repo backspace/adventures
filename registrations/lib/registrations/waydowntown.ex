@@ -273,7 +273,9 @@ defmodule Registrations.Waydowntown do
       ** (Ecto.NoResultsError)
 
   """
-  def get_submission!(id), do: Submission |> Repo.get!(id) |> Repo.preload(:answer)
+  # FIXME consolidate preloads
+  def get_submission!(id),
+    do: Submission |> Repo.get!(id) |> Repo.preload([:answer, run: [specification: [:answers], submissions: [:answer]]])
 
   @doc """
   Creates a submission.
@@ -397,6 +399,7 @@ defmodule Registrations.Waydowntown do
       {:ok, submission} ->
         submission = Repo.preload(submission, [:answer, run: [:submissions, specification: [:answers]]])
         check_and_update_run_winner(run, submission)
+        submission = get_submission!(submission.id)
         {:ok, submission}
 
       {:error, changeset} ->
