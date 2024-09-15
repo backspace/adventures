@@ -90,6 +90,7 @@ class TestHelpers {
         (server) => server.reply(201, responseJson),
         data: requestJson,
       );
+      // FIXME remove PATCH
     } else if (setup.method == 'PATCH') {
       dioAdapter.onPatch(
         setup.route,
