@@ -198,7 +198,9 @@ defmodule RegistrationsWeb.RunControllerTest do
       assert run.specification_id == bluetooth_specification.id
     end
 
-    test "creates run with non-placed specification", %{conn: conn} do
+    test "creates run with non-placed specification, blank answers are included", %{
+      conn: conn
+    } do
       conn =
         post(
           conn,
@@ -217,12 +219,18 @@ defmodule RegistrationsWeb.RunControllerTest do
       sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
       assert sideloaded_specification["attributes"]["concept"] in ["orientation_memory", "cardinal_memory"]
 
+      specification = Specification |> Repo.get!(sideloaded_specification["id"]) |> Repo.preload(:answers)
+
+      sideloaded_answers = Enum.filter(included, &(&1["type"] == "answers"))
+      assert length(sideloaded_answers) > 0
+      assert length(sideloaded_answers) == length(specification.answers)
+
       run = Waydowntown.get_run!(id)
       specification = Waydowntown.get_specification!(run.specification_id)
       assert specification.concept in ["orientation_memory", "cardinal_memory"]
     end
 
-    test "creates new specification for unplaced concept even if one exists", %{conn: conn} do
+    test "creates new specification for unplaced concept even if one exists, blank answers are included", %{conn: conn} do
       existing_specification =
         Repo.insert!(%Specification{
           concept: "orientation_memory",
@@ -248,6 +256,12 @@ defmodule RegistrationsWeb.RunControllerTest do
       sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
       assert sideloaded_specification["attributes"]["concept"] == "orientation_memory"
       assert sideloaded_specification["id"] != existing_specification.id
+
+      specification = Specification |> Repo.get!(sideloaded_specification["id"]) |> Repo.preload(:answers)
+
+      sideloaded_answers = Enum.filter(included, &(&1["type"] == "answers"))
+      assert length(sideloaded_answers) > 0
+      assert length(sideloaded_answers) == length(specification.answers)
 
       run = Waydowntown.get_run!(id)
       new_specification = Waydowntown.get_specification!(run.specification_id)

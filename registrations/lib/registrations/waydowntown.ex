@@ -147,9 +147,17 @@ defmodule Registrations.Waydowntown do
     {:ok, specification} =
       create_specification(%{
         concept: concept_key,
-        task_description: concept_data["instructions"],
-        answers: Enum.map(answers, &%Answer{answer: &1})
+        task_description: concept_data["instructions"]
       })
+
+    answer_models =
+      answers
+      |> Enum.with_index()
+      |> Enum.map(fn {answer, index} -> %Answer{answer: answer, order: index + 1, specification_id: specification.id} end)
+
+    Enum.each(answer_models, fn answer ->
+      Repo.insert!(answer)
+    end)
 
     %Run{}
     |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
