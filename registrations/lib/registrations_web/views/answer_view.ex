@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.AnswerView do
   alias RegistrationsWeb.AnswerView
 
   def fields do
-    [:label]
+    [:label, :order]
   end
 
   def render("show.json", %{answer: answer, conn: conn, params: params}) do

@@ -225,6 +225,11 @@ defmodule RegistrationsWeb.RunControllerTest do
       assert length(sideloaded_answers) > 0
       assert length(sideloaded_answers) == length(specification.answers)
 
+      Enum.each(specification.answers, fn answer ->
+        sideloaded_answer = Enum.find(sideloaded_answers, &(&1["id"] == answer.id))
+        assert sideloaded_answer["attributes"]["order"] == answer.order
+      end)
+
       run = Waydowntown.get_run!(id)
       specification = Waydowntown.get_specification!(run.specification_id)
       assert specification.concept in ["orientation_memory", "cardinal_memory"]
