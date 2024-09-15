@@ -22,7 +22,7 @@ void main() {
       ),
       correctAnswers: 0,
       totalAnswers: 0,
-      description: 'Test description',
+      taskDescription: 'Test description',
     );
 
     await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
@@ -35,7 +35,7 @@ void main() {
       (WidgetTester tester) async {
     final game = Run(
       id: '1',
-      description: 'Test description',
+      taskDescription: 'Test description',
       specification: Specification(
         id: '1',
         concept: 'Test',
@@ -60,7 +60,7 @@ void main() {
       (WidgetTester tester) async {
     final game = Run(
       id: '1',
-      description: 'Test description',
+      taskDescription: 'Test description',
       specification: Specification(
         id: '1',
         concept: 'Test',
@@ -82,7 +82,7 @@ void main() {
       (WidgetTester tester) async {
     final game = Run(
       id: '1',
-      description: 'Test description',
+      taskDescription: 'Test description',
       specification: Specification(
         id: '1',
         concept: 'Test',

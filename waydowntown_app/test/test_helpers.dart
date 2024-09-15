@@ -197,7 +197,7 @@ class TestHelpers {
       correctAnswers: correctAnswers,
       totalAnswers: totalAnswers,
       startedAt: startedAt,
-      description: description,
+      taskDescription: description,
     );
   }
 
@@ -214,7 +214,7 @@ class TestHelpers {
               "correct_answers": run.correctAnswers,
               "total_answers": run.totalAnswers,
               "started_at": DateTime.now().toUtc().toIso8601String(),
-              "description": run.description,
+              "description": run.taskDescription,
             },
             "relationships": {
               "specification": {

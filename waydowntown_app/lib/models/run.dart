@@ -6,7 +6,7 @@ class Run {
   final int correctAnswers;
   final int totalAnswers;
   final DateTime? startedAt;
-  final String? description;
+  final String? taskDescription;
 
   Run({
     required this.id,
@@ -14,7 +14,7 @@ class Run {
     required this.correctAnswers,
     required this.totalAnswers,
     this.startedAt,
-    this.description,
+    this.taskDescription,
   });
 
   factory Run.fromJson(Map<String, dynamic> json,
@@ -43,7 +43,7 @@ class Run {
       id: data['id'],
       specification: specification ??
           (throw const FormatException('Run must have a specification')),
-      description: data['attributes']['description'],
+      taskDescription: data['attributes']['task_description'],
       correctAnswers: data['attributes']['correct_answers'] ?? 0,
       totalAnswers: data['attributes']['total_answers'] ?? 0,
       startedAt: data['attributes']['started_at'] != null

@@ -16,10 +16,10 @@ class RunHeader extends StatelessWidget {
           getRegionPath(run.specification),
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        if (run.description != null)
+        if (run.taskDescription != null)
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(run.description!),
+            child: Text(run.taskDescription!),
           ),
         if (run.startedAt != null && run.specification.duration != null)
           CountdownTimer(game: run),
