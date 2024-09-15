@@ -4,7 +4,11 @@ defmodule RegistrationsWeb.SpecificationView do
   alias RegistrationsWeb.SpecificationView
 
   def fields do
-    [:concept, :start_description, :duration]
+    [:concept, :start_description, :duration, :placed]
+  end
+
+  def placed(specification, _conn) do
+    Registrations.Waydowntown.concept_is_placed(specification.concept)
   end
 
   def render("index.json", %{specifications: specifications, conn: conn, params: params}) do

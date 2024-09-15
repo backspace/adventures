@@ -69,7 +69,8 @@ defmodule Registrations.Mixfile do
       {:yaml_elixir, "~> 2.11"},
       {:email_checker, "~> 0.2"},
       {:geo, "~> 3.6"},
-      {:geo_postgis, "~> 3.7"}
+      {:geo_postgis, "~> 3.7"},
+      {:con_cache, "~> 1.0"}
     ]
   end
 

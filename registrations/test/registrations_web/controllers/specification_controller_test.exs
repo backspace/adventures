@@ -32,6 +32,10 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
           start_description: "Outside the coat check"
         })
 
+      Repo.insert!(%Specification{
+        concept: "orientation_memory"
+      })
+
       %{
         specification: specification,
         child_region: child_region,
@@ -39,7 +43,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       }
     end
 
-    test "returns list of incarnations with nested regions", %{
+    test "returns list of specifications with nested regions", %{
       conn: conn,
       specification: specification,
       child_region: child_region,
@@ -48,15 +52,16 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       conn = get(conn, Routes.specification_path(conn, :index))
 
       assert %{
-               "data" => [specification_data | _],
+               "data" => [placed_specification_data, unplaced_specification_data | _],
                "included" => included
              } = json_response(conn, 200)
 
-      assert specification_data["id"] == specification.id
-      assert specification_data["type"] == "specifications"
-      assert specification_data["attributes"]["concept"] == "fill_in_the_blank"
-      assert specification_data["attributes"]["start_description"] == "Outside the coat check"
-      assert specification_data["relationships"]["region"]["data"]["id"] == child_region.id
+      assert placed_specification_data["id"] == specification.id
+      assert placed_specification_data["type"] == "specifications"
+      assert placed_specification_data["attributes"]["placed"]
+      assert placed_specification_data["attributes"]["concept"] == "fill_in_the_blank"
+      assert placed_specification_data["attributes"]["start_description"] == "Outside the coat check"
+      assert placed_specification_data["relationships"]["region"]["data"]["id"] == child_region.id
 
       assert Enum.any?(included, fn item ->
                item["type"] == "regions" &&
@@ -75,6 +80,8 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
                  item["attributes"]["longitude"] == "-97.0" &&
                  item["relationships"]["parent"]["data"] == nil
              end)
+
+      refute unplaced_specification_data["attributes"]["placed"]
     end
   end
 end

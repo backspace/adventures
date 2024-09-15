@@ -8,14 +8,23 @@ defmodule Registrations.Waydowntown do
   alias Registrations.Waydowntown.Specification
   alias Registrations.Waydowntown.Submission
 
+  @concepts_yaml_path Path.join(:code.priv_dir(:registrations), "concepts.yaml")
+
   defp concepts_yaml do
-    YamlElixir.read_from_file!(Path.join(:code.priv_dir(:registrations), "concepts.yaml"))
+    ConCache.get_or_store(:registrations_cache, :concepts_yaml, fn ->
+      YamlElixir.read_from_file!(@concepts_yaml_path)
+    end)
+  end
+
+  def concept_is_placed(concept) do
+    !(concepts_yaml()[concept]["placeless"] == true)
   end
 
   def list_runs do
     Run |> Repo.all() |> Repo.preload(run_preloads())
   end
 
+  @spec get_run!(any()) :: nil | [%{optional(atom()) => any()}] | %{optional(atom()) => any()}
   def get_run!(id) do
     Run
     |> Repo.get!(id)
@@ -98,7 +107,7 @@ defmodule Registrations.Waydowntown do
   defp create_run_with_concept(attrs, concept) do
     concept_data = concepts_yaml()[concept]
 
-    if concept_data["placed"] == false do
+    if concept_data["placeless"] == true do
       create_run_with_new_specification(attrs, concept)
     else
       case get_random_specification(%{"concept" => concept, "placed" => true}) do
@@ -155,7 +164,7 @@ defmodule Registrations.Waydowntown do
 
   defp choose_unplaced_concept do
     concepts_yaml()
-    |> Enum.filter(fn {_, v} -> v["placed"] == false end)
+    |> Enum.filter(fn {_, v} -> v["placeless"] == true end)
     |> Enum.random()
   end
 

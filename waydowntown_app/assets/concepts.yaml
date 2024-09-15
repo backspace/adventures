@@ -6,7 +6,7 @@ bluetooth_collector:
 cardinal_memory:
   name: "Cardinal memory"
   marker: compass
-  placed: false
+  placeless: true
   instructions: "face north, east, south, or west and submit your guess until you learn the full pattern. if you make a mistake, start over!"
   options:
     - north
@@ -42,7 +42,7 @@ fill_in_the_blank:
 orientation_memory:
   name: "Orientation memory"
   marker: ratio
-  placed: false
+  placeless: true
   instructions: "rotate the phone and learn the secret pattern. if you make a mistake, start over!"
   options:
     - left

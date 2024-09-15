@@ -32,9 +32,10 @@ defmodule Registrations.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Registrations.PubSub},
       # Start the Endpoint (http/https)
-      RegistrationsWeb.Endpoint
+      RegistrationsWeb.Endpoint,
       # Start a worker by calling: Registrations.Worker.start_link(arg)
       # {Registrations.Worker, arg}
+      {ConCache, [name: :registrations_cache, ttl_check_interval: false]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
