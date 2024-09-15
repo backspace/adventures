@@ -274,11 +274,8 @@ defmodule Registrations.Waydowntown do
       is_nil(answer_with_submitted_id) ->
         {:error, "Unknown answer: #{answer_id}"}
 
-      Enum.any?(run.submissions, fn s -> s.correct && s.answer_id end) ->
+      Enum.any?(run.submissions, fn s -> s.correct && s.answer_id == answer_id end) ->
         {:error, "Submission already exists for label: #{answer_with_submitted_id.label}"}
-
-      Enum.any?(run.submissions, fn s -> s.submission == submission_text end) ->
-        {:error, "Submission already submitted"}
 
       true ->
         insert_submission(run, submission_text, answer_id)

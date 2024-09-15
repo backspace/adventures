@@ -1,4 +1,6 @@
 import 'package:http_mock_adapter/http_mock_adapter.dart';
+
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/models/specification.dart';
@@ -82,7 +84,8 @@ class TestHelpers {
       isComplete: setup.isComplete,
     ));
 
-    final requestJson = generateSubmissionRequestJson(setup.submission, runId);
+    final requestJson =
+        generateSubmissionRequestJson(setup.submission, runId, setup.answerId);
 
     if (setup.method == 'POST') {
       dioAdapter.onPost(
@@ -108,7 +111,7 @@ class TestHelpers {
   }
 
   static Map<String, dynamic> generateSubmissionRequestJson(
-      String submission, String runId) {
+      String submission, String runId, String? answerId) {
     return {
       'data': {
         'type': 'submissions',
@@ -118,7 +121,14 @@ class TestHelpers {
         'relationships': {
           'run': {
             'data': {'type': 'runs', 'id': runId}
-          }
+          },
+          ...(answerId != null)
+              ? {}
+              : {
+                  'answer': {
+                    'data': {'type': 'answers', 'id': answerId}
+                  }
+                }
         }
       }
     };
@@ -162,17 +172,13 @@ class TestHelpers {
     String concept = 'test_concept',
     String? description,
     String start = 'test_start',
-    List<String> answerLabels = const [
-      'test_answer_label_1',
-      'test_answer_label_2',
-      'test_answer_label_3'
-    ],
     int correctAnswers = 0,
     int totalAnswers = 3,
     double? latitude,
     double? longitude,
     DateTime? startedAt,
     int? durationSeconds = 300,
+    List<Answer>? answers,
   }) {
     return Run(
       id: '22261813-2171-453f-a669-db08edc70d6d',
@@ -181,7 +187,12 @@ class TestHelpers {
         placed: true,
         concept: concept,
         start: start,
-        answerLabels: answerLabels,
+        answers: answers ??
+            [
+              const Answer(id: '1', label: 'Answer 1'),
+              const Answer(id: '2', label: 'Answer 2'),
+              const Answer(id: '3', label: 'Answer 3'),
+            ],
         duration: durationSeconds,
         region: Region(
           id: '324fd8f9-cd25-48be-a761-b8680fa72737',
@@ -272,6 +283,7 @@ class SubmissionRequest {
   final int totalAnswers;
   final String method;
   final String? runId;
+  final String? answerId;
   final String? submissionId;
 
   SubmissionRequest({
@@ -283,6 +295,7 @@ class SubmissionRequest {
     this.totalAnswers = 3,
     this.method = 'POST',
     this.runId,
+    this.answerId,
     this.submissionId,
   });
 }

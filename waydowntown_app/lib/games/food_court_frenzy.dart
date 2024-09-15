@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/run_header.dart';
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
@@ -23,14 +24,14 @@ enum AnswerSubmissionState {
   incorrect
 }
 
-class Answer {
-  final String label;
+class SubmissionContainer {
+  final Answer answer;
   String value;
   AnswerSubmissionState state;
   String? errorMessage;
 
-  Answer(
-    this.label, {
+  SubmissionContainer(
+    this.answer, {
     this.value = '',
     this.state = AnswerSubmissionState.unsubmitted,
     this.errorMessage,
@@ -38,7 +39,7 @@ class Answer {
 }
 
 class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
-  late List<Answer> answers;
+  late List<SubmissionContainer> answers;
   bool isGameComplete = false;
   Map<String, String> answerErrors = {};
   late Run currentGame;
@@ -47,8 +48,8 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
   void initState() {
     super.initState();
     currentGame = widget.run;
-    answers = currentGame.specification.answerLabels
-            ?.map((label) => Answer(label))
+    answers = currentGame.specification.answers
+            ?.map((answer) => SubmissionContainer(answer))
             .toList() ??
         [];
   }
@@ -57,7 +58,7 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
     CompletionAnimation.show(context);
   }
 
-  Future<void> submitAnswer(Answer answer) async {
+  Future<void> submitAnswer(SubmissionContainer answer) async {
     setState(() {
       answer.state = AnswerSubmissionState.submitting;
     });
@@ -69,11 +70,14 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
           'data': {
             'type': 'submissions',
             'attributes': {
-              'submission': '${answer.label}|${answer.value}',
+              'submission': answer.value,
             },
             'relationships': {
               'run': {
                 'data': {'type': 'runs', 'id': currentGame.id},
+              },
+              'answer': {
+                'data': {'type': 'answers', 'id': answer.answer.id},
               },
             },
           },
@@ -116,9 +120,9 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
     }
   }
 
-  Widget _buildAnswerField(Answer answer) {
+  Widget _buildAnswerField(SubmissionContainer answer) {
     return ListTile(
-      title: Text(answer.label),
+      title: Text(answer.answer.label),
       subtitle: answer.state == AnswerSubmissionState.correct
           ? Text(answer.value, style: const TextStyle(color: Colors.green))
           : TextField(

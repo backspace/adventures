@@ -1,3 +1,4 @@
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/region.dart';
 
 class Specification {
@@ -7,7 +8,7 @@ class Specification {
   final Region? region;
   final bool placed;
   final String? start;
-  final List<String>? answerLabels;
+  final List<Answer>? answers;
 
   const Specification({
     required this.id,
@@ -16,7 +17,7 @@ class Specification {
     this.duration,
     required this.placed,
     this.start,
-    this.answerLabels,
+    this.answers,
   });
 
   factory Specification.fromJson(
@@ -48,9 +49,13 @@ class Specification {
       placed: attributes['placed'] ?? false,
       duration: attributes['duration'],
       start: attributes['start'],
-      answerLabels: attributes['answer_labels'] != null
-          ? List<String>.from(attributes['answer_labels'])
-          : null,
+      answers: included
+          .where((item) =>
+              item['type'] == 'answers' &&
+              relationships['answers']['data']
+                  .any((answer) => answer['id'] == item['id']))
+          .map((item) => Answer.fromJson(item))
+          .toList(),
     );
   }
 }

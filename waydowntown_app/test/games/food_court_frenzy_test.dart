@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/games/food_court_frenzy.dart';
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
@@ -18,16 +19,20 @@ void main() {
 
   late Dio dio;
   late DioAdapter dioAdapter;
-  late Run game;
+  late Run run;
 
   setUp(() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
-    game = TestHelpers.createMockRun(
+    run = TestHelpers.createMockRun(
       concept: 'food_court_frenzy',
       description: 'Find food court items',
-      answerLabels: ['Burger', 'Pizza', 'Sushi'],
+      answers: [
+        const Answer(id: '1', label: 'Burger'),
+        const Answer(id: '2', label: 'Pizza'),
+        const Answer(id: '3', label: 'Sushi'),
+      ],
     );
   });
 
@@ -37,7 +42,8 @@ void main() {
       dioAdapter,
       SubmissionRequest(
         route: submitAnswerRoute,
-        submission: 'Burger|Jortle',
+        submission: 'Jortle',
+        answerId: run.specification.answers![0].id,
         correct: true,
         correctAnswers: 1,
         totalAnswers: 3,
@@ -47,7 +53,8 @@ void main() {
       dioAdapter,
       SubmissionRequest(
         route: submitAnswerRoute,
-        submission: 'Pizza|Margherita',
+        submission: 'Margherita',
+        answerId: run.specification.answers![1].id,
         correct: true,
         correctAnswers: 2,
         totalAnswers: 3,
@@ -57,7 +64,8 @@ void main() {
       dioAdapter,
       SubmissionRequest(
         route: submitAnswerRoute,
-        submission: 'Sushi|California Roll',
+        submission: 'California Roll',
+        answerId: run.specification.answers![2].id,
         correct: true,
         correctAnswers: 3,
         totalAnswers: 3,
@@ -66,7 +74,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(home: FoodCourtFrenzyGame(run: game, dio: dio)),
+      MaterialApp(home: FoodCourtFrenzyGame(run: run, dio: dio)),
     );
     await tester.pumpAndSettle();
 
@@ -120,7 +128,8 @@ void main() {
       dioAdapter,
       SubmissionRequest(
         route: submitAnswerRoute,
-        submission: 'Burger|Wrong',
+        submission: 'Wrong',
+        submissionId: run.specification.answers![0].id,
         correct: false,
         correctAnswers: 0,
         totalAnswers: 3,
@@ -128,7 +137,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(home: FoodCourtFrenzyGame(run: game, dio: dio)),
+      MaterialApp(home: FoodCourtFrenzyGame(run: run, dio: dio)),
     );
     await tester.pumpAndSettle();
 
@@ -152,7 +161,9 @@ void main() {
     Run singleAnswerGame = TestHelpers.createMockRun(
       concept: 'food_court_frenzy',
       description: 'Find food court items',
-      answerLabels: ['Burger'],
+      answers: [
+        const Answer(id: '1', label: 'Answer 1'),
+      ],
     );
 
     dioAdapter.onPost(
@@ -165,8 +176,8 @@ void main() {
           );
         });
       },
-      data: TestHelpers.generateSubmissionRequestJson(
-          "Burger|Error", singleAnswerGame.id),
+      data: TestHelpers.generateSubmissionRequestJson("Error",
+          singleAnswerGame.id, singleAnswerGame.specification.answers![0].id),
     );
 
     await tester.pumpWidget(
@@ -175,7 +186,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(
-        find.widgetWithText(ListTile, 'Burger').last, 'Error');
+        find.widgetWithText(ListTile, 'Answer 1').last, 'Error');
     await tester.tap(find.widgetWithIcon(IconButton, Icons.send).first);
     await tester.pumpAndSettle();
 

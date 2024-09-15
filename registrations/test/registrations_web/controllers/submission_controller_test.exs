@@ -784,6 +784,38 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       refute run.winner_submission_id
     end
 
+    test "completes run when all items are submitted, progress is reported", %{run: run} do
+      run.specification.answers
+      |> Enum.with_index()
+      |> Enum.each(fn {answer, index} ->
+        conn =
+          setup_conn(build_conn())
+
+        conn =
+          post(conn, Routes.submission_path(conn, :create), %{
+            "data" => %{
+              "type" => "submissions",
+              "attributes" => %{"submission" => answer.answer},
+              "relationships" => %{
+                "run" => %{
+                  "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer.id}
+                }
+              }
+            }
+          })
+
+        sideloaded_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+        assert sideloaded_run["attributes"]["correct_submissions"] == index + 1
+      end)
+
+      updated_run = Waydowntown.get_run!(run.id)
+
+      assert updated_run.winner_submission_id != nil
+    end
+
     test "creates incorrect submission", %{conn: conn, run: run, burger: burger} do
       conn =
         conn
@@ -885,6 +917,70 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
         )
 
       assert json_response(conn, 422)["errors"] == [%{"detail" => "Submission already exists for label: burger"}]
+    end
+
+    test "rejects a duplicate submission for the same answer but not for a different answer", %{conn: conn, run: run} do
+      [answer_1, answer_2, answer_3] = run.specification.answers
+
+      conn =
+        conn
+        |> setup_conn()
+        |> post(Routes.submission_path(conn, :create), %{
+          "data" => %{
+            "type" => "submissions",
+            "attributes" => %{"submission" => answer_3.answer},
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              },
+              "answer" => %{
+                "data" => %{"type" => "answers", "id" => answer_3.id}
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 201)
+
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> post(Routes.submission_path(conn, :create), %{
+          "data" => %{
+            "type" => "submissions",
+            "attributes" => %{"submission" => answer_3.answer},
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              },
+              "answer" => %{
+                "data" => %{"type" => "answers", "id" => answer_3.id}
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 422)
+
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> post(Routes.submission_path(conn, :create), %{
+          "data" => %{
+            "type" => "submissions",
+            "attributes" => %{"submission" => answer_3.answer},
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              },
+              "answer" => %{
+                "data" => %{"type" => "answers", "id" => answer_1.id}
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 201)
     end
   end
 end
