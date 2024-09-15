@@ -16,22 +16,22 @@ import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';
 
-class GameLaunchRoute extends StatefulWidget {
-  Run game;
+class RunLaunchRoute extends StatefulWidget {
+  Run run;
   final Dio dio;
 
-  GameLaunchRoute({super.key, required this.game, required this.dio});
+  RunLaunchRoute({super.key, required this.run, required this.dio});
 
   @override
-  State<GameLaunchRoute> createState() => _GameLaunchRouteState();
+  State<RunLaunchRoute> createState() => _RunLaunchRouteState();
 }
 
-class _GameLaunchRouteState extends State<GameLaunchRoute> {
+class _RunLaunchRouteState extends State<RunLaunchRoute> {
   Future<Map<String, dynamic>> _loadGameInfo(BuildContext context) async {
     final yamlString =
         await DefaultAssetBundle.of(context).loadString('assets/concepts.yaml');
     final yamlMap = loadYaml(yamlString);
-    final conceptInfo = yamlMap[widget.game.specification.concept];
+    final conceptInfo = yamlMap[widget.run.specification.concept];
 
     if (conceptInfo == null) {
       return {'error': 'Unknown game concept'};
@@ -79,32 +79,32 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
                     'Instructions',
                     instructions,
                   ),
-                if (widget.game.specification.start != null)
+                if (widget.run.specification.start != null)
                   _buildInfoCard(
                     context,
                     'Starting point',
-                    widget.game.specification.start!,
+                    widget.run.specification.start!,
                   ),
                 Row(
                   children: [
-                    if (widget.game.totalAnswers > 1)
+                    if (widget.run.totalAnswers > 1)
                       Expanded(
                         child: _buildInfoCard(
                           context,
                           'Goal',
-                          '${widget.game.totalAnswers} answers',
+                          '${widget.run.totalAnswers} answers',
                           key: const Key('total_answers'),
                         ),
                       ),
-                    if (widget.game.totalAnswers > 1 &&
-                        widget.game.specification.duration != null)
+                    if (widget.run.totalAnswers > 1 &&
+                        widget.run.specification.duration != null)
                       const SizedBox(width: 2),
-                    if (widget.game.specification.duration != null)
+                    if (widget.run.specification.duration != null)
                       Expanded(
                         child: _buildInfoCard(
                           context,
                           'Duration',
-                          _formatDuration(widget.game.specification.duration!),
+                          _formatDuration(widget.run.specification.duration!),
                           key: const Key('duration'),
                         ),
                       ),
@@ -123,43 +123,43 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
                             style: Theme.of(context).textTheme.headlineSmall,
                           ),
                           const SizedBox(height: 8),
-                          RunHeader(run: widget.game),
+                          RunHeader(run: widget.run),
                           const SizedBox(height: 8),
                           SizedBox(
                             height: 100,
-                            child: _buildMap(widget.game),
+                            child: _buildMap(widget.run),
                           ),
                         ],
                       ),
                     ),
                   ),
                 ElevatedButton(
-                  child: Text(widget.game.startedAt != null
+                  child: Text(widget.run.startedAt != null
                       ? 'Resume Game'
                       : 'Start Game'),
                   onPressed: () async {
                     try {
-                      if (widget.game.startedAt == null) {
+                      if (widget.run.startedAt == null) {
                         final response = await widget.dio.post(
-                          '/waydowntown/runs/${widget.game.id}/start',
+                          '/waydowntown/runs/${widget.run.id}/start',
                           data: {
                             'data': {
                               'type': 'runs',
-                              'id': widget.game.id,
+                              'id': widget.run.id,
                             },
                           },
                         );
                         if (response.statusCode == 200) {
                           setState(() {
                             logger.d('Game started: ${response.data}');
-                            widget.game = Run.fromJson(response.data);
+                            widget.run = Run.fromJson(response.data);
                           });
                         }
                       }
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => _buildGameWidget(widget.game),
+                          builder: (context) => _buildGameWidget(widget.run),
                         ),
                       );
                     } catch (e) {
@@ -220,7 +220,7 @@ class _GameLaunchRouteState extends State<GameLaunchRoute> {
                 ?.copyWith(color: Colors.red)),
         const SizedBox(height: 8),
         Text(
-            'The game concept "${widget.game.specification.concept}" is not recognized.'),
+            'The game concept "${widget.run.specification.concept}" is not recognized.'),
       ],
     );
   }

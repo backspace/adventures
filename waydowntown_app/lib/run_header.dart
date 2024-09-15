@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/models/specification.dart';
-import 'package:waydowntown/models/region.dart';
 
-class GameHeader extends StatelessWidget {
-  final Run game;
+class RunHeader extends StatelessWidget {
+  final Run run;
 
-  const GameHeader({super.key, required this.game});
+  const RunHeader({super.key, required this.run});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         Text(
-          getRegionPath(game.specification),
+          getRegionPath(run.specification),
           style: Theme.of(context).textTheme.titleLarge,
         ),
-        if (game.description != null)
+        if (run.description != null)
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(game.description!),
+            child: Text(run.description!),
           ),
-        if (game.startedAt != null && game.specification.duration != null)
-          CountdownTimer(game: game),
+        if (run.startedAt != null && run.specification.duration != null)
+          CountdownTimer(game: run),
       ],
     );
   }

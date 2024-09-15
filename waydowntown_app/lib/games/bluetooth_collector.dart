@@ -5,19 +5,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/flutter_blue_plus_mockable.dart';
-import 'package:waydowntown/game_header.dart';
+import 'package:waydowntown/run_header.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class BluetoothCollectorGame extends StatefulWidget {
   final Dio dio;
-  final Run game;
+  final Run run;
   final FlutterBluePlusMockable flutterBluePlus;
 
   BluetoothCollectorGame({
     super.key,
     required this.dio,
-    required this.game,
+    required this.run,
     FlutterBluePlusMockable? flutterBluePlus,
   }) : flutterBluePlus = flutterBluePlus ?? FlutterBluePlusMockable();
 
@@ -54,7 +54,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
   @override
   void initState() {
     super.initState();
-    currentGame = widget.game;
+    currentGame = widget.run;
     startScan();
   }
 
@@ -103,16 +103,16 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
 
     try {
       final response = await widget.dio.post(
-        '/waydowntown/answers',
+        '/waydowntown/submissions',
         data: {
           'data': {
-            'type': 'answers',
+            'type': 'submissions',
             'attributes': {
-              'answer': detectedDevice.device.platformName,
+              'submission': detectedDevice.device.platformName,
             },
             'relationships': {
-              'game': {
-                'data': {'type': 'games', 'id': currentGame.id},
+              'run': {
+                'data': {'type': 'runs', 'id': currentGame.id},
               },
             },
           },
@@ -129,7 +129,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
         if (response.data['included'] != null) {
           final gameData = response.data['included'].firstWhere(
             (included) =>
-                included['type'] == 'games' && included['id'] == currentGame.id,
+                included['type'] == 'runs' && included['id'] == currentGame.id,
             orElse: () => null,
           );
           if (gameData != null) {
@@ -233,7 +233,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
       ),
       body: Column(
         children: [
-          GameHeader(game: currentGame),
+          RunHeader(run: currentGame),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(

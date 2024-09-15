@@ -7,13 +7,13 @@ import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class OrientationMemoryGame extends StatefulWidget {
-  final Run game;
+  final Run run;
   final Dio dio;
   final MotionSensors? motionSensors;
 
   const OrientationMemoryGame({
     super.key,
-    required this.game,
+    required this.run,
     required this.dio,
     this.motionSensors,
   });
@@ -45,7 +45,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
         currentOrientation = getOrientation();
       });
     });
-    totalAnswers = widget.game.totalAnswers;
+    totalAnswers = widget.run.totalAnswers;
   }
 
   @override
@@ -84,15 +84,15 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
       final data = {
         'data': {
           ...(lastAnswerId != null ? {'id': lastAnswerId} : {}),
-          'type': 'answers',
+          'type': 'submissions',
           'attributes': {
-            'answer': newPattern.join('|'),
+            'submission': newPattern.join('|'),
           },
           'relationships': {
-            'game': {
+            'run': {
               'data': {
-                'type': 'games',
-                'id': widget.game.id,
+                'type': 'runs',
+                'id': widget.run.id,
               }
             }
           }
@@ -101,12 +101,12 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
 
       if (lastAnswerId != null) {
         response = await widget.dio.patch(
-          '/waydowntown/answers/$lastAnswerId',
+          '/waydowntown/submissions/$lastAnswerId',
           data: data,
         );
       } else {
         response = await widget.dio.post(
-          '/waydowntown/answers',
+          '/waydowntown/submissions',
           data: data,
         );
       }
@@ -115,7 +115,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
         final responseData = response.data;
         final answerData = responseData['data'];
         final gameData = (responseData['included'] as List<dynamic>)
-            .firstWhere((included) => included['type'] == 'games');
+            .firstWhere((included) => included['type'] == 'runs');
 
         if (answerData['attributes']['correct'] == true) {
           setState(() {

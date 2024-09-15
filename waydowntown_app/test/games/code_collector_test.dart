@@ -19,7 +19,7 @@ import 'code_collector_test.mocks.dart';
 
 @GenerateMocks([MobileScannerController])
 void main() {
-  const submitAnswerRoute = '/waydowntown/answers';
+  const submitAnswerRoute = '/waydowntown/submissions';
 
   late Dio dio;
   late DioAdapter dioAdapter;
@@ -34,7 +34,7 @@ void main() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
-    game = TestHelpers.createMockGame(
+    game = TestHelpers.createMockRun(
         concept: 'code_collector', correctAnswers: 0, totalAnswers: 5);
   });
 
@@ -56,7 +56,7 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: CodeCollectorGame(
-          dio: dio, game: game, scannerController: mockController),
+          dio: dio, run: game, scannerController: mockController),
     ));
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
@@ -74,18 +74,18 @@ void main() {
 
   testWidgets('CodeCollectorGame submits code and updates state',
       (WidgetTester tester) async {
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'Code1',
+            submission: 'Code1',
             correct: true,
             correctAnswers: 1,
             totalAnswers: 5));
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
-            route: submitAnswerRoute, answer: 'Code2', correct: false));
+        SubmissionRequest(
+            route: submitAnswerRoute, submission: 'Code2', correct: false));
 
     dioAdapter.onPost(
       submitAnswerRoute,
@@ -96,15 +96,15 @@ void main() {
             submitAnswerRoute,
             (server) => server.reply(
                 201,
-                TestHelpers.generateAnswerResponseJson(AnswerResponse(
-                  answerId: '48cf441e-ab98-4da6-8980-69fba3b4417d',
-                  answer: 'Code3',
+                TestHelpers.generateSubmissionResponseJson(SubmissionResponse(
+                  submissionId: '48cf441e-ab98-4da6-8980-69fba3b4417d',
+                  submission: 'Code3',
                   correct: true,
-                  gameId: game.id,
+                  runId: game.id,
                   correctAnswers: 1,
                   totalAnswers: 3,
                 ))),
-            data: TestHelpers.generateAnswerRequestJson('Code3', game.id),
+            data: TestHelpers.generateSubmissionRequestJson('Code3', game.id),
           );
 
           throw DioException(
@@ -113,7 +113,7 @@ void main() {
           );
         });
       },
-      data: TestHelpers.generateAnswerRequestJson('Code3', game.id),
+      data: TestHelpers.generateSubmissionRequestJson('Code3', game.id),
     );
 
     when(mockController.start()).thenAnswer((_) async => ());
@@ -132,7 +132,7 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: CodeCollectorGame(
-          dio: dio, game: game, scannerController: mockController),
+          dio: dio, run: game, scannerController: mockController),
     ));
 
     streamController.add(const BarcodeCapture(
@@ -217,11 +217,11 @@ void main() {
 
   testWidgets('CodeCollectorGame completes and stops scanning',
       (WidgetTester tester) async {
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'Code5',
+            submission: 'Code5',
             correct: true,
             correctAnswers: 5,
             totalAnswers: 5,
@@ -243,7 +243,7 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: CodeCollectorGame(
-          dio: dio, game: game, scannerController: mockController),
+          dio: dio, run: game, scannerController: mockController),
     ));
 
     streamController.add(const BarcodeCapture(

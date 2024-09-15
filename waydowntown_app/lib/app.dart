@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:waydowntown/routes/request_game_route.dart';
+import 'package:waydowntown/routes/request_run_route.dart';
 import 'package:waydowntown/tools/auth_webview.dart';
 import 'package:waydowntown/tools/bluetooth_scanner_route.dart';
 import 'package:waydowntown/tools/map_route.dart';
@@ -95,7 +95,7 @@ class _HomeState extends State<Home> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => RequestGameRoute(dio: dio),
+                            builder: (context) => RequestRunRoute(dio: dio),
                           ),
                         );
                       },
@@ -110,7 +110,7 @@ class _HomeState extends State<Home> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => RequestGameRoute(
+                              builder: (context) => RequestRunRoute(
                                 dio: dio,
                                 position:
                                     '${position.latitude},${position.longitude}',
@@ -142,7 +142,7 @@ class _HomeState extends State<Home> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => RequestGameRoute(
+                      builder: (context) => RequestRunRoute(
                         dio: dio,
                         concept: concept,
                       ),
@@ -160,7 +160,7 @@ class _HomeState extends State<Home> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => RequestGameRoute(
+                      builder: (context) => RequestRunRoute(
                         dio: dio,
                         concept: concept,
                       ),

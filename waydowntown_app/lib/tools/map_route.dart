@@ -7,7 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:sentry/sentry.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/specification.dart';
-import 'package:waydowntown/routes/request_game_route.dart';
+import 'package:waydowntown/routes/request_run_route.dart';
 import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';
 
@@ -46,6 +46,7 @@ class _MapRouteState extends State<MapRoute> {
               .map((json) => Specification.fromJson(json, included))
               .where((specification) => specification.region != null)
               .toList();
+          print(specifications);
           isLoading = false;
         });
       } else {
@@ -107,7 +108,7 @@ class _MapRouteState extends State<MapRoute> {
   void _onMarkerTap(Specification specification) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => RequestGameRoute(
+        builder: (context) => RequestRunRoute(
           dio: widget.dio,
           specificationId: specification.id,
         ),

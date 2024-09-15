@@ -1,15 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
-import 'package:waydowntown/game_header.dart';
+import 'package:waydowntown/run_header.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class FoodCourtFrenzyGame extends StatefulWidget {
   final Dio dio;
-  final Run game;
+  final Run run;
 
-  const FoodCourtFrenzyGame({super.key, required this.dio, required this.game});
+  const FoodCourtFrenzyGame({super.key, required this.dio, required this.run});
 
   @override
   FoodCourtFrenzyGameState createState() => FoodCourtFrenzyGameState();
@@ -46,7 +46,7 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
   @override
   void initState() {
     super.initState();
-    currentGame = widget.game;
+    currentGame = widget.run;
     answers = currentGame.specification.answerLabels
             ?.map((label) => Answer(label))
             .toList() ??
@@ -64,16 +64,16 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
 
     try {
       final response = await widget.dio.post(
-        '/waydowntown/answers',
+        '/waydowntown/submissions',
         data: {
           'data': {
-            'type': 'answers',
+            'type': 'submissions',
             'attributes': {
-              'answer': '${answer.label}|${answer.value}',
+              'submission': '${answer.label}|${answer.value}',
             },
             'relationships': {
-              'game': {
-                'data': {'type': 'games', 'id': currentGame.id},
+              'run': {
+                'data': {'type': 'runs', 'id': currentGame.id},
               },
             },
           },
@@ -92,7 +92,7 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
         if (response.data['included'] != null) {
           final gameData = response.data['included'].firstWhere(
             (included) =>
-                included['type'] == 'games' && included['id'] == currentGame.id,
+                included['type'] == 'runs' && included['id'] == currentGame.id,
             orElse: () => null,
           );
           if (gameData != null) {
@@ -158,7 +158,7 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
       ),
       body: Column(
         children: [
-          GameHeader(game: currentGame),
+          RunHeader(run: currentGame),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(

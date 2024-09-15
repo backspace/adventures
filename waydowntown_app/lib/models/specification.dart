@@ -33,6 +33,8 @@ class Specification {
       }
 
       final regionData = relationships['region']['data'];
+      print(attributes['concept']);
+      print(regionData);
       final regionJson = included.firstWhere(
         (item) => item['type'] == 'regions' && item['id'] == regionData['id'],
         orElse: () =>
@@ -40,6 +42,8 @@ class Specification {
       );
       region = Region.fromJson(regionJson, included);
     }
+
+    print(region);
 
     return Specification(
       id: json['id'],

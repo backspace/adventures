@@ -1,13 +1,13 @@
 import 'package:http_mock_adapter/http_mock_adapter.dart';
+import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/models/specification.dart';
-import 'package:waydowntown/models/region.dart';
 
 class TestHelpers {
-  static void setupMockGameResponse(
+  static void setupMockRunResponse(
     DioAdapter dioAdapter, {
     required String route,
-    required Run game,
+    required Run run,
   }) {
     dioAdapter.onPost(
       route,
@@ -15,40 +15,40 @@ class TestHelpers {
         201,
         {
           "data": {
-            "id": game.id,
-            "type": "games",
+            "id": run.id,
+            "type": "runs",
             "attributes": {
-              "correct_answers": game.correctAnswers,
-              "total_answers": game.totalAnswers,
+              "correct_answers": run.correctAnswers,
+              "total_answers": run.totalAnswers,
             },
             "relationships": {
               "specification": {
-                "data": {"type": "specifications", "id": game.specification.id}
+                "data": {"type": "specifications", "id": run.specification.id}
               }
             }
           },
           "included": [
             {
-              "id": game.specification.id,
+              "id": run.specification.id,
               "type": "specifications",
               "attributes": {
-                "concept": game.specification.concept,
+                "concept": run.specification.concept,
               },
               "relationships": {
                 "region": {
                   "data": {
                     "type": "regions",
-                    "id": game.specification.region!.id
+                    "id": run.specification.region!.id
                   }
                 }
               },
             },
             {
-              "id": game.specification.region!.id,
+              "id": run.specification.region!.id,
               "type": "regions",
               "attributes": {
-                "name": game.specification.region!.name,
-                "description": game.specification.region!.description
+                "name": run.specification.region!.name,
+                "description": run.specification.region!.description
               },
               "relationships": {
                 "parent": {"data": null}
@@ -59,29 +59,30 @@ class TestHelpers {
       ),
       data: {
         'data': {
-          'type': 'games',
+          'type': 'runs',
           'attributes': {},
         },
       },
     );
   }
 
-  static Map<String, String> setupMockAnswerResponse(
-      DioAdapter dioAdapter, AnswerRequest setup) {
-    final gameId = setup.gameId ?? "22261813-2171-453f-a669-db08edc70d6d";
-    final answerId = setup.answerId ?? "48cf441e-ab98-4da6-8980-69fba3b4417d";
+  static Map<String, String> setupMockSubmissionResponse(
+      DioAdapter dioAdapter, SubmissionRequest setup) {
+    final runId = setup.runId ?? "22261813-2171-453f-a669-db08edc70d6d";
+    final submissionId =
+        setup.submissionId ?? "48cf441e-ab98-4da6-8980-69fba3b4417d";
 
-    final responseJson = generateAnswerResponseJson(AnswerResponse(
-      answerId: answerId,
-      answer: setup.answer,
+    final responseJson = generateSubmissionResponseJson(SubmissionResponse(
+      submissionId: submissionId,
+      submission: setup.submission,
       correct: setup.correct,
-      gameId: gameId,
+      runId: runId,
       correctAnswers: setup.correctAnswers,
       totalAnswers: setup.totalAnswers,
       isComplete: setup.isComplete,
     ));
 
-    final requestJson = generateAnswerRequestJson(setup.answer, gameId);
+    final requestJson = generateSubmissionRequestJson(setup.submission, runId);
 
     if (setup.method == 'POST') {
       dioAdapter.onPost(
@@ -97,7 +98,7 @@ class TestHelpers {
       );
     }
 
-    return {'gameId': gameId, 'answerId': answerId};
+    return {'runId': runId, 'submissionId': submissionId};
   }
 
   static void setupMockErrorResponse(DioAdapter dioAdapter, String route,
@@ -105,46 +106,46 @@ class TestHelpers {
     dioAdapter.onPost(route, (server) => server.reply(500, {}), data: data);
   }
 
-  static Map<String, dynamic> generateAnswerRequestJson(
-      String answer, String gameId) {
+  static Map<String, dynamic> generateSubmissionRequestJson(
+      String submission, String runId) {
     return {
       'data': {
-        'type': 'answers',
+        'type': 'submissions',
         'attributes': {
-          'answer': answer,
+          'submission': submission,
         },
         'relationships': {
-          'game': {
-            'data': {'type': 'games', 'id': gameId}
+          'run': {
+            'data': {'type': 'runs', 'id': runId}
           }
         }
       }
     };
   }
 
-  static Map<String, dynamic> generateAnswerResponseJson(
-      AnswerResponse response) {
+  static Map<String, dynamic> generateSubmissionResponseJson(
+      SubmissionResponse response) {
     return {
       "data": {
-        "id": response.answerId,
-        "type": "answers",
+        "id": response.submissionId,
+        "type": "submissions",
         "attributes": {
-          "answer": response.answer,
+          "submission": response.submission,
           "correct": response.correct,
         },
         "relationships": {
-          "game": {
+          "run": {
             "data": {
-              "type": "games",
-              "id": response.gameId,
+              "type": "runs",
+              "id": response.runId,
             }
           }
         }
       },
       "included": [
         {
-          "id": response.gameId,
-          "type": "games",
+          "id": response.runId,
+          "type": "runs",
           "attributes": {
             "correct_answers": response.correctAnswers,
             "total_answers": response.totalAnswers,
@@ -156,7 +157,7 @@ class TestHelpers {
     };
   }
 
-  static Run createMockGame({
+  static Run createMockRun({
     String concept = 'test_concept',
     String? description,
     String start = 'test_start',
@@ -200,49 +201,49 @@ class TestHelpers {
     );
   }
 
-  static void setupMockStartGameResponse(DioAdapter dioAdapter, Run game) {
+  static void setupMockStartRunResponse(DioAdapter dioAdapter, Run run) {
     dioAdapter.onPost(
-      '/waydowntown/games/${game.id}/start',
+      '/waydowntown/runs/${run.id}/start',
       (server) => server.reply(
         200,
         {
           "data": {
-            "id": game.id,
-            "type": "games",
+            "id": run.id,
+            "type": "runs",
             "attributes": {
-              "correct_answers": game.correctAnswers,
-              "total_answers": game.totalAnswers,
+              "correct_answers": run.correctAnswers,
+              "total_answers": run.totalAnswers,
               "started_at": DateTime.now().toUtc().toIso8601String(),
-              "description": game.description,
+              "description": run.description,
             },
             "relationships": {
               "specification": {
-                "data": {"type": "specifications", "id": game.specification.id}
+                "data": {"type": "specifications", "id": run.specification.id}
               }
             }
           },
           "included": [
             {
-              "id": game.specification.id,
+              "id": run.specification.id,
               "type": "specifications",
               "attributes": {
-                "concept": game.specification.concept,
+                "concept": run.specification.concept,
               },
               "relationships": {
                 "region": {
                   "data": {
                     "type": "regions",
-                    "id": game.specification.region!.id
+                    "id": run.specification.region!.id
                   }
                 }
               },
             },
             {
-              "id": game.specification.region!.id,
+              "id": run.specification.region!.id,
               "type": "regions",
               "attributes": {
-                "name": game.specification.region!.name,
-                "description": game.specification.region!.description
+                "name": run.specification.region!.name,
+                "description": run.specification.region!.description
               },
               "relationships": {
                 "parent": {"data": null}
@@ -253,52 +254,52 @@ class TestHelpers {
       ),
       data: {
         'data': {
-          'type': 'games',
-          'id': game.id,
+          'type': 'runs',
+          'id': run.id,
         },
       },
     );
   }
 }
 
-class AnswerRequest {
+class SubmissionRequest {
   final String route;
-  final String answer;
+  final String submission;
   final bool correct;
   final bool isComplete;
   final int correctAnswers;
   final int totalAnswers;
   final String method;
-  final String? gameId;
-  final String? answerId;
+  final String? runId;
+  final String? submissionId;
 
-  AnswerRequest({
+  SubmissionRequest({
     required this.route,
-    required this.answer,
+    required this.submission,
     required this.correct,
     this.isComplete = false,
     this.correctAnswers = 0,
     this.totalAnswers = 3,
     this.method = 'POST',
-    this.gameId,
-    this.answerId,
+    this.runId,
+    this.submissionId,
   });
 }
 
-class AnswerResponse {
-  final String answerId;
-  final String answer;
+class SubmissionResponse {
+  final String submissionId;
+  final String submission;
   final bool correct;
-  final String gameId;
+  final String runId;
   final int correctAnswers;
   final int totalAnswers;
   final bool isComplete;
 
-  AnswerResponse({
-    required this.answerId,
-    required this.answer,
+  SubmissionResponse({
+    required this.submissionId,
+    required this.submission,
     required this.correct,
-    required this.gameId,
+    required this.runId,
     required this.correctAnswers,
     required this.totalAnswers,
     this.isComplete = false,

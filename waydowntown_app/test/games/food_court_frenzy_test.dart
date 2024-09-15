@@ -14,7 +14,7 @@ import '../test_helpers.dart';
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
 
-  const submitAnswerRoute = '/waydowntown/answers';
+  const submitAnswerRoute = '/waydowntown/submissions';
 
   late Dio dio;
   late DioAdapter dioAdapter;
@@ -24,7 +24,7 @@ void main() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
-    game = TestHelpers.createMockGame(
+    game = TestHelpers.createMockRun(
       concept: 'food_court_frenzy',
       description: 'Find food court items',
       answerLabels: ['Burger', 'Pizza', 'Sushi'],
@@ -33,31 +33,31 @@ void main() {
 
   testWidgets('FoodCourtFrenzyGame displays and submits answers',
       (WidgetTester tester) async {
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
       dioAdapter,
-      AnswerRequest(
+      SubmissionRequest(
         route: submitAnswerRoute,
-        answer: 'Burger|Jortle',
+        submission: 'Burger|Jortle',
         correct: true,
         correctAnswers: 1,
         totalAnswers: 3,
       ),
     );
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
       dioAdapter,
-      AnswerRequest(
+      SubmissionRequest(
         route: submitAnswerRoute,
-        answer: 'Pizza|Margherita',
+        submission: 'Pizza|Margherita',
         correct: true,
         correctAnswers: 2,
         totalAnswers: 3,
       ),
     );
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
       dioAdapter,
-      AnswerRequest(
+      SubmissionRequest(
         route: submitAnswerRoute,
-        answer: 'Sushi|California Roll',
+        submission: 'Sushi|California Roll',
         correct: true,
         correctAnswers: 3,
         totalAnswers: 3,
@@ -66,7 +66,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(home: FoodCourtFrenzyGame(game: game, dio: dio)),
+      MaterialApp(home: FoodCourtFrenzyGame(run: game, dio: dio)),
     );
     await tester.pumpAndSettle();
 
@@ -116,11 +116,11 @@ void main() {
 
   testWidgets('FoodCourtFrenzyGame handles incorrect answers',
       (WidgetTester tester) async {
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
       dioAdapter,
-      AnswerRequest(
+      SubmissionRequest(
         route: submitAnswerRoute,
-        answer: 'Burger|Wrong',
+        submission: 'Burger|Wrong',
         correct: false,
         correctAnswers: 0,
         totalAnswers: 3,
@@ -128,7 +128,7 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(home: FoodCourtFrenzyGame(game: game, dio: dio)),
+      MaterialApp(home: FoodCourtFrenzyGame(run: game, dio: dio)),
     );
     await tester.pumpAndSettle();
 
@@ -149,7 +149,7 @@ void main() {
   });
 
   testWidgets('FoodCourtFrenzyGame shows errors', (WidgetTester tester) async {
-    Run singleAnswerGame = TestHelpers.createMockGame(
+    Run singleAnswerGame = TestHelpers.createMockRun(
       concept: 'food_court_frenzy',
       description: 'Find food court items',
       answerLabels: ['Burger'],
@@ -165,12 +165,12 @@ void main() {
           );
         });
       },
-      data: TestHelpers.generateAnswerRequestJson(
+      data: TestHelpers.generateSubmissionRequestJson(
           "Burger|Error", singleAnswerGame.id),
     );
 
     await tester.pumpWidget(
-      MaterialApp(home: FoodCourtFrenzyGame(game: singleAnswerGame, dio: dio)),
+      MaterialApp(home: FoodCourtFrenzyGame(run: singleAnswerGame, dio: dio)),
     );
     await tester.pumpAndSettle();
 

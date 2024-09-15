@@ -24,7 +24,7 @@ import 'bluetooth_collector_test.mocks.dart';
   ScanResult,
 ])
 void main() {
-  const submitAnswerRoute = '/waydowntown/answers';
+  const submitAnswerRoute = '/waydowntown/submissions';
 
   final ScanResult deviceResult1 = MockScanResult();
   final BluetoothDevice device1 = MockBluetoothDevice();
@@ -38,7 +38,7 @@ void main() {
   late Dio dio;
   late DioAdapter dioAdapter;
 
-  final Run game = TestHelpers.createMockGame(concept: 'bluetooth_collector');
+  final Run game = TestHelpers.createMockRun(concept: 'bluetooth_collector');
 
   late FlutterBluePlusMockable mockFlutterBluePlus;
 
@@ -82,7 +82,7 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: BluetoothCollectorGame(
-          dio: dio, game: game, flutterBluePlus: mockFlutterBluePlus),
+          dio: dio, run: game, flutterBluePlus: mockFlutterBluePlus),
     ));
 
     await tester.pumpAndSettle();
@@ -95,28 +95,28 @@ void main() {
 
   testWidgets('BluetoothCollectorGame submits device and updates state',
       (WidgetTester tester) async {
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'Device 1',
+            submission: 'Device 1',
             correct: true,
             correctAnswers: 1,
             totalAnswers: 3));
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
-            route: submitAnswerRoute, answer: 'Device 2', correct: false));
+        SubmissionRequest(
+            route: submitAnswerRoute, submission: 'Device 2', correct: false));
 
     dioAdapter.onPost(
       submitAnswerRoute,
       (server) {
         server.reply(500, (request) {
-          TestHelpers.setupMockAnswerResponse(
+          TestHelpers.setupMockSubmissionResponse(
               dioAdapter,
-              AnswerRequest(
+              SubmissionRequest(
                   route: submitAnswerRoute,
-                  answer: 'Device 3',
+                  submission: 'Device 3',
                   correct: true,
                   correctAnswers: 2,
                   totalAnswers: 3));
@@ -126,7 +126,7 @@ void main() {
           );
         });
       },
-      data: TestHelpers.generateAnswerRequestJson(
+      data: TestHelpers.generateSubmissionRequestJson(
           "Device 3", "22261813-2171-453f-a669-db08edc70d6d"),
     );
 
@@ -140,7 +140,7 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: BluetoothCollectorGame(
-          dio: dio, game: game, flutterBluePlus: mockFlutterBluePlus),
+          dio: dio, run: game, flutterBluePlus: mockFlutterBluePlus),
     ));
 
     await tester.pumpAndSettle();
@@ -218,11 +218,11 @@ void main() {
 
   testWidgets('BluetoothCollectorGame completes and stops scanning',
       (WidgetTester tester) async {
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'Device 3',
+            submission: 'Device 3',
             correct: true,
             correctAnswers: 3,
             totalAnswers: 3,
@@ -238,7 +238,7 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: BluetoothCollectorGame(
-          dio: dio, game: game, flutterBluePlus: mockFlutterBluePlus),
+          dio: dio, run: game, flutterBluePlus: mockFlutterBluePlus),
     ));
 
     await tester.pumpAndSettle();

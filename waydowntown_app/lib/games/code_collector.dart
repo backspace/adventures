@@ -4,19 +4,19 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:waydowntown/app.dart';
-import 'package:waydowntown/game_header.dart';
+import 'package:waydowntown/run_header.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class CodeCollectorGame extends StatefulWidget {
   final Dio dio;
-  final Run game;
+  final Run run;
   final MobileScannerController? scannerController;
 
   const CodeCollectorGame({
     super.key,
     required this.dio,
-    required this.game,
+    required this.run,
     this.scannerController,
   });
 
@@ -47,7 +47,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     controller = widget.scannerController ?? MobileScannerController();
-    currentGame = widget.game;
+    currentGame = widget.run;
     startScanner();
   }
 
@@ -70,16 +70,16 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
 
     try {
       final response = await widget.dio.post(
-        '/waydowntown/answers',
+        '/waydowntown/submissions',
         data: {
           'data': {
-            'type': 'answers',
+            'type': 'submissions',
             'attributes': {
-              'answer': detectedCode.code,
+              'submission': detectedCode.code,
             },
             'relationships': {
-              'game': {
-                'data': {'type': 'games', 'id': currentGame.id},
+              'run': {
+                'data': {'type': 'runs', 'id': currentGame.id},
               },
             },
           },
@@ -97,7 +97,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
           if (response.data['included'] != null) {
             final gameData = response.data['included'].firstWhere(
               (included) =>
-                  included['type'] == 'games' &&
+                  included['type'] == 'runs' &&
                   included['id'] == currentGame.id,
               orElse: () => null,
             );
@@ -201,7 +201,7 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
       ),
       body: Column(
         children: [
-          GameHeader(game: currentGame),
+          RunHeader(run: currentGame),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(

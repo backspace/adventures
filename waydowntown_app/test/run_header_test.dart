@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:waydowntown/game_header.dart';
+import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/models/specification.dart';
-import 'package:waydowntown/models/region.dart';
+import 'package:waydowntown/run_header.dart';
 
 void main() {
   testWidgets('GameHeader displays region path and description',
@@ -25,7 +25,7 @@ void main() {
       description: 'Test description',
     );
 
-    await tester.pumpWidget(MaterialApp(home: GameHeader(game: game)));
+    await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
     expect(find.text('Test description'), findsOneWidget);
@@ -48,7 +48,7 @@ void main() {
       startedAt: DateTime.now().subtract(const Duration(seconds: 5)),
     );
 
-    await tester.pumpWidget(MaterialApp(home: GameHeader(game: game)));
+    await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 1));
 
@@ -72,7 +72,7 @@ void main() {
       startedAt: DateTime.now(),
     );
 
-    await tester.pumpWidget(MaterialApp(home: GameHeader(game: game)));
+    await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
 
     expect(find.text('Test Region'), findsOneWidget);
     expect(find.textContaining('Time remaining:'), findsNothing);
@@ -95,7 +95,7 @@ void main() {
       startedAt: DateTime.now().subtract(const Duration(seconds: 2)),
     );
 
-    await tester.pumpWidget(MaterialApp(home: GameHeader(game: game)));
+    await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 2));
 

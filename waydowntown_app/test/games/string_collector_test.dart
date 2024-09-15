@@ -14,7 +14,7 @@ import '../test_helpers.dart';
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
 
-  const submitAnswerRoute = '/waydowntown/answers';
+  const submitAnswerRoute = '/waydowntown/submissions';
 
   late Dio dio;
   late DioAdapter dioAdapter;
@@ -24,48 +24,48 @@ void main() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
-    game = TestHelpers.createMockGame(
+    game = TestHelpers.createMockRun(
         concept: 'string_collector', description: 'Collect strings');
   });
 
   testWidgets('StringCollectorGame displays and submits strings',
       (WidgetTester tester) async {
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'correct1',
+            submission: 'correct1',
             correct: true,
             correctAnswers: 1,
             totalAnswers: 3));
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'incorrect',
+            submission: 'incorrect',
             correct: false,
             correctAnswers: 1,
             totalAnswers: 3));
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'correct2',
+            submission: 'correct2',
             correct: true,
             correctAnswers: 2,
             totalAnswers: 3));
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'correct3',
+            submission: 'correct3',
             correct: true,
             correctAnswers: 3,
             totalAnswers: 3,
             isComplete: true));
 
     await tester.pumpWidget(
-        MaterialApp(home: StringCollectorGame(game: game, dio: dio)));
+        MaterialApp(home: StringCollectorGame(run: game, dio: dio)));
     await tester.pumpAndSettle();
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
@@ -132,11 +132,11 @@ void main() {
           );
         });
       },
-      data: TestHelpers.generateAnswerRequestJson("error_string", game.id),
+      data: TestHelpers.generateSubmissionRequestJson("error_string", game.id),
     );
 
     await tester.pumpWidget(
-        MaterialApp(home: StringCollectorGame(game: game, dio: dio)));
+        MaterialApp(home: StringCollectorGame(run: game, dio: dio)));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'error_string');

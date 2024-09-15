@@ -1,15 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
-import 'package:waydowntown/game_header.dart';
+import 'package:waydowntown/run_header.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class StringCollectorGame extends StatefulWidget {
   final Dio dio;
-  final Run game;
+  final Run run;
 
-  const StringCollectorGame({super.key, required this.dio, required this.game});
+  const StringCollectorGame({super.key, required this.dio, required this.run});
 
   @override
   StringCollectorGameState createState() => StringCollectorGameState();
@@ -32,19 +32,19 @@ class SubmittedString {
 
 class StringCollectorGameState extends State<StringCollectorGame> {
   List<SubmittedString> submittedStrings = [];
-  bool isGameComplete = false;
+  bool isRunComplete = false;
   TextEditingController textFieldController = TextEditingController();
   Map<String, String> stringErrors = {};
   late FocusNode _focusNode;
 
-  late Run currentGame;
+  late Run currentRun;
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   @override
   void initState() {
     super.initState();
-    currentGame = widget.game;
+    currentRun = widget.run;
     _focusNode = FocusNode();
   }
 
@@ -65,16 +65,16 @@ class StringCollectorGameState extends State<StringCollectorGame> {
 
     try {
       final response = await widget.dio.post(
-        '/waydowntown/answers',
+        '/waydowntown/submissions',
         data: {
           'data': {
-            'type': 'answers',
+            'type': 'submissions',
             'attributes': {
-              'answer': value,
+              'submission': value,
             },
             'relationships': {
-              'game': {
-                'data': {'type': 'games', 'id': currentGame.id},
+              'run': {
+                'data': {'type': 'runs', 'id': currentRun.id},
               },
             },
           },
@@ -92,20 +92,20 @@ class StringCollectorGameState extends State<StringCollectorGame> {
         _addString(submittedString);
 
         if (response.data['included'] != null) {
-          final gameData = response.data['included'].firstWhere(
+          final runData = response.data['included'].firstWhere(
             (included) =>
-                included['type'] == 'games' && included['id'] == currentGame.id,
+                included['type'] == 'runs' && included['id'] == currentRun.id,
             orElse: () => null,
           );
-          if (gameData != null) {
-            currentGame = Run.fromJson(
-                {'data': gameData, 'included': response.data['included']},
-                existingSpecification: currentGame.specification);
+          if (runData != null) {
+            currentRun = Run.fromJson(
+                {'data': runData, 'included': response.data['included']},
+                existingSpecification: currentRun.specification);
           }
         }
 
-        if (currentGame.correctAnswers == currentGame.totalAnswers) {
-          isGameComplete = true;
+        if (currentRun.correctAnswers == currentRun.totalAnswers) {
+          isRunComplete = true;
           _showCompletionAnimation();
         }
       });
@@ -193,14 +193,14 @@ class StringCollectorGameState extends State<StringCollectorGame> {
       ),
       body: Column(
         children: [
-          GameHeader(game: currentGame),
+          RunHeader(run: currentRun),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Progress: ${currentGame.correctAnswers}/${currentGame.totalAnswers}',
+              'Progress: ${currentRun.correctAnswers}/${currentRun.totalAnswers}',
             ),
           ),
-          if (isGameComplete)
+          if (isRunComplete)
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: Text(

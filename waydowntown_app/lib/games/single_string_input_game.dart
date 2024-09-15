@@ -1,23 +1,23 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
-import 'package:waydowntown/game_header.dart';
+import 'package:waydowntown/run_header.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class SingleStringInputGame extends StatefulWidget {
   final Dio dio;
-  final Run game;
+  final Run run;
 
   const SingleStringInputGame(
-      {super.key, required this.dio, required this.game});
+      {super.key, required this.dio, required this.run});
 
   @override
   SingleStringInputGameState createState() => SingleStringInputGameState();
 }
 
 class SingleStringInputGameState extends State<SingleStringInputGame> {
-  String answer = 'answer';
+  String answer = 'submission';
   bool hasAnsweredIncorrectly = false;
   bool isOver = false;
   bool isRequestError = false;
@@ -37,16 +37,16 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
   Future<void> submitAnswer(String answer) async {
     try {
       final response = await widget.dio.post(
-        '/waydowntown/answers',
+        '/waydowntown/submissions',
         data: {
           'data': {
-            'type': 'answers',
+            'type': 'submissions',
             'attributes': {
-              'answer': answer,
+              'submission': answer,
             },
             'relationships': {
-              'game': {
-                'data': {'type': 'games', 'id': widget.game.id},
+              'run': {
+                'data': {'type': 'runs', 'id': widget.run.id},
               },
             },
           },
@@ -76,7 +76,7 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.game.specification.concept == 'fill_in_the_blank'
+        title: Text(widget.run.specification.concept == 'fill_in_the_blank'
             ? 'Fill in the Blank'
             : 'Count the Items'),
       ),
@@ -85,7 +85,7 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
           children: [
             Column(
               children: [
-                GameHeader(game: widget.game),
+                RunHeader(run: widget.run),
                 if (!isGameComplete)
                   Form(
                     child: Column(children: <Widget>[
@@ -156,7 +156,7 @@ bool checkGameCompletion(Map<String, dynamic> apiResponse) {
   var included = apiResponse['included'] as List<dynamic>;
 
   for (var item in included) {
-    if (item['type'] == 'games') {
+    if (item['type'] == 'runs') {
       return item['attributes']['complete'] == true;
     }
   }

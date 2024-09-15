@@ -10,7 +10,7 @@ import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:waydowntown/routes/game_launch_route.dart';
+import 'package:waydowntown/routes/run_launch_route.dart';
 
 import './test_helpers.dart';
 
@@ -84,7 +84,7 @@ void main() {
   });
 
   testWidgets(
-      'GameLaunchRoute displays game information, start button, progress, and map when location is available',
+      'RunLaunchRoute displays run information, start button, progress, and map when location is available',
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '''
 bluetooth_collector:
@@ -96,7 +96,7 @@ bluetooth_collector:
     testAssetBundle.addBinaryAsset(
         'assets/walkway.mbtiles', walkwayMbtiles.readAsBytesSync());
 
-    final game = TestHelpers.createMockGame(
+    final run = TestHelpers.createMockRun(
       concept: 'bluetooth_collector',
       latitude: 49.895305538809,
       longitude: -97.13854044484164,
@@ -108,7 +108,7 @@ bluetooth_collector:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: GameLaunchRoute(game: game, dio: dio),
+          child: RunLaunchRoute(run: run, dio: dio),
         ),
       ),
     );
@@ -146,7 +146,7 @@ bluetooth_collector:
   });
 
   testWidgets(
-      'The launcher can be returned to after starting the game and it will not start over',
+      'The launcher can be returned to after starting the run and it will not start over',
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '''
 fill_in_the_blank:
@@ -154,18 +154,18 @@ fill_in_the_blank:
   instructions: Fill in the blank!
 ''');
 
-    final game = TestHelpers.createMockGame(
+    final run = TestHelpers.createMockRun(
       concept: 'fill_in_the_blank',
       totalAnswers: 1,
     );
 
-    TestHelpers.setupMockStartGameResponse(dioAdapter, game);
+    TestHelpers.setupMockStartRunResponse(dioAdapter, run);
 
     await tester.pumpWidget(
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: GameLaunchRoute(game: game, dio: dio),
+          child: RunLaunchRoute(run: run, dio: dio),
         ),
       ),
     );
@@ -183,7 +183,7 @@ fill_in_the_blank:
   });
 
   testWidgets(
-      'GameLaunchRoute displays message when location is not available and does not show answer count when there is only one or duration when there is none',
+      'RunLaunchRoute displays message when location is not available and does not show answer count when there is only one or duration when there is none',
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '''
 bluetooth_collector:
@@ -191,7 +191,7 @@ bluetooth_collector:
   instructions: Collect Bluetooth devices
 ''');
 
-    final game = TestHelpers.createMockGame(
+    final run = TestHelpers.createMockRun(
       concept: 'bluetooth_collector',
       latitude: null,
       longitude: null,
@@ -203,7 +203,7 @@ bluetooth_collector:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: GameLaunchRoute(game: game, dio: dio),
+          child: RunLaunchRoute(run: run, dio: dio),
         ),
       ),
     );
@@ -225,17 +225,17 @@ bluetooth_collector:
     expect(find.text('Start Game'), findsOneWidget);
   });
 
-  testWidgets('GameLaunchRoute shows error for unknown concept',
+  testWidgets('RunLaunchRoute shows error for unknown concept',
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '{}');
 
-    final game = TestHelpers.createMockGame(concept: 'unknown_concept');
+    final run = TestHelpers.createMockRun(concept: 'unknown_concept');
 
     await tester.pumpWidget(
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: GameLaunchRoute(game: game, dio: dio),
+          child: RunLaunchRoute(run: run, dio: dio),
         ),
       ),
     );
@@ -250,7 +250,7 @@ bluetooth_collector:
   });
 
   testWidgets(
-      'GameLaunchRoute does not display location for unplaced game concepts',
+      'RunLaunchRoute does not display location for unplaced run concepts',
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '''
 cardinal_memory:
@@ -259,7 +259,7 @@ cardinal_memory:
   placed: false
 ''');
 
-    final game = TestHelpers.createMockGame(
+    final run = TestHelpers.createMockRun(
       concept: 'cardinal_memory',
       latitude: 49.895305538809,
       longitude: -97.13854044484164,
@@ -270,7 +270,7 @@ cardinal_memory:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: GameLaunchRoute(game: game, dio: dio),
+          child: RunLaunchRoute(run: run, dio: dio),
         ),
       ),
     );
@@ -289,7 +289,7 @@ cardinal_memory:
     expect(find.text('Map unavailable - location not specified'), findsNothing);
   });
 
-  testWidgets('GameLaunchRoute displays Resume Game button for started games',
+  testWidgets('RunLaunchRoute displays Resume Game button for started runs',
       (WidgetTester tester) async {
     testAssetBundle.addAsset('assets/concepts.yaml', '''
 fill_in_the_blank:
@@ -297,7 +297,7 @@ fill_in_the_blank:
   instructions: Fill in the blank!
 ''');
 
-    final game = TestHelpers.createMockGame(
+    final run = TestHelpers.createMockRun(
       concept: 'fill_in_the_blank',
       totalAnswers: 1,
       startedAt: DateTime.now(),
@@ -305,7 +305,7 @@ fill_in_the_blank:
 
     await tester.pumpWidget(
       MaterialApp(
-        home: GameLaunchRoute(game: game, dio: dio),
+        home: RunLaunchRoute(run: run, dio: dio),
       ),
     );
 

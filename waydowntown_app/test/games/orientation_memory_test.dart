@@ -21,7 +21,7 @@ import 'orientation_memory_test.mocks.dart';
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
 
-  const submitAnswerRoute = '/waydowntown/answers';
+  const submitAnswerRoute = '/waydowntown/submissions';
 
   late Dio dio;
   late DioAdapter dioAdapter;
@@ -33,52 +33,52 @@ void main() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
-    game = TestHelpers.createMockGame(concept: 'orientation_memory');
+    game = TestHelpers.createMockRun(concept: 'orientation_memory');
   });
 
   testWidgets('OrientationMemoryGame displays and submits pattern',
       (WidgetTester tester) async {
-    final ids1 = TestHelpers.setupMockAnswerResponse(
+    final ids1 = TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'up',
+            submission: 'up',
             correct: true,
             correctAnswers: 1,
             totalAnswers: 3,
             method: 'POST'));
 
-    final ids2 = TestHelpers.setupMockAnswerResponse(
+    final ids2 = TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
-            route: '/waydowntown/answers/${ids1['answerId']}',
-            answer: 'up|right',
+        SubmissionRequest(
+            route: '/waydowntown/submissions/${ids1['submissionId']}',
+            submission: 'up|right',
             correct: true,
             correctAnswers: 2,
             totalAnswers: 3,
             method: 'PATCH',
-            gameId: ids1['gameId'],
-            answerId: ids1['answerId']));
+            runId: ids1['gameId'],
+            submissionId: ids1['submissionId']));
 
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
-            route: '/waydowntown/answers/${ids2['answerId']}',
-            answer: 'up|right|left',
+        SubmissionRequest(
+            route: '/waydowntown/submissions/${ids2['submissionId']}',
+            submission: 'up|right|left',
             correct: false,
             method: 'PATCH',
-            gameId: ids1['gameId'],
-            answerId: ids2['answerId']));
+            runId: ids1['gameId'],
+            submissionId: ids2['submissionId']));
 
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'right',
+            submission: 'right',
             correct: true,
             correctAnswers: 1,
             totalAnswers: 3,
-            answerId: '8cfe9e24-fe4c-472e-b2eb-3e2c169b11c',
+            submissionId: '8cfe9e24-fe4c-472e-b2eb-3e2c169b11c',
             method: 'POST'));
 
     final streamController = StreamController<ScreenOrientationEvent>();
@@ -88,7 +88,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: OrientationMemoryGame(
         dio: dio,
-        game: game,
+        run: game,
         motionSensors: mockMotionSensors,
       ),
     ));
@@ -158,18 +158,18 @@ void main() {
     when(mockMotionSensors.screenOrientation)
         .thenAnswer((_) => streamController.stream);
 
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'up',
+            submission: 'up',
             correct: false,
             method: 'POST'));
-    TestHelpers.setupMockAnswerResponse(
+    TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
-        AnswerRequest(
+        SubmissionRequest(
             route: submitAnswerRoute,
-            answer: 'right',
+            submission: 'right',
             correct: true,
             correctAnswers: 1,
             totalAnswers: 1,
@@ -179,7 +179,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: OrientationMemoryGame(
         dio: dio,
-        game: game,
+        run: game,
         motionSensors: mockMotionSensors,
       ),
     ));
