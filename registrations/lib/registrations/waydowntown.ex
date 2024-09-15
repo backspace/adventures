@@ -499,7 +499,7 @@ defmodule Registrations.Waydowntown do
       "count_the_items" ->
         true
 
-      concept when concept in ["bluetooth_collector", "code_collector", "string_collector"] ->
+      concept when concept in ["bluetooth_collector", "code_collector", "string_collector", "food_court_frenzy"] ->
         Enum.count(run.submissions, & &1.correct) == length(run.specification.answers)
 
       # FIXME these all need fixing, and order is missing
@@ -508,11 +508,6 @@ defmodule Registrations.Waydowntown do
 
       "cardinal_memory" ->
         check_ordered_win_condition(run, submission)
-
-      "food_court_frenzy" ->
-        correct_submissions = Enum.count(run.submissions, & &1.correct)
-        total_answers = length(run.specification.answers)
-        correct_submissions == total_answers
 
       _ ->
         false
