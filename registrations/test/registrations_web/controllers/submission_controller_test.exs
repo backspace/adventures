@@ -115,8 +115,6 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       run = Waydowntown.get_run!(run.id)
       assert run.winner_submission_id == submission.id
 
-      included = json_response(conn, 201)["included"]
-
       assert %{"included" => included} = json_response(conn, 201)
 
       sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
@@ -295,7 +293,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
     end
 
     test "returns 422 when answer is not in correct order", %{conn: conn, run: run, specification: specification} do
-      [answer_1, answer_2, answer_3] = specification.answers
+      [answer_1, answer_2, _answer_3] = specification.answers
 
       conn =
         conn
@@ -363,7 +361,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
              ]
     end
 
-    test "returns 422 when answer does not belong to specification", %{conn: conn, run: run, specification: specification} do
+    test "returns 422 when answer does not belong to specification", %{conn: conn, run: run} do
       other_specification =
         Repo.insert!(%Specification{concept: "other_concept", answers: [%Answer{answer: "other_answer"}]})
 
@@ -685,8 +683,6 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
       run = Waydowntown.get_run!(run.id)
       assert run.winner_submission_id == submission.id
-
-      included = json_response(conn, 201)["included"]
 
       assert %{"included" => included} = json_response(conn, 201)
 

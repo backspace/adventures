@@ -105,15 +105,14 @@ defmodule RegistrationsWeb.RunControllerTest do
     test "task description is included in the run when the it has started",
          %{
            conn: conn,
-           run: run,
-           specification: specification
+           run: run
          } do
       Waydowntown.start_run(run)
       conn = get(conn, Routes.run_path(conn, :show, run.id))
 
       assert %{
                "data" => %{
-                 "id" => run_id,
+                 "id" => _run_id,
                  "type" => "runs",
                  "attributes" => %{
                    "complete" => false,
@@ -121,7 +120,7 @@ defmodule RegistrationsWeb.RunControllerTest do
                  },
                  "relationships" => %{
                    "specification" => %{
-                     "data" => %{"id" => specification_id, "type" => "specifications"}
+                     "data" => %{"id" => _specification_id, "type" => "specifications"}
                    }
                  }
                },
