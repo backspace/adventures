@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/run_header.dart';
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
@@ -17,7 +18,9 @@ class SingleStringInputGame extends StatefulWidget {
 }
 
 class SingleStringInputGameState extends State<SingleStringInputGame> {
-  String answer = 'submission';
+  late Answer answer;
+
+  String submission = 'submission';
   bool hasAnsweredIncorrectly = false;
   bool isOver = false;
   bool isRequestError = false;
@@ -32,9 +35,10 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
   @override
   void initState() {
     super.initState();
+    answer = widget.run.specification.answers![0];
   }
 
-  Future<void> submitAnswer(String answer) async {
+  Future<void> submitSubmission(String submission) async {
     try {
       final response = await widget.dio.post(
         '/waydowntown/submissions',
@@ -42,11 +46,14 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
           'data': {
             'type': 'submissions',
             'attributes': {
-              'submission': answer,
+              'submission': submission,
             },
             'relationships': {
               'run': {
                 'data': {'type': 'runs', 'id': widget.run.id},
+              },
+              'answer': {
+                'data': {'type': 'answers', 'id': answer.id},
               },
             },
           },
@@ -89,27 +96,29 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
                 if (!isGameComplete)
                   Form(
                     child: Column(children: <Widget>[
-                      TextFormField(
-                        controller: textFieldController,
-                        autofocus: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Answer',
-                        ),
-                        onChanged: (value) {
-                          answer = value;
-                        },
-                        onFieldSubmitted: (value) async {
-                          answer = value;
-                          await submitAnswer(answer);
-                        },
-                      ),
+                      ListTile(
+                          title: Text(answer.label),
+                          subtitle: TextFormField(
+                            controller: textFieldController,
+                            autofocus: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Answer',
+                            ),
+                            onChanged: (value) {
+                              submission = value;
+                            },
+                            onFieldSubmitted: (value) async {
+                              submission = value;
+                              await submitSubmission(submission);
+                            },
+                          )),
                       if (isAnswerError)
                         const Text('Error submitting answer')
                       else if (hasAnsweredIncorrectly)
                         const Text('Wrong'),
                       ElevatedButton(
                         onPressed: () async {
-                          await submitAnswer(answer);
+                          await submitSubmission(submission);
                         },
                         child: const Text('Submit'),
                       )
@@ -123,7 +132,7 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'Correct answer: $answer',
+                      'Correct answer: $submission',
                       style: const TextStyle(color: Colors.green),
                     ),
                   ),

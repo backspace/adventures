@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/games/single_string_input_game.dart';
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
@@ -18,35 +19,39 @@ void main() {
 
   late Dio dio;
   late DioAdapter dioAdapter;
-  late Run game;
+  late Run run;
 
   setUp(() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
-    game = TestHelpers.createMockRun(
-        concept: 'fill_in_the_blank',
-        description: 'An enormous headline proclaims ____ quit!');
+    run = TestHelpers.createMockRun(concept: 'fill_in_the_blank', answers: [
+      const Answer(id: '1', label: 'An enormous headline proclaims ____ quit!')
+    ]);
   });
 
-  testWidgets('Game is requested, displayed, and answers are posted',
+  testWidgets('Run is requested, displayed, and answers are posted',
       (WidgetTester tester) async {
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
         SubmissionRequest(
-            route: submitAnswerRoute, submission: 'incorrect', correct: false));
+            route: submitAnswerRoute,
+            submission: 'incorrect',
+            correct: false,
+            answerId: '1'));
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
         SubmissionRequest(
             route: submitAnswerRoute,
             submission: 'correct',
             correct: true,
+            answerId: '1',
             correctAnswers: 1,
             totalAnswers: 1,
             isComplete: true));
 
     await tester.pumpWidget(
-        MaterialApp(home: SingleStringInputGame(run: game, dio: dio)));
+        MaterialApp(home: SingleStringInputGame(run: run, dio: dio)));
     await tester.pumpAndSettle();
 
     expect(tester.testTextInput.isRegistered, isTrue);
@@ -83,7 +88,8 @@ void main() {
   testWidgets('An error is displayed when answering fails but can try again',
       (WidgetTester tester) async {
     TestHelpers.setupMockErrorResponse(dioAdapter, submitAnswerRoute,
-        data: TestHelpers.generateSubmissionRequestJson('incorrect', game.id));
+        data: TestHelpers.generateSubmissionRequestJson(
+            'incorrect', run.id, '1'));
 
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
@@ -93,10 +99,11 @@ void main() {
             correct: true,
             correctAnswers: 1,
             totalAnswers: 1,
-            isComplete: true));
+            isComplete: true,
+            answerId: '1'));
 
     await tester.pumpWidget(
-        MaterialApp(home: SingleStringInputGame(run: game, dio: dio)));
+        MaterialApp(home: SingleStringInputGame(run: run, dio: dio)));
     await tester.pumpAndSettle();
 
     final textField = find.byType(TextField);
@@ -123,12 +130,12 @@ void main() {
 
   testWidgets('count_the_items game shows that in the header',
       (WidgetTester tester) async {
-    game = TestHelpers.createMockRun(
+    run = TestHelpers.createMockRun(
         concept: 'count_the_items',
         description: 'How many trees can you see in the courtyard?');
 
     await tester.pumpWidget(
-        MaterialApp(home: SingleStringInputGame(run: game, dio: dio)));
+        MaterialApp(home: SingleStringInputGame(run: run, dio: dio)));
     await tester.pumpAndSettle();
 
     expect(find.text('Count the Items'), findsOneWidget);
