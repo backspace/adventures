@@ -132,7 +132,8 @@ void main() {
           );
         });
       },
-      data: TestHelpers.generateSubmissionRequestJson("error_string", game.id),
+      data: TestHelpers.generateSubmissionRequestJson(
+          "error_string", game.id, null),
     );
 
     await tester.pumpWidget(

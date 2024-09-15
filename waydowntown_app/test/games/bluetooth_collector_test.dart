@@ -127,7 +127,7 @@ void main() {
         });
       },
       data: TestHelpers.generateSubmissionRequestJson(
-          "Device 3", "22261813-2171-453f-a669-db08edc70d6d"),
+          "Device 3", "22261813-2171-453f-a669-db08edc70d6d", null),
     );
 
     List<List<ScanResult>> results = [

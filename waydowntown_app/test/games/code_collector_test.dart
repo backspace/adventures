@@ -104,7 +104,8 @@ void main() {
                   correctAnswers: 1,
                   totalAnswers: 3,
                 ))),
-            data: TestHelpers.generateSubmissionRequestJson('Code3', game.id),
+            data: TestHelpers.generateSubmissionRequestJson(
+                'Code3', game.id, null),
           );
 
           throw DioException(
@@ -113,7 +114,7 @@ void main() {
           );
         });
       },
-      data: TestHelpers.generateSubmissionRequestJson('Code3', game.id),
+      data: TestHelpers.generateSubmissionRequestJson('Code3', game.id, null),
     );
 
     when(mockController.start()).thenAnswer((_) async => ());
