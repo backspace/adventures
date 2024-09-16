@@ -236,6 +236,14 @@ class TestHelpers {
                     "type": "regions",
                     "id": run.specification.region!.id
                   }
+                },
+                "answers": {
+                  "data": run.specification.answers!
+                      .map((answer) => {
+                            "id": answer.id,
+                            "type": "answers",
+                          })
+                      .toList(),
                 }
               },
             },
@@ -249,7 +257,22 @@ class TestHelpers {
               "relationships": {
                 "parent": {"data": null}
               }
-            }
+            },
+            ...run.specification.answers!.map((answer) => {
+                  "id": answer.id,
+                  "type": "answers",
+                  "attributes": {
+                    "label": answer.label,
+                  },
+                  "relationships": {
+                    "specification": {
+                      "data": {
+                        "type": "specifications",
+                        "id": run.specification.id
+                      }
+                    }
+                  },
+                }),
           ],
         },
       ),
