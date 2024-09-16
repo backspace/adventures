@@ -122,7 +122,7 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
 
   Widget _buildAnswerField(SubmissionContainer answer) {
     return ListTile(
-      title: Text(answer.answer.label),
+      title: Text(answer.answer.label!),
       subtitle: answer.state == AnswerSubmissionState.correct
           ? Text(answer.value, style: const TextStyle(color: Colors.green))
           : TextField(

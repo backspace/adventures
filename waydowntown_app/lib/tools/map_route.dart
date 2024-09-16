@@ -46,7 +46,6 @@ class _MapRouteState extends State<MapRoute> {
               .map((json) => Specification.fromJson(json, included))
               .where((specification) => specification.region != null)
               .toList();
-          print(specifications);
           isLoading = false;
         });
       } else {

@@ -80,7 +80,7 @@ void main() {
             route: submitAnswerRoute,
             submission: 'Code1',
             correct: true,
-            correctAnswers: 1,
+            correctSubmissions: 1,
             totalAnswers: 5));
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
@@ -101,7 +101,7 @@ void main() {
                   submission: 'Code3',
                   correct: true,
                   runId: game.id,
-                  correctAnswers: 1,
+                  correctSubmissions: 1,
                   totalAnswers: 3,
                 ))),
             data: TestHelpers.generateSubmissionRequestJson(
@@ -224,7 +224,7 @@ void main() {
             route: submitAnswerRoute,
             submission: 'Code5',
             correct: true,
-            correctAnswers: 5,
+            correctSubmissions: 5,
             totalAnswers: 5,
             isComplete: true));
 

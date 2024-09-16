@@ -45,7 +45,7 @@ void main() {
         submission: 'Jortle',
         answerId: run.specification.answers![0].id,
         correct: true,
-        correctAnswers: 1,
+        correctSubmissions: 1,
         totalAnswers: 3,
       ),
     );
@@ -56,7 +56,7 @@ void main() {
         submission: 'Margherita',
         answerId: run.specification.answers![1].id,
         correct: true,
-        correctAnswers: 2,
+        correctSubmissions: 2,
         totalAnswers: 3,
       ),
     );
@@ -67,7 +67,7 @@ void main() {
         submission: 'California Roll',
         answerId: run.specification.answers![2].id,
         correct: true,
-        correctAnswers: 3,
+        correctSubmissions: 3,
         totalAnswers: 3,
         isComplete: true,
       ),
@@ -131,7 +131,7 @@ void main() {
         submission: 'Wrong',
         submissionId: run.specification.answers![0].id,
         correct: false,
-        correctAnswers: 0,
+        correctSubmissions: 0,
         totalAnswers: 3,
       ),
     );

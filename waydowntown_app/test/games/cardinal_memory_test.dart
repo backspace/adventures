@@ -11,6 +11,7 @@ import 'package:mockito/mockito.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/games/cardinal_memory.dart';
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
@@ -33,42 +34,26 @@ void main() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
-    game = TestHelpers.createMockRun(concept: 'cardinal_memory');
+    game = TestHelpers.createMockRun(concept: 'cardinal_memory', answers: [
+      const Answer(id: '1', label: 'north', order: 1),
+      const Answer(id: '2', label: 'west', order: 2),
+      const Answer(id: '3', label: 'south', order: 3),
+    ]);
   });
 
   testWidgets('CardinalMemoryGame displays and submits pattern',
       (WidgetTester tester) async {
-    final ids1 = TestHelpers.setupMockSubmissionResponse(
-        dioAdapter,
-        SubmissionRequest(
-            route: submitAnswerRoute,
-            submission: 'north',
-            correct: true,
-            correctAnswers: 1,
-            totalAnswers: 3,
-            method: 'POST'));
-
-    final ids2 = TestHelpers.setupMockSubmissionResponse(
-        dioAdapter,
-        SubmissionRequest(
-            route: '/waydowntown/submissions/${ids1['submissionId']}',
-            submission: 'north|west',
-            correct: true,
-            correctAnswers: 2,
-            totalAnswers: 3,
-            method: 'PATCH',
-            runId: ids1['gameId'],
-            submissionId: ids1['submissionId']));
-
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
         SubmissionRequest(
-            route: '/waydowntown/submissions/${ids2['submissionId']}',
-            submission: 'north|west|south',
-            correct: false,
-            method: 'PATCH',
-            runId: ids1['gameId'],
-            submissionId: ids2['submissionId']));
+          route: submitAnswerRoute,
+          submission: 'north',
+          correct: true,
+          correctSubmissions: 1,
+          totalAnswers: 3,
+          runId: game.id,
+          answerId: '1',
+        ));
 
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
@@ -76,10 +61,33 @@ void main() {
             route: submitAnswerRoute,
             submission: 'west',
             correct: true,
-            correctAnswers: 1,
+            correctSubmissions: 2,
             totalAnswers: 3,
-            submissionId: '8cfe9e24-fe4c-472e-b2eb-3e2c169b11c',
-            method: 'POST'));
+            runId: game.id,
+            answerId: '2'));
+
+    TestHelpers.setupMockSubmissionResponse(
+        dioAdapter,
+        SubmissionRequest(
+            route: submitAnswerRoute,
+            submission: 'south',
+            correct: false,
+            correctSubmissions: 0,
+            totalAnswers: 3,
+            runId: game.id,
+            answerId: '3'));
+
+    TestHelpers.setupMockSubmissionResponse(
+        dioAdapter,
+        SubmissionRequest(
+          route: submitAnswerRoute,
+          submission: 'west',
+          correct: true,
+          correctSubmissions: 1,
+          totalAnswers: 3,
+          runId: game.id,
+          answerId: '1',
+        ));
 
     final streamController = StreamController<AbsoluteOrientationEvent>();
     when(mockMotionSensors.absoluteOrientation)
@@ -98,7 +106,7 @@ void main() {
     expect(find.byKey(const Key('progress-display')), findsOneWidget);
     expect(find.text('Progress: 0 / 3'), findsOneWidget);
 
-    // First submission (POST)
+    // First submission
     streamController.add(AbsoluteOrientationEvent(0, 0, 0));
     await tester.pump();
     expect(find.byKey(const Key('submit-north')), findsOneWidget);
@@ -111,7 +119,7 @@ void main() {
     expect(find.text('Correct! Keep going.'), findsOneWidget);
     expect(find.text('Progress: 1 / 3'), findsOneWidget);
 
-    // Second submission (PATCH)
+    // Second submission
     streamController.add(AbsoluteOrientationEvent(1.57, 0, 0));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('submit-west')), findsOneWidget);
@@ -124,7 +132,7 @@ void main() {
     expect(find.text('Correct! Keep going.'), findsOneWidget);
     expect(find.text('Progress: 2 / 3'), findsOneWidget);
 
-    // Third submission (PATCH - incorrect)
+    // Third submission: incorrect
     streamController.add(AbsoluteOrientationEvent(3.14, 0, 0));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('submit-south')), findsOneWidget);
@@ -137,7 +145,7 @@ void main() {
     expect(find.text('Incorrect. Start over.'), findsOneWidget);
     expect(find.text('Progress: 0 / 3'), findsOneWidget);
 
-    // Fourth submission (POST - after incorrect, with new direction)
+    // Fourth submission: after incorrect, with new direction
     streamController.add(AbsoluteOrientationEvent(1.57, 0, 0));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('submit-west')), findsOneWidget);
@@ -158,28 +166,39 @@ void main() {
     when(mockMotionSensors.absoluteOrientation)
         .thenAnswer((_) => streamController.stream);
 
+    final shortRun =
+        TestHelpers.createMockRun(concept: 'cardinal_memory', answers: [
+      const Answer(id: '1', label: 'west', order: 1),
+    ]);
+
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
         SubmissionRequest(
-            route: submitAnswerRoute,
-            submission: 'north',
-            correct: false,
-            method: 'POST'));
+          route: submitAnswerRoute,
+          submission: 'north',
+          correct: false,
+          correctSubmissions: 0,
+          totalAnswers: 1,
+          runId: shortRun.id,
+          answerId: '1',
+        ));
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
         SubmissionRequest(
-            route: submitAnswerRoute,
-            submission: 'west',
-            correct: true,
-            correctAnswers: 1,
-            totalAnswers: 1,
-            isComplete: true,
-            method: 'POST'));
+          route: submitAnswerRoute,
+          submission: 'west',
+          correct: true,
+          correctSubmissions: 1,
+          totalAnswers: 1,
+          runId: shortRun.id,
+          answerId: '1',
+          isComplete: true,
+        ));
 
     await tester.pumpWidget(MaterialApp(
       home: CardinalMemoryGame(
         dio: dio,
-        run: game,
+        run: shortRun,
         motionSensors: mockMotionSensors,
       ),
     ));
@@ -189,7 +208,7 @@ void main() {
     expect(find.byKey(const Key('progress-display')), findsOneWidget);
     expect(find.text('Progress: 0 / 3'), findsOneWidget);
 
-    // First submission (POST - incorrect)
+    // First submission: incorrect
     streamController.add(AbsoluteOrientationEvent(0, 0, 0));
     await tester.pump();
     expect(find.byKey(const Key('submit-north')), findsOneWidget);
@@ -204,7 +223,7 @@ void main() {
     expect(find.text('Start over.'), findsNothing);
     expect(find.text('Progress: 0 / 3'), findsOneWidget);
 
-    // Second submission (POST - correct and winning)
+    // Second submission: correct and winning
     streamController.add(AbsoluteOrientationEvent(1.57, 0, 0));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('submit-west')), findsOneWidget);

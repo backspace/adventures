@@ -36,7 +36,7 @@ void main() {
             route: submitAnswerRoute,
             submission: 'correct1',
             correct: true,
-            correctAnswers: 1,
+            correctSubmissions: 1,
             totalAnswers: 3));
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
@@ -44,7 +44,7 @@ void main() {
             route: submitAnswerRoute,
             submission: 'incorrect',
             correct: false,
-            correctAnswers: 1,
+            correctSubmissions: 1,
             totalAnswers: 3));
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
@@ -52,7 +52,7 @@ void main() {
             route: submitAnswerRoute,
             submission: 'correct2',
             correct: true,
-            correctAnswers: 2,
+            correctSubmissions: 2,
             totalAnswers: 3));
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
@@ -60,7 +60,7 @@ void main() {
             route: submitAnswerRoute,
             submission: 'correct3',
             correct: true,
-            correctAnswers: 3,
+            correctSubmissions: 3,
             totalAnswers: 3,
             isComplete: true));
 

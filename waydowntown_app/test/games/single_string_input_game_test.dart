@@ -46,7 +46,7 @@ void main() {
             submission: 'correct',
             correct: true,
             answerId: '1',
-            correctAnswers: 1,
+            correctSubmissions: 1,
             totalAnswers: 1,
             isComplete: true));
 
@@ -97,7 +97,7 @@ void main() {
             route: submitAnswerRoute,
             submission: 'correct',
             correct: true,
-            correctAnswers: 1,
+            correctSubmissions: 1,
             totalAnswers: 1,
             isComplete: true,
             answerId: '1'));

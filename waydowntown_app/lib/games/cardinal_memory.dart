@@ -81,14 +81,15 @@ class CardinalMemoryGameState extends State<CardinalMemoryGame> {
 
     try {
       final Response response;
-      final newPattern = [...pattern, currentDirection];
+
+      final answer = widget.run.specification.answers!
+          .firstWhere((answer) => answer.order == pattern.length + 1);
 
       final data = {
         'data': {
-          ...(lastAnswerId != null ? {'id': lastAnswerId} : {}),
           'type': 'submissions',
           'attributes': {
-            'submission': newPattern.join('|'),
+            'submission': currentDirection,
           },
           'relationships': {
             'run': {
@@ -96,24 +97,23 @@ class CardinalMemoryGameState extends State<CardinalMemoryGame> {
                 'type': 'runs',
                 'id': widget.run.id,
               }
+            },
+            'answer': {
+              'data': {
+                'type': 'answers',
+                'id': answer.id,
+              }
             }
           }
         }
       };
 
-      if (lastAnswerId != null) {
-        response = await widget.dio.patch(
-          '/waydowntown/submissions/$lastAnswerId',
-          data: data,
-        );
-      } else {
-        response = await widget.dio.post(
-          '/waydowntown/submissions',
-          data: data,
-        );
-      }
+      response = await widget.dio.post(
+        '/waydowntown/submissions',
+        data: data,
+      );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 201) {
         final responseData = response.data;
         final answerData = responseData['data'];
         final gameData = (responseData['included'] as List<dynamic>)
@@ -121,7 +121,7 @@ class CardinalMemoryGameState extends State<CardinalMemoryGame> {
 
         if (answerData['attributes']['correct'] == true) {
           setState(() {
-            pattern = newPattern;
+            pattern.add(currentDirection);
             lastAnswerId = answerData['id'];
             submissionMessage = 'Correct! Keep going.';
             totalAnswers = gameData['attributes']['total_answers'];

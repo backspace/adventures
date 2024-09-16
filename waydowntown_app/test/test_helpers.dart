@@ -68,7 +68,7 @@ class TestHelpers {
     );
   }
 
-  static Map<String, String> setupMockSubmissionResponse(
+  static void setupMockSubmissionResponse(
       DioAdapter dioAdapter, SubmissionRequest setup) {
     final runId = setup.runId ?? "22261813-2171-453f-a669-db08edc70d6d";
     final submissionId =
@@ -79,7 +79,7 @@ class TestHelpers {
       submission: setup.submission,
       correct: setup.correct,
       runId: runId,
-      correctAnswers: setup.correctAnswers,
+      correctSubmissions: setup.correctSubmissions,
       totalAnswers: setup.totalAnswers,
       isComplete: setup.isComplete,
     ));
@@ -87,22 +87,11 @@ class TestHelpers {
     final requestJson =
         generateSubmissionRequestJson(setup.submission, runId, setup.answerId);
 
-    if (setup.method == 'POST') {
-      dioAdapter.onPost(
-        setup.route,
-        (server) => server.reply(201, responseJson),
-        data: requestJson,
-      );
-      // FIXME remove PATCH
-    } else if (setup.method == 'PATCH') {
-      dioAdapter.onPatch(
-        setup.route,
-        (server) => server.reply(200, responseJson),
-        data: requestJson,
-      );
-    }
-
-    return {'runId': runId, 'submissionId': submissionId};
+    dioAdapter.onPost(
+      setup.route,
+      (server) => server.reply(201, responseJson),
+      data: requestJson,
+    );
   }
 
   static void setupMockErrorResponse(DioAdapter dioAdapter, String route,
@@ -158,7 +147,7 @@ class TestHelpers {
           "id": response.runId,
           "type": "runs",
           "attributes": {
-            "correct_submissions": response.correctAnswers,
+            "correct_submissions": response.correctSubmissions,
             "total_answers": response.totalAnswers,
             "complete": response.isComplete,
           }
@@ -279,9 +268,8 @@ class SubmissionRequest {
   final String submission;
   final bool correct;
   final bool isComplete;
-  final int correctAnswers;
+  final int correctSubmissions;
   final int totalAnswers;
-  final String method;
   final String? runId;
   final String? answerId;
   final String? submissionId;
@@ -291,9 +279,8 @@ class SubmissionRequest {
     required this.submission,
     required this.correct,
     this.isComplete = false,
-    this.correctAnswers = 0,
+    this.correctSubmissions = 0,
     this.totalAnswers = 3,
-    this.method = 'POST',
     this.runId,
     this.answerId,
     this.submissionId,
@@ -305,7 +292,7 @@ class SubmissionResponse {
   final String submission;
   final bool correct;
   final String runId;
-  final int correctAnswers;
+  final int correctSubmissions;
   final int totalAnswers;
   final bool isComplete;
 
@@ -314,7 +301,7 @@ class SubmissionResponse {
     required this.submission,
     required this.correct,
     required this.runId,
-    required this.correctAnswers,
+    required this.correctSubmissions,
     required this.totalAnswers,
     this.isComplete = false,
   });

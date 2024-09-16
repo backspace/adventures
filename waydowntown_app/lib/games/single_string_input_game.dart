@@ -97,7 +97,7 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
                   Form(
                     child: Column(children: <Widget>[
                       ListTile(
-                          title: Text(answer.label),
+                          title: Text(answer.label!),
                           subtitle: TextFormField(
                             controller: textFieldController,
                             autofocus: true,

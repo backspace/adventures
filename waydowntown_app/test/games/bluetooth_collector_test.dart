@@ -101,7 +101,7 @@ void main() {
             route: submitAnswerRoute,
             submission: 'Device 1',
             correct: true,
-            correctAnswers: 1,
+            correctSubmissions: 1,
             totalAnswers: 3));
     TestHelpers.setupMockSubmissionResponse(
         dioAdapter,
@@ -118,7 +118,7 @@ void main() {
                   route: submitAnswerRoute,
                   submission: 'Device 3',
                   correct: true,
-                  correctAnswers: 2,
+                  correctSubmissions: 2,
                   totalAnswers: 3));
           throw DioException(
             requestOptions: RequestOptions(path: submitAnswerRoute),
@@ -224,7 +224,7 @@ void main() {
             route: submitAnswerRoute,
             submission: 'Device 3',
             correct: true,
-            correctAnswers: 3,
+            correctSubmissions: 3,
             totalAnswers: 3,
             isComplete: true));
 
