@@ -111,7 +111,7 @@ class TestHelpers {
           'run': {
             'data': {'type': 'runs', 'id': runId}
           },
-          ...(answerId != null)
+          ...(answerId == null)
               ? {}
               : {
                   'answer': {
