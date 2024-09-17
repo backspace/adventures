@@ -8,11 +8,9 @@ defmodule Registrations.Waydowntown do
   alias Registrations.Waydowntown.Specification
   alias Registrations.Waydowntown.Submission
 
-  @concepts_yaml_path Path.join(:code.priv_dir(:registrations), "concepts.yaml")
-
   defp concepts_yaml do
     ConCache.get_or_store(:registrations_cache, :concepts_yaml, fn ->
-      YamlElixir.read_from_file!(@concepts_yaml_path)
+      YamlElixir.read_from_file!(Path.join(:code.priv_dir(:registrations), "concepts.yaml"))
     end)
   end
 
