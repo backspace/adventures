@@ -5,11 +5,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:waydowntown/developer_tools.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
-import 'package:waydowntown/tools/auth_webview.dart';
-import 'package:waydowntown/tools/bluetooth_scanner_route.dart';
-import 'package:waydowntown/tools/map_route.dart';
-import 'package:waydowntown/tools/motion_sensors_route.dart';
 
 var logger = Logger();
 
@@ -169,44 +166,17 @@ class _HomeState extends State<Home> {
                 }),
                 const SizedBox(height: 20),
                 const Divider(color: Colors.white),
-                const Text("Tools", style: TextStyle(color: Colors.white)),
-                _buildFlexibleButtonGrid([
-                  ('Auth', 'auth_webview'),
-                  ('Bluetooth\nScanner', 'bluetooth_scanner'),
-                  ('Map', 'map'),
-                  ('Motion\nSensors', 'motion_sensors'),
-                ], (tool) {
-                  switch (tool) {
-                    case 'bluetooth_scanner':
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const BluetoothScannerRoute()));
-                      break;
-                    case 'map':
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => MapRoute(dio: dio)));
-                      break;
-                    case 'motion_sensors':
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const MotionSensorsRoute()));
-                      break;
-                    case 'auth_webview':
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => AuthWebView(
-                                  apiBaseUrl: dotenv.env['API_ROOT']!,
-                                  dio: dio)));
-                      break;
-                  }
-                }),
+                ElevatedButton(
+                  child: const Text('Developer Tools'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DeveloperTools(dio: dio),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
