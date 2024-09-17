@@ -9,7 +9,7 @@ import 'package:waydowntown/tools/motion_sensors_route.dart';
 class DeveloperTools extends StatelessWidget {
   final Dio dio;
 
-  const DeveloperTools({Key? key, required this.dio}) : super(key: key);
+  const DeveloperTools({super.key, required this.dio});
 
   @override
   Widget build(BuildContext context) {
