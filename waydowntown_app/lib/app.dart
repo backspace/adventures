@@ -7,6 +7,7 @@ import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/developer_tools.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
+import 'package:waydowntown/widgets/session_widget.dart';
 
 var logger = Logger();
 
@@ -82,6 +83,8 @@ class _HomeState extends State<Home> {
                     width: 200, semanticsLabel: 'Winnipeg Walkway logo'),
                 const Text("waydowntown",
                     style: TextStyle(color: Colors.white)),
+                const SizedBox(height: 20),
+                SessionWidget(dio: dio, apiBaseUrl: dotenv.env['API_ROOT']!),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

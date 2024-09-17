@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -56,6 +57,9 @@ class _AuthWebViewState extends State<AuthWebView> {
         setState(() {
           _email = email;
         });
+
+        final preferences = await SharedPreferences.getInstance();
+        await preferences.setString('auth_cookie', cookieString);
       }
     } catch (error) {
       print('Error fetching session: $error');
