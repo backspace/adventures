@@ -3,6 +3,6 @@ defmodule Registrations.Repo.Migrations.AddTrigramExtension do
   use Ecto.Migration
 
   def change do
-    execute("CREATE EXTENSION pg_trgm", "DROP EXTENSION pg_trgm")
+    execute("CREATE EXTENSION IF NOT EXISTS pg_trgm", "DROP EXTENSION IF EXISTS pg_trgm")
   end
 end
