@@ -4,8 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:waydowntown/app.dart';
-import 'package:waydowntown/run_header.dart';
 import 'package:waydowntown/models/run.dart';
+import 'package:waydowntown/run_header.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
 
 class CodeCollectorGame extends StatefulWidget {

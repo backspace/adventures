@@ -4,7 +4,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:waydowntown/app.dart';
-import 'package:waydowntown/run_header.dart';
 import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/games/cardinal_memory.dart';
 import 'package:waydowntown/games/code_collector.dart';
@@ -13,6 +12,7 @@ import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/games/single_string_input_game.dart';
 import 'package:waydowntown/games/string_collector.dart';
 import 'package:waydowntown/models/run.dart';
+import 'package:waydowntown/run_header.dart';
 import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';
 
