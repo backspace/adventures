@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
+import 'package:waydowntown/mixins/run_state_mixin.dart';
+import 'package:waydowntown/run_header.dart';
 
 class OrientationMemoryGame extends StatefulWidget {
   final Run run;
@@ -22,17 +24,20 @@ class OrientationMemoryGame extends StatefulWidget {
   OrientationMemoryGameState createState() => OrientationMemoryGameState();
 }
 
-class OrientationMemoryGameState extends State<OrientationMemoryGame> {
+class OrientationMemoryGameState extends State<OrientationMemoryGame>
+    with RunStateMixin<OrientationMemoryGame> {
   double _screenOrientation = 0.0;
   late StreamSubscription<ScreenOrientationEvent> _orientationSubscription;
   List<String> pattern = [];
   String currentOrientation = '';
-  bool isGameOver = false;
-  String? lastAnswerId;
   String? submissionMessage;
   late MotionSensors _motionSensors;
-  String? winningAnswerId;
-  int totalAnswers = 0;
+
+  @override
+  Dio get dio => widget.dio;
+
+  @override
+  Run get initialRun => widget.run;
 
   @override
   void initState() {
@@ -45,7 +50,6 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
         currentOrientation = getOrientation();
       });
     });
-    totalAnswers = widget.run.totalAnswers;
   }
 
   @override
@@ -78,79 +82,31 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
     if (currentOrientation.isEmpty) return;
 
     try {
-      final Response response;
-
       final answer = widget.run.specification.answers!
           .firstWhere((answer) => answer.order == pattern.length + 1);
 
-      final data = {
-        'data': {
-          'type': 'submissions',
-          'attributes': {
-            'submission': currentOrientation,
-          },
-          'relationships': {
-            'run': {
-              'data': {
-                'type': 'runs',
-                'id': widget.run.id,
-              }
-            },
-            'answer': {
-              'data': {
-                'type': 'answers',
-                'id': answer.id,
-              }
-            }
+      final isCorrect =
+          await submitSubmission(currentOrientation, answerId: answer.id);
+
+      setState(() {
+        if (isCorrect) {
+          pattern.add(currentOrientation);
+          submissionMessage = 'Correct! Keep going.';
+
+          if (currentRun.isComplete) {
+            submissionMessage = 'Congratulations!';
           }
-        }
-      };
-
-      response = await widget.dio.post(
-        '/waydowntown/submissions',
-        data: data,
-      );
-
-      if (response.statusCode == 201) {
-        final responseData = response.data;
-        final answerData = responseData['data'];
-        final gameData = (responseData['included'] as List<dynamic>)
-            .firstWhere((included) => included['type'] == 'runs');
-
-        if (answerData['attributes']['correct'] == true) {
-          setState(() {
-            pattern.add(currentOrientation);
-            lastAnswerId = answerData['id'];
-            submissionMessage = 'Correct! Keep going.';
-            totalAnswers = gameData['attributes']['total_answers'];
-            if (gameData['attributes']['complete'] == true) {
-              _showCompletionAnimation();
-              isGameOver = true;
-              submissionMessage = 'Congratulations!';
-            }
-          });
         } else {
-          setState(() {
-            submissionMessage =
-                pattern.isEmpty ? 'Incorrect.' : 'Incorrect. Start over.';
-            pattern = [];
-            lastAnswerId = null;
-          });
+          submissionMessage =
+              pattern.isEmpty ? 'Incorrect.' : 'Incorrect. Start over.';
+          pattern = [];
         }
-      } else {
-        setState(() {
-          submissionMessage = 'Error submitting answer. Try again.';
-        });
-      }
+      });
     } catch (e) {
       setState(() {
-        submissionMessage = 'Error: $e';
+        submissionMessage = 'Error: ${e.toString()}';
       });
     }
-  }
-
-  void _showCompletionAnimation() {
-    CompletionAnimation.show(context);
   }
 
   @override
@@ -164,7 +120,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              'Progress: ${pattern.length} / $totalAnswers',
+              'Progress: ${currentRun.correctSubmissions} / ${currentRun.totalAnswers}',
               key: const Key('progress-display'),
               style: Theme.of(context).textTheme.displaySmall,
             ),
@@ -183,7 +139,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame> {
             const SizedBox(height: 20),
             ElevatedButton(
               key: Key('submit-$currentOrientation'),
-              onPressed: isGameOver ? null : submitOrientation,
+              onPressed: isGameComplete ? null : submitOrientation,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
