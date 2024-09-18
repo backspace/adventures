@@ -5,6 +5,7 @@ import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/run_header.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
+import 'package:waydowntown/mixins/run_state_mixin.dart';
 
 class SingleStringInputGame extends StatefulWidget {
   final Dio dio;
@@ -17,7 +18,8 @@ class SingleStringInputGame extends StatefulWidget {
   SingleStringInputGameState createState() => SingleStringInputGameState();
 }
 
-class SingleStringInputGameState extends State<SingleStringInputGame> {
+class SingleStringInputGameState extends State<SingleStringInputGame>
+    with RunStateMixin<SingleStringInputGame> {
   late Answer answer;
 
   String submission = 'submission';
@@ -25,57 +27,39 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
   bool isOver = false;
   bool isRequestError = false;
   bool isAnswerError = false;
-  bool isGameComplete = false;
   TextEditingController textFieldController = TextEditingController();
 
-  void _showCompletionAnimation() {
-    CompletionAnimation.show(context);
-  }
+  @override
+  Dio get dio => widget.dio;
+
+  @override
+  Run get initialRun => widget.run;
 
   @override
   void initState() {
     super.initState();
-    answer = widget.run.specification.answers![0];
+    answer = initialRun.specification.answers![0];
   }
 
-  Future<void> submitSubmission(String submission) async {
+  Future<void> submitAnswer(String submission) async {
     try {
-      final response = await widget.dio.post(
-        '/waydowntown/submissions',
-        data: {
-          'data': {
-            'type': 'submissions',
-            'attributes': {
-              'submission': submission,
-            },
-            'relationships': {
-              'run': {
-                'data': {'type': 'runs', 'id': widget.run.id},
-              },
-              'answer': {
-                'data': {'type': 'answers', 'id': answer.id},
-              },
-            },
-          },
-        },
-      );
+      final isCorrect = await submitSubmission(submission, answerId: answer.id);
 
       setState(() {
-        isAnswerError = false;
-        isOver = checkGameCompletion(response.data);
-        hasAnsweredIncorrectly = !isOver;
-        textFieldController.clear();
-
-        if (isOver) {
-          isGameComplete = true;
-          _showCompletionAnimation();
+        if (isCorrect) {
+          hasAnsweredIncorrectly = false;
+        } else {
+          hasAnsweredIncorrectly = true;
         }
+        textFieldController.clear();
+        isAnswerError = false;
       });
-    } catch (error) {
+    } catch (e) {
       setState(() {
         isAnswerError = true;
+        isRequestError = true;
       });
-      logger.e('Error submitting answer: $error');
+      logger.e('Error submitting answer: $e');
     }
   }
 
@@ -89,43 +73,41 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
       ),
       body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Column(
-              children: [
-                RunHeader(run: widget.run),
-                if (!isGameComplete)
-                  Form(
-                    child: Column(children: <Widget>[
-                      ListTile(
-                          title: Text(answer.label!),
-                          subtitle: TextFormField(
-                            controller: textFieldController,
-                            autofocus: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Answer',
-                            ),
-                            onChanged: (value) {
-                              submission = value;
-                            },
-                            onFieldSubmitted: (value) async {
-                              submission = value;
-                              await submitSubmission(submission);
-                            },
-                          )),
-                      if (isAnswerError)
-                        const Text('Error submitting answer')
-                      else if (hasAnsweredIncorrectly)
-                        const Text('Wrong'),
-                      ElevatedButton(
-                        onPressed: () async {
-                          await submitSubmission(submission);
-                        },
-                        child: const Text('Submit'),
-                      )
-                    ]),
+            RunHeader(run: currentRun),
+            if (!isGameComplete)
+              Form(
+                child: Column(children: <Widget>[
+                  ListTile(
+                    title: Text(answer.label!),
+                    subtitle: TextFormField(
+                      controller: textFieldController,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Answer',
+                      ),
+                      onChanged: (value) {
+                        submission = value;
+                      },
+                      onFieldSubmitted: (value) async {
+                        submission = value;
+                        await submitAnswer(submission);
+                      },
+                    ),
                   ),
-              ],
-            ),
+                  if (isAnswerError)
+                    const Text('Error submitting answer')
+                  else if (hasAnsweredIncorrectly)
+                    const Text('Wrong'),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await submitAnswer(submission);
+                    },
+                    child: const Text('Submit'),
+                  )
+                ]),
+              ),
             if (isGameComplete)
               Column(
                 children: [
@@ -157,18 +139,4 @@ class SingleStringInputGameState extends State<SingleStringInputGame> {
       ),
     );
   }
-}
-
-bool checkGameCompletion(Map<String, dynamic> apiResponse) {
-  if (apiResponse['included'] == null) return false;
-
-  var included = apiResponse['included'] as List<dynamic>;
-
-  for (var item in included) {
-    if (item['type'] == 'runs') {
-      return item['attributes']['complete'] == true;
-    }
-  }
-
-  return false;
 }
