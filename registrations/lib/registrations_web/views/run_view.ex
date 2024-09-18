@@ -51,7 +51,8 @@ defmodule RegistrationsWeb.RunView do
 
   def relationships do
     [
-      specification: {RegistrationsWeb.SpecificationView, :include}
+      specification: {RegistrationsWeb.SpecificationView, :include},
+      submissions: {RegistrationsWeb.SubmissionView, :include}
     ]
   end
 end

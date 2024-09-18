@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.SubmissionView do
   alias RegistrationsWeb.SubmissionView
 
   def fields do
-    [:correct]
+    [:correct, :submission, :inserted_at]
   end
 
   def render("show.json", %{submission: submission, conn: conn, params: params}) do

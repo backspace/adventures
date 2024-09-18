@@ -5,6 +5,7 @@ defmodule RegistrationsWeb.RunControllerTest do
   alias Registrations.Waydowntown.Answer
   alias Registrations.Waydowntown.Region
   alias Registrations.Waydowntown.Specification
+  alias Registrations.Waydowntown.Submission
 
   setup %{conn: conn} do
     {:ok,
@@ -15,6 +16,7 @@ defmodule RegistrationsWeb.RunControllerTest do
   end
 
   describe "show run" do
+    @describetag focus: true
     setup do
       parent_region =
         Repo.insert!(%Region{name: "Parent Region", geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}})
@@ -37,19 +39,28 @@ defmodule RegistrationsWeb.RunControllerTest do
 
       {:ok, run} = Waydowntown.create_run(%{}, %{"concept" => specification.concept})
 
+      submission =
+        Repo.insert!(%Submission{
+          submission: "incorrect",
+          correct: false,
+          run_id: run.id
+        })
+
       %{
         run: run,
         specification: specification,
+        submission: submission,
         child_region: child_region,
         parent_region: parent_region
       }
     end
 
-    test "returns run with nested specification, regions, and progress attributes, but no task description before the run has started",
+    test "returns run with nested specification, regions, submissions, and progress attributes, but no task description before the run has started",
          %{
            conn: conn,
            run: run,
            specification: specification,
+           submission: submission,
            child_region: child_region,
            parent_region: parent_region
          } do
@@ -100,6 +111,12 @@ defmodule RegistrationsWeb.RunControllerTest do
                  item["attributes"]["longitude"] == "-97.0" &&
                  item["relationships"]["parent"]["data"] == nil
              end)
+
+      included_submission = Enum.find(included, &(&1["type"] == "submissions"))
+
+      assert included_submission["id"] == submission.id
+      assert included_submission["attributes"]["submission"] == "incorrect"
+      refute included_submission["attributes"]["correct"]
     end
 
     test "task description is included in the run when the it has started",
