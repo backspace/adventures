@@ -4,9 +4,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:waydowntown/app.dart';
+import 'package:waydowntown/mixins/run_state_mixin.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/run_header.dart';
-import 'package:waydowntown/widgets/completion_animation.dart';
 
 class CodeCollectorGame extends StatefulWidget {
   final Dio dio;
@@ -34,20 +34,24 @@ class DetectedCode {
 }
 
 class CodeCollectorGameState extends State<CodeCollectorGame>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, RunStateMixin<CodeCollectorGame> {
   List<DetectedCode> detectedCodes = [];
   late MobileScannerController controller;
   Map<String, String> codeErrors = {};
-  late Run currentGame;
-  bool isGameComplete = false;
+
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+
+  @override
+  Dio get dio => widget.dio;
+
+  @override
+  Run get initialRun => widget.run;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     controller = widget.scannerController ?? MobileScannerController();
-    currentGame = widget.run;
     startScanner();
   }
 
@@ -59,69 +63,27 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
     controller.stop();
   }
 
-  void _showCompletionAnimation() {
-    CompletionAnimation.show(context);
-  }
-
   Future<void> submitCode(DetectedCode detectedCode) async {
     setState(() {
       detectedCode.state = CodeSubmissionState.submitting;
     });
 
     try {
-      final response = await widget.dio.post(
-        '/waydowntown/submissions',
-        data: {
-          'data': {
-            'type': 'submissions',
-            'attributes': {
-              'submission': detectedCode.code,
-            },
-            'relationships': {
-              'run': {
-                'data': {'type': 'runs', 'id': currentGame.id},
-              },
-            },
-          },
-        },
-      );
+      final isCorrect = await submitSubmission(detectedCode.code);
 
-      if (mounted) {
-        setState(() {
-          if (response.data['data']['attributes']['correct']) {
-            detectedCode.state = CodeSubmissionState.correct;
-          } else {
-            detectedCode.state = CodeSubmissionState.incorrect;
-          }
-
-          if (response.data['included'] != null) {
-            final gameData = response.data['included'].firstWhere(
-              (included) =>
-                  included['type'] == 'runs' &&
-                  included['id'] == currentGame.id,
-              orElse: () => null,
-            );
-            if (gameData != null) {
-              currentGame = Run.fromJson(
-                  {'data': gameData, 'included': response.data['included']},
-                  existingSpecification: currentGame.specification);
-            }
-          }
-
-          if (currentGame.correctSubmissions == currentGame.totalAnswers) {
-            isGameComplete = true;
-            _showCompletionAnimation();
-          }
-        });
-      }
+      setState(() {
+        if (isCorrect) {
+          detectedCode.state = CodeSubmissionState.correct;
+        } else {
+          detectedCode.state = CodeSubmissionState.incorrect;
+        }
+      });
     } catch (e) {
       logger.e('Error submitting code: $e');
-      if (mounted) {
-        setState(() {
-          detectedCode.state = CodeSubmissionState.error;
-          codeErrors[detectedCode.code] = e.toString();
-        });
-      }
+      setState(() {
+        detectedCode.state = CodeSubmissionState.error;
+        codeErrors[detectedCode.code] = e.toString();
+      });
     }
   }
 
@@ -201,11 +163,11 @@ class CodeCollectorGameState extends State<CodeCollectorGame>
       ),
       body: Column(
         children: [
-          RunHeader(run: currentGame),
+          RunHeader(run: currentRun),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Progress: ${currentGame.correctSubmissions}/${currentGame.totalAnswers}',
+              'Progress: ${currentRun.correctSubmissions}/${currentRun.totalAnswers}',
             ),
           ),
           if (isGameComplete)
