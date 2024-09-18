@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:motion_sensors/motion_sensors.dart';
-import 'package:waydowntown/models/run.dart';
-import 'package:waydowntown/widgets/completion_animation.dart';
 import 'package:waydowntown/mixins/run_state_mixin.dart';
-import 'package:waydowntown/run_header.dart';
+import 'package:waydowntown/models/run.dart';
 
 class OrientationMemoryGame extends StatefulWidget {
   final Run run;

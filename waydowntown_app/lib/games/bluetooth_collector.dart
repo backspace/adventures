@@ -46,7 +46,6 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame>
   StreamSubscription<List<ScanResult>>? _scanResultsSubscription;
   bool isScanning = false;
   Map<String, String> deviceErrors = {};
-  bool isGameComplete = false;
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 

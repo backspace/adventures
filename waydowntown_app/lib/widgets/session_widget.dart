@@ -7,8 +7,7 @@ class SessionWidget extends StatefulWidget {
   final Dio dio;
   final String apiBaseUrl;
 
-  const SessionWidget({Key? key, required this.dio, required this.apiBaseUrl})
-      : super(key: key);
+  const SessionWidget({super.key, required this.dio, required this.apiBaseUrl});
 
   @override
   _SessionWidgetState createState() => _SessionWidgetState();

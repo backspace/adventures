@@ -1,11 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
+import 'package:waydowntown/mixins/run_state_mixin.dart';
 import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/run_header.dart';
-import 'package:waydowntown/widgets/completion_animation.dart';
-import 'package:waydowntown/mixins/run_state_mixin.dart';
 
 class SingleStringInputGame extends StatefulWidget {
   final Dio dio;
