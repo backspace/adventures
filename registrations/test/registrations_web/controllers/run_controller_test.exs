@@ -16,7 +16,6 @@ defmodule RegistrationsWeb.RunControllerTest do
   end
 
   describe "show run" do
-    @describetag focus: true
     setup do
       parent_region =
         Repo.insert!(%Region{name: "Parent Region", geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}})
