@@ -7,6 +7,7 @@ class Run {
   final int totalAnswers;
   final DateTime? startedAt;
   final String? taskDescription;
+  final bool isComplete;
 
   Run({
     required this.id,
@@ -15,6 +16,7 @@ class Run {
     required this.totalAnswers,
     this.startedAt,
     this.taskDescription,
+    this.isComplete = false,
   });
 
   factory Run.fromJson(Map<String, dynamic> json,
@@ -49,6 +51,7 @@ class Run {
       startedAt: data['attributes']['started_at'] != null
           ? DateTime.parse(data['attributes']['started_at'])
           : null,
+      isComplete: data['attributes']['complete'] ?? false,
     );
   }
 }

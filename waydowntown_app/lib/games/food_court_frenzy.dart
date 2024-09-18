@@ -1,10 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:waydowntown/app.dart';
+import 'package:waydowntown/mixins/run_state_mixin.dart';
 import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/run_header.dart';
-import 'package:waydowntown/widgets/completion_animation.dart';
 
 class FoodCourtFrenzyGame extends StatefulWidget {
   final Dio dio;
@@ -38,24 +37,24 @@ class SubmissionContainer {
   });
 }
 
-class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
+class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame>
+    with RunStateMixin<FoodCourtFrenzyGame> {
+  @override
+  Dio get dio => widget.dio;
+
+  @override
+  Run get initialRun => widget.run;
+
   late List<SubmissionContainer> answers;
-  bool isGameComplete = false;
   Map<String, String> answerErrors = {};
-  late Run currentGame;
 
   @override
   void initState() {
     super.initState();
-    currentGame = widget.run;
-    answers = currentGame.specification.answers
+    answers = currentRun.specification.answers
             ?.map((answer) => SubmissionContainer(answer))
             .toList() ??
         [];
-  }
-
-  void _showCompletionAnimation() {
-    CompletionAnimation.show(context);
   }
 
   Future<void> submitAnswer(SubmissionContainer answer) async {
@@ -64,55 +63,19 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
     });
 
     try {
-      final response = await widget.dio.post(
-        '/waydowntown/submissions',
-        data: {
-          'data': {
-            'type': 'submissions',
-            'attributes': {
-              'submission': answer.value,
-            },
-            'relationships': {
-              'run': {
-                'data': {'type': 'runs', 'id': currentGame.id},
-              },
-              'answer': {
-                'data': {'type': 'answers', 'id': answer.answer.id},
-              },
-            },
-          },
-        },
-      );
+      final isCorrect = await super
+          .submitSubmission(answer.value, answerId: answer.answer.id);
 
       setState(() {
-        if (response.data['data']['attributes']['correct']) {
+        if (isCorrect) {
           answer.state = AnswerSubmissionState.correct;
           answer.errorMessage = null;
         } else {
           answer.state = AnswerSubmissionState.incorrect;
           answer.errorMessage = 'Incorrect answer. Try again.';
         }
-
-        if (response.data['included'] != null) {
-          final gameData = response.data['included'].firstWhere(
-            (included) =>
-                included['type'] == 'runs' && included['id'] == currentGame.id,
-            orElse: () => null,
-          );
-          if (gameData != null) {
-            currentGame = Run.fromJson(
-                {'data': gameData, 'included': response.data['included']},
-                existingSpecification: currentGame.specification);
-          }
-        }
-
-        if (currentGame.correctSubmissions == currentGame.totalAnswers) {
-          isGameComplete = true;
-          _showCompletionAnimation();
-        }
       });
     } catch (e) {
-      logger.e('Error submitting answer: $e');
       setState(() {
         answer.state = AnswerSubmissionState.error;
         answer.errorMessage = e.toString();
@@ -162,11 +125,11 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame> {
       ),
       body: Column(
         children: [
-          RunHeader(run: currentGame),
+          RunHeader(run: currentRun),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Progress: ${currentGame.correctSubmissions}/${currentGame.totalAnswers}',
+              'Progress: ${currentRun.correctSubmissions}/${currentRun.totalAnswers}',
             ),
           ),
           if (isGameComplete)
