@@ -348,9 +348,19 @@ defmodule Registrations.Waydowntown do
 
   def get_run_progress(run) do
     correct_submissions =
-      run.submissions
-      |> Enum.uniq_by(& &1.submission)
-      |> Enum.count(& &1.correct)
+      if run.specification.concept in ["orientation_memory", "cardinal_memory"] do
+        latest_submission = run.submissions |> Enum.sort_by(&{&1.inserted_at, &1.answer.order}, :desc) |> List.first()
+
+        if is_nil(latest_submission) or not latest_submission.correct do
+          0
+        else
+          latest_submission.answer.order
+        end
+      else
+        run.submissions
+        |> Enum.uniq_by(& &1.submission)
+        |> Enum.count(& &1.correct)
+      end
 
     total_answers = length(run.specification.answers)
 

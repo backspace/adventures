@@ -204,6 +204,9 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       assert submission.submission == answer_1.answer
       assert submission.correct
 
+      included_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+      assert included_run["attributes"]["correct_submissions"] == 1
+
       conn =
         build_conn()
         |> setup_conn()
@@ -231,6 +234,9 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       assert created_submission.submission == answer_2.answer
       assert created_submission.correct
 
+      included_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+      assert included_run["attributes"]["correct_submissions"] == 2
+
       conn =
         build_conn()
         |> setup_conn()
@@ -257,6 +263,9 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       completed_submission = Waydowntown.get_submission!(id)
       assert completed_submission.submission == answer_3.answer
       assert completed_submission.correct
+
+      included_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+      assert included_run["attributes"]["correct_submissions"] == 3
 
       run = Waydowntown.get_run!(run.id)
       assert run.winner_submission_id == completed_submission.id
@@ -290,6 +299,58 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       submission = Waydowntown.get_submission!(id)
       assert submission.submission == "WRONG ANSWER"
       refute submission.correct
+    end
+
+    test "run correct counter resets after incorrect submission", %{conn: conn, run: run, specification: specification} do
+      [answer_1, answer_2, _answer_3] = specification.answers
+
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> post(
+          Routes.submission_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "submissions",
+              "attributes" => %{"submission" => answer_1.answer},
+              "relationships" => %{
+                "run" => %{
+                  "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer_1.id}
+                }
+              }
+            }
+          }
+        )
+
+      included_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+      assert included_run["attributes"]["correct_submissions"] == 1
+
+      conn =
+        build_conn()
+        |> setup_conn()
+        |> post(
+          Routes.submission_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "submissions",
+              "attributes" => %{"submission" => "WRONG"},
+              "relationships" => %{
+                "run" => %{
+                  "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => answer_2.id}
+                }
+              }
+            }
+          }
+        )
+
+      included_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+      assert included_run["attributes"]["correct_submissions"] == 0
     end
 
     test "returns 422 when answer is not in correct order", %{conn: conn, run: run, specification: specification} do
