@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/flutter_blue_plus_mockable.dart';
+import 'package:waydowntown/mixins/run_state_mixin.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/run_header.dart';
-import 'package:waydowntown/widgets/completion_animation.dart';
 
 class BluetoothCollectorGame extends StatefulWidget {
   final Dio dio;
@@ -40,21 +40,25 @@ class DetectedDevice {
   DetectedDevice(this.device, {this.state = DeviceSubmissionState.unsubmitted});
 }
 
-class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
+class BluetoothCollectorGameState extends State<BluetoothCollectorGame>
+    with RunStateMixin<BluetoothCollectorGame> {
   List<DetectedDevice> detectedDevices = [];
   StreamSubscription<List<ScanResult>>? _scanResultsSubscription;
   bool isScanning = false;
   Map<String, String> deviceErrors = {};
   bool isGameComplete = false;
 
-  late Run currentGame;
-
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+
+  @override
+  Dio get dio => widget.dio;
+
+  @override
+  Run get initialRun => widget.run;
 
   @override
   void initState() {
     super.initState();
-    currentGame = widget.run;
     startScan();
   }
 
@@ -92,61 +96,24 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
     });
   }
 
-  void _showCompletionAnimation() {
-    CompletionAnimation.show(context);
-  }
-
   Future<void> submitDevice(DetectedDevice detectedDevice) async {
     setState(() {
       detectedDevice.state = DeviceSubmissionState.submitting;
     });
 
     try {
-      final response = await widget.dio.post(
-        '/waydowntown/submissions',
-        data: {
-          'data': {
-            'type': 'submissions',
-            'attributes': {
-              'submission': detectedDevice.device.platformName,
-            },
-            'relationships': {
-              'run': {
-                'data': {'type': 'runs', 'id': currentGame.id},
-              },
-            },
-          },
-        },
+      final isCorrect = await submitSubmission(
+        detectedDevice.device.platformName.toString(),
       );
 
       setState(() {
-        if (response.data['data']['attributes']['correct']) {
+        if (isCorrect) {
           detectedDevice.state = DeviceSubmissionState.correct;
         } else {
           detectedDevice.state = DeviceSubmissionState.incorrect;
         }
-
-        if (response.data['included'] != null) {
-          final gameData = response.data['included'].firstWhere(
-            (included) =>
-                included['type'] == 'runs' && included['id'] == currentGame.id,
-            orElse: () => null,
-          );
-          if (gameData != null) {
-            currentGame = Run.fromJson(
-                {'data': gameData, 'included': response.data['included']},
-                existingSpecification: currentGame.specification);
-          }
-        }
-
-        if (currentGame.correctSubmissions == currentGame.totalAnswers) {
-          isGameComplete = true;
-          stopScan();
-          _showCompletionAnimation();
-        }
       });
     } catch (e) {
-      logger.e('Error submitting device: $e');
       setState(() {
         detectedDevice.state = DeviceSubmissionState.error;
         deviceErrors[detectedDevice.device.remoteId.toString()] = e.toString();
@@ -233,11 +200,11 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame> {
       ),
       body: Column(
         children: [
-          RunHeader(run: currentGame),
+          RunHeader(run: currentRun),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Progress: ${currentGame.correctSubmissions}/${currentGame.totalAnswers}',
+              'Progress: ${currentRun.correctSubmissions}/${currentRun.totalAnswers}',
             ),
           ),
           if (isGameComplete)
