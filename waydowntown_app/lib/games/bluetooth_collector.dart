@@ -113,6 +113,7 @@ class BluetoothCollectorGameState extends State<BluetoothCollectorGame>
         }
       });
     } catch (e) {
+      logger.e('Error submitting device: $e');
       setState(() {
         detectedDevice.state = DeviceSubmissionState.error;
         deviceErrors[detectedDevice.device.remoteId.toString()] = e.toString();
