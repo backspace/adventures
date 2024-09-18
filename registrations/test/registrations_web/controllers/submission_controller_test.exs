@@ -920,7 +920,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
     end
 
     test "rejects a duplicate submission for the same answer but not for a different answer", %{conn: conn, run: run} do
-      [answer_1, answer_2, answer_3] = run.specification.answers
+      [answer_1, _answer_2, answer_3] = run.specification.answers
 
       conn =
         conn
