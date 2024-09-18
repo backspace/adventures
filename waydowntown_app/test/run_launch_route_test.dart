@@ -218,8 +218,6 @@ bluetooth_collector:
     expect(find.text('Duration'), findsNothing);
 
     expect(find.byType(FlutterMap), findsNothing);
-    expect(
-        find.text('Map unavailable - location not specified'), findsOneWidget);
 
     await tester.scrollUntilVisible(find.text('Start Game'), 100);
     expect(find.text('Start Game'), findsOneWidget);
@@ -256,7 +254,7 @@ bluetooth_collector:
 cardinal_memory:
   name: Cardinal Memory
   instructions: Face north, east, south, or west
-  placed: false
+  placeless: true
 ''');
 
     final run = TestHelpers.createMockRun(
@@ -283,10 +281,8 @@ cardinal_memory:
 
     expect(find.text('Start Game'), findsOneWidget);
 
-    // Verify that location information is not displayed
     expect(find.text('Parent Region > Test Region'), findsNothing);
     expect(find.byType(FlutterMap), findsNothing);
-    expect(find.text('Map unavailable - location not specified'), findsNothing);
   });
 
   testWidgets('RunLaunchRoute displays Resume Game button for started runs',

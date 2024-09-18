@@ -40,7 +40,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
     return {
       'name': conceptInfo['name'],
       'instructions': conceptInfo['instructions'],
-      'placed': conceptInfo['placed'] ?? true,
+      'placeless': conceptInfo['placeless'] ?? false,
     };
   }
 
@@ -65,7 +65,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
 
         final gameName = gameInfo?['name'];
         final instructions = gameInfo?['instructions'];
-        final isPlaced = gameInfo?['placed'] ?? true;
+        final isPlaceless = gameInfo?['placeless'] ?? false;
 
         return Scaffold(
           appBar: AppBar(title: Text(gameName ?? 'Game Instructions')),
@@ -110,7 +110,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                       ),
                   ],
                 ),
-                if (isPlaced)
+                if (!isPlaceless)
                   Card(
                     color: Colors.white,
                     child: Padding(
