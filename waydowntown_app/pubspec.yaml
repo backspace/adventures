@@ -123,3 +123,19 @@ flutter:
     - family: Arrows
       fonts:
         - asset: fonts/roadgeek-arrows.ttf
+
+flutter_launcher_icons:
+  image_path: "assets/icon/icon-local.png"
+
+  android: true
+
+  ios: true
+  remove_alpha_ios: true
+
+  macos:
+    generate: true
+    image_path: "assets/icon/icon-local.png"
+
+flutter_native_splash:
+  color: "#059FC2"
+  image: assets/images/logo.png
