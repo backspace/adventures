@@ -70,14 +70,12 @@ void main() {
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
     expect(find.text('Collect strings'), findsOneWidget);
-    expect(find.text('Progress: 0/3'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'correct1');
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
 
     expect(find.text('correct1'), findsOneWidget);
-    expect(find.text('Progress: 1/3'), findsOneWidget);
 
     final textField =
         (find.byType(TextField).first.evaluate().first.widget as TextField);
@@ -88,21 +86,18 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('incorrect'), findsOneWidget);
-    expect(find.text('Progress: 1/3'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'correct2');
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
 
     expect(find.text('correct2'), findsOneWidget);
-    expect(find.text('Progress: 2/3'), findsOneWidget);
 
     await tester.enterText(find.byType(TextField), 'correct3');
     await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
 
     expect(find.text('correct3'), findsOneWidget);
-    expect(find.text('Progress: 3/3'), findsOneWidget);
     expect(find.text('Congratulations! You have completed the game.'),
         findsOneWidget);
     expect(find.byType(TextField), findsNothing);

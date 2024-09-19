@@ -145,8 +145,6 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('Progress: 0/5'), findsOneWidget);
-
     expect(
         find.byWidgetPredicate((widget) =>
             widget is ListTile &&
@@ -165,8 +163,6 @@ void main() {
         findsOneWidget);
 
     await tester.pumpAndSettle();
-
-    expect(find.text('Progress: 1/5'), findsOneWidget);
 
     expect(
         find.byWidgetPredicate((widget) =>
@@ -255,7 +251,6 @@ void main() {
     await tester.tap(find.text('Code5'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Progress: 5/5'), findsOneWidget);
     expect(find.text('Congratulations! You have completed the game.'),
         findsOneWidget);
 

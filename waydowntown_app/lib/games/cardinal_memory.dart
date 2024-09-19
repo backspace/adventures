@@ -119,12 +119,6 @@ class CardinalMemoryGameState extends State<CardinalMemoryGame>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'Progress: ${currentRun.correctSubmissions} / ${currentRun.totalAnswers}',
-              key: const Key('progress-display'),
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

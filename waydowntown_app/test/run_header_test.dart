@@ -101,4 +101,48 @@ void main() {
 
     expect(find.text('Out of time!'), findsOneWidget);
   });
+
+  testWidgets('GameHeader shows progress', (WidgetTester tester) async {
+    final game = Run(
+      id: '1',
+      specification: Specification(
+          id: '1',
+          concept: 'Test',
+          placed: true,
+          region: Region(
+            id: '1',
+            name: 'Test Region',
+          )),
+      correctSubmissions: 1,
+      totalAnswers: 2,
+      taskDescription: 'Test description',
+    );
+
+    await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
+
+    expect(find.text('1/2'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  });
+
+  testWidgets('GameHeader shows no progress for single-answer',
+      (WidgetTester tester) async {
+    final game = Run(
+      id: '1',
+      specification: Specification(
+          id: '1',
+          concept: 'Test',
+          placed: true,
+          region: Region(
+            id: '1',
+            name: 'Test Region',
+          )),
+      correctSubmissions: 0,
+      totalAnswers: 1,
+    );
+
+    await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
+
+    expect(find.text('0/1'), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
 }

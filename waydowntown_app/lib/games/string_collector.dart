@@ -194,12 +194,6 @@ class StringCollectorGameState extends State<StringCollectorGame> {
       body: Column(
         children: [
           RunHeader(run: currentRun),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Progress: ${currentRun.correctSubmissions}/${currentRun.totalAnswers}',
-            ),
-          ),
           if (isRunComplete)
             const Padding(
               padding: EdgeInsets.all(16.0),

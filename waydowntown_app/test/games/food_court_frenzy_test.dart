@@ -80,7 +80,6 @@ void main() {
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
     expect(find.text('Find food court items'), findsOneWidget);
-    expect(find.text('Progress: 0/3'), findsOneWidget);
 
     // Submit first answer
     await tester.enterText(
@@ -88,7 +87,6 @@ void main() {
     await tester.tap(find.widgetWithIcon(IconButton, Icons.send).first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Progress: 1/3'), findsOneWidget);
     expect(find.widgetWithText(TextField, 'Burger'), findsNothing);
     expect(find.text('Jortle'), findsOneWidget);
     expect(find.widgetWithIcon(ListTile, Icons.check_circle), findsOneWidget);
@@ -99,7 +97,6 @@ void main() {
     await tester.tap(find.widgetWithIcon(IconButton, Icons.send).first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Progress: 2/3'), findsOneWidget);
     expect(find.widgetWithText(TextField, 'Pizza'), findsNothing);
     expect(find.text('Margherita'), findsOneWidget);
     expect(find.widgetWithIcon(ListTile, Icons.check_circle), findsNWidgets(2));
@@ -110,7 +107,6 @@ void main() {
     await tester.tap(find.widgetWithIcon(IconButton, Icons.send).first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Progress: 3/3'), findsOneWidget);
     expect(find.widgetWithText(TextField, 'Sushi'), findsNothing);
     expect(find.text('California Roll'), findsOneWidget);
     expect(find.widgetWithIcon(ListTile, Icons.check_circle), findsNWidgets(3));
@@ -146,7 +142,6 @@ void main() {
     await tester.tap(find.widgetWithIcon(IconButton, Icons.send).first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Progress: 0/3'), findsOneWidget);
     expect(find.widgetWithText(ListTile, 'Burger'), findsOneWidget);
     expect(find.text('Wrong'), findsOneWidget);
     expect(find.widgetWithIcon(ListTile, Icons.check_circle), findsNothing);

@@ -23,6 +23,20 @@ class RunHeader extends StatelessWidget {
           ),
         if (run.startedAt != null && run.specification.duration != null)
           CountdownTimer(game: run),
+        if (run.totalAnswers > 1)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                CircularProgressIndicator(
+                  value: run.correctSubmissions / run.totalAnswers,
+                  backgroundColor: Colors.blue.shade200,
+                ),
+                const SizedBox(width: 10),
+                Text('${run.correctSubmissions}/${run.totalAnswers}'),
+              ],
+            ),
+          ),
       ],
     );
   }

@@ -126,12 +126,6 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame>
       body: Column(
         children: [
           RunHeader(run: currentRun),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Progress: ${currentRun.correctSubmissions}/${currentRun.totalAnswers}',
-            ),
-          ),
           if (isGameComplete)
             const Padding(
               padding: EdgeInsets.all(16.0),
