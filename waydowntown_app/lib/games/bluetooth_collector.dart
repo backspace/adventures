@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/flutter_blue_plus_mockable.dart';
-import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/games/collector_game.dart';
+import 'package:waydowntown/models/run.dart';
 
 class BluetoothCollectorGame extends StatelessWidget {
   final Dio dio;
