@@ -30,7 +30,6 @@ class CodeCollectorGame extends StatelessWidget {
           height: 300,
           child: MobileScanner(
             controller: (detector as CodeDetector).controller,
-            onDetect: (capture) {},
           ),
         ),
       ),
@@ -41,6 +40,7 @@ class CodeCollectorGame extends StatelessWidget {
 class CodeDetector implements StringDetector {
   final MobileScannerController controller;
   final _detectedCodesController = StreamController<String>.broadcast();
+  StreamSubscription? _barcodesSubscription;
 
   CodeDetector(MobileScannerController? scannerController)
       : controller = scannerController ?? MobileScannerController();
