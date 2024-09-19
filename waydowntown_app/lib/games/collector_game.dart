@@ -72,6 +72,8 @@ class CollectorGameState extends State<CollectorGame>
   }
 
   Future<void> submitItem(DetectedItem item) async {
+    if (!mounted) return;
+
     setState(() {
       item.state = SubmissionState.submitting;
     });
@@ -79,11 +81,14 @@ class CollectorGameState extends State<CollectorGame>
     try {
       final bool isCorrect = await submitSubmission(item.value);
 
+      if (!mounted) return;
+
       setState(() {
         item.state =
             isCorrect ? SubmissionState.correct : SubmissionState.incorrect;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         item.state = SubmissionState.error;
         itemErrors[item.value] = e.toString();
