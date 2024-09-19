@@ -33,6 +33,14 @@ class StringCollectorGame extends StatelessWidget {
     final textController = TextEditingController();
     final focusNode = FocusNode();
 
+    void submitString() {
+      if (textController.text.isNotEmpty) {
+        detector.addString(textController.text);
+        textController.clear();
+        focusNode.requestFocus();
+      }
+    }
+
     return Column(
       children: [
         Padding(
@@ -42,26 +50,13 @@ class StringCollectorGame extends StatelessWidget {
             focusNode: focusNode,
             autofocus: true,
             decoration: const InputDecoration(
-              labelText: 'Enter a string',
+              labelText: 'Enter a string!',
             ),
-            onSubmitted: (value) {
-              if (value.isNotEmpty) {
-                detector.addString(value);
-                textController.clear();
-                // FIXME this isn’t working, does it need to happen after the submission? Also, repeated below
-                focusNode.requestFocus();
-              }
-            },
+            onSubmitted: (_) => submitString(),
           ),
         ),
         ElevatedButton(
-          onPressed: () {
-            if (textController.text.isNotEmpty) {
-              detector.addString(textController.text);
-              textController.clear();
-              focusNode.requestFocus();
-            }
-          },
+          onPressed: submitString,
           child: const Text('Submit'),
         ),
       ],
