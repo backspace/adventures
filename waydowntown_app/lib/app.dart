@@ -57,7 +57,18 @@ class _HomeState extends State<Home> {
       },
     ));
 
-    dio.interceptors.add(TalkerDioLogger(talker: talker));
+    dio.interceptors.add(TalkerDioLogger(
+        talker: talker,
+        settings: const TalkerDioLoggerSettings(
+          printResponseData: true,
+          printResponseHeaders: true,
+          printResponseMessage: true,
+          printErrorData: true,
+          printErrorHeaders: true,
+          printErrorMessage: true,
+          printRequestData: true,
+          printRequestHeaders: true,
+        )));
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
