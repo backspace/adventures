@@ -11,12 +11,12 @@ class CodeCollectorGame extends StatelessWidget {
   final Run run;
   final MobileScannerController? scannerController;
 
-  CodeCollectorGame({
-    Key? key,
+  const CodeCollectorGame({
+    super.key,
     required this.dio,
     required this.run,
     this.scannerController,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

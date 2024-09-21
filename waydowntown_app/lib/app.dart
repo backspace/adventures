@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:logger/logger.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:talker_dio_logger/talker_dio_logger.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 import 'package:waydowntown/developer_tools.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
 import 'package:waydowntown/widgets/session_widget.dart';
 
-var logger = Logger();
+var talker = Talker();
 
 Future main() async {
   runApp(const Waydowntown());
@@ -32,6 +32,7 @@ class Waydowntown extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const Home(title: 'waydowntown'),
+      navigatorObservers: [TalkerRouteObserver(talker)],
     );
   }
 }
@@ -56,17 +57,7 @@ class _HomeState extends State<Home> {
       },
     ));
 
-    dio.interceptors.add(PrettyDioLogger(
-        requestHeader: true,
-        requestBody: true,
-        responseBody: true,
-        responseHeader: false,
-        error: true,
-        compact: true,
-        maxWidth: 90,
-        logPrint: (message) {
-          logger.d(message);
-        }));
+    dio.interceptors.add(TalkerDioLogger(talker: talker));
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,

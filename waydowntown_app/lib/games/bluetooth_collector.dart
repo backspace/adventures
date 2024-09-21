@@ -13,12 +13,12 @@ class BluetoothCollectorGame extends StatelessWidget {
   final Run run;
   final FlutterBluePlusMockable? flutterBluePlus;
 
-  BluetoothCollectorGame({
-    Key? key,
+  const BluetoothCollectorGame({
+    super.key,
     required this.dio,
     required this.run,
     this.flutterBluePlus,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +51,7 @@ class BluetoothDetector implements StringDetector {
           _detectedDevicesController.add(result.device.platformName);
         }
       }
-    }, onError: (e) => logger.e('Error scanning: $e'));
+    }, onError: (e) => talker.error('Error scanning: $e'));
 
     FlutterBluePlus.adapterState
         .where((state) => state == BluetoothAdapterState.on)

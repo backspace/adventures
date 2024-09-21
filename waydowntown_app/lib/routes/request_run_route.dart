@@ -76,7 +76,7 @@ class RequestRunRouteState extends State<RequestRunRoute> {
           isRequestError = true;
         });
       }
-      logger.e('Error fetching run from $endpoint: $error');
+      talker.error('Error fetching run from $endpoint: $error');
     }
   }
 

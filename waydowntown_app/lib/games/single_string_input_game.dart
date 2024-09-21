@@ -58,7 +58,7 @@ class SingleStringInputGameState extends State<SingleStringInputGame>
         isAnswerError = true;
         isRequestError = true;
       });
-      logger.e('Error submitting answer: $e');
+      talker.error('Error submitting answer: $e');
     }
   }
 

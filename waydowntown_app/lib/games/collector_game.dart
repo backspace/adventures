@@ -28,13 +28,13 @@ class CollectorGame extends StatefulWidget {
   final Widget Function(BuildContext, StringDetector) inputBuilder;
 
   const CollectorGame({
-    Key? key,
+    super.key,
     required this.dio,
     required this.run,
     required this.detector,
     required this.inputBuilder,
     this.autoSubmit = false,
-  }) : super(key: key);
+  });
 
   @override
   CollectorGameState createState() => CollectorGameState();

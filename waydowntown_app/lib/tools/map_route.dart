@@ -59,7 +59,7 @@ class _MapRouteState extends State<MapRoute> {
           isLoading = false;
         });
       }
-      logger.e('Error fetching specifications from $endpoint: $error');
+      talker.error('Error fetching specifications from $endpoint: $error');
     }
   }
 

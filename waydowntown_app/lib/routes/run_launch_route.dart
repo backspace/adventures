@@ -151,7 +151,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                         );
                         if (response.statusCode == 200) {
                           setState(() {
-                            logger.d('Game started: ${response.data}');
+                            talker.debug('Game started: ${response.data}');
                             widget.run = Run.fromJson(response.data);
                           });
                         }

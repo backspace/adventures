@@ -9,11 +9,11 @@ class StringCollectorGame extends StatelessWidget {
   final Dio dio;
   final Run run;
 
-  StringCollectorGame({
-    Key? key,
+  const StringCollectorGame({
+    super.key,
     required this.dio,
     required this.run,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

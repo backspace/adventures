@@ -76,7 +76,7 @@ class BluetoothScannerRouteState extends State<BluetoothScannerRoute> {
 
         if (results.isNotEmpty) {
           ScanResult r = results.last;
-          logger.i(
+          talker.info(
               '${r.device.remoteId}: "${r.advertisementData.advName}" found!');
 
           if (r.advertisementData.advName.isNotEmpty) {
@@ -86,7 +86,7 @@ class BluetoothScannerRouteState extends State<BluetoothScannerRoute> {
           }
         }
       },
-      onError: (e) => logger.i(e),
+      onError: (e) => talker.info(e),
     );
 
     FlutterBluePlus.cancelWhenScanComplete(subscription);

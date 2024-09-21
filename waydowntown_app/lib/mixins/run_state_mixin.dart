@@ -68,7 +68,7 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
 
       return isCorrect;
     } catch (e) {
-      logger.e('Error submitting answer: $e');
+      talker.error('Error submitting answer: $e');
       rethrow;
     }
   }

@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:talker_flutter/talker_flutter.dart';
+import 'package:waydowntown/app.dart';
 import 'package:waydowntown/tools/auth_webview.dart';
 import 'package:waydowntown/tools/bluetooth_scanner_route.dart';
 import 'package:waydowntown/tools/map_route.dart';
@@ -26,6 +28,7 @@ class DeveloperTools extends StatelessWidget {
                 ('Bluetooth\nScanner', 'bluetooth_scanner'),
                 ('Map', 'map'),
                 ('Motion\nSensors', 'motion_sensors'),
+                ('Logs', 'logs'),
               ],
               (tool) {
                 switch (tool) {
@@ -55,6 +58,13 @@ class DeveloperTools extends StatelessWidget {
                             builder: (context) => AuthWebView(
                                 apiBaseUrl: dotenv.env['API_ROOT']!,
                                 dio: dio)));
+                    break;
+                  case 'logs':
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                TalkerScreen(talker: talker)));
                     break;
                 }
               },
