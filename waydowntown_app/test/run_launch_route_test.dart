@@ -210,8 +210,6 @@ bluetooth_collector:
 
     await tester.pumpAndSettle();
 
-    debugDumpApp();
-
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
     expect(find.text('test_start'), findsOneWidget);
     expect(find.byKey(const Key('total_answers')), findsNothing);
