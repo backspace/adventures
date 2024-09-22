@@ -12,7 +12,8 @@ import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/games/single_string_input_game.dart';
 import 'package:waydowntown/games/string_collector.dart';
 import 'package:waydowntown/models/run.dart';
-import 'package:waydowntown/run_header.dart';
+import 'package:waydowntown/util/get_region_path.dart';
+import 'package:waydowntown/widgets/countdown_timer.dart';
 import 'package:waydowntown/widgets/game_map.dart';
 import 'package:yaml/yaml.dart';
 
@@ -100,14 +101,21 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                         widget.run.specification.duration != null)
                       const SizedBox(width: 2),
                     if (widget.run.specification.duration != null)
-                      Expanded(
-                        child: _buildInfoCard(
+                      if (widget.run.startedAt == null)
+                        Expanded(
+                            child: _buildInfoCard(
                           context,
                           'Duration',
                           _formatDuration(widget.run.specification.duration!),
                           key: const Key('duration'),
-                        ),
-                      ),
+                        ))
+                      else
+                        Expanded(
+                            child: _buildInfoCard(
+                          context,
+                          'Time left',
+                          CountdownTimer(game: widget.run),
+                        ))
                   ],
                 ),
                 if (!isPlaceless)
@@ -123,7 +131,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                             style: Theme.of(context).textTheme.headlineSmall,
                           ),
                           const SizedBox(height: 8),
-                          RunHeader(run: widget.run),
+                          Text(getRegionPath(widget.run.specification)),
                           const SizedBox(height: 8),
                           SizedBox(
                             height: 100,
@@ -169,6 +177,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                     }
                   },
                 ),
+                const SizedBox(height: 100),
               ],
             ),
           ),
@@ -267,7 +276,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
     }
   }
 
-  Widget _buildInfoCard(BuildContext context, String title, String content,
+  Widget _buildInfoCard(BuildContext context, String title, dynamic content,
       {Key? key}) {
     return Card(
       key: key,
@@ -282,7 +291,12 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
-            Text(content),
+            if (content is String)
+              Text(content)
+            else if (content is Widget)
+              content
+            else
+              const Text('Invalid content type'),
           ],
         ),
       ),

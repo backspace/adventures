@@ -53,7 +53,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Test Region'), findsOneWidget);
-    expect(find.textContaining('Time remaining:'), findsOneWidget);
+    expect(find.textContaining('Time left:'), findsOneWidget);
   });
 
   testWidgets('GameHeader does not display countdown when duration is not set',
