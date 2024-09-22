@@ -66,6 +66,7 @@ class BluetoothDetector implements StringDetector {
 
   @override
   void dispose() {
+    FlutterBluePlus.stopScan();
     _detectedDevicesController.close();
   }
 }
