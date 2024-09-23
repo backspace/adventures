@@ -108,6 +108,9 @@ defmodule RegistrationsWeb.Router do
     resources("/registration", ApiRegistrationController, singleton: true, only: [:create])
     resources("/session", ApiSessionController, singleton: true, only: [:create, :delete])
     post("/session/renew", ApiSessionController, :renew)
+
+    get("/auth/:provider/new", ApiAuthorizationController, :new)
+    post("/auth/:provider/callback", ApiAuthorizationController, :callback)
   end
 
   scope "/waydowntown", RegistrationsWeb do
