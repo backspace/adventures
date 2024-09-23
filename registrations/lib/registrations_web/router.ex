@@ -13,7 +13,11 @@ defmodule RegistrationsWeb.Router do
     plug(:fetch_flash)
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
+
     plug(RegistrationsWeb.Plugs.Settings)
+
+    plug(Pow.Plug.Session, otp_app: :registrations)
+    plug(PowPersistentSession.Plug.Cookie)
 
     plug(PowAssent.Plug.Reauthorization,
       handler: PowAssent.Phoenix.ReauthorizationPlugHandler
@@ -34,6 +38,15 @@ defmodule RegistrationsWeb.Router do
   pipeline :jsonapi_with_session do
     plug(:fetch_session)
     plug(:jsonapi)
+  end
+
+  pipeline :pow_api do
+    plug(:accepts, ["json"])
+    plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
+  end
+
+  pipeline :pow_api_protected do
+    plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
   end
 
   pipeline :skip_csrf_protection do
@@ -89,6 +102,14 @@ defmodule RegistrationsWeb.Router do
     patch("/users/voicepass", UserController, :voicepass)
   end
 
+  scope "/powapi", RegistrationsWeb do
+    pipe_through(:pow_api)
+
+    resources("/registration", ApiRegistrationController, singleton: true, only: [:create])
+    resources("/session", ApiSessionController, singleton: true, only: [:create, :delete])
+    post("/session/renew", ApiSessionController, :renew)
+  end
+
   scope "/waydowntown", RegistrationsWeb do
     pipe_through(:jsonapi)
 
@@ -101,7 +122,7 @@ defmodule RegistrationsWeb.Router do
   end
 
   scope "/fixme", RegistrationsWeb do
-    pipe_through(:jsonapi_with_session)
+    pipe_through([:pow_api, :pow_api_protected])
 
     get("/session", SessionController, :show)
   end
