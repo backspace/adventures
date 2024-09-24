@@ -49,6 +49,14 @@ defmodule RegistrationsWeb.Router do
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
   end
 
+  pipeline :pow_json_api_protected do
+    plug(JSONAPI.EnsureSpec)
+    plug(JSONAPI.Deserializer)
+    plug(JSONAPI.UnderscoreParameters)
+    plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
+    plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+  end
+
   pipeline :skip_csrf_protection do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -122,6 +130,12 @@ defmodule RegistrationsWeb.Router do
     resources("/runs", RunController, except: [:new, :edit, :delete, :update]) do
       post "/start", RunController, :start, as: :start
     end
+  end
+
+  scope "/waydowntown", RegistrationsWeb do
+    pipe_through([:pow_json_api_protected])
+
+    get("/specifications/mine", SpecificationController, :mine, as: :my_specifications)
   end
 
   scope "/fixme", RegistrationsWeb do

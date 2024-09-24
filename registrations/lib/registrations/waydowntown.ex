@@ -210,6 +210,13 @@ defmodule Registrations.Waydowntown do
     Specification |> Repo.all() |> Repo.preload(region: [parent: [parent: [:parent]]])
   end
 
+  def list_specifications_for(user) do
+    from(i in Specification)
+    |> where([i], i.creator_id == ^user.id)
+    |> Repo.all()
+    |> Repo.preload(region: [parent: [parent: [:parent]]])
+  end
+
   def get_specification!(id), do: Repo.get!(Specification, id)
 
   def get_submission!(id), do: Submission |> Repo.get!(id) |> Repo.preload(submission_preloads())

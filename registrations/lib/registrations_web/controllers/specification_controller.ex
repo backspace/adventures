@@ -9,4 +9,10 @@ defmodule RegistrationsWeb.SpecificationController do
     specifications = Waydowntown.list_specifications()
     render(conn, "index.json", %{specifications: specifications, conn: conn, params: params})
   end
+
+  def mine(conn, params) do
+    user = Pow.Plug.current_user(conn)
+    specifications = Waydowntown.list_specifications_for(user)
+    render(conn, "index.json", %{specifications: specifications, conn: conn, params: params})
+  end
 end

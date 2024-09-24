@@ -84,4 +84,46 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       refute unplaced_specification_data["attributes"]["placed"]
     end
   end
+
+  describe "list my specifications" do
+    setup do
+      user = insert(:octavia, admin: true)
+      my_specification_1 = Repo.insert!(%Specification{creator_id: user.id})
+      my_specification_2 = Repo.insert!(%Specification{creator_id: user.id})
+      other_specification = Repo.insert!(%Specification{creator_id: insert(:user).id})
+
+      authed_conn = build_conn()
+
+      authed_conn =
+        authed_conn
+        |> post(Routes.api_session_path(authed_conn, :create), %{"user" => %{"email" => user.email, "password" => "Xenogenesis"}})
+
+      json = json_response(authed_conn, 200)
+      authorization_token = json["data"]["access_token"]
+
+      %{authorization_token: authorization_token, my_specification_1: my_specification_1, my_specification_2: my_specification_2, other_specification: other_specification, user: user}
+    end
+
+    test "returns list of specifications for the current user", %{
+      conn: conn,
+      authorization_token: authorization_token,
+      my_specification_1: my_specification_1,
+      my_specification_2: my_specification_2,
+      other_specification: other_specification,
+    } do
+      conn =
+        conn
+        |> put_req_header("authorization", "#{authorization_token}")
+        |> get(Routes.my_specifications_path(conn, :mine))
+
+      response_specification_ids =
+        json_response(conn, 200)
+        |> Map.get("data")
+        |> Enum.map(fn specification -> specification["id"] end)
+
+      assert my_specification_1.id in response_specification_ids
+      assert my_specification_2.id in response_specification_ids
+      refute other_specification.id in response_specification_ids
+    end
+  end
 end
