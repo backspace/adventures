@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/specification.dart';
+import 'package:waydowntown/routes/request_run_route.dart';
 
 class MySpecificationsTable extends StatefulWidget {
   final Dio dio;
@@ -84,6 +85,7 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
                 columns: const [
                   DataColumn(label: Text('Concept')),
                   DataColumn(label: Text('Start Description')),
+                  DataColumn(label: Text('')),
                 ],
                 rows: _buildTableRows(),
               ),
@@ -118,12 +120,24 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
             ),
           ),
           const DataCell(Text('')),
+          const DataCell(Text('')),
         ],
       ));
       rows.addAll(specs.map((spec) => DataRow(
             cells: [
               DataCell(Text(spec.concept)),
               DataCell(_truncatedText(spec.start)),
+              DataCell(IconButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => RequestRunRoute(
+                      dio: widget.dio,
+                      specificationId: spec.id,
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.play_arrow),
+              )),
             ],
           )));
     });
