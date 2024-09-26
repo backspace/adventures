@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:waydowntown/tools/auth_webview.dart';
+import 'package:waydowntown/tools/auth_form.dart';
 
 class SessionWidget extends StatefulWidget {
   final Dio dio;
@@ -24,18 +24,22 @@ class _SessionWidgetState extends State<SessionWidget> {
   }
 
   Future<void> _checkSession() async {
+    final otherDio = Dio();
+
     setState(() {
       _isLoading = true;
     });
 
     final prefs = await SharedPreferences.getInstance();
-    final cookieString = prefs.getString('auth_cookie');
+    final authToken = prefs.getString('access_token');
 
-    if (cookieString != null) {
+    if (authToken != null) {
       try {
-        final response = await widget.dio.get(
-          '/fixme/session',
-          options: Options(headers: {'Cookie': cookieString}),
+        final response = await otherDio.get(
+          '${widget.apiBaseUrl}/fixme/session',
+          options: Options(headers: {
+            'Authorization': authToken,
+          }),
         );
 
         if (response.statusCode == 200) {
@@ -58,21 +62,27 @@ class _SessionWidgetState extends State<SessionWidget> {
 
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_cookie');
+    await prefs.remove('access_token');
     _checkSession();
   }
 
-  void _openAuthWebView() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AuthWebView(
-          apiBaseUrl: widget.apiBaseUrl,
-          dio: widget.dio,
-        ),
-      ),
+  void _openAuthForm() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Log in'),
+          content: AuthFormWidget(
+            dio: widget.dio,
+            apiBaseUrl: widget.apiBaseUrl,
+            onAuthSuccess: () {
+              Navigator.of(context).pop();
+              _checkSession();
+            },
+          ),
+        );
+      },
     );
-    _checkSession();
   }
 
   @override
@@ -98,7 +108,7 @@ class _SessionWidgetState extends State<SessionWidget> {
     }
 
     return ElevatedButton(
-      onPressed: _openAuthWebView,
+      onPressed: _openAuthForm,
       child: const Text('Log in'),
     );
   }
