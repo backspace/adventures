@@ -3,8 +3,8 @@
 defmodule RegistrationsWeb.ApiSessionController do
   use RegistrationsWeb, :controller
 
-  alias RegistrationsWeb.APIAuthPlug
   alias Plug.Conn
+  alias RegistrationsWeb.PowAuthPlug
 
   @spec create(Conn.t(), map()) :: Conn.t()
   def create(conn, %{"user" => user_params}) do
@@ -26,7 +26,7 @@ defmodule RegistrationsWeb.ApiSessionController do
     config = Pow.Plug.fetch_config(conn)
 
     conn
-    |> APIAuthPlug.renew(config)
+    |> PowAuthPlug.renew(config)
     |> case do
       {conn, nil} ->
         conn
