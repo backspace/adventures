@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waydowntown/tools/auth_form.dart';
+import 'package:waydowntown/tools/my_specifications_table.dart';
 
 class SessionWidget extends StatefulWidget {
   final Dio dio;
@@ -102,6 +103,15 @@ class _SessionWidgetState extends State<SessionWidget> {
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: _logout,
             tooltip: 'Log out',
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MySpecificationsTable(dio: widget.dio),
+              ),
+            ),
+            child: const Text('My specifications'),
           ),
         ],
       );
