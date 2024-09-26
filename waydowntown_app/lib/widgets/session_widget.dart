@@ -25,8 +25,6 @@ class _SessionWidgetState extends State<SessionWidget> {
   }
 
   Future<void> _checkSession() async {
-    final otherDio = Dio();
-
     setState(() {
       _isLoading = true;
     });
@@ -36,10 +34,12 @@ class _SessionWidgetState extends State<SessionWidget> {
 
     if (authToken != null) {
       try {
-        final response = await otherDio.get(
+        final response = await widget.dio.get(
           '${widget.apiBaseUrl}/fixme/session',
           options: Options(headers: {
             'Authorization': authToken,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
           }),
         );
 
@@ -52,6 +52,7 @@ class _SessionWidgetState extends State<SessionWidget> {
         }
       } catch (error) {
         print('Error checking session: $error');
+        await _logout();
       }
     }
 
