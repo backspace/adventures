@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/run.dart';
-import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/util/get_region_path.dart';
 import 'package:waydowntown/widgets/countdown_timer.dart';
 

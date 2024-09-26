@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthFormWidget extends StatefulWidget {
@@ -8,11 +8,11 @@ class AuthFormWidget extends StatefulWidget {
   final Function onAuthSuccess;
 
   const AuthFormWidget({
-    Key? key,
+    super.key,
     required this.dio,
     required this.apiBaseUrl,
     required this.onAuthSuccess,
-  }) : super(key: key);
+  });
 
   @override
   _AuthFormWidgetState createState() => _AuthFormWidgetState();

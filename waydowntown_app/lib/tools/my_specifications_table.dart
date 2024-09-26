@@ -7,7 +7,7 @@ import 'package:waydowntown/models/specification.dart';
 class MySpecificationsTable extends StatefulWidget {
   final Dio dio;
 
-  const MySpecificationsTable({Key? key, required this.dio}) : super(key: key);
+  const MySpecificationsTable({super.key, required this.dio});
 
   @override
   _MySpecificationsTableState createState() => _MySpecificationsTableState();
@@ -113,11 +113,11 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
               color: Theme.of(context).primaryColor.withOpacity(0.1),
               child: Text(
                 regionName,
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ),
-          DataCell(Text('')),
+          const DataCell(Text('')),
         ],
       ));
       rows.addAll(specs.map((spec) => DataRow(
