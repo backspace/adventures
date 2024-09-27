@@ -1,9 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:waydowntown/app.dart';
-import 'package:waydowntown/tools/auth_webview.dart';
 import 'package:waydowntown/tools/bluetooth_scanner_route.dart';
 import 'package:waydowntown/tools/map_route.dart';
 import 'package:waydowntown/tools/motion_sensors_route.dart';
@@ -24,7 +22,6 @@ class DeveloperTools extends StatelessWidget {
             _buildFlexibleButtonGrid(
               context,
               [
-                ('Auth', 'auth_webview'),
                 ('Bluetooth\nScanner', 'bluetooth_scanner'),
                 ('Map', 'map'),
                 ('Motion\nSensors', 'motion_sensors'),
@@ -50,14 +47,6 @@ class DeveloperTools extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                             builder: (context) => const MotionSensorsRoute()));
-                    break;
-                  case 'auth_webview':
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AuthWebView(
-                                apiBaseUrl: dotenv.env['API_ROOT']!,
-                                dio: dio)));
                     break;
                   case 'logs':
                     Navigator.push(
