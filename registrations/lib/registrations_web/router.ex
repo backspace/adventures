@@ -141,7 +141,7 @@ defmodule RegistrationsWeb.Router do
   end
 
   scope "/fixme", RegistrationsWeb do
-    pipe_through([:pow_api, :pow_api_protected])
+    pipe_through([:pow_json_api_protected])
 
     get("/session", SessionController, :show)
   end
