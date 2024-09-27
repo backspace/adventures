@@ -7,6 +7,8 @@ defmodule RegistrationsWeb.Router do
     otp_app: :registrations,
     extensions: [PowResetPassword, PowInvitation, PowPersistentSession]
 
+  alias Pow.Plug.RequireAuthenticated
+
   pipeline :browser do
     plug(:accepts, ["html"])
     plug(:fetch_session)
@@ -46,7 +48,7 @@ defmodule RegistrationsWeb.Router do
   end
 
   pipeline :pow_api_protected do
-    plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+    plug(RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
   end
 
   pipeline :pow_json_api_protected do
@@ -54,7 +56,7 @@ defmodule RegistrationsWeb.Router do
     plug(JSONAPI.Deserializer)
     plug(JSONAPI.UnderscoreParameters)
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
-    plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+    plug(RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
   end
 
   pipeline :skip_csrf_protection do
