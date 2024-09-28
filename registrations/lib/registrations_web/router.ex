@@ -137,6 +137,7 @@ defmodule RegistrationsWeb.Router do
   scope "/waydowntown", RegistrationsWeb do
     pipe_through([:pow_json_api_protected])
 
+    resources("/specifications", SpecificationController, only: [:update])
     get("/specifications/mine", SpecificationController, :mine, as: :my_specifications)
   end
 

@@ -178,4 +178,116 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       assert answer_2.id in included_answer_ids
     end
   end
+
+  describe "update specification" do
+    setup do
+      user = insert(:octavia, admin: true)
+      other_user = insert(:user)
+
+      my_specification =
+        Repo.insert!(%Specification{
+          creator_id: user.id,
+          concept: "old_concept",
+          start_description: "old_start_description",
+          task_description: "old_task_description",
+          duration: 60,
+          region_id: nil
+        })
+
+      other_specification =
+        Repo.insert!(%Specification{
+          creator_id: other_user.id,
+          concept: "other_concept"
+        })
+
+      new_region =
+        Repo.insert!(%Region{
+          name: "New Region",
+          geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}
+        })
+
+      authed_conn = build_conn()
+
+      authed_conn =
+        post(authed_conn, Routes.api_session_path(authed_conn, :create), %{
+          "user" => %{"email" => user.email, "password" => "Xenogenesis"}
+        })
+
+      json = json_response(authed_conn, 200)
+      authorization_token = json["data"]["access_token"]
+
+      %{
+        authorization_token: authorization_token,
+        my_specification: my_specification,
+        other_specification: other_specification,
+        new_region: new_region,
+        user: user
+      }
+    end
+
+    test "updates specification fields for the current user", %{
+      conn: conn,
+      authorization_token: authorization_token,
+      my_specification: my_specification,
+      new_region: new_region
+    } do
+      update_params = %{
+        "data" => %{
+          "type" => "specifications",
+          "id" => my_specification.id,
+          "attributes" => %{
+            "concept" => "new_concept",
+            "start_description" => "new_start_description",
+            "task_description" => "new_task_description",
+            "duration" => 120
+          },
+          "relationships" => %{
+            "region" => %{
+              "data" => %{"type" => "regions", "id" => new_region.id}
+            }
+          }
+        }
+      }
+
+      conn =
+        conn
+        |> put_req_header("authorization", "#{authorization_token}")
+        |> patch(Routes.specification_path(conn, :update, my_specification), update_params)
+
+      assert json_response(conn, 200)["data"]["id"] == my_specification.id
+
+      updated_specification = Repo.get!(Specification, my_specification.id)
+      assert updated_specification.concept == "new_concept"
+      assert updated_specification.start_description == "new_start_description"
+      assert updated_specification.task_description == "new_task_description"
+      assert updated_specification.duration == 120
+      assert updated_specification.region_id == new_region.id
+    end
+
+    test "returns 401 when trying to update another user's specification", %{
+      conn: conn,
+      authorization_token: authorization_token,
+      other_specification: other_specification
+    } do
+      update_params = %{
+        "data" => %{
+          "type" => "specifications",
+          "id" => other_specification.id,
+          "attributes" => %{
+            "concept" => "attempted_update"
+          }
+        }
+      }
+
+      conn =
+        conn
+        |> put_req_header("authorization", "#{authorization_token}")
+        |> patch(Routes.specification_path(conn, :update, other_specification), update_params)
+
+      assert json_response(conn, 401)["errors"] == [%{"detail" => "Unauthorized"}]
+
+      unchanged_specification = Repo.get!(Specification, other_specification.id)
+      assert unchanged_specification.concept == "other_concept"
+    end
+  end
 end

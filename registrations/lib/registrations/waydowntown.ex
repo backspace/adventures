@@ -219,6 +219,12 @@ defmodule Registrations.Waydowntown do
 
   def get_specification!(id), do: Repo.get!(Specification, id)
 
+  def update_specification(%Specification{} = specification, attrs) do
+    specification
+    |> Specification.changeset(attrs)
+    |> Repo.update()
+  end
+
   def get_submission!(id), do: Submission |> Repo.get!(id) |> Repo.preload(submission_preloads())
 
   def create_submission(%{"submission" => submission_text, "run_id" => run_id} = params) do
