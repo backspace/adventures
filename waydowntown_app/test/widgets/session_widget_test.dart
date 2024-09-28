@@ -114,4 +114,65 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getString('access_token'), isNull);
   });
+
+  testWidgets('SessionWidget renews session on 401 and retries',
+      (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({
+      'access_token': 'expired_token',
+      'renewal_token': 'valid_renewal_token',
+    });
+
+    dioAdapter.onGet(
+      'https://example.com/fixme/session',
+      (server) => server.reply(401, {}),
+      headers: {
+        'Authorization': 'expired_token',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    dioAdapter.onPost(
+      'https://example.com/powapi/session/renew',
+      (server) => server.reply(200, {
+        'data': {
+          'access_token': 'new_access_token',
+          'renewal_token': 'new_renewal_token',
+        }
+      }),
+      headers: {
+        'Authorization': 'valid_renewal_token',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    dioAdapter.onGet(
+      'https://example.com/fixme/session',
+      (server) => server.reply(200, {
+        'data': {
+          'attributes': {'email': 'test@example.com'}
+        }
+      }),
+      headers: {
+        'Authorization': 'new_access_token',
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: SessionWidget(dio: dio, apiBaseUrl: 'https://example.com'),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('test@example.com'), findsOneWidget);
+    expect(find.byIcon(Icons.logout), findsOneWidget);
+    expect(find.text('Log in'), findsNothing);
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString('access_token'), equals('new_access_token'));
+    expect(prefs.getString('renewal_token'), equals('new_renewal_token'));
+  });
 }
