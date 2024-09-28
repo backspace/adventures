@@ -84,7 +84,8 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
               child: DataTable(
                 columns: const [
                   DataColumn(label: Text('Concept')),
-                  DataColumn(label: Text('Start Description')),
+                  DataColumn(label: Text('Start')),
+                  DataColumn(label: Text('Task')),
                   DataColumn(label: Text('')),
                 ],
                 rows: _buildTableRows(),
@@ -121,12 +122,14 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
           ),
           const DataCell(Text('')),
           const DataCell(Text('')),
+          const DataCell(Text('')),
         ],
       ));
       rows.addAll(specs.map((spec) => DataRow(
             cells: [
               DataCell(Text(spec.concept)),
-              DataCell(_truncatedText(spec.start)),
+              DataCell(_truncatedText(spec.startDescription)),
+              DataCell(_truncatedText(spec.taskDescription)),
               DataCell(IconButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(

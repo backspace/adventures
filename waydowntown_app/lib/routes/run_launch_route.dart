@@ -80,11 +80,11 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                     'Instructions',
                     instructions,
                   ),
-                if (widget.run.specification.start != null)
+                if (widget.run.specification.startDescription != null)
                   _buildInfoCard(
                     context,
                     'Starting point',
-                    widget.run.specification.start!,
+                    widget.run.specification.startDescription!,
                   ),
                 Row(
                   children: [

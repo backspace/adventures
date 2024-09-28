@@ -1,10 +1,17 @@
 defmodule RegistrationsWeb.SpecificationView do
   use JSONAPI.View, type: "specifications"
 
+  alias RegistrationsWeb.Router.Helpers, as: Routes
   alias RegistrationsWeb.SpecificationView
 
   def fields do
-    [:concept, :start_description, :duration, :placed]
+    [:concept, :start_description, :duration, :placed, :task_description]
+  end
+
+  def task_description(specification, conn) do
+    if conn.request_path == Routes.my_specifications_path(conn, :mine) do
+      specification.task_description
+    end
   end
 
   def placed(specification, _conn) do

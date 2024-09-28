@@ -12,7 +12,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
        |> put_req_header("content-type", "application/vnd.api+json")}
   end
 
-  describe "list specifications" do
+  describe "list specifications not including task description" do
     setup do
       parent_region =
         Repo.insert!(%Region{name: "Parent Region", geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}})
@@ -61,6 +61,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       assert placed_specification_data["attributes"]["placed"]
       assert placed_specification_data["attributes"]["concept"] == "fill_in_the_blank"
       assert placed_specification_data["attributes"]["start_description"] == "Outside the coat check"
+      refute placed_specification_data["attributes"]["task_description"]
       assert placed_specification_data["relationships"]["region"]["data"]["id"] == child_region.id
 
       assert Enum.any?(included, fn item ->
@@ -85,23 +86,30 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
     end
   end
 
-  describe "list my specifications" do
+  describe "list my specifications including task description" do
     setup do
       user = insert(:octavia, admin: true)
-      my_specification_1 = Repo.insert!(%Specification{creator_id: user.id})
-      my_specification_2 = Repo.insert!(%Specification{creator_id: user.id})
+      my_specification_1 = Repo.insert!(%Specification{creator_id: user.id, task_description: "Task description 1"})
+      my_specification_2 = Repo.insert!(%Specification{creator_id: user.id, task_description: "Task description 2"})
       other_specification = Repo.insert!(%Specification{creator_id: insert(:user).id})
 
       authed_conn = build_conn()
 
       authed_conn =
-        authed_conn
-        |> post(Routes.api_session_path(authed_conn, :create), %{"user" => %{"email" => user.email, "password" => "Xenogenesis"}})
+        post(authed_conn, Routes.api_session_path(authed_conn, :create), %{
+          "user" => %{"email" => user.email, "password" => "Xenogenesis"}
+        })
 
       json = json_response(authed_conn, 200)
       authorization_token = json["data"]["access_token"]
 
-      %{authorization_token: authorization_token, my_specification_1: my_specification_1, my_specification_2: my_specification_2, other_specification: other_specification, user: user}
+      %{
+        authorization_token: authorization_token,
+        my_specification_1: my_specification_1,
+        my_specification_2: my_specification_2,
+        other_specification: other_specification,
+        user: user
+      }
     end
 
     test "returns list of specifications for the current user", %{
@@ -109,7 +117,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       authorization_token: authorization_token,
       my_specification_1: my_specification_1,
       my_specification_2: my_specification_2,
-      other_specification: other_specification,
+      other_specification: other_specification
     } do
       conn =
         conn
@@ -117,13 +125,24 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
         |> get(Routes.my_specifications_path(conn, :mine))
 
       response_specification_ids =
-        json_response(conn, 200)
+        conn
+        |> json_response(200)
         |> Map.get("data")
         |> Enum.map(fn specification -> specification["id"] end)
+
+      response_task_descriptions =
+        conn
+        |> json_response(200)
+        |> Map.get("data")
+        |> Enum.map(fn specification -> specification["attributes"]["task_description"] end)
 
       assert my_specification_1.id in response_specification_ids
       assert my_specification_2.id in response_specification_ids
       refute other_specification.id in response_specification_ids
+
+      assert my_specification_1.task_description in response_task_descriptions
+      assert my_specification_2.task_description in response_task_descriptions
+      refute other_specification.task_description in response_task_descriptions
     end
   end
 end

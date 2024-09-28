@@ -7,7 +7,8 @@ class Specification {
   final int? duration;
   final Region? region;
   final bool placed;
-  final String? start;
+  final String? startDescription;
+  final String? taskDescription;
   final List<Answer>? answers;
 
   const Specification({
@@ -16,7 +17,8 @@ class Specification {
     this.region,
     this.duration,
     required this.placed,
-    this.start,
+    this.startDescription,
+    this.taskDescription,
     this.answers,
   });
 
@@ -48,7 +50,8 @@ class Specification {
       region: region,
       placed: attributes['placed'] ?? false,
       duration: attributes['duration'],
-      start: attributes['start'],
+      startDescription: attributes['start_description'],
+      taskDescription: attributes['task_description'],
       answers: included
           .where((item) =>
               item['type'] == 'answers' &&
