@@ -84,6 +84,7 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
               child: DataTable(
                 columns: const [
                   DataColumn(label: Text('Concept')),
+                  DataColumn(label: Text('Answers')),
                   DataColumn(label: Text('Start')),
                   DataColumn(label: Text('Task')),
                   DataColumn(label: Text('')),
@@ -123,11 +124,13 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
           const DataCell(Text('')),
           const DataCell(Text('')),
           const DataCell(Text('')),
+          const DataCell(Text('')),
         ],
       ));
       rows.addAll(specs.map((spec) => DataRow(
             cells: [
               DataCell(Text(spec.concept)),
+              DataCell(Text(spec.answers?.length.toString() ?? '0')),
               DataCell(_truncatedText(spec.startDescription)),
               DataCell(_truncatedText(spec.taskDescription)),
               DataCell(IconButton(

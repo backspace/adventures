@@ -1,6 +1,7 @@
 defmodule RegistrationsWeb.SpecificationControllerTest do
   use RegistrationsWeb.ConnCase
 
+  alias Registrations.Waydowntown.Answer
   alias Registrations.Waydowntown.Region
   alias Registrations.Waydowntown.Specification
 
@@ -12,7 +13,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
        |> put_req_header("content-type", "application/vnd.api+json")}
   end
 
-  describe "list specifications not including task description" do
+  describe "list specifications not including task description or answers" do
     setup do
       parent_region =
         Repo.insert!(%Region{name: "Parent Region", geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}})
@@ -83,14 +84,32 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
              end)
 
       refute unplaced_specification_data["attributes"]["placed"]
+
+      refute Enum.any?(included, fn item ->
+               item["type"] == "answers"
+             end)
     end
   end
 
-  describe "list my specifications including task description" do
+  describe "list my specifications including task description and answers" do
     setup do
       user = insert(:octavia, admin: true)
-      my_specification_1 = Repo.insert!(%Specification{creator_id: user.id, task_description: "Task description 1"})
-      my_specification_2 = Repo.insert!(%Specification{creator_id: user.id, task_description: "Task description 2"})
+
+      my_specification_1 =
+        Repo.insert!(%Specification{
+          creator_id: user.id,
+          task_description: "Task description 1"
+        })
+
+      my_specification_2 =
+        Repo.insert!(%Specification{
+          creator_id: user.id,
+          task_description: "Task description 2"
+        })
+
+      answer_1 = Repo.insert!(%Answer{answer: "Answer 1", specification_id: my_specification_1.id})
+      answer_2 = Repo.insert!(%Answer{answer: "Answer 2", specification_id: my_specification_2.id})
+
       other_specification = Repo.insert!(%Specification{creator_id: insert(:user).id})
 
       authed_conn = build_conn()
@@ -108,6 +127,8 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
         my_specification_1: my_specification_1,
         my_specification_2: my_specification_2,
         other_specification: other_specification,
+        answer_1: answer_1,
+        answer_2: answer_2,
         user: user
       }
     end
@@ -117,7 +138,9 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       authorization_token: authorization_token,
       my_specification_1: my_specification_1,
       my_specification_2: my_specification_2,
-      other_specification: other_specification
+      other_specification: other_specification,
+      answer_1: answer_1,
+      answer_2: answer_2
     } do
       conn =
         conn
@@ -143,6 +166,16 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       assert my_specification_1.task_description in response_task_descriptions
       assert my_specification_2.task_description in response_task_descriptions
       refute other_specification.task_description in response_task_descriptions
+
+      included_answer_ids =
+        conn
+        |> json_response(200)
+        |> Map.get("included")
+        |> Enum.filter(fn item -> item["type"] == "answers" end)
+        |> Enum.map(fn item -> item["id"] end)
+
+      assert answer_1.id in included_answer_ids
+      assert answer_2.id in included_answer_ids
     end
   end
 end

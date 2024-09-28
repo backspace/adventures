@@ -1,14 +1,14 @@
-defmodule RegistrationsWeb.SpecificationView do
+defmodule RegistrationsWeb.Owner.SpecificationView do
   use JSONAPI.View, type: "specifications"
 
-  alias RegistrationsWeb.SpecificationView
+  alias RegistrationsWeb.Owner.SpecificationView
 
   def fields do
-    [:concept, :start_description, :duration, :placed]
+    [:concept, :start_description, :duration, :placed, :task_description]
   end
 
-  def placed(specification, _conn) do
-    Registrations.Waydowntown.concept_is_placed(specification.concept)
+  def placed(specification, conn) do
+    RegistrationsWeb.SpecificationView.placed(specification, conn)
   end
 
   def render("index.json", %{specifications: specifications, conn: conn, params: params}) do
@@ -22,7 +22,7 @@ defmodule RegistrationsWeb.SpecificationView do
   def relationships do
     [
       region: {RegistrationsWeb.RegionView, :include},
-      answers: {RegistrationsWeb.AnswerView, :include}
+      answers: {RegistrationsWeb.Owner.AnswerView, :include}
     ]
   end
 end
