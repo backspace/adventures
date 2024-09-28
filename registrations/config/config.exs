@@ -15,7 +15,7 @@ config :registrations, Registrations.Mailer,
   domain: "mg.chromatin.ca"
 
 config :registrations, RegistrationsWeb.Endpoint,
-  url: [host: "localhost"],
+  url: [host: System.get_env("PHX_HOST") || "localhost"],
   root: Path.dirname(__DIR__),
   secret_key_base: "xn64PMB42eKmnISH1qTC8I+r62bNyMgTxlXYupsWCvvjBnFJEycMHcXdeFitYxyS",
   render_errors: [accepts: ~w(html json)],
