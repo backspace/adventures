@@ -1,4 +1,4 @@
-defmodule RegistrationsWeb.SpecificationControllerTest do
+defmodule RegistrationsWeb.SessionControllerTest do
   use RegistrationsWeb.ConnCase
 
   alias Registrations.Waydowntown.Region
