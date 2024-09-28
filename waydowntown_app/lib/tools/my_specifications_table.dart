@@ -153,7 +153,7 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
 
   Widget _truncatedText(String? text) {
     if (text == null || text.isEmpty) {
-      return const Text('N/A');
+      return const Text('');
     }
 
     String displayText =
