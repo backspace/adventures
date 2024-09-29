@@ -4,6 +4,8 @@ defmodule Registrations.Waydowntown.Specification do
 
   import Ecto.Changeset
 
+  alias Registrations.Waydowntown
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "waydowntown"
 
@@ -27,7 +29,18 @@ defmodule Registrations.Waydowntown.Specification do
     specification
     |> cast(attrs, [:concept, :start_description, :task_description, :duration, :region_id, :creator_id])
     |> validate_required([:concept, :task_description])
+    |> validate_concept()
     |> assoc_constraint(:region)
     |> assoc_constraint(:creator)
+  end
+
+  defp validate_concept(changeset) do
+    validate_change(changeset, :concept, fn :concept, concept ->
+      if concept in Waydowntown.get_known_concepts() do
+        []
+      else
+        [concept: "must be a known concept"]
+      end
+    end)
   end
 end

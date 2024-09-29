@@ -14,6 +14,10 @@ defmodule Registrations.Waydowntown do
     end)
   end
 
+  def get_known_concepts do
+    Map.keys(concepts_yaml())
+  end
+
   def concept_is_placed(concept) do
     !(concepts_yaml()[concept]["placeless"] == true)
   end

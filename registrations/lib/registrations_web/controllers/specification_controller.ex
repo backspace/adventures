@@ -34,8 +34,15 @@ defmodule RegistrationsWeb.SpecificationController do
         {:error, changeset} ->
           conn
           |> put_status(:unprocessable_entity)
-          |> put_view(RegistrationsWeb.ChangesetView)
-          |> render("error.json", changeset: changeset)
+          |> json(%{
+            errors:
+              Enum.map(changeset.errors, fn {field, {message, _additional}} ->
+                %{
+                  detail: "#{message}",
+                  source: %{pointer: "/data/attributes/#{field}"}
+                }
+              end)
+          })
       end
     else
       conn

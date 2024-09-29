@@ -236,7 +236,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
           "type" => "specifications",
           "id" => my_specification.id,
           "attributes" => %{
-            "concept" => "new_concept",
+            "concept" => "bluetooth_collector",
             "start_description" => "new_start_description",
             "task_description" => "new_task_description",
             "duration" => 120
@@ -257,7 +257,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       assert json_response(conn, 200)["data"]["id"] == my_specification.id
 
       updated_specification = Repo.get!(Specification, my_specification.id)
-      assert updated_specification.concept == "new_concept"
+      assert updated_specification.concept == "bluetooth_collector"
       assert updated_specification.start_description == "new_start_description"
       assert updated_specification.task_description == "new_task_description"
       assert updated_specification.duration == 120
@@ -288,6 +288,31 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
 
       unchanged_specification = Repo.get!(Specification, other_specification.id)
       assert unchanged_specification.concept == "other_concept"
+    end
+
+    test "returns error with invalid concept", %{
+      conn: conn,
+      authorization_token: authorization_token,
+      my_specification: my_specification
+    } do
+      update_params = %{
+        "data" => %{
+          "type" => "specifications",
+          "id" => my_specification.id,
+          "attributes" => %{
+            "concept" => "invalid",
+            "task_description" => "Updated task description"
+          }
+        }
+      }
+
+      conn =
+        conn
+        |> put_req_header("authorization", "#{authorization_token}")
+        |> patch(Routes.specification_path(conn, :update, my_specification), update_params)
+
+      assert %{"errors" => errors} = json_response(conn, 422)
+      assert [%{"source" => %{"pointer" => "/data/attributes/concept"}, "detail" => "must be a known concept"}] = errors
     end
   end
 end
