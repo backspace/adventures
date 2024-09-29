@@ -176,6 +176,7 @@ class TestHelpers {
         placed: true,
         concept: concept,
         startDescription: start,
+        taskDescription: description,
         answers: answers ??
             [
               const Answer(id: '1', label: 'Answer 1'),

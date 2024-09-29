@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
+import 'package:waydowntown/widgets/edit_specification_widget.dart';
 
 class MySpecificationsTable extends StatefulWidget {
   final Dio dio;
@@ -137,16 +138,32 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
               DataCell(Text(spec.answers?.length.toString() ?? '0')),
               DataCell(_truncatedText(spec.startDescription)),
               DataCell(_truncatedText(spec.taskDescription)),
-              DataCell(IconButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => RequestRunRoute(
-                      dio: widget.dio,
-                      specificationId: spec.id,
+              DataCell(Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => RequestRunRoute(
+                          dio: widget.dio,
+                          specificationId: spec.id,
+                        ),
+                      ),
                     ),
+                    icon: const Icon(Icons.play_arrow),
                   ),
-                ),
-                icon: const Icon(Icons.play_arrow),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => EditSpecificationWidget(
+                          dio: widget.dio,
+                          specification: spec,
+                        ),
+                      ),
+                    ),
+                    icon: const Icon(Icons.edit),
+                  ),
+                ],
               )),
             ],
           )));
