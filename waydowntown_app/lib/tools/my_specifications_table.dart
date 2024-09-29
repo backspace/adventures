@@ -67,35 +67,39 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
 
   @override
   Widget build(BuildContext context) {
-    if (isRequestError) {
-      return const Center(child: Text('Error fetching specifications'));
-    } else if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    } else {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('My Specifications'),
-        ),
-        body: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SingleChildScrollView(
-            child: Theme(
-              data: Theme.of(context).copyWith(),
-              child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('Concept')),
-                  DataColumn(label: Text('Answers')),
-                  DataColumn(label: Text('Start')),
-                  DataColumn(label: Text('Task')),
-                  DataColumn(label: Text('')),
-                ],
-                rows: _buildTableRows(),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My Specifications'),
+      ),
+      body: Builder(
+        builder: (BuildContext context) {
+          if (isRequestError) {
+            return const Center(child: Text('Error fetching specifications'));
+          } else if (isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SingleChildScrollView(
+                child: Theme(
+                  data: Theme.of(context).copyWith(),
+                  child: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('Concept')),
+                      DataColumn(label: Text('Answers')),
+                      DataColumn(label: Text('Start')),
+                      DataColumn(label: Text('Task')),
+                      DataColumn(label: Text('')),
+                    ],
+                    rows: _buildTableRows(),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
-      );
-    }
+            );
+          }
+        },
+      ),
+    );
   }
 
   List<DataRow> _buildTableRows() {
