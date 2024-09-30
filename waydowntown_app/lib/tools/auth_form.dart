@@ -84,6 +84,7 @@ class _AuthFormWidgetState extends State<AuthFormWidget> {
           children: [
             TextFormField(
               controller: _emailController,
+              autofocus: true,
               decoration: const InputDecoration(labelText: 'Email'),
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.next,
