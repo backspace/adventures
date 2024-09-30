@@ -32,11 +32,13 @@ defmodule RegistrationsWeb.SpecificationController do
           |> render("show.json", specification: updated_specification, conn: conn, params: params)
 
         {:error, changeset} ->
+          errors = Ecto.Changeset.traverse_errors(changeset, &RegistrationsWeb.ErrorHelpers.translate_error/1)
+
           conn
           |> put_status(:unprocessable_entity)
           |> json(%{
             errors:
-              Enum.map(changeset.errors, fn {field, {message, _additional}} ->
+              Enum.map(errors, fn {field, message} ->
                 %{
                   detail: "#{message}",
                   source: %{pointer: "/data/attributes/#{field}"}

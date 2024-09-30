@@ -290,7 +290,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       assert unchanged_specification.concept == "other_concept"
     end
 
-    test "returns error with invalid concept", %{
+    test "returns error with invalid attributes", %{
       conn: conn,
       authorization_token: authorization_token,
       my_specification: my_specification
@@ -301,7 +301,8 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
           "id" => my_specification.id,
           "attributes" => %{
             "concept" => "invalid",
-            "task_description" => "Updated task description"
+            "task_description" => "Updated task description",
+            "duration" => 0
           }
         }
       }
@@ -312,7 +313,12 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
         |> patch(Routes.specification_path(conn, :update, my_specification), update_params)
 
       assert %{"errors" => errors} = json_response(conn, 422)
-      assert [%{"source" => %{"pointer" => "/data/attributes/concept"}, "detail" => "must be a known concept"}] = errors
+
+      assert Enum.sort(errors) ==
+               Enum.sort([
+                 %{"source" => %{"pointer" => "/data/attributes/concept"}, "detail" => "must be a known concept"},
+                 %{"source" => %{"pointer" => "/data/attributes/duration"}, "detail" => "must be greater than 0"}
+               ])
     end
   end
 end
