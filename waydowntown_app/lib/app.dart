@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:waydowntown/developer_tools.dart';
+import 'package:waydowntown/refresh_token_interceptor.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
 import 'package:waydowntown/widgets/session_widget.dart';
 
@@ -57,6 +58,7 @@ class _HomeState extends State<Home> {
       },
     ));
 
+    dio.interceptors.add(RefreshTokenInterceptor(dio: dio));
     dio.interceptors.add(TalkerDioLogger(
         talker: talker,
         settings: const TalkerDioLoggerSettings(

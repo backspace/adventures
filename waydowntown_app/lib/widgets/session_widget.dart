@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:waydowntown/app.dart';
 import 'package:waydowntown/tools/auth_form.dart';
 import 'package:waydowntown/tools/my_specifications_table.dart';
 
@@ -29,82 +30,46 @@ class _SessionWidgetState extends State<SessionWidget> {
       _isLoading = true;
     });
 
-    final prefs = await SharedPreferences.getInstance();
-    final authToken = prefs.getString('access_token');
-
-    if (authToken != null) {
-      try {
-        final response = await _getSession(authToken);
-        if (response.statusCode == 200) {
-          setState(() {
-            _email = response.data['data']['attributes']['email'];
-            _isLoading = false;
-          });
-          return;
-        }
-      } catch (error) {
-        if (error is DioException && error.response?.statusCode == 401) {
-          final renewalToken = prefs.getString('renewal_token');
-          if (renewalToken != null) {
-            final renewedSession = await _renewSession(renewalToken);
-            if (renewedSession) {
-              await _checkSession();
-              return;
-            }
-          }
-        }
-        print('Error checking session: $error');
-        await _logout();
+    try {
+      final response = await _getSession();
+      if (response.statusCode == 200) {
+        setState(() {
+          _email = response.data['data']['attributes']['email'];
+          _isLoading = false;
+        });
+        return;
       }
-    }
+    } catch (error) {
+      talker.error('Error checking session: $error');
 
-    setState(() {
-      _email = null;
-      _isLoading = false;
-    });
+      setState(() {
+        _email = null;
+        _isLoading = false;
+      });
+    }
   }
 
-  Future<Response> _getSession(String authToken) {
+  Future<Response> _getSession() {
     return widget.dio.get(
       '${widget.apiBaseUrl}/fixme/session',
       options: Options(headers: {
-        'Authorization': authToken,
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       }),
     );
   }
 
-  Future<bool> _renewSession(String renewalToken) async {
-    try {
-      final response = await widget.dio.post(
-        '${widget.apiBaseUrl}/powapi/session/renew',
-        options: Options(headers: {
-          'Authorization': renewalToken,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final accessToken = response.data['data']['access_token'];
-        final newRenewalToken = response.data['data']['renewal_token'];
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('access_token', accessToken);
-        await prefs.setString('renewal_token', newRenewalToken);
-        return true;
-      }
-    } catch (error) {
-      print('Error renewing session: $error');
-    }
-    return false;
-  }
-
   Future<void> _logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('access_token');
-    _checkSession();
+    await prefs.remove('renewal_token');
+
+    setState(() {
+      _email = null;
+      _isLoading = false;
+    });
+
+    await _checkSession();
   }
 
   void _openAuthForm() {
