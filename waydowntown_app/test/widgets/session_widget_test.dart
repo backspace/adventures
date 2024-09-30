@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waydowntown/refresh_token_interceptor.dart';
 import 'package:waydowntown/widgets/session_widget.dart';
 
@@ -17,7 +17,9 @@ void main() {
   late Dio postRenewalDio;
   late DioAdapter postRenewalDioAdapter;
 
-  setUp(() {
+  late FlutterSecureStorage secureStorage;
+
+  setUp(() async {
     renewalDio = Dio(BaseOptions(baseUrl: 'http://example.com'));
     renewalDio.interceptors
         .add(PrettyDioLogger(requestBody: true, requestHeader: true));
@@ -33,11 +35,13 @@ void main() {
     dio.interceptors.add(RefreshTokenInterceptor(
         dio: dio, renewalDio: renewalDio, postRenewalDio: postRenewalDio));
     dioAdapter = DioAdapter(dio: dio);
+
+    secureStorage = const FlutterSecureStorage();
   });
 
   testWidgets('SessionWidget shows login button when not logged in',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
 
     dioAdapter.onGet(
       'http://example.com/fixme/session',
@@ -60,7 +64,7 @@ void main() {
 
   testWidgets('SessionWidget shows email and logout button when logged in',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({
+    FlutterSecureStorage.setMockInitialValues({
       'access_token': 'abc123',
     });
 
@@ -86,9 +90,10 @@ void main() {
 
   testWidgets('Logout button clears cookie and shows login button',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({
+    FlutterSecureStorage.setMockInitialValues({
       'access_token': 'abc123',
     });
+
     dioAdapter.onGet(
       'http://example.com/fixme/session',
       (server) => server.reply(200, {
@@ -121,14 +126,13 @@ void main() {
     expect(find.text('test@example.com'), findsNothing);
     expect(find.byIcon(Icons.logout), findsNothing);
 
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('access_token'), isNull);
-    expect(prefs.getString('renewal_token'), isNull);
+    expect(await secureStorage.read(key: 'access_token'), isNull);
+    expect(await secureStorage.read(key: 'renewal_token'), isNull);
   });
 
   testWidgets('SessionWidget renews session on 401 and retries',
       (WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({
+    FlutterSecureStorage.setMockInitialValues({
       'access_token': 'expired_token',
       'renewal_token': 'valid_renewal_token',
     });
@@ -183,8 +187,9 @@ void main() {
     expect(find.byIcon(Icons.logout), findsOneWidget);
     expect(find.text('Log in'), findsNothing);
 
-    final prefs = await SharedPreferences.getInstance();
-    expect(prefs.getString('access_token'), equals('new_access_token'));
-    expect(prefs.getString('renewal_token'), equals('new_renewal_token'));
+    expect(await secureStorage.read(key: 'access_token'),
+        equals('new_access_token'));
+    expect(await secureStorage.read(key: 'renewal_token'),
+        equals('new_renewal_token'));
   });
 }

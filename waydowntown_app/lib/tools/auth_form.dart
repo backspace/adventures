@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'
+    as secure_storage;
 
 class AuthFormWidget extends StatefulWidget {
   final Dio dio;
@@ -50,9 +51,9 @@ class _AuthFormWidgetState extends State<AuthFormWidget> {
           final accessToken = response.data['data']['access_token'];
           final renewalToken = response.data['data']['renewal_token'];
 
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('access_token', accessToken);
-          await prefs.setString('renewal_token', renewalToken);
+          const secureStorage = secure_storage.FlutterSecureStorage();
+          await secureStorage.write(key: 'access_token', value: accessToken);
+          await secureStorage.write(key: 'renewal_token', value: renewalToken);
 
           widget.onAuthSuccess();
         } else {

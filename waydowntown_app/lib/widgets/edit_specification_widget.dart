@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/specification.dart';
 import 'package:yaml/yaml.dart';
@@ -175,13 +174,6 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
 
   Future<void> _saveSpecification() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final authToken = prefs.getString('access_token');
-
-      if (authToken == null) {
-        throw Exception('Auth token not found');
-      }
-
       final response = await widget.dio.patch(
         '/waydowntown/specifications/${widget.specification.id}',
         data: {
@@ -196,9 +188,6 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
             },
           },
         },
-        options: Options(
-          headers: {'Authorization': authToken},
-        ),
       );
 
       if (response.statusCode == 200 && mounted) {

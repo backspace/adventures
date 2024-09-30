@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'
+    as secure_storage;
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/tools/auth_form.dart';
 import 'package:waydowntown/tools/my_specifications_table.dart';
@@ -60,9 +61,9 @@ class _SessionWidgetState extends State<SessionWidget> {
   }
 
   Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('access_token');
-    await prefs.remove('renewal_token');
+    const secureStorage = secure_storage.FlutterSecureStorage();
+    await secureStorage.delete(key: 'access_token');
+    await secureStorage.delete(key: 'renewal_token');
 
     setState(() {
       _email = null;

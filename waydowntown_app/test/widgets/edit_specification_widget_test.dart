@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/widgets/edit_specification_widget.dart';
 
@@ -58,10 +57,6 @@ void main() {
   late Specification specification;
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({
-      'access_token': 'auth_token',
-    });
-
     dio = Dio(BaseOptions(baseUrl: 'http://example.com'));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
@@ -162,7 +157,6 @@ another_concept:
           },
         ],
       }),
-      headers: {'Authorization': 'auth_token'},
       data: Matchers.any,
     );
 

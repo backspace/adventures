@@ -2,7 +2,8 @@
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'
+    as secure_storage;
 
 class RefreshTokenInterceptor extends InterceptorsWrapper {
   final Dio dio;
@@ -48,8 +49,8 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
       return handler.next(options);
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    final userToken = prefs.getString('access_token');
+    const secureStorage = secure_storage.FlutterSecureStorage();
+    final userToken = await secureStorage.read(key: 'access_token');
 
     if (userToken != null && userToken.isNotEmpty) {
       options.headers['Authorization'] = userToken;
@@ -65,8 +66,8 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
     ErrorInterceptorHandler handler,
   ) async {
     _debugPrint('### Refreshing token... ###');
-    final prefs = await SharedPreferences.getInstance();
-    final refreshToken = prefs.getString('renewal_token');
+    const secureStorage = secure_storage.FlutterSecureStorage();
+    final refreshToken = await secureStorage.read(key: 'renewal_token');
 
     if (refreshToken == null) {
       return handler.next(err);
@@ -102,8 +103,8 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
         }),
       );
     } catch (e) {
-      prefs.remove('access_token');
-      prefs.remove('renewal_token');
+      await secureStorage.delete(key: 'access_token');
+      await secureStorage.delete(key: 'renewal_token');
 
       if (e is DioException) {
         return handler.next(e);
@@ -114,10 +115,11 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
 
     _debugPrint('### Token refreshed! ###');
 
-    await prefs.setString(
-        'access_token', authResponse.data['data']['access_token']);
-    await prefs.setString(
-        'renewal_token', authResponse.data['data']['renewal_token']);
+    await secureStorage.write(
+        key: 'access_token', value: authResponse.data['data']['access_token']);
+    await secureStorage.write(
+        key: 'renewal_token',
+        value: authResponse.data['data']['renewal_token']);
 
     err.requestOptions.headers['Authorization'] =
         '${authResponse.data['data']['access_token']}';

@@ -68,6 +68,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		01DA8C4A2CAB562400457124 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		0AF7D68E7F3AB5898565B741 /* Pods-Runner.profile-production.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-production.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-production.xcconfig"; sourceTree = "<group>"; };
 		16EF0D80075D4A825A392697 /* productionRelease.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = productionRelease.xcconfig; path = Runner/Configs/productionRelease.xcconfig; sourceTree = "<group>"; };
 		1E2CE99AFF57E0A914344346 /* Pods-RunnerTests.profile-local.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile-local.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile-local.xcconfig"; sourceTree = "<group>"; };
@@ -205,6 +206,7 @@
 		33FAB671232836740065AC1E /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				01DA8C4A2CAB562400457124 /* Runner.entitlements */,
 				33CC10F02044A3C60003C045 /* AppDelegate.swift */,
 				33CC11122044BFA00003C045 /* MainFlutterWindow.swift */,
 				33E51913231747F40026EE4D /* DebugProfile.entitlements */,
@@ -522,6 +524,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 90D9150404D6BAE40B119ECA /* Pods-Runner.debug-local.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = Runner;
 			};
@@ -531,6 +536,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AE9CA6BB088D2FAEC484382B /* Pods-Runner.profile-local.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = Runner;
 			};
@@ -540,6 +548,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 33E71EAD72B208D7DDEC15CB /* Pods-Runner.release-local.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = Runner;
 			};
@@ -549,6 +560,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F159FD23CDEBB6BAA255AF76 /* Pods-Runner.debug-production.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = Runner;
 			};
@@ -558,6 +572,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0AF7D68E7F3AB5898565B741 /* Pods-Runner.profile-production.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = Runner;
 			};
@@ -567,6 +584,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B05E7FD68D256920F5BE8994 /* Pods-Runner.release-production.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = Runner;
 			};
@@ -900,8 +920,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/DebugProfile.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1033,8 +1055,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/DebugProfile.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1054,8 +1078,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Release.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				INFOPLIST_FILE = Runner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

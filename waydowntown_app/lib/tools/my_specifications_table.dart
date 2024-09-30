@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
@@ -29,18 +28,8 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
   Future<void> fetchMySpecifications() async {
     const endpoint = '/waydowntown/specifications/mine';
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final authToken = prefs.getString('access_token');
-
-      if (authToken == null) {
-        throw Exception('Auth token not found');
-      }
-
       final response = await widget.dio.get(
         endpoint,
-        options: Options(
-          headers: {'Authorization': authToken},
-        ),
       );
 
       if (response.statusCode == 200) {
