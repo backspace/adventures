@@ -1,9 +1,9 @@
 // Adapted from https://medium.com/@dariovarrialeapps/how-to-create-a-refresh-token-interceptor-in-flutter-with-dio-64a3ab0be6fa
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'
     as secure_storage;
+import 'package:waydowntown/app.dart';
 
 class RefreshTokenInterceptor extends InterceptorsWrapper {
   final Dio dio;
@@ -139,8 +139,6 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
   }
 
   void _debugPrint(String message) {
-    if (kDebugMode) {
-      print(message);
-    }
+    talker.debug(message);
   }
 }
