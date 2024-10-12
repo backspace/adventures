@@ -4,6 +4,7 @@ defmodule Registrations.Waydowntown do
 
   alias Registrations.Repo
   alias Registrations.Waydowntown.Answer
+  alias Registrations.Waydowntown.Region
   alias Registrations.Waydowntown.Run
   alias Registrations.Waydowntown.Specification
   alias Registrations.Waydowntown.Submission
@@ -20,6 +21,10 @@ defmodule Registrations.Waydowntown do
 
   def concept_is_placed(concept) do
     !(concepts_yaml()[concept]["placeless"] == true)
+  end
+
+  def list_regions do
+    Region |> Repo.all() |> Repo.preload(parent: [parent: [:parent]])
   end
 
   def list_runs do

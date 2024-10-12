@@ -126,6 +126,7 @@ defmodule RegistrationsWeb.Router do
   scope "/waydowntown", RegistrationsWeb do
     pipe_through(:jsonapi)
 
+    resources("/regions", RegionController, only: [:index])
     resources("/submissions", SubmissionController, only: [:create, :show])
     resources("/specifications", SpecificationController, only: [:index])
 
