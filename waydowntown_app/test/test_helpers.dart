@@ -168,6 +168,7 @@ class TestHelpers {
     DateTime? startedAt,
     int? durationSeconds = 300,
     List<Answer>? answers,
+    Region? region,
   }) {
     return Run(
       id: '22261813-2171-453f-a669-db08edc70d6d',
@@ -184,17 +185,18 @@ class TestHelpers {
               const Answer(id: '3', label: 'Answer 3'),
             ],
         duration: durationSeconds,
-        region: Region(
-          id: '324fd8f9-cd25-48be-a761-b8680fa72737',
-          name: 'Test Region',
-          latitude: latitude,
-          longitude: longitude,
-          parentRegion: Region(
-            id: '67cc2c5c-06c2-4e86-9aac-b575fc712862',
-            name: 'Parent Region',
-            description: null,
-          ),
-        ),
+        region: region ??
+            Region(
+              id: '324fd8f9-cd25-48be-a761-b8680fa72737',
+              name: 'Test Region',
+              latitude: latitude,
+              longitude: longitude,
+              parentRegion: Region(
+                id: '67cc2c5c-06c2-4e86-9aac-b575fc712862',
+                name: 'Parent Region',
+                description: null,
+              ),
+            ),
       ),
       correctSubmissions: correctAnswers,
       totalAnswers: totalAnswers,

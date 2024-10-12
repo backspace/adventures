@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/widgets/edit_specification_widget.dart';
 
@@ -80,8 +81,43 @@ another_concept:
             concept: 'bluetooth_collector',
             start: 'This is the start',
             description: 'This is the task',
-            durationSeconds: 100)
+            durationSeconds: 100,
+            region: Region(id: 'region1', name: 'Region 1'))
         .specification;
+
+    dioAdapter.onGet(
+      '/waydowntown/regions',
+      (server) => server.reply(200, {
+        'data': [
+          {
+            'id': 'region1',
+            'type': 'regions',
+            'attributes': {'name': 'Region 1'},
+            'relationships': {
+              'parent': {'data': null}
+            }
+          },
+          {
+            'id': 'region2',
+            'type': 'regions',
+            'attributes': {'name': 'Region 2'},
+            'relationships': {
+              'parent': {
+                'data': {'id': 'region1', 'type': 'regions'}
+              },
+            }
+          },
+          {
+            'id': 'region3',
+            'type': 'regions',
+            'attributes': {'name': 'Region 3'},
+            'relationships': {
+              'parent': {'data': null},
+            }
+          }
+        ]
+      }),
+    );
   });
 
   tearDown(() {
@@ -105,10 +141,17 @@ another_concept:
     expect(find.text(specification.startDescription!), findsOneWidget);
     expect(find.text(specification.taskDescription!), findsOneWidget);
     expect(find.text(specification.duration.toString()), findsOneWidget);
+    expect(find.text('Region 1'), findsOneWidget);
 
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
+    await tester.tap(find.byType(DropdownButtonFormField<String>).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Fill in the Blank').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(DropdownButtonFormField<String>).last);
+    await tester.pumpAndSettle();
+    expect(find.text('  Region 2'), findsOneWidget); // Assert on nesting
+    await tester.tap(find.text('Region 3').last);
     await tester.pumpAndSettle();
 
     await tester.enterText(
@@ -132,6 +175,7 @@ another_concept:
             'start_description': 'New start',
             'task_description': 'New task',
             'duration': 60,
+            'region_id': 'region3',
           },
         },
       },

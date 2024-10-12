@@ -5,14 +5,16 @@ class Region {
   final double? latitude;
   final double? longitude;
   Region? parentRegion;
+  List<Region> children = [];
 
-  Region(
-      {required this.id,
-      required this.name,
-      this.description,
-      this.parentRegion,
-      this.latitude,
-      this.longitude});
+  Region({
+    required this.id,
+    required this.name,
+    this.description,
+    this.parentRegion,
+    this.latitude,
+    this.longitude,
+  });
 
   factory Region.fromJson(Map<String, dynamic> json, List<dynamic> included) {
     final attributes = json['attributes'];
@@ -44,5 +46,41 @@ class Region {
     }
 
     return region;
+  }
+
+  static List<Region> parseRegions(Map<String, dynamic> apiResponse) {
+    final List<dynamic> data = apiResponse['data'];
+
+    Map<String, Region> regionMap = {};
+
+    // Extract all regions
+    for (var item in data) {
+      if (item['type'] == 'regions') {
+        Region region = Region.fromJson(item, []);
+        regionMap[region.id] = region;
+      }
+    }
+
+    // Nest children
+    for (var item in data) {
+      if (item['type'] == 'regions' && item['relationships'] != null) {
+        var relationships = item['relationships'];
+        if (relationships['parent'] != null &&
+            relationships['parent']['data'] != null) {
+          String parentId = relationships['parent']['data']['id'];
+          Region? parentRegion = regionMap[parentId];
+          Region? childRegion = regionMap[item['id']];
+          if (parentRegion != null && childRegion != null) {
+            childRegion.parentRegion = parentRegion;
+            parentRegion.children.add(childRegion);
+          }
+        }
+      }
+    }
+
+    // Return only root regions
+    return regionMap.values
+        .where((region) => region.parentRegion == null)
+        .toList();
   }
 }

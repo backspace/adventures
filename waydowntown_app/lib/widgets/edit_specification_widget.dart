@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
+import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/specification.dart';
 import 'package:yaml/yaml.dart';
 
@@ -23,6 +24,8 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   late TextEditingController _taskDescriptionController;
   late TextEditingController _durationController;
   String? _selectedConcept;
+  String? _selectedRegionId;
+  List<Region> _regions = [];
   Map<String, String> _fieldErrors = {};
 
   @override
@@ -35,6 +38,21 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     _durationController = TextEditingController(
         text: widget.specification.duration?.toString() ?? '');
     _selectedConcept = widget.specification.concept;
+    _selectedRegionId = widget.specification.region?.id;
+    _loadRegions();
+  }
+
+  Future<void> _loadRegions() async {
+    try {
+      final response = await widget.dio.get('/waydowntown/regions');
+      if (response.statusCode == 200) {
+        setState(() {
+          _regions = Region.parseRegions(response.data);
+        });
+      }
+    } catch (e) {
+      talker.error('Error loading regions: $e');
+    }
   }
 
   Future<dynamic> _loadConcepts(context) async {
@@ -66,6 +84,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildConceptDropdown(snapshot.data),
+                    _buildRegionDropdown(),
                     _buildTextField('Start Description',
                         _startDescriptionController, 'start_description'),
                     _buildTextField('Task Description',
@@ -119,6 +138,37 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
         });
       },
     );
+  }
+
+  Widget _buildRegionDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedRegionId,
+      decoration: InputDecoration(
+        labelText: 'Region',
+        errorText: _fieldErrors['region_id'],
+      ),
+      items: _buildRegionItems(_regions, 0),
+      onChanged: (String? newValue) {
+        setState(() {
+          _selectedRegionId = newValue;
+        });
+      },
+    );
+  }
+
+  List<DropdownMenuItem<String>> _buildRegionItems(
+      List<Region> regions, int depth) {
+    List<DropdownMenuItem<String>> items = [];
+    for (var region in regions) {
+      items.add(DropdownMenuItem<String>(
+        value: region.id,
+        child: Text('${'  ' * depth}${region.name}'),
+      ));
+      if (region.children.isNotEmpty) {
+        items.addAll(_buildRegionItems(region.children, depth + 1));
+      }
+    }
+    return items;
   }
 
   Widget _buildTextField(
@@ -185,6 +235,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
               'start_description': _startDescriptionController.text,
               'task_description': _taskDescriptionController.text,
               'duration': int.tryParse(_durationController.text),
+              'region_id': _selectedRegionId,
             },
           },
         },
