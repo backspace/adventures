@@ -58,8 +58,19 @@ class _HomeState extends State<Home> {
       },
     ));
 
-    dio.interceptors.add(RefreshTokenInterceptor(dio: dio));
-    dio.interceptors.add(TalkerDioLogger(
+    final renewalDio = Dio(BaseOptions(
+      baseUrl: dotenv.env['API_ROOT']!,
+    ));
+
+    final postRenewalDio = Dio(BaseOptions(
+      baseUrl: dotenv.env['API_ROOT']!,
+      headers: {
+        'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json',
+      },
+    ));
+
+    TalkerDioLogger talkerDioLogger = TalkerDioLogger(
         talker: talker,
         settings: const TalkerDioLoggerSettings(
           printResponseData: true,
@@ -70,7 +81,14 @@ class _HomeState extends State<Home> {
           printErrorMessage: true,
           printRequestData: true,
           printRequestHeaders: true,
-        )));
+        ));
+
+    dio.interceptors.add(talkerDioLogger);
+    renewalDio.interceptors.add(talkerDioLogger);
+    postRenewalDio.interceptors.add(talkerDioLogger);
+
+    dio.interceptors.add(RefreshTokenInterceptor(
+        dio: dio, postRenewalDio: postRenewalDio, renewalDio: renewalDio));
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
