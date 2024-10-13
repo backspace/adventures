@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.RegionView do
   alias RegistrationsWeb.RegionView
 
   def fields do
-    [:name, :description, :latitude, :longitude]
+    [:name, :description, :distance, :latitude, :longitude]
   end
 
   def latitude(region, _conn) do
@@ -25,10 +25,6 @@ defmodule RegistrationsWeb.RegionView do
       _ ->
         nil
     end
-  end
-
-  def render("index.json", %{regions: regions, conn: conn, params: params}) do
-    RegionView.index(regions, conn, params)
   end
 
   def render("show.json", %{region: region, conn: conn, params: params}) do

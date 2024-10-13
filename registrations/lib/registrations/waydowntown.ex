@@ -24,7 +24,22 @@ defmodule Registrations.Waydowntown do
   end
 
   def list_regions do
-    Region |> Repo.all() |> Repo.preload(parent: [parent: [:parent]])
+    Region |> Repo.all() |> Repo.preload(region_preloads())
+  end
+
+  def get_nearest_regions(latitude, longitude, limit) do
+    point = %Geo.Point{coordinates: {longitude, latitude}, srid: 4326}
+
+    Region
+    |> select([r], %{r | distance: fragment("ST_Distance(?, ?, true)", r.geom, ^point)})
+    |> order_by([r], fragment("ST_Distance(?, ?)", r.geom, ^point))
+    |> limit(^limit)
+    |> Repo.all()
+    |> Repo.preload(region_preloads())
+  end
+
+  defp region_preloads do
+    [parent: [parent: [:parent]]]
   end
 
   def list_runs do

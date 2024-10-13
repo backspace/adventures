@@ -12,6 +12,8 @@ defmodule Registrations.Waydowntown.Region do
     field(:name, :string)
     field(:geom, Geo.PostGIS.Geometry)
 
+    field(:distance, :float, virtual: true)
+
     belongs_to(:parent, __MODULE__, type: :binary_id, foreign_key: :parent_id)
 
     timestamps()
