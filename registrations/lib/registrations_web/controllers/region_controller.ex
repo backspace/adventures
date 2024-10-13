@@ -2,7 +2,6 @@ defmodule RegistrationsWeb.RegionController do
   use RegistrationsWeb, :controller
 
   alias Registrations.Waydowntown
-  alias Registrations.Waydowntown.Region
 
   plug(JSONAPI.QueryParser,
     view: RegistrationsWeb.RegionView,
