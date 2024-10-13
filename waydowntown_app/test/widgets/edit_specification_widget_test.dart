@@ -2,7 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geolocator_platform_interface/geolocator_platform_interface.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
+import 'package:mockito/mockito.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/specification.dart';
@@ -49,6 +53,27 @@ class TestAssetBundle extends CachingAssetBundle {
     }
     throw FlutterError('Asset not found: $key');
   }
+}
+
+class MockGeolocatorPlatform extends Mock
+    with MockPlatformInterfaceMixin
+    implements GeolocatorPlatform {
+  @override
+  Future<Position> getCurrentPosition({
+    LocationSettings? locationSettings,
+  }) =>
+      Future.value(Position(
+        latitude: 49.895077,
+        longitude: -97.138451,
+        timestamp: DateTime.now(),
+        accuracy: 0,
+        altitude: 0,
+        heading: 0,
+        speed: 0,
+        speedAccuracy: 0,
+        altitudeAccuracy: 0,
+        headingAccuracy: 0,
+      ));
 }
 
 void main() {
@@ -118,13 +143,133 @@ another_concept:
         ]
       }),
     );
+
+    dioAdapter.onGet(
+      '/waydowntown/regions?filter[position]=49.895077,-97.138451',
+      (server) => server.reply(200, {
+        'data': [
+          {
+            'id': 'region1',
+            'type': 'regions',
+            'attributes': {
+              'name': 'Region 1',
+              'distance': 500,
+            },
+            'relationships': {
+              'parent': {
+                'data': {'id': 'region0', 'type': 'regions'}
+              }
+            }
+          },
+          {
+            'id': 'region2',
+            'type': 'regions',
+            'attributes': {
+              'name': 'Region 2',
+              'distance': 1500,
+            },
+            'relationships': {
+              'parent': {'data': null},
+            }
+          },
+          {
+            'id': 'region3',
+            'type': 'regions',
+            'attributes': {
+              'name': 'Region 3',
+              'distance': 2500,
+            },
+            'relationships': {
+              'parent': {'data': null},
+            }
+          }
+        ],
+        'included': [
+          {
+            'id': 'region0',
+            'type': 'regions',
+            'attributes': {
+              'name': 'Region 0',
+              'distance': 5500,
+            },
+            'relationships': {
+              'parent': {'data': null}
+            }
+          },
+        ]
+      }),
+    );
+
+    GeolocatorPlatform.instance = MockGeolocatorPlatform();
   });
 
-  tearDown(() {
-    testAssetBundle.clear();
+  testWidgets(
+      'EditSpecificationWidget updates region selection and region sort can be changed',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: specification,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    // Alphabetic sort by default
+    final azButtonFinder = find.widgetWithText(ElevatedButton, 'A-Z');
+    final nearestButtonFinder = find.widgetWithText(ElevatedButton, 'Nearest');
+
+    ElevatedButton azButton = tester.widget(azButtonFinder);
+    ElevatedButton nearestButton = tester.widget(nearestButtonFinder);
+
+    expect(azButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
+        equals(Theme.of(tester.element(azButtonFinder)).primaryColor));
+    expect(nearestButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
+        isNot(Theme.of(tester.element(nearestButtonFinder)).primaryColor));
+
+    await tester.tap(azButtonFinder);
+    await tester.pumpAndSettle();
+
+    azButton = tester.widget(azButtonFinder);
+    nearestButton = tester.widget(nearestButtonFinder);
+
+    expect(azButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
+        equals(Theme.of(tester.element(azButtonFinder)).primaryColor));
+    expect(
+        nearestButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
+        isNot(equals(
+            Theme.of(tester.element(nearestButtonFinder)).primaryColor)));
+
+    // No distances in dropdown
+    await tester.tap(find.text('Region'));
+    await tester.pumpAndSettle();
+    expect(find.text('500 m'), findsNothing);
+    expect(find.text('2 km'), findsNothing);
+    expect(find.text('3 km'), findsNothing);
+
+    await tester.tap(nearestButtonFinder);
+    await tester.pumpAndSettle();
+
+    azButton = tester.widget(azButtonFinder);
+    nearestButton = tester.widget(nearestButtonFinder);
+
+    expect(azButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
+        isNot(equals(Theme.of(tester.element(azButtonFinder)).primaryColor)));
+    expect(nearestButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
+        equals(Theme.of(tester.element(nearestButtonFinder)).primaryColor));
+
+    await tester.tap(find.text('Region'));
+    await tester.pumpAndSettle();
+    expect(find.text('500 m'), findsOneWidget);
+    expect(find.text('2 km'), findsOneWidget);
+    expect(find.text('3 km'), findsOneWidget);
   });
 
-  testWidgets('EditSpecificationWidget updates', (WidgetTester tester) async {
+  testWidgets('EditSpecificationWidget updates correctly',
+      (WidgetTester tester) async {
     await tester.pumpWidget(MaterialApp(
       home: DefaultAssetBundle(
         bundle: testAssetBundle,

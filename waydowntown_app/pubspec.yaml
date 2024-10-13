@@ -72,6 +72,7 @@ dependencies:
   talker_dio_logger: ^4.4.1
   talker_logger: ^4.4.1
   flutter_secure_storage: ^9.2.2
+  geolocator_platform_interface: ^4.2.4
 
 dev_dependencies:
   flutter_test:

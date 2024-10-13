@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/specification.dart';
@@ -27,6 +28,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   String? _selectedRegionId;
   List<Region> _regions = [];
   Map<String, String> _fieldErrors = {};
+  bool _sortByDistance = false;
 
   @override
   void initState() {
@@ -48,10 +50,47 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
       if (response.statusCode == 200) {
         setState(() {
           _regions = Region.parseRegions(response.data);
+          _sortRegions();
         });
       }
     } catch (e) {
       talker.error('Error loading regions: $e');
+    }
+  }
+
+  Future<void> _loadNearestRegions() async {
+    try {
+      Position position = await Geolocator.getCurrentPosition();
+      final response = await widget.dio.get(
+          '/waydowntown/regions?filter[position]=${position.latitude},${position.longitude}');
+      if (response.statusCode == 200) {
+        setState(() {
+          _regions = Region.parseRegions(response.data);
+          _sortByDistance = true;
+          _sortRegions();
+        });
+      }
+    } catch (e) {
+      talker.error('Error loading nearest regions: $e');
+    }
+  }
+
+  void _sortRegions() {
+    _sortRegionList(_regions);
+  }
+
+  void _sortRegionList(List<Region> regions) {
+    if (_sortByDistance) {
+      regions.sort((a, b) => (a.distance ?? double.infinity)
+          .compareTo(b.distance ?? double.infinity));
+    } else {
+      regions.sort((a, b) => a.name.compareTo(b.name));
+    }
+
+    for (var region in regions) {
+      if (region.children.isNotEmpty) {
+        _sortRegionList(region.children);
+      }
     }
   }
 
@@ -84,7 +123,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildConceptDropdown(snapshot.data),
-                    _buildRegionDropdown(),
+                    _buildRegionSection(),
                     _buildTextField('Start Description',
                         _startDescriptionController, 'start_description'),
                     _buildTextField('Task Description',
@@ -140,35 +179,85 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     );
   }
 
+  Widget _buildRegionSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildRegionDropdown(),
+            ),
+            const SizedBox(width: 8),
+            _buildSortButton(
+              context: context,
+              label: 'A-Z',
+              isActive: !_sortByDistance,
+              onPressed: () {
+                setState(() {
+                  _sortByDistance = false;
+                  _sortRegions();
+                });
+              },
+            ),
+            const SizedBox(width: 8),
+            _buildSortButton(
+              context: context,
+              label: 'Nearest',
+              isActive: _sortByDistance,
+              onPressed: _loadNearestRegions,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildRegionDropdown() {
-    return DropdownButtonFormField<String>(
-      value: _selectedRegionId,
-      decoration: InputDecoration(
-        labelText: 'Region',
-        errorText: _fieldErrors['region_id'],
-      ),
-      items: _buildRegionItems(_regions, 0),
-      onChanged: (String? newValue) {
+    return DropdownMenu<String>(
+      initialSelection: _selectedRegionId,
+      onSelected: (String? newValue) {
         setState(() {
           _selectedRegionId = newValue;
         });
       },
+      errorText: _fieldErrors['region_id'],
+      label: const Text('Region'),
+      dropdownMenuEntries: _buildNestedRegionEntries(_regions),
+      width: MediaQuery.of(context).size.width - 150,
     );
   }
 
-  List<DropdownMenuItem<String>> _buildRegionItems(
-      List<Region> regions, int depth) {
-    List<DropdownMenuItem<String>> items = [];
+  List<DropdownMenuEntry<String>> _buildNestedRegionEntries(
+      List<Region> regions,
+      {String indent = ''}) {
+    List<DropdownMenuEntry<String>> entries = [];
+
     for (var region in regions) {
-      items.add(DropdownMenuItem<String>(
+      entries.add(DropdownMenuEntry<String>(
         value: region.id,
-        child: Text('${'  ' * depth}${region.name}'),
+        label: '$indent${region.name}',
+        trailingIcon: _sortByDistance && region.distance != null
+            ? Text(_formatDistance(region.distance!))
+            : null,
       ));
+
       if (region.children.isNotEmpty) {
-        items.addAll(_buildRegionItems(region.children, depth + 1));
+        entries.addAll(
+            _buildNestedRegionEntries(region.children, indent: '$indent  '));
       }
     }
-    return items;
+
+    return entries;
+  }
+
+  String _formatDistance(double distanceInMeters) {
+    if (distanceInMeters >= 1000) {
+      return '${(distanceInMeters / 1000).round()} km';
+    } else {
+      return '${distanceInMeters.round()} m';
+    }
   }
 
   Widget _buildTextField(
@@ -271,4 +360,20 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     _durationController.dispose();
     super.dispose();
   }
+}
+
+Widget _buildSortButton({
+  required BuildContext context,
+  required String label,
+  required bool isActive,
+  required VoidCallback onPressed,
+}) {
+  return ElevatedButton(
+    onPressed: onPressed,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: isActive ? Theme.of(context).primaryColor : null,
+      foregroundColor: isActive ? Colors.white : null,
+    ),
+    child: Text(label),
+  );
 }

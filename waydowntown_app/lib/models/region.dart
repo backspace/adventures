@@ -4,6 +4,7 @@ class Region {
   final String? description;
   final double? latitude;
   final double? longitude;
+  final double? distance;
   Region? parentRegion;
   List<Region> children = [];
 
@@ -14,6 +15,7 @@ class Region {
     this.parentRegion,
     this.latitude,
     this.longitude,
+    this.distance,
   });
 
   factory Region.fromJson(Map<String, dynamic> json, List<dynamic> included) {
@@ -30,6 +32,7 @@ class Region {
       longitude: attributes['longitude'] != null
           ? double.parse(attributes['longitude'])
           : null,
+      distance: attributes['distance']?.toDouble(),
     );
 
     if (relationships != null &&
@@ -50,19 +53,20 @@ class Region {
 
   static List<Region> parseRegions(Map<String, dynamic> apiResponse) {
     final List<dynamic> data = apiResponse['data'];
+    final List<dynamic> included = apiResponse['included'] ?? [];
 
     Map<String, Region> regionMap = {};
 
     // Extract all regions
-    for (var item in data) {
+    for (var item in [...data, ...included]) {
       if (item['type'] == 'regions') {
-        Region region = Region.fromJson(item, []);
+        Region region = Region.fromJson(item, included);
         regionMap[region.id] = region;
       }
     }
 
     // Nest children
-    for (var item in data) {
+    for (var item in [...data, ...included]) {
       if (item['type'] == 'regions' && item['relationships'] != null) {
         var relationships = item['relationships'];
         if (relationships['parent'] != null &&
