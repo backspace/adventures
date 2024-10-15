@@ -1,8 +1,6 @@
 defmodule RegistrationsWeb.RegionView do
   use JSONAPI.View, type: "regions"
 
-  alias RegistrationsWeb.RegionView
-
   def fields do
     [:name, :description, :distance, :latitude, :longitude]
   end
@@ -25,10 +23,6 @@ defmodule RegistrationsWeb.RegionView do
       _ ->
         nil
     end
-  end
-
-  def render("show.json", %{region: region, conn: conn, params: params}) do
-    RegionView.show(region, conn, params)
   end
 
   def relationships do

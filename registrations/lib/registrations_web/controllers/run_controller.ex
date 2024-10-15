@@ -15,7 +15,7 @@ defmodule RegistrationsWeb.RunController do
 
   def index(conn, params) do
     runs = Waydowntown.list_runs()
-    render(conn, "index.json", %{runs: runs, conn: conn, params: params})
+    render(conn, "index.json", %{data: runs, conn: conn, params: params})
   end
 
   def create(conn, params) do
@@ -29,7 +29,7 @@ defmodule RegistrationsWeb.RunController do
         conn
         |> put_status(:created)
         |> put_resp_header("location", Routes.run_path(conn, :show, run))
-        |> render("show.json", %{run: run, conn: conn, params: params})
+        |> render("show.json", %{data: run, conn: conn, params: params})
 
       {:error, changeset} ->
         conn
@@ -68,7 +68,7 @@ defmodule RegistrationsWeb.RunController do
 
   def show(conn, params) do
     run = Waydowntown.get_run!(params["id"])
-    render(conn, "show.json", %{run: run, conn: conn, params: params})
+    render(conn, "show.json", %{data: run, conn: conn, params: params})
   end
 
   def start(conn, %{"id" => id}) do
@@ -76,7 +76,7 @@ defmodule RegistrationsWeb.RunController do
 
     case Waydowntown.start_run(run) do
       {:ok, started_run} ->
-        render(conn, "show.json", %{run: started_run, conn: conn, params: %{}})
+        render(conn, "show.json", %{data: started_run, conn: conn, params: %{}})
 
       {:error, message} when is_binary(message) ->
         conn

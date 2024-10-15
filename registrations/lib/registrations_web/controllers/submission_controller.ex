@@ -14,7 +14,7 @@ defmodule RegistrationsWeb.SubmissionController do
         conn
         |> put_status(:created)
         |> put_resp_header("location", Routes.submission_path(conn, :show, submission))
-        |> render("show.json", %{submission: submission, conn: conn, params: params})
+        |> render("show.json", %{data: submission, conn: conn, params: params})
 
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
@@ -31,6 +31,6 @@ defmodule RegistrationsWeb.SubmissionController do
 
   def show(conn, %{"id" => id} = params) do
     submission = Waydowntown.get_submission!(id)
-    render(conn, "show.json", %{submission: submission, conn: conn, params: params})
+    render(conn, "show.json", %{data: submission, conn: conn, params: params})
   end
 end

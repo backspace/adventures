@@ -8,7 +8,7 @@ defmodule RegistrationsWeb.SpecificationController do
 
   def index(conn, params) do
     specifications = Waydowntown.list_specifications()
-    render(conn, "index.json", %{specifications: specifications, conn: conn, params: params})
+    render(conn, "index.json", %{data: specifications, conn: conn, params: params})
   end
 
   def mine(conn, params) do
@@ -17,7 +17,7 @@ defmodule RegistrationsWeb.SpecificationController do
 
     conn
     |> put_view(SpecificationView)
-    |> render("index.json", %{specifications: specifications, conn: conn, params: params})
+    |> render("index.json", %{data: specifications, conn: conn, params: params})
   end
 
   def update(conn, %{"id" => id} = params) do
@@ -29,7 +29,7 @@ defmodule RegistrationsWeb.SpecificationController do
         {:ok, updated_specification} ->
           conn
           |> put_view(SpecificationView)
-          |> render("show.json", specification: updated_specification, conn: conn, params: params)
+          |> render("show.json", data: updated_specification, conn: conn, params: params)
 
         {:error, changeset} ->
           errors = Ecto.Changeset.traverse_errors(changeset, &RegistrationsWeb.ErrorHelpers.translate_error/1)
