@@ -38,6 +38,20 @@ defmodule Registrations.Waydowntown do
     |> Repo.preload(region_preloads())
   end
 
+  def get_region!(id), do: Repo.get!(Region, id)
+
+  def create_region(attrs) do
+    %Region{}
+    |> Region.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_region(%Region{} = region, attrs) do
+    region
+    |> Region.changeset(attrs)
+    |> Repo.update()
+  end
+
   defp region_preloads do
     [parent: [parent: [:parent]]]
   end

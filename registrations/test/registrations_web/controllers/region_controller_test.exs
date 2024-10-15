@@ -83,4 +83,117 @@ defmodule RegistrationsWeb.RegionControllerTest do
              ]
     end
   end
+
+  describe "POST /waydowntown/regions" do
+    setup %{conn: conn} do
+      %{authorization_token: setup_user_and_get_token(), conn: setup_conn(conn)}
+    end
+
+    test "creates and renders region", %{authorization_token: authorization_token, conn: conn} do
+      conn =
+        conn
+        |> put_req_header("authorization", authorization_token)
+        |> post(Routes.region_path(conn, :create),
+          data: %{
+            type: "regions",
+            attributes: %{
+              name: "New Region",
+              description: "New Region Description",
+              geom: %{
+                type: "Point",
+                coordinates: [-97.143130, 49.891725],
+                srid: 4326
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+
+      region = Repo.get!(Region, id)
+
+      assert region.name == "New Region"
+      assert region.description == "New Region Description"
+      assert region.geom.coordinates == {-97.143130, 49.891725}
+    end
+
+    test "renders errors when data is invalid", %{authorization_token: authorization_token, conn: conn} do
+      conn =
+        conn
+        |> put_req_header("authorization", authorization_token)
+        |> post(Routes.region_path(conn, :create), data: %{type: "regions", attributes: %{}})
+
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+  end
+
+  describe "PATCH /waydowntown/regions/:id" do
+    setup %{conn: conn} do
+      region = Repo.insert!(%Region{name: "Test Region", geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}})
+      %{authorization_token: setup_user_and_get_token(), conn: setup_conn(conn), region: region}
+    end
+
+    test "updates and renders region", %{
+      authorization_token: authorization_token,
+      conn: conn,
+      region: region
+    } do
+      conn =
+        conn
+        |> put_req_header("authorization", authorization_token)
+        |> patch(
+          Routes.region_path(conn, :update, region),
+          %{
+            "data" => %{
+              "type" => "regions",
+              "id" => region.id,
+              "attributes" => %{
+                "name" => "Updated Region"
+              }
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 200)["data"]
+
+      updated_region = Repo.get!(Region, id)
+
+      assert updated_region.name == "Updated Region"
+    end
+
+    test "renders errors when data is invalid", %{authorization_token: authorization_token, conn: conn, region: region} do
+      conn =
+        conn
+        |> put_req_header("authorization", authorization_token)
+        |> patch(
+          Routes.region_path(conn, :update, region),
+          %{
+            "data" => %{
+              "type" => "regions",
+              "id" => region.id,
+              "attributes" => %{
+                "name" => nil
+              }
+            }
+          }
+        )
+
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+  end
+
+  defp setup_user_and_get_token do
+    user = insert(:octavia, admin: true)
+
+    authed_conn = build_conn()
+
+    authed_conn =
+      post(authed_conn, Routes.api_session_path(authed_conn, :create), %{
+        "user" => %{"email" => user.email, "password" => "Xenogenesis"}
+      })
+
+    json = json_response(authed_conn, 200)
+
+    json["data"]["access_token"]
+  end
 end

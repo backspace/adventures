@@ -2,6 +2,7 @@ defmodule RegistrationsWeb.RegionController do
   use RegistrationsWeb, :controller
 
   alias Registrations.Waydowntown
+  alias Registrations.Waydowntown.Region
 
   plug(JSONAPI.QueryParser,
     view: RegistrationsWeb.RegionView,
@@ -21,6 +22,22 @@ defmodule RegistrationsWeb.RegionController do
       end
 
     render(conn, "index.json", %{data: regions, conn: conn, params: params})
+  end
+
+  def create(conn, region_params) do
+    with {:ok, %Region{} = region} <- Waydowntown.create_region(region_params) do
+      conn
+      |> put_status(:created)
+      |> render("show.json", %{data: region})
+    end
+  end
+
+  def update(conn, %{"id" => id} = region_params) do
+    region = Waydowntown.get_region!(id)
+
+    with {:ok, %Region{} = updated_region} <- Waydowntown.update_region(region, region_params) do
+      render(conn, "show.json", %{data: updated_region})
+    end
   end
 
   defp get_position_filter(params) do

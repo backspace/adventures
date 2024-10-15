@@ -23,6 +23,6 @@ defmodule Registrations.Waydowntown.Region do
   def changeset(region, attrs) do
     region
     |> cast(attrs, [:name, :description, :geom])
-    |> validate_required([:name, :description])
+    |> validate_required([:name])
   end
 end
