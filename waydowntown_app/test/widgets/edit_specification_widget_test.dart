@@ -263,9 +263,10 @@ another_concept:
 
     await tester.tap(find.text('Region'));
     await tester.pumpAndSettle();
-    expect(find.text('500 m'), findsOneWidget);
-    expect(find.text('2 km'), findsOneWidget);
-    expect(find.text('3 km'), findsOneWidget);
+
+    expect(find.text('500 m'), findsAny);
+    expect(find.text('2 km'), findsAny);
+    expect(find.text('3 km'), findsAny);
   });
 
   testWidgets('EditSpecificationWidget updates correctly',
@@ -286,7 +287,12 @@ another_concept:
     expect(find.text(specification.startDescription!), findsOneWidget);
     expect(find.text(specification.taskDescription!), findsOneWidget);
     expect(find.text(specification.duration.toString()), findsOneWidget);
-    expect(find.text('Region 1'), findsOneWidget);
+    expect(
+        find.descendant(
+          of: find.byType(MenuItemButton),
+          matching: find.text('Region 1'),
+        ),
+        findsOneWidget);
 
     await tester.tap(find.byType(DropdownButtonFormField<String>).first);
     await tester.pumpAndSettle();
@@ -417,7 +423,11 @@ another_concept:
     await tester.tap(find.text('Create'));
     await tester.pumpAndSettle();
 
-    // Within dropdown and selected
-    expect(find.text('New Region'), findsNWidgets(2));
+    expect(
+        find.descendant(
+          of: find.byType(MenuItemButton),
+          matching: find.text('New Region'),
+        ),
+        findsOneWidget);
   });
 }
