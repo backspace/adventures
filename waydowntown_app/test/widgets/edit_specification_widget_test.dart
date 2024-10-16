@@ -117,7 +117,7 @@ another_concept:
           {
             'id': 'region1',
             'type': 'regions',
-            'attributes': {'name': 'Region 1'},
+            'attributes': {'name': 'region 1'},
             'relationships': {
               'parent': {'data': null}
             }
@@ -152,7 +152,7 @@ another_concept:
             'id': 'region1',
             'type': 'regions',
             'attributes': {
-              'name': 'Region 1',
+              'name': 'region 1',
               'distance': 500,
             },
             'relationships': {
@@ -243,6 +243,15 @@ another_concept:
         isNot(equals(
             Theme.of(tester.element(nearestButtonFinder)).primaryColor)));
 
+    // Regions should be sorted case-insensitive
+    final regionItems = tester
+        .widget<DropdownMenu<String>>(find.byType(DropdownMenu<String>))
+        .dropdownMenuEntries;
+    expect(regionItems.length, greaterThanOrEqualTo(3));
+    expect(regionItems[0].label, 'region 1');
+    expect(regionItems[1].label, '  Region 2');
+    expect(regionItems[2].label, 'Region 3');
+
     // No distances in dropdown
     await tester.tap(find.text('Region'));
     await tester.pumpAndSettle();
@@ -290,7 +299,7 @@ another_concept:
     expect(
         find.descendant(
           of: find.byType(MenuItemButton),
-          matching: find.text('Region 1'),
+          matching: find.text('region 1'),
         ),
         findsOneWidget);
 

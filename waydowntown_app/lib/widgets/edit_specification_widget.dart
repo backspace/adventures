@@ -84,7 +84,8 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
       regions.sort((a, b) => (a.distance ?? double.infinity)
           .compareTo(b.distance ?? double.infinity));
     } else {
-      regions.sort((a, b) => a.name.compareTo(b.name));
+      regions
+          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     }
 
     for (var region in regions) {
