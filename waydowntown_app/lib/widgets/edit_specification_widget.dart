@@ -208,6 +208,11 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
               isActive: _sortByDistance,
               onPressed: _loadNearestRegions,
             ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: _createNewRegion,
+              child: const Text('New'),
+            ),
           ],
         ),
       ],
@@ -351,6 +356,75 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
         );
       }
     }
+  }
+
+  Future<void> _createNewRegion() async {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController descriptionController = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Create New Region'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(labelText: 'Description'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                try {
+                  final response = await widget.dio.post(
+                    '/waydowntown/regions',
+                    data: {
+                      'data': {
+                        'type': 'regions',
+                        'attributes': {
+                          'name': nameController.text,
+                          'description': descriptionController.text,
+                        },
+                      },
+                    },
+                  );
+
+                  if (response.statusCode == 201) {
+                    final newRegion =
+                        Region.fromJson(response.data['data'], []);
+                    setState(() {
+                      _regions.add(newRegion);
+                      _sortRegions();
+                      _selectedRegionId = newRegion.id;
+                    });
+                    Navigator.of(context).pop();
+                  }
+                } catch (e) {
+                  talker.error('Error creating new region: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Failed to create new region')),
+                  );
+                }
+              },
+              child: const Text('Create'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

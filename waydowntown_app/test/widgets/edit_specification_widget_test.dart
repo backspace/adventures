@@ -366,4 +366,58 @@ another_concept:
     expect(find.text('must be a known concept'), findsOneWidget);
     expect(find.text('must be greater than 0'), findsOneWidget);
   });
+
+  testWidgets('EditSpecificationWidget can create a new region',
+      (WidgetTester tester) async {
+    dioAdapter.onPost(
+      '/waydowntown/regions',
+      (server) => server.reply(201, {
+        'data': {
+          'id': 'new_region',
+          'type': 'regions',
+          'attributes': {
+            'name': 'New Region',
+            'description': 'New Region Description',
+          },
+        }
+      }),
+      data: {
+        'data': {
+          'type': 'regions',
+          'attributes': {
+            'name': 'New Region',
+            'description': 'New Region Description',
+          },
+        },
+      },
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: specification,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('New'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Create New Region'), findsOneWidget);
+
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Name'), 'New Region');
+    await tester.enterText(find.widgetWithText(TextField, 'Description'),
+        'New Region Description');
+
+    await tester.tap(find.text('Create'));
+    await tester.pumpAndSettle();
+
+    // Within dropdown and selected
+    expect(find.text('New Region'), findsNWidgets(2));
+  });
 }
