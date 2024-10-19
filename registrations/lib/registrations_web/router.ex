@@ -127,7 +127,6 @@ defmodule RegistrationsWeb.Router do
     pipe_through(:jsonapi)
 
     resources("/regions", RegionController, only: [:index])
-    resources("/submissions", SubmissionController, only: [:create, :show])
     resources("/specifications", SpecificationController, only: [:index])
 
     resources("/runs", RunController, except: [:new, :edit, :delete, :update]) do
@@ -141,6 +140,8 @@ defmodule RegistrationsWeb.Router do
     resources("/regions", RegionController, only: [:create, :update])
     resources("/specifications", SpecificationController, only: [:update])
     get("/specifications/mine", SpecificationController, :mine, as: :my_specifications)
+
+    resources("/submissions", SubmissionController, only: [:create, :show])
   end
 
   scope "/fixme", RegistrationsWeb do

@@ -11,6 +11,7 @@ defmodule Registrations.Waydowntown.Submission do
     field(:submission, :string)
     field(:correct, :boolean)
 
+    belongs_to(:creator, RegistrationsWeb.User, type: :binary_id, foreign_key: :creator_id)
     belongs_to(:run, Registrations.Waydowntown.Run, type: :binary_id)
     belongs_to(:answer, Registrations.Waydowntown.Answer, type: :binary_id)
 
@@ -20,8 +21,9 @@ defmodule Registrations.Waydowntown.Submission do
   @doc false
   def changeset(submission, attrs) do
     submission
-    |> cast(attrs, [:submission, :correct, :run_id, :answer_id])
-    |> validate_required([:submission, :correct, :run_id])
+    |> cast(attrs, [:submission, :correct, :creator_id, :run_id, :answer_id])
+    |> validate_required([:submission, :correct, :creator_id, :run_id])
+    |> assoc_constraint(:creator)
     |> assoc_constraint(:run)
     |> assoc_constraint(:answer)
   end

@@ -9,7 +9,7 @@ defmodule RegistrationsWeb.SubmissionController do
   action_fallback(RegistrationsWeb.FallbackController)
 
   def create(conn, params) do
-    case Waydowntown.create_submission(params) do
+    case Waydowntown.create_submission(conn, params) do
       {:ok, %Submission{} = submission} ->
         conn
         |> put_status(:created)

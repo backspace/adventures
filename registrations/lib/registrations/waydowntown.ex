@@ -265,7 +265,8 @@ defmodule Registrations.Waydowntown do
 
   def get_submission!(id), do: Submission |> Repo.get!(id) |> Repo.preload(submission_preloads())
 
-  def create_submission(%{"submission" => submission_text, "run_id" => run_id} = params) do
+  def create_submission(conn, %{"submission" => submission_text, "run_id" => run_id} = params) do
+    current_user_id = conn.assigns[:current_user].id
     answer_id = Map.get(params, "answer_id")
 
     run = get_run!(run_id)
@@ -286,16 +287,16 @@ defmodule Registrations.Waydowntown do
 
         cond do
           specification.concept == "string_collector" ->
-            check_for_duplicate_normalised_submission(run, submission_text)
+            check_for_duplicate_normalised_submission(current_user_id, run, submission_text)
 
           specification.concept in ["food_court_frenzy", "fill_in_the_blank", "count_the_items"] ->
-            check_for_paired_answer(run, specification, submission_text, answer_id)
+            check_for_paired_answer(current_user_id, run, specification, submission_text, answer_id)
 
           specification.concept in ["orientation_memory", "cardinal_memory"] ->
-            check_for_ordered_answer(run, specification, submission_text, answer_id)
+            check_for_ordered_answer(current_user_id, run, specification, submission_text, answer_id)
 
           true ->
-            insert_submission(run, submission_text, answer_id)
+            insert_submission(current_user_id, run, submission_text, answer_id)
         end
     end
   end
@@ -310,18 +311,18 @@ defmodule Registrations.Waydowntown do
     ]
   end
 
-  defp check_for_duplicate_normalised_submission(run, submission_text) do
+  defp check_for_duplicate_normalised_submission(current_user_id, run, submission_text) do
     normalized_submission = normalize_string(submission_text)
     existing_submissions = Enum.map(run.submissions, &normalize_string(&1.submission))
 
     if normalized_submission in existing_submissions do
       {:error, "Submission already submitted"}
     else
-      insert_submission(run, submission_text)
+      insert_submission(current_user_id, run, submission_text)
     end
   end
 
-  defp check_for_paired_answer(run, specification, submission_text, answer_id) do
+  defp check_for_paired_answer(current_user_id, run, specification, submission_text, answer_id) do
     answer_with_submitted_id = Enum.find(specification.answers, fn a -> a.id == answer_id end)
 
     cond do
@@ -335,11 +336,11 @@ defmodule Registrations.Waydowntown do
         {:error, "Submission already exists for label: #{answer_with_submitted_id.label}"}
 
       true ->
-        insert_submission(run, submission_text, answer_id)
+        insert_submission(current_user_id, run, submission_text, answer_id)
     end
   end
 
-  def check_for_ordered_answer(run, specification, submission_text, answer_id) do
+  def check_for_ordered_answer(current_user_id, run, specification, submission_text, answer_id) do
     answer_with_submitted_id = Enum.find(specification.answers, fn a -> a.id == answer_id end)
     latest_submission = run.submissions |> Enum.sort_by(&{&1.inserted_at, &1.answer.order}, :desc) |> List.first()
 
@@ -356,18 +357,18 @@ defmodule Registrations.Waydowntown do
       end
 
     if answer_with_submitted_id.order == expected_answer_order do
-      insert_submission(run, submission_text, answer_id)
+      insert_submission(current_user_id, run, submission_text, answer_id)
     else
       {:error,
        "Expected submission for answer of order #{expected_answer_order}, id #{Enum.find(specification.answers, fn a -> a.order == expected_answer_order end).id}"}
     end
   end
 
-  # FIXME rename
-  defp insert_submission(run, submission_text, answer_id \\ nil) do
+  defp insert_submission(current_user_id, run, submission_text, answer_id \\ nil) do
     correct = check_submission_correctness(run, submission_text, answer_id)
 
     attrs = %{
+      "creator_id" => current_user_id,
       "submission" => submission_text,
       "correct" => correct,
       "run_id" => run.id,
