@@ -12,7 +12,8 @@ defmodule RegistrationsWeb.RunControllerTest do
      conn:
        conn
        |> put_req_header("accept", "application/vnd.api+json")
-       |> put_req_header("content-type", "application/vnd.api+json")}
+       |> put_req_header("content-type", "application/vnd.api+json")
+       |> put_req_header("authorization", setup_user_and_get_token())}
   end
 
   describe "show run" do
@@ -453,5 +454,22 @@ defmodule RegistrationsWeb.RunControllerTest do
       conn = post(conn, Routes.run_start_path(conn, :start, run), %{"data" => %{"type" => "runs", "id" => run.id}})
       assert json_response(conn, 422)["errors"] != %{}
     end
+  end
+
+  defp setup_user_and_get_token do
+    user =
+      Registrations.Repo.get_by(RegistrationsWeb.User, email: "octavia.butler@example.com") ||
+        insert(:octavia, admin: true)
+
+    authed_conn = build_conn()
+
+    authed_conn =
+      post(authed_conn, Routes.api_session_path(authed_conn, :create), %{
+        "user" => %{"email" => user.email, "password" => "Xenogenesis"}
+      })
+
+    json = json_response(authed_conn, 200)
+
+    json["data"]["access_token"]
   end
 end

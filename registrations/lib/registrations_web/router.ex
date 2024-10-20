@@ -128,16 +128,17 @@ defmodule RegistrationsWeb.Router do
 
     resources("/regions", RegionController, only: [:index])
     resources("/specifications", SpecificationController, only: [:index])
-
-    resources("/runs", RunController, except: [:new, :edit, :delete, :update]) do
-      post "/start", RunController, :start, as: :start
-    end
   end
 
   scope "/waydowntown", RegistrationsWeb do
     pipe_through([:pow_json_api_protected])
 
     resources("/regions", RegionController, only: [:create, :update])
+
+    resources("/runs", RunController, except: [:new, :edit, :delete, :update]) do
+      post "/start", RunController, :start, as: :start
+    end
+
     resources("/specifications", SpecificationController, only: [:update])
     get("/specifications/mine", SpecificationController, :mine, as: :my_specifications)
 
