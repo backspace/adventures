@@ -408,7 +408,7 @@ defmodule Registrations.Waydowntown do
 
   defp run_expired?(_), do: false
 
-  def get_run_progress(run) do
+  def get_run_progress(run, current_user_id) do
     correct_submissions =
       if run.specification.concept in ["orientation_memory", "cardinal_memory"] do
         latest_submission = run.submissions |> Enum.sort_by(&{&1.inserted_at, &1.answer.order}, :desc) |> List.first()
@@ -426,11 +426,24 @@ defmodule Registrations.Waydowntown do
 
     total_answers = length(run.specification.answers)
 
+    competitors = get_competitors_progress(run, current_user_id)
+
     %{
       correct_submissions: correct_submissions,
       total_answers: total_answers,
-      complete: run.winner_submission_id != nil
+      complete: run.winner_submission_id != nil,
+      competitors: competitors
     }
+  end
+
+  defp get_competitors_progress(run, current_user_id) do
+    run.participations
+    |> Enum.reject(&(&1.user_id == current_user_id))
+    |> Map.new(fn participation ->
+      user = Repo.get!(RegistrationsWeb.User, participation.user_id)
+      correct_submissions = Enum.count(run.submissions, &(&1.creator_id == user.id && &1.correct))
+      {user.email, %{correct_submissions: correct_submissions, total_answers: length(run.specification.answers)}}
+    end)
   end
 
   defp check_submission_correctness(
@@ -551,6 +564,6 @@ defmodule Registrations.Waydowntown do
   end
 
   defp submission_preloads do
-    [:answer, run: [specification: [:answers], submissions: [:answer]]]
+    [:answer, run: [:participations, specification: [:answers], submissions: [:answer]]]
   end
 end

@@ -3,16 +3,17 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
   alias Registrations.Waydowntown
   alias Registrations.Waydowntown.Answer
+  alias Registrations.Waydowntown.Participation
   alias Registrations.Waydowntown.Region
   alias Registrations.Waydowntown.Run
   alias Registrations.Waydowntown.Specification
   alias Registrations.Waydowntown.Submission
 
-  defp setup_conn(conn) do
+  defp setup_conn(conn, user \\ nil) do
     conn
     |> put_req_header("accept", "application/vnd.api+json")
     |> put_req_header("content-type", "application/vnd.api+json")
-    |> put_req_header("authorization", setup_user_and_get_token())
+    |> put_req_header("authorization", setup_user_and_get_token(user))
   end
 
   describe "create submission" do
@@ -1046,9 +1047,145 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
     end
   end
 
-  defp setup_user_and_get_token do
+  describe "create submissions for run with multiple participants" do
+    setup do
+      region = Repo.insert!(%Region{name: "Test Region"})
+
+      specification =
+        Repo.insert!(%Specification{
+          concept: "orientation_memory",
+          answers: [
+            %Answer{order: 1, answer: "left"},
+            %Answer{order: 2, answer: "up"},
+            %Answer{order: 3, answer: "right"}
+          ],
+          region: region
+        })
+
+      run = Repo.insert!(%Run{specification: specification, started_at: DateTime.utc_now()})
+
+      current_user = insert(:octavia, admin: true)
+      other_user1 = insert(:user, email: "user1@example.com")
+      other_user2 = insert(:user, email: "user2@example.com")
+
+      Repo.insert!(%Participation{user_id: current_user.id, run_id: run.id})
+      Repo.insert!(%Participation{user_id: other_user1.id, run_id: run.id})
+      Repo.insert!(%Participation{user_id: other_user2.id, run_id: run.id})
+
+      %{
+        run: run,
+        specification: specification,
+        region: region,
+        current_user: current_user,
+        other_user1: other_user1,
+        other_user2: other_user2
+      }
+    end
+
+    test "creates submissions and completes the run with current user winning", %{
+      conn: conn,
+      run: run,
+      specification: specification,
+      current_user: current_user
+    } do
+      [answer_1, answer_2, answer_3] = specification.answers
+
+      # Current user submits correct answers
+      Enum.each([answer_1, answer_2, answer_3], fn answer ->
+        conn =
+          conn
+          |> setup_conn()
+          |> post(Routes.submission_path(conn, :create), %{
+            "data" => %{
+              "type" => "submissions",
+              "attributes" => %{"submission" => answer.answer},
+              "relationships" => %{
+                "run" => %{"data" => %{"type" => "runs", "id" => run.id}},
+                "answer" => %{"data" => %{"type" => "answers", "id" => answer.id}}
+              }
+            }
+          })
+
+        assert %{"id" => id} = json_response(conn, 201)["data"]
+        submission = Waydowntown.get_submission!(id)
+        assert submission.correct
+
+        included_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+        assert included_run["attributes"]["correct_submissions"] == answer.order
+        assert included_run["attributes"]["total_answers"] == 3
+
+        if answer.order == 3 do
+          assert included_run["attributes"]["complete"]
+
+          assert included_run["attributes"]["competitors"] == %{
+                   "user1@example.com" => %{"correct_submissions" => 0, "total_answers" => 3},
+                   "user2@example.com" => %{"correct_submissions" => 0, "total_answers" => 3}
+                 }
+        else
+          refute included_run["attributes"]["complete"]
+        end
+      end)
+
+      run = Waydowntown.get_run!(run.id)
+      assert run.winner_submission_id != nil
+      winning_submission = Waydowntown.get_submission!(run.winner_submission_id)
+      assert winning_submission.creator_id == current_user.id
+    end
+
+    test "creates submissions with another user winning", %{
+      conn: conn,
+      run: run,
+      specification: specification,
+      other_user1: other_user1
+    } do
+      [answer_1, answer_2, answer_3] = specification.answers
+
+      # user1 submits correct answers
+      Enum.each([answer_1, answer_2, answer_3], fn answer ->
+        conn =
+          conn
+          |> setup_conn(other_user1)
+          |> post(Routes.submission_path(conn, :create), %{
+            "data" => %{
+              "type" => "submissions",
+              "attributes" => %{"submission" => answer.answer},
+              "relationships" => %{
+                "run" => %{"data" => %{"type" => "runs", "id" => run.id}},
+                "answer" => %{"data" => %{"type" => "answers", "id" => answer.id}}
+              }
+            }
+          })
+
+        assert %{"id" => id} = json_response(conn, 201)["data"]
+        submission = Waydowntown.get_submission!(id)
+        assert submission.correct
+
+        included_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+        assert included_run["attributes"]["correct_submissions"] == answer.order
+        assert included_run["attributes"]["total_answers"] == 3
+
+        if answer.order == 3 do
+          assert included_run["attributes"]["complete"]
+
+          assert included_run["attributes"]["competitors"] == %{
+                   "octavia.butler@example.com" => %{"correct_submissions" => 0, "total_answers" => 3},
+                   "user2@example.com" => %{"correct_submissions" => 0, "total_answers" => 3}
+                 }
+        else
+          refute included_run["attributes"]["complete"]
+        end
+      end)
+
+      run = Waydowntown.get_run!(run.id)
+      assert run.winner_submission_id != nil
+      winning_submission = Waydowntown.get_submission!(run.winner_submission_id)
+      assert winning_submission.creator_id == other_user1.id
+    end
+  end
+
+  defp setup_user_and_get_token(user \\ nil) do
     user =
-      Registrations.Repo.get_by(RegistrationsWeb.User, email: "octavia.butler@example.com") ||
+      user || Registrations.Repo.get_by(RegistrationsWeb.User, email: "octavia.butler@example.com") ||
         insert(:octavia, admin: true)
 
     authed_conn = build_conn()

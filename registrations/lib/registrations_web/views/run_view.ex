@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.RunView do
   alias Registrations.Waydowntown
 
   def fields do
-    [:complete, :correct_submissions, :total_answers, :task_description, :started_at]
+    [:complete, :correct_submissions, :total_answers, :task_description, :started_at, :competitors]
   end
 
   def hidden(run) do
@@ -28,16 +28,21 @@ defmodule RegistrationsWeb.RunView do
     run.specification.task_description
   end
 
-  def complete(run, _conn) do
-    Waydowntown.get_run_progress(run).complete
+  def complete(run, conn) do
+    Waydowntown.get_run_progress(run, conn.assigns.current_user.id).complete
   end
 
-  def correct_submissions(run, _conn) do
-    Waydowntown.get_run_progress(run).correct_submissions
+  @spec correct_submissions(any(), any()) :: any()
+  def correct_submissions(run, conn) do
+    Waydowntown.get_run_progress(run, conn.assigns.current_user.id).correct_submissions
   end
 
-  def total_answers(run, _conn) do
-    Waydowntown.get_run_progress(run).total_answers
+  def total_answers(run, conn) do
+    Waydowntown.get_run_progress(run, conn.assigns.current_user.id).total_answers
+  end
+
+  def competitors(run, conn) do
+    Waydowntown.get_run_progress(run, conn.assigns.current_user.id).competitors
   end
 
   def relationships do

@@ -2,9 +2,12 @@ defmodule Registrations.Factory do
   @moduledoc false
   use ExMachina.Ecto, repo: Registrations.Repo
 
+  alias Pow.Ecto.Schema.Password
+
   def user_factory do
     %RegistrationsWeb.User{
-      email: sequence(:email, &"jh#{&1}@example.com")
+      email: sequence(:email, &"jh#{&1}@example.com"),
+      password_hash: Password.pbkdf2_hash("Xenogenesis")
     }
   end
 
@@ -22,7 +25,7 @@ defmodule Registrations.Factory do
       user_factory(),
       %{
         email: "octavia.butler@example.com",
-        password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Xenogenesis")
+        password_hash: Password.pbkdf2_hash("Xenogenesis")
       }
     )
   end
