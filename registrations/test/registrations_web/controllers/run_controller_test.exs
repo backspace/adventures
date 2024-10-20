@@ -18,6 +18,8 @@ defmodule RegistrationsWeb.RunControllerTest do
 
   describe "show run" do
     setup do
+      user = Registrations.Repo.get_by(RegistrationsWeb.User, email: "octavia.butler@example.com") || insert(:octavia)
+
       parent_region =
         Repo.insert!(%Region{name: "Parent Region", geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}})
 
@@ -37,7 +39,7 @@ defmodule RegistrationsWeb.RunControllerTest do
           duration: 300
         })
 
-      {:ok, run} = Waydowntown.create_run(%{}, %{"concept" => specification.concept})
+      {:ok, run} = Waydowntown.create_run(user, %{}, %{"concept" => specification.concept})
 
       submission =
         Repo.insert!(%Submission{
@@ -47,6 +49,7 @@ defmodule RegistrationsWeb.RunControllerTest do
         })
 
       %{
+        user: user,
         run: run,
         specification: specification,
         submission: submission,
@@ -121,10 +124,11 @@ defmodule RegistrationsWeb.RunControllerTest do
 
     test "task description is included in the run when the it has started",
          %{
+           user: user,
            conn: conn,
            run: run
          } do
-      Waydowntown.start_run(run)
+      Waydowntown.start_run(user, run)
       conn = get(conn, Routes.run_path(conn, :show, run.id))
 
       assert %{
@@ -182,8 +186,13 @@ defmodule RegistrationsWeb.RunControllerTest do
       sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
       assert sideloaded_specification["id"] == specification.id
 
-      run = Waydowntown.get_run!(id)
+      run = id |> Waydowntown.get_run!() |> Repo.preload(:participations)
       assert run.specification_id == specification.id
+
+      user = Registrations.Repo.get_by(RegistrationsWeb.User, email: "octavia.butler@example.com")
+
+      assert length(run.participations) == 1
+      assert run.participations |> hd() |> Map.get(:user_id) == user.id
     end
 
     test "creates run with filtered specification", %{conn: conn} do
@@ -436,11 +445,13 @@ defmodule RegistrationsWeb.RunControllerTest do
 
   describe "start run" do
     setup do
+      user = Registrations.Repo.get_by(RegistrationsWeb.User, email: "octavia.butler@example.com") || insert(:octavia)
+
       specification =
         Repo.insert!(%Specification{concept: "fill_in_the_blank", answers: [%Answer{answer: "answer"}], duration: 300})
 
-      {:ok, run} = Waydowntown.create_run(%{}, %{"concept" => specification.concept})
-      %{run: run}
+      {:ok, run} = Waydowntown.create_run(user, %{}, %{"concept" => specification.concept})
+      %{user: user, run: run}
     end
 
     test "starts the run", %{conn: conn, run: run} do
@@ -449,10 +460,25 @@ defmodule RegistrationsWeb.RunControllerTest do
       assert started_at != nil
     end
 
-    test "returns error when starting an already started run", %{conn: conn, run: run} do
-      Waydowntown.start_run(run)
+    test "returns error when starting an already started run", %{user: user, conn: conn, run: run} do
+      Waydowntown.start_run(user, run)
       conn = post(conn, Routes.run_start_path(conn, :start, run), %{"data" => %{"type" => "runs", "id" => run.id}})
       assert json_response(conn, 422)["errors"] != %{}
+    end
+  end
+
+  describe "start another user's run" do
+    setup do
+      Repo.insert!(%Specification{concept: "fill_in_the_blank"})
+
+      user = insert(:user)
+      {:ok, run} = Waydowntown.create_run(user, %{}, %{"concept" => "fill_in_the_blank"})
+      %{run: run}
+    end
+
+    test "returns error", %{conn: conn, run: run} do
+      conn = post(conn, Routes.run_start_path(conn, :start, run), %{"data" => %{"type" => "runs", "id" => run.id}})
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "User is not a participant in this run"}]
     end
   end
 

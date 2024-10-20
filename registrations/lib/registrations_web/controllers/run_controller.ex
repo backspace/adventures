@@ -22,7 +22,7 @@ defmodule RegistrationsWeb.RunController do
     Logger.info("Creating run with params: #{inspect(params)}")
     specification_filter = get_specification_filter(conn.params)
 
-    case Waydowntown.create_run(params, specification_filter) do
+    case Waydowntown.create_run(conn.assigns[:current_user], params, specification_filter) do
       {:ok, %Run{} = run} ->
         run = Waydowntown.get_run!(run.id)
 
@@ -30,6 +30,11 @@ defmodule RegistrationsWeb.RunController do
         |> put_status(:created)
         |> put_resp_header("location", Routes.run_path(conn, :show, run))
         |> render("show.json", %{data: run, conn: conn, params: params})
+
+      {:error, message} when is_binary(message) ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: [%{detail: message}]})
 
       {:error, changeset} ->
         conn
@@ -74,7 +79,7 @@ defmodule RegistrationsWeb.RunController do
   def start(conn, %{"id" => id}) do
     run = Waydowntown.get_run!(id)
 
-    case Waydowntown.start_run(run) do
+    case Waydowntown.start_run(conn.assigns[:current_user], run) do
       {:ok, started_run} ->
         render(conn, "show.json", %{data: started_run, conn: conn, params: %{}})
 

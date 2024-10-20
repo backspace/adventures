@@ -4,18 +4,21 @@ defmodule Registrations.Waydowntown.Run do
 
   import Ecto.Changeset
 
+  alias Registrations.Waydowntown.Participation
   alias Registrations.Waydowntown.Submission
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "waydowntown"
 
   schema "runs" do
+    has_many(:participations, Participation, on_delete: :delete_all)
+
     belongs_to(:specification, Registrations.Waydowntown.Specification, type: :binary_id)
     has_many(:submissions, Submission, on_delete: :delete_all)
 
-    field(:started_at, :utc_datetime_usec)
-
     belongs_to(:winner_submission, Submission, type: :binary_id)
+
+    field(:started_at, :utc_datetime_usec)
 
     field(:custom_error, :string, virtual: true)
 

@@ -4,6 +4,7 @@ defmodule Registrations.Waydowntown do
 
   alias Registrations.Repo
   alias Registrations.Waydowntown.Answer
+  alias Registrations.Waydowntown.Participation
   alias Registrations.Waydowntown.Region
   alias Registrations.Waydowntown.Run
   alias Registrations.Waydowntown.Specification
@@ -67,31 +68,14 @@ defmodule Registrations.Waydowntown do
     |> Repo.preload(run_preloads())
   end
 
-  def create_run(attrs \\ %{}, specification_filter \\ nil) do
-    case_result =
-      case specification_filter do
-        %{"placed" => "false"} ->
-          create_run_with_new_specification(attrs)
-
-        %{"placed" => "true"} ->
-          create_run_with_placed_specification(attrs)
-
-        %{"position" => {latitude, longitude}} ->
-          create_run_with_nearest_specification(attrs, latitude, longitude)
-
-        %{"concept" => concept} ->
-          create_run_with_concept(attrs, concept)
-
-        %{"specification_id" => id} ->
-          create_run_with_specific_specification(attrs, id)
-
-        nil ->
-          create_run_with_placed_specification(attrs)
-      end
-
-    case case_result do
-      {:ok, run} ->
-        {:ok, run}
+  def create_run(current_user, attrs \\ %{}, specification_filter \\ nil) do
+    with {:ok, run} <- construct_run(attrs, specification_filter),
+         {:ok, run} <- Repo.insert(run),
+         {:ok, _participation} <- create_participation(current_user, run) do
+      {:ok, Repo.preload(run, run_preloads())}
+    else
+      {:error, changeset} ->
+        {:error, changeset}
 
       {:error, error_message} when is_binary(error_message) ->
         changeset =
@@ -100,77 +84,78 @@ defmodule Registrations.Waydowntown do
           |> Ecto.Changeset.add_error(:base, error_message)
 
         {:error, changeset}
-
-      {:error, changeset} ->
-        {:error, changeset}
     end
   end
 
-  defp create_run_with_placed_specification(attrs) do
+  defp construct_run(attrs, specification_filter) do
+    case specification_filter do
+      %{"placed" => "false"} ->
+        construct_run_with_new_specification(attrs)
+
+      %{"placed" => "true"} ->
+        construct_run_with_placed_specification(attrs)
+
+      %{"position" => {latitude, longitude}} ->
+        construct_run_with_nearest_specification(attrs, latitude, longitude)
+
+      %{"concept" => concept} ->
+        construct_run_with_concept(attrs, concept)
+
+      %{"specification_id" => id} ->
+        construct_run_with_specific_specification(attrs, id)
+
+      nil ->
+        construct_run_with_placed_specification(attrs)
+    end
+  end
+
+  defp construct_run_with_placed_specification(attrs) do
     case get_random_specification(%{"placed" => true}) do
       nil ->
         {:error, "No placed specification available"}
 
       specification ->
-        %Run{}
-        |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
-        |> Repo.insert()
+        {:ok, Run.changeset(%Run{}, Map.put(attrs, "specification_id", specification.id))}
     end
   end
 
-  defp create_run_with_nearest_specification(attrs, latitude, longitude) do
+  defp construct_run_with_nearest_specification(attrs, latitude, longitude) do
     case get_nearest_specification(latitude, longitude) do
       nil ->
         {:error, "No specification found near the specified position"}
 
       specification ->
-        %Run{}
-        |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
-        |> Repo.insert()
+        {:ok, Run.changeset(%Run{}, Map.put(attrs, "specification_id", specification.id))}
     end
   end
 
-  defp get_nearest_specification(latitude, longitude) do
-    point = %Geo.Point{coordinates: {longitude, latitude}, srid: 4326}
-
-    Specification
-    |> join(:inner, [i], r in assoc(i, :region))
-    |> order_by([i, r], fragment("ST_Distance(?, ?)", r.geom, ^point))
-    |> limit(1)
-    |> Repo.one()
-  end
-
-  defp create_run_with_concept(attrs, concept) do
+  defp construct_run_with_concept(attrs, concept) do
     concept_data = concepts_yaml()[concept]
 
     if concept_data["placeless"] == true do
-      create_run_with_new_specification(attrs, concept)
+      construct_run_with_new_specification(attrs, concept)
     else
       case get_random_specification(%{"concept" => concept, "placed" => true}) do
         nil ->
           {:error, "No specification with the specified concept available"}
 
         specification ->
-          %Run{}
-          |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
-          |> Repo.insert()
+          {:ok, Run.changeset(%Run{}, Map.put(attrs, "specification_id", specification.id))}
       end
     end
   end
 
-  defp create_run_with_specific_specification(attrs, specification_id) do
+  defp construct_run_with_specific_specification(attrs, specification_id) do
     case Repo.get(Specification, specification_id) do
       nil ->
         {:error, "Specification not found"}
 
       specification ->
-        %Run{}
-        |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
-        |> Repo.insert()
+        {:ok, Run.changeset(%Run{}, Map.put(attrs, "specification_id", specification.id))}
     end
   end
 
-  defp create_run_with_new_specification(attrs, concept \\ nil) do
+  defp construct_run_with_new_specification(attrs, concept \\ nil) do
     {concept_key, concept_data} =
       if concept do
         {concept, concepts_yaml()[concept]}
@@ -180,29 +165,34 @@ defmodule Registrations.Waydowntown do
 
     answers = generate_answers(concept_data)
 
-    {:ok, specification} =
-      create_specification(%{
-        concept: concept_key,
-        task_description: concept_data["instructions"]
-      })
-
-    answer_models =
-      answers
-      |> Enum.with_index()
-      |> Enum.map(fn {answer, index} -> %Answer{answer: answer, order: index + 1, specification_id: specification.id} end)
-
-    Enum.each(answer_models, fn answer ->
-      Repo.insert!(answer)
-    end)
-
-    %Run{}
-    |> Run.changeset(Map.put(attrs, "specification_id", specification.id))
-    |> Repo.insert()
+    with {:ok, specification} <-
+           create_specification(%{
+             concept: concept_key,
+             task_description: concept_data["instructions"]
+           }),
+         {:ok, _} <- create_answers(specification, answers) do
+      {:ok, Run.changeset(%Run{}, Map.put(attrs, "specification_id", specification.id))}
+    end
   end
 
   defp create_specification(attrs) do
     %Specification{}
     |> Specification.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp create_answers(specification, answers) do
+    answer_models =
+      answers
+      |> Enum.with_index()
+      |> Enum.map(fn {answer, index} -> %Answer{answer: answer, order: index + 1, specification_id: specification.id} end)
+
+    {:ok, Enum.map(answer_models, &Repo.insert!/1)}
+  end
+
+  defp create_participation(user, run) do
+    %Participation{}
+    |> Participation.changeset(%{user_id: user.id, run_id: run.id})
     |> Repo.insert()
   end
 
@@ -242,6 +232,16 @@ defmodule Registrations.Waydowntown do
       [] -> nil
       specifications -> Enum.random(specifications)
     end
+  end
+
+  defp get_nearest_specification(latitude, longitude) do
+    point = %Geo.Point{coordinates: {longitude, latitude}, srid: 4326}
+
+    Specification
+    |> join(:inner, [i], r in assoc(i, :region))
+    |> order_by([i, r], fragment("ST_Distance(?, ?)", r.geom, ^point))
+    |> limit(1)
+    |> Repo.one()
   end
 
   def list_specifications do
@@ -528,20 +528,26 @@ defmodule Registrations.Waydowntown do
     |> String.downcase()
   end
 
-  def start_run(%Run{} = run) do
-    case run.started_at do
-      nil ->
-        run
-        |> Run.changeset(%{started_at: DateTime.utc_now()})
-        |> Repo.update()
+  def start_run(current_user, %Run{} = run) do
+    run_has_current_user_participation = run.participations |> Enum.map(& &1.user_id) |> Enum.member?(current_user.id)
 
-      _ ->
-        {:error, "Run already started"}
+    if run_has_current_user_participation do
+      case run.started_at do
+        nil ->
+          run
+          |> Run.changeset(%{started_at: DateTime.utc_now()})
+          |> Repo.update()
+
+        _ ->
+          {:error, "Run already started"}
+      end
+    else
+      {:error, "User is not a participant in this run"}
     end
   end
 
   defp run_preloads do
-    [submissions: [:answer], specification: [:answers, region: [parent: [parent: [:parent]]]]]
+    [:participations, submissions: [:answer], specification: [:answers, region: [parent: [parent: [:parent]]]]]
   end
 
   defp submission_preloads do
