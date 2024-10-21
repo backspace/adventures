@@ -34,6 +34,7 @@ defmodule RegistrationsWeb.SessionControllerTest do
       |> get(Routes.session_path(conn, :show))
 
     assert json_response(conn, 200)["data"]["id"] == user.id
+    assert json_response(conn, 200)["data"]["attributes"]["admin"]
     assert json_response(conn, 200)["data"]["attributes"]["email"] == user.email
   end
 end
