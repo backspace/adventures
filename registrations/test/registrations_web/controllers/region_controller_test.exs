@@ -182,8 +182,43 @@ defmodule RegistrationsWeb.RegionControllerTest do
     end
   end
 
-  defp setup_user_and_get_token do
-    user = insert(:octavia, admin: true)
+  describe "DELETE /waydowntown/regions/:id" do
+    setup %{conn: conn} do
+      region = Repo.insert!(%Region{name: "Test Region", geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}})
+      %{conn: setup_conn(conn), region: region}
+    end
+
+    test "deletes chosen region when user is admin", %{conn: conn, region: region} do
+      admin_token = setup_user_and_get_token(admin: true)
+
+      conn =
+        conn
+        |> put_req_header("authorization", admin_token)
+        |> delete(Routes.region_path(conn, :delete, region))
+
+      assert response(conn, 204)
+      assert_raise Ecto.NoResultsError, fn -> Repo.get!(Region, region.id) end
+    end
+
+    test "returns forbidden when user is not admin", %{conn: conn, region: region} do
+      non_admin_token = setup_user_and_get_token(admin: false)
+
+      conn =
+        conn
+        |> put_req_header("authorization", non_admin_token)
+        |> delete(Routes.region_path(conn, :delete, region))
+
+      assert json_response(conn, 403)["errors"] == [
+               %{"detail" => "Admin access required", "status" => 403, "title" => "Forbidden"}
+             ]
+
+      # Region still exists
+      assert Repo.get!(Region, region.id)
+    end
+  end
+
+  defp setup_user_and_get_token(opts \\ []) do
+    user = insert(:octavia, admin: Keyword.get(opts, :admin, true))
 
     authed_conn = build_conn()
 

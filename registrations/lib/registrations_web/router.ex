@@ -59,6 +59,11 @@ defmodule RegistrationsWeb.Router do
     plug(RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
   end
 
+  pipeline :pow_json_api_protected_admin do
+    plug(:pow_json_api_protected)
+    plug(RegistrationsWeb.Plugs.AdminAPI)
+  end
+
   pipeline :skip_csrf_protection do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -134,6 +139,16 @@ defmodule RegistrationsWeb.Router do
     pipe_through([:pow_json_api_protected])
 
     resources("/regions", RegionController, only: [:create, :update])
+  end
+
+  scope "/waydowntown", RegistrationsWeb do
+    pipe_through([:pow_json_api_protected_admin])
+
+    resources("/regions", RegionController, only: [:delete])
+  end
+
+  scope "/waydowntown", RegistrationsWeb do
+    pipe_through([:pow_json_api_protected])
 
     resources("/runs", RunController, except: [:new, :edit, :delete, :update]) do
       post "/start", RunController, :start, as: :start

@@ -40,6 +40,14 @@ defmodule RegistrationsWeb.RegionController do
     end
   end
 
+  def delete(conn, %{"id" => id}) do
+    region = Waydowntown.get_region!(id)
+
+    with {:ok, %Region{}} <- Waydowntown.delete_region(region) do
+      send_resp(conn, :no_content, "")
+    end
+  end
+
   defp get_position_filter(params) do
     case params["filter"] do
       %{"position" => position} when is_binary(position) ->

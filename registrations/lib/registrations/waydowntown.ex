@@ -53,6 +53,10 @@ defmodule Registrations.Waydowntown do
     |> Repo.update()
   end
 
+  def delete_region(%Region{} = region) do
+    Repo.delete(region)
+  end
+
   defp region_preloads do
     [parent: [parent: [:parent]]]
   end
