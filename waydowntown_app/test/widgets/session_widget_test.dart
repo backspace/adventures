@@ -62,7 +62,8 @@ void main() {
     expect(find.byType(ElevatedButton), findsOneWidget);
   });
 
-  testWidgets('SessionWidget shows email and logout button when logged in',
+  testWidgets(
+      'SessionWidget shows email, admin icon, and logout button when logged in as admin',
       (WidgetTester tester) async {
     FlutterSecureStorage.setMockInitialValues({
       'access_token': 'abc123',
@@ -72,7 +73,7 @@ void main() {
       'http://example.com/fixme/session',
       (server) => server.reply(200, {
         'data': {
-          'attributes': {'email': 'test@example.com'}
+          'attributes': {'email': 'test@example.com', 'admin': true}
         }
       }),
     );
@@ -84,11 +85,48 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('test@example.com'), findsOneWidget);
+    expect(find.byIcon(Icons.admin_panel_settings), findsOneWidget);
     expect(find.byIcon(Icons.logout), findsOneWidget);
     expect(find.text('Log in'), findsNothing);
+
+    expect(await secureStorage.read(key: 'user_email'),
+        equals('test@example.com'));
+    expect(await secureStorage.read(key: 'user_is_admin'), equals('true'));
   });
 
-  testWidgets('Logout button clears cookie and shows login button',
+  testWidgets(
+      'SessionWidget shows email and logout button when logged in as non-admin',
+      (WidgetTester tester) async {
+    FlutterSecureStorage.setMockInitialValues({
+      'access_token': 'abc123',
+    });
+
+    dioAdapter.onGet(
+      'http://example.com/fixme/session',
+      (server) => server.reply(200, {
+        'data': {
+          'attributes': {'email': 'test@example.com', 'admin': false}
+        }
+      }),
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: SessionWidget(dio: dio, apiBaseUrl: 'http://example.com'),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('test@example.com'), findsOneWidget);
+    expect(find.byIcon(Icons.admin_panel_settings), findsNothing);
+    expect(find.byIcon(Icons.logout), findsOneWidget);
+    expect(find.text('Log in'), findsNothing);
+
+    expect(await secureStorage.read(key: 'user_email'),
+        equals('test@example.com'));
+    expect(await secureStorage.read(key: 'user_is_admin'), equals('false'));
+  });
+
+  testWidgets('Logout button clears user data and shows login button',
       (WidgetTester tester) async {
     FlutterSecureStorage.setMockInitialValues({
       'access_token': 'abc123',
@@ -128,6 +166,8 @@ void main() {
 
     expect(await secureStorage.read(key: 'access_token'), isNull);
     expect(await secureStorage.read(key: 'renewal_token'), isNull);
+    expect(await secureStorage.read(key: 'user_email'), isNull);
+    expect(await secureStorage.read(key: 'user_is_admin'), isNull);
   });
 
   testWidgets('SessionWidget renews session on 401 and retries',

@@ -18,6 +18,7 @@ class SessionWidget extends StatefulWidget {
 
 class _SessionWidgetState extends State<SessionWidget> {
   String? _email;
+  bool? _isAdmin;
   bool _isLoading = true;
 
   @override
@@ -34,10 +35,13 @@ class _SessionWidgetState extends State<SessionWidget> {
     try {
       final response = await _getSession();
       if (response.statusCode == 200) {
+        final attributes = response.data['data']['attributes'];
         setState(() {
-          _email = response.data['data']['attributes']['email'];
+          _email = attributes['email'];
+          _isAdmin = attributes['admin'] ?? false;
           _isLoading = false;
         });
+        await _saveUserData(_email!, _isAdmin!);
         return;
       }
     } catch (error) {
@@ -45,9 +49,16 @@ class _SessionWidgetState extends State<SessionWidget> {
 
       setState(() {
         _email = null;
+        _isAdmin = null;
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _saveUserData(String email, bool isAdmin) async {
+    const secureStorage = secure_storage.FlutterSecureStorage();
+    await secureStorage.write(key: 'user_email', value: email);
+    await secureStorage.write(key: 'user_is_admin', value: isAdmin.toString());
   }
 
   Future<Response> _getSession() {
@@ -64,9 +75,12 @@ class _SessionWidgetState extends State<SessionWidget> {
     const secureStorage = secure_storage.FlutterSecureStorage();
     await secureStorage.delete(key: 'access_token');
     await secureStorage.delete(key: 'renewal_token');
+    await secureStorage.delete(key: 'user_email');
+    await secureStorage.delete(key: 'user_is_admin');
 
     setState(() {
       _email = null;
+      _isAdmin = null;
       _isLoading = false;
     });
 
@@ -105,6 +119,8 @@ class _SessionWidgetState extends State<SessionWidget> {
         spacing: 8, // Add some space between the email and the logout button
         children: [
           Text('$_email', style: const TextStyle(color: Colors.white)),
+          if (_isAdmin == true)
+            const Icon(Icons.admin_panel_settings, color: Colors.white),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: _logout,
