@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
@@ -9,12 +10,15 @@ import 'package:waydowntown/widgets/regions_table.dart';
 void main() {
   late Dio dio;
   late DioAdapter dioAdapter;
+  late FlutterSecureStorage secureStorage;
 
   setUp(() {
     dio = Dio(BaseOptions(baseUrl: 'http://example.com'));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
     dio.httpClientAdapter = dioAdapter;
+    secureStorage = FlutterSecureStorage();
+    FlutterSecureStorage.setMockInitialValues({});
   });
 
   testWidgets('RegionsTable displays sorted and nested regions',
@@ -60,6 +64,7 @@ void main() {
             .then((response) => response.data)),
         onRefresh: () {},
         dio: dio,
+        secureStorage: secureStorage,
       ),
     ));
 
@@ -106,6 +111,7 @@ void main() {
         regions: regions,
         onRefresh: () {},
         dio: dio,
+        secureStorage: secureStorage,
       ),
     ));
 
@@ -121,5 +127,89 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Updated Region'), findsOneWidget);
+  });
+
+  testWidgets('RegionsTable shows delete button for admin users',
+      (WidgetTester tester) async {
+    final regions = [Region(id: '1', name: 'Test Region')];
+
+    FlutterSecureStorage.setMockInitialValues({
+      'user_is_admin': 'true',
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      home: RegionsTable(
+        regions: regions,
+        onRefresh: () {},
+        dio: dio,
+        secureStorage: secureStorage,
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Delete'), findsOneWidget);
+  });
+
+  testWidgets('RegionsTable hides delete button for non-admin users',
+      (WidgetTester tester) async {
+    final regions = [Region(id: '1', name: 'Test Region')];
+
+    FlutterSecureStorage.setMockInitialValues({
+      'user_is_admin': 'false',
+    });
+
+    await tester.pumpWidget(MaterialApp(
+      home: RegionsTable(
+        regions: regions,
+        onRefresh: () {},
+        dio: dio,
+        secureStorage: secureStorage,
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Delete'), findsNothing);
+  });
+
+  testWidgets('RegionsTable deletes region after confirmation',
+      (WidgetTester tester) async {
+    final regions = [Region(id: '1', name: 'Test Region')];
+
+    FlutterSecureStorage.setMockInitialValues({
+      'user_is_admin': 'true',
+    });
+
+    dioAdapter.onDelete(
+      '/waydowntown/regions/1',
+      (server) => server.reply(204, null),
+    );
+
+    bool refreshCalled = false;
+
+    await tester.pumpWidget(MaterialApp(
+      home: RegionsTable(
+        regions: regions,
+        onRefresh: () {
+          refreshCalled = true;
+        },
+        dio: dio,
+        secureStorage: secureStorage,
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Are you sure you want to delete Test Region?'),
+        findsOneWidget);
+
+    await tester.tap(find.text('Delete').last);
+    await tester.pumpAndSettle();
+
+    expect(refreshCalled, isTrue);
   });
 }
