@@ -8,11 +8,11 @@ class EditRegionForm extends StatefulWidget {
   final Dio dio;
 
   const EditRegionForm({
-    Key? key,
+    super.key,
     this.region,
     required this.onSave,
     required this.dio,
-  }) : super(key: key);
+  });
 
   @override
   _EditRegionFormState createState() => _EditRegionFormState();
@@ -37,15 +37,15 @@ class _EditRegionFormState extends State<EditRegionForm> {
         children: [
           TextFormField(
             controller: _nameController,
-            decoration: InputDecoration(labelText: 'Name'),
+            decoration: const InputDecoration(labelText: 'Name'),
           ),
           TextFormField(
             controller: _descriptionController,
-            decoration: InputDecoration(labelText: 'Description'),
+            decoration: const InputDecoration(labelText: 'Description'),
           ),
           ElevatedButton(
             onPressed: _saveRegion,
-            child: Text('Save Region'),
+            child: const Text('Save Region'),
           ),
         ],
       ),

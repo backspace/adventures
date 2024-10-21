@@ -9,11 +9,11 @@ class RegionsTable extends StatelessWidget {
   final Function() onRefresh;
 
   const RegionsTable({
-    Key? key,
+    super.key,
     required this.regions,
     required this.onRefresh,
     required this.dio,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class RegionsTable extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: DataTable(
-          columns: [
+          columns: const [
             DataColumn(label: Text('Name')),
             DataColumn(label: Text('Description')),
             DataColumn(label: Text('Actions')),
@@ -50,7 +50,7 @@ class RegionsTable extends StatelessWidget {
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
-                    title: Text('Edit Region'),
+                    title: const Text('Edit Region'),
                     content: EditRegionForm(
                       region: region,
                       dio: dio,
@@ -63,7 +63,7 @@ class RegionsTable extends StatelessWidget {
                 },
               );
             },
-            child: Text('Edit'),
+            child: const Text('Edit'),
           ),
         ),
       ]));
