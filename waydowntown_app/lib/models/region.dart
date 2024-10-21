@@ -87,4 +87,14 @@ class Region {
         .where((region) => region.parentRegion == null)
         .toList();
   }
+
+  static void sortAlphabetically(List<Region> regions) {
+    regions
+        .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    for (var region in regions) {
+      if (region.children.isNotEmpty) {
+        sortAlphabetically(region.children);
+      }
+    }
+  }
 }

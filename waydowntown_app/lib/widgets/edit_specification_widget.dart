@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/specification.dart';
+import 'package:waydowntown/widgets/edit_region_form.dart';
 import 'package:yaml/yaml.dart';
 
 class EditSpecificationWidget extends StatefulWidget {
@@ -76,22 +77,11 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   }
 
   void _sortRegions() {
-    _sortRegionList(_regions);
-  }
-
-  void _sortRegionList(List<Region> regions) {
     if (_sortByDistance) {
-      regions.sort((a, b) => (a.distance ?? double.infinity)
+      _regions.sort((a, b) => (a.distance ?? double.infinity)
           .compareTo(b.distance ?? double.infinity));
     } else {
-      regions
-          .sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-    }
-
-    for (var region in regions) {
-      if (region.children.isNotEmpty) {
-        _sortRegionList(region.children);
-      }
+      Region.sortAlphabetically(_regions);
     }
   }
 
@@ -360,69 +350,23 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   }
 
   Future<void> _createNewRegion() async {
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController descriptionController = TextEditingController();
-
     await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Create New Region'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-              ),
-            ],
+          content: EditRegionForm(
+            region: null,
+            dio: widget.dio,
+            onSave: (newRegion) {
+              setState(() {
+                _regions.add(newRegion);
+                _sortRegions();
+                _selectedRegionId = newRegion.id;
+              });
+              Navigator.of(context).pop();
+            },
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  final response = await widget.dio.post(
-                    '/waydowntown/regions',
-                    data: {
-                      'data': {
-                        'type': 'regions',
-                        'attributes': {
-                          'name': nameController.text,
-                          'description': descriptionController.text,
-                        },
-                      },
-                    },
-                  );
-
-                  if (response.statusCode == 201) {
-                    final newRegion =
-                        Region.fromJson(response.data['data'], []);
-                    setState(() {
-                      _regions.add(newRegion);
-                      _sortRegions();
-                      _selectedRegionId = newRegion.id;
-                    });
-                    Navigator.of(context).pop();
-                  }
-                } catch (e) {
-                  talker.error('Error creating new region: $e');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Failed to create new region')),
-                  );
-                }
-              },
-              child: const Text('Create'),
-            ),
-          ],
         );
       },
     );

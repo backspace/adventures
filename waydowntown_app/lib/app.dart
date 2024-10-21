@@ -6,8 +6,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 import 'package:waydowntown/developer_tools.dart';
+import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/refresh_token_interceptor.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
+import 'package:waydowntown/widgets/regions_table.dart';
 import 'package:waydowntown/widgets/session_widget.dart';
 
 var talker = Talker();
@@ -191,16 +193,55 @@ class _HomeState extends State<Home> {
                 }),
                 const SizedBox(height: 20),
                 const Divider(color: Colors.white),
-                ElevatedButton(
-                  child: const Text('Developer Tools'),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DeveloperTools(dio: dio),
-                      ),
-                    );
-                  },
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      child: const Text('Regions'),
+                      onPressed: () {
+                        Future<void> loadRegions() async {
+                          try {
+                            final response =
+                                await dio.get('/waydowntown/regions');
+                            if (response.statusCode == 200) {
+                              final regions =
+                                  Region.parseRegions(response.data);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => RegionsTable(
+                                      dio: dio,
+                                      regions: regions,
+                                      onRefresh: () {
+                                        loadRegions();
+                                      }),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            talker.error('Error loading regions: $e');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Failed to load regions')),
+                            );
+                          }
+                        }
+
+                        loadRegions();
+                      },
+                    ),
+                    ElevatedButton(
+                      child: const Text('Developer Tools'),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DeveloperTools(dio: dio),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),

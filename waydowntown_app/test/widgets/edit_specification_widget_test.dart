@@ -429,7 +429,7 @@ another_concept:
     await tester.enterText(find.widgetWithText(TextField, 'Description'),
         'New Region Description');
 
-    await tester.tap(find.text('Create'));
+    await tester.tap(find.text('Save Region'));
     await tester.pumpAndSettle();
 
     expect(
