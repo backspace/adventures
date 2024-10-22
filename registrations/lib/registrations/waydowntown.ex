@@ -61,8 +61,24 @@ defmodule Registrations.Waydowntown do
     [parent: [parent: [:parent]]]
   end
 
-  def list_runs do
-    Run |> Repo.all() |> Repo.preload(run_preloads())
+  def list_runs(filters \\ %{}) do
+    Run
+    |> filter_runs_query(filters)
+    |> Repo.all()
+    |> Repo.preload(run_preloads())
+  end
+
+  defp filter_runs_query(query, filters) do
+    Enum.reduce(filters, query, fn
+      {"started", "true"}, query ->
+        from(r in query, where: not is_nil(r.started_at))
+
+      {"started", "false"}, query ->
+        from(r in query, where: is_nil(r.started_at))
+
+      _, query ->
+        query
+    end)
   end
 
   @spec get_run!(any()) :: nil | [%{optional(atom()) => any()}] | %{optional(atom()) => any()}

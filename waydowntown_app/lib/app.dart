@@ -9,6 +9,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 import 'package:waydowntown/developer_tools.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/refresh_token_interceptor.dart';
+import 'package:waydowntown/routes/open_runs_route.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
 import 'package:waydowntown/widgets/regions_table.dart';
 import 'package:waydowntown/widgets/session_widget.dart';
@@ -111,6 +112,19 @@ class _HomeState extends State<Home> {
                 const SizedBox(height: 20),
                 SessionWidget(dio: dio, apiBaseUrl: dotenv.env['API_ROOT']!),
                 const SizedBox(height: 20),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  ElevatedButton(
+                    child: const Text('Open games'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OpenGamesRoute(dio: dio),
+                        ),
+                      );
+                    },
+                  ),
+                ]),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

@@ -482,6 +482,43 @@ defmodule RegistrationsWeb.RunControllerTest do
     end
   end
 
+  describe "index" do
+    setup do
+      user = Registrations.Repo.get_by(RegistrationsWeb.User, email: "octavia.butler@example.com") || insert(:octavia)
+      specification = Repo.insert!(%Specification{concept: "fill_in_the_blank"})
+
+      {:ok, started_run} = Waydowntown.create_run(user, %{}, %{"concept" => specification.concept})
+      {:ok, _} = Waydowntown.start_run(user, started_run)
+
+      {:ok, not_started_run} = Waydowntown.create_run(user, %{}, %{"concept" => specification.concept})
+
+      %{user: user, started_run: started_run, not_started_run: not_started_run}
+    end
+
+    test "lists all started runs when filter[started]=true", %{conn: conn, started_run: started_run} do
+      conn = get(conn, Routes.run_path(conn, :index, filter: %{started: "true"}))
+      response = json_response(conn, 200)
+
+      assert length(response["data"]) == 1
+      assert Enum.at(response["data"], 0)["id"] == started_run.id
+    end
+
+    test "lists all not started runs when filter[started]=false", %{conn: conn, not_started_run: not_started_run} do
+      conn = get(conn, Routes.run_path(conn, :index, filter: %{started: "false"}))
+      response = json_response(conn, 200)
+
+      assert length(response["data"]) == 1
+      assert Enum.at(response["data"], 0)["id"] == not_started_run.id
+    end
+
+    test "lists all runs when no started filter is provided", %{conn: conn} do
+      conn = get(conn, Routes.run_path(conn, :index))
+      response = json_response(conn, 200)
+
+      assert length(response["data"]) == 2
+    end
+  end
+
   defp setup_user_and_get_token do
     user =
       Registrations.Repo.get_by(RegistrationsWeb.User, email: "octavia.butler@example.com") ||

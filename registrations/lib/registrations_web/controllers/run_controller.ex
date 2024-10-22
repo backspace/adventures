@@ -8,13 +8,13 @@ defmodule RegistrationsWeb.RunController do
 
   plug(JSONAPI.QueryParser,
     view: RegistrationsWeb.RunView,
-    filter: ["specification.concept", "specification.id", "specification.placed", "specification.position"]
+    filter: ["specification.concept", "specification.id", "specification.placed", "specification.position", "started"]
   )
 
   action_fallback(RegistrationsWeb.FallbackController)
 
   def index(conn, params) do
-    runs = Waydowntown.list_runs()
+    runs = Waydowntown.list_runs(conn.params["filter"] || %{})
     render(conn, "index.json", %{data: runs, conn: conn, params: params})
   end
 
@@ -94,4 +94,15 @@ defmodule RegistrationsWeb.RunController do
         |> render("error.json", message: "Unable to start the run")
     end
   end
+
+  defp filter_runs(runs, %{"started" => started}) when started in ["true", "false"] do
+    Enum.filter(runs, fn run ->
+      case started do
+        "true" -> not is_nil(run.started_at)
+        "false" -> is_nil(run.started_at)
+      end
+    end)
+  end
+
+  defp filter_runs(runs, _), do: runs
 end

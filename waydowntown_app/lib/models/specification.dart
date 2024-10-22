@@ -32,7 +32,8 @@ class Specification {
       if (relationships == null ||
           relationships['region'] == null ||
           relationships['region']['data'] == null) {
-        throw const FormatException('Placed specification must have a region');
+        throw FormatException(
+            'Placed specification must have a region, ${json['id']} did not');
       }
 
       final regionData = relationships['region']['data'];
