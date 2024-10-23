@@ -36,7 +36,7 @@ defmodule RegistrationsWeb.ParticipationController do
     if conn.assigns[:current_user].id == participation.user_id do
       ready_at = if ready, do: DateTime.utc_now()
 
-      case Waydowntown.update_participation(participation, %{ready_at: ready_at}) do
+      case Waydowntown.update_participation(participation, %{ready_at: ready_at}, conn) do
         {:ok, updated_participation} ->
           render(conn, "show.json", %{data: updated_participation, conn: conn, params: params})
 

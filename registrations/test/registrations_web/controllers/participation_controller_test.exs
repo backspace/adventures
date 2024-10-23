@@ -103,14 +103,12 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
       participation1: participation1,
       participation2: participation2,
       user1: user1,
-      user2: user2,
-      socket1: socket1,
-      socket2: socket2
+      user2: user2
     } do
       conn =
-        %{conn: conn}
-        |> setup_conn()
-        |> Map.get(:conn)
+        conn
+        |> put_req_header("accept", "application/vnd.api+json")
+        |> put_req_header("content-type", "application/vnd.api+json")
         |> put_req_header("authorization", setup_user_and_get_token(user1))
         |> put(Routes.participation_path(conn, :update, participation1.id), %{
           "data" => %{
@@ -122,15 +120,14 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
           }
         })
 
-      %{"id" => participation1_id, "attributes" => %{"ready_at" => ready_at}} = json_response(conn, 200)["data"]
+      assert json_response(conn, 200)["data"]["attributes"]["ready_at"] != nil
+      assert_broadcast "run_update", payload
 
-      assert ready_at
-      assert_push "participation_update", %{participation_id: participation1_id, ready: true}
-
-      conn = build_conn()
+      assert payload.data.type == "runs"
+      assert payload.data.id == run.id
 
       conn =
-        %{conn: conn}
+        %{conn: build_conn()}
         |> setup_conn()
         |> Map.get(:conn)
         |> put_req_header("authorization", setup_user_and_get_token(user2))
@@ -145,12 +142,17 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
         })
 
       assert json_response(conn, 200)["data"]["attributes"]["ready_at"] != nil
-      # assert_push "participation_update", %{participation_id: participation2.id, ready: true}
-      # assert_push "run_started", %{run_id: run.id, start_time: start_time}
 
-      # Verify that the run's started_at is set
       updated_run = Waydowntown.get_run!(run.id)
       assert updated_run.started_at
+
+      started_at = updated_run.started_at
+
+      assert_broadcast "run_update",
+                       payload_with_started_at = %{data: %{attributes: %{started_at: ^started_at}}, included: _}
+
+      assert payload_with_started_at.data.id == run.id
+      assert payload_with_started_at.data.attributes.started_at
     end
   end
 

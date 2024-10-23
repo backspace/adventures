@@ -608,7 +608,7 @@ defmodule Registrations.Waydowntown do
 
   def get_participation!(id), do: Repo.get!(Participation, id)
 
-  def update_participation(%Participation{} = participation, attrs) do
+  def update_participation(%Participation{} = participation, attrs, conn) do
     result =
       participation
       |> Participation.changeset(attrs)
@@ -616,8 +616,8 @@ defmodule Registrations.Waydowntown do
 
     case result do
       {:ok, updated_participation} ->
-        broadcast_participation_update(updated_participation)
-        check_and_start_run(updated_participation.run_id)
+        broadcast_participation_update(updated_participation, conn)
+        check_and_start_run(updated_participation.run_id, conn)
         result
 
       error ->
@@ -625,34 +625,32 @@ defmodule Registrations.Waydowntown do
     end
   end
 
-  defp broadcast_participation_update(participation) do
-    # RegistrationsWeb.Endpoint.broadcast("run:#{participation.run_id}", "participation_update", %{
-    #   participation_id: participation.id,
-    #   ready: participation.ready_at != nil
-    # })
+  defp broadcast_participation_update(participation, conn) do
+    run = get_run!(participation.run_id)
+    payload = RegistrationsWeb.RunView.render("show.json", %{conn: conn, data: run})
+    RegistrationsWeb.Endpoint.broadcast("run:#{participation.run_id}", "run_update", payload)
   end
 
-  defp check_and_start_run(run_id) do
+  defp check_and_start_run(run_id, conn) do
     run = run_id |> get_run!() |> Repo.preload(:participations)
 
     if all_participants_ready?(run) do
-      start_run(run)
+      start_run_new(run, conn)
     end
   end
 
   defp all_participants_ready?(run) do
-    IO.inspect("all participants ready? #{run.id}: #{Enum.all?(run.participations, &(&1.ready_at != nil))}")
     Enum.all?(run.participations, &(&1.ready_at != nil))
   end
 
-  defp start_run(run) do
+  defp start_run_new(run, conn) do
     start_time = DateTime.add(DateTime.utc_now(), 5, :second)
     {:ok, started_run} = update_run(run, %{started_at: start_time})
+    started_run = Repo.preload(started_run, run_preloads())
 
-    # RegistrationsWeb.Endpoint.broadcast("run:#{run.id}", "run_started", %{
-    #   run_id: run.id,
-    #   start_time: start_time
-    # })
+    payload = RegistrationsWeb.RunView.render("show.json", %{conn: conn, data: started_run})
+
+    RegistrationsWeb.Endpoint.broadcast("run:#{run.id}", "run_update", payload)
   end
 
   def update_run(%Run{} = run, attrs) do
