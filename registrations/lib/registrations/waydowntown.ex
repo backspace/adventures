@@ -605,4 +605,59 @@ defmodule Registrations.Waydowntown do
   defp submission_preloads do
     [:answer, run: [:participations, specification: [:answers], submissions: [:answer]]]
   end
+
+  def get_participation!(id), do: Repo.get!(Participation, id)
+
+  def update_participation(%Participation{} = participation, attrs) do
+    result =
+      participation
+      |> Participation.changeset(attrs)
+      |> Repo.update()
+
+    case result do
+      {:ok, updated_participation} ->
+        broadcast_participation_update(updated_participation)
+        check_and_start_run(updated_participation.run_id)
+        result
+
+      error ->
+        error
+    end
+  end
+
+  defp broadcast_participation_update(participation) do
+    # RegistrationsWeb.Endpoint.broadcast("run:#{participation.run_id}", "participation_update", %{
+    #   participation_id: participation.id,
+    #   ready: participation.ready_at != nil
+    # })
+  end
+
+  defp check_and_start_run(run_id) do
+    run = run_id |> get_run!() |> Repo.preload(:participations)
+
+    if all_participants_ready?(run) do
+      start_run(run)
+    end
+  end
+
+  defp all_participants_ready?(run) do
+    IO.inspect("all participants ready? #{run.id}: #{Enum.all?(run.participations, &(&1.ready_at != nil))}")
+    Enum.all?(run.participations, &(&1.ready_at != nil))
+  end
+
+  defp start_run(run) do
+    start_time = DateTime.add(DateTime.utc_now(), 5, :second)
+    {:ok, started_run} = update_run(run, %{started_at: start_time})
+
+    # RegistrationsWeb.Endpoint.broadcast("run:#{run.id}", "run_started", %{
+    #   run_id: run.id,
+    #   start_time: start_time
+    # })
+  end
+
+  def update_run(%Run{} = run, attrs) do
+    run
+    |> Run.changeset(attrs)
+    |> Repo.update()
+  end
 end

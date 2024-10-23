@@ -150,7 +150,7 @@ defmodule RegistrationsWeb.Router do
   scope "/waydowntown", RegistrationsWeb do
     pipe_through([:pow_json_api_protected])
 
-    resources "/participations", ParticipationController, only: [:create]
+    resources "/participations", ParticipationController, only: [:create, :update]
 
     resources("/runs", RunController, except: [:new, :edit, :delete, :update]) do
       post "/start", RunController, :start, as: :start

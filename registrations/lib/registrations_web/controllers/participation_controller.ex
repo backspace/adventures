@@ -2,6 +2,7 @@ defmodule RegistrationsWeb.ParticipationController do
   use RegistrationsWeb, :controller
 
   alias Registrations.Waydowntown
+  alias Registrations.Waydowntown.Participation
 
   plug(JSONAPI.QueryParser, view: RegistrationsWeb.ParticipationView)
 
@@ -26,6 +27,29 @@ defmodule RegistrationsWeb.ParticipationController do
         conn
         |> put_status(:unprocessable_entity)
         |> json(%{errors: [%{detail: message}]})
+    end
+  end
+
+  def update(conn, %{"id" => id, "ready" => ready} = params) do
+    participation = Waydowntown.get_participation!(id)
+
+    if conn.assigns[:current_user].id == participation.user_id do
+      ready_at = if ready, do: DateTime.utc_now()
+
+      case Waydowntown.update_participation(participation, %{ready_at: ready_at}) do
+        {:ok, updated_participation} ->
+          render(conn, "show.json", %{data: updated_participation, conn: conn, params: params})
+
+        {:error, changeset} ->
+          conn
+          |> put_status(:unprocessable_entity)
+          |> put_view(RegistrationsWeb.ChangesetView)
+          |> render("error.json", changeset: changeset)
+      end
+    else
+      conn
+      |> put_status(:forbidden)
+      |> json(%{errors: [%{detail: "Cannot update another user's participation"}]})
     end
   end
 end

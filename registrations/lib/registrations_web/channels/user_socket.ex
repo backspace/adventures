@@ -1,8 +1,7 @@
 defmodule RegistrationsWeb.UserSocket do
   use Phoenix.Socket
 
-  ## Channels
-  # channel "rooms:*", Registrations.RoomChannel
+  channel "run:*", RegistrationsWeb.RunChannel
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
