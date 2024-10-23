@@ -4,6 +4,7 @@ defmodule RegistrationsWeb.RunChannel do
 
   @impl true
   def join("run:" <> run_id, payload, socket) do
+    # FIXME how will this work?
     if authorized?(payload) do
       {:ok, socket}
     else
