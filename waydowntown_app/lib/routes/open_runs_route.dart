@@ -1,12 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:waydowntown/widgets/open_runs_table.dart';
 import 'package:waydowntown/models/run.dart';
+import 'package:waydowntown/widgets/open_runs_table.dart';
 
 class OpenGamesRoute extends StatelessWidget {
   final Dio dio;
 
-  const OpenGamesRoute({Key? key, required this.dio}) : super(key: key);
+  const OpenGamesRoute({super.key, required this.dio});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class OpenGamesRoute extends StatelessWidget {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No open games available.'));
           } else {
-            return OpenRunsTable(runs: snapshot.data!);
+            return OpenRunsTable(runs: snapshot.data!, dio: dio);
           }
         },
       ),

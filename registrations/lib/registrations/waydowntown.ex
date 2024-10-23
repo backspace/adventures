@@ -195,6 +195,25 @@ defmodule Registrations.Waydowntown do
     end
   end
 
+  def join_run(user, run_id) do
+    run = get_run!(run_id)
+
+    if Enum.any?(run.participations, fn p -> p.user_id == user.id end) do
+      {:error, "User is already a participant in this run"}
+    else
+      %Participation{}
+      |> Participation.changeset(%{user_id: user.id, run_id: run.id})
+      |> Repo.insert()
+      |> case do
+        {:ok, participation} ->
+          {:ok, participation |> Repo.preload(run: run_preloads()) |> Repo.preload(:user, prefix: "public")}
+
+        error ->
+          error
+      end
+    end
+  end
+
   defp create_specification(attrs) do
     %Specification{}
     |> Specification.changeset(attrs)
