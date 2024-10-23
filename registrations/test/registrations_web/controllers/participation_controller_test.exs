@@ -126,6 +126,8 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
       assert payload.data.type == "runs"
       assert payload.data.id == run.id
 
+      assert length(payload.data.relationships.participations.data) == 2
+
       conn =
         %{conn: build_conn()}
         |> setup_conn()
