@@ -128,6 +128,16 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
 
       assert length(payload.data.relationships.participations.data) == 2
 
+      # FIXME inclusion/serialisation crisis
+      included_participations =
+        payload.included
+        |> Enum.filter(fn x -> x.type == "participations" and Map.has_key?(x.relationships, :user) end)
+        |> Enum.uniq_by(& &1.id)
+
+      assert length(included_participations) == 2
+      assert Enum.all?(included_participations, fn x -> x.relationships.user.data.id in [user1.id, user2.id] end)
+      assert Enum.all?(included_participations, fn x -> x.relationships.run.data.id == run.id end)
+
       conn =
         %{conn: build_conn()}
         |> setup_conn()

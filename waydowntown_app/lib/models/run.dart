@@ -1,3 +1,4 @@
+import 'package:waydowntown/models/participation.dart';
 import 'package:waydowntown/models/specification.dart';
 
 class Run {
@@ -8,6 +9,7 @@ class Run {
   final DateTime? startedAt;
   final String? taskDescription;
   final bool isComplete;
+  final List<Participation> participations;
 
   Run({
     required this.id,
@@ -17,6 +19,7 @@ class Run {
     this.startedAt,
     this.taskDescription,
     this.isComplete = false,
+    required this.participations,
   });
 
   factory Run.fromJson(Map<String, dynamic> json,
@@ -41,6 +44,33 @@ class Run {
       }
     }
 
+    List<Participation> participations = [];
+    if (included != null &&
+        data['relationships'] != null &&
+        data['relationships']['participations'] != null) {
+      final participationsData =
+          data['relationships']['participations']['data'] as List;
+
+      participations = participationsData
+          .map((participationData) {
+            final participationJson = included.firstWhere(
+              (item) =>
+                  item['type'] == 'participations' &&
+                  item['id'] == participationData['id'] &&
+                  // FIXME serialisation crisis
+                  item['relationships']['run'] != null &&
+                  item['relationships']['user'] != null,
+              orElse: () => null,
+            );
+            if (participationJson != null) {
+              return Participation.fromJson(participationJson);
+            }
+            return null;
+          })
+          .whereType<Participation>()
+          .toList();
+    }
+
     return Run(
       id: data['id'],
       specification: specification ??
@@ -52,6 +82,7 @@ class Run {
           ? DateTime.parse(data['attributes']['started_at'])
           : null,
       isComplete: data['attributes']['complete'] ?? false,
+      participations: participations,
     );
   }
 }

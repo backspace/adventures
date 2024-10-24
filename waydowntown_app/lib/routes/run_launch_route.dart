@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
-import 'package:waydowntown/app.dart';
 import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/games/cardinal_memory.dart';
 import 'package:waydowntown/games/code_collector.dart';
@@ -28,6 +31,12 @@ class RunLaunchRoute extends StatefulWidget {
 }
 
 class _RunLaunchRouteState extends State<RunLaunchRoute> {
+  late PhoenixSocket socket;
+  late PhoenixChannel channel;
+  bool isReady = false;
+  DateTime? startTime;
+  Timer? countdownTimer;
+
   Future<Map<String, dynamic>> _loadGameInfo(BuildContext context) async {
     final yamlString =
         await DefaultAssetBundle.of(context).loadString('assets/concepts.yaml');
@@ -43,6 +52,65 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
       'instructions': conceptInfo['instructions'],
       'placeless': conceptInfo['placeless'] ?? false,
     };
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _connectToSocket();
+  }
+
+  void _connectToSocket() async {
+    final apiRoot = dotenv.env['API_ROOT']!.replaceFirst('http', 'ws');
+
+    socket = PhoenixSocket('$apiRoot/socket/websocket');
+    await socket.connect();
+
+    channel = socket.addChannel(topic: 'run:${widget.run.id}');
+    await channel.join().future;
+
+    channel.messages.listen((message) {
+      if (message.event.value == "run_update") {
+        setState(() {
+          widget.run = Run.fromJson(message.payload!);
+          if (widget.run.startedAt != null) {
+            startTime = widget.run.startedAt!;
+            _startCountdown();
+          }
+        });
+      }
+    });
+  }
+
+  void _startCountdown() {
+    if (countdownTimer != null) {
+      countdownTimer!.cancel();
+    }
+    countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (DateTime.now().isAfter(startTime!)) {
+          timer.cancel();
+          _navigateToGame();
+        }
+      });
+    });
+  }
+
+  void _navigateToGame() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => _buildGameWidget(widget.run),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    countdownTimer?.cancel();
+    channel.leave();
+    socket.dispose();
+    super.dispose();
   }
 
   @override
@@ -68,6 +136,11 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
         final instructions = gameInfo?['instructions'];
         final isPlaceless = gameInfo?['placeless'] ?? false;
 
+        if (startTime != null) {
+          return _buildFullScreenCountdown(context);
+        }
+
+        // Otherwise, show the regular game launch screen
         return Scaffold(
           appBar: AppBar(title: Text(gameName ?? 'Game Instructions')),
           body: Padding(
@@ -142,40 +215,8 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                     ),
                   ),
                 ElevatedButton(
-                  child: Text(widget.run.startedAt != null
-                      ? 'Resume Game'
-                      : 'Start Game'),
-                  onPressed: () async {
-                    try {
-                      if (widget.run.startedAt == null) {
-                        final response = await widget.dio.post(
-                          '/waydowntown/runs/${widget.run.id}/start',
-                          data: {
-                            'data': {
-                              'type': 'runs',
-                              'id': widget.run.id,
-                            },
-                          },
-                        );
-                        if (response.statusCode == 200) {
-                          setState(() {
-                            talker.debug('Game started: ${response.data}');
-                            widget.run = Run.fromJson(response.data);
-                          });
-                        }
-                      }
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => _buildGameWidget(widget.run),
-                        ),
-                      );
-                    } catch (e) {
-                      Sentry.captureException(e);
-                      _showErrorDialog(
-                          context, 'Error starting game', e.toString());
-                    }
-                  },
+                  child: Text(isReady ? 'Waiting for others…' : 'I’m ready'),
+                  onPressed: isReady ? null : _markAsReady,
                 ),
                 const SizedBox(height: 100),
               ],
@@ -232,6 +273,86 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
             'The game concept "${widget.run.specification.concept}" is not recognized.'),
       ],
     );
+  }
+
+  Widget _buildFullScreenCountdown(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        color: Theme.of(context).primaryColor,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Game Starting In',
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineMedium
+                    ?.copyWith(color: Colors.white),
+              ),
+              const SizedBox(height: 20),
+              _buildCountdown(),
+              const SizedBox(height: 40),
+              Text(
+                'Get Ready!',
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall
+                    ?.copyWith(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCountdown() {
+    final remaining = startTime!.difference(DateTime.now());
+
+    // How could this happen…? But
+    if (remaining.isNegative) {
+      return const Text('Starting…',
+          style: TextStyle(color: Colors.white, fontSize: 24));
+    }
+
+    return Text(
+      '${remaining.inSeconds}',
+      style: const TextStyle(
+          color: Colors.white, fontSize: 72, fontWeight: FontWeight.bold),
+    );
+  }
+
+  void _markAsReady() async {
+    try {
+      // FIXME how do we know which user we are?
+      final participation = widget.run.participations.first;
+      // final participation = widget.run.participations.firstWhere(
+      //   (p) => p.userId == currentUserId,
+      //   orElse: () => throw Exception('Participation not found'),
+      // );
+
+      final response = await widget.dio.patch(
+        '/waydowntown/participations/${participation.id}',
+        data: {
+          "data": {
+            "type": "participations",
+            "id": participation.id,
+            "attributes": {"ready": true}
+          }
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          isReady = true;
+        });
+      }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      _showErrorDialog(context, 'Error marking as ready', e.toString());
+    }
   }
 
   void _showErrorDialog(BuildContext context, String title, String message) {

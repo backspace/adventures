@@ -65,7 +65,10 @@ defmodule Registrations.Waydowntown do
     Run
     |> filter_runs_query(filters)
     |> Repo.all()
+    # FIXME Preloads involving the user preclude this approach
     |> Repo.preload(run_preloads())
+    |> Repo.preload(participations: [run: run_preloads()])
+    |> Repo.preload([participations: [:user]], prefix: "public")
   end
 
   defp filter_runs_query(query, filters) do
@@ -86,13 +89,19 @@ defmodule Registrations.Waydowntown do
     Run
     |> Repo.get!(id)
     |> Repo.preload(run_preloads())
+    |> Repo.preload(participations: [run: run_preloads()])
+    |> Repo.preload([participations: [:user]], prefix: "public")
   end
 
   def create_run(current_user, attrs \\ %{}, specification_filter \\ nil) do
     with {:ok, run} <- construct_run(attrs, specification_filter),
          {:ok, run} <- Repo.insert(run),
          {:ok, _participation} <- create_participation(current_user, run) do
-      {:ok, Repo.preload(run, run_preloads())}
+      {:ok,
+       run
+       |> Repo.preload(run_preloads())
+       |> Repo.preload(participations: [run: run_preloads()])
+       |> Repo.preload([participations: [:user]], prefix: "public")}
     else
       {:error, changeset} ->
         {:error, changeset}
@@ -599,14 +608,19 @@ defmodule Registrations.Waydowntown do
   end
 
   defp run_preloads do
-    [:participations, submissions: [:answer], specification: [:answers, region: [parent: [parent: [:parent]]]]]
+    [
+      participations: [run: [:participations, specification: [:answers], submissions: [:answer]]],
+      submissions: [:answer],
+      specification: [:answers, region: [parent: [parent: [:parent]]]]
+    ]
   end
 
   defp submission_preloads do
     [:answer, run: [:participations, specification: [:answers], submissions: [:answer]]]
   end
 
-  def get_participation!(id), do: Repo.get!(Participation, id)
+  def get_participation!(id),
+    do: Participation |> Repo.get!(id) |> Repo.preload(run: run_preloads()) |> Repo.preload(:user, prefix: "public")
 
   def update_participation(%Participation{} = participation, attrs, conn) do
     result =
