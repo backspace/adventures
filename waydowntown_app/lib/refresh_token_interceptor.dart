@@ -1,9 +1,8 @@
 // Adapted from https://medium.com/@dariovarrialeapps/how-to-create-a-refresh-token-interceptor-in-flutter-with-dio-64a3ab0be6fa
 
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'
-    as secure_storage;
 import 'package:waydowntown/app.dart';
+import 'package:waydowntown/services/user_service.dart';
 
 class RefreshTokenInterceptor extends InterceptorsWrapper {
   final Dio dio;
@@ -21,7 +20,7 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    _addTokenIfNeeded(options, handler);
+    await _addTokenIfNeeded(options, handler);
   }
 
   @override
@@ -34,14 +33,14 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
       return handler.next(err);
     }
 
-    _refreshTokenAndResolveError(err, handler);
+    await _refreshTokenAndResolveError(err, handler);
   }
 
   /// Adds the user token to the request headers if it's not already there.
   /// If the token is not present, the request will be sent without it.
   ///
   /// If the token is present, it will be added to the headers.
-  void _addTokenIfNeeded(
+  Future<void> _addTokenIfNeeded(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
@@ -49,8 +48,7 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
       return handler.next(options);
     }
 
-    const secureStorage = secure_storage.FlutterSecureStorage();
-    final userToken = await secureStorage.read(key: 'access_token');
+    final userToken = await UserService.getAccessToken();
 
     if (userToken != null && userToken.isNotEmpty) {
       options.headers['Authorization'] = userToken;
@@ -61,13 +59,12 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
 
   /// Refreshes the user token and retries the request.
   /// If the token refresh fails, the error will be passed to the next interceptor.
-  void _refreshTokenAndResolveError(
+  Future<void> _refreshTokenAndResolveError(
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
     _debugPrint('### Refreshing token... ###');
-    const secureStorage = secure_storage.FlutterSecureStorage();
-    final refreshToken = await secureStorage.read(key: 'renewal_token');
+    final refreshToken = await UserService.getRenewalToken();
 
     if (refreshToken == null) {
       return handler.next(err);
@@ -103,8 +100,7 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
         }),
       );
     } catch (e) {
-      await secureStorage.delete(key: 'access_token');
-      await secureStorage.delete(key: 'renewal_token');
+      await UserService.clearUserData();
 
       if (e is DioException) {
         return handler.next(e);
@@ -115,14 +111,12 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
 
     _debugPrint('### Token refreshed! ###');
 
-    await secureStorage.write(
-        key: 'access_token', value: authResponse.data['data']['access_token']);
-    await secureStorage.write(
-        key: 'renewal_token',
-        value: authResponse.data['data']['renewal_token']);
+    final newAccessToken = authResponse.data['data']['access_token'];
+    final newRenewalToken = authResponse.data['data']['renewal_token'];
 
-    err.requestOptions.headers['Authorization'] =
-        '${authResponse.data['data']['access_token']}';
+    await UserService.setTokens(newAccessToken, newRenewalToken);
+
+    err.requestOptions.headers['Authorization'] = newAccessToken;
 
     Dio actualPostRenewalDio;
 

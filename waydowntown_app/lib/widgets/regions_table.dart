@@ -1,21 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:waydowntown/models/region.dart';
+import 'package:waydowntown/services/user_service.dart';
 import 'package:waydowntown/widgets/edit_region_form.dart';
 
 class RegionsTable extends StatelessWidget {
   final Dio dio;
   final List<Region> regions;
   final Function() onRefresh;
-  final FlutterSecureStorage secureStorage;
 
   const RegionsTable({
     super.key,
     required this.regions,
     required this.onRefresh,
     required this.dio,
-    required this.secureStorage,
   });
 
   @override
@@ -102,8 +100,8 @@ class RegionsTable extends StatelessWidget {
   }
 
   Future<bool> _isUserAdmin() async {
-    final isAdmin = await secureStorage.read(key: 'user_is_admin');
-    return isAdmin == 'true';
+    final isAdmin = await UserService.getUserIsAdmin();
+    return isAdmin;
   }
 
   void _showDeleteConfirmation(BuildContext context, Region region) {

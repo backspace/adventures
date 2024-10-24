@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'
-    as secure_storage;
+import 'package:waydowntown/services/user_service.dart';
 
 class AuthFormWidget extends StatefulWidget {
   final Dio dio;
@@ -51,13 +50,10 @@ class _AuthFormWidgetState extends State<AuthFormWidget> {
           final accessToken = response.data['data']['access_token'];
           final renewalToken = response.data['data']['renewal_token'];
 
-          const secureStorage = secure_storage.FlutterSecureStorage();
-          await secureStorage.write(key: 'access_token', value: accessToken);
-          await secureStorage.write(key: 'renewal_token', value: renewalToken);
+          await UserService.setTokens(accessToken, renewalToken);
 
           widget.onAuthSuccess();
         } else {
-          // Handle error (e.g., show error message)
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Authentication failed')),
           );

@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:talker_dio_logger/talker_dio_logger.dart';
@@ -227,7 +226,6 @@ class _HomeState extends State<Home> {
                                   builder: (context) => RegionsTable(
                                       dio: dio,
                                       regions: regions,
-                                      secureStorage: FlutterSecureStorage(),
                                       onRefresh: () {
                                         loadRegions();
                                       }),

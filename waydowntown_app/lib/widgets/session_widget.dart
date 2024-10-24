@@ -1,8 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'
-    as secure_storage;
 import 'package:waydowntown/app.dart';
+import 'package:waydowntown/services/user_service.dart';
 import 'package:waydowntown/tools/auth_form.dart';
 import 'package:waydowntown/tools/my_specifications_table.dart';
 
@@ -34,6 +33,7 @@ class _SessionWidgetState extends State<SessionWidget> {
 
     try {
       final response = await _getSession();
+
       if (response.statusCode == 200) {
         final attributes = response.data['data']['attributes'];
         setState(() {
@@ -41,24 +41,27 @@ class _SessionWidgetState extends State<SessionWidget> {
           _isAdmin = attributes['admin'] ?? false;
           _isLoading = false;
         });
-        await _saveUserData(_email!, _isAdmin!);
+        await UserService.setUserData(
+            response.data['data']['id'], _email!, _isAdmin!);
         return;
       }
+
+      final email = await UserService.getUserEmail();
+      final isAdmin = await UserService.getUserIsAdmin();
+
+      setState(() {
+        _email = email;
+        _isAdmin = isAdmin;
+        _isLoading = false;
+      });
     } catch (error) {
       talker.error('Error checking session: $error');
-
       setState(() {
         _email = null;
         _isAdmin = null;
         _isLoading = false;
       });
     }
-  }
-
-  Future<void> _saveUserData(String email, bool isAdmin) async {
-    const secureStorage = secure_storage.FlutterSecureStorage();
-    await secureStorage.write(key: 'user_email', value: email);
-    await secureStorage.write(key: 'user_is_admin', value: isAdmin.toString());
   }
 
   Future<Response> _getSession() {
@@ -72,12 +75,7 @@ class _SessionWidgetState extends State<SessionWidget> {
   }
 
   Future<void> _logout() async {
-    const secureStorage = secure_storage.FlutterSecureStorage();
-    await secureStorage.delete(key: 'access_token');
-    await secureStorage.delete(key: 'renewal_token');
-    await secureStorage.delete(key: 'user_email');
-    await secureStorage.delete(key: 'user_is_admin');
-
+    await UserService.clearUserData();
     setState(() {
       _email = null;
       _isAdmin = null;

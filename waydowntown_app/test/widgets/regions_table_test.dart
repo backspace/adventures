@@ -10,14 +10,12 @@ import 'package:waydowntown/widgets/regions_table.dart';
 void main() {
   late Dio dio;
   late DioAdapter dioAdapter;
-  late FlutterSecureStorage secureStorage;
 
   setUp(() {
     dio = Dio(BaseOptions(baseUrl: 'http://example.com'));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
     dio.httpClientAdapter = dioAdapter;
-    secureStorage = FlutterSecureStorage();
     FlutterSecureStorage.setMockInitialValues({});
   });
 
@@ -64,7 +62,6 @@ void main() {
             .then((response) => response.data)),
         onRefresh: () {},
         dio: dio,
-        secureStorage: secureStorage,
       ),
     ));
 
@@ -111,7 +108,6 @@ void main() {
         regions: regions,
         onRefresh: () {},
         dio: dio,
-        secureStorage: secureStorage,
       ),
     ));
 
@@ -142,7 +138,6 @@ void main() {
         regions: regions,
         onRefresh: () {},
         dio: dio,
-        secureStorage: secureStorage,
       ),
     ));
 
@@ -164,7 +159,6 @@ void main() {
         regions: regions,
         onRefresh: () {},
         dio: dio,
-        secureStorage: secureStorage,
       ),
     ));
 
@@ -195,7 +189,6 @@ void main() {
           refreshCalled = true;
         },
         dio: dio,
-        secureStorage: secureStorage,
       ),
     ));
 
