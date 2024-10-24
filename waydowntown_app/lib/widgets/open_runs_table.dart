@@ -42,13 +42,22 @@ class OpenRunsTable extends StatelessWidget {
                         }
                       });
                       if (response.statusCode == 201) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                RunLaunchRoute(run: run, dio: dio),
-                          ),
-                        );
+                        final updatedRunResponse =
+                            await dio.get('/waydowntown/runs/${run.id}');
+                        if (updatedRunResponse.statusCode == 200) {
+                          final updatedRun = Run.fromJson({
+                            "data": updatedRunResponse.data['data'],
+                            "included": updatedRunResponse.data['included']
+                          });
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  RunLaunchRoute(run: updatedRun, dio: dio),
+                            ),
+                          );
+                        }
                       }
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(

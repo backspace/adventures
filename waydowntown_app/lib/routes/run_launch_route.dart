@@ -15,6 +15,7 @@ import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/games/single_string_input_game.dart';
 import 'package:waydowntown/games/string_collector.dart';
 import 'package:waydowntown/models/run.dart';
+import 'package:waydowntown/services/user_service.dart';
 import 'package:waydowntown/util/get_region_path.dart';
 import 'package:waydowntown/widgets/countdown_timer.dart';
 import 'package:waydowntown/widgets/game_map.dart';
@@ -325,12 +326,16 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
 
   void _markAsReady() async {
     try {
-      // FIXME how do we know which user we are?
-      final participation = widget.run.participations.first;
-      // final participation = widget.run.participations.firstWhere(
-      //   (p) => p.userId == currentUserId,
-      //   orElse: () => throw Exception('Participation not found'),
-      // );
+      final userId = await UserService.getUserId();
+
+      if (userId == null) {
+        throw Exception('User ID not found');
+      }
+
+      final participation = widget.run.participations.firstWhere(
+        (p) => p.userId == userId,
+        orElse: () => throw Exception('Participation not found'),
+      );
 
       final response = await widget.dio.patch(
         '/waydowntown/participations/${participation.id}',
