@@ -1,6 +1,7 @@
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 
 import 'package:waydowntown/models/answer.dart';
+import 'package:waydowntown/models/participation.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/models/specification.dart';
@@ -169,6 +170,7 @@ class TestHelpers {
     int? durationSeconds = 300,
     List<Answer>? answers,
     Region? region,
+    List<Participation>? participations,
   }) {
     return Run(
       id: '22261813-2171-453f-a669-db08edc70d6d',
@@ -202,6 +204,7 @@ class TestHelpers {
       totalAnswers: totalAnswers,
       startedAt: startedAt,
       taskDescription: description,
+      participations: participations ?? [],
     );
   }
 
