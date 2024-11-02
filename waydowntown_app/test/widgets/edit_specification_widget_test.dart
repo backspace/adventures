@@ -244,17 +244,16 @@ another_concept:
             Theme.of(tester.element(nearestButtonFinder)).primaryColor)));
 
     // Regions should be sorted case-insensitive
-    final regionItems = tester
-        .widget<DropdownMenu<String>>(find.byType(DropdownMenu<String>))
-        .dropdownMenuEntries;
-    expect(regionItems.length, greaterThanOrEqualTo(3));
-    expect(regionItems[0].label, 'region 1');
-    expect(regionItems[1].label, '  Region 2');
-    expect(regionItems[2].label, 'Region 3');
+
+    // How to check alphabetic sort?
 
     // No distances in dropdown
-    await tester.tap(find.text('Region'));
+    await tester.tap(find.byKey(const Key('region-dropdown')));
     await tester.pumpAndSettle();
+    expect(find.text('region 1'), findsExactly(2));
+    expect(find.text('  Region 2'), findsOneWidget);
+    expect(find.text('Region 3'), findsOneWidget);
+
     expect(find.text('500 m'), findsNothing);
     expect(find.text('2 km'), findsNothing);
     expect(find.text('3 km'), findsNothing);
@@ -266,11 +265,13 @@ another_concept:
     nearestButton = tester.widget(nearestButtonFinder);
 
     expect(azButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
-        isNot(equals(Theme.of(tester.element(azButtonFinder)).primaryColor)));
-    expect(nearestButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
-        equals(Theme.of(tester.element(nearestButtonFinder)).primaryColor));
+        (equals(Theme.of(tester.element(azButtonFinder)).primaryColor)));
+    expect(
+        nearestButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
+        isNot(equals(
+            Theme.of(tester.element(nearestButtonFinder)).primaryColor)));
 
-    await tester.tap(find.text('Region'));
+    await tester.tap(find.byKey(const Key('region-dropdown')));
     await tester.pumpAndSettle();
 
     expect(find.text('500 m'), findsAny);

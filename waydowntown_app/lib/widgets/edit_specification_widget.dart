@@ -30,6 +30,8 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   List<Region> _regions = [];
   Map<String, String> _fieldErrors = {};
   bool _sortByDistance = false;
+  dynamic _concepts;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -43,6 +45,14 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     _selectedConcept = widget.specification.concept;
     _selectedRegionId = widget.specification.region?.id;
     _loadRegions();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_concepts == null) {
+      _loadConcepts();
+    }
   }
 
   Future<void> _loadRegions() async {
@@ -85,61 +95,62 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     }
   }
 
-  Future<dynamic> _loadConcepts(context) async {
+  Future<void> _loadConcepts() async {
     final yamlString =
         await DefaultAssetBundle.of(context).loadString('assets/concepts.yaml');
     final yamlMap = loadYaml(yamlString);
-    return yamlMap;
+    if (mounted) {
+      setState(() {
+        _concepts = yamlMap;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<dynamic>(
-        future: _loadConcepts(context),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Edit Specification'),
-            ),
-            body: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildConceptDropdown(snapshot.data),
-                    _buildRegionSection(),
-                    _buildTextField('Start Description',
-                        _startDescriptionController, 'start_description'),
-                    _buildTextField('Task Description',
-                        _taskDescriptionController, 'task_description'),
-                    _buildDurationField(),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Cancel'),
-                        ),
-                        ElevatedButton(
-                          onPressed: _saveSpecification,
-                          child: const Text('Save'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Edit Specification'),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildConceptDropdown(_concepts),
+              _buildRegionSection(),
+              _buildTextField('Start Description', _startDescriptionController,
+                  'start_description'),
+              _buildTextField('Task Description', _taskDescriptionController,
+                  'task_description'),
+              _buildDurationField(),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _saveSpecification,
+                    child: const Text('Save'),
+                  ),
+                ],
               ),
-            ),
-          );
-        });
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildConceptDropdown(dynamic concepts) {
@@ -183,7 +194,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
             const SizedBox(width: 8),
             _buildSortButton(
               context: context,
-              label: 'A-Z',
+              icon: const Icon(Icons.sort_by_alpha),
               isActive: !_sortByDistance,
               onPressed: () {
                 setState(() {
@@ -195,14 +206,16 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
             const SizedBox(width: 8),
             _buildSortButton(
               context: context,
-              label: 'Nearest',
+              icon: const Icon(Icons.near_me),
               isActive: _sortByDistance,
               onPressed: _loadNearestRegions,
             ),
             const SizedBox(width: 8),
-            ElevatedButton(
+            _buildSortButton(
+              context: context,
+              icon: const Icon(Icons.add),
+              isActive: false,
               onPressed: _createNewRegion,
-              child: const Text('New'),
             ),
           ],
         ),
@@ -211,32 +224,38 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   }
 
   Widget _buildRegionDropdown() {
-    return DropdownMenu<String>(
-      initialSelection: _selectedRegionId,
-      onSelected: (String? newValue) {
+    return DropdownButtonFormField<String>(
+      key: const Key('region-dropdown'),
+      value: _selectedRegionId,
+      decoration: InputDecoration(
+        labelText: 'Region',
+        errorText: _fieldErrors['region_id'],
+      ),
+      items: _buildNestedRegionEntries(_regions),
+      onChanged: (String? newValue) {
         setState(() {
           _selectedRegionId = newValue;
         });
       },
-      errorText: _fieldErrors['region_id'],
-      label: const Text('Region'),
-      dropdownMenuEntries: _buildNestedRegionEntries(_regions),
-      width: MediaQuery.of(context).size.width - 150,
+      isExpanded: true,
     );
   }
 
-  List<DropdownMenuEntry<String>> _buildNestedRegionEntries(
-      List<Region> regions,
+  List<DropdownMenuItem<String>> _buildNestedRegionEntries(List<Region> regions,
       {String indent = ''}) {
-    List<DropdownMenuEntry<String>> entries = [];
+    List<DropdownMenuItem<String>> entries = [];
 
     for (var region in regions) {
-      entries.add(DropdownMenuEntry<String>(
+      entries.add(DropdownMenuItem<String>(
         value: region.id,
-        label: '$indent${region.name}',
-        trailingIcon: _sortByDistance && region.distance != null
-            ? Text(_formatDistance(region.distance!))
-            : null,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('$indent${region.name}'),
+            if (_sortByDistance && region.distance != null)
+              Text(_formatDistance(region.distance!)),
+          ],
+        ),
       ));
 
       if (region.children.isNotEmpty) {
@@ -383,16 +402,16 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
 
 Widget _buildSortButton({
   required BuildContext context,
-  required String label,
+  required Icon icon,
   required bool isActive,
   required VoidCallback onPressed,
 }) {
-  return ElevatedButton(
+  return IconButton(
     onPressed: onPressed,
-    style: ElevatedButton.styleFrom(
+    icon: icon,
+    style: IconButton.styleFrom(
       backgroundColor: isActive ? Theme.of(context).primaryColor : null,
       foregroundColor: isActive ? Colors.white : null,
     ),
-    child: Text(label),
   );
 }
