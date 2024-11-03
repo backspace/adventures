@@ -168,7 +168,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
             final instructions = gameInfo?['instructions'];
             final isPlaceless = gameInfo?['placeless'] ?? false;
 
-            if (startTime != null) {
+            if (startTime != null && DateTime.now().isBefore(startTime!)) {
               return _buildFullScreenCountdown(context);
             }
 
@@ -249,9 +249,16 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                         ),
                       ),
                     ElevatedButton(
-                      child:
-                          Text(isReady ? 'Waiting for others…' : 'I’m ready'),
-                      onPressed: isReady ? null : _markAsReady,
+                      onPressed: widget.run.startedAt != null
+                          ? () => _navigateToGame()
+                          : isReady
+                              ? null
+                              : _markAsReady,
+                      child: Text(widget.run.startedAt != null
+                          ? 'Resume Game'
+                          : isReady
+                              ? 'Waiting for others…'
+                              : 'I’m ready'),
                     ),
                     const SizedBox(height: 100),
                   ],
