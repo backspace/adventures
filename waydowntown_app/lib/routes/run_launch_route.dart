@@ -25,14 +25,12 @@ class RunLaunchRoute extends StatefulWidget {
   Run run;
   final Dio dio;
   final PhoenixSocket? testSocket;
-  final bool skipSocket;
 
   RunLaunchRoute({
     super.key,
     required this.run,
     required this.dio,
     this.testSocket,
-    this.skipSocket = false,
   });
 
   @override
@@ -71,10 +69,6 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   }
 
   Future<void> _connectToSocket() async {
-    if (widget.skipSocket) {
-      return;
-    }
-
     final apiRoot = dotenv.env['API_ROOT']!.replaceFirst('http', 'ws');
 
     socket = widget.testSocket ?? PhoenixSocket('$apiRoot/socket/websocket');

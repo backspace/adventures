@@ -11,8 +11,18 @@ import 'package:path_provider_platform_interface/path_provider_platform_interfac
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/routes/run_launch_route.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
+import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
 
 import './test_helpers.dart';
+
+@GenerateNiceMocks([
+  MockSpec<PhoenixSocket>(),
+  MockSpec<PhoenixChannel>(),
+  MockSpec<Push>(),
+])
+import 'run_launch_route_test.mocks.dart';
 
 class TestAssetBundle extends CachingAssetBundle {
   final Map<String, dynamic> _assets = {};
@@ -61,6 +71,9 @@ void main() {
   late Dio dio;
   late TestAssetBundle testAssetBundle;
   late DioAdapter dioAdapter;
+  late MockPhoenixSocket mockSocket;
+  late MockPhoenixChannel mockChannel;
+  late MockPush mockPush;
 
   setUp(() async {
     dotenv.testLoad(fileInput: File('.env').readAsStringSync());
@@ -69,6 +82,18 @@ void main() {
     dioAdapter = DioAdapter(dio: dio);
     dio.httpClientAdapter = dioAdapter;
     testAssetBundle = TestAssetBundle();
+
+    // Setup mock socket
+    mockSocket = MockPhoenixSocket();
+    mockChannel = MockPhoenixChannel();
+    mockPush = MockPush();
+
+    // Setup basic mock behaviors
+    when(mockSocket.connect()).thenAnswer((_) async => mockSocket);
+    when(mockSocket.addChannel(topic: anyNamed('topic')))
+        .thenReturn(mockChannel);
+    when(mockChannel.join()).thenReturn(mockPush);
+    when(mockChannel.messages).thenAnswer((_) => Stream.empty());
 
     const testMockStorage = './test/fixtures/core';
     const channel = MethodChannel(
@@ -108,13 +133,19 @@ bluetooth_collector:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
+          child: RunLaunchRoute(
+            run: run,
+            dio: dio,
+            testSocket: mockSocket,
+          ),
         ),
       ),
     );
 
     await tester.pump();
     await tester.pump();
+
+    debugDumpApp();
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
     expect(find.text('test_start'), findsOneWidget);
@@ -166,7 +197,7 @@ fill_in_the_blank:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
+          child: RunLaunchRoute(run: run, dio: dio, testSocket: mockSocket),
         ),
       ),
     );
@@ -206,7 +237,7 @@ bluetooth_collector:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
+          child: RunLaunchRoute(run: run, dio: dio, testSocket: mockSocket),
         ),
       ),
     );
@@ -234,7 +265,7 @@ bluetooth_collector:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
+          child: RunLaunchRoute(run: run, dio: dio, testSocket: mockSocket),
         ),
       ),
     );
@@ -269,7 +300,7 @@ cardinal_memory:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
+          child: RunLaunchRoute(run: run, dio: dio, testSocket: mockSocket),
         ),
       ),
     );
@@ -304,7 +335,14 @@ fill_in_the_blank:
 
     await tester.pumpWidget(
       MaterialApp(
-        home: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
+        home: DefaultAssetBundle(
+          bundle: testAssetBundle,
+          child: RunLaunchRoute(
+            run: run,
+            dio: dio,
+            testSocket: mockSocket,
+          ),
+        ),
       ),
     );
 
