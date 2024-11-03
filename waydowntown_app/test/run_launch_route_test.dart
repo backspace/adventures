@@ -108,11 +108,12 @@ bluetooth_collector:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RunLaunchRoute(run: run, dio: dio),
+          child: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
         ),
       ),
     );
 
+    await tester.pump();
     await tester.pump();
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
@@ -122,8 +123,8 @@ bluetooth_collector:
     expect(find.text('5 minutes'), findsOneWidget);
 
     // scroll the container so the start button shows
-    await tester.scrollUntilVisible(find.text('Start Game'), 100);
-    expect(find.text('Start Game'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('I’m ready'), 100);
+    expect(find.text('I’m ready'), findsOneWidget);
 
     // It never settles because the map never loads… why?
     /*
@@ -165,14 +166,14 @@ fill_in_the_blank:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RunLaunchRoute(run: run, dio: dio),
+          child: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
         ),
       ),
     );
 
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('Start Game'), 100);
-    await tester.tap(find.text('Start Game'));
+    await tester.scrollUntilVisible(find.text('I’m ready'), 100);
+    await tester.tap(find.text('I’m ready'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(BackButton));
@@ -205,7 +206,7 @@ bluetooth_collector:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RunLaunchRoute(run: run, dio: dio),
+          child: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
         ),
       ),
     );
@@ -219,8 +220,8 @@ bluetooth_collector:
 
     expect(find.byType(FlutterMap), findsNothing);
 
-    await tester.scrollUntilVisible(find.text('Start Game'), 100);
-    expect(find.text('Start Game'), findsOneWidget);
+    await tester.scrollUntilVisible(find.text('I’m ready'), 100);
+    expect(find.text('I’m ready'), findsOneWidget);
   });
 
   testWidgets('RunLaunchRoute shows error for unknown concept',
@@ -233,7 +234,7 @@ bluetooth_collector:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RunLaunchRoute(run: run, dio: dio),
+          child: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
         ),
       ),
     );
@@ -244,7 +245,7 @@ bluetooth_collector:
     expect(find.text('Error: Unknown game concept'), findsOneWidget);
     expect(find.text('The game concept "unknown_concept" is not recognized.'),
         findsOneWidget);
-    expect(find.text('Start Game'), findsNothing);
+    expect(find.text('I’m ready'), findsNothing);
   });
 
   testWidgets(
@@ -268,7 +269,7 @@ cardinal_memory:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RunLaunchRoute(run: run, dio: dio),
+          child: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
         ),
       ),
     );
@@ -279,7 +280,7 @@ cardinal_memory:
     expect(find.text('Face north, east, south, or west'), findsOneWidget);
     expect(find.text('20 seconds'), findsOneWidget);
 
-    expect(find.text('Start Game'), findsOneWidget);
+    expect(find.text('I’m ready'), findsOneWidget);
 
     expect(find.text('Parent Region > Test Region'), findsNothing);
     expect(find.byType(FlutterMap), findsNothing);
@@ -303,7 +304,7 @@ fill_in_the_blank:
 
     await tester.pumpWidget(
       MaterialApp(
-        home: RunLaunchRoute(run: run, dio: dio),
+        home: RunLaunchRoute(run: run, dio: dio, skipSocket: true),
       ),
     );
 

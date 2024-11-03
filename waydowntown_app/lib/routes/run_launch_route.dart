@@ -24,19 +24,28 @@ import 'package:yaml/yaml.dart';
 class RunLaunchRoute extends StatefulWidget {
   Run run;
   final Dio dio;
+  final PhoenixSocket? testSocket;
+  final bool skipSocket;
 
-  RunLaunchRoute({super.key, required this.run, required this.dio});
+  RunLaunchRoute({
+    super.key,
+    required this.run,
+    required this.dio,
+    this.testSocket,
+    this.skipSocket = false,
+  });
 
   @override
   State<RunLaunchRoute> createState() => _RunLaunchRouteState();
 }
 
 class _RunLaunchRouteState extends State<RunLaunchRoute> {
-  late PhoenixSocket socket;
-  late PhoenixChannel channel;
+  PhoenixSocket? socket;
+  PhoenixChannel? channel;
   bool isReady = false;
   DateTime? startTime;
   Timer? countdownTimer;
+  late Future<void> connectionFuture;
 
   Future<Map<String, dynamic>> _loadGameInfo(BuildContext context) async {
     final yamlString =
@@ -58,19 +67,23 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   @override
   void initState() {
     super.initState();
-    _connectToSocket();
+    connectionFuture = _connectToSocket();
   }
 
-  void _connectToSocket() async {
+  Future<void> _connectToSocket() async {
+    if (widget.skipSocket) {
+      return;
+    }
+
     final apiRoot = dotenv.env['API_ROOT']!.replaceFirst('http', 'ws');
 
-    socket = PhoenixSocket('$apiRoot/socket/websocket');
-    await socket.connect();
+    socket = widget.testSocket ?? PhoenixSocket('$apiRoot/socket/websocket');
+    await socket!.connect();
 
-    channel = socket.addChannel(topic: 'run:${widget.run.id}');
-    await channel.join().future;
+    channel = socket!.addChannel(topic: 'run:${widget.run.id}');
+    await channel!.join().future;
 
-    channel.messages.listen((message) {
+    channel!.messages.listen((message) {
       if (message.event.value == "run_update") {
         setState(() {
           widget.run = Run.fromJson(message.payload!);
@@ -109,15 +122,15 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   @override
   void dispose() {
     countdownTimer?.cancel();
-    channel.leave();
-    socket.dispose();
+    channel?.leave();
+    socket?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: _loadGameInfo(context),
+    return FutureBuilder<void>(
+      future: connectionFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -125,104 +138,127 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
           );
         }
 
-        final gameInfo = snapshot.data;
-        if (gameInfo?['error'] != null) {
+        if (snapshot.hasError) {
           return Scaffold(
             appBar: AppBar(title: const Text('Error')),
-            body: _buildErrorWidget(context),
+            body: Center(
+              child: Text('Error connecting to server: ${snapshot.error}'),
+            ),
           );
         }
 
-        final gameName = gameInfo?['name'];
-        final instructions = gameInfo?['instructions'];
-        final isPlaceless = gameInfo?['placeless'] ?? false;
+        return FutureBuilder<Map<String, dynamic>>(
+          future: _loadGameInfo(context),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
 
-        if (startTime != null) {
-          return _buildFullScreenCountdown(context);
-        }
+            final gameInfo = snapshot.data;
+            if (gameInfo?['error'] != null) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('Error')),
+                body: _buildErrorWidget(context),
+              );
+            }
 
-        // Otherwise, show the regular game launch screen
-        return Scaffold(
-          appBar: AppBar(title: Text(gameName ?? 'Game Instructions')),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: ListView(
-              children: [
-                if (instructions != null)
-                  _buildInfoCard(
-                    context,
-                    'Instructions',
-                    instructions,
-                  ),
-                if (widget.run.specification.startDescription != null)
-                  _buildInfoCard(
-                    context,
-                    'Starting point',
-                    widget.run.specification.startDescription!,
-                  ),
-                Row(
+            final gameName = gameInfo?['name'];
+            final instructions = gameInfo?['instructions'];
+            final isPlaceless = gameInfo?['placeless'] ?? false;
+
+            if (startTime != null) {
+              return _buildFullScreenCountdown(context);
+            }
+
+            // Otherwise, show the regular game launch screen
+            return Scaffold(
+              appBar: AppBar(title: Text(gameName ?? 'Game Instructions')),
+              body: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ListView(
                   children: [
-                    if (widget.run.totalAnswers > 1)
-                      Expanded(
-                        child: _buildInfoCard(
-                          context,
-                          'Goal',
-                          '${widget.run.totalAnswers} answers',
-                          key: const Key('total_answers'),
+                    if (instructions != null)
+                      _buildInfoCard(
+                        context,
+                        'Instructions',
+                        instructions,
+                      ),
+                    if (widget.run.specification.startDescription != null)
+                      _buildInfoCard(
+                        context,
+                        'Starting point',
+                        widget.run.specification.startDescription!,
+                      ),
+                    Row(
+                      children: [
+                        if (widget.run.totalAnswers > 1)
+                          Expanded(
+                            child: _buildInfoCard(
+                              context,
+                              'Goal',
+                              '${widget.run.totalAnswers} answers',
+                              key: const Key('total_answers'),
+                            ),
+                          ),
+                        if (widget.run.totalAnswers > 1 &&
+                            widget.run.specification.duration != null)
+                          const SizedBox(width: 2),
+                        if (widget.run.specification.duration != null)
+                          if (widget.run.startedAt == null)
+                            Expanded(
+                                child: _buildInfoCard(
+                              context,
+                              'Duration',
+                              _formatDuration(
+                                  widget.run.specification.duration!),
+                              key: const Key('duration'),
+                            ))
+                          else
+                            Expanded(
+                                child: _buildInfoCard(
+                              context,
+                              'Time left',
+                              CountdownTimer(game: widget.run),
+                            ))
+                      ],
+                    ),
+                    if (!isPlaceless)
+                      Card(
+                        color: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Location',
+                                style:
+                                    Theme.of(context).textTheme.headlineSmall,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(getRegionPath(widget.run.specification)),
+                              const SizedBox(height: 8),
+                              SizedBox(
+                                height: 100,
+                                child: _buildMap(widget.run),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    if (widget.run.totalAnswers > 1 &&
-                        widget.run.specification.duration != null)
-                      const SizedBox(width: 2),
-                    if (widget.run.specification.duration != null)
-                      if (widget.run.startedAt == null)
-                        Expanded(
-                            child: _buildInfoCard(
-                          context,
-                          'Duration',
-                          _formatDuration(widget.run.specification.duration!),
-                          key: const Key('duration'),
-                        ))
-                      else
-                        Expanded(
-                            child: _buildInfoCard(
-                          context,
-                          'Time left',
-                          CountdownTimer(game: widget.run),
-                        ))
+                    ElevatedButton(
+                      child:
+                          Text(isReady ? 'Waiting for others…' : 'I’m ready'),
+                      onPressed: isReady ? null : _markAsReady,
+                    ),
+                    const SizedBox(height: 100),
                   ],
                 ),
-                if (!isPlaceless)
-                  Card(
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Location',
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(getRegionPath(widget.run.specification)),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            height: 100,
-                            child: _buildMap(widget.run),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ElevatedButton(
-                  child: Text(isReady ? 'Waiting for others…' : 'I’m ready'),
-                  onPressed: isReady ? null : _markAsReady,
-                ),
-                const SizedBox(height: 100),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
