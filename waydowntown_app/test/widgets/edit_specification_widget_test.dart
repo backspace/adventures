@@ -321,6 +321,9 @@ another_concept:
         find.widgetWithText(TextField, 'Task Description'), 'New task');
     await tester.tap(find.text('1m'));
 
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Notes'), 'Some notes');
+
     dioAdapter.onPatch(
       '/waydowntown/specifications/${specification.id}',
       (server) => server.reply(200, {
@@ -337,6 +340,7 @@ another_concept:
             'task_description': 'New task',
             'duration': 60,
             'region_id': 'region3',
+            'notes': 'Some notes',
           },
         },
       },

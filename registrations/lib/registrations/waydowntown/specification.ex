@@ -14,6 +14,7 @@ defmodule Registrations.Waydowntown.Specification do
     field(:start_description, :string)
     field(:task_description, :string)
     field(:duration, :integer)
+    field(:notes, :string)
 
     belongs_to(:region, Registrations.Waydowntown.Region, type: :binary_id)
     belongs_to(:creator, RegistrationsWeb.User, type: :binary_id, foreign_key: :creator_id)
@@ -27,7 +28,7 @@ defmodule Registrations.Waydowntown.Specification do
   @doc false
   def changeset(specification, attrs) do
     specification
-    |> cast(attrs, [:concept, :start_description, :task_description, :duration, :region_id, :creator_id])
+    |> cast(attrs, [:concept, :start_description, :task_description, :duration, :region_id, :creator_id, :notes])
     |> validate_required([:concept, :task_description])
     |> validate_concept()
     |> validate_number(:duration, greater_than: 0)

@@ -2,7 +2,7 @@ defmodule RegistrationsWeb.Owner.SpecificationView do
   use JSONAPI.View, type: "specifications"
 
   def fields do
-    [:concept, :start_description, :duration, :placed, :task_description]
+    [:concept, :start_description, :duration, :placed, :task_description, :notes]
   end
 
   def placed(specification, conn) do

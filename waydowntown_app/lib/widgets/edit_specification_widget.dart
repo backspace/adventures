@@ -25,6 +25,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   late TextEditingController _startDescriptionController;
   late TextEditingController _taskDescriptionController;
   late TextEditingController _durationController;
+  late TextEditingController _notesController;
   String? _selectedConcept;
   String? _selectedRegionId;
   List<Region> _regions = [];
@@ -42,6 +43,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
         TextEditingController(text: widget.specification.taskDescription);
     _durationController = TextEditingController(
         text: widget.specification.duration?.toString() ?? '');
+    _notesController = TextEditingController(text: widget.specification.notes);
     _selectedConcept = widget.specification.concept;
     _selectedRegionId = widget.specification.region?.id;
     _loadRegions();
@@ -131,6 +133,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
                   'start_description'),
               _buildTextField('Task Description', _taskDescriptionController,
                   'task_description'),
+              _buildTextField('Notes', _notesController, 'notes'),
               _buildDurationField(),
               const SizedBox(height: 16),
               Row(
@@ -340,6 +343,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
               'task_description': _taskDescriptionController.text,
               'duration': int.tryParse(_durationController.text),
               'region_id': _selectedRegionId,
+              'notes': _notesController.text,
             },
           },
         },
@@ -396,6 +400,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     _startDescriptionController.dispose();
     _taskDescriptionController.dispose();
     _durationController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 }

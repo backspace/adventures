@@ -30,7 +30,8 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
           concept: "fill_in_the_blank",
           task_description: "This is a ____",
           region_id: child_region.id,
-          start_description: "Outside the coat check"
+          start_description: "Outside the coat check",
+          notes: "This is a test note"
         })
 
       Repo.insert!(%Specification{
@@ -63,6 +64,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       assert placed_specification_data["attributes"]["concept"] == "fill_in_the_blank"
       assert placed_specification_data["attributes"]["start_description"] == "Outside the coat check"
       refute placed_specification_data["attributes"]["task_description"]
+      refute placed_specification_data["attributes"]["notes"]
       assert placed_specification_data["relationships"]["region"]["data"]["id"] == child_region.id
 
       assert Enum.any?(included, fn item ->
@@ -98,13 +100,15 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       my_specification_1 =
         Repo.insert!(%Specification{
           creator_id: user.id,
-          task_description: "Task description 1"
+          task_description: "Task description 1",
+          notes: "This is a test note"
         })
 
       my_specification_2 =
         Repo.insert!(%Specification{
           creator_id: user.id,
-          task_description: "Task description 2"
+          task_description: "Task description 2",
+          notes: "This is a test note"
         })
 
       answer_1 = Repo.insert!(%Answer{answer: "Answer 1", specification_id: my_specification_1.id})
@@ -159,6 +163,12 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
         |> Map.get("data")
         |> Enum.map(fn specification -> specification["attributes"]["task_description"] end)
 
+      response_notes =
+        conn
+        |> json_response(200)
+        |> Map.get("data")
+        |> Enum.map(fn specification -> specification["attributes"]["notes"] end)
+
       assert my_specification_1.id in response_specification_ids
       assert my_specification_2.id in response_specification_ids
       refute other_specification.id in response_specification_ids
@@ -166,6 +176,10 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       assert my_specification_1.task_description in response_task_descriptions
       assert my_specification_2.task_description in response_task_descriptions
       refute other_specification.task_description in response_task_descriptions
+
+      assert my_specification_1.notes in response_notes
+      assert my_specification_2.notes in response_notes
+      refute other_specification.notes in response_notes
 
       included_answer_ids =
         conn
@@ -190,6 +204,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
           concept: "old_concept",
           start_description: "old_start_description",
           task_description: "old_task_description",
+          notes: "old_notes",
           duration: 60,
           region_id: nil
         })
@@ -239,7 +254,8 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
             "concept" => "bluetooth_collector",
             "start_description" => "new_start_description",
             "task_description" => "new_task_description",
-            "duration" => 120
+            "duration" => 120,
+            "notes" => "new_notes"
           },
           "relationships" => %{
             "region" => %{
@@ -262,6 +278,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       assert updated_specification.task_description == "new_task_description"
       assert updated_specification.duration == 120
       assert updated_specification.region_id == new_region.id
+      assert updated_specification.notes == "new_notes"
     end
 
     test "returns 401 when trying to update another user's specification", %{

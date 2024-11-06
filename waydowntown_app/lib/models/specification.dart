@@ -10,6 +10,7 @@ class Specification {
   final String? startDescription;
   final String? taskDescription;
   final List<Answer>? answers;
+  final String? notes;
 
   const Specification({
     required this.id,
@@ -20,6 +21,7 @@ class Specification {
     this.startDescription,
     this.taskDescription,
     this.answers,
+    this.notes,
   });
 
   factory Specification.fromJson(
@@ -60,6 +62,7 @@ class Specification {
                   .any((answer) => answer['id'] == item['id']))
           .map((item) => Answer.fromJson(item))
           .toList(),
+      notes: attributes['notes'],
     );
   }
 }
