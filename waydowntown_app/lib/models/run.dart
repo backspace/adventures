@@ -37,9 +37,9 @@ class Run {
         (item) =>
             item['type'] == 'specifications' &&
             item['id'] == specificationData['id'],
-        orElse: () => null,
+        orElse: () => <String, Object>{},
       );
-      if (specificationJson != null) {
+      if (specificationJson.isNotEmpty) {
         specification = Specification.fromJson(specificationJson, included);
       }
     }
@@ -60,9 +60,9 @@ class Run {
                   // FIXME serialisation crisis
                   item['relationships']['run'] != null &&
                   item['relationships']['user'] != null,
-              orElse: () => null,
+              orElse: () => <String, Object>{},
             );
-            if (participationJson != null) {
+            if (participationJson.isNotEmpty) {
               return Participation.fromJson(participationJson);
             }
             return null;

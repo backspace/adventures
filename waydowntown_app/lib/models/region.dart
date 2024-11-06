@@ -41,8 +41,9 @@ class Region {
       final parentData = relationships['parent']['data'];
       final parentJson = included.firstWhere(
         (item) => item['type'] == 'regions' && item['id'] == parentData['id'],
-        orElse: () => null,
+        orElse: () => <String, Object>{},
       );
+
       if (parentJson != null) {
         region.parentRegion = Region.fromJson(parentJson, included);
       }

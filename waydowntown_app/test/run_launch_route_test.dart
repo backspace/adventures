@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -5,18 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:waydowntown/models/participation.dart';
 import 'package:waydowntown/routes/run_launch_route.dart';
-import 'package:phoenix_socket/phoenix_socket.dart';
-import 'package:mockito/mockito.dart';
-import 'package:mockito/annotations.dart';
+import 'package:waydowntown/services/user_service.dart';
 
 import './test_helpers.dart';
-
 @GenerateNiceMocks([
   MockSpec<PhoenixSocket>(),
   MockSpec<PhoenixChannel>(),
@@ -83,6 +86,9 @@ void main() {
     dio.httpClientAdapter = dioAdapter;
     testAssetBundle = TestAssetBundle();
 
+    FlutterSecureStorage.setMockInitialValues({});
+    UserService.setUserData('user1', 'user1@example.com', false);
+
     // Setup mock socket
     mockSocket = MockPhoenixSocket();
     mockChannel = MockPhoenixChannel();
@@ -144,8 +150,10 @@ bluetooth_collector:
 
     await tester.pump();
     await tester.pump();
-
-    debugDumpApp();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
     expect(find.text('test_start'), findsOneWidget);
@@ -355,6 +363,82 @@ fill_in_the_blank:
 
     expect(find.text('00:19'), findsOneWidget);
     expect(find.text('30 seconds'), findsNothing);
+  });
+
+  testWidgets(
+      'RunLaunchRoute displays player list and shows join notifications',
+      (WidgetTester tester) async {
+    testAssetBundle.addAsset('assets/concepts.yaml', '''
+fill_in_the_blank:
+  name: Fill in the Blank
+  instructions: Fill in the blank!
+''');
+
+    final initialRun = TestHelpers.createMockRun(
+      concept: 'fill_in_the_blank',
+      participations: [
+        Participation(
+          id: '1',
+          userId: 'user1',
+          runId: 'run1',
+          readyAt: null,
+        ),
+      ],
+    );
+
+    // Setup message stream for run updates
+    final messageController = StreamController<Message>();
+    when(mockChannel.messages).thenAnswer((_) => messageController.stream);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DefaultAssetBundle(
+          bundle: testAssetBundle,
+          child: RunLaunchRoute(
+            run: initialRun,
+            dio: dio,
+            testSocket: mockSocket,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Verify initial player list
+    expect(find.text('Players'), findsOneWidget);
+    expect(find.text('Solo'), findsOneWidget);
+
+    // Simulate a new player joining via run update
+    final updatedRun = TestHelpers.createMockRun(
+      concept: 'fill_in_the_blank',
+      participations: [
+        Participation(
+          id: '1',
+          userId: 'user1',
+          runId: 'run1',
+          readyAt: null,
+        ),
+        Participation(
+          id: '2',
+          userId: 'user2',
+          runId: 'run1',
+          readyAt: null,
+        ),
+      ],
+    );
+
+    messageController.add(Message(
+      event: PhoenixChannelEvent.custom('run_update'),
+      payload: TestHelpers.generateRunJson(updatedRun),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('user2'), findsOneWidget);
+
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.text('Player user2 joined the game'), findsOneWidget);
   });
 }
 

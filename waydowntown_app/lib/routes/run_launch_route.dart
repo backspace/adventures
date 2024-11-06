@@ -44,6 +44,17 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   DateTime? startTime;
   Timer? countdownTimer;
   late Future<void> connectionFuture;
+  String? _currentUserId;
+
+  List<String> get opponents {
+    if (_currentUserId == null) {
+      return [];
+    }
+    return widget.run.participations
+        .where((p) => p.userId != _currentUserId)
+        .map((p) => p.userId)
+        .toList();
+  }
 
   Future<Map<String, dynamic>> _loadGameInfo(BuildContext context) async {
     final yamlString =
@@ -65,7 +76,12 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   @override
   void initState() {
     super.initState();
-    connectionFuture = _connectToSocket();
+    connectionFuture = _initializeConnection();
+  }
+
+  Future<void> _initializeConnection() async {
+    _currentUserId = await UserService.getUserId();
+    await _connectToSocket();
   }
 
   Future<void> _connectToSocket() async {
@@ -78,9 +94,27 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
     await channel!.join().future;
 
     channel!.messages.listen((message) {
-      if (message.event.value == "run_update") {
+      if (message.event == PhoenixChannelEvent.custom('run_update')) {
+        final oldParticipants = widget.run.participations;
         setState(() {
           widget.run = Run.fromJson(message.payload!);
+
+          // Check for new players by comparing old and new participation lists
+          final newParticipants = widget.run.participations
+              .where((p) =>
+                  !oldParticipants.any((old) => old.userId == p.userId) &&
+                  p.userId != _currentUserId)
+              .toList();
+
+          for (final newPlayer in newParticipants) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Player ${newPlayer.userId} joined the game"),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+
           if (widget.run.startedAt != null) {
             startTime = widget.run.startedAt!;
             _startCountdown();
@@ -179,6 +213,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                         'Instructions',
                         instructions,
                       ),
+                    _buildPlayersCard(context),
                     if (widget.run.specification.startDescription != null)
                       _buildInfoCard(
                         context,
@@ -460,6 +495,30 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
               content
             else
               const Text('Invalid content type'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlayersCard(BuildContext context) {
+    return Card(
+      key: const Key('players_card'),
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Players',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              opponents.isEmpty ? 'Solo' : opponents.join(', '),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ],
         ),
       ),

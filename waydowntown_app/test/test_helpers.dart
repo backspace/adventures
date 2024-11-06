@@ -204,7 +204,21 @@ class TestHelpers {
       totalAnswers: totalAnswers,
       startedAt: startedAt,
       taskDescription: description,
-      participations: participations ?? [],
+      participations: participations ??
+          [
+            Participation(
+              id: '1',
+              userId: '1',
+              runId: 'run1',
+              readyAt: null,
+            ),
+            Participation(
+              id: '2',
+              userId: '2',
+              runId: 'run1',
+              readyAt: null,
+            ),
+          ],
     );
   }
 
@@ -289,6 +303,131 @@ class TestHelpers {
         },
       },
     );
+  }
+
+  static Map<String, dynamic> generateRunJson(Run run) {
+    // Helper function to collect all parent regions
+    List<Region> getAllRegions(Region region) {
+      final regions = [region];
+      var current = region.parentRegion;
+      while (current != null) {
+        regions.add(current);
+        current = current.parentRegion;
+      }
+      return regions;
+    }
+
+    // Get all regions including parents
+    final allRegions = run.specification.region != null
+        ? getAllRegions(run.specification.region!)
+        : <Region>[];
+
+    return {
+      "data": {
+        "id": run.id,
+        "type": "runs",
+        "attributes": {
+          "correct_submissions": run.correctSubmissions,
+          "total_answers": run.totalAnswers,
+          "started_at": run.startedAt?.toUtc().toIso8601String(),
+          "description": run.taskDescription,
+        },
+        "relationships": {
+          "specification": {
+            "data": {"type": "specifications", "id": run.specification.id}
+          },
+          "participations": {
+            "data": run.participations
+                .map((p) => {
+                      "type": "participations",
+                      "id": p.id,
+                    })
+                .toList(),
+          }
+        }
+      },
+      "included": [
+        {
+          "id": run.specification.id,
+          "type": "specifications",
+          "attributes": {
+            "concept": run.specification.concept,
+            "placed": run.specification.placed,
+            "start_description": run.specification.startDescription,
+            "task_description": run.specification.taskDescription,
+            "duration": run.specification.duration,
+          },
+          "relationships": {
+            "region": run.specification.region != null
+                ? {
+                    "data": {
+                      "type": "regions",
+                      "id": run.specification.region!.id
+                    }
+                  }
+                : {"data": null},
+            "answers": {
+              "data": run.specification.answers!
+                  .map((answer) => {
+                        "id": answer.id,
+                        "type": "answers",
+                      })
+                  .toList(),
+            }
+          },
+        },
+        // Include all regions (current and parents)
+        ...allRegions.map((region) => {
+              "id": region.id,
+              "type": "regions",
+              "attributes": {
+                "name": region.name,
+                "description": region.description,
+                "latitude": region.latitude,
+                "longitude": region.longitude,
+              },
+              "relationships": {
+                "parent": region.parentRegion != null
+                    ? {
+                        "data": {
+                          "type": "regions",
+                          "id": region.parentRegion!.id
+                        }
+                      }
+                    : {"data": null}
+              }
+            }),
+        // Include answers
+        ...run.specification.answers!.map((answer) => {
+              "id": answer.id,
+              "type": "answers",
+              "attributes": {
+                "label": answer.label,
+              },
+              "relationships": {
+                "specification": {
+                  "data": {"type": "specifications", "id": run.specification.id}
+                }
+              },
+            }),
+        // Include participations
+        ...run.participations.map((p) => {
+              "id": p.id,
+              "type": "participations",
+              "attributes": {
+                "ready": p.readyAt != null,
+              },
+              "relationships": {
+                "user": {
+                  "data": {"type": "users", "id": p.userId}
+                },
+                "run": {
+                  "data": {"type": "runs", "id": p.runId}
+                }
+              }
+            }),
+      ],
+    };
   }
 }
 
