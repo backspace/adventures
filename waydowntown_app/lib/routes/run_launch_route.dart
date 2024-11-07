@@ -76,6 +76,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   @override
   void initState() {
     super.initState();
+    startTime = widget.run.startedAt;
     connectionFuture = _initializeConnection();
   }
 
@@ -129,12 +130,13 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
       countdownTimer!.cancel();
     }
     countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        if (DateTime.now().isAfter(startTime!)) {
-          timer.cancel();
-          _navigateToGame();
-        }
-      });
+      if (DateTime.now().isAfter(startTime!)) {
+        timer.cancel();
+        _navigateToGame();
+
+        // Rerender to hide countdown
+        setState(() {});
+      }
     });
   }
 
@@ -364,7 +366,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                     ?.copyWith(color: Colors.white),
               ),
               const SizedBox(height: 20),
-              _buildCountdown(),
+              StartCountdown(startTime: startTime!),
               const SizedBox(height: 40),
               Text(
                 'Get Ready!',
@@ -377,22 +379,6 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildCountdown() {
-    final remaining = startTime!.difference(DateTime.now());
-
-    // How could this happen…? But
-    if (remaining.isNegative) {
-      return const Text('Starting…',
-          style: TextStyle(color: Colors.white, fontSize: 24));
-    }
-
-    return Text(
-      '${remaining.inSeconds}',
-      style: const TextStyle(
-          color: Colors.white, fontSize: 72, fontWeight: FontWeight.bold),
     );
   }
 
@@ -522,6 +508,51 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class StartCountdown extends StatefulWidget {
+  final DateTime startTime;
+
+  const StartCountdown({super.key, required this.startTime});
+
+  @override
+  State<StartCountdown> createState() => _StartCountdownState();
+}
+
+class _StartCountdownState extends State<StartCountdown> {
+  late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        // Force rebuild of just this widget
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final remaining = widget.startTime.difference(DateTime.now());
+
+    if (remaining.isNegative) {
+      return const Text('Starting…',
+          style: TextStyle(color: Colors.white, fontSize: 24));
+    }
+
+    return Text(
+      '${remaining.inSeconds}',
+      style: const TextStyle(
+          color: Colors.white, fontSize: 72, fontWeight: FontWeight.bold),
     );
   }
 }
