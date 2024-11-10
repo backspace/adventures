@@ -87,8 +87,15 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
 
   Future<void> _connectToSocket() async {
     final apiRoot = dotenv.env['API_ROOT']!.replaceFirst('http', 'ws');
+    final userToken = await UserService.getAccessToken();
 
-    socket = widget.testSocket ?? PhoenixSocket('$apiRoot/socket/websocket');
+    final socketOptions =
+        PhoenixSocketOptions(params: {'Authorization': userToken!});
+
+    socket = widget.testSocket ??
+        PhoenixSocket('$apiRoot/socket/websocket',
+            socketOptions: socketOptions);
+
     await socket!.connect();
 
     channel = socket!.addChannel(topic: 'run:${widget.run.id}');

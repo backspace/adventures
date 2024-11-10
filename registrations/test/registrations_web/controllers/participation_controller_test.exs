@@ -166,6 +166,16 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
       assert payload_with_started_at.data.id == run.id
       assert payload_with_started_at.data.attributes.started_at
     end
+
+    test "channel join fails when user is not a participant", %{conn: conn, run: run} do
+      other_user = insert(:user)
+      conn = put_req_header(conn, "authorization", setup_user_and_get_token(other_user))
+
+      assert {:error, %{reason: "unauthorized"}} =
+               RegistrationsWeb.UserSocket
+               |> socket("user_id", %{user_id: other_user.id})
+               |> subscribe_and_join(RegistrationsWeb.RunChannel, "run:#{run.id}")
+    end
   end
 
   defp setup_conn(%{conn: conn}) do
