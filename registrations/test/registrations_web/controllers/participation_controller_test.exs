@@ -71,10 +71,13 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
     setup do
       user1 = insert(:user)
       user2 = insert(:user)
+
+      conn = assign(build_conn(), :current_user, user1)
+
       specification = Repo.insert!(%Specification{concept: "bluetooth_collector"})
       {:ok, run} = Waydowntown.create_run(user1, %{}, %{"concept" => specification.concept})
       [participation1] = run.participations
-      {:ok, participation2} = Waydowntown.join_run(user2, run.id)
+      {:ok, participation2} = Waydowntown.join_run(user2, run.id, conn)
 
       {:ok, _, socket1} =
         RegistrationsWeb.UserSocket
@@ -175,6 +178,49 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
                RegistrationsWeb.UserSocket
                |> socket("user_id", %{user_id: other_user.id})
                |> subscribe_and_join(RegistrationsWeb.RunChannel, "run:#{run.id}")
+    end
+
+    test "broadcasts run_update when second user joins", %{
+      conn: conn,
+      run: run,
+      user1: user1,
+      socket1: socket1
+    } do
+      new_user = insert(:user)
+
+      conn =
+        conn
+        |> put_req_header("accept", "application/vnd.api+json")
+        |> put_req_header("content-type", "application/vnd.api+json")
+        |> put_req_header("authorization", setup_user_and_get_token(new_user))
+        |> post(Routes.participation_path(conn, :create), %{
+          "data" => %{
+            "type" => "participations",
+            "relationships" => %{
+              "run" => %{
+                "data" => %{
+                  "type" => "run",
+                  "id" => run.id
+                }
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 201)
+      assert_broadcast "run_update", payload
+
+      assert payload.data.type == "runs"
+      assert payload.data.id == run.id
+      assert length(payload.data.relationships.participations.data) == 3
+
+      included_participations =
+        payload.included
+        |> Enum.filter(fn x -> x.type == "participations" and Map.has_key?(x.relationships, :user) end)
+        |> Enum.uniq_by(& &1.id)
+
+      assert length(included_participations) == 3
+      assert Enum.any?(included_participations, fn x -> x.relationships.user.data.id == new_user.id end)
     end
   end
 

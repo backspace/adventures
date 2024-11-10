@@ -11,7 +11,7 @@ defmodule RegistrationsWeb.ParticipationController do
   def create(conn, %{"run_id" => run_id} = params) do
     current_user = conn.assigns[:current_user]
 
-    case Waydowntown.join_run(current_user, run_id) do
+    case Waydowntown.join_run(current_user, run_id, conn) do
       {:ok, participation} ->
         conn
         |> put_status(:created)

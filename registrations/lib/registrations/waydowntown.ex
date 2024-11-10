@@ -204,7 +204,7 @@ defmodule Registrations.Waydowntown do
     end
   end
 
-  def join_run(user, run_id) do
+  def join_run(user, run_id, conn) do
     run = get_run!(run_id)
 
     if Enum.any?(run.participations, fn p -> p.user_id == user.id end) do
@@ -215,6 +215,7 @@ defmodule Registrations.Waydowntown do
       |> Repo.insert()
       |> case do
         {:ok, participation} ->
+          broadcast_participation_update(participation, conn)
           {:ok, participation |> Repo.preload(run: run_preloads()) |> Repo.preload(:user, prefix: "public")}
 
         error ->
