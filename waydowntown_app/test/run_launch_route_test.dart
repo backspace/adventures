@@ -99,7 +99,7 @@ void main() {
     when(mockSocket.addChannel(topic: anyNamed('topic')))
         .thenReturn(mockChannel);
     when(mockChannel.join()).thenReturn(mockPush);
-    when(mockChannel.messages).thenAnswer((_) => Stream.empty());
+    when(mockChannel.messages).thenAnswer((_) => const Stream.empty());
 
     const testMockStorage = './test/fixtures/core';
     const channel = MethodChannel(
@@ -429,7 +429,7 @@ fill_in_the_blank:
     );
 
     messageController.add(Message(
-      event: PhoenixChannelEvent.custom('run_update'),
+      event: const PhoenixChannelEvent.custom('run_update'),
       payload: TestHelpers.generateRunJson(updatedRun),
     ));
 

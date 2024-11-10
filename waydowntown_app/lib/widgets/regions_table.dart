@@ -75,10 +75,10 @@ class RegionsTable extends StatelessWidget {
                   if (snapshot.hasData && snapshot.data == true) {
                     return ElevatedButton(
                       onPressed: () => _showDeleteConfirmation(context, region),
-                      child: const Text('Delete'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                       ),
+                      child: const Text('Delete'),
                     );
                   } else {
                     return const SizedBox.shrink();
@@ -122,8 +122,8 @@ class RegionsTable extends StatelessWidget {
                 await _deleteRegion(region);
                 onRefresh();
               },
-              child: const Text('Delete'),
               style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Delete'),
             ),
           ],
         );

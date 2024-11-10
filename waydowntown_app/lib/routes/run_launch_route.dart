@@ -95,7 +95,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
     await channel!.join().future;
 
     channel!.messages.listen((message) {
-      if (message.event == PhoenixChannelEvent.custom('run_update')) {
+      if (message.event == const PhoenixChannelEvent.custom('run_update')) {
         final oldParticipants = widget.run.participations;
         setState(() {
           widget.run = Run.fromJson(message.payload!);

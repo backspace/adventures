@@ -7,8 +7,7 @@ class OpenRunsTable extends StatelessWidget {
   final List<Run> runs;
   final Dio dio;
 
-  const OpenRunsTable({Key? key, required this.runs, required this.dio})
-      : super(key: key);
+  const OpenRunsTable({super.key, required this.runs, required this.dio});
 
   @override
   Widget build(BuildContext context) {
