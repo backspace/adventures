@@ -88,6 +88,7 @@ void main() {
 
     FlutterSecureStorage.setMockInitialValues({});
     UserService.setUserData('user1', 'user1@example.com', false);
+    UserService.setTokens('test_token', 'test_renewal_token');
 
     // Setup mock socket
     mockSocket = MockPhoenixSocket();
