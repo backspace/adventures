@@ -291,11 +291,16 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
                           ? () => _navigateToGame()
                           : isReady
                               ? null
-                              : _markAsReady,
+                              : _toggleReady,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isReady && widget.run.startedAt == null
+                            ? Colors.red
+                            : null,
+                      ),
                       child: Text(widget.run.startedAt != null
                           ? 'Resume Game'
                           : isReady
-                              ? 'Waiting for others…'
+                              ? 'I’m not ready!'
                               : 'I’m ready'),
                     ),
                     const SizedBox(height: 100),
@@ -389,7 +394,8 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
     );
   }
 
-  void _markAsReady() async {
+  void _toggleReady() async {
+    print('Toggling ready');
     try {
       final userId = await UserService.getUserId();
 
@@ -402,26 +408,27 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
         orElse: () => throw Exception('Participation not found'),
       );
 
+      print('Patching participation ${participation.id} to ${!isReady}');
+
       final response = await widget.dio.patch(
         '/waydowntown/participations/${participation.id}',
         data: {
           "data": {
             "type": "participations",
             "id": participation.id,
-            "attributes": {"ready": true}
+            "attributes": {"ready": !isReady}
           }
         },
       );
 
       if (response.statusCode == 200) {
         setState(() {
-          isReady = true;
+          isReady = !isReady;
         });
       }
     } catch (e) {
       Sentry.captureException(e);
-
-      _showErrorDialog(context, 'Error marking as ready', e.toString());
+      _showErrorDialog(context, 'Error updating ready status', e.toString());
     }
   }
 

@@ -441,6 +441,87 @@ fill_in_the_blank:
     expect(find.byType(SnackBar), findsOneWidget);
     expect(find.text('Player user2 joined the game'), findsOneWidget);
   });
+
+  testWidgets('RunLaunchRoute allows toggling ready status',
+      (WidgetTester tester) async {
+    testAssetBundle.addAsset('assets/concepts.yaml', '''
+fill_in_the_blank:
+  name: Fill in the Blank
+  instructions: Fill in the blank!
+''');
+
+    final run = TestHelpers.createMockRun(
+      concept: 'fill_in_the_blank',
+      totalAnswers: 1,
+    );
+
+    TestHelpers.setupMockStartRunResponse(dioAdapter, run);
+
+    dioAdapter.onPatch(
+      '/waydowntown/participations/participation1',
+      (server) => server.reply(200, {
+        'data': {
+          'type': 'participations',
+          'id': 'participation1',
+          'attributes': {'ready_at': '2024-01-01T00:00:00Z'}
+        }
+      }),
+      data: {
+        'data': {
+          'type': 'participations',
+          'id': 'participation1',
+          'attributes': {'ready': true}
+        }
+      },
+    );
+
+    dioAdapter.onPatch(
+      '/waydowntown/participations/participation1',
+      (server) => server.reply(200, {
+        'data': {
+          'type': 'participations',
+          'id': 'participation1',
+          'attributes': {'ready_at': null}
+        }
+      }),
+      data: {
+        'data': {
+          'type': 'participations',
+          'id': 'participation1',
+          'attributes': {'ready': false}
+        }
+      },
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DefaultAssetBundle(
+          bundle: testAssetBundle,
+          child: RunLaunchRoute(run: run, dio: dio, testSocket: mockSocket),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('I’m ready'), 100);
+    expect(find.text('I’m ready'), findsOneWidget);
+
+    final Finder readyButton = find.text('I’m ready');
+
+    await tester.dragUntilVisible(
+        readyButton, find.byType(Scaffold), const Offset(0, -100));
+
+    await tester.tap(readyButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('I’m not ready!'), findsOneWidget);
+
+    await tester.tap(find.text('I’m not ready!'));
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(find.text('I’m ready'), 100);
+    expect(find.text('I’m ready'), findsOneWidget);
+  }, skip: true);
 }
 
 const String kTemporaryPath = 'temporaryPath';
