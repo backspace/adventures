@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/widgets/completion_animation.dart';
@@ -10,6 +11,8 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
 
   Dio get dio;
   Run get initialRun;
+
+  PhoenixChannel? channel;
 
   @override
   void initState() {
@@ -71,5 +74,28 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
       talker.error('Error submitting answer: $e');
       rethrow;
     }
+  }
+
+  void initializeChannel(PhoenixChannel gameChannel) {
+    channel = gameChannel;
+    channel!.messages.listen((message) {
+      if (message.event == const PhoenixChannelEvent.custom('run_update')) {
+        setState(() {
+          currentRun = Run.fromJson(message.payload!,
+              existingSpecification: currentRun.specification);
+
+          if (currentRun.isComplete && !isGameComplete) {
+            isGameComplete = true;
+            _showCompletionAnimation();
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    channel?.leave();
+    super.dispose();
   }
 }

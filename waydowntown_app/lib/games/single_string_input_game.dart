@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/mixins/run_state_mixin.dart';
 import 'package:waydowntown/models/answer.dart';
@@ -9,9 +10,13 @@ import 'package:waydowntown/run_header.dart';
 class SingleStringInputGame extends StatefulWidget {
   final Dio dio;
   final Run run;
-
-  const SingleStringInputGame(
-      {super.key, required this.dio, required this.run});
+  final PhoenixChannel channel;
+  const SingleStringInputGame({
+    super.key,
+    required this.dio,
+    required this.run,
+    required this.channel,
+  });
 
   @override
   SingleStringInputGameState createState() => SingleStringInputGameState();
@@ -37,6 +42,7 @@ class SingleStringInputGameState extends State<SingleStringInputGame>
   @override
   void initState() {
     super.initState();
+    initializeChannel(widget.channel);
     answer = initialRun.specification.answers![0];
   }
 

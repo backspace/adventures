@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/mixins/run_state_mixin.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/run_header.dart';
@@ -24,6 +25,7 @@ class CollectorGame extends StatefulWidget {
   final Dio dio;
   final Run run;
   final StringDetector detector;
+  final PhoenixChannel channel;
   final bool autoSubmit;
   final Widget Function(BuildContext, StringDetector) inputBuilder;
 
@@ -31,6 +33,7 @@ class CollectorGame extends StatefulWidget {
     super.key,
     required this.dio,
     required this.run,
+    required this.channel,
     required this.detector,
     required this.inputBuilder,
     this.autoSubmit = false,
@@ -56,6 +59,7 @@ class CollectorGameState extends State<CollectorGame>
   @override
   void initState() {
     super.initState();
+    initializeChannel(widget.channel);
     WidgetsBinding.instance.addObserver(this);
     widget.detector.detectedStrings.listen(_onItemDetected);
     widget.detector.startDetecting();

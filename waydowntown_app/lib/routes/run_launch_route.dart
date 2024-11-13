@@ -123,7 +123,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
             );
           }
 
-          if (widget.run.startedAt != null) {
+          if (startTime == null && widget.run.startedAt != null) {
             startTime = widget.run.startedAt!;
             _startCountdown();
           }
@@ -455,20 +455,26 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   Widget _buildGameWidget(Run game) {
     switch (game.specification.concept) {
       case 'bluetooth_collector':
-        return BluetoothCollectorGame(run: game, dio: widget.dio);
+        return BluetoothCollectorGame(
+            run: game, dio: widget.dio, channel: channel!);
       case 'cardinal_memory':
-        return CardinalMemoryGame(run: game, dio: widget.dio);
+        return CardinalMemoryGame(
+            run: game, dio: widget.dio, channel: channel!);
       case 'code_collector':
-        return CodeCollectorGame(run: game, dio: widget.dio);
+        return CodeCollectorGame(run: game, dio: widget.dio, channel: channel!);
       case 'count_the_items':
       case 'fill_in_the_blank':
-        return SingleStringInputGame(run: game, dio: widget.dio);
+        return SingleStringInputGame(
+            run: game, dio: widget.dio, channel: channel!);
       case 'food_court_frenzy':
-        return FoodCourtFrenzyGame(run: game, dio: widget.dio);
+        return FoodCourtFrenzyGame(
+            run: game, dio: widget.dio, channel: channel!);
       case 'orientation_memory':
-        return OrientationMemoryGame(run: game, dio: widget.dio);
+        return OrientationMemoryGame(
+            run: game, dio: widget.dio, channel: channel!);
       case 'string_collector':
-        return StringCollectorGame(run: game, dio: widget.dio);
+        return StringCollectorGame(
+            run: game, dio: widget.dio, channel: channel!);
       default:
         throw Exception('Unknown game type: ${game.specification.concept}');
     }

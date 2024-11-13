@@ -3,18 +3,21 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:motion_sensors/motion_sensors.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/mixins/run_state_mixin.dart';
 import 'package:waydowntown/models/run.dart';
 
 class OrientationMemoryGame extends StatefulWidget {
   final Run run;
   final Dio dio;
+  final PhoenixChannel channel;
   final MotionSensors? motionSensors;
 
   const OrientationMemoryGame({
     super.key,
     required this.run,
     required this.dio,
+    required this.channel,
     this.motionSensors,
   });
 
@@ -40,6 +43,7 @@ class OrientationMemoryGameState extends State<OrientationMemoryGame>
   @override
   void initState() {
     super.initState();
+    initializeChannel(widget.channel);
     _motionSensors = widget.motionSensors ?? MotionSensors();
     _orientationSubscription =
         _motionSensors.screenOrientation.listen((ScreenOrientationEvent event) {

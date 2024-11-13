@@ -2,17 +2,20 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/games/collector_game.dart';
 import 'package:waydowntown/models/run.dart';
 
 class StringCollectorGame extends StatelessWidget {
   final Dio dio;
   final Run run;
+  final PhoenixChannel channel;
 
   const StringCollectorGame({
     super.key,
     required this.dio,
     required this.run,
+    required this.channel,
   });
 
   @override
@@ -21,6 +24,7 @@ class StringCollectorGame extends StatelessWidget {
     return CollectorGame(
       dio: dio,
       run: run,
+      channel: channel,
       detector: detector,
       autoSubmit: true,
       inputBuilder: (context, detector) =>

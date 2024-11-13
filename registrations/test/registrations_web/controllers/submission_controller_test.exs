@@ -1,6 +1,8 @@
 defmodule RegistrationsWeb.SubmissionControllerTest do
   use RegistrationsWeb.ConnCase
 
+  import Phoenix.ChannelTest
+
   alias Registrations.Waydowntown
   alias Registrations.Waydowntown.Answer
   alias Registrations.Waydowntown.Participation
@@ -81,9 +83,25 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
       run = Repo.insert!(%Run{specification: specification, started_at: DateTime.utc_now()})
 
+      user = insert(:user)
+
+      Repo.insert!(%Participation{user_id: user.id, run_id: run.id})
+
+      {:ok, _, socket} =
+        RegistrationsWeb.UserSocket
+        |> socket("user_id", %{user_id: user.id})
+        |> subscribe_and_join(RegistrationsWeb.RunChannel, "run:#{run.id}")
+
       answer = List.first(specification.answers)
 
-      %{run: run, specification: specification, region: region, answer: answer}
+      %{
+        run: run,
+        specification: specification,
+        region: region,
+        answer: answer,
+        user: user,
+        socket: socket
+      }
     end
 
     test "creates correct submission", %{conn: conn, run: run, answer: answer} do
@@ -128,6 +146,11 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
       sideloaded_answer = Enum.find(included, &(&1["type"] == "answers"))
       assert sideloaded_answer["id"] == answer.id
+
+      assert_broadcast "run_update", payload
+
+      assert payload.data.type == "runs"
+      assert payload.data.id == run.id
     end
 
     test "does not create submission if run already has a winning submission", %{conn: conn, run: run} do
@@ -153,6 +176,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
         )
 
       assert json_response(conn, 422)["errors"] != %{}
+      refute_broadcast "run_update", _payload
     end
   end
 

@@ -323,7 +323,19 @@ defmodule Registrations.Waydowntown do
     with {:ok, _} <- validate_run_status(run),
          {:ok, _} <- validate_concept_answer(run.specification.concept, answer_id, run.specification.answers),
          {:ok, _} <- check_submission_validity(run, submission_text, answer_id) do
-      insert_submission(current_user_id, run, submission_text, answer_id)
+      result = insert_submission(current_user_id, run, submission_text, answer_id)
+
+      run = get_run!(run_id)
+
+      case result do
+        {:ok, _} when not is_nil(run.winner_submission_id) ->
+          broadcast_run_update(run, conn)
+
+        _ ->
+          :ok
+      end
+
+      result
     end
   end
 
@@ -642,8 +654,12 @@ defmodule Registrations.Waydowntown do
 
   defp broadcast_participation_update(participation, conn) do
     run = get_run!(participation.run_id)
+    broadcast_run_update(run, conn)
+  end
+
+  defp broadcast_run_update(run, conn) do
     payload = RegistrationsWeb.RunView.render("show.json", %{conn: conn, data: run})
-    RegistrationsWeb.Endpoint.broadcast("run:#{participation.run_id}", "run_update", payload)
+    RegistrationsWeb.Endpoint.broadcast("run:#{run.id}", "run_update", payload)
   end
 
   defp check_and_start_run(run_id, conn) do

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/mixins/run_state_mixin.dart';
 import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
@@ -8,8 +9,14 @@ import 'package:waydowntown/run_header.dart';
 class FoodCourtFrenzyGame extends StatefulWidget {
   final Dio dio;
   final Run run;
+  final PhoenixChannel channel;
 
-  const FoodCourtFrenzyGame({super.key, required this.dio, required this.run});
+  const FoodCourtFrenzyGame({
+    super.key,
+    required this.dio,
+    required this.run,
+    required this.channel,
+  });
 
   @override
   FoodCourtFrenzyGameState createState() => FoodCourtFrenzyGameState();
@@ -51,6 +58,7 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame>
   @override
   void initState() {
     super.initState();
+    initializeChannel(widget.channel);
     answers = currentRun.specification.answers
             ?.map((answer) => SubmissionContainer(answer))
             .toList() ??
