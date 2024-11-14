@@ -1,10 +1,20 @@
 import 'package:http_mock_adapter/http_mock_adapter.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 
 import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/participation.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/models/specification.dart';
+
+@GenerateNiceMocks([
+  MockSpec<PhoenixSocket>(),
+  MockSpec<PhoenixChannel>(),
+  MockSpec<Push>(),
+])
+import 'test_helpers.mocks.dart';
 
 class TestHelpers {
   static void setupMockRunResponse(
@@ -429,6 +439,20 @@ class TestHelpers {
             }),
       ],
     };
+  }
+
+  static (MockPhoenixSocket, MockPhoenixChannel, MockPush) setupMockSocket() {
+    final mockSocket = MockPhoenixSocket();
+    final mockChannel = MockPhoenixChannel();
+    final mockPush = MockPush();
+
+    when(mockSocket.connect()).thenAnswer((_) async => mockSocket);
+    when(mockSocket.addChannel(topic: anyNamed('topic')))
+        .thenReturn(mockChannel);
+    when(mockChannel.join()).thenReturn(mockPush);
+    when(mockChannel.messages).thenAnswer((_) => const Stream.empty());
+
+    return (mockSocket, mockChannel, mockPush);
   }
 }
 

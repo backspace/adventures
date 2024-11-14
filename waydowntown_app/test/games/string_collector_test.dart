@@ -10,6 +10,7 @@ import 'package:waydowntown/games/string_collector.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
+import '../test_helpers.mocks.dart';
 
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
@@ -19,6 +20,7 @@ void main() {
   late Dio dio;
   late DioAdapter dioAdapter;
   late Run game;
+  late MockPhoenixChannel mockChannel;
 
   setUp(() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
@@ -26,6 +28,8 @@ void main() {
     dioAdapter = DioAdapter(dio: dio);
     game = TestHelpers.createMockRun(
         concept: 'string_collector', description: 'Collect strings');
+
+    (_, mockChannel, _) = TestHelpers.setupMockSocket();
   });
 
   testWidgets('StringCollectorGame displays and submits strings',
@@ -64,8 +68,9 @@ void main() {
             totalAnswers: 3,
             isComplete: true));
 
-    await tester.pumpWidget(
-        MaterialApp(home: StringCollectorGame(run: game, dio: dio)));
+    await tester.pumpWidget(MaterialApp(
+      home: StringCollectorGame(run: game, dio: dio, channel: mockChannel),
+    ));
     await tester.pumpAndSettle();
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
@@ -132,8 +137,9 @@ void main() {
           "error_string", game.id, null),
     );
 
-    await tester.pumpWidget(
-        MaterialApp(home: StringCollectorGame(run: game, dio: dio)));
+    await tester.pumpWidget(MaterialApp(
+      home: StringCollectorGame(run: game, dio: dio, channel: mockChannel),
+    ));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'error_string');

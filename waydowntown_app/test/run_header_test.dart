@@ -23,6 +23,8 @@ void main() {
       correctSubmissions: 0,
       totalAnswers: 0,
       taskDescription: 'Test description',
+      participations: [],
+      submissions: [],
     );
 
     await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
@@ -46,6 +48,8 @@ void main() {
       correctSubmissions: 0,
       totalAnswers: 0,
       startedAt: DateTime.now().subtract(const Duration(seconds: 5)),
+      participations: [],
+      submissions: [],
     );
 
     await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
@@ -70,6 +74,8 @@ void main() {
       correctSubmissions: 0,
       totalAnswers: 0,
       startedAt: DateTime.now(),
+      participations: [],
+      submissions: [],
     );
 
     await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
@@ -93,6 +99,8 @@ void main() {
       correctSubmissions: 0,
       totalAnswers: 0,
       startedAt: DateTime.now().subtract(const Duration(seconds: 2)),
+      participations: [],
+      submissions: [],
     );
 
     await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
@@ -116,6 +124,8 @@ void main() {
       correctSubmissions: 1,
       totalAnswers: 2,
       taskDescription: 'Test description',
+      participations: [],
+      submissions: [],
     );
 
     await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));
@@ -138,6 +148,8 @@ void main() {
           )),
       correctSubmissions: 0,
       totalAnswers: 1,
+      participations: [],
+      submissions: [],
     );
 
     await tester.pumpWidget(MaterialApp(home: RunHeader(run: game)));

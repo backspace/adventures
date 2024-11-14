@@ -9,7 +9,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
@@ -20,12 +19,7 @@ import 'package:waydowntown/routes/run_launch_route.dart';
 import 'package:waydowntown/services/user_service.dart';
 
 import './test_helpers.dart';
-@GenerateNiceMocks([
-  MockSpec<PhoenixSocket>(),
-  MockSpec<PhoenixChannel>(),
-  MockSpec<Push>(),
-])
-import 'run_launch_route_test.mocks.dart';
+import './test_helpers.mocks.dart';
 
 class TestAssetBundle extends CachingAssetBundle {
   final Map<String, dynamic> _assets = {};
@@ -76,7 +70,6 @@ void main() {
   late DioAdapter dioAdapter;
   late MockPhoenixSocket mockSocket;
   late MockPhoenixChannel mockChannel;
-  late MockPush mockPush;
 
   setUp(() async {
     dotenv.testLoad(fileInput: File('.env').readAsStringSync());
@@ -90,17 +83,7 @@ void main() {
     UserService.setUserData('user1', 'user1@example.com', false);
     UserService.setTokens('test_token', 'test_renewal_token');
 
-    // Setup mock socket
-    mockSocket = MockPhoenixSocket();
-    mockChannel = MockPhoenixChannel();
-    mockPush = MockPush();
-
-    // Setup basic mock behaviors
-    when(mockSocket.connect()).thenAnswer((_) async => mockSocket);
-    when(mockSocket.addChannel(topic: anyNamed('topic')))
-        .thenReturn(mockChannel);
-    when(mockChannel.join()).thenReturn(mockPush);
-    when(mockChannel.messages).thenAnswer((_) => const Stream.empty());
+    (mockSocket, mockChannel, _) = TestHelpers.setupMockSocket();
 
     const testMockStorage = './test/fixtures/core';
     const channel = MethodChannel(

@@ -15,6 +15,7 @@ import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
+import '../test_helpers.mocks.dart';
 
 import 'orientation_memory_test.mocks.dart';
 
@@ -28,6 +29,7 @@ void main() {
   late DioAdapter dioAdapter;
   late Run game;
   late MockMotionSensors mockMotionSensors;
+  late MockPhoenixChannel mockChannel;
 
   setUp(() {
     mockMotionSensors = MockMotionSensors();
@@ -39,6 +41,8 @@ void main() {
       const Answer(id: '2', label: 'right', order: 2),
       const Answer(id: '3', label: 'left', order: 3),
     ]);
+
+    (_, mockChannel, _) = TestHelpers.setupMockSocket();
   });
 
   testWidgets('OrientationMemoryGame displays and submits pattern',
@@ -97,6 +101,7 @@ void main() {
       home: OrientationMemoryGame(
         dio: dio,
         run: game,
+        channel: mockChannel,
         motionSensors: mockMotionSensors,
       ),
     ));
@@ -195,6 +200,7 @@ void main() {
       home: OrientationMemoryGame(
         dio: dio,
         run: shortRun,
+        channel: mockChannel,
         motionSensors: mockMotionSensors,
       ),
     ));

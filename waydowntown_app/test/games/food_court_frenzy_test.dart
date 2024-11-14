@@ -11,6 +11,7 @@ import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
+import '../test_helpers.mocks.dart';
 
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
@@ -20,6 +21,7 @@ void main() {
   late Dio dio;
   late DioAdapter dioAdapter;
   late Run run;
+  late MockPhoenixChannel mockChannel;
 
   setUp(() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
@@ -34,6 +36,8 @@ void main() {
         const Answer(id: '3', label: 'Sushi'),
       ],
     );
+
+    (_, mockChannel, _) = TestHelpers.setupMockSocket();
   });
 
   testWidgets('FoodCourtFrenzyGame displays and submits answers',
@@ -74,7 +78,9 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(home: FoodCourtFrenzyGame(run: run, dio: dio)),
+      MaterialApp(
+        home: FoodCourtFrenzyGame(run: run, dio: dio, channel: mockChannel),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -133,7 +139,9 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(home: FoodCourtFrenzyGame(run: run, dio: dio)),
+      MaterialApp(
+        home: FoodCourtFrenzyGame(run: run, dio: dio, channel: mockChannel),
+      ),
     );
     await tester.pumpAndSettle();
 
@@ -176,7 +184,13 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp(home: FoodCourtFrenzyGame(run: singleAnswerGame, dio: dio)),
+      MaterialApp(
+        home: FoodCourtFrenzyGame(
+          run: singleAnswerGame,
+          dio: dio,
+          channel: mockChannel,
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 

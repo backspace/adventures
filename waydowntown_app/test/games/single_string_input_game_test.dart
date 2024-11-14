@@ -11,6 +11,7 @@ import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
+import '../test_helpers.mocks.dart';
 
 void main() {
   dotenv.testLoad(fileInput: File('.env').readAsStringSync());
@@ -20,6 +21,7 @@ void main() {
   late Dio dio;
   late DioAdapter dioAdapter;
   late Run run;
+  late MockPhoenixChannel mockChannel;
 
   setUp(() {
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
@@ -28,6 +30,8 @@ void main() {
     run = TestHelpers.createMockRun(concept: 'fill_in_the_blank', answers: [
       const Answer(id: '1', label: 'An enormous headline proclaims ____ quit!')
     ]);
+
+    (_, mockChannel, _) = TestHelpers.setupMockSocket();
   });
 
   testWidgets('Run is requested, displayed, and answers are posted',
@@ -50,8 +54,9 @@ void main() {
             totalAnswers: 1,
             isComplete: true));
 
-    await tester.pumpWidget(
-        MaterialApp(home: SingleStringInputGame(run: run, dio: dio)));
+    await tester.pumpWidget(MaterialApp(
+      home: SingleStringInputGame(run: run, dio: dio, channel: mockChannel),
+    ));
     await tester.pumpAndSettle();
 
     expect(tester.testTextInput.isRegistered, isTrue);
@@ -102,8 +107,9 @@ void main() {
             isComplete: true,
             answerId: '1'));
 
-    await tester.pumpWidget(
-        MaterialApp(home: SingleStringInputGame(run: run, dio: dio)));
+    await tester.pumpWidget(MaterialApp(
+      home: SingleStringInputGame(run: run, dio: dio, channel: mockChannel),
+    ));
     await tester.pumpAndSettle();
 
     final textField = find.byType(TextField);
@@ -134,8 +140,9 @@ void main() {
         concept: 'count_the_items',
         description: 'How many trees can you see in the courtyard?');
 
-    await tester.pumpWidget(
-        MaterialApp(home: SingleStringInputGame(run: run, dio: dio)));
+    await tester.pumpWidget(MaterialApp(
+      home: SingleStringInputGame(run: run, dio: dio, channel: mockChannel),
+    ));
     await tester.pumpAndSettle();
 
     expect(find.text('Count the Items'), findsOneWidget);

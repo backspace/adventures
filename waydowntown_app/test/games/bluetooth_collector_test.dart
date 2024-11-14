@@ -15,14 +15,11 @@ import 'package:waydowntown/games/bluetooth_collector.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
+import '../test_helpers.mocks.dart';
 
+@GenerateMocks([FlutterBluePlusMockable, BluetoothDevice, ScanResult])
 import 'bluetooth_collector_test.mocks.dart';
 
-@GenerateMocks([
-  FlutterBluePlusMockable,
-  BluetoothDevice,
-  ScanResult,
-])
 void main() {
   const submitAnswerRoute = '/waydowntown/submissions';
 
@@ -41,6 +38,8 @@ void main() {
   final Run game = TestHelpers.createMockRun(concept: 'bluetooth_collector');
 
   late FlutterBluePlusMockable mockFlutterBluePlus;
+
+  late MockPhoenixChannel mockChannel;
 
   setUpAll(() {
     when(deviceResult1.device).thenReturn(device1);
@@ -64,6 +63,8 @@ void main() {
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);
 
+    (_, mockChannel, _) = TestHelpers.setupMockSocket();
+
     when(mockFlutterBluePlus.adapterState)
         .thenAnswer((_) => Stream.fromIterable([BluetoothAdapterState.on]));
 
@@ -82,7 +83,10 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: BluetoothCollectorGame(
-          dio: dio, run: game, flutterBluePlus: mockFlutterBluePlus),
+          dio: dio,
+          run: game,
+          flutterBluePlus: mockFlutterBluePlus,
+          channel: mockChannel),
     ));
 
     await tester.pumpAndSettle();
@@ -140,7 +144,10 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: BluetoothCollectorGame(
-          dio: dio, run: game, flutterBluePlus: mockFlutterBluePlus),
+          dio: dio,
+          run: game,
+          flutterBluePlus: mockFlutterBluePlus,
+          channel: mockChannel),
     ));
 
     await tester.pumpAndSettle();
@@ -234,7 +241,10 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: BluetoothCollectorGame(
-          dio: dio, run: game, flutterBluePlus: mockFlutterBluePlus),
+          dio: dio,
+          run: game,
+          flutterBluePlus: mockFlutterBluePlus,
+          channel: mockChannel),
     ));
 
     await tester.pumpAndSettle();

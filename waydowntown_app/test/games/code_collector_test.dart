@@ -14,6 +14,7 @@ import 'package:waydowntown/games/code_collector.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
+import '../test_helpers.mocks.dart';
 
 import 'code_collector_test.mocks.dart';
 
@@ -24,6 +25,7 @@ void main() {
   late Dio dio;
   late DioAdapter dioAdapter;
   late Run game;
+  late MockPhoenixChannel mockChannel;
 
   late MockMobileScannerController mockController;
 
@@ -36,6 +38,8 @@ void main() {
     dioAdapter = DioAdapter(dio: dio);
     game = TestHelpers.createMockRun(
         concept: 'code_collector', correctAnswers: 0, totalAnswers: 5);
+
+    (_, mockChannel, _) = TestHelpers.setupMockSocket();
   });
 
   testWidgets('CodeCollectorGame displays scanned codes',
@@ -56,7 +60,10 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: CodeCollectorGame(
-          dio: dio, run: game, scannerController: mockController),
+          dio: dio,
+          run: game,
+          channel: mockChannel,
+          scannerController: mockController),
     ));
 
     expect(find.text('Parent Region > Test Region'), findsOneWidget);
@@ -133,7 +140,10 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: CodeCollectorGame(
-          dio: dio, run: game, scannerController: mockController),
+          dio: dio,
+          run: game,
+          channel: mockChannel,
+          scannerController: mockController),
     ));
 
     streamController.add(const BarcodeCapture(
@@ -240,7 +250,10 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       home: CodeCollectorGame(
-          dio: dio, run: game, scannerController: mockController),
+          dio: dio,
+          run: game,
+          channel: mockChannel,
+          scannerController: mockController),
     ));
 
     streamController.add(const BarcodeCapture(

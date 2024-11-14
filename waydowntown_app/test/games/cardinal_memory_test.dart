@@ -15,6 +15,7 @@ import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
+import '../test_helpers.mocks.dart';
 
 import 'cardinal_memory_test.mocks.dart';
 
@@ -29,6 +30,8 @@ void main() {
   late Run game;
   late MockMotionSensors mockMotionSensors;
 
+  late MockPhoenixChannel mockChannel;
+
   setUp(() {
     mockMotionSensors = MockMotionSensors();
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
@@ -39,6 +42,8 @@ void main() {
       const Answer(id: '2', label: 'west', order: 2),
       const Answer(id: '3', label: 'south', order: 3),
     ]);
+
+    (_, mockChannel, _) = TestHelpers.setupMockSocket();
   });
 
   testWidgets('CardinalMemoryGame displays and submits pattern',
@@ -97,6 +102,7 @@ void main() {
       home: CardinalMemoryGame(
         dio: dio,
         run: game,
+        channel: mockChannel,
         motionSensors: mockMotionSensors,
       ),
     ));
@@ -193,6 +199,7 @@ void main() {
       home: CardinalMemoryGame(
         dio: dio,
         run: shortRun,
+        channel: mockChannel,
         motionSensors: mockMotionSensors,
       ),
     ));
