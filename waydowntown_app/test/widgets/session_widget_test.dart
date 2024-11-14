@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/refresh_token_interceptor.dart';
+import 'package:waydowntown/services/user_service.dart';
 import 'package:waydowntown/widgets/session_widget.dart';
 
 void main() {
@@ -73,6 +74,7 @@ void main() {
       'http://example.com/fixme/session',
       (server) => server.reply(200, {
         'data': {
+          'id': '1',
           'attributes': {'email': 'test@example.com', 'admin': true}
         }
       }),
@@ -92,6 +94,8 @@ void main() {
     expect(await secureStorage.read(key: 'user_email'),
         equals('test@example.com'));
     expect(await secureStorage.read(key: 'user_is_admin'), equals('true'));
+
+    expect(await UserService.getUserId(), equals('1'));
   });
 
   testWidgets(
@@ -105,6 +109,7 @@ void main() {
       'http://example.com/fixme/session',
       (server) => server.reply(200, {
         'data': {
+          'id': '1',
           'attributes': {'email': 'test@example.com', 'admin': false}
         }
       }),
@@ -136,6 +141,7 @@ void main() {
       'http://example.com/fixme/session',
       (server) => server.reply(200, {
         'data': {
+          'id': '1',
           'attributes': {'email': 'test@example.com'}
         }
       }),
@@ -207,6 +213,7 @@ void main() {
       'http://example.com/fixme/session',
       (server) => server.reply(200, {
         'data': {
+          'id': '1',
           'attributes': {'email': 'test@example.com'}
         }
       }),
