@@ -104,10 +104,10 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       }
     end
 
-    test "creates correct submission", %{conn: conn, run: run, answer: answer} do
+    test "creates correct submission", %{conn: conn, user: user, run: run, answer: answer} do
       conn =
         conn
-        |> setup_conn()
+        |> setup_conn(user)
         |> post(
           Routes.submission_path(conn, :create),
           %{
@@ -146,6 +146,9 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
       sideloaded_answer = Enum.find(included, &(&1["type"] == "answers"))
       assert sideloaded_answer["id"] == answer.id
+
+      sideloaded_user = Enum.find(included, &(&1["type"] == "users"))
+      assert sideloaded_user["id"] == user.id
 
       assert_broadcast "run_update", payload
 

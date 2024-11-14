@@ -6,6 +6,10 @@ defmodule RegistrationsWeb.SubmissionView do
   end
 
   def relationships do
-    [answer: {RegistrationsWeb.AnswerView, :include}, run: {RegistrationsWeb.RunView, :include}]
+    [
+      answer: {RegistrationsWeb.AnswerView, :include},
+      run: {RegistrationsWeb.RunView, :include},
+      creator: {RegistrationsWeb.JSONAPI.UserView, :include}
+    ]
   end
 end

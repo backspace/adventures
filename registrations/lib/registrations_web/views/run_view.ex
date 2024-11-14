@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.RunView do
   alias Registrations.Waydowntown
 
   def fields do
-    [:complete, :correct_submissions, :total_answers, :task_description, :started_at, :competitors]
+    [:complete, :correct_submissions, :total_answers, :task_description, :started_at, :competitors, :winner_submission_id]
   end
 
   def hidden(run) do

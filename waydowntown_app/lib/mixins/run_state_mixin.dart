@@ -3,11 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/run.dart';
-import 'package:waydowntown/widgets/completion_animation.dart';
+import 'package:waydowntown/models/submission.dart';
+import 'package:waydowntown/services/user_service.dart';
+import 'package:waydowntown/widgets/losing_animation.dart';
+import 'package:waydowntown/widgets/winning_animation.dart';
+
+enum GameState {
+  inProgress,
+  won,
+  lost,
+}
 
 mixin RunStateMixin<T extends StatefulWidget> on State<T> {
   late Run currentRun;
-  bool isGameComplete = false;
+  GameState gameState = GameState.inProgress;
 
   Dio get dio;
   Run get initialRun;
@@ -20,8 +29,14 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
     currentRun = initialRun;
   }
 
+  bool get isGameComplete => gameState != GameState.inProgress;
+
   void _showCompletionAnimation() {
-    CompletionAnimation.show(context);
+    if (gameState == GameState.won) {
+      WinningAnimation.show(context);
+    } else {
+      LosingAnimation.show(context);
+    }
   }
 
   Future<bool> submitSubmission(String submission, {String? answerId}) async {
@@ -60,12 +75,9 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
             currentRun = Run.fromJson(
                 {'data': runData, 'included': response.data['included']},
                 existingSpecification: currentRun.specification);
-
-            if (currentRun.isComplete) {
-              isGameComplete = true;
-              _showCompletionAnimation();
-            }
           });
+
+          await checkForCompletion();
         }
       }
 
@@ -76,21 +88,33 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  void initializeChannel(PhoenixChannel gameChannel) {
+  void initializeChannel(PhoenixChannel gameChannel) async {
     channel = gameChannel;
-    channel!.messages.listen((message) {
+    channel!.messages.listen((message) async {
       if (message.event == const PhoenixChannelEvent.custom('run_update')) {
         setState(() {
           currentRun = Run.fromJson(message.payload!,
               existingSpecification: currentRun.specification);
-
-          if (currentRun.isComplete && !isGameComplete) {
-            isGameComplete = true;
-            _showCompletionAnimation();
-          }
         });
+
+        await checkForCompletion();
       }
     });
+  }
+
+  Future<void> checkForCompletion() async {
+    if (currentRun.isComplete &&
+        gameState == GameState.inProgress &&
+        currentRun.winnerSubmissionId != null) {
+      final String? winnerSubmissionId = currentRun.winnerSubmissionId;
+      final Submission winningSubmission = currentRun.submissions
+          .firstWhere((submission) => submission.id == winnerSubmissionId);
+      final bool isUserSubmission =
+          winningSubmission.creatorId == await UserService.getUserId();
+
+      gameState = isUserSubmission ? GameState.won : GameState.lost;
+      _showCompletionAnimation();
+    }
   }
 
   @override

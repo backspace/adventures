@@ -91,6 +91,7 @@ defmodule Registrations.Waydowntown do
     |> Repo.preload(run_preloads())
     |> Repo.preload(participations: [run: run_preloads()])
     |> Repo.preload([participations: [:user]], prefix: "public")
+    |> Repo.preload([submissions: [:creator]], prefix: "public")
   end
 
   def create_run(current_user, attrs \\ %{}, specification_filter \\ nil) do
@@ -312,7 +313,12 @@ defmodule Registrations.Waydowntown do
     |> Repo.update()
   end
 
-  def get_submission!(id), do: Submission |> Repo.get!(id) |> Repo.preload(submission_preloads())
+  def get_submission!(id),
+    do:
+      Submission
+      |> Repo.get!(id)
+      |> Repo.preload(submission_preloads())
+      |> Repo.preload([:creator, run: [submissions: [:creator]]], prefix: "public")
 
   def create_submission(conn, %{"submission" => submission_text, "run_id" => run_id} = params) do
     current_user_id = conn.assigns[:current_user].id

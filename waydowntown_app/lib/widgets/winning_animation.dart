@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_confetti/flutter_confetti.dart';
 
-class CompletionAnimation {
+class WinningAnimation {
   static void show(BuildContext context) {
     const options = ConfettiOptions(
       spread: 360,

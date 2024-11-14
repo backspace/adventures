@@ -1,5 +1,6 @@
 import 'package:waydowntown/models/participation.dart';
 import 'package:waydowntown/models/specification.dart';
+import 'package:waydowntown/models/submission.dart';
 
 class Run {
   final String id;
@@ -10,6 +11,8 @@ class Run {
   final String? taskDescription;
   final bool isComplete;
   final List<Participation> participations;
+  final String? winnerSubmissionId;
+  final List<Submission> submissions;
 
   Run({
     required this.id,
@@ -20,6 +23,8 @@ class Run {
     this.taskDescription,
     this.isComplete = false,
     required this.participations,
+    this.winnerSubmissionId,
+    required this.submissions,
   });
 
   factory Run.fromJson(Map<String, dynamic> json,
@@ -71,6 +76,25 @@ class Run {
           .toList();
     }
 
+    List<Submission> submissions = [];
+    if (included != null &&
+        data['relationships'] != null &&
+        data['relationships']['submissions'] != null) {
+      final submissionsData =
+          data['relationships']['submissions']['data'] as List;
+
+      submissions = submissionsData
+          .map((submissionData) => Submission.fromJson(included.firstWhere(
+                (item) =>
+                    item['type'] == 'submissions' &&
+                    item['id'] == submissionData['id'] &&
+                    // FIXME serialisation crisis
+                    item['relationships']['creator'] != null,
+                orElse: () => <String, Object>{},
+              )))
+          .toList();
+    }
+
     return Run(
       id: data['id'],
       specification: specification ??
@@ -83,6 +107,8 @@ class Run {
           : null,
       isComplete: data['attributes']['complete'] ?? false,
       participations: participations,
+      submissions: submissions,
+      winnerSubmissionId: data['attributes']['winner_submission_id'],
     );
   }
 }
