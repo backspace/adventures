@@ -219,6 +219,7 @@ class TestHelpers {
               readyAt: null,
             ),
           ],
+      submissions: [],
     );
   }
 
