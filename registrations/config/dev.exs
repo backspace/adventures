@@ -28,11 +28,8 @@ config :registrations, RegistrationsWeb.Endpoint,
   cache_static_lookup: false,
   check_origin: false,
   watchers: [
-    node: [
-      "node_modules/webpack/bin/webpack.js",
-      "--mode",
-      "development",
-      "--watch",
+    pnpm: [
+      "watch",
       cd: Path.expand("../assets", __DIR__)
     ]
   ]
