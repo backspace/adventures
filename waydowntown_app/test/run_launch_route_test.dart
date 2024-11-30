@@ -364,6 +364,7 @@ fill_in_the_blank:
         Participation(
           id: '1',
           userId: 'user1',
+          userName: 'Jortle',
           runId: 'run1',
           readyAt: null,
         ),
@@ -400,12 +401,14 @@ fill_in_the_blank:
         Participation(
           id: '1',
           userId: 'user1',
+          userName: 'Jortle',
           runId: 'run1',
           readyAt: null,
         ),
         Participation(
           id: '2',
           userId: 'user2',
+          userName: 'Tortle',
           runId: 'run1',
           readyAt: null,
         ),
@@ -419,10 +422,10 @@ fill_in_the_blank:
 
     await tester.pumpAndSettle();
 
-    expect(find.text('user2'), findsOneWidget);
+    expect(find.text('Tortle'), findsOneWidget);
 
     expect(find.byType(SnackBar), findsOneWidget);
-    expect(find.text('Player user2 joined the game'), findsOneWidget);
+    expect(find.text('Tortle joined the game'), findsOneWidget);
   });
 
   testWidgets('RunLaunchRoute allows toggling ready status',

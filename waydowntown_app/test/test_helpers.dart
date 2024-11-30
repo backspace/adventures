@@ -219,12 +219,14 @@ class TestHelpers {
             Participation(
               id: '1',
               userId: '1',
+              userName: 'One',
               runId: 'run1',
               readyAt: null,
             ),
             Participation(
               id: '2',
               userId: '2',
+              userName: 'Two',
               runId: 'run1',
               readyAt: null,
             ),
@@ -436,6 +438,13 @@ class TestHelpers {
                   "data": {"type": "runs", "id": p.runId}
                 }
               }
+            }),
+        ...run.participations.map((p) => {
+              "id": p.userId,
+              "type": "users",
+              "attributes": {
+                "name": p.userName,
+              },
             }),
       ],
     };

@@ -68,7 +68,7 @@ class Run {
               orElse: () => <String, Object>{},
             );
             if (participationJson.isNotEmpty) {
-              return Participation.fromJson(participationJson);
+              return Participation.fromJson(participationJson, included);
             }
             return null;
           })

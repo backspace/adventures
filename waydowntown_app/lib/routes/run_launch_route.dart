@@ -52,7 +52,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
     }
     return widget.run.participations
         .where((p) => p.userId != _currentUserId)
-        .map((p) => p.userId)
+        .map((p) => p.userName)
         .toList();
   }
 
@@ -117,7 +117,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
           for (final newPlayer in newParticipants) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text("Player ${newPlayer.userId} joined the game"),
+                content: Text("${newPlayer.userName} joined the game"),
                 duration: const Duration(seconds: 2),
               ),
             );
