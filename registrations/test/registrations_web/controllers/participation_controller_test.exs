@@ -69,8 +69,8 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
 
   describe "update participation with readiness" do
     setup do
-      user1 = insert(:user)
-      user2 = insert(:user)
+      user1 = insert(:user, name: "Jortle")
+      user2 = insert(:user, name: "Tortle")
 
       conn = assign(build_conn(), :current_user, user1)
 
@@ -140,6 +140,11 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
       assert length(included_participations) == 2
       assert Enum.all?(included_participations, fn x -> x.relationships.user.data.id in [user1.id, user2.id] end)
       assert Enum.all?(included_participations, fn x -> x.relationships.run.data.id == run.id end)
+
+      included_users =
+        Enum.filter(payload.included, fn x -> x.type == "users" end)
+
+      assert Enum.all?(included_users, fn u -> u.attributes.name in ["Jortle", "Tortle"] end)
 
       conn =
         %{conn: build_conn()}
