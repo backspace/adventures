@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/games/collector_game.dart';
 import 'package:waydowntown/models/run.dart';
 

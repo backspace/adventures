@@ -44,7 +44,7 @@ class Region {
         orElse: () => <String, Object>{},
       );
 
-      if (parentJson != null) {
+      if (parentJson.isNotEmpty) {
         region.parentRegion = Region.fromJson(parentJson, included);
       }
     }
