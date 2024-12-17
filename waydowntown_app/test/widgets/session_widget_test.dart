@@ -64,7 +64,7 @@ void main() {
   });
 
   testWidgets(
-      'SessionWidget shows email, admin icon, and logout button when logged in as admin',
+      'SessionWidget shows name, email, admin icon, and logout button when logged in as admin',
       (WidgetTester tester) async {
     FlutterSecureStorage.setMockInitialValues({
       'access_token': 'abc123',
@@ -75,7 +75,11 @@ void main() {
       (server) => server.reply(200, {
         'data': {
           'id': '1',
-          'attributes': {'email': 'test@example.com', 'admin': true}
+          'attributes': {
+            'email': 'test@example.com',
+            'name': 'Test User',
+            'admin': true
+          }
         }
       }),
     );
@@ -86,6 +90,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.text('Test User'), findsOneWidget);
     expect(find.text('test@example.com'), findsOneWidget);
     expect(find.byIcon(Icons.admin_panel_settings), findsOneWidget);
     expect(find.byIcon(Icons.logout), findsOneWidget);
@@ -93,13 +98,13 @@ void main() {
 
     expect(await secureStorage.read(key: 'user_email'),
         equals('test@example.com'));
+    expect(await secureStorage.read(key: 'user_name'), equals('Test User'));
     expect(await secureStorage.read(key: 'user_is_admin'), equals('true'));
-
     expect(await UserService.getUserId(), equals('1'));
   });
 
   testWidgets(
-      'SessionWidget shows email and logout button when logged in as non-admin',
+      'SessionWidget shows name, email and logout button when logged in as non-admin',
       (WidgetTester tester) async {
     FlutterSecureStorage.setMockInitialValues({
       'access_token': 'abc123',
@@ -110,7 +115,11 @@ void main() {
       (server) => server.reply(200, {
         'data': {
           'id': '1',
-          'attributes': {'email': 'test@example.com', 'admin': false}
+          'attributes': {
+            'email': 'test@example.com',
+            'name': 'Test User',
+            'admin': false
+          }
         }
       }),
     );
@@ -121,6 +130,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.text('Test User'), findsOneWidget);
     expect(find.text('test@example.com'), findsOneWidget);
     expect(find.byIcon(Icons.admin_panel_settings), findsNothing);
     expect(find.byIcon(Icons.logout), findsOneWidget);
@@ -128,6 +138,7 @@ void main() {
 
     expect(await secureStorage.read(key: 'user_email'),
         equals('test@example.com'));
+    expect(await secureStorage.read(key: 'user_name'), equals('Test User'));
     expect(await secureStorage.read(key: 'user_is_admin'), equals('false'));
   });
 
@@ -142,7 +153,7 @@ void main() {
       (server) => server.reply(200, {
         'data': {
           'id': '1',
-          'attributes': {'email': 'test@example.com'}
+          'attributes': {'email': 'test@example.com', 'name': 'Test User'}
         }
       }),
       headers: {
@@ -158,6 +169,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.text('Test User'), findsOneWidget);
     expect(find.text('test@example.com'), findsOneWidget);
     expect(find.byIcon(Icons.logout), findsOneWidget);
 
@@ -167,12 +179,14 @@ void main() {
     expect(find.text('Log in'), findsOneWidget);
     expect(find.byType(ElevatedButton), findsOneWidget);
 
+    expect(find.text('Test User'), findsNothing);
     expect(find.text('test@example.com'), findsNothing);
     expect(find.byIcon(Icons.logout), findsNothing);
 
     expect(await secureStorage.read(key: 'access_token'), isNull);
     expect(await secureStorage.read(key: 'renewal_token'), isNull);
     expect(await secureStorage.read(key: 'user_email'), isNull);
+    expect(await secureStorage.read(key: 'user_name'), isNull);
     expect(await secureStorage.read(key: 'user_is_admin'), isNull);
   });
 
@@ -214,7 +228,11 @@ void main() {
       (server) => server.reply(200, {
         'data': {
           'id': '1',
-          'attributes': {'email': 'test@example.com'}
+          'attributes': {
+            'email': 'test@example.com',
+            'name': 'Test User',
+            'admin': false
+          }
         }
       }),
       headers: {
@@ -238,5 +256,140 @@ void main() {
         equals('new_access_token'));
     expect(await secureStorage.read(key: 'renewal_token'),
         equals('new_renewal_token'));
+  });
+
+  testWidgets('User can edit their name successfully',
+      (WidgetTester tester) async {
+    FlutterSecureStorage.setMockInitialValues({
+      'access_token': 'abc123',
+      'user_id': '1',
+    });
+
+    dioAdapter.onGet(
+      'http://example.com/fixme/session',
+      (server) => server.reply(200, {
+        'data': {
+          'id': '1',
+          'attributes': {
+            'email': 'test@example.com',
+            'name': 'Original Name',
+            'admin': false
+          }
+        }
+      }),
+    );
+
+    dioAdapter.onPost(
+      'http://example.com/fixme/me',
+      (server) => server.reply(200, {
+        'data': {
+          'id': '1',
+          'attributes': {
+            'email': 'test@example.com',
+            'name': 'Octavia',
+            'admin': false
+          }
+        }
+      }),
+      data: {
+        'data': {
+          'type': 'users',
+          'id': '1',
+          'attributes': {'name': 'Octavia'}
+        }
+      },
+      headers: {
+        'Accept': 'application/vnd.api+json',
+        'Content-Type': 'application/vnd.api+json',
+      },
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: SessionWidget(dio: dio, apiBaseUrl: 'http://example.com'),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Original Name'), findsOneWidget);
+    expect(find.text('test@example.com'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.edit));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'Octavia');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Octavia'), findsOneWidget);
+    expect(find.text('test@example.com'), findsOneWidget);
+    expect(await secureStorage.read(key: 'user_name'), equals('Octavia'));
+  });
+
+  testWidgets('Name update shows error when API returns validation error',
+      (WidgetTester tester) async {
+    FlutterSecureStorage.setMockInitialValues({
+      'access_token': 'abc123',
+      'user_id': '1',
+    });
+
+    dioAdapter.onGet(
+      'http://example.com/fixme/session',
+      (server) => server.reply(200, {
+        'data': {
+          'id': '1',
+          'attributes': {
+            'email': 'test@example.com',
+            'name': 'Original Name',
+            'admin': false
+          }
+        }
+      }),
+    );
+
+    dioAdapter.onPost(
+      'http://example.com/fixme/me',
+      (server) => server.reply(422, {
+        'errors': [
+          {
+            'source': {'pointer': '/data/attributes/name'},
+            'detail': "can't be blank"
+          }
+        ]
+      }),
+      data: {
+        'data': {
+          'type': 'users',
+          'id': '1',
+          'attributes': {'name': ''}
+        }
+      },
+      headers: {
+        'Accept': 'application/vnd.api+json',
+        'Content-Type': 'application/vnd.api+json',
+      },
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: SessionWidget(dio: dio, apiBaseUrl: 'http://example.com'),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Original Name'), findsOneWidget);
+    expect(find.text('test@example.com'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.edit));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text("Name can't be blank"), findsOneWidget);
+    expect(find.byType(AlertDialog), findsOneWidget);
+
+    expect(find.byType(TextField), findsOneWidget);
+
+    expect(await secureStorage.read(key: 'user_name'), equals('Original Name'));
   });
 }

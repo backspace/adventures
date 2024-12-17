@@ -4,7 +4,7 @@ defmodule RegistrationsWeb.SessionView do
   alias RegistrationsWeb.SessionView
 
   def fields do
-    [:admin, :email]
+    [:admin, :email, :name]
   end
 
   def render("show.json", %{conn: conn, params: params}) do

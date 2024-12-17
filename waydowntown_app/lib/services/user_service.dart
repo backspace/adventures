@@ -8,12 +8,16 @@ class UserService {
   static const String _userIsAdminKey = 'user_is_admin';
   static const String _accessTokenKey = 'access_token';
   static const String _renewalTokenKey = 'renewal_token';
+  static const String _userNameKey = 'user_name';
 
-  static Future<void> setUserData(
-      String userId, String email, bool isAdmin) async {
+  static Future<void> setUserData(String userId, String email, bool isAdmin,
+      {String? name}) async {
     await _storage.write(key: _userIdKey, value: userId);
     await _storage.write(key: _userEmailKey, value: email);
     await _storage.write(key: _userIsAdminKey, value: isAdmin.toString());
+    if (name != null) {
+      await _storage.write(key: _userNameKey, value: name);
+    }
   }
 
   static Future<void> setTokens(String accessToken, String renewalToken) async {
@@ -42,9 +46,18 @@ class UserService {
     return await _storage.read(key: _renewalTokenKey);
   }
 
+  static Future<String?> getUserName() async {
+    return await _storage.read(key: _userNameKey);
+  }
+
+  static Future<void> setUserName(String name) async {
+    await _storage.write(key: _userNameKey, value: name);
+  }
+
   static Future<void> clearUserData() async {
     await _storage.delete(key: _userIdKey);
     await _storage.delete(key: _userEmailKey);
+    await _storage.delete(key: _userNameKey);
     await _storage.delete(key: _userIsAdminKey);
     await _storage.delete(key: _accessTokenKey);
     await _storage.delete(key: _renewalTokenKey);
