@@ -92,6 +92,14 @@ defmodule RegistrationsWeb.User do
     |> validate_required(required_fields)
   end
 
+  def name_changeset(model, params \\ %{}) do
+    required_fields = ~w(name)a
+
+    model
+    |> cast(params, required_fields)
+    |> validate_required(required_fields)
+  end
+
   def voicepass_changeset(model, params \\ %{}) do
     required_fields = ~w(voicepass)a
 

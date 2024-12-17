@@ -9,6 +9,13 @@ defmodule Registrations.Waydowntown do
   alias Registrations.Waydowntown.Run
   alias Registrations.Waydowntown.Specification
   alias Registrations.Waydowntown.Submission
+  alias RegistrationsWeb.User
+
+  def update_user(user, attrs) do
+    user
+    |> User.name_changeset(attrs)
+    |> Repo.update()
+  end
 
   defp concepts_yaml do
     ConCache.get_or_store(:registrations_cache, :concepts_yaml, fn ->

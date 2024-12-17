@@ -166,5 +166,6 @@ defmodule RegistrationsWeb.Router do
     pipe_through([:pow_json_api_protected])
 
     get("/session", SessionController, :show)
+    post("/me", ApiUserController, :update)
   end
 end
