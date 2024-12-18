@@ -167,7 +167,7 @@ defmodule RegistrationsWeb.RunControllerTest do
       refute included_specification["attributes"]["task_description"] == "This is a ____"
     end
 
-    test "answer hint is included when revealed", %{
+    test "answer hint is included when revealed for this user", %{
       user: user,
       conn: conn,
       run: run,
@@ -183,17 +183,20 @@ defmodule RegistrationsWeb.RunControllerTest do
       assert revealed_answer["attributes"]["hint"] == answer.hint
     end
 
-    test "answer hint is not included when not revealed", %{
+    test "answer hint is null when not revealed for this user", %{
       conn: conn,
       run: run,
       answers: [answer | _]
     } do
+      another_user = insert(:user)
+      {:ok, _reveal} = Waydowntown.create_reveal(another_user, answer.id)
+
       conn = get(conn, Routes.run_path(conn, :show, run.id))
 
       included = json_response(conn, 200)["included"]
       unrevealed_answer = Enum.find(included, &(&1["type"] == "answers" && &1["id"] == answer.id))
 
-      refute Map.has_key?(unrevealed_answer["attributes"], "hint")
+      refute unrevealed_answer["attributes"]["hint"]
     end
   end
 

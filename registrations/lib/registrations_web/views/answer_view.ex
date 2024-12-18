@@ -5,11 +5,13 @@ defmodule RegistrationsWeb.AnswerView do
     [:hint, :label, :order]
   end
 
-  def hidden(answer) do
-    if length(answer.reveals) == 0 do
-      [:hint]
+  def get_field(field, answer, conn) do
+    if field == :hint do
+      if Enum.find(answer.reveals, fn reveal -> reveal.user_id == conn.assigns.current_user.id end) do
+        Map.fetch!(answer, field)
+      end
     else
-      []
+      Map.fetch!(answer, field)
     end
   end
 
