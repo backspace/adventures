@@ -10,9 +10,12 @@ defmodule Registrations.Waydowntown.Answer do
   schema "answers" do
     field(:label, :string)
     field(:answer, :string)
+    field(:hint, :string)
     field(:order, :integer)
 
     belongs_to(:specification, Registrations.Waydowntown.Specification, type: :binary_id)
+
+    has_many(:reveals, Registrations.Waydowntown.Reveal, on_delete: :delete_all)
 
     timestamps()
   end

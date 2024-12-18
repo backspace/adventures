@@ -48,13 +48,28 @@ defmodule RegistrationsWeb.RunControllerTest do
           run_id: run.id
         })
 
+      answer_1 =
+        Repo.insert!(%Answer{
+          label: "answer_1",
+          hint: "hint_1",
+          specification: specification
+        })
+
+      answer_2 =
+        Repo.insert!(%Answer{
+          label: "answer_2",
+          hint: "hint_2",
+          specification: specification
+        })
+
       %{
         user: user,
         run: run,
         specification: specification,
         submission: submission,
         child_region: child_region,
-        parent_region: parent_region
+        parent_region: parent_region,
+        answers: [answer_1, answer_2]
       }
     end
 
@@ -150,6 +165,35 @@ defmodule RegistrationsWeb.RunControllerTest do
 
       included_specification = Enum.find(included, &(&1["type"] == "specifications"))
       refute included_specification["attributes"]["task_description"] == "This is a ____"
+    end
+
+    test "answer hint is included when revealed", %{
+      user: user,
+      conn: conn,
+      run: run,
+      answers: [answer | _]
+    } do
+      {:ok, _reveal} = Waydowntown.create_reveal(user, answer.id)
+
+      conn = get(conn, Routes.run_path(conn, :show, run.id))
+
+      included = json_response(conn, 200)["included"]
+      revealed_answer = Enum.find(included, &(&1["type"] == "answers" && &1["id"] == answer.id))
+
+      assert revealed_answer["attributes"]["hint"] == answer.hint
+    end
+
+    test "answer hint is not included when not revealed", %{
+      conn: conn,
+      run: run,
+      answers: [answer | _]
+    } do
+      conn = get(conn, Routes.run_path(conn, :show, run.id))
+
+      included = json_response(conn, 200)["included"]
+      unrevealed_answer = Enum.find(included, &(&1["type"] == "answers" && &1["id"] == answer.id))
+
+      refute Map.has_key?(unrevealed_answer["attributes"], "hint")
     end
   end
 

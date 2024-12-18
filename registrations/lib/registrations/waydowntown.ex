@@ -6,6 +6,7 @@ defmodule Registrations.Waydowntown do
   alias Registrations.Waydowntown.Answer
   alias Registrations.Waydowntown.Participation
   alias Registrations.Waydowntown.Region
+  alias Registrations.Waydowntown.Reveal
   alias Registrations.Waydowntown.Run
   alias Registrations.Waydowntown.Specification
   alias Registrations.Waydowntown.Submission
@@ -309,7 +310,7 @@ defmodule Registrations.Waydowntown do
     from(i in Specification)
     |> where([i], i.creator_id == ^user.id)
     |> Repo.all()
-    |> Repo.preload([:answers, region: [parent: [parent: [:parent]]]])
+    |> Repo.preload(answers: [:reveals], region: [parent: [parent: [:parent]]])
   end
 
   def get_specification!(id), do: Repo.get!(Specification, id)
@@ -635,14 +636,14 @@ defmodule Registrations.Waydowntown do
 
   defp run_preloads do
     [
-      participations: [run: [:participations, specification: [:answers], submissions: [:answer]]],
+      participations: [run: [:participations, specification: [answers: [:reveals]], submissions: [:answer]]],
       submissions: [:answer],
-      specification: [:answers, region: [parent: [parent: [:parent]]]]
+      specification: [answers: [:reveals], region: [parent: [parent: [:parent]]]]
     ]
   end
 
   defp submission_preloads do
-    [:answer, run: [:participations, specification: [:answers], submissions: [:answer]]]
+    [:answer, run: [:participations, specification: [answers: [:reveals]], submissions: [:answer]]]
   end
 
   def get_participation!(id),
@@ -701,5 +702,62 @@ defmodule Registrations.Waydowntown do
     run
     |> Run.changeset(attrs)
     |> Repo.update()
+  end
+
+  def create_reveal(user, answer_id \\ nil) do
+    case answer_id do
+      nil ->
+        unrevealed_answers_query =
+          from(a in Answer,
+            where: not is_nil(a.hint),
+            where:
+              a.id not in subquery(
+                from(r in Reveal,
+                  where: r.user_id == ^user.id,
+                  select: r.answer_id
+                )
+              )
+          )
+
+        case Repo.one(from(a in unrevealed_answers_query, order_by: fragment("RANDOM()"), limit: 1)) do
+          nil -> {:error, :no_reveals_available}
+          answer -> do_create_reveal(user, answer)
+        end
+
+      id ->
+        answer = Repo.get(Answer, id)
+
+        cond do
+          is_nil(answer.hint) ->
+            {:error, :hint_not_available}
+
+          Repo.exists?(from(r in Reveal, where: r.answer_id == ^id and r.user_id == ^user.id)) ->
+            {:error, :already_revealed}
+
+          true ->
+            do_create_reveal(user, answer)
+        end
+    end
+  end
+
+  defp do_create_reveal(user, answer) do
+    result =
+      %Reveal{}
+      |> Reveal.changeset(%{user_id: user.id, answer_id: answer.id})
+      |> Repo.insert()
+
+    case result do
+      {:ok, reveal} ->
+        {:ok, Repo.preload(reveal, answer: [:reveals])}
+
+      error ->
+        error
+    end
+  end
+
+  def get_reveal!(id) do
+    Reveal
+    |> Repo.get!(id)
+    |> Repo.preload([:answer, :user])
   end
 end
