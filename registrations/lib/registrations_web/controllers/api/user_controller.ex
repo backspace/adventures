@@ -6,7 +6,7 @@ defmodule RegistrationsWeb.ApiUserController do
 
   action_fallback(RegistrationsWeb.FallbackController)
 
-  def update(conn, %{"id" => id} = params) do
+  def update(conn, params) do
     user = Pow.Plug.current_user(conn)
 
     case Waydowntown.update_user(user, params) do

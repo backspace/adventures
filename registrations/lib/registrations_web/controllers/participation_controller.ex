@@ -2,7 +2,6 @@ defmodule RegistrationsWeb.ParticipationController do
   use RegistrationsWeb, :controller
 
   alias Registrations.Waydowntown
-  alias Registrations.Waydowntown.Participation
 
   plug(JSONAPI.QueryParser, view: RegistrationsWeb.ParticipationView)
 

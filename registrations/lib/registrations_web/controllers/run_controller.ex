@@ -94,15 +94,4 @@ defmodule RegistrationsWeb.RunController do
         |> render("error.json", message: "Unable to start the run")
     end
   end
-
-  defp filter_runs(runs, %{"started" => started}) when started in ["true", "false"] do
-    Enum.filter(runs, fn run ->
-      case started do
-        "true" -> not is_nil(run.started_at)
-        "false" -> is_nil(run.started_at)
-      end
-    end)
-  end
-
-  defp filter_runs(runs, _), do: runs
 end
