@@ -203,4 +203,56 @@ void main() {
     expect(textField.decoration?.errorText,
         'DioException [unknown]: null\nError: Server error');
   });
+
+  testWidgets('FoodCourtFrenzyGame handles hints', (WidgetTester tester) async {
+    const hintRoute = '/waydowntown/reveals';
+
+    dioAdapter.onPost(
+      hintRoute,
+      (server) => server.reply(201, {
+        'data': {
+          'type': 'reveals',
+          'id': '1',
+          'attributes': {},
+        },
+        'included': [
+          {
+            'type': 'answers',
+            'id': '1',
+            'attributes': {
+              'hint': 'This is a test hint',
+            },
+          }
+        ]
+      }),
+      data: {
+        'data': {
+          'type': 'reveals',
+          'attributes': {},
+          'relationships': {
+            'answer': {
+              'data': {'type': 'answers', 'id': '1'}
+            }
+          }
+        }
+      },
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FoodCourtFrenzyGame(run: run, dio: dio, channel: mockChannel),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester
+        .tap(find.widgetWithIcon(IconButton, Icons.lightbulb_outline).first);
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Hint: This is a test hint'), findsOneWidget);
+
+    expect(find.widgetWithIcon(IconButton, Icons.lightbulb_outline),
+        findsNWidgets(2));
+  });
 }

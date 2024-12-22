@@ -117,6 +117,40 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
+  Future<String?> requestHint(String answerId) async {
+    try {
+      final response = await dio.post('/waydowntown/reveals', data: {
+        'data': {
+          'type': 'reveals',
+          'attributes': {},
+          'relationships': {
+            'answer': {
+              'data': {'type': 'answers', 'id': answerId}
+            }
+          }
+        }
+      });
+
+      final includedAnswer = response.data['included'].firstWhere(
+        (included) =>
+            included['type'] == 'answers' && included['id'] == answerId,
+        orElse: () => null,
+      );
+
+      if (includedAnswer != null) {
+        return includedAnswer['attributes']['hint'];
+      }
+
+      return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 422) {
+        final error = e.response?.data['errors'][0]['detail'];
+        throw error ?? 'Failed to get hint';
+      }
+      rethrow;
+    }
+  }
+
   @override
   void dispose() {
     channel?.leave();

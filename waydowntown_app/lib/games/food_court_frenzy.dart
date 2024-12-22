@@ -35,12 +35,15 @@ class SubmissionContainer {
   String value;
   AnswerSubmissionState state;
   String? errorMessage;
+  String? hint;
+  bool isLoadingHint = false;
 
   SubmissionContainer(
     this.answer, {
     this.value = '',
     this.state = AnswerSubmissionState.unsubmitted,
     this.errorMessage,
+    this.hint,
   });
 }
 
@@ -91,37 +94,98 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame>
     }
   }
 
+  Future<void> _requestHint(SubmissionContainer answer) async {
+    if (answer.hint != null || answer.isLoadingHint) return;
+
+    setState(() {
+      answer.isLoadingHint = true;
+      answer.errorMessage = null;
+    });
+
+    try {
+      final hint = await requestHint(answer.answer.id);
+      setState(() {
+        print('hint: $hint');
+        answer.hint = hint;
+        answer.isLoadingHint = false;
+      });
+    } catch (e) {
+      setState(() {
+        answer.errorMessage = e.toString();
+        answer.isLoadingHint = false;
+      });
+    }
+  }
+
   Widget _buildAnswerField(SubmissionContainer answer) {
-    return ListTile(
-      title: Text(answer.answer.label!),
-      subtitle: answer.state == AnswerSubmissionState.correct
-          ? Text(answer.value, style: const TextStyle(color: Colors.green))
-          : TextField(
-              onChanged: (value) {
-                setState(() {
-                  answer.value = value;
-                  if (answer.state == AnswerSubmissionState.incorrect) {
-                    answer.state = AnswerSubmissionState.unsubmitted;
-                    answer.errorMessage = null;
-                  }
-                });
-              },
-              onSubmitted: (_) => submitAnswer(answer),
-              decoration: InputDecoration(
-                errorText: answer.errorMessage,
-                errorStyle: TextStyle(
-                  color: answer.state == AnswerSubmissionState.incorrect
-                      ? Colors.orange
-                      : Colors.red,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          title: Row(
+            children: [
+              Expanded(child: Text(answer.answer.label!)),
+              if (answer.hint == null &&
+                  answer.state != AnswerSubmissionState.correct)
+                IconButton(
+                  icon: answer.isLoadingHint
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.lightbulb_outline),
+                  onPressed: () => _requestHint(answer),
                 ),
-              ),
-            ),
-      trailing: answer.state == AnswerSubmissionState.correct
-          ? const Icon(Icons.check_circle, color: Colors.green)
-          : IconButton(
-              icon: const Icon(Icons.send),
-              onPressed: () => submitAnswer(answer),
-            ),
+            ],
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (answer.hint != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text(
+                    'Hint: ${answer.hint}',
+                    style: const TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              answer.state == AnswerSubmissionState.correct
+                  ? Text(answer.value,
+                      style: const TextStyle(color: Colors.green))
+                  : TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          answer.value = value;
+                          if (answer.state == AnswerSubmissionState.incorrect) {
+                            answer.state = AnswerSubmissionState.unsubmitted;
+                            answer.errorMessage = null;
+                          }
+                        });
+                      },
+                      onSubmitted: (_) => submitAnswer(answer),
+                      decoration: InputDecoration(
+                        errorText: answer.errorMessage,
+                        errorStyle: TextStyle(
+                          color: answer.state == AnswerSubmissionState.incorrect
+                              ? Colors.orange
+                              : Colors.red,
+                        ),
+                      ),
+                    ),
+            ],
+          ),
+          trailing: answer.state == AnswerSubmissionState.correct
+              ? const Icon(Icons.check_circle, color: Colors.green)
+              : IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: () => submitAnswer(answer),
+                ),
+        ),
+      ],
     );
   }
 
