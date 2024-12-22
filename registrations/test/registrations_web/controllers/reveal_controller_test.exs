@@ -6,19 +6,35 @@ defmodule RegistrationsWeb.RevealControllerTest do
 
   setup %{conn: conn} do
     user = insert(:user)
-    answer = Repo.insert!(%Answer{hint: "This is a hint"})
-    answer_without_hint = Repo.insert!(%Answer{hint: nil})
+
+    specification = insert(:specification)
+    run = insert(:run, specification: specification)
+
+    answer = Repo.insert!(%Answer{hint: "This is a hint", specification: specification})
+    answer_without_hint = Repo.insert!(%Answer{hint: nil, specification: specification})
 
     conn = setup_conn(conn, user)
 
-    %{conn: conn, user: user, answer: answer, answer_without_hint: answer_without_hint}
+    %{
+      conn: conn,
+      user: user,
+      answer: answer,
+      answer_without_hint: answer_without_hint,
+      run: run
+    }
   end
 
   describe "create reveal" do
     test "creates reveal and returns hint for a provided answer", %{
       conn: conn,
-      answer: answer
+      user: user,
+      answer: answer,
+      run: run
     } do
+      # This should be ignored when checking if the hint has already been revealed
+      other_run = insert(:run, specification: run.specification)
+      Waydowntown.create_reveal(user, answer.id, other_run.id)
+
       conn =
         post(conn, Routes.reveal_path(conn, :create), %{
           "data" => %{
@@ -26,6 +42,9 @@ defmodule RegistrationsWeb.RevealControllerTest do
             "relationships" => %{
               "answer" => %{
                 "data" => %{"type" => "answers", "id" => answer.id}
+              },
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
               }
             }
           }
@@ -36,11 +55,19 @@ defmodule RegistrationsWeb.RevealControllerTest do
       assert sideloaded_answer["attributes"]["hint"] == "This is a hint"
     end
 
-    test "creates reveal and returns hint with a random answer", %{conn: conn} do
+    test "creates reveal and returns hint with a random answer", %{
+      conn: conn,
+      run: run
+    } do
       conn =
         post(conn, Routes.reveal_path(conn, :create), %{
           "data" => %{
-            "type" => "reveals"
+            "type" => "reveals",
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              }
+            }
           }
         })
 
@@ -52,9 +79,10 @@ defmodule RegistrationsWeb.RevealControllerTest do
     test "returns error when answer is already revealed", %{
       conn: conn,
       user: user,
-      answer: answer
+      answer: answer,
+      run: run
     } do
-      {:ok, _reveal} = Waydowntown.create_reveal(user, answer.id)
+      {:ok, _reveal} = Waydowntown.create_reveal(user, answer.id, run.id)
 
       conn =
         post(conn, Routes.reveal_path(conn, :create), %{
@@ -63,6 +91,9 @@ defmodule RegistrationsWeb.RevealControllerTest do
             "relationships" => %{
               "answer" => %{
                 "data" => %{"type" => "answers", "id" => answer.id}
+              },
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
               }
             }
           }
@@ -71,10 +102,13 @@ defmodule RegistrationsWeb.RevealControllerTest do
       assert json_response(conn, 422)["errors"] == [%{"detail" => "Answer already revealed"}]
     end
 
-    test "returns error when answer has no hint", %{
+    test "returns error when answer is not connected to run", %{
       conn: conn,
-      answer_without_hint: answer
+      answer: answer
     } do
+      other_specification = insert(:specification)
+      other_run = insert(:run, specification: other_specification)
+
       conn =
         post(conn, Routes.reveal_path(conn, :create), %{
           "data" => %{
@@ -82,21 +116,36 @@ defmodule RegistrationsWeb.RevealControllerTest do
             "relationships" => %{
               "answer" => %{
                 "data" => %{"type" => "answers", "id" => answer.id}
+              },
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => other_run.id}
               }
             }
           }
         })
 
-      assert json_response(conn, 422)["errors"] == [%{"detail" => "Hint not available for this answer"}]
+      assert json_response(conn, 422)["errors"] == [
+               %{"detail" => "Answer not connected to run", "pointer" => "answer_id"}
+             ]
     end
 
-    test "returns error when no reveals are available", %{conn: conn, user: user, answer: answer} do
-      {:ok, _reveal} = Waydowntown.create_reveal(user, answer.id)
+    test "returns error when no reveals are available", %{
+      conn: conn,
+      user: user,
+      answer: answer,
+      run: run
+    } do
+      {:ok, _reveal} = Waydowntown.create_reveal(user, answer.id, run.id)
 
       conn =
         post(conn, Routes.reveal_path(conn, :create), %{
           "data" => %{
-            "type" => "reveals"
+            "type" => "reveals",
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              }
+            }
           }
         })
 

@@ -105,7 +105,6 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame>
     try {
       final hint = await requestHint(answer.answer.id);
       setState(() {
-        print('hint: $hint');
         answer.hint = hint;
         answer.isLoadingHint = false;
       });

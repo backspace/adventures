@@ -232,6 +232,9 @@ void main() {
           'relationships': {
             'answer': {
               'data': {'type': 'answers', 'id': '1'}
+            },
+            'run': {
+              'data': {'type': 'runs', 'id': run.id}
             }
           }
         }

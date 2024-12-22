@@ -173,7 +173,7 @@ defmodule RegistrationsWeb.RunControllerTest do
       run: run,
       answers: [answer | _]
     } do
-      {:ok, _reveal} = Waydowntown.create_reveal(user, answer.id)
+      {:ok, _reveal} = Waydowntown.create_reveal(user, answer.id, run.id)
 
       conn = get(conn, Routes.run_path(conn, :show, run.id))
 
@@ -189,7 +189,7 @@ defmodule RegistrationsWeb.RunControllerTest do
       answers: [answer | _]
     } do
       another_user = insert(:user)
-      {:ok, _reveal} = Waydowntown.create_reveal(another_user, answer.id)
+      {:ok, _reveal} = Waydowntown.create_reveal(another_user, answer.id, run.id)
 
       conn = get(conn, Routes.run_path(conn, :show, run.id))
 

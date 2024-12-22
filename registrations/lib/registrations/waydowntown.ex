@@ -704,7 +704,7 @@ defmodule Registrations.Waydowntown do
     |> Repo.update()
   end
 
-  def create_reveal(user, answer_id \\ nil) do
+  def create_reveal(user, answer_id \\ nil, run_id \\ nil) do
     case answer_id do
       nil ->
         unrevealed_answers_query =
@@ -713,7 +713,7 @@ defmodule Registrations.Waydowntown do
             where:
               a.id not in subquery(
                 from(r in Reveal,
-                  where: r.user_id == ^user.id,
+                  where: r.user_id == ^user.id and r.run_id == ^run_id,
                   select: r.answer_id
                 )
               )
@@ -721,7 +721,7 @@ defmodule Registrations.Waydowntown do
 
         case Repo.one(from(a in unrevealed_answers_query, order_by: fragment("RANDOM()"), limit: 1)) do
           nil -> {:error, :no_reveals_available}
-          answer -> do_create_reveal(user, answer)
+          answer -> do_create_reveal(user, answer, run_id)
         end
 
       id ->
@@ -731,19 +731,19 @@ defmodule Registrations.Waydowntown do
           is_nil(answer.hint) ->
             {:error, :hint_not_available}
 
-          Repo.exists?(from(r in Reveal, where: r.answer_id == ^id and r.user_id == ^user.id)) ->
+          Repo.exists?(from(r in Reveal, where: r.answer_id == ^id and r.user_id == ^user.id and r.run_id == ^run_id)) ->
             {:error, :already_revealed}
 
           true ->
-            do_create_reveal(user, answer)
+            do_create_reveal(user, answer, run_id)
         end
     end
   end
 
-  defp do_create_reveal(user, answer) do
+  defp do_create_reveal(user, answer, run_id) do
     result =
       %Reveal{}
-      |> Reveal.changeset(%{user_id: user.id, answer_id: answer.id})
+      |> Reveal.changeset(%{user_id: user.id, answer_id: answer.id, run_id: run_id})
       |> Repo.insert()
 
     case result do

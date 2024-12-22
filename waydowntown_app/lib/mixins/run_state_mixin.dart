@@ -126,6 +126,9 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
           'relationships': {
             'answer': {
               'data': {'type': 'answers', 'id': answerId}
+            },
+            'run': {
+              'data': {'type': 'runs', 'id': currentRun.id}
             }
           }
         }

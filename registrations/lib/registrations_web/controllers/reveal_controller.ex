@@ -8,7 +8,7 @@ defmodule RegistrationsWeb.RevealController do
   action_fallback(RegistrationsWeb.FallbackController)
 
   def create(conn, params) do
-    case Waydowntown.create_reveal(conn.assigns.current_user, params["answer_id"]) do
+    case Waydowntown.create_reveal(conn.assigns.current_user, params["answer_id"], params["run_id"]) do
       {:ok, reveal} ->
         conn
         |> put_status(:created)
@@ -28,6 +28,13 @@ defmodule RegistrationsWeb.RevealController do
         conn
         |> put_status(:unprocessable_entity)
         |> json(%{errors: [%{detail: "Hint not available for this answer"}]})
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{
+          errors: Enum.map(changeset.errors, fn {field, {message, _}} -> %{pointer: field, detail: message} end)
+        })
     end
   end
 end
