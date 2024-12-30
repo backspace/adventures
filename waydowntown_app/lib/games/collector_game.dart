@@ -114,8 +114,29 @@ class CollectorGameState extends State<CollectorGame>
         setState(() {
           isLoadingHint = false;
         });
+        _showErrorDialog('Error requesting hint', e.toString());
       }
     }
+  }
+
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> submitItem(DetectedItem item) async {

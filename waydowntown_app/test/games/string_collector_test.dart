@@ -253,4 +253,57 @@ void main() {
 
     expect(find.text(testHint), findsOneWidget);
   });
+
+  testWidgets('StringCollectorGame shows error dialog when hint request fails',
+      (WidgetTester tester) async {
+    const hintRoute = '/waydowntown/reveals';
+    const errorMessage = 'Failed to get hint';
+
+    dioAdapter.onPost(
+      hintRoute,
+      (server) => server.throws(
+        422,
+        DioException(
+          requestOptions: RequestOptions(path: hintRoute),
+          response: Response(
+            requestOptions: RequestOptions(path: hintRoute),
+            statusCode: 422,
+            data: {
+              'errors': [
+                {'detail': errorMessage}
+              ]
+            },
+          ),
+        ),
+      ),
+      data: {
+        'data': {
+          'type': 'reveals',
+          'attributes': {},
+          'relationships': {
+            'run': {
+              'data': {'type': 'runs', 'id': game.id}
+            }
+          }
+        }
+      },
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: StringCollectorGame(run: game, dio: dio, channel: mockChannel),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.lightbulb_outline));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Error requesting hint'), findsOneWidget);
+    expect(find.text(errorMessage), findsOneWidget);
+
+    await tester.tap(find.text('Close'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Error requesting hint'), findsNothing);
+    expect(find.text(errorMessage), findsNothing);
+  });
 }
