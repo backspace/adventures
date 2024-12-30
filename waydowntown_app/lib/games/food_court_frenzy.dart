@@ -103,9 +103,9 @@ class FoodCourtFrenzyGameState extends State<FoodCourtFrenzyGame>
     });
 
     try {
-      final hint = await requestHint(answer.answer.id);
+      final answerData = await requestHint(answer.answer.id);
       setState(() {
-        answer.hint = hint;
+        answer.hint = answerData?.label;
         answer.isLoadingHint = false;
       });
     } catch (e) {

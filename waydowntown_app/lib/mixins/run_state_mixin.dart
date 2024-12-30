@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/app.dart';
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/models/submission.dart';
 import 'package:waydowntown/services/user_service.dart';
@@ -117,16 +118,17 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
     }
   }
 
-  Future<String?> requestHint(String answerId) async {
+  Future<Answer?> requestHint(String? answerId) async {
     try {
       final response = await dio.post('/waydowntown/reveals', data: {
         'data': {
           'type': 'reveals',
           'attributes': {},
           'relationships': {
-            'answer': {
-              'data': {'type': 'answers', 'id': answerId}
-            },
+            if (answerId != null)
+              'answer': {
+                'data': {'type': 'answers', 'id': answerId}
+              },
             'run': {
               'data': {'type': 'runs', 'id': currentRun.id}
             }
@@ -134,17 +136,27 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
         }
       });
 
-      final includedAnswer = response.data['included'].firstWhere(
-        (included) =>
-            included['type'] == 'answers' && included['id'] == answerId,
+      if (response.data['included'] != null) {
+        final runData = response.data['included'].firstWhere(
+          (included) =>
+              included['type'] == 'runs' && included['id'] == currentRun.id,
+          orElse: () => null,
+        );
+        if (runData != null) {
+          setState(() {
+            currentRun = Run.fromJson(
+                {'data': runData, 'included': response.data['included']},
+                existingSpecification: currentRun.specification);
+          });
+        }
+      }
+
+      final includedAnswer = response.data['included']?.firstWhere(
+        (included) => included['type'] == 'answers',
         orElse: () => null,
       );
 
-      if (includedAnswer != null) {
-        return includedAnswer['attributes']['hint'];
-      }
-
-      return null;
+      return includedAnswer != null ? Answer.fromJson(includedAnswer) : null;
     } on DioException catch (e) {
       if (e.response?.statusCode == 422) {
         final error = e.response?.data['errors'][0]['detail'];

@@ -163,4 +163,94 @@ void main() {
 
     expect(find.text('Error'), findsNothing);
   });
+
+  testWidgets(
+      'StringCollectorGame requests hints and matches them to submissions',
+      (WidgetTester tester) async {
+    const hintRoute = '/waydowntown/reveals';
+    const testHint = 'This is a test hint';
+
+    dioAdapter.onPost(
+      hintRoute,
+      (server) => server.reply(201, {
+        'data': {
+          'type': 'reveals',
+          'id': '1',
+          'attributes': {},
+        },
+        'included': [
+          {
+            'type': 'answers',
+            'id': '1',
+            'attributes': {
+              'hint': testHint,
+            },
+          },
+        ]
+      }),
+      data: {
+        'data': {
+          'type': 'reveals',
+          'attributes': {},
+          'relationships': {
+            'run': {
+              'data': {'type': 'runs', 'id': game.id}
+            }
+          }
+        }
+      },
+    );
+
+    TestHelpers.setupMockSubmissionResponse(
+      dioAdapter,
+      SubmissionRequest(
+        route: submitAnswerRoute,
+        submission: 'incorrect',
+        correct: false,
+        correctSubmissions: 0,
+        totalAnswers: 3,
+      ),
+    );
+
+    TestHelpers.setupMockSubmissionResponse(
+      dioAdapter,
+      SubmissionRequest(
+        route: submitAnswerRoute,
+        submission: 'correct',
+        correct: true,
+        correctSubmissions: 1,
+        totalAnswers: 3,
+      ),
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: StringCollectorGame(run: game, dio: dio, channel: mockChannel),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.lightbulb_outline));
+    await tester.pumpAndSettle();
+
+    expect(find.text(testHint), findsOneWidget);
+    expect(find.byIcon(Icons.lightbulb), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'incorrect');
+    await tester.tap(find.byType(ElevatedButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text(testHint), findsOneWidget);
+    expect(find.byIcon(Icons.lightbulb), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'correct');
+    await tester.tap(find.byType(ElevatedButton));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.lightbulb), findsNothing);
+
+    final listItems = find.byType(ListTile);
+    expect(tester.widget<ListTile>(listItems.first).title,
+        isA<Text>().having((t) => t.data, 'text', 'correct'));
+
+    expect(find.text(testHint), findsOneWidget);
+  });
 }

@@ -14,11 +14,27 @@ abstract class StringDetector {
 
 enum SubmissionState { unsubmitted, submitting, error, correct, incorrect }
 
+class HintItem {
+  final String hint;
+  bool isMatched = false;
+  DateTime receivedAt = DateTime.now();
+
+  HintItem(this.hint);
+}
+
 class DetectedItem {
   final String value;
   SubmissionState state;
+  String? errorMessage;
+  DateTime submittedAt = DateTime.now();
+  String? matchedHint;
 
-  DetectedItem(this.value, {this.state = SubmissionState.unsubmitted});
+  DetectedItem(
+    this.value, {
+    this.state = SubmissionState.unsubmitted,
+    this.errorMessage,
+    this.matchedHint,
+  });
 }
 
 class CollectorGame extends StatefulWidget {
@@ -46,6 +62,8 @@ class CollectorGame extends StatefulWidget {
 class CollectorGameState extends State<CollectorGame>
     with WidgetsBindingObserver, RunStateMixin<CollectorGame> {
   List<DetectedItem> detectedItems = [];
+  List<HintItem> hints = [];
+  bool isLoadingHint = false;
   Map<String, String> itemErrors = {};
 
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
@@ -75,6 +93,31 @@ class CollectorGameState extends State<CollectorGame>
     }
   }
 
+  Future<void> _requestHint() async {
+    if (isLoadingHint) return;
+
+    setState(() {
+      isLoadingHint = true;
+    });
+
+    try {
+      final answer = await requestHint(null);
+
+      if (mounted && answer?.hint != null) {
+        setState(() {
+          _addHint(HintItem(answer?.hint ?? ''));
+          isLoadingHint = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoadingHint = false;
+        });
+      }
+    }
+  }
+
   Future<void> submitItem(DetectedItem item) async {
     if (!mounted) return;
 
@@ -90,6 +133,17 @@ class CollectorGameState extends State<CollectorGame>
       setState(() {
         item.state =
             isCorrect ? SubmissionState.correct : SubmissionState.incorrect;
+
+        if (isCorrect) {
+          for (var hint in hints.toList()) {
+            if (!hint.isMatched) {
+              hint.isMatched = true;
+              item.matchedHint = hint.hint;
+              _removeHint(hint);
+              break;
+            }
+          }
+        }
       });
     } catch (e) {
       if (!mounted) return;
@@ -104,7 +158,33 @@ class CollectorGameState extends State<CollectorGame>
     if (mounted) {
       setState(() {
         detectedItems.insert(0, item);
-        _listKey.currentState?.insertItem(0);
+        _listKey.currentState
+            ?.insertItem(0, duration: const Duration(milliseconds: 300));
+      });
+    }
+  }
+
+  void _addHint(HintItem hint) {
+    if (mounted) {
+      setState(() {
+        hints.insert(0, hint);
+        _listKey.currentState
+            ?.insertItem(0, duration: const Duration(milliseconds: 300));
+      });
+    }
+  }
+
+  void _removeHint(HintItem hint) {
+    final index = hints.indexOf(hint);
+    if (index != -1) {
+      final removedHint = hints[index];
+      _listKey.currentState?.removeItem(
+        index,
+        (context, animation) => _buildHintTile(removedHint, animation),
+        duration: const Duration(milliseconds: 300),
+      );
+      setState(() {
+        hints.removeAt(index);
       });
     }
   }
@@ -148,8 +228,7 @@ class CollectorGameState extends State<CollectorGame>
   }
 
   Widget _buildItem(
-      BuildContext context, int index, Animation<double> animation) {
-    DetectedItem item = detectedItems[index];
+      BuildContext context, DetectedItem item, Animation<double> animation) {
     return SlideTransition(
       position: Tween<Offset>(
         begin: const Offset(0, -1),
@@ -158,29 +237,108 @@ class CollectorGameState extends State<CollectorGame>
         parent: animation,
         curve: Curves.easeInOutCubic,
       )),
-      child: ListTile(
-          title: Text(item.value),
-          leading: _getIconForState(item.state, item.value),
-          // FIXME should there be a submit button? Previously just tapping the row was the way
-          trailing:
-              !widget.autoSubmit && item.state == SubmissionState.unsubmitted
-                  ? ElevatedButton(
-                      onPressed: () => submitItem(item),
-                      child: const Text('Submit'),
-                    )
-                  : null,
-          onTap: item.state == SubmissionState.unsubmitted ||
-                  item.state == SubmissionState.error
-              ? () => submitItem(item)
-              : null),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            title: Text(item.value),
+            leading: _getIconForState(item.state, item.value),
+            trailing:
+                !widget.autoSubmit && item.state == SubmissionState.unsubmitted
+                    ? ElevatedButton(
+                        onPressed: () => submitItem(item),
+                        child: const Text('Submit'),
+                      )
+                    : null,
+            onTap: item.state == SubmissionState.unsubmitted ||
+                    item.state == SubmissionState.error
+                ? () => submitItem(item)
+                : null,
+          ),
+          if (item.state == SubmissionState.correct && item.matchedHint != null)
+            Padding(
+              padding:
+                  const EdgeInsets.only(left: 72.0, right: 16.0, bottom: 8.0),
+              child: Text(
+                item.matchedHint!,
+                style: const TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
+  }
+
+  Widget _buildHintTile(HintItem hint, [Animation<double>? animation]) {
+    Widget tile = Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+      color: Colors.blue.shade50,
+      child: ListTile(
+        leading: const Icon(
+          Icons.lightbulb,
+          color: Colors.blue,
+        ),
+        title: Text(
+          hint.hint,
+          style: const TextStyle(
+            fontStyle: FontStyle.italic,
+            color: Colors.blue,
+          ),
+        ),
+      ),
+    );
+
+    if (animation != null) {
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, -1),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeInOutCubic,
+        )),
+        child: tile,
+      );
+    }
+
+    return tile;
+  }
+
+  Widget _buildListItem(
+      BuildContext context, int index, Animation<double> animation) {
+    final allItems = [
+      ...hints.map((hint) => MapEntry(hint.receivedAt,
+          (Animation<double> anim) => _buildHintTile(hint, anim))),
+      ...detectedItems.map((item) => MapEntry(item.submittedAt,
+          (Animation<double> anim) => _buildItem(context, item, anim))),
+    ]..sort((a, b) => b.key.compareTo(a.key));
+
+    return allItems[index].value(animation);
   }
 
   @override
   Widget build(BuildContext context) {
+    final int totalItems = detectedItems.length + hints.length;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.runtimeType.toString()),
+        actions: [
+          if (!isGameComplete)
+            IconButton(
+              icon: isLoadingHint
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.lightbulb_outline),
+              onPressed: _requestHint,
+            ),
+        ],
       ),
       body: Column(
         children: [
@@ -198,9 +356,9 @@ class CollectorGameState extends State<CollectorGame>
           Expanded(
             child: AnimatedList(
               key: _listKey,
-              initialItemCount: detectedItems.length,
+              initialItemCount: totalItems,
               itemBuilder: (context, index, animation) {
-                return _buildItem(context, index, animation);
+                return _buildListItem(context, index, animation);
               },
             ),
           ),
