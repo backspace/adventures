@@ -111,8 +111,8 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
           notes: "This is a test note"
         })
 
-      answer_1 = Repo.insert!(%Answer{answer: "Answer 1", specification_id: my_specification_1.id})
-      answer_2 = Repo.insert!(%Answer{answer: "Answer 2", specification_id: my_specification_2.id})
+      answer_1 = Repo.insert!(%Answer{answer: "Answer 1", hint: "Hint 1", specification_id: my_specification_1.id})
+      answer_2 = Repo.insert!(%Answer{answer: "Answer 2", hint: "Hint 2", specification_id: my_specification_2.id})
 
       other_specification = Repo.insert!(%Specification{creator_id: insert(:user).id})
 
@@ -137,7 +137,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       }
     end
 
-    test "returns list of specifications for the current user", %{
+    test "returns list of specifications for the current user with answers and hints", %{
       conn: conn,
       authorization_token: authorization_token,
       my_specification_1: my_specification_1,
@@ -190,6 +190,26 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
 
       assert answer_1.id in included_answer_ids
       assert answer_2.id in included_answer_ids
+
+      included_answer_answers =
+        conn
+        |> json_response(200)
+        |> Map.get("included")
+        |> Enum.filter(fn item -> item["type"] == "answers" end)
+        |> Enum.map(fn item -> item["attributes"]["answer"] end)
+
+      assert "Answer 1" in included_answer_answers
+      assert "Answer 2" in included_answer_answers
+
+      included_answer_hints =
+        conn
+        |> json_response(200)
+        |> Map.get("included")
+        |> Enum.filter(fn item -> item["type"] == "answers" end)
+        |> Enum.map(fn item -> item["attributes"]["hint"] end)
+
+      assert "Hint 1" in included_answer_hints
+      assert "Hint 2" in included_answer_hints
     end
   end
 

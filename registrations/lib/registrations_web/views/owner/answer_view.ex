@@ -2,7 +2,7 @@ defmodule RegistrationsWeb.Owner.AnswerView do
   use JSONAPI.View, type: "answers"
 
   def fields do
-    [:label, :order, :answer]
+    [:label, :order, :answer, :hint]
   end
 
   def relationships do
