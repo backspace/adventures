@@ -716,7 +716,8 @@ defmodule Registrations.Waydowntown do
                   where: r.user_id == ^user.id and r.run_id == ^run_id,
                   select: r.answer_id
                 )
-              )
+              ),
+            where: a.specification_id in subquery(from(r in Run, where: r.id == ^run_id, select: r.specification_id))
           )
 
         case Repo.one(from(a in unrevealed_answers_query, order_by: fragment("RANDOM()"), limit: 1)) do

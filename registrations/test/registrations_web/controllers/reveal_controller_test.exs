@@ -135,6 +135,10 @@ defmodule RegistrationsWeb.RevealControllerTest do
       answer: answer,
       run: run
     } do
+      other_specification = insert(:specification)
+      _other_answer = Repo.insert!(%Answer{hint: "This is a hint", specification: other_specification})
+      _other_run = insert(:run, specification: other_specification)
+
       {:ok, _reveal} = Waydowntown.create_reveal(user, answer.id, run.id)
 
       conn =
