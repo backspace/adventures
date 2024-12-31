@@ -443,7 +443,7 @@ defmodule RegistrationsWeb.RunControllerTest do
       Repo.insert!(%Specification{
         concept: "food_court_frenzy",
         answers: [
-          %Answer{label: "Burger", answer: "6.99"},
+          %Answer{label: "Burger", answer: "6.99", hint: "Burger hint"},
           %Answer{label: "Pizza", answer: "7.99"},
           %Answer{label: "Salad", answer: "5.99"},
           %Answer{label: "Soda", answer: "3.99"}
@@ -481,7 +481,7 @@ defmodule RegistrationsWeb.RunControllerTest do
 
       assert Enum.all?(answer_data, fn answer ->
                answer["label"] in ["Burger", "Pizza", "Salad", "Soda"] and
-                 is_nil(answer["answer"])
+                 is_nil(answer["answer"]) and (answer["has_hint"] == false or answer["label"] == "Burger")
              end)
 
       run = Waydowntown.get_run!(id)
