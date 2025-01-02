@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/games/string_collector.dart';
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
 
 import '../test_helpers.dart';
@@ -305,5 +306,74 @@ void main() {
 
     expect(find.text('Error requesting hint'), findsNothing);
     expect(find.text(errorMessage), findsNothing);
+  });
+
+  testWidgets(
+      'StringCollectorGame does not show hint button when no hints are left',
+      (WidgetTester tester) async {
+    final singleHintRun = TestHelpers.createMockRun(
+      concept: 'string_collector',
+      description: 'Collect strings',
+      answers: [
+        const Answer(id: '1', label: 'correct', hasHint: false),
+        const Answer(id: '2', label: 'label', hasHint: true),
+      ],
+    );
+
+    const hintRoute = '/waydowntown/reveals';
+
+    dioAdapter.onPost(
+      hintRoute,
+      (server) => server.reply(201, {
+        'data': {
+          'type': 'reveals',
+          'id': '1',
+          'attributes': {},
+        },
+        'included': [
+          {
+            'type': 'answers',
+            'id': '2',
+            'attributes': {
+              'hint': 'a hint',
+              'has_hint': true,
+            },
+          },
+        ]
+      }),
+      data: {
+        'data': {
+          'type': 'reveals',
+          'attributes': {},
+          'relationships': {
+            'run': {
+              'data': {'type': 'runs', 'id': game.id}
+            }
+          }
+        }
+      },
+    );
+
+    TestHelpers.setupMockSubmissionResponse(
+      dioAdapter,
+      SubmissionRequest(
+        route: submitAnswerRoute,
+        submission: 'correct',
+        correct: true,
+        correctSubmissions: 1,
+        totalAnswers: 3,
+      ),
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: StringCollectorGame(
+          run: singleHintRun, dio: dio, channel: mockChannel),
+    ));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.lightbulb_outline));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.lightbulb_outline), findsNothing);
   });
 }

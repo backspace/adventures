@@ -192,9 +192,9 @@ class TestHelpers {
         taskDescription: description,
         answers: answers ??
             [
-              const Answer(id: '1', label: 'Answer 1'),
-              const Answer(id: '2', label: 'Answer 2'),
-              const Answer(id: '3', label: 'Answer 3'),
+              const Answer(id: '1', label: 'Answer 1', hasHint: true),
+              const Answer(id: '2', label: 'Answer 2', hasHint: true),
+              const Answer(id: '3', label: 'Answer 3', hasHint: true),
             ],
         duration: durationSeconds,
         region: region ??

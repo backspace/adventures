@@ -344,11 +344,15 @@ class CollectorGameState extends State<CollectorGame>
   Widget build(BuildContext context) {
     final int totalItems = detectedItems.length + hints.length;
 
+    final unrevealedHintsExist = widget.run.specification.answers
+        ?.any((answer) => answer.hasHint && answer.hint == null);
+    final showHintButton = !isGameComplete && unrevealedHintsExist == true;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.runtimeType.toString()),
         actions: [
-          if (!isGameComplete)
+          if (showHintButton)
             IconButton(
               icon: isLoadingHint
                   ? const SizedBox(

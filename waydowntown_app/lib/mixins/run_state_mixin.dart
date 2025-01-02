@@ -156,7 +156,21 @@ mixin RunStateMixin<T extends StatefulWidget> on State<T> {
         orElse: () => null,
       );
 
-      return includedAnswer != null ? Answer.fromJson(includedAnswer) : null;
+      if (includedAnswer != null) {
+        final answerIndex = currentRun.specification.answers
+            ?.indexWhere((answer) => answer.id == includedAnswer?['id']);
+        if (answerIndex != null) {
+          final newAnswer = Answer.fromJson(includedAnswer);
+
+          setState(() {
+            currentRun.specification.answers?[answerIndex] = newAnswer;
+          });
+
+          return newAnswer;
+        }
+      }
+
+      return null;
     } on DioException catch (e) {
       if (e.response?.statusCode == 422) {
         final error = e.response?.data['errors'][0]['detail'];
