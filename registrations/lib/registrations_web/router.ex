@@ -105,6 +105,10 @@ defmodule RegistrationsWeb.Router do
 
     resources "/settings", SettingsController
 
+    get("/delete", UserController, :delete_show)
+    post("/delete", UserController, :delete)
+    put("/delete", UserController, :delete)
+
     post("/questions", PageController, :questions)
     post("/waitlist", PageController, :waitlist)
     get("/", PageController, :index)

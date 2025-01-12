@@ -225,6 +225,17 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     assert admin_email.subject == "octavia.butler@example.com deleted their account"
   end
 
+  test "delete with login" do
+    insert(:octavia)
+
+    navigate_to("/delete")
+    Login.fill_email("octavia.butler@example.com")
+    Login.fill_password("Xenogenesis")
+    Login.submit()
+
+    assert Nav.info_text() == "Your account has been deleted. Sorry to see you go!"
+  end
+
   test "when registration is closed, a warning is displayed on the registration and details routes" do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,

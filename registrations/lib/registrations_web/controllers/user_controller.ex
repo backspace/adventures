@@ -51,6 +51,30 @@ defmodule RegistrationsWeb.UserController do
     )
   end
 
+  def delete_show(conn, _) do
+    changeset = Pow.Plug.change_user(conn)
+
+    conn
+    |> put_flash(:info, "Log in to immediately delete your waydowntown account and all associated data")
+    |> put_view(RegistrationsWeb.Pow.SessionView)
+    |> render("new.html", %{action: Routes.user_path(conn, :delete), delete: true, changeset: changeset})
+  end
+
+  def delete(conn, _params) do
+    case Pow.Plug.authenticate_user(conn, conn.params["user"]) do
+      {:ok, conn} ->
+        Pow.Plug.delete_user(conn)
+        Pow.Plug.delete(conn)
+
+        conn
+        |> put_flash(:info, "Your account has been deleted. Sorry to see you go!")
+        |> redirect(to: "/")
+
+      {:error, conn} ->
+        redirect(conn, to: "/delete")
+    end
+  end
+
   def update(conn, %{"user" => user_params}) do
     users = Repo.all(User)
     current_user = conn.assigns[:current_user]
