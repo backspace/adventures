@@ -336,7 +336,7 @@ defmodule Registrations.Waydowntown do
 
     with {:ok, _} <- validate_run_status(run),
          {:ok, _} <- validate_concept_answer(run.specification.concept, answer_id, run.specification.answers),
-         {:ok, _} <- check_submission_validity(run, submission_text, answer_id) do
+         {:ok, _} <- check_submission_validity(current_user_id, run, submission_text, answer_id) do
       result = insert_submission(current_user_id, run, submission_text, answer_id)
 
       run = get_run!(run_id)
@@ -385,10 +385,10 @@ defmodule Registrations.Waydowntown do
     ]
   end
 
-  defp check_submission_validity(run, submission_text, answer_id) do
+  defp check_submission_validity(current_user_id, run, submission_text, answer_id) do
     case run.specification.concept do
       "string_collector" ->
-        check_for_duplicate_normalised_submission(run, submission_text)
+        check_for_duplicate_normalised_submission(current_user_id, run, submission_text)
 
       concept when concept in ["food_court_frenzy", "fill_in_the_blank", "count_the_items"] ->
         check_for_paired_answer(run, answer_id)
@@ -401,9 +401,11 @@ defmodule Registrations.Waydowntown do
     end
   end
 
-  defp check_for_duplicate_normalised_submission(run, submission_text) do
+  defp check_for_duplicate_normalised_submission(current_user_id, run, submission_text) do
     normalized_submission = normalize_string(submission_text)
-    existing_submissions = Enum.map(run.submissions, &normalize_string(&1.submission))
+
+    existing_submissions =
+      Enum.map(Enum.filter(run.submissions, &(&1.creator_id == current_user_id)), &normalize_string(&1.submission))
 
     if normalized_submission in existing_submissions do
       {:error, "Submission already submitted"}

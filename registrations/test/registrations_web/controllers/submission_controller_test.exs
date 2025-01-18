@@ -621,6 +621,8 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
   describe "create submission for string_collector" do
     setup do
+      user = insert(:user)
+
       specification =
         Repo.insert!(%Specification{
           concept: "string_collector",
@@ -630,7 +632,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
       run = Repo.insert!(%Run{specification: specification, started_at: DateTime.utc_now()})
 
-      %{run: run}
+      %{run: run, user: user}
     end
 
     test "creates answer and returns 201 for correct submission", %{conn: conn, run: run} do
@@ -707,16 +709,17 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       assert updated_run.winner_submission_id != nil
     end
 
-    test "rejects a duplicate submission", %{conn: conn, run: run} do
+    test "rejects a duplicate submission", %{conn: conn, run: run, user: user} do
       Repo.insert!(%Submission{
         submission: "first string",
         run_id: run.id,
-        correct: true
+        correct: true,
+        creator: user
       })
 
       conn =
         conn
-        |> setup_conn()
+        |> setup_conn(user)
         |> post(Routes.submission_path(conn, :create), %{
           "data" => %{
             "type" => "submissions",
@@ -730,6 +733,34 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
         })
 
       assert json_response(conn, 422)["errors"] == [%{"detail" => "Submission already submitted"}]
+    end
+
+    test "accepts a submission that duplicates that of another participant", %{conn: conn, run: run, user: user} do
+      other_user = insert(:user)
+
+      Repo.insert!(%Submission{
+        submission: "first string",
+        run_id: run.id,
+        correct: true,
+        creator: other_user
+      })
+
+      conn =
+        conn
+        |> setup_conn(user)
+        |> post(Routes.submission_path(conn, :create), %{
+          "data" => %{
+            "type" => "submissions",
+            "attributes" => %{"submission" => "first string"},
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 201)
     end
   end
 
