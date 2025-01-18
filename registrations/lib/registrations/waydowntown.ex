@@ -636,14 +636,14 @@ defmodule Registrations.Waydowntown do
 
   defp run_preloads do
     [
-      participations: [run: [:participations, specification: [answers: [:reveals]], submissions: [:answer]]],
-      submissions: [:answer],
+      participations: [run: [:participations, specification: [answers: [:reveals]], submissions: [answer: [:reveals]]]],
+      submissions: [answer: [:reveals]],
       specification: [answers: [:reveals], region: [parent: [parent: [:parent]]]]
     ]
   end
 
   defp submission_preloads do
-    [:answer, run: [:participations, specification: [answers: [:reveals]], submissions: [:answer]]]
+    [answer: [:reveals], run: [:participations, specification: [answers: [:reveals]], submissions: [answer: [:reveals]]]]
   end
 
   def get_participation!(id),
