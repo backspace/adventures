@@ -15,6 +15,7 @@ class OpenRunsTable extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: DataTable(
         columns: const [
+          DataColumn(label: Text('Players')),
           DataColumn(label: Text('Concept')),
           DataColumn(label: Text('Region')),
           DataColumn(label: Text('Action')),
@@ -22,6 +23,10 @@ class OpenRunsTable extends StatelessWidget {
         rows: runs.map((run) {
           return DataRow(
             cells: [
+              DataCell(Text(run.participations
+                  .map((p) => p.userName)
+                  .toList()
+                  .join(", "))),
               DataCell(Text(run.specification.concept)),
               DataCell(Text(run.specification.region?.name ?? 'N/A')),
               DataCell(
