@@ -762,6 +762,38 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
       assert json_response(conn, 201)
     end
+
+    test "run progress is user-scoped", %{conn: conn, run: run, user: user} do
+      other_user = insert(:user)
+
+      Repo.insert!(%Submission{
+        submission: "first string",
+        run_id: run.id,
+        correct: true,
+        creator: other_user
+      })
+
+      conn =
+        conn
+        |> setup_conn(user)
+        |> post(Routes.submission_path(conn, :create), %{
+          "data" => %{
+            "type" => "submissions",
+            "attributes" => %{"submission" => "second string"},
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 201)
+
+      included_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+      assert included_run["attributes"]["correct_submissions"] == 1
+      assert included_run["attributes"]["total_answers"] == 3
+    end
   end
 
   describe "create answer for count_the_items" do
@@ -1194,6 +1226,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       conn: conn,
       run: run,
       specification: specification,
+      current_user: current_user,
       other_user1: other_user1
     } do
       [answer_1, answer_2, answer_3] = specification.answers
@@ -1231,6 +1264,27 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
                  }
         else
           refute included_run["attributes"]["complete"]
+
+          # Assert that current user run progress doesn’t include correct submissions and that order enforcement is user-scoped
+          if answer.order == 1 do
+            current_user_conn = setup_conn(build_conn(), current_user)
+
+            current_user_conn =
+              post(current_user_conn, Routes.submission_path(current_user_conn, :create), %{
+                "data" => %{
+                  "type" => "submissions",
+                  "attributes" => %{"submission" => "incorrect"},
+                  "relationships" => %{
+                    "run" => %{"data" => %{"type" => "runs", "id" => run.id}},
+                    "answer" => %{"data" => %{"type" => "answers", "id" => answer.id}}
+                  }
+                }
+              })
+
+            other_included_run = Enum.find(json_response(current_user_conn, 201)["included"], &(&1["type"] == "runs"))
+            assert other_included_run["attributes"]["correct_submissions"] == 0
+            assert other_included_run["attributes"]["total_answers"] == 3
+          end
         end
       end)
 

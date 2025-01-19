@@ -394,7 +394,7 @@ defmodule Registrations.Waydowntown do
         check_for_paired_answer(run, answer_id)
 
       concept when concept in ["orientation_memory", "cardinal_memory"] ->
-        check_for_ordered_answer(run, answer_id)
+        check_for_ordered_answer(current_user_id, run, answer_id)
 
       _ ->
         {:ok, nil}
@@ -432,9 +432,14 @@ defmodule Registrations.Waydowntown do
     end
   end
 
-  defp check_for_ordered_answer(run, answer_id) do
+  defp check_for_ordered_answer(current_user_id, run, answer_id) do
     answer_with_submitted_id = Enum.find(run.specification.answers, fn a -> a.id == answer_id end)
-    latest_submission = run.submissions |> Enum.sort_by(&{&1.inserted_at, &1.answer.order}, :desc) |> List.first()
+
+    latest_submission =
+      run.submissions
+      |> Enum.filter(&(&1.creator_id == current_user_id))
+      |> Enum.sort_by(&{&1.inserted_at, &1.answer.order}, :desc)
+      |> List.first()
 
     expected_answer_order =
       cond do
@@ -488,7 +493,11 @@ defmodule Registrations.Waydowntown do
   def get_run_progress(run, current_user_id) do
     correct_submissions =
       if run.specification.concept in ["orientation_memory", "cardinal_memory"] do
-        latest_submission = run.submissions |> Enum.sort_by(&{&1.inserted_at, &1.answer.order}, :desc) |> List.first()
+        latest_submission =
+          run.submissions
+          |> Enum.filter(&(&1.creator_id == current_user_id))
+          |> Enum.sort_by(&{&1.inserted_at, &1.answer.order}, :desc)
+          |> List.first()
 
         if is_nil(latest_submission) or not latest_submission.correct do
           0
@@ -497,6 +506,7 @@ defmodule Registrations.Waydowntown do
         end
       else
         run.submissions
+        |> Enum.filter(&(&1.creator_id == current_user_id))
         |> Enum.uniq_by(& &1.submission)
         |> Enum.count(& &1.correct)
       end
