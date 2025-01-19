@@ -794,6 +794,44 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       assert included_run["attributes"]["correct_submissions"] == 1
       assert included_run["attributes"]["total_answers"] == 3
     end
+
+    test "win check is user-scoped", %{conn: conn, run: run, user: user} do
+      other_user = insert(:user)
+
+      Repo.insert!(%Submission{
+        submission: "first string",
+        run_id: run.id,
+        correct: true,
+        creator: other_user
+      })
+
+      Repo.insert!(%Submission{
+        submission: "second string",
+        run_id: run.id,
+        correct: true,
+        creator: other_user
+      })
+
+      conn =
+        conn
+        |> setup_conn(user)
+        |> post(Routes.submission_path(conn, :create), %{
+          "data" => %{
+            "type" => "submissions",
+            "attributes" => %{"submission" => "second string"},
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 201)
+
+      included_run = Enum.find(json_response(conn, 201)["included"], &(&1["type"] == "runs"))
+      refute included_run["attributes"]["complete"]
+    end
   end
 
   describe "create answer for count_the_items" do

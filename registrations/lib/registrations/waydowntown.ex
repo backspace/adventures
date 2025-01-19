@@ -603,7 +603,10 @@ defmodule Registrations.Waydowntown do
         true
 
       concept when concept in ["bluetooth_collector", "code_collector", "string_collector", "food_court_frenzy"] ->
-        Enum.count(run.submissions, & &1.correct) == length(run.specification.answers)
+        run_answer_count = length(run.specification.answers)
+        submissions_by_user = Enum.group_by(run.submissions, & &1.creator_id)
+
+        Enum.any?(Map.values(submissions_by_user), &(length(&1) == run_answer_count))
 
       # FIXME these all need fixing, and order is missing
       "orientation_memory" ->
