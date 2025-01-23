@@ -795,7 +795,7 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
       assert included_run["attributes"]["total_answers"] == 3
     end
 
-    test "win check is user-scoped", %{conn: conn, run: run, user: user} do
+    test "win check is user- and correctness-scoped", %{conn: conn, run: run, user: user} do
       other_user = insert(:user)
 
       Repo.insert!(%Submission{
@@ -810,6 +810,20 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
         run_id: run.id,
         correct: true,
         creator: other_user
+      })
+
+      Repo.insert!(%Submission{
+        submission: "first string",
+        run_id: run.id,
+        correct: true,
+        creator: user
+      })
+
+      Repo.insert!(%Submission{
+        submission: "non string",
+        run_id: run.id,
+        correct: false,
+        creator: user
       })
 
       conn =
