@@ -1187,6 +1187,45 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
 
       assert json_response(conn, 201)
     end
+
+    test "accepts a submission that duplicates that of another participant", %{
+      conn: conn,
+      run: run,
+      burger: burger
+    } do
+      other_user = insert(:user)
+
+      Repo.insert!(%Submission{
+        submission: "5.99",
+        run_id: run.id,
+        answer_id: burger.id,
+        correct: true,
+        creator: other_user
+      })
+
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.submission_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "submissions",
+              "attributes" => %{"submission" => "5.99"},
+              "relationships" => %{
+                "run" => %{
+                  "data" => %{"type" => "runs", "id" => run.id}
+                },
+                "answer" => %{
+                  "data" => %{"type" => "answers", "id" => burger.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert json_response(conn, 201)
+    end
   end
 
   describe "create submissions for run with multiple participants" do

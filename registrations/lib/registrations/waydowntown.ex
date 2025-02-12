@@ -391,7 +391,7 @@ defmodule Registrations.Waydowntown do
         check_for_duplicate_normalised_submission(current_user_id, run, submission_text)
 
       concept when concept in ["food_court_frenzy", "fill_in_the_blank", "count_the_items"] ->
-        check_for_paired_answer(run, answer_id)
+        check_for_paired_answer(current_user_id, run, answer_id)
 
       concept when concept in ["orientation_memory", "cardinal_memory"] ->
         check_for_ordered_answer(current_user_id, run, answer_id)
@@ -414,7 +414,7 @@ defmodule Registrations.Waydowntown do
     end
   end
 
-  defp check_for_paired_answer(run, answer_id) do
+  defp check_for_paired_answer(current_user_id, run, answer_id) do
     answer_with_submitted_id = Enum.find(run.specification.answers, fn a -> a.id == answer_id end)
 
     cond do
@@ -424,7 +424,7 @@ defmodule Registrations.Waydowntown do
       is_nil(answer_with_submitted_id) ->
         {:error, "Unknown answer: #{answer_id}"}
 
-      Enum.any?(run.submissions, fn s -> s.correct && s.answer_id == answer_id end) ->
+      Enum.any?(run.submissions, fn s -> s.correct && s.answer_id == answer_id && s.creator_id == current_user_id end) ->
         {:error, "Submission already exists for label: #{answer_with_submitted_id.label}"}
 
       true ->
