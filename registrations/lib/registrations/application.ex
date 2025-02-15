@@ -13,6 +13,8 @@ defmodule Registrations.Application do
       config: %{metadata: [:file, :line]}
     })
 
+    set_premailex_ssl_options()
+
     # Without this the GameController filter produces this error: not an already existing atom
     specification_concept_hack = String.to_atom("specification.concept")
     specification_id_hack = String.to_atom("specification.id")
@@ -50,5 +52,22 @@ defmodule Registrations.Application do
   def config_change(changed, _new, removed) do
     RegistrationsWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  # https://github.com/danschultzer/premailex/issues/87#issuecomment-2635517602
+  defp set_premailex_ssl_options do
+    Application.put_env(
+      :premailex,
+      :http_adapter,
+      {Premailex.HTTPAdapter.Httpc,
+       [
+         ssl: [
+           verify: :verify_peer,
+           cacerts: :public_key.cacerts_get(),
+           depth: 3,
+           customize_hostname_check: [match_fun: :public_key.pkix_verify_hostname_match_fun(:https)]
+         ]
+       ]}
+    )
   end
 end
