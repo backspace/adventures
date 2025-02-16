@@ -16,7 +16,13 @@ window.addEventListener("DOMContentLoaded", () => {
       regenerateElement.innerHTML = "regenerate";
 
       let response = await (
-        await fetch("/api/users/voicepass", { method: "PATCH" })
+        await fetch("/api/users/voicepass", {
+          method: "PATCH",
+          headers: {
+            "x-csrf-token": document.querySelector("input[name='_csrf_token']")
+              .value,
+          },
+        })
       ).json();
 
       voicepassElement.innerHTML = response.data.voicepass;

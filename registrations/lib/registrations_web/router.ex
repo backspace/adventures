@@ -26,11 +26,6 @@ defmodule RegistrationsWeb.Router do
     )
   end
 
-  pipeline :api do
-    plug(:accepts, ["json"])
-    plug(:fetch_session)
-  end
-
   pipeline :jsonapi do
     plug(JSONAPI.EnsureSpec)
     plug(JSONAPI.Deserializer)
@@ -115,7 +110,7 @@ defmodule RegistrationsWeb.Router do
   end
 
   scope "/api", RegistrationsWeb do
-    pipe_through(:api)
+    pipe_through(:browser)
 
     get("/teams", TeamController, :index_json)
     patch("/users/voicepass", UserController, :voicepass)
