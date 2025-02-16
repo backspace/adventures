@@ -177,7 +177,7 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
 
     test "channel join fails when user is not a participant", %{conn: conn, run: run} do
       other_user = insert(:user)
-      conn = put_req_header(conn, "authorization", setup_user_and_get_token(other_user))
+      put_req_header(conn, "authorization", setup_user_and_get_token(other_user))
 
       assert {:error, %{reason: "unauthorized"}} =
                RegistrationsWeb.UserSocket
@@ -187,9 +187,7 @@ defmodule RegistrationsWeb.ParticipationControllerTest do
 
     test "broadcasts run_update when second user joins", %{
       conn: conn,
-      run: run,
-      user1: user1,
-      socket1: socket1
+      run: run
     } do
       new_user = insert(:user)
 

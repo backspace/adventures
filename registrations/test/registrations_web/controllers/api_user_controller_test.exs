@@ -1,9 +1,6 @@
 defmodule RegistrationsWeb.ApiUserControllerTest do
   use RegistrationsWeb.ConnCase
 
-  alias Registrations.Waydowntown.Region
-  alias Registrations.Waydowntown.Specification
-
   setup %{conn: conn} do
     user = insert(:octavia, admin: true)
 

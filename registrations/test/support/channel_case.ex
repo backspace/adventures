@@ -19,10 +19,11 @@ defmodule RegistrationsWeb.ChannelCase do
 
   using do
     quote do
-      # Import conveniences for testing with channels
-      use Phoenix.ChannelTest
-
       import Ecto.Query, only: [from: 2]
+
+      # Import conveniences for testing with channels
+      import Phoenix.ChannelTest
+      import RegistrationsWeb.ChannelCase
 
       alias Registrations.Repo
 
