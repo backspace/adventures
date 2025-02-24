@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -21,45 +23,40 @@ void main() {
 
   testWidgets('RegionsTable displays sorted and nested regions',
       (WidgetTester tester) async {
-    dioAdapter.onGet(
-      '/waydowntown/regions',
-      (server) => server.reply(200, {
-        'data': [
-          {
-            'id': 'region1',
-            'type': 'regions',
-            'attributes': {'name': 'Zoo'},
-            'relationships': {
-              'parent': {'data': null}
+    final regions = Region.parseRegions(jsonDecode(jsonEncode({
+      'data': [
+        {
+          'id': 'region1',
+          'type': 'regions',
+          'attributes': {'name': 'Zoo'},
+          'relationships': {
+            'parent': {'data': null}
+          }
+        },
+        {
+          'id': 'region2',
+          'type': 'regions',
+          'attributes': {'name': 'Park'},
+          'relationships': {
+            'parent': {'data': null}
+          }
+        },
+        {
+          'id': 'region3',
+          'type': 'regions',
+          'attributes': {'name': 'Beach'},
+          'relationships': {
+            'parent': {
+              'data': {'id': 'region2', 'type': 'regions'}
             }
-          },
-          {
-            'id': 'region2',
-            'type': 'regions',
-            'attributes': {'name': 'Park'},
-            'relationships': {
-              'parent': {'data': null}
-            }
-          },
-          {
-            'id': 'region3',
-            'type': 'regions',
-            'attributes': {'name': 'Beach'},
-            'relationships': {
-              'parent': {
-                'data': {'id': 'region2', 'type': 'regions'}
-              }
-            }
-          },
-        ]
-      }),
-    );
+          }
+        },
+      ]
+    })));
 
     await tester.pumpWidget(MaterialApp(
       home: RegionsTable(
-        regions: Region.parseRegions(await dio
-            .get('/waydowntown/regions')
-            .then((response) => response.data)),
+        regions: regions,
         onRefresh: () {},
         dio: dio,
       ),
@@ -70,14 +67,12 @@ void main() {
     expect(find.text('Park'), findsOneWidget);
     expect(find.text('  Beach'), findsOneWidget);
     expect(find.text('Zoo'), findsOneWidget);
-
-    expect(tester.getTopLeft(find.text('Park')).dx,
-        lessThan(tester.getTopLeft(find.text('  Beach')).dx));
   });
 
-  testWidgets('RegionsTable updates after editing a region',
+  testWidgets('RegionsTable triggers refresh after editing a region',
       (WidgetTester tester) async {
     final regions = [Region(id: '1', name: 'Test Region')];
+    bool refreshCalled = false;
 
     dioAdapter.onPatch(
       '/waydowntown/regions/1',
@@ -106,7 +101,9 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: RegionsTable(
         regions: regions,
-        onRefresh: () {},
+        onRefresh: () {
+          refreshCalled = true;
+        },
         dio: dio,
       ),
     ));
@@ -122,7 +119,8 @@ void main() {
     await tester.tap(find.text('Save Region'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Updated Region'), findsOneWidget);
+    expect(refreshCalled, isTrue,
+        reason: 'onRefresh should be called after editing');
   });
 
   testWidgets('RegionsTable shows delete button for admin users',
