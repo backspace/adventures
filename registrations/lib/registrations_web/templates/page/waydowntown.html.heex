@@ -25,15 +25,17 @@
 </div>
 
 <%= if @placeholder do %>
-  <div class="row card" data-test-placeholder>
-    <div class="small-12 columns">
-      <h2 class="marquee">Subscribe</h2>
-      <p>
-        provide your email to receive a one-time notification when the site is ready.
-      </p>
-      <%= render(RegistrationsWeb.SharedView, "waitlist.html", conn: @conn) %>
+  <%= unless @hide_waitlist do %>
+    <div class="row card" data-test-placeholder>
+      <div class="small-12 columns">
+        <h2 class="marquee">Subscribe</h2>
+        <p>
+          provide your email to receive a one-time notification when the site is ready.
+        </p>
+        <%= render(RegistrationsWeb.SharedView, "waitlist.html", conn: @conn) %>
+      </div>
     </div>
-  </div>
+  <% end %>
 <% else %>
   <div class="row card">
     <div class="small-12 columns">

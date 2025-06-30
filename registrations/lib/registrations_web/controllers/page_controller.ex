@@ -23,8 +23,10 @@ defmodule RegistrationsWeb.PageController do
           false
       end
 
+    hide_waitlist = Application.get_env(:registrations, :hide_waitlist, false)
+
     adventure_name = Application.get_env(:registrations, :adventure)
-    render(conn, "#{adventure_name}.html", placeholder: placeholder)
+    render(conn, "#{adventure_name}.html", placeholder: placeholder, hide_waitlist: hide_waitlist)
   end
 
   def questions(conn, %{"question" => question_params}) do

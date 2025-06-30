@@ -24,6 +24,7 @@ config :registrations, RegistrationsWeb.Endpoint,
 # Configures Elixir's Logger
 config :registrations,
   placeholder: false,
+  hide_waitlist: true,
   start_time: [{{2017, 6, 8}, {18, 00, 00}}, "Canada/Pacific"],
   location: "Zagreb",
   base_url: "http://example.com"
