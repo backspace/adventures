@@ -488,6 +488,72 @@ defmodule RegistrationsWeb.RunControllerTest do
       specification = Waydowntown.get_specification!(run.specification_id)
       assert specification.concept == "food_court_frenzy"
     end
+
+    test "creates run with payphone_collector concept", %{conn: conn} do
+      Repo.insert!(%Specification{
+        concept: "payphone_collector",
+        answers: [
+          %Answer{answer: "204-555-0112", hint: "Payphone near the mural"},
+          %Answer{answer: "204-555-0199", hint: "Payphone by the red benches"}
+        ],
+        region: Repo.insert!(%Region{})
+      })
+
+      conn =
+        post(
+          conn,
+          Routes.run_path(conn, :create) <> "?filter[specification.concept]=payphone_collector",
+          %{
+            "data" => %{
+              "type" => "runs",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
+      assert sideloaded_specification["attributes"]["concept"] == "payphone_collector"
+
+      run = Waydowntown.get_run!(id)
+      specification = Waydowntown.get_specification!(run.specification_id)
+      assert specification.concept == "payphone_collector"
+    end
+
+    test "creates run with elevator_collector concept", %{conn: conn} do
+      Repo.insert!(%Specification{
+        concept: "elevator_collector",
+        answers: [
+          %Answer{answer: "EP-71-449", hint: "East elevator bank"},
+          %Answer{answer: "EP-83-120", hint: "Service elevator by loading bay"}
+        ],
+        region: Repo.insert!(%Region{})
+      })
+
+      conn =
+        post(
+          conn,
+          Routes.run_path(conn, :create) <> "?filter[specification.concept]=elevator_collector",
+          %{
+            "data" => %{
+              "type" => "runs",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
+      assert sideloaded_specification["attributes"]["concept"] == "elevator_collector"
+
+      run = Waydowntown.get_run!(id)
+      specification = Waydowntown.get_specification!(run.specification_id)
+      assert specification.concept == "elevator_collector"
+    end
   end
 
   describe "start run" do

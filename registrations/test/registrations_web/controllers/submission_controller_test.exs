@@ -848,6 +848,136 @@ defmodule RegistrationsWeb.SubmissionControllerTest do
     end
   end
 
+  describe "create submission for payphone_collector" do
+    setup do
+      user = insert(:user)
+
+      specification =
+        Repo.insert!(%Specification{
+          concept: "payphone_collector",
+          start_description: "Collect all the payphones",
+          answers: [%Answer{answer: "204-555-0112"}, %Answer{answer: "204-555-0199"}]
+        })
+
+      run = Repo.insert!(%Run{specification: specification, started_at: DateTime.utc_now()})
+
+      %{run: run, user: user}
+    end
+
+    test "creates answer and returns 201 for correct submission", %{conn: conn, run: run} do
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.submission_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "submissions",
+              "attributes" => %{"submission" => " 204-555-0112 "},
+              "relationships" => %{
+                "run" => %{
+                  "data" => %{"type" => "runs", "id" => run.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"correct" => true} = json_response(conn, 201)["data"]["attributes"]
+    end
+
+    test "rejects a duplicate submission", %{conn: conn, run: run, user: user} do
+      Repo.insert!(%Submission{
+        submission: "204-555-0112",
+        run_id: run.id,
+        correct: true,
+        creator: user
+      })
+
+      conn =
+        conn
+        |> setup_conn(user)
+        |> post(Routes.submission_path(conn, :create), %{
+          "data" => %{
+            "type" => "submissions",
+            "attributes" => %{"submission" => "204-555-0112"},
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Submission already submitted"}]
+    end
+  end
+
+  describe "create submission for elevator_collector" do
+    setup do
+      user = insert(:user)
+
+      specification =
+        Repo.insert!(%Specification{
+          concept: "elevator_collector",
+          start_description: "Collect all the elevator permits",
+          answers: [%Answer{answer: "EP-71-449"}, %Answer{answer: "EP-83-120"}]
+        })
+
+      run = Repo.insert!(%Run{specification: specification, started_at: DateTime.utc_now()})
+
+      %{run: run, user: user}
+    end
+
+    test "creates answer and returns 201 for correct submission", %{conn: conn, run: run} do
+      conn =
+        conn
+        |> setup_conn()
+        |> post(
+          Routes.submission_path(conn, :create),
+          %{
+            "data" => %{
+              "type" => "submissions",
+              "attributes" => %{"submission" => " ep-83-120 "},
+              "relationships" => %{
+                "run" => %{
+                  "data" => %{"type" => "runs", "id" => run.id}
+                }
+              }
+            }
+          }
+        )
+
+      assert %{"correct" => true} = json_response(conn, 201)["data"]["attributes"]
+    end
+
+    test "rejects a duplicate submission", %{conn: conn, run: run, user: user} do
+      Repo.insert!(%Submission{
+        submission: "ep-83-120",
+        run_id: run.id,
+        correct: true,
+        creator: user
+      })
+
+      conn =
+        conn
+        |> setup_conn(user)
+        |> post(Routes.submission_path(conn, :create), %{
+          "data" => %{
+            "type" => "submissions",
+            "attributes" => %{"submission" => "EP-83-120"},
+            "relationships" => %{
+              "run" => %{
+                "data" => %{"type" => "runs", "id" => run.id}
+              }
+            }
+          }
+        })
+
+      assert json_response(conn, 422)["errors"] == [%{"detail" => "Submission already submitted"}]
+    end
+  end
+
   describe "create answer for count_the_items" do
     setup do
       region = Repo.insert!(%Region{name: "Test Region"})
