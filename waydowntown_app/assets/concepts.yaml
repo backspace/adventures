@@ -42,14 +42,14 @@ fill_in_the_blank:
 
 payphone_collector:
   name: "Payphone Collector"
-  marker: list_checks
+  marker: phone
   instructions: "submit the phone numbers from payphones."
   long_running: true
   normalise_submissions: true
 
 elevator_collector:
   name: "Elevator Collector"
-  marker: list_checks
+  marker: arrow_up_down
   instructions: "submit the serial numbers from elevator permits."
   long_running: true
   normalise_submissions: true

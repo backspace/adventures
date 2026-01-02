@@ -147,6 +147,8 @@ class _MapRouteState extends State<MapRoute> {
 
 IconData iconFromName(String name) {
   switch (name) {
+    case 'arrow_up_down':
+      return LucideIcons.arrow_up_down;
     case 'bluetooth_searching':
       return LucideIcons.bluetooth_searching;
     case 'compass':
@@ -157,6 +159,8 @@ IconData iconFromName(String name) {
       return LucideIcons.utensils_crossed;
     case 'list_checks':
       return LucideIcons.list_checks;
+    case 'phone':
+      return LucideIcons.phone;
     case 'rectangle_ellipsis':
       return LucideIcons.rectangle_ellipsis;
     case 'ratio':
