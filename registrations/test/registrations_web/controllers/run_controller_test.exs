@@ -52,7 +52,8 @@ defmodule RegistrationsWeb.RunControllerTest do
         Repo.insert!(%Answer{
           label: "answer_1",
           hint: "hint_1",
-          specification: specification
+          specification: specification,
+          region_id: child_region.id
         })
 
       answer_2 =
@@ -171,7 +172,8 @@ defmodule RegistrationsWeb.RunControllerTest do
       user: user,
       conn: conn,
       run: run,
-      answers: [answer | _]
+      answers: [answer | _],
+      child_region: child_region
     } do
       {:ok, _reveal} = Waydowntown.create_reveal(user, answer.id, run.id)
 
@@ -181,6 +183,7 @@ defmodule RegistrationsWeb.RunControllerTest do
       revealed_answer = Enum.find(included, &(&1["type"] == "answers" && &1["id"] == answer.id))
 
       assert revealed_answer["attributes"]["hint"] == answer.hint
+      assert revealed_answer["relationships"]["region"]["data"]["id"] == child_region.id
     end
 
     test "answer hint is null when not revealed for this user", %{

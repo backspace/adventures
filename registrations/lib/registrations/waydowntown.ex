@@ -330,14 +330,14 @@ defmodule Registrations.Waydowntown do
   end
 
   def list_specifications do
-    Specification |> Repo.all() |> Repo.preload(region: [parent: [parent: [:parent]]])
+    Specification |> Repo.all() |> Repo.preload(answers: [:region], region: [parent: [parent: [:parent]]])
   end
 
   def list_specifications_for(user) do
     from(i in Specification)
     |> where([i], i.creator_id == ^user.id)
     |> Repo.all()
-    |> Repo.preload(answers: [:reveals], region: [parent: [parent: [:parent]]])
+    |> Repo.preload(answers: [:reveals, :region], region: [parent: [parent: [:parent]]])
   end
 
   def get_specification!(id), do: Repo.get!(Specification, id)
@@ -717,14 +717,23 @@ defmodule Registrations.Waydowntown do
 
   defp run_preloads do
     [
-      participations: [run: [:participations, specification: [answers: [:reveals]], submissions: [answer: [:reveals]]]],
-      submissions: [answer: [:reveals]],
-      specification: [answers: [:reveals], region: [parent: [parent: [:parent]]]]
+      participations: [
+        run: [
+          :participations,
+          specification: [answers: [:reveals, :region]],
+          submissions: [answer: [:reveals, :region]]
+        ]
+      ],
+      submissions: [answer: [:reveals, :region]],
+      specification: [answers: [:reveals, :region], region: [parent: [parent: [:parent]]]]
     ]
   end
 
   defp submission_preloads do
-    [answer: [:reveals], run: [:participations, specification: [answers: [:reveals]], submissions: [answer: [:reveals]]]]
+    [
+      answer: [:reveals, :region],
+      run: [:participations, specification: [answers: [:reveals, :region]], submissions: [answer: [:reveals, :region]]]
+    ]
   end
 
   def get_participation!(id),

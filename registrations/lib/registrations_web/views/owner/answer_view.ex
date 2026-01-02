@@ -6,6 +6,9 @@ defmodule RegistrationsWeb.Owner.AnswerView do
   end
 
   def relationships do
-    [specification: {RegistrationsWeb.Owner.SpecificationView, :include}]
+    [
+      specification: {RegistrationsWeb.Owner.SpecificationView, :include},
+      region: {RegistrationsWeb.RegionView, :include}
+    ]
   end
 end
