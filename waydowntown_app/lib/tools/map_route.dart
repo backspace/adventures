@@ -25,6 +25,7 @@ class _MapRouteState extends State<MapRoute> {
   bool isLoading = true;
   bool isRequestError = false;
   Map<String, String> conceptMarkers = {};
+  Map<String, bool> conceptLongRunning = {};
 
   @override
   void initState() {
@@ -44,7 +45,6 @@ class _MapRouteState extends State<MapRoute> {
         setState(() {
           specifications = data
               .map((json) => Specification.fromJson(json, included))
-              .where((specification) => specification.region != null)
               .toList();
           isLoading = false;
         });
@@ -67,41 +67,69 @@ class _MapRouteState extends State<MapRoute> {
     final yamlString = await rootBundle.loadString('assets/concepts.yaml');
     final yamlMap = loadYaml(yamlString) as YamlMap;
 
-    conceptMarkers = Map.fromEntries(yamlMap.entries.map((entry) {
+    final markers = Map.fromEntries(yamlMap.entries.map((entry) {
       final conceptName = entry.key as String;
       final conceptData = entry.value as YamlMap;
       return MapEntry(conceptName, conceptData['marker'] as String);
     }));
+
+    final longRunning = Map.fromEntries(yamlMap.entries.map((entry) {
+      final conceptName = entry.key as String;
+      final conceptData = entry.value as YamlMap;
+      return MapEntry(conceptName, conceptData['long_running'] == true);
+    }));
+
+    if (mounted) {
+      setState(() {
+        conceptMarkers = markers;
+        conceptLongRunning = longRunning;
+      });
+    }
   }
 
   List<Marker> _buildMarkers() {
-    return specifications
-        .where((specification) =>
-            specification.region != null &&
-            specification.region!.latitude != null &&
-            specification.region!.longitude != null)
-        .map((specification) {
-      final region = specification.region!;
+    final markers = <Marker>[];
+    final seenAnswerRegions = <String>{};
+
+    for (final specification in specifications) {
       final marker = conceptMarkers[specification.concept] ?? '📍';
-      return Marker(
-        width: 40.0,
-        height: 40.0,
-        point: LatLng(region.latitude!, region.longitude!),
-        child: GestureDetector(
-          onTap: () => _onMarkerTap(specification),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.black, width: 1),
-            ),
-            child: Center(
-              child: Icon(iconFromName(marker)),
-            ),
-          ),
-        ),
-      );
-    }).toList();
+      final isLongRunning = conceptLongRunning[specification.concept] == true;
+
+      if (!isLongRunning &&
+          specification.region != null &&
+          specification.region!.latitude != null &&
+          specification.region!.longitude != null) {
+        final region = specification.region!;
+        markers.add(_buildMarker(
+          LatLng(region.latitude!, region.longitude!),
+          marker,
+          () => _onMarkerTap(specification),
+        ));
+      }
+
+      if (isLongRunning && specification.answers != null) {
+        for (final answer in specification.answers!) {
+          final region = answer.region;
+          if (region?.latitude == null || region?.longitude == null) {
+            continue;
+          }
+
+          final key = '${specification.concept}:${region!.id}';
+          if (seenAnswerRegions.contains(key)) {
+            continue;
+          }
+          seenAnswerRegions.add(key);
+
+          markers.add(_buildMarker(
+            LatLng(region.latitude!, region.longitude!),
+            marker,
+            () => _onLongRunningMarkerTap(specification.concept),
+          ));
+        }
+      }
+    }
+
+    return markers;
   }
 
   void _onMarkerTap(Specification specification) {
@@ -110,6 +138,38 @@ class _MapRouteState extends State<MapRoute> {
         builder: (context) => RequestRunRoute(
           dio: widget.dio,
           specificationId: specification.id,
+        ),
+      ),
+    );
+  }
+
+  void _onLongRunningMarkerTap(String concept) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => RequestRunRoute(
+          dio: widget.dio,
+          concept: concept,
+        ),
+      ),
+    );
+  }
+
+  Marker _buildMarker(LatLng point, String marker, VoidCallback onTap) {
+    return Marker(
+      width: 40.0,
+      height: 40.0,
+      point: point,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.black, width: 1),
+          ),
+          child: Center(
+            child: Icon(iconFromName(marker)),
+          ),
         ),
       ),
     );
