@@ -1,0 +1,223 @@
+openapi: 3.0.0
+info:
+  title: Games API
+  version: 1.0.0
+paths:
+  /games:
+    post:
+      summary: Create a new game
+      parameters:
+        - in: query
+          name: concept
+          schema:
+            type: string
+          required: false
+          description: Optional concept for the game
+        - in: query
+          name: incarnation_filter[concept]
+          schema:
+            type: string
+          required: false
+          description: Filter incarnations by concept
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameInput"
+      responses:
+        "201":
+          description: Successfully created game
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Game"
+                  included:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: "#/components/schemas/Incarnation"
+                        - $ref: "#/components/schemas/Region"
+  /games/{id}:
+    get:
+      summary: Fetch a game
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Successfully fetched game
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Game"
+                  included:
+                    type: array
+                    items:
+                      oneOf:
+                        - $ref: "#/components/schemas/Incarnation"
+                        - $ref: "#/components/schemas/Region"
+                        - $ref: "#/components/schemas/Answer"
+  /answers:
+    post:
+      summary: Create a new answer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnswerInput"
+      responses:
+        "201":
+          description: Successfully created answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Answer"
+components:
+  schemas:
+    GameInput:
+      type: object
+      properties:
+        incarnation_id:
+          type: string
+          format: uuid
+    Game:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        attributes:
+          type: object
+          properties:
+            complete:
+              type: boolean
+        relationships:
+          type: object
+          properties:
+            incarnation:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+            winner_answer:
+              type: object
+              properties:
+                data:
+                  type: object
+                  nullable: true
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+    Incarnation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        attributes:
+          type: object
+          properties:
+            concept:
+              type: string
+            mask:
+              type: string
+            answer:
+              type: string
+            answers:
+              type: array
+              items:
+                type: string
+        relationships:
+          type: object
+          properties:
+            region:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+    Region:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        attributes:
+          type: object
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+        relationships:
+          type: object
+          properties:
+            parent:
+              type: object
+              properties:
+                data:
+                  type: object
+                  nullable: true
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+    AnswerInput:
+      type: object
+      properties:
+        answer:
+          type: string
+        game:
+          type: object
+          properties:
+            data:
+              type: object
+              properties:
+                id:
+                  type: string
+                  format: uuid
+    Answer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        attributes:
+          type: object
+          properties:
+            answer:
+              type: string
+            correct:
+              type: boolean
+        relationships:
+          type: object
+          properties:
+            game:
+              type: object
+              properties:
+                data:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
