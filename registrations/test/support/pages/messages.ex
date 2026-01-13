@@ -44,8 +44,8 @@ defmodule Registrations.Pages.Messages do
   end
 
   def send(session) do
-    accept_confirm(session, fn ->
-      Browser.click(session, Query.css(".button.send"))
+    accept_confirm(session, fn inner_session ->
+      Browser.click(inner_session, Query.css(".button.send"))
     end)
   end
 
@@ -59,7 +59,7 @@ defmodule Registrations.Pages.Messages do
       session
     else
       _ = Browser.execute_script(session, "window.confirm = function(){return true;};")
-      action.()
+      action.(session)
       session
     end
   end
