@@ -15,7 +15,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
   test "head tags are correct", %{session: session} do
     visit(session, "/")
 
-    assert text(session, Query.css("title", visible: false)) == "unmnemonic devices"
+    assert page_title(session) == "unmnemonic devices"
 
     assert Element.attr(
              find(session, Query.css("meta[property='og:title']", visible: false)),
