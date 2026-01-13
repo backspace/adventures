@@ -1,9 +1,8 @@
 defmodule Registrations.Integration.Teams do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
-  use Hound.Helpers
 
   import Assertions, only: [assert_lists_equal: 2]
 
@@ -12,15 +11,11 @@ defmodule Registrations.Integration.Teams do
   alias Registrations.Pages.Details.Attending.Error
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
+  alias Wallaby.Query
 
   require Assertions
 
-  # Import Hound helpers
-
-  # Start a Hound session
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
-
-  test "teams are negotiable" do
+  test "teams are negotiable", %{session: session} do
     insert(:user,
       email: "Shevek@example.com",
       team_emails: "Takver@example.com bedap@example.com tuio@example.com rulag@example.com",
@@ -47,29 +42,34 @@ defmodule Registrations.Integration.Teams do
       password_hash: Password.pbkdf2_hash("Anarres")
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Login.login_as("takver@example.com", "Anarres")
+    Login.login_as(session, "takver@example.com", "Anarres")
 
-    refute Details.Attending.present?(), "Expected attending fields to be hidden unless enabled"
-    refute Details.Team.present?(), "Expected no team block for an unassigned user"
+    refute Details.Attending.present?(session),
+           "Expected attending fields to be hidden unless enabled"
 
-    Details.fill_team_emails("shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo")
+    refute Details.Team.present?(session), "Expected no team block for an unassigned user"
 
-    Details.fill_proposed_team_name("Simultaneity")
-    Details.choose_risk_aversion("Don’t hold back")
-    Details.fill_accessibility("Some accessibility information")
+    Details.fill_team_emails(
+      session,
+      "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"
+    )
 
-    Details.comments().fill("Some comments")
-    Details.source().fill("A source")
+    Details.fill_proposed_team_name(session, "Simultaneity")
+    Details.choose_risk_aversion(session, "Don’t hold back")
+    Details.fill_accessibility(session, "Some accessibility information")
 
-    Details.submit()
+    Details.comments().fill(session, "Some comments")
+    Details.source().fill(session, "A source")
 
-    assert Nav.info_text() == "Your details were saved"
+    Details.submit(session)
 
-    assert Details.accessibility_text() == "Some accessibility information"
-    assert Details.comments().value() == "Some comments"
-    assert Details.source().value() == "A source"
+    assert Nav.info_text(session) == "Your details were saved"
+
+    assert Details.accessibility_text(session) == "Some accessibility information"
+    assert Details.comments().value(session) == "Some comments"
+    assert Details.source().value(session) == "A source"
 
     [sent_email] = Registrations.SwooshHelper.sent_email()
     assert sent_email.to == [{"", "b@events.chromatin.ca"}]
@@ -81,7 +81,7 @@ defmodule Registrations.Integration.Teams do
     assert sent_email.text_body ==
              ~s([accessibility: "Some accessibility information", comments: "Some comments", proposed_team_name: "Simultaneity", risk_aversion: 3, source: "A source", team_emails: "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"])
 
-    [bedap, shevek] = Enum.sort_by(Details.mutuals(), & &1.email)
+    [bedap, shevek] = Enum.sort_by(Details.mutuals(session), & &1.email)
 
     assert shevek.email == "shevek@example.com"
     assert shevek.symbol == "✓"
@@ -99,14 +99,14 @@ defmodule Registrations.Integration.Teams do
     assert bedap.risk_aversion.value == "✓ Don’t hold back"
     assert bedap.risk_aversion.agreement?
 
-    [sadik] = Details.proposers()
+    [sadik] = Details.proposers(session)
     assert sadik.email == "sadik@example.com"
     assert sadik.symbol == "?"
 
     assert sadik.text ==
              "This person has you listed in their team. Add their address to your team emails list if you agree."
 
-    [rulag, tuio] = Enum.sort_by(Details.proposals_by_mutuals(), & &1.email)
+    [rulag, tuio] = Enum.sort_by(Details.proposals_by_mutuals(session), & &1.email)
 
     assert rulag.email == "rulag@example.com"
     assert rulag.symbol == "?"
@@ -120,12 +120,12 @@ defmodule Registrations.Integration.Teams do
     assert tuio.text ==
              "bedap@example.com and shevek@example.com have this address in their team emails lists. Add it if you agree."
 
-    [invalid] = Details.invalids()
+    [invalid] = Details.invalids(session)
     assert invalid.email == "nooo"
     assert invalid.symbol == "✘"
     assert invalid.text == "This doesn’t seem like a valid email address!"
 
-    [laia, sabul] = Enum.sort_by(Details.proposees(), & &1.email)
+    [laia, sabul] = Enum.sort_by(Details.proposees(session), & &1.email)
 
     assert sabul.email == "sabul@example.com"
     assert sabul.symbol == "✘"
@@ -144,12 +144,12 @@ defmodule Registrations.Integration.Teams do
            )
 
     sadik.add.()
-    Details.submit()
+    Details.submit(session)
 
-    assert length(Details.mutuals()) == 3
+    assert length(Details.mutuals(session)) == 3
   end
 
-  test "team emails can be appended to" do
+  test "team emails can be appended to", %{session: session} do
     insert(:user,
       email: "Shevek@example.com",
       team_emails: "Takver@example.com bedap@example.com tuio@example.com rulag@example.com",
@@ -162,31 +162,33 @@ defmodule Registrations.Integration.Teams do
       password_hash: Password.pbkdf2_hash("Anarres")
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Login.login_as("takver@example.com", "Anarres")
+    Login.login_as(session, "takver@example.com", "Anarres")
 
-    assert Details.team_emails() == ""
+    assert Details.team_emails(session) == ""
 
-    Details.add_to_team_emails()
+    Details.add_to_team_emails(session)
 
-    assert Details.team_emails() == " shevek@example.com"
+    assert Details.team_emails(session) == " shevek@example.com"
   end
 
-  test "the table is hidden when empty" do
+  test "the table is hidden when empty", %{session: session} do
     insert(:user,
       email: "takver@example.com",
       password_hash: Password.pbkdf2_hash("Anarres")
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Login.login_as("takver@example.com", "Anarres")
+    Login.login_as(session, "takver@example.com", "Anarres")
 
-    refute Hound.Matchers.element?(:css, "table")
+    refute has?(session, Query.css("table"))
   end
 
-  test "when confirmation-requesting is enabled, show and require the fields" do
+  test "when confirmation-requesting is enabled, show and require the fields", %{
+    session: session
+  } do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :request_confirmation,
@@ -198,38 +200,40 @@ defmodule Registrations.Integration.Teams do
       password_hash: Password.pbkdf2_hash("Anarres")
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Login.login_as("takver@example.com", "Anarres")
+    Login.login_as(session, "takver@example.com", "Anarres")
 
-    assert Details.Attending.present?(), "Expected attending fields shown when enabled"
+    assert Details.Attending.present?(session), "Expected attending fields shown when enabled"
 
-    Details.submit()
+    Details.submit(session)
 
-    assert Error.present?(),
+    assert Error.present?(session),
            "Expected an error about the attending field being blank"
 
-    Details.Attending.yes()
-    Details.submit()
+    Details.Attending.yes(session)
+    Details.submit(session)
 
-    refute Error.present?(),
+    refute Error.present?(session),
            "Expected no error when the person said they were attending"
 
-    Details.Attending.no()
-    Details.submit()
+    Details.Attending.no(session)
+    Details.submit(session)
 
-    refute Error.present?(),
+    refute Error.present?(session),
            "Expected no error when the person said they were not attending"
   end
 
-  test "visiting the details page redirects to login when there is no session" do
-    navigate_to("/details")
+  test "visiting the details page redirects to login when there is no session", %{
+    session: session
+  } do
+    visit(session, "/details")
 
-    assert Nav.info_text() == "Please log in to edit your details"
-    Login.fill_email("anemail")
+    assert Nav.info_text(session) == "Please log in to edit your details"
+    Login.fill_email(session, "anemail")
   end
 
-  test "team details are shown if the user is assigned to one" do
+  test "team details are shown if the user is assigned to one", %{session: session} do
     takver =
       insert(:user,
         email: "takver@example.com",
@@ -249,15 +253,15 @@ defmodule Registrations.Integration.Teams do
       users: [takver, bedap]
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Login.login_as("takver@example.com", "Anarres")
+    Login.login_as(session, "takver@example.com", "Anarres")
 
-    assert Details.Team.present?()
-    assert Details.Team.name() == "A team"
-    assert Details.Team.risk_aversion() == "Push me a little"
+    assert Details.Team.present?(session)
+    assert Details.Team.name(session) == "A team"
+    assert Details.Team.risk_aversion(session) == "Push me a little"
 
-    assert_lists_equal(String.split(Details.Team.emails(), ", "), [
+    assert_lists_equal(String.split(Details.Team.emails(session), ", "), [
       "takver@example.com",
       "bedap@example.com"
     ])
@@ -266,20 +270,14 @@ end
 
 defmodule Registrations.Integration.UnmnemonicDevices.Teams do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
-  use Hound.Helpers
 
   alias Registrations.Pages.Details
   alias Registrations.Pages.Login
 
-  # Import Hound helpers
-
-  # Start a Hound session
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
-
-  test "team emails can be appended to" do
+  test "team emails can be appended to", %{session: session} do
     insert(:user,
       email: "Shevek@example.com",
       team_emails: "Takver@example.com bedap@example.com tuio@example.com rulag@example.com",
@@ -292,14 +290,14 @@ defmodule Registrations.Integration.UnmnemonicDevices.Teams do
       password_hash: Pow.Ecto.Schema.Password.pbkdf2_hash("Anarres")
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Login.login_as("takver@example.com", "Anarres")
+    Login.login_as(session, "takver@example.com", "Anarres")
 
-    assert Details.team_emails() == ""
+    assert Details.team_emails(session) == ""
 
-    Details.add_to_team_emails()
+    Details.add_to_team_emails(session)
 
-    assert Details.team_emails() == " shevek@example.com"
+    assert Details.team_emails(session) == " shevek@example.com"
   end
 end

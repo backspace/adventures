@@ -1,39 +1,42 @@
 defmodule Registrations.Pages.Details do
   @moduledoc false
-  use Hound.Helpers
+  alias Wallaby.Browser
+  alias Wallaby.Element
+  alias Wallaby.Query
 
-  def edit_account do
-    click({:css, "a.account"})
+  def edit_account(session) do
+    Browser.click(session, Query.css("a.account"))
   end
 
-  def delete_account do
-    click({:css, "a.delete"})
-    accept_dialog()
+  def delete_account(session) do
+    Browser.accept_confirm(session, fn inner_session ->
+      Browser.click(inner_session, Query.css("a.delete"))
+    end)
   end
 
-  def proposers do
-    :css
-    |> find_all_elements("[data-test-proposers]")
+  def proposers(session) do
+    session
+    |> Browser.all(Query.css("[data-test-proposers]"))
     |> Enum.map(&email_and_text_row(&1))
   end
 
-  def mutuals do
-    :css
-    |> find_all_elements("[data-test-mutuals]")
+  def mutuals(session) do
+    session
+    |> Browser.all(Query.css("[data-test-mutuals]"))
     |> Enum.map(fn row ->
-      proposed_team_name_element = find_within_element(row, :css, ".proposed-team-name")
-      risk_aversion_element = find_within_element(row, :css, ".risk-aversion")
+      proposed_team_name_element = Browser.find(row, Query.css(".proposed-team-name"))
+      risk_aversion_element = Browser.find(row, Query.css(".risk-aversion"))
 
       %{
-        email: visible_text(find_within_element(row, :css, ".email")),
-        symbol: visible_text(find_within_element(row, :css, ".symbol")),
+        email: Element.text(Browser.find(row, Query.css(".email"))),
+        symbol: Element.text(Browser.find(row, Query.css(".symbol"))),
         proposed_team_name: %{
-          value: visible_text(proposed_team_name_element),
+          value: Element.text(proposed_team_name_element),
           conflict?: has_class?(proposed_team_name_element, "conflict"),
           agreement?: has_class?(proposed_team_name_element, "agreement")
         },
         risk_aversion: %{
-          value: visible_text(risk_aversion_element),
+          value: Element.text(risk_aversion_element),
           conflict?: has_class?(risk_aversion_element, "conflict"),
           agreement?: has_class?(risk_aversion_element, "agreement")
         }
@@ -41,53 +44,57 @@ defmodule Registrations.Pages.Details do
     end)
   end
 
-  def proposals_by_mutuals do
-    :css
-    |> find_all_elements("[data-test-proposals-by-mutuals]")
+  def proposals_by_mutuals(session) do
+    session
+    |> Browser.all(Query.css("[data-test-proposals-by-mutuals]"))
     |> Enum.map(&email_and_text_row(&1))
   end
 
-  def invalids do
-    :css
-    |> find_all_elements("[data-test-invalids]")
+  def invalids(session) do
+    session
+    |> Browser.all(Query.css("[data-test-invalids]"))
     |> Enum.map(&email_and_text_row(&1))
   end
 
-  def proposees do
-    :css
-    |> find_all_elements("[data-test-proposees]")
+  def proposees(session) do
+    session
+    |> Browser.all(Query.css("[data-test-proposees]"))
     |> Enum.map(&email_and_text_row(&1))
   end
 
-  def fill_team_emails(team_emails) do
-    fill_field({:id, "user_team_emails"}, team_emails)
+  def fill_team_emails(session, team_emails) do
+    Browser.fill_in(session, Query.css("#user_team_emails"), with: team_emails)
   end
 
-  def fill_proposed_team_name(proposed_team_name) do
-    fill_field({:id, "user_proposed_team_name"}, proposed_team_name)
+  def fill_proposed_team_name(session, proposed_team_name) do
+    Browser.fill_in(session, Query.css("#user_proposed_team_name"), with: proposed_team_name)
   end
 
-  def choose_risk_aversion(level_string) do
+  def choose_risk_aversion(session, level_string) do
     level_integer =
       RegistrationsWeb.UserView.risk_aversion_string_into_integer()[level_string]
 
-    click({:css, "input.level-#{level_integer}"})
+    Browser.click(session, Query.css("input.level-#{level_integer}"))
   end
 
-  def fill_accessibility(accessibility) do
-    fill_field({:id, "user_accessibility"}, accessibility)
+  def fill_accessibility(session, accessibility) do
+    Browser.fill_in(session, Query.css("#user_accessibility"), with: accessibility)
   end
 
-  def accessibility_text do
-    attribute_value({:id, "user_accessibility"}, "value")
+  def accessibility_text(session) do
+    session
+    |> Browser.find(Query.css("#user_accessibility"))
+    |> Element.attr("value")
   end
 
-  def team_emails do
-    attribute_value({:name, "user[team_emails]"}, "value")
+  def team_emails(session) do
+    session
+    |> Browser.find(Query.css("[name='user[team_emails]']"))
+    |> Element.attr("value")
   end
 
-  def add_to_team_emails do
-    click({:css, "[data-action=add-email]"})
+  def add_to_team_emails(session) do
+    Browser.click(session, Query.css("[data-action=add-email]"))
   end
 
   def comments do
@@ -96,14 +103,20 @@ defmodule Registrations.Pages.Details do
 
   defmodule Comments do
     @moduledoc false
-    @selector {:id, "user_comments"}
+    alias Wallaby.Browser
+    alias Wallaby.Element
+    alias Wallaby.Query
 
-    def fill(comments) do
-      fill_field(@selector, comments)
+    @selector "#user_comments"
+
+    def fill(session, comments) do
+      Browser.fill_in(session, Query.css(@selector), with: comments)
     end
 
-    def value do
-      attribute_value(@selector, "value")
+    def value(session) do
+      session
+      |> Browser.find(Query.css(@selector))
+      |> Element.attr("value")
     end
   end
 
@@ -114,83 +127,110 @@ defmodule Registrations.Pages.Details do
   # FIXME this is just begging for DRYing!
   defmodule Source do
     @moduledoc false
-    @selector {:id, "user_source"}
+    alias Wallaby.Browser
+    alias Wallaby.Element
+    alias Wallaby.Query
 
-    def fill(source) do
-      fill_field(@selector, source)
+    @selector "#user_source"
+
+    def fill(session, source) do
+      Browser.fill_in(session, Query.css(@selector), with: source)
     end
 
-    def value do
-      attribute_value(@selector, "value")
+    def value(session) do
+      session
+      |> Browser.find(Query.css(@selector))
+      |> Element.attr("value")
     end
   end
 
   defmodule InviteButton do
     @moduledoc false
-    def present? do
-      element?(:css, "[data-test-invite]")
+    alias Wallaby.Browser
+    alias Wallaby.Query
+
+    def present?(session) do
+      Browser.has?(session, Query.css("[data-test-invite]"))
     end
 
-    def click do
-      click({:css, "[data-test-invite]"})
+    def click(session) do
+      Browser.click(session, Query.css("[data-test-invite]"))
     end
   end
 
   defmodule Attending do
     @moduledoc false
-    def present? do
-      element?(:css, ".form-group.attending")
+    alias Wallaby.Browser
+    alias Wallaby.Query
+
+    def present?(session) do
+      Browser.has?(session, Query.css(".form-group.attending"))
     end
 
-    def yes do
-      click({:css, "input.attending-true"})
+    def yes(session) do
+      Browser.click(session, Query.css("input.attending-true"))
     end
 
-    def no do
-      click({:css, "input.attending-false"})
+    def no(session) do
+      Browser.click(session, Query.css("input.attending-false"))
     end
 
     defmodule Error do
       @moduledoc false
-      def present? do
-        element?(:css, ".errors .attending")
+      alias Wallaby.Browser
+      alias Wallaby.Query
+
+      def present?(session) do
+        Browser.has?(session, Query.css(".errors .attending"))
       end
     end
   end
 
   defmodule Team do
     @moduledoc false
-    def present? do
-      element?(:css, "[data-test-assigned-team]")
+    alias Wallaby.Browser
+    alias Wallaby.Query
+
+    def present?(session) do
+      Browser.has?(session, Query.css("[data-test-assigned-team]"))
     end
 
-    def name do
-      visible_text({:css, "[data-test-assigned-team-name]"})
+    def name(session) do
+      Browser.text(session, Query.css("[data-test-assigned-team-name]"))
     end
 
-    def risk_aversion do
-      visible_text({:css, "[data-test-assigned-team-risk-aversion]"})
+    def risk_aversion(session) do
+      Browser.text(session, Query.css("[data-test-assigned-team-risk-aversion]"))
     end
 
-    def emails do
-      visible_text({:css, "[data-test-assigned-team-emails]"})
+    def emails(session) do
+      Browser.text(session, Query.css("[data-test-assigned-team-emails]"))
     end
   end
 
-  def active? do
-    current_path() == "/details"
+  def active?(session) do
+    Browser.current_path(session) == "/details"
   end
 
-  def submit do
-    click({:id, "submit"})
+  def submit(session) do
+    Browser.click(session, Query.css("#submit"))
   end
 
   defp email_and_text_row(row) do
     %{
-      email: visible_text(find_within_element(row, :css, ".email")),
-      symbol: visible_text(find_within_element(row, :css, ".symbol")),
-      text: visible_text(find_within_element(row, :css, ".text")),
-      add: fn -> click(find_within_element(row, :css, "a")) end
+      email: Element.text(Browser.find(row, Query.css(".email"))),
+      symbol: Element.text(Browser.find(row, Query.css(".symbol"))),
+      text: Element.text(Browser.find(row, Query.css(".text"))),
+      add: fn -> Element.click(Browser.find(row, Query.css("a"))) end
     }
   end
+
+  defp has_class?(element, class_name) do
+    element
+    |> Element.attr("class")
+    |> to_string()
+    |> String.split()
+    |> Enum.member?(class_name)
+  end
+
 end

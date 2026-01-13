@@ -1,19 +1,18 @@
 defmodule Registrations.Pages.Nav do
   @moduledoc false
-  use Hound.Helpers
+  alias Wallaby.Browser
+  alias Wallaby.Query
 
-  alias Hound.Helpers.Page
-
-  def present? do
-    Hound.Matchers.element?(:css, ".row.nav")
+  def present?(session) do
+    Browser.has?(session, Query.css(".row.nav"))
   end
 
-  def info_text do
-    visible_text({:css, ".alert-info"})
+  def info_text(session) do
+    Browser.text(session, Query.css(".alert-info"))
   end
 
-  def error_text do
-    visible_text({:css, ".alert-danger"})
+  def error_text(session) do
+    Browser.text(session, Query.css(".alert-danger"))
   end
 
   def register_link do
@@ -42,82 +41,99 @@ defmodule Registrations.Pages.Nav do
     Registrations.Pages.Nav.SettingsLink
   end
 
-  def edit_details do
-    click({:css, "a.details"})
+  def edit_details(session) do
+    Browser.click(session, Query.css("a.details"))
   end
 
-  def edit_messages do
-    click({:css, "a.messages"})
+  def edit_messages(session) do
+    Browser.click(session, Query.css("a.messages"))
   end
 
   defmodule LogoutLink do
     @moduledoc false
-    @selector {:css, "a.logout"}
+    alias Wallaby.Browser
+    alias Wallaby.Query
 
-    def text do
-      visible_text(@selector)
+    @selector "a.logout"
+
+    def text(session) do
+      Browser.text(session, Query.css(@selector))
     end
 
-    def click do
-      click(@selector)
+    def click(session) do
+      Browser.click(session, Query.css(@selector))
     end
   end
 
   defmodule LoginLink do
     @moduledoc false
-    @selector {:css, "a.login"}
+    alias Wallaby.Browser
+    alias Wallaby.Query
 
-    def click do
-      click(@selector)
+    @selector "a.login"
+
+    def click(session) do
+      Browser.click(session, Query.css(@selector))
     end
 
-    def present? do
-      # Is this reasonable?
-      apply(Page, :find_element, Tuple.to_list(@selector))
+    def present?(session) do
+      Browser.has?(session, Query.css(@selector))
     end
   end
 
   defmodule RegisterLink do
     @moduledoc false
-    @selector {:css, "a.register"}
+    alias Wallaby.Browser
+    alias Wallaby.Query
 
-    def click do
-      click(@selector)
+    @selector "a.register"
+
+    def click(session) do
+      Browser.click(session, Query.css(@selector))
     end
 
-    def present? do
-      apply(Page, :find_element, Tuple.to_list(@selector))
+    def present?(session) do
+      Browser.has?(session, Query.css(@selector))
     end
   end
 
   defmodule UsersLink do
     @moduledoc false
-    @selector {:css, "a.users"}
+    alias Wallaby.Browser
+    alias Wallaby.Query
 
-    def click do
-      click(@selector)
+    @selector "a.users"
+
+    def click(session) do
+      Browser.click(session, Query.css(@selector))
     end
 
-    def absent? do
-      !apply(Hound.Matchers, :element?, Tuple.to_list(@selector))
+    def absent?(session) do
+      not Browser.has?(session, Query.css(@selector))
     end
   end
 
   defmodule TeamsLink do
     @moduledoc false
-    @selector {:css, "a.teams"}
+    alias Wallaby.Browser
+    alias Wallaby.Query
 
-    def click do
-      click(@selector)
+    @selector "a.teams"
+
+    def click(session) do
+      Browser.click(session, Query.css(@selector))
     end
   end
 
   defmodule SettingsLink do
     @moduledoc false
-    @selector {:css, "a.settings"}
+    alias Wallaby.Browser
+    alias Wallaby.Query
 
-    def click do
-      click(@selector)
+    @selector "a.settings"
+
+    def click(session) do
+      Browser.click(session, Query.css(@selector))
     end
   end
 end
