@@ -221,7 +221,7 @@ defmodule Registrations.Pages.Details do
       email: Element.text(Browser.find(row, Query.css(".email"))),
       symbol: Element.text(Browser.find(row, Query.css(".symbol"))),
       text: Element.text(Browser.find(row, Query.css(".text"))),
-      add: fn -> Browser.click(Browser.find(row, Query.css("a"))) end
+      add: fn -> Element.click(Browser.find(row, Query.css("a"))) end
     }
   end
 

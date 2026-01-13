@@ -10,6 +10,7 @@ defmodule Registrations.Integration.Admin do
   alias Registrations.Pages.Nav
   alias Registrations.Pages.Teams
   alias Registrations.Pages.Users
+  alias Wallaby.Query
 
   require Assertions
 
@@ -32,7 +33,7 @@ defmodule Registrations.Integration.Admin do
     Login.fill_password(session, "Xenogenesis")
     Login.submit(session)
 
-    refute has?(session, css("a.settings"))
+    refute has?(session, Query.css("a.settings"))
 
     Nav.users_link().click(session)
 
@@ -208,6 +209,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
 
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
+  alias Wallaby.Query
 
   test "admin can create and update settings", %{session: session} do
     insert(:octavia, admin: true)
@@ -222,17 +224,17 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
 
     Nav.settings_link().click(session)
 
-    refute has?(session, css("#settings_begun:checked"))
+    refute has?(session, Query.css("#settings_begun:checked"))
 
-    fill_in(session, css("#settings_override"), with: "an override")
-    click(session, css("#settings_begun"))
+    fill_in(session, Query.css("#settings_override"), with: "an override")
+    click(session, Query.css("#settings_begun"))
 
-    click(session, css("button[type=submit]"))
+    click(session, Query.css("button[type=submit]"))
 
     assert current_path(session) == "/settings"
 
-    assert has?(session, css("#settings_begun:checked"))
-    assert text(session, css(".alert-info")) == "Settings updated successfully."
+    assert has?(session, Query.css("#settings_begun:checked"))
+    assert text(session, Query.css(".alert-info")) == "Settings updated successfully."
   end
 
   test "non-admins cannot access the user list or messages", %{session: session} do

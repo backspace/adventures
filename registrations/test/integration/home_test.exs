@@ -8,21 +8,31 @@ defmodule Registrations.UnmnemonicDevices.Integration.Home do
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
   alias Wallaby.Element
+  alias Wallaby.Query
 
   require WaitForIt
 
   test "head tags are correct", %{session: session} do
     visit(session, "/")
 
-    assert text(session, css("title")) == "unmnemonic devices"
+    assert text(session, Query.css("title", visible: false)) == "unmnemonic devices"
 
-    assert Element.attr(find(session, css("meta[property='og:title']")), "content") ==
+    assert Element.attr(
+             find(session, Query.css("meta[property='og:title']", visible: false)),
+             "content"
+           ) ==
              "unmnemonic devices: Zagreb, June 8"
 
-    assert Element.attr(find(session, css("meta[property='og:url']")), "content") ==
+    assert Element.attr(
+             find(session, Query.css("meta[property='og:url']", visible: false)),
+             "content"
+           ) ==
              "http://example.com"
 
-    assert Element.attr(find(session, css("meta[property='og:image']")), "content") ==
+    assert Element.attr(
+             find(session, Query.css("meta[property='og:image']", visible: false)),
+             "content"
+           ) ==
              "http://example.com/images/unmnemonic-devices/meta.png"
   end
 

@@ -11,6 +11,7 @@ defmodule Registrations.Integration.Teams do
   alias Registrations.Pages.Details.Attending.Error
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
+  alias Wallaby.Query
 
   require Assertions
 
@@ -182,7 +183,7 @@ defmodule Registrations.Integration.Teams do
 
     Login.login_as(session, "takver@example.com", "Anarres")
 
-    refute has?(session, css("table"))
+    refute has?(session, Query.css("table"))
   end
 
   test "when confirmation-requesting is enabled, show and require the fields", %{
