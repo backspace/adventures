@@ -1,4 +1,5 @@
 {:ok, _} = Application.ensure_all_started(:ex_machina)
+{:ok, _} = Application.ensure_all_started(:wallaby)
 
 ExUnit.configure(formatters: [JUnitFormatter, ExUnit.CLIFormatter])
 ExUnit.start()
@@ -18,10 +19,10 @@ end
 
 defmodule Registrations.WindowHelpers do
   @moduledoc false
-  use Hound.Helpers
+  alias Wallaby.Browser
 
-  def set_window_to_show_account do
-    set_window_size(current_window_handle(), 720, 450)
+  def set_window_to_show_account(session) do
+    Browser.resize_window(session, 720, 450)
   end
 end
 
@@ -43,28 +44,6 @@ defmodule Registrations.SwooshHelper do
 
   def emails_sent? do
     length(sent_email()) > 0
-  end
-end
-
-defmodule Registrations.ChromeHeadlessHelper do
-  @moduledoc false
-  use ExUnit.CaseTemplate
-
-  def additional_capabilities do
-    [
-      additional_capabilities: %{
-        :"goog:chromeOptions" => %{
-          "args" => [
-            "--headless",
-            "--disable-gpu",
-            "--no-sandbox",
-            "--disable-dev-shm-usage",
-            "--disable-software-rasterizer"
-          ]
-        },
-        browserName: "chrome"
-      }
-    ]
   end
 end
 

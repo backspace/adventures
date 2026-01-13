@@ -1,9 +1,8 @@
 defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
-  use Hound.Helpers
 
   alias Registrations.Pages.Account
   alias Registrations.Pages.Details
@@ -12,38 +11,33 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
   alias Registrations.Pages.Nav
   alias Registrations.Pages.Register
 
-  # Import Hound helpers
+  test "registering", %{session: session} do
+    Registrations.WindowHelpers.set_window_to_show_account(session)
 
-  # Start a Hound session
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
+    visit(session, "/")
+    Nav.register_link().click(session)
 
-  test "registering" do
-    Registrations.WindowHelpers.set_window_to_show_account()
+    Register.submit(session)
 
-    navigate_to("/")
-    Nav.register_link().click()
-
-    Register.submit()
-
-    assert Nav.error_text() ==
+    assert Nav.error_text(session) ==
              "Oops, something went wrong! Please check the errors below:\nPassword can't be blank\nEmail can't be blank"
 
-    assert Register.email_error() == "Email can't be blank"
+    assert Register.email_error(session) == "Email can't be blank"
     # FIXME fix plural detection
-    assert Register.password_error() == "Password can't be blank"
+    assert Register.password_error(session) == "Password can't be blank"
 
-    Register.fill_email("franklin.w.dixon@example.com")
-    Register.submit()
+    Register.fill_email(session, "franklin.w.dixon@example.com")
+    Register.submit(session)
 
-    assert Nav.error_text() ==
+    assert Nav.error_text(session) ==
              "Oops, something went wrong! Please check the errors below:\nPassword can't be blank"
 
-    Register.fill_email("samuel.delaney@example.com")
-    Register.fill_password("nestofspiders")
-    Register.fill_password_confirmation("nestofspiders")
-    Register.submit()
+    Register.fill_email(session, "samuel.delaney@example.com")
+    Register.fill_password(session, "nestofspiders")
+    Register.fill_password_confirmation(session, "nestofspiders")
+    Register.submit(session)
 
-    assert Nav.info_text() == "Your account was created"
+    assert Nav.info_text(session) == "Your account was created"
 
     [admin_email, welcome_email] = Registrations.SwooshHelper.sent_email()
 
@@ -56,105 +50,105 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     assert String.contains?(welcome_email.text_body, "secret society")
     assert String.contains?(welcome_email.html_body, "secret society")
 
-    assert Nav.logout_link().text() == "Log out samuel.delaney@example.com"
+    assert Nav.logout_link().text(session) == "Log out samuel.delaney@example.com"
 
-    assert Details.active?()
+    assert Details.active?(session)
   end
 
-  test "logging in" do
+  test "logging in", %{session: session} do
     insert(:octavia)
 
-    Registrations.WindowHelpers.set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account(session)
 
-    navigate_to("/")
-    Nav.login_link().click()
+    visit(session, "/")
+    Nav.login_link().click(session)
 
-    Login.fill_email("Octavia.butler@example.com")
-    Login.fill_password("Parable of the Talents")
-    Login.submit()
+    Login.fill_email(session, "Octavia.butler@example.com")
+    Login.fill_password(session, "Parable of the Talents")
+    Login.submit(session)
 
-    assert Nav.error_text() ==
+    assert Nav.error_text(session) ==
              "The provided login details did not work. Please verify your credentials, and try again."
 
-    Login.fill_password("Xenogenesis")
-    Login.submit()
+    Login.fill_password(session, "Xenogenesis")
+    Login.submit(session)
 
-    assert Nav.info_text() == "Logged in"
-    assert Nav.logout_link().text() == "Log out octavia.butler@example.com"
+    assert Nav.info_text(session) == "Logged in"
+    assert Nav.logout_link().text(session) == "Log out octavia.butler@example.com"
 
-    assert Details.active?()
+    assert Details.active?(session)
 
-    Nav.logout_link().click()
+    Nav.logout_link().click(session)
 
-    assert Nav.info_text() == "Logged out"
-    assert Nav.login_link().present?()
-    assert Nav.register_link().present?()
+    assert Nav.info_text(session) == "Logged out"
+    assert Nav.login_link().present?(session)
+    assert Nav.register_link().present?(session)
   end
 
-  test "changing password" do
+  test "changing password", %{session: session} do
     insert(:octavia)
 
-    Registrations.WindowHelpers.set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account(session)
 
-    navigate_to("/")
-    Login.login_as_admin()
+    visit(session, "/")
+    Login.login_as_admin(session)
 
-    Nav.edit_details()
-    Details.edit_account()
+    Nav.edit_details(session)
+    Details.edit_account(session)
 
-    Account.fill_current_password("Wrong")
-    Account.submit()
+    Account.fill_current_password(session, "Wrong")
+    Account.submit(session)
 
-    assert Nav.error_text() ==
+    assert Nav.error_text(session) ==
              "Oops, something went wrong! Please check the errors below:\nCurrent password is invalid"
 
-    Account.fill_current_password("Xenogenesis")
-    Account.fill_new_password("abcde")
-    Account.fill_new_password_confirmation("vwxyz")
-    Account.submit()
+    Account.fill_current_password(session, "Xenogenesis")
+    Account.fill_new_password(session, "abcde")
+    Account.fill_new_password_confirmation(session, "vwxyz")
+    Account.submit(session)
 
-    assert Nav.error_text() ==
+    assert Nav.error_text(session) ==
              "Oops, something went wrong! Please check the errors below:\nPassword should be at least 8 character(s)\nPassword confirmation does not match confirmation"
 
-    Account.fill_current_password("Xenogenesis")
-    Account.fill_new_password("Lilith’s Brood")
-    Account.fill_new_password_confirmation("Lilith’s Brood")
-    Account.submit()
+    Account.fill_current_password(session, "Xenogenesis")
+    Account.fill_new_password(session, "Lilith’s Brood")
+    Account.fill_new_password_confirmation(session, "Lilith’s Brood")
+    Account.submit(session)
 
-    assert Nav.info_text() == "Your account has been updated."
+    assert Nav.info_text(session) == "Your account has been updated."
 
-    Nav.logout_link().click()
+    Nav.logout_link().click(session)
 
-    navigate_to("/")
-    Nav.login_link().click()
+    visit(session, "/")
+    Nav.login_link().click(session)
 
-    Login.fill_email("octavia.butler@example.com")
-    Login.fill_password("Xenogenesis")
-    Login.submit()
+    Login.fill_email(session, "octavia.butler@example.com")
+    Login.fill_password(session, "Xenogenesis")
+    Login.submit(session)
 
-    assert Nav.error_text() ==
+    assert Nav.error_text(session) ==
              "The provided login details did not work. Please verify your credentials, and try again."
 
-    Login.fill_password("Lilith’s Brood")
-    Login.submit()
+    Login.fill_password(session, "Lilith’s Brood")
+    Login.submit(session)
 
-    assert Nav.info_text() == "Logged in"
+    assert Nav.info_text(session) == "Logged in"
   end
 
-  test "forgot password" do
-    Registrations.WindowHelpers.set_window_to_show_account()
+  test "forgot password", %{session: session} do
+    Registrations.WindowHelpers.set_window_to_show_account(session)
 
     insert(:octavia)
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Nav.login_link().click()
-    Login.click_forgot_password()
+    Nav.login_link().click(session)
+    Login.click_forgot_password(session)
 
-    ForgotPassword.fill_email("octavia.butler@example.com")
-    ForgotPassword.submit()
+    ForgotPassword.fill_email(session, "octavia.butler@example.com")
+    ForgotPassword.submit(session)
 
-    assert Nav.info_text() ==
+    assert Nav.info_text(session) ==
              "If an account for the provided email exists, an email with reset instructions will be sent to you. Please check your inbox."
 
     [forgot_password_email] = Registrations.SwooshHelper.sent_email()
@@ -172,51 +166,51 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     assert String.starts_with?(reset_path, "/reset-password/")
 
-    navigate_to("/reset-password/fake")
-    assert Nav.error_text() == "The reset token has expired."
+    visit(session, "/reset-password/fake")
+    assert Nav.error_text(session) == "The reset token has expired."
 
-    navigate_to(reset_path)
+    visit(session, reset_path)
 
-    Account.fill_new_password("anewpassword")
-    Account.fill_new_password_confirmation("awrongpassword")
-    Account.submit()
+    Account.fill_new_password(session, "anewpassword")
+    Account.fill_new_password_confirmation(session, "awrongpassword")
+    Account.submit(session)
 
-    assert Nav.error_text() ==
+    assert Nav.error_text(session) ==
              "Oops, something went wrong! Please check the errors below:\nPassword confirmation does not match confirmation"
 
-    Account.fill_new_password("anewpassword")
-    Account.fill_new_password_confirmation("anewpassword")
-    Account.submit()
+    Account.fill_new_password(session, "anewpassword")
+    Account.fill_new_password_confirmation(session, "anewpassword")
+    Account.submit(session)
 
-    assert Nav.info_text() == "The password has been updated."
+    assert Nav.info_text(session) == "The password has been updated."
 
-    Login.fill_email("Octavia.butler@example.com")
-    Login.fill_password("anewpassword")
-    Login.submit()
+    Login.fill_email(session, "Octavia.butler@example.com")
+    Login.fill_password(session, "anewpassword")
+    Login.submit(session)
 
-    assert Nav.logout_link().text() == "Log out octavia.butler@example.com"
+    assert Nav.logout_link().text(session) == "Log out octavia.butler@example.com"
 
-    Nav.logout_link().click()
+    Nav.logout_link().click(session)
 
-    Login.login_as("octavia.butler@example.com", "anewpassword")
-    assert Nav.logout_link().text() == "Log out octavia.butler@example.com"
+    Login.login_as(session, "octavia.butler@example.com", "anewpassword")
+    assert Nav.logout_link().text(session) == "Log out octavia.butler@example.com"
 
-    Nav.logout_link().click()
+    Nav.logout_link().click(session)
 
-    navigate_to(reset_path)
-    assert Nav.error_text() == "The reset token has expired."
+    visit(session, reset_path)
+    assert Nav.error_text(session) == "The reset token has expired."
   end
 
-  test "delete account" do
+  test "delete account", %{session: session} do
     insert(:octavia)
 
-    navigate_to("/")
-    Login.login_as_admin()
+    visit(session, "/")
+    Login.login_as_admin(session)
 
-    Nav.edit_details()
-    Details.delete_account()
+    Nav.edit_details(session)
+    Details.delete_account(session)
 
-    assert Nav.info_text() == "Your account has been deleted. Sorry to see you go!"
+    assert Nav.info_text(session) == "Your account has been deleted. Sorry to see you go!"
 
     [admin_email] = Registrations.SwooshHelper.sent_email()
 
@@ -225,64 +219,59 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     assert admin_email.subject == "octavia.butler@example.com deleted their account"
   end
 
-  test "delete with login" do
+  test "delete with login", %{session: session} do
     insert(:octavia)
 
-    navigate_to("/delete")
-    Login.fill_email("octavia.butler@example.com")
-    Login.fill_password("Xenogenesis")
-    Login.submit()
+    visit(session, "/delete")
+    Login.fill_email(session, "octavia.butler@example.com")
+    Login.fill_password(session, "Xenogenesis")
+    Login.submit(session)
 
-    assert Nav.info_text() == "Your account has been deleted. Sorry to see you go!"
+    assert Nav.info_text(session) == "Your account has been deleted. Sorry to see you go!"
   end
 
-  test "when registration is closed, a warning is displayed on the registration and details routes" do
+  test "when registration is closed, a warning is displayed on the registration and details routes",
+       %{session: session} do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :registration_closed,
       true
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Nav.register_link().click()
+    Nav.register_link().click(session)
 
-    assert Nav.error_text() ==
+    assert Nav.error_text(session) ==
              "Registration is closed; however, you may continue and we will email you"
 
     insert(:octavia)
-    Login.login_as_admin()
+    Login.login_as_admin(session)
 
-    assert Nav.error_text() ==
+    assert Nav.error_text(session) ==
              "You may change your details but it’s too late to guarantee the changes can be integrated"
   end
 end
 
 defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
-  use Hound.Helpers
 
   alias Registrations.Pages.Nav
   alias Registrations.Pages.Register
 
-  # Import Hound helpers
+  test "registering sends email from and to a different address", %{session: session} do
+    Registrations.WindowHelpers.set_window_to_show_account(session)
 
-  # Start a Hound session
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
+    visit(session, "/")
+    Nav.register_link().click(session)
 
-  test "registering sends email from and to a different address" do
-    Registrations.WindowHelpers.set_window_to_show_account()
-
-    navigate_to("/")
-    Nav.register_link().click()
-
-    Register.fill_email("samuel.delaney@example.com")
-    Register.fill_password("nestofspiders")
-    Register.fill_password_confirmation("nestofspiders")
-    Register.submit()
+    Register.fill_email(session, "samuel.delaney@example.com")
+    Register.fill_password(session, "nestofspiders")
+    Register.fill_password_confirmation(session, "nestofspiders")
+    Register.submit(session)
 
     [admin_email, welcome_email] = Registrations.SwooshHelper.sent_email()
 

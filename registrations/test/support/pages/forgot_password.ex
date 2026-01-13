@@ -1,12 +1,13 @@
 defmodule Registrations.Pages.ForgotPassword do
   @moduledoc false
-  use Hound.Helpers
+  alias Wallaby.Browser
+  alias Wallaby.Query
 
-  def fill_email(email) do
-    fill_field({:id, "email"}, email)
+  def fill_email(session, email) do
+    Browser.fill_in(session, Query.css("#email"), with: email)
   end
 
-  def submit do
-    click({:class, "button"})
+  def submit(session) do
+    Browser.click(session, Query.css(".button"))
   end
 end

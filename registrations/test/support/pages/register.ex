@@ -1,28 +1,29 @@
 defmodule Registrations.Pages.Register do
   @moduledoc false
-  use Hound.Helpers
+  alias Wallaby.Browser
+  alias Wallaby.Query
 
-  def fill_email(email) do
-    fill_field({:id, "email"}, email)
+  def fill_email(session, email) do
+    Browser.fill_in(session, Query.css("#email"), with: email)
   end
 
-  def email_error do
-    visible_text({:css, ".errors .email"})
+  def email_error(session) do
+    Browser.text(session, Query.css(".errors .email"))
   end
 
-  def fill_password(password) do
-    fill_field({:id, "password"}, password)
+  def fill_password(session, password) do
+    Browser.fill_in(session, Query.css("#password"), with: password)
   end
 
-  def fill_password_confirmation(password_confirmation) do
-    fill_field({:id, "password_confirmation"}, password_confirmation)
+  def fill_password_confirmation(session, password_confirmation) do
+    Browser.fill_in(session, Query.css("#password_confirmation"), with: password_confirmation)
   end
 
-  def password_error do
-    visible_text({:css, ".errors .password"})
+  def password_error(session) do
+    Browser.text(session, Query.css(".errors .password"))
   end
 
-  def submit do
-    click({:class, "button"})
+  def submit(session) do
+    Browser.click(session, Query.css(".button"))
   end
 end

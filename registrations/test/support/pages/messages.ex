@@ -1,52 +1,66 @@
 defmodule Registrations.Pages.Messages do
   @moduledoc false
-  use Hound.Helpers
+  alias Wallaby.Browser
+  alias Wallaby.Query
 
-  def new_message do
-    click({:css, ".new-message"})
+  def new_message(session) do
+    Browser.click(session, Query.css(".new-message"))
   end
 
-  def fill_from_name(name) do
-    fill_field({:id, "message_from_name"}, name)
+  def fill_from_name(session, name) do
+    Browser.fill_in(session, Query.css("#message_from_name"), with: name)
   end
 
-  def fill_from_address(address) do
-    fill_field({:id, "message_from_address"}, address)
+  def fill_from_address(session, address) do
+    Browser.fill_in(session, Query.css("#message_from_address"), with: address)
   end
 
-  def fill_subject(subject) do
-    fill_field({:id, "message_subject"}, subject)
+  def fill_subject(session, subject) do
+    Browser.fill_in(session, Query.css("#message_subject"), with: subject)
   end
 
-  def fill_content(content) do
-    fill_field({:id, "message_content"}, content)
+  def fill_content(session, content) do
+    Browser.fill_in(session, Query.css("#message_content"), with: content)
   end
 
-  def fill_postmarked_at(date) do
-    execute_script("document.querySelector('#message_postmarked_at').value = arguments[0]", [date])
+  def fill_postmarked_at(session, date) do
+    Browser.execute_script(
+      session,
+      "document.querySelector('#message_postmarked_at').value = arguments[0]",
+      [date]
+    )
   end
 
-  def check_ready do
-    click({:id, "message_ready"})
+  def check_ready(session) do
+    Browser.click(session, Query.css("#message_ready"))
   end
 
-  def check_show_team do
-    click({:id, "message_show_team"})
+  def check_show_team(session) do
+    Browser.click(session, Query.css("#message_show_team"))
   end
 
-  def save do
-    click({:css, "button.submit"})
+  def save(session) do
+    Browser.click(session, Query.css("button.submit"))
   end
 
-  def send do
-    click({:css, ".button.send"})
+  def send(session) do
+    accept_confirm(session, fn ->
+      Browser.click(session, Query.css(".button.send"))
+    end)
   end
 
-  def dismiss_alert do
-    accept_dialog()
+  def send_to_me(session) do
+    Browser.click(session, Query.css(".button.send_to_me"))
   end
 
-  def send_to_me do
-    click({:css, ".button.send_to_me"})
+  defp accept_confirm(session, action) do
+    if function_exported?(Browser, :accept_confirm, 2) do
+      _ = apply(Browser, :accept_confirm, [session, action])
+      session
+    else
+      _ = Browser.execute_script(session, "window.confirm = function(){return true;};")
+      action.()
+      session
+    end
   end
 end

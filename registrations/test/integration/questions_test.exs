@@ -1,27 +1,27 @@
 defmodule Registrations.ClandestineRendezvous.Integration.Questions do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
-  use Hound.Helpers
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Nav
 
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
+  test "submitting a question", %{session: session} do
+    visit(session, "/")
 
-  test "submitting a question" do
-    navigate_to("/")
+    Home.fill_name(session, "Lucy Parsons")
+    Home.fill_email(session, "lucy@example.com")
+    Home.fill_subject(session, "A Word to Tramps")
 
-    Home.fill_name("Lucy Parsons")
-    Home.fill_email("lucy@example.com")
-    Home.fill_subject("A Word to Tramps")
+    Home.fill_question(
+      session,
+      "Can you not see that it is the industrial system and not the \"boss\" which must be changed?"
+    )
 
-    Home.fill_question("Can you not see that it is the industrial system and not the \"boss\" which must be changed?")
+    Home.submit_question(session)
 
-    Home.submit_question()
-
-    assert Nav.info_text() == "Your question has been submitted."
+    assert Nav.info_text(session) == "Your question has been submitted."
 
     [sent_email] = Registrations.SwooshHelper.sent_email()
     assert sent_email.to == [{"", "b@events.chromatin.ca"}]
@@ -37,28 +37,28 @@ end
 
 defmodule Registrations.UnmnemonicDevices.Integration.Questions do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
-  use Hound.Helpers
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Nav
 
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
+  test "submitting a question", %{session: session} do
+    visit(session, "/")
 
-  test "submitting a question" do
-    navigate_to("/")
+    Home.fill_name(session, "Lucy Parsons")
+    Home.fill_email(session, "lucy@example.com")
+    Home.fill_subject(session, "A Word to Tramps")
 
-    Home.fill_name("Lucy Parsons")
-    Home.fill_email("lucy@example.com")
-    Home.fill_subject("A Word to Tramps")
+    Home.fill_question(
+      session,
+      "Can you not see that it is the industrial system and not the \"boss\" which must be changed?"
+    )
 
-    Home.fill_question("Can you not see that it is the industrial system and not the \"boss\" which must be changed?")
+    Home.submit_question(session)
 
-    Home.submit_question()
-
-    assert Nav.info_text() == "Your question has been submitted."
+    assert Nav.info_text(session) == "Your question has been submitted."
 
     [sent_email] = Registrations.SwooshHelper.sent_email()
     assert sent_email.to == [{"", "knut@chromatin.ca"}]

@@ -1,36 +1,40 @@
 defmodule Registrations.Pages.Users do
   @moduledoc false
-  use Hound.Helpers
+  alias Wallaby.Browser
+  alias Wallaby.Element
+  alias Wallaby.Query
 
   defp user_container(id) do
     "tr[id='user-#{id}']"
   end
 
-  def email(id) do
-    visible_text({:css, "#{user_container(id)} .email"})
+  def email(session, id) do
+    Browser.text(session, Query.css("#{user_container(id)} .email"))
   end
 
-  def accessibility(id) do
-    visible_text({:css, "#{user_container(id)} .accessibility"})
+  def accessibility(session, id) do
+    Browser.text(session, Query.css("#{user_container(id)} .accessibility"))
   end
 
-  def attending(id) do
-    visible_text({:css, "#{user_container(id)} .attending"})
+  def attending(session, id) do
+    Browser.text(session, Query.css("#{user_container(id)} .attending"))
   end
 
-  def proposed_team_name(id) do
-    visible_text({:css, "#{user_container(id)} .proposed-team-name"})
+  def proposed_team_name(session, id) do
+    Browser.text(session, Query.css("#{user_container(id)} .proposed-team-name"))
   end
 
-  def teamed(id) do
-    visible_text({:css, "#{user_container(id)} .teamed"}) == "✓"
+  def teamed(session, id) do
+    Browser.text(session, Query.css("#{user_container(id)} .teamed")) == "✓"
   end
 
-  def build_team_from(id) do
-    click({:css, "#{user_container(id)} a"})
+  def build_team_from(session, id) do
+    Browser.click(session, Query.css("#{user_container(id)} a"))
   end
 
-  def all_emails do
-    :css |> Hound.Helpers.Page.find_all_elements("tr .email") |> Enum.map(&visible_text/1)
+  def all_emails(session) do
+    session
+    |> Browser.all(Query.css("tr .email"))
+    |> Enum.map(&Element.text/1)
   end
 end
