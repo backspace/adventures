@@ -183,8 +183,6 @@ function init() {
 	wW = toReplace.width() * 2;
 	wH = toReplace.height() * 2;
 
-  console.log('wW/wH', `${wW}/${wH}`);
-
 
   // if (canvas3d) {
   //   canvas3d.style.width = wW + 'px';
@@ -242,7 +240,7 @@ function init() {
 
 function checkReady() {
   numObjectsLoaded++;
-  console.log(numObjectsLoaded)
+
   if (numObjectsLoaded >= 2) {
     TweenLite.to('#intro, #bg', 1, {opacity: 0});
   }

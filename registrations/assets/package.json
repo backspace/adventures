@@ -34,5 +34,10 @@
   "volta": {
     "node": "22.5.1",
     "npm": "10.8.2"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "three@0.77.1": "patches/three@0.77.1.patch"
+    }
   }
 }

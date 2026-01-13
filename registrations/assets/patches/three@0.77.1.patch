@@ -1,0 +1,13 @@
+diff --git a/src/renderers/WebGLRenderer.js b/src/renderers/WebGLRenderer.js
+index bcb04643c1b134869798f8417fa024754648f751..5814dc35c847994d66569d3e3702761ffe48613a 100644
+--- a/src/renderers/WebGLRenderer.js
++++ b/src/renderers/WebGLRenderer.js
+@@ -8,7 +8,7 @@
+ 
+ THREE.WebGLRenderer = function ( parameters ) {
+ 
+-	console.log( 'THREE.WebGLRenderer', THREE.REVISION );
++	// console.log( 'THREE.WebGLRenderer', THREE.REVISION );
+ 
+ 	parameters = parameters || {};
+ 
