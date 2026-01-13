@@ -9,7 +9,7 @@ defmodule Registrations.Pages.Details do
   end
 
   def delete_account(session) do
-    accept_confirm(session, fn inner_session ->
+    Browser.accept_confirm(session, fn inner_session ->
       Browser.click(inner_session, Query.css("a.delete"))
     end)
   end
@@ -233,14 +233,4 @@ defmodule Registrations.Pages.Details do
     |> Enum.member?(class_name)
   end
 
-  defp accept_confirm(session, action) do
-    if function_exported?(Browser, :accept_confirm, 2) do
-      _ = apply(Browser, :accept_confirm, [session, action])
-      session
-    else
-      _ = Browser.execute_script(session, "window.confirm = function(){return true;};")
-      action.(session)
-      session
-    end
-  end
 end
