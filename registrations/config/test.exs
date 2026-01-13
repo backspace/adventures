@@ -3,7 +3,8 @@ import Config
 config :wallaby,
   driver: Wallaby.Chrome,
   chrome: [headless: true],
-  base_url: "http://localhost:4001"
+  base_url: "http://localhost:4001",
+  js_errors: false
 
 # Print only warnings and errors during test
 config :logger, level: :warning
