@@ -4,7 +4,7 @@ defmodule Registrations.Pages.Home do
   alias Wallaby.Query
 
   def placeholder_exists?(session) do
-    Browser.has?(session, Query.css("[data-test-placeholder]", visible: false))
+    Browser.has?(session, Query.css("[data-test-placeholder]"))
   end
 
   def fill_name(session, name) do

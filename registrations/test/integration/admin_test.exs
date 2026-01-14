@@ -4,6 +4,7 @@ defmodule Registrations.Integration.Admin do
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
 
+  import Registrations.TestJsonHelpers, only: [decode_json_from_page: 1]
   import Assertions, only: [assert_lists_equal: 2]
 
   alias Registrations.Pages.Login
@@ -159,9 +160,10 @@ defmodule Registrations.Integration.Admin do
 
     visit(session, "/")
     Login.login_as_admin(session)
+    assert has?(session, Query.css("a.users"))
 
     visit(session, "/api/teams")
-    json = session |> page_source() |> Floki.find("pre") |> Floki.text() |> Jason.decode!()
+    json = decode_json_from_page(session)
 
     assert json == %{
              "data" => [
@@ -199,6 +201,7 @@ defmodule Registrations.Integration.Admin do
     visit(session, "/settings")
     assert Nav.error_text(session) == "Who are you?"
   end
+
 end
 
 defmodule Registrations.Integration.UnmnemonicDevices.Admin do
@@ -207,6 +210,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
 
+  import Registrations.TestJsonHelpers, only: [decode_json_from_page: 1]
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
   alias Wallaby.Query
@@ -263,7 +267,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
     Login.login_as_admin(session)
 
     visit(session, "/api/teams")
-    json = session |> page_source() |> Floki.find("pre") |> Floki.text() |> Jason.decode!()
+    json = decode_json_from_page(session)
 
     assert json == %{
              "data" => [
@@ -283,4 +287,5 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
              ]
            }
   end
+
 end
