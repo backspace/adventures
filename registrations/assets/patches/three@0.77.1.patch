@@ -1,3 +1,120 @@
+diff --git a/build/three.js b/build/three.js
+index 738d18bc99d4bc2d7703e8c740244bb5248f2a76..491548056fdb37b1b9810ddb901dbb655384941b 100644
+--- a/build/three.js
++++ b/build/three.js
+@@ -24736,7 +24736,7 @@ THREE.ShaderLib[ 'physical' ] = {
+ 
+ THREE.WebGLRenderer = function ( parameters ) {
+ 
+-	console.log( 'THREE.WebGLRenderer', THREE.REVISION );
++	// console.log( 'THREE.WebGLRenderer', THREE.REVISION );
+ 
+ 	parameters = parameters || {};
+ 
+diff --git a/build/three.min.js b/build/three.min.js
+index d7a1702b312137bd0093c83fa9fa9c6854c89166..be50090784a6159e27635c061249522a686d6a47 100644
+--- a/build/three.min.js
++++ b/build/three.min.js
+@@ -626,7 +626,7 @@ if(a===THREE.FloatType)return t.FLOAT;b=V.get("OES_texture_half_float");if(null!
+ THREE.ReverseSubtractEquation)return t.FUNC_REVERSE_SUBTRACT;if(a===THREE.ZeroFactor)return t.ZERO;if(a===THREE.OneFactor)return t.ONE;if(a===THREE.SrcColorFactor)return t.SRC_COLOR;if(a===THREE.OneMinusSrcColorFactor)return t.ONE_MINUS_SRC_COLOR;if(a===THREE.SrcAlphaFactor)return t.SRC_ALPHA;if(a===THREE.OneMinusSrcAlphaFactor)return t.ONE_MINUS_SRC_ALPHA;if(a===THREE.DstAlphaFactor)return t.DST_ALPHA;if(a===THREE.OneMinusDstAlphaFactor)return t.ONE_MINUS_DST_ALPHA;if(a===THREE.DstColorFactor)return t.DST_COLOR;
+ if(a===THREE.OneMinusDstColorFactor)return t.ONE_MINUS_DST_COLOR;if(a===THREE.SrcAlphaSaturateFactor)return t.SRC_ALPHA_SATURATE;b=V.get("WEBGL_compressed_texture_s3tc");if(null!==b){if(a===THREE.RGB_S3TC_DXT1_Format)return b.COMPRESSED_RGB_S3TC_DXT1_EXT;if(a===THREE.RGBA_S3TC_DXT1_Format)return b.COMPRESSED_RGBA_S3TC_DXT1_EXT;if(a===THREE.RGBA_S3TC_DXT3_Format)return b.COMPRESSED_RGBA_S3TC_DXT3_EXT;if(a===THREE.RGBA_S3TC_DXT5_Format)return b.COMPRESSED_RGBA_S3TC_DXT5_EXT}b=V.get("WEBGL_compressed_texture_pvrtc");
+ if(null!==b){if(a===THREE.RGB_PVRTC_4BPPV1_Format)return b.COMPRESSED_RGB_PVRTC_4BPPV1_IMG;if(a===THREE.RGB_PVRTC_2BPPV1_Format)return b.COMPRESSED_RGB_PVRTC_2BPPV1_IMG;if(a===THREE.RGBA_PVRTC_4BPPV1_Format)return b.COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;if(a===THREE.RGBA_PVRTC_2BPPV1_Format)return b.COMPRESSED_RGBA_PVRTC_2BPPV1_IMG}b=V.get("WEBGL_compressed_texture_etc1");if(null!==b&&a===THREE.RGB_ETC1_Format)return b.COMPRESSED_RGB_ETC1_WEBGL;b=V.get("EXT_blend_minmax");if(null!==b){if(a===THREE.MinEquation)return b.MIN_EXT;
+-if(a===THREE.MaxEquation)return b.MAX_EXT}return 0}console.log("THREE.WebGLRenderer",THREE.REVISION);a=a||{};var z=void 0!==a.canvas?a.canvas:document.createElement("canvas"),H=void 0!==a.context?a.context:null,M=void 0!==a.alpha?a.alpha:!1,O=void 0!==a.depth?a.depth:!0,N=void 0!==a.stencil?a.stencil:!0,E=void 0!==a.antialias?a.antialias:!1,K=void 0!==a.premultipliedAlpha?a.premultipliedAlpha:!0,I=void 0!==a.preserveDrawingBuffer?a.preserveDrawingBuffer:!1,L=[],P=[],Q=-1,R=[],F=-1,da=new Float32Array(8),
++if(a===THREE.MaxEquation)return b.MAX_EXT}return 0}a=a||{};var z=void 0!==a.canvas?a.canvas:document.createElement("canvas"),H=void 0!==a.context?a.context:null,M=void 0!==a.alpha?a.alpha:!1,O=void 0!==a.depth?a.depth:!0,N=void 0!==a.stencil?a.stencil:!0,E=void 0!==a.antialias?a.antialias:!1,K=void 0!==a.premultipliedAlpha?a.premultipliedAlpha:!0,I=void 0!==a.preserveDrawingBuffer?a.preserveDrawingBuffer:!1,L=[],P=[],Q=-1,R=[],F=-1,da=new Float32Array(8),
+ U=[],Y=[];this.domElement=z;this.context=null;this.sortObjects=this.autoClearStencil=this.autoClearDepth=this.autoClearColor=this.autoClear=!0;this.clippingPlanes=[];this.localClippingEnabled=!1;this.gammaFactor=2;this.physicallyCorrectLights=this.gammaOutput=this.gammaInput=!1;this.toneMapping=THREE.LinearToneMapping;this.toneMappingWhitePoint=this.toneMappingExposure=1;this.maxMorphTargets=8;this.maxMorphNormals=4;this.autoScaleCubemaps=!0;var W=this,fa=null,la=null,ga=null,Z=-1,oa="",ea=null,ra=
+ new THREE.Vector4,Aa=null,ma=new THREE.Vector4,ta=0,aa=new THREE.Color(0),ia=0,va=z.width,wa=z.height,$=1,ya=new THREE.Vector4(0,0,va,wa),Ca=!1,na=new THREE.Vector4(0,0,va,wa),Ba=new THREE.Frustum,ba=new THREE.WebGLClipping,ua=!1,za=!1,ka=new THREE.Sphere,sa=new THREE.Matrix4,X=new THREE.Vector3,S={hash:"",ambient:[0,0,0],directional:[],directionalShadowMap:[],directionalShadowMatrix:[],spot:[],spotShadowMap:[],spotShadowMatrix:[],point:[],pointShadowMap:[],pointShadowMatrix:[],hemi:[],shadows:[]},
+ ja={geometries:0,textures:0},ha={calls:0,vertices:0,faces:0,points:0};this.info={render:ha,memory:ja,programs:null};var t;try{M={alpha:M,depth:O,stencil:N,antialias:E,premultipliedAlpha:K,preserveDrawingBuffer:I};t=H||z.getContext("webgl",M)||z.getContext("experimental-webgl",M);if(null===t){if(null!==z.getContext("webgl"))throw"Error creating WebGL context with your selected attributes.";throw"Error creating WebGL context.";}void 0===t.getShaderPrecisionFormat&&(t.getShaderPrecisionFormat=function(){return{rangeMin:1,
+diff --git a/examples/js/renderers/CSS2DRenderer.js b/examples/js/renderers/CSS2DRenderer.js
+index 90e0c9c279afa24cd998b8ace3584fe3856644a5..13fff59be74b332d5789253fd7775e95795a930d 100644
+--- a/examples/js/renderers/CSS2DRenderer.js
++++ b/examples/js/renderers/CSS2DRenderer.js
+@@ -28,7 +28,7 @@ THREE.CSS2DObject.prototype.constructor = THREE.CSS2DObject;
+ 
+ THREE.CSS2DRenderer = function () {
+ 
+-	console.log( 'THREE.CSS2DRenderer', THREE.REVISION );
++	// console.log( 'THREE.CSS2DRenderer', THREE.REVISION );
+ 
+ 	var _width, _height;
+ 	var _widthHalf, _heightHalf;
+diff --git a/examples/js/renderers/CSS3DRenderer.js b/examples/js/renderers/CSS3DRenderer.js
+index 66aa4f467b1643cbf0ef2b41b547031817e7dd29..4f00b6488fbe96e0870ad4f8a13765a64080dcb6 100644
+--- a/examples/js/renderers/CSS3DRenderer.js
++++ b/examples/js/renderers/CSS3DRenderer.js
+@@ -38,7 +38,7 @@ THREE.CSS3DSprite.prototype.constructor = THREE.CSS3DSprite;
+ 
+ THREE.CSS3DRenderer = function () {
+ 
+-	console.log( 'THREE.CSS3DRenderer', THREE.REVISION );
++	// console.log( 'THREE.CSS3DRenderer', THREE.REVISION );
+ 
+ 	var _width, _height;
+ 	var _widthHalf, _heightHalf;
+diff --git a/examples/js/renderers/CanvasRenderer.js b/examples/js/renderers/CanvasRenderer.js
+index f550c4b5571b06783e77f1df378e9454faeaef1f..1b40d6f19795244242c61b815219eb13c45be414 100644
+--- a/examples/js/renderers/CanvasRenderer.js
++++ b/examples/js/renderers/CanvasRenderer.js
+@@ -34,7 +34,7 @@ THREE.SpriteCanvasMaterial.prototype.clone = function () {
+ 
+ THREE.CanvasRenderer = function ( parameters ) {
+ 
+-	console.log( 'THREE.CanvasRenderer', THREE.REVISION );
++	// console.log( 'THREE.CanvasRenderer', THREE.REVISION );
+ 
+ 	parameters = parameters || {};
+ 
+diff --git a/examples/js/renderers/RaytracingRenderer.js b/examples/js/renderers/RaytracingRenderer.js
+index fa92b27542d52caf9f8e53300ab36146193d350a..4184c5829341f49f02af320d02645e63a8320b9a 100644
+--- a/examples/js/renderers/RaytracingRenderer.js
++++ b/examples/js/renderers/RaytracingRenderer.js
+@@ -8,7 +8,7 @@
+ 
+ THREE.RaytracingRenderer = function ( parameters ) {
+ 
+-	console.log( 'THREE.RaytracingRenderer', THREE.REVISION );
++	// console.log( 'THREE.RaytracingRenderer', THREE.REVISION );
+ 
+ 	parameters = parameters || {};
+ 
+diff --git a/examples/js/renderers/RaytracingWorker.js b/examples/js/renderers/RaytracingWorker.js
+index 9564f755861e7679628ba74cf65b1876aa630d9b..7820223df1d3132eb6cc3829146a589a9ab58386 100644
+--- a/examples/js/renderers/RaytracingWorker.js
++++ b/examples/js/renderers/RaytracingWorker.js
+@@ -82,7 +82,7 @@ self.onmessage = function( e ) {
+ 
+ THREE.RaytracingRendererWorker = function ( parameters ) {
+ 
+-	console.log( 'THREE.RaytracingRendererWorker', THREE.REVISION );
++	// console.log( 'THREE.RaytracingRendererWorker', THREE.REVISION );
+ 
+ 	parameters = parameters || {};
+ 
+diff --git a/examples/js/renderers/SVGRenderer.js b/examples/js/renderers/SVGRenderer.js
+index 4f3acf14d20ee2d415351a8327afd9dbfcff45c3..43385e299eaa61deff4b4617013643c5dec71fc5 100644
+--- a/examples/js/renderers/SVGRenderer.js
++++ b/examples/js/renderers/SVGRenderer.js
+@@ -15,7 +15,7 @@ THREE.SVGObject.prototype.constructor = THREE.SVGObject;
+ 
+ THREE.SVGRenderer = function () {
+ 
+-	console.log( 'THREE.SVGRenderer', THREE.REVISION );
++	// console.log( 'THREE.SVGRenderer', THREE.REVISION );
+ 
+ 	var _this = this,
+ 	_renderData, _elements, _lights,
+diff --git a/examples/js/renderers/SoftwareRenderer.js b/examples/js/renderers/SoftwareRenderer.js
+index 250899eb6a385e9c8a09488ae7b8f18108e76556..0ac43118349df1961bef0694114865965452c67d 100644
+--- a/examples/js/renderers/SoftwareRenderer.js
++++ b/examples/js/renderers/SoftwareRenderer.js
+@@ -7,7 +7,7 @@
+ 
+ THREE.SoftwareRenderer = function ( parameters ) {
+ 
+-	console.log( 'THREE.SoftwareRenderer', THREE.REVISION );
++	// console.log( 'THREE.SoftwareRenderer', THREE.REVISION );
+ 
+ 	parameters = parameters || {};
+ 
 diff --git a/src/renderers/WebGLRenderer.js b/src/renderers/WebGLRenderer.js
 index bcb04643c1b134869798f8417fa024754648f751..5814dc35c847994d66569d3e3702761ffe48613a 100644
 --- a/src/renderers/WebGLRenderer.js
