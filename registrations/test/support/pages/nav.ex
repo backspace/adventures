@@ -4,6 +4,8 @@ defmodule Registrations.Pages.Nav do
   alias Wallaby.Query
   require WaitForIt
 
+  @flash_timeout 10_000
+
   def present?(session) do
     Browser.has?(session, Query.css(".row.nav"))
   end
@@ -31,7 +33,8 @@ defmodule Registrations.Pages.Nav do
       case safe_text(session, "a.logout") do
         {:ok, text} -> normalize_text(text) == normalize_text(expected)
         :error -> false
-      end
+      end,
+      timeout: @flash_timeout
     )
   end
 
@@ -165,12 +168,12 @@ defmodule Registrations.Pages.Nav do
   end
 
   defp flash_text(session, selector, expected) when is_binary(expected) do
-    WaitForIt.wait!(flash_text_matches?(session, selector, expected))
+    WaitForIt.wait!(flash_text_matches?(session, selector, expected), timeout: @flash_timeout)
     expected
   end
 
   defp flash_text(session, selector, nil) do
-    WaitForIt.wait!(match?({:ok, _}, safe_text(session, selector)))
+    WaitForIt.wait!(match?({:ok, _}, safe_text(session, selector)), timeout: @flash_timeout)
 
     {:ok, text} = safe_text(session, selector)
     text
@@ -193,7 +196,7 @@ defmodule Registrations.Pages.Nav do
   end
 
   defp assert_flash_text(session, selector, expected) do
-    WaitForIt.wait!(flash_text_matches?(session, selector, expected))
+    WaitForIt.wait!(flash_text_matches?(session, selector, expected), timeout: @flash_timeout)
 
     {:ok, text} = safe_text(session, selector)
     if normalize_text(text) != normalize_text(expected) do
