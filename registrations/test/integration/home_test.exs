@@ -191,7 +191,8 @@ defmodule Registrations.Waydowntown.Integration.Home do
     Home.fill_waitlist_question(session, "When will the event take place?")
     Home.submit_waitlist(session)
 
-    assert Nav.info_text(session) == "we’ll let you know when registration opens"
+    assert Nav.info_text(session, "we’ll let you know when registration opens") ==
+             "we’ll let you know when registration opens"
 
     wait_for_emails([sent_email])
     assert sent_email.to == [{"", "mdrysdale@waydown.town"}]
@@ -240,7 +241,8 @@ defmodule Registrations.Waydowntown.Integration.Home do
 
     Home.submit_waitlist(session)
 
-    assert Nav.info_text(session) == "was that an email address?"
+    assert Nav.info_text(session, "was that an email address?") ==
+             "was that an email address?"
 
     assert wait_for_emails([]) == []
   end
@@ -268,7 +270,8 @@ defmodule Registrations.Waydowntown.Integration.Home do
     Home.fill_waitlist_question(session, "When will the event take place?")
     Home.submit_waitlist(session)
 
-    assert Nav.info_text(session) == "we’ll let you know when registration opens"
+    assert Nav.info_text(session, "we’ll let you know when registration opens") ==
+             "we’ll let you know when registration opens"
 
     assert wait_for_emails([]) == []
   end
@@ -296,7 +299,8 @@ defmodule Registrations.Waydowntown.Integration.Home do
     Home.fill_waitlist_question(session, "When will this unwanted event take place?")
     Home.submit_waitlist(session)
 
-    assert Nav.info_text(session) == "we’ll let you know when registration opens"
+    assert Nav.info_text(session, "we’ll let you know when registration opens") ==
+             "we’ll let you know when registration opens"
 
     assert wait_for_emails([]) == []
   end

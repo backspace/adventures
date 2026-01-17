@@ -92,7 +92,7 @@ defmodule Registrations.Integration.Admin do
 
     Users.build_team_from(session, a.id)
 
-    assert Nav.info_text(session) == "Team built successfully"
+    assert Nav.info_text(session, "Team built successfully") == "Team built successfully"
 
     assert Users.teamed(session, a.id)
     assert Users.teamed(session, b.id)
@@ -136,7 +136,8 @@ defmodule Registrations.Integration.Admin do
     Nav.users_link().click(session)
     Users.build_team_from(session, a.id)
 
-    assert Nav.error_text(session) == "Team built with placeholders!"
+    assert Nav.error_text(session, "Team built with placeholders!") ==
+             "Team built with placeholders!"
 
     Nav.teams_link().click(session)
 
@@ -193,13 +194,13 @@ defmodule Registrations.Integration.Admin do
     refute page_source(session) =~ "francine.pascal@example.com"
 
     visit(session, "/messages")
-    assert Nav.error_text(session) == "Who are you?"
+    assert Nav.error_text(session, "Who are you?") == "Who are you?"
 
     visit(session, "/teams")
-    assert Nav.error_text(session) == "Who are you?"
+    assert Nav.error_text(session, "Who are you?") == "Who are you?"
 
     visit(session, "/settings")
-    assert Nav.error_text(session) == "Who are you?"
+    assert Nav.error_text(session, "Who are you?") == "Who are you?"
   end
 
 end
@@ -245,7 +246,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
     insert(:user, email: "francine.pascal@example.com")
 
     visit(session, "/settings")
-    assert Nav.error_text(session) == "Who are you?"
+    assert Nav.error_text(session, "Who are you?") == "Who are you?"
   end
 
   test "admin can view team JSON that includes voicepasses", %{session: session} do

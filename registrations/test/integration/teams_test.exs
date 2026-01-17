@@ -65,7 +65,7 @@ defmodule Registrations.Integration.Teams do
 
     Details.submit(session)
 
-    assert Nav.info_text(session) == "Your details were saved"
+    assert Nav.info_text(session, "Your details were saved") == "Your details were saved"
 
     assert Details.accessibility_text(session) == "Some accessibility information"
     assert Details.comments().value(session) == "Some comments"
@@ -229,7 +229,8 @@ defmodule Registrations.Integration.Teams do
   } do
     visit(session, "/details")
 
-    assert Nav.info_text(session) == "Please log in to edit your details"
+    assert Nav.info_text(session, "Please log in to edit your details") ==
+             "Please log in to edit your details"
     Login.fill_email(session, "anemail")
   end
 

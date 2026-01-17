@@ -19,7 +19,10 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     Register.submit(session)
 
-    assert Nav.error_text(session) ==
+    assert Nav.error_text(
+             session,
+             "Oops, something went wrong! Please check the errors below:\nPassword can't be blank\nEmail can't be blank"
+           ) ==
              "Oops, something went wrong! Please check the errors below:\nPassword can't be blank\nEmail can't be blank"
 
     assert Register.email_error(session) == "Email can't be blank"
@@ -29,7 +32,10 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Register.fill_email(session, "franklin.w.dixon@example.com")
     Register.submit(session)
 
-    assert Nav.error_text(session) ==
+    assert Nav.error_text(
+             session,
+             "Oops, something went wrong! Please check the errors below:\nPassword can't be blank"
+           ) ==
              "Oops, something went wrong! Please check the errors below:\nPassword can't be blank"
 
     Register.fill_email(session, "samuel.delaney@example.com")
@@ -37,7 +43,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Register.fill_password_confirmation(session, "nestofspiders")
     Register.submit(session)
 
-    assert Nav.info_text(session) == "Your account was created"
+    assert Nav.info_text(session, "Your account was created") == "Your account was created"
 
     wait_for_emails([admin_email, welcome_email])
 
@@ -67,20 +73,23 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.fill_password(session, "Parable of the Talents")
     Login.submit(session)
 
-    assert Nav.error_text(session) ==
+    assert Nav.error_text(
+             session,
+             "The provided login details did not work. Please verify your credentials, and try again."
+           ) ==
              "The provided login details did not work. Please verify your credentials, and try again."
 
     Login.fill_password(session, "Xenogenesis")
     Login.submit(session)
 
-    assert Nav.info_text(session) == "Logged in"
+    assert Nav.info_text(session, "Logged in") == "Logged in"
     assert Nav.logout_link().text(session) == "Log out octavia.butler@example.com"
 
     assert Details.active?(session)
 
     Nav.logout_link().click(session)
 
-    assert Nav.info_text(session) == "Logged out"
+    assert Nav.info_text(session, "Logged out") == "Logged out"
     assert Nav.login_link().present?(session)
     assert Nav.register_link().present?(session)
   end
@@ -99,7 +108,10 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Account.fill_current_password(session, "Wrong")
     Account.submit(session)
 
-    assert Nav.error_text(session) ==
+    assert Nav.error_text(
+             session,
+             "Oops, something went wrong! Please check the errors below:\nCurrent password is invalid"
+           ) ==
              "Oops, something went wrong! Please check the errors below:\nCurrent password is invalid"
 
     Account.fill_current_password(session, "Xenogenesis")
@@ -107,7 +119,10 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Account.fill_new_password_confirmation(session, "vwxyz")
     Account.submit(session)
 
-    assert Nav.error_text(session) ==
+    assert Nav.error_text(
+             session,
+             "Oops, something went wrong! Please check the errors below:\nPassword should be at least 8 character(s)\nPassword confirmation does not match confirmation"
+           ) ==
              "Oops, something went wrong! Please check the errors below:\nPassword should be at least 8 character(s)\nPassword confirmation does not match confirmation"
 
     Account.fill_current_password(session, "Xenogenesis")
@@ -115,7 +130,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Account.fill_new_password_confirmation(session, "Lilith’s Brood")
     Account.submit(session)
 
-    assert Nav.info_text(session) == "Your account has been updated."
+    assert Nav.info_text(session, "Your account has been updated.") ==
+             "Your account has been updated."
 
     Nav.logout_link().click(session)
 
@@ -126,13 +142,16 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.fill_password(session, "Xenogenesis")
     Login.submit(session)
 
-    assert Nav.error_text(session) ==
+    assert Nav.error_text(
+             session,
+             "The provided login details did not work. Please verify your credentials, and try again."
+           ) ==
              "The provided login details did not work. Please verify your credentials, and try again."
 
     Login.fill_password(session, "Lilith’s Brood")
     Login.submit(session)
 
-    assert Nav.info_text(session) == "Logged in"
+    assert Nav.info_text(session, "Logged in") == "Logged in"
   end
 
   test "forgot password", %{session: session} do
@@ -148,7 +167,10 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     ForgotPassword.fill_email(session, "octavia.butler@example.com")
     ForgotPassword.submit(session)
 
-    assert Nav.info_text(session) ==
+    assert Nav.info_text(
+             session,
+             "If an account for the provided email exists, an email with reset instructions will be sent to you. Please check your inbox."
+           ) ==
              "If an account for the provided email exists, an email with reset instructions will be sent to you. Please check your inbox."
 
     wait_for_emails([forgot_password_email])
@@ -167,7 +189,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     assert String.starts_with?(reset_path, "/reset-password/")
 
     visit(session, "/reset-password/fake")
-    assert Nav.error_text(session) == "The reset token has expired."
+    assert Nav.error_text(session, "The reset token has expired.") ==
+             "The reset token has expired."
 
     visit(session, reset_path)
 
@@ -175,14 +198,18 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Account.fill_new_password_confirmation(session, "awrongpassword")
     Account.submit(session)
 
-    assert Nav.error_text(session) ==
+    assert Nav.error_text(
+             session,
+             "Oops, something went wrong! Please check the errors below:\nPassword confirmation does not match confirmation"
+           ) ==
              "Oops, something went wrong! Please check the errors below:\nPassword confirmation does not match confirmation"
 
     Account.fill_new_password(session, "anewpassword")
     Account.fill_new_password_confirmation(session, "anewpassword")
     Account.submit(session)
 
-    assert Nav.info_text(session) == "The password has been updated."
+    assert Nav.info_text(session, "The password has been updated.") ==
+             "The password has been updated."
 
     Login.fill_email(session, "Octavia.butler@example.com")
     Login.fill_password(session, "anewpassword")
@@ -198,7 +225,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Nav.logout_link().click(session)
 
     visit(session, reset_path)
-    assert Nav.error_text(session) == "The reset token has expired."
+    assert Nav.error_text(session, "The reset token has expired.") ==
+             "The reset token has expired."
   end
 
   test "delete account", %{session: session} do
@@ -210,7 +238,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Nav.edit_details(session)
     Details.delete_account(session)
 
-    assert Nav.info_text(session) == "Your account has been deleted. Sorry to see you go!"
+    assert Nav.info_text(session, "Your account has been deleted. Sorry to see you go!") ==
+             "Your account has been deleted. Sorry to see you go!"
 
     wait_for_emails([admin_email])
 
@@ -227,7 +256,8 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     Login.fill_password(session, "Xenogenesis")
     Login.submit(session)
 
-    assert Nav.info_text(session) == "Your account has been deleted. Sorry to see you go!"
+    assert Nav.info_text(session, "Your account has been deleted. Sorry to see you go!") ==
+             "Your account has been deleted. Sorry to see you go!"
   end
 
   test "when registration is closed, a warning is displayed on the registration and details routes",
@@ -242,13 +272,19 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     Nav.register_link().click(session)
 
-    assert Nav.error_text(session) ==
+    assert Nav.error_text(
+             session,
+             "Registration is closed; however, you may continue and we will email you"
+           ) ==
              "Registration is closed; however, you may continue and we will email you"
 
     insert(:octavia)
     Login.login_as_admin(session)
 
-    assert Nav.error_text(session) ==
+    assert Nav.error_text(
+             session,
+             "You may change your details but it’s too late to guarantee the changes can be integrated"
+           ) ==
              "You may change your details but it’s too late to guarantee the changes can be integrated"
   end
 end

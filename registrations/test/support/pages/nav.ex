@@ -2,17 +2,18 @@ defmodule Registrations.Pages.Nav do
   @moduledoc false
   alias Wallaby.Browser
   alias Wallaby.Query
+  require WaitForIt
 
   def present?(session) do
     Browser.has?(session, Query.css(".row.nav"))
   end
 
-  def info_text(session) do
-    Browser.text(session, Query.css(".alert-info"))
+  def info_text(session, expected \\ nil) do
+    flash_text(session, ".alert-info", expected)
   end
 
-  def error_text(session) do
-    Browser.text(session, Query.css(".alert-danger"))
+  def error_text(session, expected \\ nil) do
+    flash_text(session, ".alert-danger", expected)
   end
 
   def register_link do
@@ -134,6 +135,34 @@ defmodule Registrations.Pages.Nav do
 
     def click(session) do
       Browser.click(session, Query.css(@selector))
+    end
+  end
+
+  defp flash_text(session, selector, expected) when is_binary(expected) do
+    WaitForIt.wait(flash_text_matches?(session, selector, expected))
+    expected
+  end
+
+  defp flash_text(session, selector, nil) do
+    WaitForIt.wait(match?({:ok, _}, safe_text(session, selector)))
+
+    {:ok, text} = safe_text(session, selector)
+    text
+  end
+
+  defp flash_text_matches?(session, selector, expected) do
+    case safe_text(session, selector) do
+      {:ok, text} -> text == expected
+      :error -> false
+    end
+  end
+
+  defp safe_text(session, selector) do
+    try do
+      {:ok, Browser.text(session, Query.css(selector))}
+    rescue
+      Wallaby.StaleReferenceError -> :error
+      Wallaby.QueryError -> :error
     end
   end
 end
