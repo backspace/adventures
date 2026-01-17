@@ -65,7 +65,7 @@ defmodule Registrations.Integration.Teams do
 
     Details.submit(session)
 
-    assert Nav.info_text(session) == "Your details were saved"
+    Nav.assert_info_text(session, "Your details were saved")
 
     assert Details.accessibility_text(session) == "Some accessibility information"
     assert Details.comments().value(session) == "Some comments"
@@ -81,7 +81,7 @@ defmodule Registrations.Integration.Teams do
     assert sent_email.text_body ==
              ~s([accessibility: "Some accessibility information", comments: "Some comments", proposed_team_name: "Simultaneity", risk_aversion: 3, source: "A source", team_emails: "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"])
 
-    [bedap, shevek] = Enum.sort_by(Details.mutuals(session), & &1.email)
+    [bedap, shevek] = Enum.sort_by(Details.mutuals(session, count: 2), & &1.email)
 
     assert shevek.email == "shevek@example.com"
     assert shevek.symbol == "✓"
@@ -99,14 +99,14 @@ defmodule Registrations.Integration.Teams do
     assert bedap.risk_aversion.value == "✓ Don’t hold back"
     assert bedap.risk_aversion.agreement?
 
-    [sadik] = Details.proposers(session)
+    [sadik] = Details.proposers(session, count: 1)
     assert sadik.email == "sadik@example.com"
     assert sadik.symbol == "?"
 
     assert sadik.text ==
              "This person has you listed in their team. Add their address to your team emails list if you agree."
 
-    [rulag, tuio] = Enum.sort_by(Details.proposals_by_mutuals(session), & &1.email)
+    [rulag, tuio] = Enum.sort_by(Details.proposals_by_mutuals(session, count: 2), & &1.email)
 
     assert rulag.email == "rulag@example.com"
     assert rulag.symbol == "?"
@@ -120,12 +120,12 @@ defmodule Registrations.Integration.Teams do
     assert tuio.text ==
              "bedap@example.com and shevek@example.com have this address in their team emails lists. Add it if you agree."
 
-    [invalid] = Details.invalids(session)
+    [invalid] = Details.invalids(session, count: 1)
     assert invalid.email == "nooo"
     assert invalid.symbol == "✘"
     assert invalid.text == "This doesn’t seem like a valid email address!"
 
-    [laia, sabul] = Enum.sort_by(Details.proposees(session), & &1.email)
+    [laia, sabul] = Enum.sort_by(Details.proposees(session, count: 2), & &1.email)
 
     assert sabul.email == "sabul@example.com"
     assert sabul.symbol == "✘"
@@ -146,7 +146,7 @@ defmodule Registrations.Integration.Teams do
     sadik.add.()
     Details.submit(session)
 
-    assert length(Details.mutuals(session)) == 3
+    assert length(Details.mutuals(session, count: 3)) == 3
   end
 
   test "team emails can be appended to", %{session: session} do
@@ -208,20 +208,26 @@ defmodule Registrations.Integration.Teams do
 
     Details.submit(session)
 
-    assert Error.present?(session),
-           "Expected an error about the attending field being blank"
+    Error.assert_present(
+      session,
+      "Expected an error about the attending field being blank"
+    )
 
     Details.Attending.yes(session)
     Details.submit(session)
 
-    refute Error.present?(session),
-           "Expected no error when the person said they were attending"
+    Error.assert_absent(
+      session,
+      "Expected no error when the person said they were attending"
+    )
 
     Details.Attending.no(session)
     Details.submit(session)
 
-    refute Error.present?(session),
-           "Expected no error when the person said they were not attending"
+    Error.assert_absent(
+      session,
+      "Expected no error when the person said they were not attending"
+    )
   end
 
   test "visiting the details page redirects to login when there is no session", %{
@@ -229,7 +235,7 @@ defmodule Registrations.Integration.Teams do
   } do
     visit(session, "/details")
 
-    assert Nav.info_text(session) == "Please log in to edit your details"
+    Nav.assert_info_text(session, "Please log in to edit your details")
     Login.fill_email(session, "anemail")
   end
 
