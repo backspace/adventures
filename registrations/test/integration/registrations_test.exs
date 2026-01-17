@@ -134,6 +134,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
              "Your account has been updated."
 
     Nav.logout_link().click(session)
+    assert Nav.info_text(session, "Logged out") == "Logged out"
 
     visit(session, "/")
     Nav.login_link().click(session)

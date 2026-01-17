@@ -54,14 +54,17 @@ defmodule Registrations.Pages.Nav do
     @moduledoc false
     alias Wallaby.Browser
     alias Wallaby.Query
+    require WaitForIt
 
     @selector "a.logout"
 
     def text(session) do
+      WaitForIt.wait(Browser.has?(session, Query.css(@selector)))
       Browser.text(session, Query.css(@selector))
     end
 
     def click(session) do
+      WaitForIt.wait(Browser.has?(session, Query.css(@selector)))
       Browser.click(session, Query.css(@selector))
     end
   end
@@ -70,10 +73,12 @@ defmodule Registrations.Pages.Nav do
     @moduledoc false
     alias Wallaby.Browser
     alias Wallaby.Query
+    require WaitForIt
 
     @selector "a.login"
 
     def click(session) do
+      WaitForIt.wait(Browser.has?(session, Query.css(@selector)))
       Browser.click(session, Query.css(@selector))
     end
 
@@ -86,10 +91,12 @@ defmodule Registrations.Pages.Nav do
     @moduledoc false
     alias Wallaby.Browser
     alias Wallaby.Query
+    require WaitForIt
 
     @selector "a.register"
 
     def click(session) do
+      WaitForIt.wait(Browser.has?(session, Query.css(@selector)))
       Browser.click(session, Query.css(@selector))
     end
 
