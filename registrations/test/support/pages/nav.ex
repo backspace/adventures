@@ -27,7 +27,7 @@ defmodule Registrations.Pages.Nav do
   def assert_logged_in_as(session, email) do
     expected = "log out #{email}"
 
-    WaitForIt.wait(
+    WaitForIt.wait!(
       case safe_text(session, "a.logout") do
         {:ok, text} -> normalize_text(text) == normalize_text(expected)
         :error -> false
@@ -165,12 +165,12 @@ defmodule Registrations.Pages.Nav do
   end
 
   defp flash_text(session, selector, expected) when is_binary(expected) do
-    WaitForIt.wait(flash_text_matches?(session, selector, expected))
+    WaitForIt.wait!(flash_text_matches?(session, selector, expected))
     expected
   end
 
   defp flash_text(session, selector, nil) do
-    WaitForIt.wait(match?({:ok, _}, safe_text(session, selector)))
+    WaitForIt.wait!(match?({:ok, _}, safe_text(session, selector)))
 
     {:ok, text} = safe_text(session, selector)
     text
@@ -193,7 +193,7 @@ defmodule Registrations.Pages.Nav do
   end
 
   defp assert_flash_text(session, selector, expected) do
-    WaitForIt.wait(flash_text_matches?(session, selector, expected))
+    WaitForIt.wait!(flash_text_matches?(session, selector, expected))
 
     {:ok, text} = safe_text(session, selector)
     if normalize_text(text) != normalize_text(expected) do

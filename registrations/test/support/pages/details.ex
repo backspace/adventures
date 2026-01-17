@@ -3,6 +3,7 @@ defmodule Registrations.Pages.Details do
   alias Wallaby.Browser
   alias Wallaby.Element
   alias Wallaby.Query
+  require WaitForIt
 
   def edit_account(session) do
     Browser.click(session, Query.css("a.account"))
@@ -14,15 +15,15 @@ defmodule Registrations.Pages.Details do
     end)
   end
 
-  def proposers(session) do
+  def proposers(session, opts \\ []) do
     session
-    |> Browser.all(Query.css("[data-test-proposers]"))
+    |> rows_with_wait("[data-test-proposers]", opts)
     |> Enum.map(&email_and_text_row(&1))
   end
 
-  def mutuals(session) do
+  def mutuals(session, opts \\ []) do
     session
-    |> Browser.all(Query.css("[data-test-mutuals]"))
+    |> rows_with_wait("[data-test-mutuals]", opts)
     |> Enum.map(fn row ->
       proposed_team_name_element = Browser.find(row, Query.css(".proposed-team-name"))
       risk_aversion_element = Browser.find(row, Query.css(".risk-aversion"))
@@ -44,21 +45,21 @@ defmodule Registrations.Pages.Details do
     end)
   end
 
-  def proposals_by_mutuals(session) do
+  def proposals_by_mutuals(session, opts \\ []) do
     session
-    |> Browser.all(Query.css("[data-test-proposals-by-mutuals]"))
+    |> rows_with_wait("[data-test-proposals-by-mutuals]", opts)
     |> Enum.map(&email_and_text_row(&1))
   end
 
-  def invalids(session) do
+  def invalids(session, opts \\ []) do
     session
-    |> Browser.all(Query.css("[data-test-invalids]"))
+    |> rows_with_wait("[data-test-invalids]", opts)
     |> Enum.map(&email_and_text_row(&1))
   end
 
-  def proposees(session) do
+  def proposees(session, opts \\ []) do
     session
-    |> Browser.all(Query.css("[data-test-proposees]"))
+    |> rows_with_wait("[data-test-proposees]", opts)
     |> Enum.map(&email_and_text_row(&1))
   end
 
@@ -214,6 +215,16 @@ defmodule Registrations.Pages.Details do
 
   def submit(session) do
     Browser.click(session, Query.css("#submit"))
+  end
+
+  defp rows_with_wait(session, selector, opts) do
+    expected = Keyword.get(opts, :count)
+
+    if expected do
+      WaitForIt.wait!(length(Browser.all(session, Query.css(selector))) == expected)
+    end
+
+    Browser.all(session, Query.css(selector))
   end
 
   defp email_and_text_row(row) do

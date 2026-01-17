@@ -43,30 +43,31 @@ defmodule Registrations.Pages.Home do
     Registrations.Pages.Home.Pi
   end
 
-    defmodule Pi do
-      @moduledoc false
-      alias Wallaby.Browser
-      alias Wallaby.Query
-      require WaitForIt
+  defmodule Pi do
+    @moduledoc false
+    alias Wallaby.Browser
+    alias Wallaby.Query
+    require WaitForIt
 
-      @selector "#pi"
+    @selector "#pi"
 
-      def present?(session) do
-        Browser.has?(session, Query.css(@selector))
-      end
-
-      def click(session) do
-        WaitForIt.wait(
-          try do
-            Browser.click(session, Query.css(@selector))
-            true
-          rescue
-            Wallaby.StaleReferenceError -> false
-            Wallaby.QueryError -> false
-          end
-        )
-      end
+    def present?(session) do
+      Browser.has?(session, Query.css(@selector))
     end
+
+    def click(session) do
+      WaitForIt.wait!(
+        try do
+          Browser.click(session, Query.css(@selector))
+          true
+        rescue
+          Wallaby.StaleReferenceError -> false
+          Wallaby.QueryError -> false
+          RuntimeError -> false
+        end
+      )
+    end
+  end
 
   def overlay do
     Registrations.Pages.Home.Overlay

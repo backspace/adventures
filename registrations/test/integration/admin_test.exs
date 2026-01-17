@@ -265,6 +265,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
 
     visit(session, "/")
     Login.login_as_admin(session)
+    Nav.assert_logged_in_as(session, "octavia.butler@example.com")
 
     visit(session, "/api/teams")
     json = decode_json_from_page(session)
