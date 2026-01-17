@@ -193,7 +193,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
 
     assert Nav.info_text(session) == "we’ll let you know when registration opens"
 
-    [sent_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([sent_email])
     assert sent_email.to == [{"", "mdrysdale@waydown.town"}]
     assert sent_email.from == {"", "mdrysdale@waydown.town"}
 
@@ -242,7 +242,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
 
     assert Nav.info_text(session) == "was that an email address?"
 
-    assert Registrations.SwooshHelper.sent_email() == []
+    assert wait_for_emails([]) == []
   end
 
   test "placeholder page doesn't send email when spam is detected in email", %{
@@ -270,7 +270,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
 
     assert Nav.info_text(session) == "we’ll let you know when registration opens"
 
-    assert Registrations.SwooshHelper.sent_email() == []
+    assert wait_for_emails([]) == []
   end
 
   test "placeholder page doesn't send email when spam is detected in question", %{
@@ -298,6 +298,6 @@ defmodule Registrations.Waydowntown.Integration.Home do
 
     assert Nav.info_text(session) == "we’ll let you know when registration opens"
 
-    assert Registrations.SwooshHelper.sent_email() == []
+    assert wait_for_emails([]) == []
   end
 end

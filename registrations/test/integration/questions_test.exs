@@ -23,7 +23,7 @@ defmodule Registrations.ClandestineRendezvous.Integration.Questions do
 
     assert Nav.info_text(session) == "Your question has been submitted."
 
-    [sent_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([sent_email])
     assert sent_email.to == [{"", "b@events.chromatin.ca"}]
     assert sent_email.from == {"", "b@events.chromatin.ca"}
 
@@ -60,7 +60,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Questions do
 
     assert Nav.info_text(session) == "Your question has been submitted."
 
-    [sent_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([sent_email])
     assert sent_email.to == [{"", "knut@chromatin.ca"}]
     assert sent_email.from == {"", "knut@chromatin.ca"}
 

@@ -31,7 +31,7 @@ defmodule Registrations.Integration.Invitations do
 
     refute Details.InviteButton.present?(session)
 
-    [invitation_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([invitation_email])
     assert invitation_email.to == [{"", "bedap@example.com"}]
     assert invitation_email.from == {"", "b@events.chromatin.ca"}
 

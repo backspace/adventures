@@ -39,7 +39,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     assert Nav.info_text(session) == "Your account was created"
 
-    [admin_email, welcome_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([admin_email, welcome_email])
 
     assert admin_email.to == [{"", "b@events.chromatin.ca"}]
     assert admin_email.from == {"", "b@events.chromatin.ca"}
@@ -151,7 +151,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
     assert Nav.info_text(session) ==
              "If an account for the provided email exists, an email with reset instructions will be sent to you. Please check your inbox."
 
-    [forgot_password_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([forgot_password_email])
 
     assert forgot_password_email.to == [{"", "octavia.butler@example.com"}]
     assert forgot_password_email.from == {"", "b@events.chromatin.ca"}
@@ -212,7 +212,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     assert Nav.info_text(session) == "Your account has been deleted. Sorry to see you go!"
 
-    [admin_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([admin_email])
 
     assert admin_email.to == [{"", "b@events.chromatin.ca"}]
     assert admin_email.from == {"", "b@events.chromatin.ca"}
@@ -273,7 +273,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
     Register.fill_password_confirmation(session, "nestofspiders")
     Register.submit(session)
 
-    [admin_email, welcome_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([admin_email, welcome_email])
 
     assert admin_email.to == [{"", "knut@chromatin.ca"}]
     assert admin_email.from == {"", "knut@chromatin.ca"}

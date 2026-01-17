@@ -49,7 +49,7 @@ defmodule Registrations.Integration.Messages do
 
     assert Nav.info_text(session) == "Message was sent"
 
-    [empty_email, _, email, _] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([empty_email, _ignored1, email, _ignored2])
     assert email.to == [{"", "user@example.com"}]
     assert email.from == {"", "b@events.chromatin.ca"}
     assert email.subject == "[rendezvous] A Subject!"
@@ -98,7 +98,7 @@ defmodule Registrations.Integration.Messages do
 
     assert Nav.info_text(session) == "Message was sent"
 
-    [email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([email])
     assert email.to == [{"", "admin@example.com"}]
     assert email.from == {"", "b@events.chromatin.ca"}
     assert email.subject == "[rendezvous] A Subject!"
@@ -131,7 +131,7 @@ defmodule Registrations.Integration.Messages do
 
     assert Nav.info_text(session) == "Message was sent"
 
-    [email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([email])
     assert email.from == {"Knut", "knut@example.com"}
   end
 
@@ -177,7 +177,7 @@ defmodule Registrations.Integration.Messages do
 
     assert Nav.info_text(session) == "Message was sent"
 
-    sent_emails = Registrations.SwooshHelper.sent_email()
+    sent_emails = wait_for_emails([_email1, _email2, _email3, _email4])
 
     has_team_email =
       Enum.find(sent_emails, fn email ->
@@ -223,7 +223,7 @@ defmodule Registrations.Integration.Messages do
     Register.fill_password_confirmation(session, "abcdefghi")
     Register.submit(session)
 
-    [_admin, _welcome, backlog_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([_admin, _welcome, backlog_email])
 
     assert backlog_email.to == [{"", "registerer@example.com"}]
     assert backlog_email.from == {"", "b@events.chromatin.ca"}

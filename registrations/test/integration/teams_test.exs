@@ -71,7 +71,7 @@ defmodule Registrations.Integration.Teams do
     assert Details.comments().value(session) == "Some comments"
     assert Details.source().value(session) == "A source"
 
-    [sent_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([sent_email])
     assert sent_email.to == [{"", "b@events.chromatin.ca"}]
     assert sent_email.from == {"", "b@events.chromatin.ca"}
 

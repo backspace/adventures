@@ -31,6 +31,13 @@ defmodule Registrations.SwooshHelper do
   use ExUnit.CaseTemplate
 
   alias Swoosh.Adapters.Local.Storage.Memory
+  require WaitForIt
+
+  using do
+    quote do
+      import Registrations.SwooshHelper, only: [wait_for_emails: 1]
+    end
+  end
 
   setup do
     Memory.delete_all()
@@ -44,6 +51,23 @@ defmodule Registrations.SwooshHelper do
 
   def emails_sent? do
     length(sent_email()) > 0
+  end
+
+  defmacro wait_for_emails(pattern) do
+    count =
+      case pattern do
+        list when is_list(list) -> length(list)
+        _ -> raise ArgumentError, "wait_for_emails expects a list pattern"
+      end
+
+    quote do
+      require WaitForIt
+      WaitForIt.wait(length(Registrations.SwooshHelper.sent_email()) == unquote(count))
+
+      emails = Registrations.SwooshHelper.sent_email()
+      unquote(pattern) = emails
+      emails
+    end
   end
 end
 
