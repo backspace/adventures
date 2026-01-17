@@ -197,6 +197,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
             const SizedBox(width: 8),
             _buildSortButton(
               context: context,
+              key: const Key('region-sort-alpha'),
               icon: const Icon(Icons.sort_by_alpha),
               isActive: !_sortByDistance,
               onPressed: () {
@@ -209,6 +210,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
             const SizedBox(width: 8),
             _buildSortButton(
               context: context,
+              key: const Key('region-sort-nearest'),
               icon: const Icon(Icons.near_me),
               isActive: _sortByDistance,
               onPressed: _loadNearestRegions,
@@ -216,6 +218,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
             const SizedBox(width: 8),
             _buildSortButton(
               context: context,
+              key: const Key('region-sort-add'),
               icon: const Icon(Icons.add),
               isActive: false,
               onPressed: _createNewRegion,
@@ -407,11 +410,13 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
 
 Widget _buildSortButton({
   required BuildContext context,
+  Key? key,
   required Icon icon,
   required bool isActive,
   required VoidCallback onPressed,
 }) {
   return IconButton(
+    key: key,
     onPressed: onPressed,
     icon: icon,
     style: IconButton.styleFrom(

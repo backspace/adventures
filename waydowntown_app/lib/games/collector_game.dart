@@ -327,8 +327,14 @@ class CollectorGameState extends State<CollectorGame>
   List<_TimelineItem> _buildTimelineItems(BuildContext context) {
     final items = <_TimelineItem>[];
     final teamSubmissions = _visibleTeamSubmissions();
-    final teamSubmissionValues =
-        teamSubmissions.map((submission) => submission.submission).toSet();
+    final visibleDetectedValues = detectedItems
+        .where(
+            (item) => showIncorrectSubmissions || item.state != SubmissionState.incorrect)
+        .where((item) =>
+            item.state == SubmissionState.correct ||
+            item.state == SubmissionState.incorrect)
+        .map((item) => item.value)
+        .toSet();
 
     for (final hint in hints) {
       items.add(_TimelineItem(
@@ -341,11 +347,6 @@ class CollectorGameState extends State<CollectorGame>
       if (!showIncorrectSubmissions && item.state == SubmissionState.incorrect) {
         continue;
       }
-      if ((item.state == SubmissionState.correct ||
-              item.state == SubmissionState.incorrect) &&
-          teamSubmissionValues.contains(item.value)) {
-        continue;
-      }
 
       items.add(_TimelineItem(
         timestamp: item.submittedAt,
@@ -354,13 +355,26 @@ class CollectorGameState extends State<CollectorGame>
     }
 
     for (final submission in teamSubmissions) {
+      if (visibleDetectedValues.contains(submission.submission)) {
+        continue;
+      }
       items.add(_TimelineItem(
         timestamp: submission.insertedAt,
         widget: _buildSubmissionTile(submission),
       ));
     }
 
-    items.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    final insertionOrder = <_TimelineItem, int>{
+      for (var i = 0; i < items.length; i++) items[i]: i,
+    };
+
+    items.sort((a, b) {
+      final timeCompare = b.timestamp.compareTo(a.timestamp);
+      if (timeCompare != 0) {
+        return timeCompare;
+      }
+      return insertionOrder[b]!.compareTo(insertionOrder[a]!);
+    });
     return items;
   }
 

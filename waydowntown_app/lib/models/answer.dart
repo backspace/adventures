@@ -15,12 +15,13 @@ class Answer {
   });
 
   factory Answer.fromJson(Map<String, dynamic> json) {
+    final attributes = json['attributes'] as Map<String, dynamic>?;
     return Answer(
       id: json['id'],
-      label: json['attributes']['label'],
-      order: json['attributes']['order'],
-      hint: json['attributes']['hint'],
-      hasHint: json['attributes']['has_hint'],
+      label: attributes?['label'],
+      order: attributes?['order'],
+      hint: attributes?['hint'],
+      hasHint: attributes?['has_hint'] == true,
     );
   }
 }

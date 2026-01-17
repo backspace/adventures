@@ -2,12 +2,14 @@ import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/participation.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/models/specification.dart';
+import 'package:waydowntown/services/user_service.dart';
 
 @GenerateNiceMocks([
   MockSpec<PhoenixSocket>(),
@@ -17,6 +19,18 @@ import 'package:waydowntown/models/specification.dart';
 import 'test_helpers.mocks.dart';
 
 class TestHelpers {
+  static Future<void> setMockUser({
+    String userId = 'user1',
+    String email = 'user1@example.com',
+    bool isAdmin = false,
+    String accessToken = 'test_token',
+    String renewalToken = 'test_renewal_token',
+  }) async {
+    FlutterSecureStorage.setMockInitialValues({});
+    await UserService.setUserData(userId, email, isAdmin);
+    await UserService.setTokens(accessToken, renewalToken);
+  }
+
   static void setupMockRunResponse(
     DioAdapter dioAdapter, {
     required String route,
@@ -85,7 +99,7 @@ class TestHelpers {
     final submissionId =
         setup.submissionId ?? "48cf441e-ab98-4da6-8980-69fba3b4417d";
 
-    final responseJson = generateSubmissionResponseJson(SubmissionResponse(
+    final response = SubmissionResponse(
       submissionId: submissionId,
       submission: setup.submission,
       correct: setup.correct,
@@ -93,14 +107,15 @@ class TestHelpers {
       correctSubmissions: setup.correctSubmissions,
       totalAnswers: setup.totalAnswers,
       isComplete: setup.isComplete,
-    ));
+    );
 
     final requestJson =
         generateSubmissionRequestJson(setup.submission, runId, setup.answerId);
 
     dioAdapter.onPost(
       setup.route,
-      (server) => server.reply(201, responseJson),
+      (server) =>
+          server.reply(201, generateSubmissionResponseJson(response)),
       data: requestJson,
     );
   }
@@ -136,6 +151,44 @@ class TestHelpers {
 
   static Map<String, dynamic> generateSubmissionResponseJson(
       SubmissionResponse response) {
+    final runAttributes = {
+      "correct_submissions": response.correctSubmissions,
+      "total_answers": response.totalAnswers,
+      "complete": response.isComplete,
+      if (response.isComplete) "winner_submission_id": response.submissionId,
+    };
+
+    final included = [
+      {
+        "id": response.runId,
+        "type": "runs",
+        "attributes": runAttributes,
+        if (response.isComplete)
+          "relationships": {
+            "submissions": {
+              "data": [
+                {"type": "submissions", "id": response.submissionId}
+              ]
+            }
+          }
+      },
+      if (response.isComplete)
+        {
+          "id": response.submissionId,
+          "type": "submissions",
+          "attributes": {
+            "submission": response.submission,
+            "correct": response.correct,
+            "inserted_at": DateTime.now().toUtc().toIso8601String(),
+          },
+          "relationships": {
+            "creator": {
+              "data": {"type": "users", "id": "user1"}
+            }
+          }
+        }
+    ];
+
     return {
       "data": {
         "id": response.submissionId,
@@ -150,20 +203,14 @@ class TestHelpers {
               "type": "runs",
               "id": response.runId,
             }
-          }
+          },
+          if (response.isComplete)
+            "creator": {
+              "data": {"type": "users", "id": "user1"}
+            }
         }
       },
-      "included": [
-        {
-          "id": response.runId,
-          "type": "runs",
-          "attributes": {
-            "correct_submissions": response.correctSubmissions,
-            "total_answers": response.totalAnswers,
-            "complete": response.isComplete,
-          }
-        }
-      ],
+      "included": included,
       "meta": {}
     };
   }

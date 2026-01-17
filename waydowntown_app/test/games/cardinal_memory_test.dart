@@ -32,8 +32,9 @@ void main() {
 
   late MockPhoenixChannel mockChannel;
 
-  setUp(() {
+  setUp(() async {
     mockMotionSensors = MockMotionSensors();
+    await TestHelpers.setMockUser();
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());
     dioAdapter = DioAdapter(dio: dio);

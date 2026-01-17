@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:sentry/sentry.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/run.dart';
@@ -10,6 +11,7 @@ class RequestRunRoute extends StatefulWidget {
   final String? concept;
   final String? specificationId;
   final String? position;
+  final PhoenixSocket? testSocket;
 
   const RequestRunRoute({
     super.key,
@@ -17,6 +19,7 @@ class RequestRunRoute extends StatefulWidget {
     this.concept,
     this.specificationId,
     this.position,
+    this.testSocket,
   });
 
   @override
@@ -91,7 +94,11 @@ class RequestRunRouteState extends State<RequestRunRoute> {
           appBar: AppBar(title: const Text('Game')),
           body: const Center(child: CircularProgressIndicator()));
     } else {
-      return RunLaunchRoute(run: run!, dio: widget.dio);
+      return RunLaunchRoute(
+        run: run!,
+        dio: widget.dio,
+        testSocket: widget.testSocket,
+      );
     }
   }
 }
