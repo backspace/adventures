@@ -8,7 +8,8 @@ defmodule RegistrationsWeb.AnswerView do
   def get_field(field, answer, conn) do
     cond do
       field == :hint ->
-        if Enum.find(answer.reveals, fn reveal -> reveal.user_id == conn.assigns.current_user.id end) do
+        if Ecto.assoc_loaded?(answer.reveals) and
+             Enum.find(answer.reveals, fn reveal -> reveal.user_id == conn.assigns.current_user.id end) do
           Map.fetch!(answer, field)
         end
 
@@ -21,6 +22,9 @@ defmodule RegistrationsWeb.AnswerView do
   end
 
   def relationships do
-    [specification: {RegistrationsWeb.SpecificationView, :include}]
+    [
+      specification: {RegistrationsWeb.SpecificationView, :include},
+      region: {RegistrationsWeb.RegionView, :include}
+    ]
   end
 end

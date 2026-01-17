@@ -189,6 +189,24 @@ class _HomeState extends State<Home> {
                 }),
                 const SizedBox(height: 20),
                 const Divider(color: Colors.white),
+                const Text("Event-long Collections",
+                    style: TextStyle(color: Colors.white)),
+                _buildFlexibleButtonGrid([
+                  ('Payphone\nCollector', 'payphone_collector'),
+                  ('Elevator\nCollector', 'elevator_collector'),
+                ], (concept) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RequestRunRoute(
+                        dio: dio,
+                        concept: concept,
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 20),
+                const Divider(color: Colors.white),
                 const Text("Placeless Games",
                     style: TextStyle(color: Colors.white)),
                 _buildFlexibleButtonGrid([

@@ -473,6 +473,8 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
         return OrientationMemoryGame(
             run: game, dio: widget.dio, channel: channel!);
       case 'string_collector':
+      case 'payphone_collector':
+      case 'elevator_collector':
         return StringCollectorGame(
             run: game, dio: widget.dio, channel: channel!);
       default:

@@ -60,7 +60,7 @@ class Specification {
               item['type'] == 'answers' &&
               relationships['answers']['data']
                   .any((answer) => answer['id'] == item['id']))
-          .map((item) => Answer.fromJson(item))
+          .map((item) => Answer.fromJson(item, included))
           .toList(),
       notes: attributes['notes'],
     );

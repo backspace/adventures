@@ -33,11 +33,26 @@ string_collector:
   name: "String Collector"
   marker: list_checks
   instructions: "enter the strings of text described until you’ve found them all. caps are ignored."
+  normalise_submissions: true
 
 fill_in_the_blank:
   name: "Fill in the Blank"
   marker: rectangle_ellipsis
   instructions: "submit the correct answer to fill in the blank."
+
+payphone_collector:
+  name: "Payphone Collector"
+  marker: phone
+  instructions: "submit the phone numbers from payphones."
+  long_running: true
+  normalise_submissions: true
+
+elevator_collector:
+  name: "Elevator Collector"
+  marker: arrow_up_down
+  instructions: "submit the serial numbers from elevator permits."
+  long_running: true
+  normalise_submissions: true
 
 orientation_memory:
   name: "Orientation memory"
