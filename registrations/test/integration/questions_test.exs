@@ -21,8 +21,7 @@ defmodule Registrations.ClandestineRendezvous.Integration.Questions do
 
     Home.submit_question(session)
 
-    assert Nav.info_text(session, "Your question has been submitted.") ==
-             "Your question has been submitted."
+    Nav.assert_info_text(session, "Your question has been submitted.")
 
     wait_for_emails([sent_email])
     assert sent_email.to == [{"", "b@events.chromatin.ca"}]
@@ -59,8 +58,7 @@ defmodule Registrations.UnmnemonicDevices.Integration.Questions do
 
     Home.submit_question(session)
 
-    assert Nav.info_text(session, "Your question has been submitted.") ==
-             "Your question has been submitted."
+    Nav.assert_info_text(session, "Your question has been submitted.")
 
     wait_for_emails([sent_email])
     assert sent_email.to == [{"", "knut@chromatin.ca"}]

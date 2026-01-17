@@ -16,6 +16,25 @@ defmodule Registrations.Pages.Nav do
     flash_text(session, ".alert-danger", expected)
   end
 
+  def assert_info_text(session, expected) do
+    assert_flash_text(session, ".alert-info", expected)
+  end
+
+  def assert_error_text(session, expected) do
+    assert_flash_text(session, ".alert-danger", expected)
+  end
+
+  def assert_logged_in_as(session, email) do
+    expected = "log out #{email}"
+
+    WaitForIt.wait(
+      case safe_text(session, "a.logout") do
+        {:ok, text} -> normalize_text(text) == normalize_text(expected)
+        :error -> false
+      end
+    )
+  end
+
   def register_link do
     Registrations.Pages.Nav.RegisterLink
   end
@@ -159,7 +178,7 @@ defmodule Registrations.Pages.Nav do
 
   defp flash_text_matches?(session, selector, expected) do
     case safe_text(session, selector) do
-      {:ok, text} -> text == expected
+      {:ok, text} -> normalize_text(text) == normalize_text(expected)
       :error -> false
     end
   end
@@ -171,5 +190,23 @@ defmodule Registrations.Pages.Nav do
       Wallaby.StaleReferenceError -> :error
       Wallaby.QueryError -> :error
     end
+  end
+
+  defp assert_flash_text(session, selector, expected) do
+    WaitForIt.wait(flash_text_matches?(session, selector, expected))
+
+    {:ok, text} = safe_text(session, selector)
+    if normalize_text(text) != normalize_text(expected) do
+      raise "Expected #{inspect(expected)}, got #{inspect(text)}"
+    end
+
+    text
+  end
+
+  defp normalize_text(text) do
+    text
+    |> String.downcase()
+    |> String.replace(~r/\s+/, " ")
+    |> String.trim()
   end
 end

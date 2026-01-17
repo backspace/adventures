@@ -47,7 +47,7 @@ defmodule Registrations.Integration.Messages do
 
     Messages.send(session)
 
-    assert Nav.info_text(session, "Message was sent") == "Message was sent"
+    Nav.assert_info_text(session, "Message was sent")
 
     wait_for_emails([empty_email, _ignored1, email, _ignored2])
     assert email.to == [{"", "user@example.com"}]
@@ -96,7 +96,7 @@ defmodule Registrations.Integration.Messages do
 
     Messages.send_to_me(session)
 
-    assert Nav.info_text(session, "Message was sent") == "Message was sent"
+    Nav.assert_info_text(session, "Message was sent")
 
     wait_for_emails([email])
     assert email.to == [{"", "admin@example.com"}]
@@ -129,7 +129,7 @@ defmodule Registrations.Integration.Messages do
 
     Messages.send(session)
 
-    assert Nav.info_text(session, "Message was sent") == "Message was sent"
+    Nav.assert_info_text(session, "Message was sent")
 
     wait_for_emails([email])
     assert email.from == {"Knut", "knut@example.com"}
@@ -175,7 +175,7 @@ defmodule Registrations.Integration.Messages do
 
     Messages.send(session)
 
-    assert Nav.info_text(session, "Message was sent") == "Message was sent"
+    Nav.assert_info_text(session, "Message was sent")
 
     sent_emails = wait_for_emails([_email1, _email2, _email3, _email4])
 
