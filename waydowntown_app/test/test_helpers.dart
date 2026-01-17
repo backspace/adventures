@@ -99,7 +99,7 @@ class TestHelpers {
     final submissionId =
         setup.submissionId ?? "48cf441e-ab98-4da6-8980-69fba3b4417d";
 
-    final responseJson = generateSubmissionResponseJson(SubmissionResponse(
+    final response = SubmissionResponse(
       submissionId: submissionId,
       submission: setup.submission,
       correct: setup.correct,
@@ -107,14 +107,15 @@ class TestHelpers {
       correctSubmissions: setup.correctSubmissions,
       totalAnswers: setup.totalAnswers,
       isComplete: setup.isComplete,
-    ));
+    );
 
     final requestJson =
         generateSubmissionRequestJson(setup.submission, runId, setup.answerId);
 
     dioAdapter.onPost(
       setup.route,
-      (server) => server.reply(201, responseJson),
+      (server) =>
+          server.reply(201, generateSubmissionResponseJson(response)),
       data: requestJson,
     );
   }
