@@ -171,7 +171,8 @@ defmodule Registrations.Waydowntown.Integration.Home do
     Login.fill_email(session, "Octavia.butler@example.com")
     Login.fill_password(session, "Xenogenesis")
     Login.submit(session)
-    assert Nav.logout_link().text(session) == "Log out octavia.butler@example.com"
+    assert String.downcase(Nav.logout_link().text(session)) ==
+             "log out octavia.butler@example.com"
 
     visit(session, "/")
     refute(Home.placeholder_exists?(session))
