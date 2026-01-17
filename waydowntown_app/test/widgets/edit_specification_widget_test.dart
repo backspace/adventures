@@ -296,12 +296,9 @@ another_concept:
     expect(find.text(specification.startDescription!), findsOneWidget);
     expect(find.text(specification.taskDescription!), findsOneWidget);
     expect(find.text(specification.duration.toString()), findsOneWidget);
-    expect(
-        find.descendant(
-          of: find.byType(MenuItemButton),
-          matching: find.text('region 1'),
-        ),
-        findsOneWidget);
+    final regionDropdownState =
+        tester.state<FormFieldState<String>>(find.byKey(const Key('region-dropdown')));
+    expect(regionDropdownState.value, equals('region1'));
 
     await tester.tap(find.byType(DropdownButtonFormField<String>).first);
     await tester.pumpAndSettle();
