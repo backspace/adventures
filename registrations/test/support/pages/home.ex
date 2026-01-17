@@ -47,6 +47,7 @@ defmodule Registrations.Pages.Home do
     @moduledoc false
     alias Wallaby.Browser
     alias Wallaby.Query
+    require WaitForIt
 
     @selector "#pi"
 
@@ -55,7 +56,16 @@ defmodule Registrations.Pages.Home do
     end
 
     def click(session) do
-      Browser.click(session, Query.css(@selector))
+      WaitForIt.wait!(
+        try do
+          Browser.click(session, Query.css(@selector))
+          true
+        rescue
+          Wallaby.StaleReferenceError -> false
+          Wallaby.QueryError -> false
+          RuntimeError -> false
+        end
+      )
     end
   end
 

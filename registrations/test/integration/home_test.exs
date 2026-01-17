@@ -171,6 +171,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
     Login.fill_email(session, "Octavia.butler@example.com")
     Login.fill_password(session, "Xenogenesis")
     Login.submit(session)
+    Nav.assert_logged_in_as(session, "octavia.butler@example.com")
 
     visit(session, "/")
     refute(Home.placeholder_exists?(session))
@@ -191,7 +192,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
     Home.fill_waitlist_question(session, "When will the event take place?")
     Home.submit_waitlist(session)
 
-    assert Nav.info_text(session) == "we’ll let you know when registration opens"
+    Nav.assert_info_text(session, "we’ll let you know when registration opens")
 
     wait_for_emails([sent_email])
     assert sent_email.to == [{"", "mdrysdale@waydown.town"}]
@@ -240,7 +241,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
 
     Home.submit_waitlist(session)
 
-    assert Nav.info_text(session) == "was that an email address?"
+    Nav.assert_info_text(session, "was that an email address?")
 
     assert wait_for_emails([]) == []
   end
@@ -268,7 +269,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
     Home.fill_waitlist_question(session, "When will the event take place?")
     Home.submit_waitlist(session)
 
-    assert Nav.info_text(session) == "we’ll let you know when registration opens"
+    Nav.assert_info_text(session, "we’ll let you know when registration opens")
 
     assert wait_for_emails([]) == []
   end
@@ -296,7 +297,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
     Home.fill_waitlist_question(session, "When will this unwanted event take place?")
     Home.submit_waitlist(session)
 
-    assert Nav.info_text(session) == "we’ll let you know when registration opens"
+    Nav.assert_info_text(session, "we’ll let you know when registration opens")
 
     assert wait_for_emails([]) == []
   end
