@@ -420,7 +420,9 @@ another_concept:
 
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('New'));
+    final addRegionButton = find.byKey(const Key('region-sort-add'));
+    await tester.ensureVisible(addRegionButton);
+    await tester.tap(addRegionButton);
     await tester.pumpAndSettle();
 
     expect(find.text('Create New Region'), findsOneWidget);
@@ -433,11 +435,8 @@ another_concept:
     await tester.tap(find.text('Save Region'));
     await tester.pumpAndSettle();
 
-    expect(
-        find.descendant(
-          of: find.byType(MenuItemButton),
-          matching: find.text('New Region'),
-        ),
-        findsOneWidget);
+    final regionDropdownState =
+        tester.state<FormFieldState<String>>(find.byKey(const Key('region-dropdown')));
+    expect(regionDropdownState.value, equals('new_region'));
   });
 }
