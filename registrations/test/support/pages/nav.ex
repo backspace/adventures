@@ -79,6 +79,7 @@ defmodule Registrations.Pages.Nav do
     require WaitForIt
 
     @selector "a.logout"
+    @logout_timeout 10_000
 
     def text(session) do
       WaitForIt.wait(Browser.has?(session, Query.css(@selector)))
@@ -86,8 +87,13 @@ defmodule Registrations.Pages.Nav do
     end
 
     def click(session) do
-      WaitForIt.wait(Browser.has?(session, Query.css(@selector)))
+      WaitForIt.wait!(Browser.has?(session, Query.css(@selector)), timeout: @logout_timeout)
       Browser.click(session, Query.css(@selector))
+      WaitForIt.wait!(
+        not Browser.has?(session, Query.css(@selector)) or
+          Browser.has?(session, Query.css("a.login")),
+        timeout: @logout_timeout
+      )
     end
   end
 

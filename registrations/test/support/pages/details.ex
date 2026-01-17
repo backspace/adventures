@@ -163,6 +163,7 @@ defmodule Registrations.Pages.Details do
     @moduledoc false
     alias Wallaby.Browser
     alias Wallaby.Query
+    require WaitForIt
 
     def present?(session) do
       Browser.has?(session, Query.css(".form-group.attending"))
@@ -170,19 +171,38 @@ defmodule Registrations.Pages.Details do
 
     def yes(session) do
       Browser.click(session, Query.css("input.attending-true"))
+      WaitForIt.wait!(Browser.has?(session, Query.css("input.attending-true:checked")))
     end
 
     def no(session) do
       Browser.click(session, Query.css("input.attending-false"))
+      WaitForIt.wait!(Browser.has?(session, Query.css("input.attending-false:checked")))
     end
 
     defmodule Error do
       @moduledoc false
       alias Wallaby.Browser
       alias Wallaby.Query
+      require WaitForIt
 
       def present?(session) do
         Browser.has?(session, Query.css(".errors .attending"))
+      end
+
+      def assert_present(session, message \\ nil) do
+        WaitForIt.wait!(present?(session))
+
+        if not present?(session) do
+          raise(message || "Expected attending error to be present")
+        end
+      end
+
+      def assert_absent(session, message \\ nil) do
+        WaitForIt.wait!(!present?(session))
+
+        if present?(session) do
+          raise(message || "Expected attending error to be absent")
+        end
       end
     end
   end

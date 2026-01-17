@@ -208,20 +208,26 @@ defmodule Registrations.Integration.Teams do
 
     Details.submit(session)
 
-    assert Error.present?(session),
-           "Expected an error about the attending field being blank"
+    Error.assert_present(
+      session,
+      "Expected an error about the attending field being blank"
+    )
 
     Details.Attending.yes(session)
     Details.submit(session)
 
-    refute Error.present?(session),
-           "Expected no error when the person said they were attending"
+    Error.assert_absent(
+      session,
+      "Expected no error when the person said they were attending"
+    )
 
     Details.Attending.no(session)
     Details.submit(session)
 
-    refute Error.present?(session),
-           "Expected no error when the person said they were not attending"
+    Error.assert_absent(
+      session,
+      "Expected no error when the person said they were not attending"
+    )
   end
 
   test "visiting the details page redirects to login when there is no session", %{
