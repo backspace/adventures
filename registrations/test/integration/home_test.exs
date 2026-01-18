@@ -1,154 +1,162 @@
 defmodule Registrations.UnmnemonicDevices.Integration.Home do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
-  use Hound.Helpers
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
+  alias Wallaby.Element
+  alias Wallaby.Query
 
   require WaitForIt
 
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
+  test "head tags are correct", %{session: session} do
+    visit(session, "/")
 
-  test "head tags are correct" do
-    navigate_to("/")
+    assert page_title(session) == "unmnemonic devices"
 
-    assert inner_text({:css, "title"}) == "unmnemonic devices"
-
-    assert attribute_value({:css, "meta[property='og:title']"}, "content") ==
+    assert Element.attr(
+             find(session, Query.css("meta[property='og:title']", visible: false)),
+             "content"
+           ) ==
              "unmnemonic devices: Zagreb, June 8"
 
-    assert attribute_value({:css, "meta[property='og:url']"}, "content") == "http://example.com"
+    assert Element.attr(
+             find(session, Query.css("meta[property='og:url']", visible: false)),
+             "content"
+           ) ==
+             "http://example.com"
 
-    assert attribute_value({:css, "meta[property='og:image']"}, "content") ==
+    assert Element.attr(
+             find(session, Query.css("meta[property='og:image']", visible: false)),
+             "content"
+           ) ==
              "http://example.com/images/unmnemonic-devices/meta.png"
   end
 
-  test "pi does not show by default" do
+  test "pi does not show by default", %{session: session} do
     insert(:unmnemonic_devices_settings)
 
-    navigate_to("/")
+    visit(session, "/")
 
-    refute Home.pi().present?()
+    refute Home.pi().present?(session)
   end
 
-  test "pi shows when compromised but cannot create a voicepass when not logged in" do
+  test "pi shows when compromised but cannot create a voicepass when not logged in", %{
+    session: session
+  } do
     insert(:unmnemonic_devices_settings, compromised: true)
 
-    navigate_to("/")
+    visit(session, "/")
 
-    assert Home.pi().present?()
+    assert Home.pi().present?(session)
 
-    Home.pi().click()
+    Home.pi().click(session)
 
-    refute Home.overlay().regenerate().present?()
+    refute Home.overlay().regenerate().present?(session)
   end
 
-  test "overlay shows voicepass when it exists" do
+  test "overlay shows voicepass when it exists", %{session: session} do
     insert(:unmnemonic_devices_settings, compromised: true)
     insert(:octavia, voicepass: "acknowledgements")
 
-    Registrations.WindowHelpers.set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account(session)
 
-    navigate_to("/")
-    Nav.login_link().click()
-    Login.fill_email("Octavia.butler@example.com")
-    Login.fill_password("Xenogenesis")
-    Login.submit()
+    visit(session, "/")
+    Nav.login_link().click(session)
+    Login.fill_email(session, "Octavia.butler@example.com")
+    Login.fill_password(session, "Xenogenesis")
+    Login.submit(session)
 
-    Home.pi().click()
+    Home.pi().click(session)
 
-    assert Home.overlay().voicepass().text() == "acknowledgements"
+    assert Home.overlay().voicepass().text(session) == "acknowledgements"
   end
 
-  test "a logged-in user can generate a voicepass" do
+  test "a logged-in user can generate a voicepass", %{session: session} do
     insert(:unmnemonic_devices_settings, compromised: true)
     insert(:octavia)
 
-    Registrations.WindowHelpers.set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account(session)
 
-    navigate_to("/")
-    Nav.login_link().click()
-    Login.fill_email("Octavia.butler@example.com")
-    Login.fill_password("Xenogenesis")
-    Login.submit()
+    visit(session, "/")
+    Nav.login_link().click(session)
+    Login.fill_email(session, "Octavia.butler@example.com")
+    Login.fill_password(session, "Xenogenesis")
+    Login.submit(session)
 
-    Home.pi().click()
+    Home.pi().click(session)
 
-    assert Home.overlay().voicepass().text() == "generate a voicepass"
+    assert Home.overlay().voicepass().text(session) == "generate a voicepass"
 
-    assert Home.overlay().regenerate().present?()
-    assert Home.overlay().regenerate().text() == "generate"
+    assert Home.overlay().regenerate().present?(session)
+    assert Home.overlay().regenerate().text(session) == "generate"
 
-    Home.overlay().regenerate().click()
+    Home.overlay().regenerate().click(session)
 
-    WaitForIt.wait(String.length(Home.overlay().voicepass().text()) == 16)
+    WaitForIt.wait(String.length(Home.overlay().voicepass().text(session)) == 16)
 
-    new_voicepass = Home.overlay().voicepass().text()
+    new_voicepass = Home.overlay().voicepass().text(session)
     assert String.length(new_voicepass) == 16
 
-    assert Home.overlay().regenerate().text() == "regenerate"
+    assert Home.overlay().regenerate().text(session) == "regenerate"
 
-    refresh_page()
-    Home.pi().click()
-    assert Home.overlay().voicepass().text() == new_voicepass
+    visit(session, "/")
+    Home.pi().click(session)
+    assert Home.overlay().voicepass().text(session) == new_voicepass
   end
 end
 
 defmodule Registrations.Waydowntown.Integration.Home do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "waydowntown"
-  use Hound.Helpers
 
   alias Registrations.Pages.Home
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
 
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
+  test "placeholder does not show by default", %{session: session} do
+    visit(session, "/")
 
-  test "placeholder does not show by default" do
-    navigate_to("/")
-
-    refute(Home.placeholder_exists?())
+    refute(Home.placeholder_exists?(session))
   end
 
-  test "placeholder shows when set in config, nav is hidden" do
+  test "placeholder shows when set in config, nav is hidden", %{session: session} do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :placeholder,
       true
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    assert(Home.placeholder_exists?())
-    refute(Nav.present?())
+    assert(Home.placeholder_exists?(session))
+    refute(Nav.present?(session))
   end
 
-  test "placeholder shows with a query parameter" do
-    navigate_to("/?placeholder=true")
+  test "placeholder shows with a query parameter", %{session: session} do
+    visit(session, "/?placeholder=true")
 
-    assert(Home.placeholder_exists?())
+    assert(Home.placeholder_exists?(session))
   end
 
-  test "placeholder can by bypassed with a query parameter" do
+  test "placeholder can by bypassed with a query parameter", %{session: session} do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :placeholder,
       true
     )
 
-    navigate_to("/?placeholder=false")
+    visit(session, "/?placeholder=false")
 
-    refute(Home.placeholder_exists?())
+    refute(Home.placeholder_exists?(session))
   end
 
-  test "placeholder does not show when logged in" do
+  test "placeholder does not show when logged in", %{session: session} do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :placeholder,
@@ -157,35 +165,36 @@ defmodule Registrations.Waydowntown.Integration.Home do
 
     insert(:octavia)
 
-    Registrations.WindowHelpers.set_window_to_show_account()
+    Registrations.WindowHelpers.set_window_to_show_account(session)
 
-    Login.visit()
-    Login.fill_email("Octavia.butler@example.com")
-    Login.fill_password("Xenogenesis")
-    Login.submit()
+    Login.visit(session)
+    Login.fill_email(session, "Octavia.butler@example.com")
+    Login.fill_password(session, "Xenogenesis")
+    Login.submit(session)
+    Nav.assert_logged_in_as(session, "octavia.butler@example.com")
 
-    navigate_to("/")
-    refute(Home.placeholder_exists?())
+    visit(session, "/")
+    refute(Home.placeholder_exists?(session))
   end
 
-  test "placeholder page has waitlist form" do
+  test "placeholder page has waitlist form", %{session: session} do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :placeholder,
       true
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    assert Home.placeholder_exists?()
+    assert Home.placeholder_exists?(session)
 
-    Home.fill_waitlist_email("interested@example.com")
-    Home.fill_waitlist_question("When will the event take place?")
-    Home.submit_waitlist()
+    Home.fill_waitlist_email(session, "interested@example.com")
+    Home.fill_waitlist_question(session, "When will the event take place?")
+    Home.submit_waitlist(session)
 
-    assert Nav.info_text() == "we’ll let you know when registration opens"
+    Nav.assert_info_text(session, "we’ll let you know when registration opens")
 
-    [sent_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([sent_email])
     assert sent_email.to == [{"", "mdrysdale@waydown.town"}]
     assert sent_email.from == {"", "mdrysdale@waydown.town"}
 
@@ -195,7 +204,7 @@ defmodule Registrations.Waydowntown.Integration.Home do
              "Email: interested@example.com\nQuestion: When will the event take place?"
   end
 
-  test "placeholder page does not have waitlist form when hidden" do
+  test "placeholder page does not have waitlist form when hidden", %{session: session} do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :placeholder,
@@ -208,36 +217,38 @@ defmodule Registrations.Waydowntown.Integration.Home do
       true
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    refute Home.placeholder_exists?()
+    refute Home.placeholder_exists?(session)
   end
 
-  test "placeholder page shows error for invalid email in waitlist form" do
+  test "placeholder page shows error for invalid email in waitlist form", %{session: session} do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :placeholder,
       true
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    assert Home.placeholder_exists?()
+    assert Home.placeholder_exists?(session)
 
-    Home.fill_waitlist_email("not_an_email")
-    Home.fill_waitlist_question("When will the event take place?")
+    Home.fill_waitlist_email(session, "not_an_email")
+    Home.fill_waitlist_question(session, "When will the event take place?")
 
     # This bypasses client-side validation
-    execute_script("document.getElementById('waitlist_email').type = 'text';")
+    execute_script(session, "document.getElementById('waitlist_email').type = 'text';")
 
-    Home.submit_waitlist()
+    Home.submit_waitlist(session)
 
-    assert Nav.info_text() == "was that an email address?"
+    Nav.assert_info_text(session, "was that an email address?")
 
-    assert Registrations.SwooshHelper.sent_email() == []
+    assert wait_for_emails([]) == []
   end
 
-  test "placeholder page doesn't send email when spam is detected in email" do
+  test "placeholder page doesn't send email when spam is detected in email", %{
+    session: session
+  } do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :placeholder,
@@ -250,20 +261,22 @@ defmodule Registrations.Waydowntown.Integration.Home do
       ["spam", "unwanted"]
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    assert Home.placeholder_exists?()
+    assert Home.placeholder_exists?(session)
 
-    Home.fill_waitlist_email("spam@example.com")
-    Home.fill_waitlist_question("When will the event take place?")
-    Home.submit_waitlist()
+    Home.fill_waitlist_email(session, "spam@example.com")
+    Home.fill_waitlist_question(session, "When will the event take place?")
+    Home.submit_waitlist(session)
 
-    assert Nav.info_text() == "we’ll let you know when registration opens"
+    Nav.assert_info_text(session, "we’ll let you know when registration opens")
 
-    assert Registrations.SwooshHelper.sent_email() == []
+    assert wait_for_emails([]) == []
   end
 
-  test "placeholder page doesn't send email when spam is detected in question" do
+  test "placeholder page doesn't send email when spam is detected in question", %{
+    session: session
+  } do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,
       :placeholder,
@@ -276,16 +289,16 @@ defmodule Registrations.Waydowntown.Integration.Home do
       ["spam", "unwanted"]
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    assert Home.placeholder_exists?()
+    assert Home.placeholder_exists?(session)
 
-    Home.fill_waitlist_email("interested@example.com")
-    Home.fill_waitlist_question("When will this unwanted event take place?")
-    Home.submit_waitlist()
+    Home.fill_waitlist_email(session, "interested@example.com")
+    Home.fill_waitlist_question(session, "When will this unwanted event take place?")
+    Home.submit_waitlist(session)
 
-    assert Nav.info_text() == "we’ll let you know when registration opens"
+    Nav.assert_info_text(session, "we’ll let you know when registration opens")
 
-    assert Registrations.SwooshHelper.sent_email() == []
+    assert wait_for_emails([]) == []
   end
 end

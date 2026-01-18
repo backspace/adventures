@@ -1,11 +1,18 @@
 import Config
 
-config :hound, driver: "chrome_driver", browser: "chrome_headless"
+config :wallaby,
+  driver: Wallaby.Chrome,
+  chrome: [headless: true],
+  base_url: "http://localhost:4001",
+  js_errors: false
 
 # Print only warnings and errors during test
 config :logger, level: :warning
 
 config :registrations, Registrations.Mailer, adapter: Swoosh.Adapters.Local
+
+config :registrations,
+  hide_waitlist: false
 
 # Configure your database
 config :registrations, Registrations.Repo,

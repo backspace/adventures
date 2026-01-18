@@ -20,6 +20,7 @@ class Answer {
 
   factory Answer.fromJson(Map<String, dynamic> json,
       [List<dynamic>? included]) {
+    final attributes = json['attributes'] as Map<String, dynamic>?;
     Region? region;
     final relationships = json['relationships'];
     if (included != null &&
@@ -39,11 +40,11 @@ class Answer {
 
     return Answer(
       id: json['id'],
-      label: json['attributes']['label'],
-      order: json['attributes']['order'],
+      label: attributes?['label'],
+      order: attributes?['order'],
       region: region,
-      hint: json['attributes']['hint'],
-      hasHint: json['attributes']['has_hint'],
+      hint: attributes?['hint'],
+      hasHint: attributes?['has_hint'] == true,
     );
   }
 }

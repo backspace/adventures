@@ -1,25 +1,21 @@
 defmodule Registrations.Integration.Admin do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
-  use Hound.Helpers
 
+  import Registrations.TestJsonHelpers, only: [decode_json_from_page: 1]
   import Assertions, only: [assert_lists_equal: 2]
 
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
   alias Registrations.Pages.Teams
   alias Registrations.Pages.Users
+  alias Wallaby.Query
 
   require Assertions
 
-  # Import Hound helpers
-
-  # Start a Hound session
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
-
-  test "logging in as an admin" do
+  test "logging in as an admin", %{session: session} do
     user =
       insert(:user,
         email: "francine.pascal@example.com",
@@ -30,30 +26,30 @@ defmodule Registrations.Integration.Admin do
     admin = insert(:octavia, admin: true, proposed_team_name: "Admins", attending: false)
     blank_attending = insert(:user, email: "blank@example.com")
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Nav.login_link().click()
+    Nav.login_link().click(session)
 
-    Login.fill_email("octavia.butler@example.com")
-    Login.fill_password("Xenogenesis")
-    Login.submit()
+    Login.fill_email(session, "octavia.butler@example.com")
+    Login.fill_password(session, "Xenogenesis")
+    Login.submit(session)
 
-    refute element?(:css, "a.settings")
+    refute has?(session, Query.css("a.settings"))
 
-    Nav.users_link().click()
+    Nav.users_link().click(session)
 
-    assert Users.email(user.id) == "francine.pascal@example.com"
-    assert Users.accessibility(user.id) == "Some accessibility text"
-    assert Users.attending(user.id) == "✓"
+    assert Users.email(session, user.id) == "francine.pascal@example.com"
+    assert Users.accessibility(session, user.id) == "Some accessibility text"
+    assert Users.attending(session, user.id) == "✓"
 
-    assert Users.email(admin.id) == admin.email
-    assert Users.proposed_team_name(admin.id) == "Admins"
-    assert Users.attending(admin.id) == "✘"
+    assert Users.email(session, admin.id) == admin.email
+    assert Users.proposed_team_name(session, admin.id) == "Admins"
+    assert Users.attending(session, admin.id) == "✘"
 
-    assert Users.attending(blank_attending.id) == "?"
+    assert Users.attending(session, blank_attending.id) == "?"
   end
 
-  test "admin can build teams" do
+  test "admin can build teams", %{session: session} do
     a =
       insert(:user,
         email: "a@example.com",
@@ -85,24 +81,24 @@ defmodule Registrations.Integration.Admin do
 
     insert(:octavia, admin: true)
 
-    navigate_to("/")
-    Login.login_as_admin()
+    visit(session, "/")
+    Login.login_as_admin(session)
 
-    Nav.users_link().click()
+    Nav.users_link().click(session)
 
-    refute Users.teamed(a.id)
-    refute Users.teamed(b.id)
-    refute Users.teamed(c.id)
+    refute Users.teamed(session, a.id)
+    refute Users.teamed(session, b.id)
+    refute Users.teamed(session, c.id)
 
-    Users.build_team_from(a.id)
+    Users.build_team_from(session, a.id)
 
-    assert Nav.info_text() == "Team built successfully"
+    Nav.assert_info_text(session, "Team built successfully")
 
-    assert Users.teamed(a.id)
-    assert Users.teamed(b.id)
-    refute Users.teamed(c.id)
+    assert Users.teamed(session, a.id)
+    assert Users.teamed(session, b.id)
+    refute Users.teamed(session, c.id)
 
-    assert_lists_equal(Users.all_emails(), [
+    assert_lists_equal(Users.all_emails(session), [
       "c@example.com",
       "octavia.butler@example.com",
       "not-attending@example.com",
@@ -110,11 +106,11 @@ defmodule Registrations.Integration.Admin do
       "b@example.com"
     ])
 
-    Nav.teams_link().click()
+    Nav.teams_link().click(session)
 
-    assert Teams.name(1) == "Team A"
-    assert Teams.risk_aversion(1) == "3"
-    assert Teams.emails(1) == "a@example.com, b@example.com"
+    assert Teams.name(session, 1) == "Team A"
+    assert Teams.risk_aversion(session, 1) == "3"
+    assert Teams.emails(session, 1) == "a@example.com, b@example.com"
 
     [team] = Registrations.Repo.all(RegistrationsWeb.Team)
     assert team.name == "Team A"
@@ -122,7 +118,9 @@ defmodule Registrations.Integration.Admin do
     refute team.notes
   end
 
-  test "teams without any name proposals or risk aversions get placeholders" do
+  test "teams without any name proposals or risk aversions get placeholders", %{
+    session: session
+  } do
     a =
       insert(:user,
         email: "a@example.com",
@@ -132,21 +130,21 @@ defmodule Registrations.Integration.Admin do
 
     insert(:octavia, admin: true)
 
-    navigate_to("/")
-    Login.login_as_admin()
+    visit(session, "/")
+    Login.login_as_admin(session)
 
-    Nav.users_link().click()
-    Users.build_team_from(a.id)
+    Nav.users_link().click(session)
+    Users.build_team_from(session, a.id)
 
-    assert Nav.error_text() == "Team built with placeholders!"
+    Nav.assert_error_text(session, "Team built with placeholders!")
 
-    Nav.teams_link().click()
+    Nav.teams_link().click(session)
 
-    assert Teams.name(1) == "FIXME"
-    assert Teams.risk_aversion(1) === "1"
+    assert Teams.name(session, 1) == "FIXME"
+    assert Teams.risk_aversion(session, 1) === "1"
   end
 
-  test "admin can view team JSON" do
+  test "admin can view team JSON", %{session: session} do
     a = insert(:user, accessibility: "my notes", email: "a@example.com")
     b = insert(:user, email: "b@example.com")
 
@@ -160,11 +158,12 @@ defmodule Registrations.Integration.Admin do
 
     insert(:octavia, admin: true)
 
-    navigate_to("/")
-    Login.login_as_admin()
+    visit(session, "/")
+    Login.login_as_admin(session)
+    assert has?(session, Query.css("a.users"))
 
-    navigate_to("/api/teams")
-    json = page_source() |> Floki.find("pre") |> Floki.text() |> Jason.decode!()
+    visit(session, "/api/teams")
+    json = decode_json_from_page(session)
 
     assert json == %{
              "data" => [
@@ -184,72 +183,72 @@ defmodule Registrations.Integration.Admin do
            }
   end
 
-  test "non-admins cannot access the user list or messages" do
+  test "non-admins cannot access the user list or messages", %{session: session} do
     insert(:user, email: "francine.pascal@example.com")
 
-    assert Nav.users_link().absent?()
+    assert Nav.users_link().absent?(session)
 
-    navigate_to("/users")
+    visit(session, "/users")
 
-    refute page_source() =~ "francine.pascal@example.com"
+    refute page_source(session) =~ "francine.pascal@example.com"
 
-    navigate_to("/messages")
-    assert Nav.error_text() == "Who are you?"
+    visit(session, "/messages")
+    Nav.assert_error_text(session, "Who are you?")
 
-    navigate_to("/teams")
-    assert Nav.error_text() == "Who are you?"
+    visit(session, "/teams")
+    Nav.assert_error_text(session, "Who are you?")
 
-    navigate_to("/settings")
-    assert Nav.error_text() == "Who are you?"
+    visit(session, "/settings")
+    Nav.assert_error_text(session, "Who are you?")
   end
+
 end
 
 defmodule Registrations.Integration.UnmnemonicDevices.Admin do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "unmnemonic-devices"
-  use Hound.Helpers
 
+  import Registrations.TestJsonHelpers, only: [decode_json_from_page: 1]
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
+  alias Wallaby.Query
 
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
-
-  test "admin can create and update settings" do
+  test "admin can create and update settings", %{session: session} do
     insert(:octavia, admin: true)
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Nav.login_link().click()
+    Nav.login_link().click(session)
 
-    Login.fill_email("octavia.butler@example.com")
-    Login.fill_password("Xenogenesis")
-    Login.submit()
+    Login.fill_email(session, "octavia.butler@example.com")
+    Login.fill_password(session, "Xenogenesis")
+    Login.submit(session)
 
-    Nav.settings_link().click()
+    Nav.settings_link().click(session)
 
-    refute selected?({:id, "settings_begun"})
+    refute has?(session, Query.css("#settings_begun:checked"))
 
-    fill_field({:id, "settings_override"}, "an override")
-    click({:id, "settings_begun"})
+    fill_in(session, Query.css("#settings_override"), with: "an override")
+    click(session, Query.css("#settings_begun"))
 
-    click({:css, "button[type=submit]"})
+    click(session, Query.css("button[type=submit]"))
 
-    assert current_path() == "/settings"
+    assert current_path(session) == "/settings"
 
-    assert selected?({:id, "settings_begun"})
-    assert visible_text({:css, ".alert-info"}) == "Settings updated successfully."
+    assert has?(session, Query.css("#settings_begun:checked"))
+    assert text(session, Query.css(".alert-info")) == "Settings updated successfully."
   end
 
-  test "non-admins cannot access the user list or messages" do
+  test "non-admins cannot access the user list or messages", %{session: session} do
     insert(:user, email: "francine.pascal@example.com")
 
-    navigate_to("/settings")
-    assert Nav.error_text() == "Who are you?"
+    visit(session, "/settings")
+    Nav.assert_error_text(session, "Who are you?")
   end
 
-  test "admin can view team JSON that includes voicepasses" do
+  test "admin can view team JSON that includes voicepasses", %{session: session} do
     a = insert(:user, email: "a@example.com")
     b = insert(:user, email: "b@example.com")
 
@@ -264,11 +263,12 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
 
     insert(:octavia, admin: true)
 
-    navigate_to("/")
-    Login.login_as_admin()
+    visit(session, "/")
+    Login.login_as_admin(session)
+    Nav.assert_logged_in_as(session, "octavia.butler@example.com")
 
-    navigate_to("/api/teams")
-    json = page_source() |> Floki.find("pre") |> Floki.text() |> Jason.decode!()
+    visit(session, "/api/teams")
+    json = decode_json_from_page(session)
 
     assert json == %{
              "data" => [
@@ -288,4 +288,5 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
              ]
            }
   end
+
 end

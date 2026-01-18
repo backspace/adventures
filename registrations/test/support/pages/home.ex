@@ -1,41 +1,42 @@
 defmodule Registrations.Pages.Home do
   @moduledoc false
-  use Hound.Helpers
+  alias Wallaby.Browser
+  alias Wallaby.Query
 
-  def placeholder_exists? do
-    Hound.Matchers.element?(:css, "[data-test-placeholder]")
+  def placeholder_exists?(session) do
+    Browser.has?(session, Query.css("[data-test-placeholder]"))
   end
 
-  def fill_name(name) do
-    fill_field({:id, "question_name"}, name)
+  def fill_name(session, name) do
+    Browser.fill_in(session, Query.css("#question_name"), with: name)
   end
 
-  def fill_email(email) do
-    fill_field({:id, "question_email"}, email)
+  def fill_email(session, email) do
+    Browser.fill_in(session, Query.css("#question_email"), with: email)
   end
 
-  def fill_subject(subject) do
-    fill_field({:id, "question_subject"}, subject)
+  def fill_subject(session, subject) do
+    Browser.fill_in(session, Query.css("#question_subject"), with: subject)
   end
 
-  def fill_question(question) do
-    fill_field({:id, "question_question"}, question)
+  def fill_question(session, question) do
+    Browser.fill_in(session, Query.css("#question_question"), with: question)
   end
 
-  def fill_waitlist_email(email) do
-    fill_field({:id, "waitlist_email"}, email)
+  def fill_waitlist_email(session, email) do
+    Browser.fill_in(session, Query.css("#waitlist_email"), with: email)
   end
 
-  def fill_waitlist_question(question) do
-    fill_field({:id, "waitlist_question"}, question)
+  def fill_waitlist_question(session, question) do
+    Browser.fill_in(session, Query.css("#waitlist_question"), with: question)
   end
 
-  def submit_question do
-    click({:class, "button"})
+  def submit_question(session) do
+    Browser.click(session, Query.css(".button"))
   end
 
-  def submit_waitlist do
-    click({:class, "button"})
+  def submit_waitlist(session) do
+    Browser.click(session, Query.css(".button"))
   end
 
   def pi do
@@ -44,14 +45,27 @@ defmodule Registrations.Pages.Home do
 
   defmodule Pi do
     @moduledoc false
-    @selector {:id, "pi"}
+    alias Wallaby.Browser
+    alias Wallaby.Query
+    require WaitForIt
 
-    def present? do
-      apply(Hound.Matchers, :element?, Tuple.to_list(@selector))
+    @selector "#pi"
+
+    def present?(session) do
+      Browser.has?(session, Query.css(@selector))
     end
 
-    def click do
-      click(@selector)
+    def click(session) do
+      WaitForIt.wait!(
+        try do
+          Browser.click(session, Query.css(@selector))
+          true
+        rescue
+          Wallaby.StaleReferenceError -> false
+          Wallaby.QueryError -> false
+          RuntimeError -> false
+        end
+      )
     end
   end
 
@@ -67,14 +81,17 @@ defmodule Registrations.Pages.Home do
 
     defmodule Voicepass do
       @moduledoc false
-      @selector {:css, "[data-test-voicepass]"}
+      alias Wallaby.Browser
+      alias Wallaby.Query
 
-      def present? do
-        apply(Hound.Matchers, :element?, Tuple.to_list(@selector))
+      @selector "[data-test-voicepass]"
+
+      def present?(session) do
+        Browser.has?(session, Query.css(@selector))
       end
 
-      def text do
-        visible_text(@selector)
+      def text(session) do
+        Browser.text(session, Query.css(@selector))
       end
     end
 
@@ -84,18 +101,21 @@ defmodule Registrations.Pages.Home do
 
     defmodule Regenerate do
       @moduledoc false
-      @selector {:css, "[data-test-regenerate]"}
+      alias Wallaby.Browser
+      alias Wallaby.Query
 
-      def present? do
-        apply(Hound.Matchers, :element?, Tuple.to_list(@selector))
+      @selector "[data-test-regenerate]"
+
+      def present?(session) do
+        Browser.has?(session, Query.css(@selector))
       end
 
-      def text do
-        visible_text(@selector)
+      def text(session) do
+        Browser.text(session, Query.css(@selector))
       end
 
-      def click do
-        click(@selector)
+      def click(session) do
+        Browser.click(session, Query.css(@selector))
       end
     end
   end

@@ -13,11 +13,11 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - Sentry/HybridSDK (8.33.0)
-  - sentry_flutter (8.7.0):
+  - Sentry/HybridSDK (8.56.2)
+  - sentry_flutter (9.9.1):
     - Flutter
     - FlutterMacOS
-    - Sentry/HybridSDK (= 8.33.0)
+    - Sentry/HybridSDK (= 8.56.2)
   - share_plus (0.0.1):
     - FlutterMacOS
   - "sqlite3 (3.46.1+1)":
@@ -86,12 +86,12 @@ SPEC CHECKSUMS:
   mobile_scanner: 0a05256215b047af27b9495db3b77640055e8824
   package_info_plus: fa739dd842b393193c5ca93c26798dff6e3d0e0c
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
-  Sentry: 8560050221424aef0bebc8e31eedf00af80f90a6
-  sentry_flutter: e26b861f744e5037a3faf9bf56603ec65d658a61
+  Sentry: b53951377b78e21a734f5dc8318e333dbfc682d7
+  sentry_flutter: d44ce25f0ed7b944b885c5d34883092a3e6b2aa9
   share_plus: 36537c04ce0c3e3f5bd297ce4318b6d5ee5fd6cf
   sqlite3: 0bb0e6389d824e40296f531b858a2a0b71c0d2fb
   sqlite3_flutter_libs: 5ca46c1a04eddfbeeb5b16566164aa7ad1616e7b
 
 PODFILE CHECKSUM: c7446ec0700d0a01a2def96a8043bdb8298a6b8b
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

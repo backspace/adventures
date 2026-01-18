@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  three@0.77.1:
+    hash: 2uu5yljsuybhlzn6rd3ghlr4xq
+    path: patches/three@0.77.1.patch
+
 importers:
 
   .:
@@ -62,7 +67,7 @@ importers:
         version: 3.1.0(webpack@5.93.0(webpack-cli@5.1.4))
       three:
         specifier: ^0.77.1
-        version: 0.77.1
+        version: 0.77.1(patch_hash=2uu5yljsuybhlzn6rd3ghlr4xq)
       webpack:
         specifier: ^5.93.0
         version: 5.93.0(webpack-cli@5.1.4)
@@ -4101,7 +4106,7 @@ snapshots:
       commander: 2.20.3
       source-map-support: 0.5.21
 
-  three@0.77.1: {}
+  three@0.77.1(patch_hash=2uu5yljsuybhlzn6rd3ghlr4xq): {}
 
   to-fast-properties@2.0.0: {}
 

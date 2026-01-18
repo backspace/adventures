@@ -1,9 +1,8 @@
 defmodule Registrations.Integration.Messages do
   @moduledoc false
-  use RegistrationsWeb.ConnCase
+  use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
   use Registrations.SetAdventure, adventure: "clandestine-rendezvous"
-  use Hound.Helpers
 
   alias Pow.Ecto.Schema.Password
   alias Registrations.Pages.Login
@@ -11,9 +10,9 @@ defmodule Registrations.Integration.Messages do
   alias Registrations.Pages.Nav
   alias Registrations.Pages.Register
 
-  hound_session(Registrations.ChromeHeadlessHelper.additional_capabilities())
-
-  test "a message is sent to all registrants with their team information summarised" do
+  test "a message is sent to all registrants with their team information summarised", %{
+    session: session
+  } do
     insert(:admin,
       email: "admin@example.com",
       password_hash: Password.pbkdf2_hash("admin")
@@ -33,25 +32,24 @@ defmodule Registrations.Integration.Messages do
 
     insert(:user, email: "empty@example.com")
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Login.login_as("admin@example.com", "admin")
-    Nav.edit_messages()
+    Login.login_as(session, "admin@example.com", "admin")
+    Nav.edit_messages(session)
 
-    Messages.new_message()
+    Messages.new_message(session)
 
-    Messages.fill_subject("A Subject!")
-    Messages.fill_content("This is the content.")
-    Messages.fill_postmarked_at("2010-01-01")
-    Messages.check_ready()
-    Messages.save()
+    Messages.fill_subject(session, "A Subject!")
+    Messages.fill_content(session, "This is the content.")
+    Messages.fill_postmarked_at(session, "2010-01-01")
+    Messages.check_ready(session)
+    Messages.save(session)
 
-    Messages.send()
-    Messages.dismiss_alert()
+    Messages.send(session)
 
-    assert Nav.info_text() == "Message was sent"
+    Nav.assert_info_text(session, "Message was sent")
 
-    [empty_email, _, email, _] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([empty_email, _ignored1, email, _ignored2])
     assert email.to == [{"", "user@example.com"}]
     assert email.from == {"", "b@events.chromatin.ca"}
     assert email.subject == "[rendezvous] A Subject!"
@@ -63,7 +61,7 @@ defmodule Registrations.Integration.Messages do
     assert String.contains?(empty_email.text_body, "You haven’t filled in any details!")
   end
 
-  test "a message can be sent to just the logged-in user" do
+  test "a message can be sent to just the logged-in user", %{session: session} do
     insert(:admin,
       email: "admin@example.com",
       password_hash: Password.pbkdf2_hash("admin")
@@ -83,62 +81,62 @@ defmodule Registrations.Integration.Messages do
 
     insert(:user, email: "empty@example.com")
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Login.login_as("admin@example.com", "admin")
-    Nav.edit_messages()
+    Login.login_as(session, "admin@example.com", "admin")
+    Nav.edit_messages(session)
 
-    Messages.new_message()
+    Messages.new_message(session)
 
-    Messages.fill_subject("A Subject!")
-    Messages.fill_content("This is the content.")
-    Messages.fill_postmarked_at("2010-01-01")
-    Messages.check_ready()
-    Messages.save()
+    Messages.fill_subject(session, "A Subject!")
+    Messages.fill_content(session, "This is the content.")
+    Messages.fill_postmarked_at(session, "2010-01-01")
+    Messages.check_ready(session)
+    Messages.save(session)
 
-    Messages.send_to_me()
+    Messages.send_to_me(session)
 
-    assert Nav.info_text() == "Message was sent"
+    Nav.assert_info_text(session, "Message was sent")
 
-    [email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([email])
     assert email.to == [{"", "admin@example.com"}]
     assert email.from == {"", "b@events.chromatin.ca"}
     assert email.subject == "[rendezvous] A Subject!"
   end
 
-  test "message sender name/address can be overridden" do
+  test "message sender name/address can be overridden", %{session: session} do
     insert(:admin,
       email: "admin@example.com",
       password_hash: Password.pbkdf2_hash("admin")
     )
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Login.login_as("admin@example.com", "admin")
-    Nav.edit_messages()
+    Login.login_as(session, "admin@example.com", "admin")
+    Nav.edit_messages(session)
 
-    Messages.new_message()
+    Messages.new_message(session)
 
-    Messages.fill_subject("A Subject!")
-    Messages.fill_content("This is the content.")
+    Messages.fill_subject(session, "A Subject!")
+    Messages.fill_content(session, "This is the content.")
 
-    Messages.fill_from_name("Knut")
-    Messages.fill_from_address("knut@example.com")
-    Messages.fill_postmarked_at("2010-01-01")
+    Messages.fill_from_name(session, "Knut")
+    Messages.fill_from_address(session, "knut@example.com")
+    Messages.fill_postmarked_at(session, "2010-01-01")
 
-    Messages.check_ready()
-    Messages.save()
+    Messages.check_ready(session)
+    Messages.save(session)
 
-    Messages.send()
-    Messages.dismiss_alert()
+    Messages.send(session)
 
-    assert Nav.info_text() == "Message was sent"
+    Nav.assert_info_text(session, "Message was sent")
 
-    [email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([email])
     assert email.from == {"Knut", "knut@example.com"}
   end
 
-  test "a message with show team enabled shows the actual team information instead of their details" do
+  test "a message with show team enabled shows the actual team information instead of their details",
+       %{session: session} do
     insert(:admin,
       email: "admin@example.com",
       password_hash: Password.pbkdf2_hash("admin")
@@ -161,26 +159,25 @@ defmodule Registrations.Integration.Messages do
 
     insert(:user, email: "teamless-user@example.com")
 
-    navigate_to("/")
+    visit(session, "/")
 
-    Login.login_as("admin@example.com", "admin")
-    Nav.edit_messages()
+    Login.login_as(session, "admin@example.com", "admin")
+    Nav.edit_messages(session)
 
-    Messages.new_message()
+    Messages.new_message(session)
 
-    Messages.fill_subject("A Subject!")
-    Messages.fill_content("ya")
-    Messages.fill_postmarked_at("2010-01-01")
-    Messages.check_ready()
-    Messages.check_show_team()
-    Messages.save()
+    Messages.fill_subject(session, "A Subject!")
+    Messages.fill_content(session, "ya")
+    Messages.fill_postmarked_at(session, "2010-01-01")
+    Messages.check_ready(session)
+    Messages.check_show_team(session)
+    Messages.save(session)
 
-    Messages.send()
-    Messages.dismiss_alert()
+    Messages.send(session)
 
-    assert Nav.info_text() == "Message was sent"
+    Nav.assert_info_text(session, "Message was sent")
 
-    sent_emails = Registrations.SwooshHelper.sent_email()
+    sent_emails = wait_for_emails([_email1, _email2, _email3, _email4])
 
     has_team_email =
       Enum.find(sent_emails, fn email ->
@@ -205,7 +202,9 @@ defmodule Registrations.Integration.Messages do
     assert String.contains?(has_no_team_email.text_body, "You have no team assigned!")
   end
 
-  test "the backlog of existing messages is sent to a new registrant after the welcome" do
+  test "the backlog of existing messages is sent to a new registrant after the welcome", %{
+    session: session
+  } do
     insert(:message,
       subject: "Subject one",
       content: "Content one",
@@ -216,15 +215,15 @@ defmodule Registrations.Integration.Messages do
     insert(:message, subject: "Subject two", content: "Content two")
     insert(:not_ready_message, subject: "Not ready", content: "Not ready")
 
-    navigate_to("/")
-    Nav.register_link().click()
+    visit(session, "/")
+    Nav.register_link().click(session)
 
-    Register.fill_email("registerer@example.com")
-    Register.fill_password("abcdefghi")
-    Register.fill_password_confirmation("abcdefghi")
-    Register.submit()
+    Register.fill_email(session, "registerer@example.com")
+    Register.fill_password(session, "abcdefghi")
+    Register.fill_password_confirmation(session, "abcdefghi")
+    Register.submit(session)
 
-    [_admin, _welcome, backlog_email] = Registrations.SwooshHelper.sent_email()
+    wait_for_emails([_admin, _welcome, backlog_email])
 
     assert backlog_email.to == [{"", "registerer@example.com"}]
     assert backlog_email.from == {"", "b@events.chromatin.ca"}

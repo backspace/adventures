@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/mixins/run_state_mixin.dart';
 import 'package:waydowntown/models/run.dart';
+import 'package:waydowntown/models/submission.dart';
 import 'package:waydowntown/run_header.dart';
+import 'package:waydowntown/services/user_service.dart';
 
 abstract class StringDetector {
   Stream<String> get detectedStrings;
@@ -65,8 +67,8 @@ class CollectorGameState extends State<CollectorGame>
   List<HintItem> hints = [];
   bool isLoadingHint = false;
   Map<String, String> itemErrors = {};
-
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  bool showIncorrectSubmissions = true;
+  String? currentUserId;
 
   @override
   Dio get dio => widget.dio;
@@ -81,6 +83,13 @@ class CollectorGameState extends State<CollectorGame>
     WidgetsBinding.instance.addObserver(this);
     widget.detector.detectedStrings.listen(_onItemDetected);
     widget.detector.startDetecting();
+    UserService.getUserId().then((id) {
+      if (mounted) {
+        setState(() {
+          currentUserId = id;
+        });
+      }
+    });
   }
 
   void _onItemDetected(String value) {
@@ -179,8 +188,6 @@ class CollectorGameState extends State<CollectorGame>
     if (mounted) {
       setState(() {
         detectedItems.insert(0, item);
-        _listKey.currentState
-            ?.insertItem(0, duration: const Duration(milliseconds: 300));
       });
     }
   }
@@ -189,8 +196,6 @@ class CollectorGameState extends State<CollectorGame>
     if (mounted) {
       setState(() {
         hints.insert(0, hint);
-        _listKey.currentState
-            ?.insertItem(0, duration: const Duration(milliseconds: 300));
       });
     }
   }
@@ -198,12 +203,6 @@ class CollectorGameState extends State<CollectorGame>
   void _removeHint(HintItem hint) {
     final index = hints.indexOf(hint);
     if (index != -1) {
-      final removedHint = hints[index];
-      _listKey.currentState?.removeItem(
-        index,
-        (context, animation) => _buildHintTile(removedHint, animation),
-        duration: const Duration(milliseconds: 300),
-      );
       setState(() {
         hints.removeAt(index);
       });
@@ -248,53 +247,43 @@ class CollectorGameState extends State<CollectorGame>
     }
   }
 
-  Widget _buildItem(
-      BuildContext context, DetectedItem item, Animation<double> animation) {
-    return SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(0, -1),
-        end: Offset.zero,
-      ).animate(CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeInOutCubic,
-      )),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            title: Text(item.value),
-            leading: _getIconForState(item.state, item.value),
-            trailing:
-                !widget.autoSubmit && item.state == SubmissionState.unsubmitted
-                    ? ElevatedButton(
-                        onPressed: () => submitItem(item),
-                        child: const Text('Submit'),
-                      )
-                    : null,
-            onTap: item.state == SubmissionState.unsubmitted ||
-                    item.state == SubmissionState.error
-                ? () => submitItem(item)
-                : null,
-          ),
-          if (item.state == SubmissionState.correct && item.matchedHint != null)
-            Padding(
-              padding:
-                  const EdgeInsets.only(left: 72.0, right: 16.0, bottom: 8.0),
-              child: Text(
-                item.matchedHint!,
-                style: const TextStyle(
-                  fontStyle: FontStyle.italic,
-                  color: Colors.blue,
-                ),
+  Widget _buildItem(BuildContext context, DetectedItem item) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          title: Text(item.value),
+          leading: _getIconForState(item.state, item.value),
+          trailing:
+              !widget.autoSubmit && item.state == SubmissionState.unsubmitted
+                  ? ElevatedButton(
+                      onPressed: () => submitItem(item),
+                      child: const Text('Submit'),
+                    )
+                  : null,
+          onTap: item.state == SubmissionState.unsubmitted ||
+                  item.state == SubmissionState.error
+              ? () => submitItem(item)
+              : null,
+        ),
+        if (item.state == SubmissionState.correct && item.matchedHint != null)
+          Padding(
+            padding:
+                const EdgeInsets.only(left: 72.0, right: 16.0, bottom: 8.0),
+            child: Text(
+              item.matchedHint!,
+              style: const TextStyle(
+                fontStyle: FontStyle.italic,
+                color: Colors.blue,
               ),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 
-  Widget _buildHintTile(HintItem hint, [Animation<double>? animation]) {
-    Widget tile = Card(
+  Widget _buildHintTile(HintItem hint) {
+    return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       color: Colors.blue.shade50,
       child: ListTile(
@@ -311,38 +300,87 @@ class CollectorGameState extends State<CollectorGame>
         ),
       ),
     );
-
-    if (animation != null) {
-      return SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, -1),
-          end: Offset.zero,
-        ).animate(CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeInOutCubic,
-        )),
-        child: tile,
-      );
-    }
-
-    return tile;
   }
 
-  Widget _buildListItem(
-      BuildContext context, int index, Animation<double> animation) {
-    final allItems = [
-      ...hints.map((hint) => MapEntry(hint.receivedAt,
-          (Animation<double> anim) => _buildHintTile(hint, anim))),
-      ...detectedItems.map((item) => MapEntry(item.submittedAt,
-          (Animation<double> anim) => _buildItem(context, item, anim))),
-    ]..sort((a, b) => b.key.compareTo(a.key));
+  Widget _buildSubmissionTile(Submission submission) {
+    final state = submission.correct
+        ? SubmissionState.correct
+        : SubmissionState.incorrect;
+    final isCurrentUser =
+        currentUserId != null && submission.creatorId == currentUserId;
 
-    return allItems[index].value(animation);
+    return ListTile(
+      title: Text(submission.submission),
+      leading: _getIconForState(state, submission.submission),
+      subtitle: currentUserId == null
+          ? null
+          : Text(isCurrentUser ? 'You' : 'Teammate'),
+    );
+  }
+
+  List<Submission> _visibleTeamSubmissions() {
+    return currentRun.submissions
+        .where((submission) => showIncorrectSubmissions || submission.correct)
+        .toList();
+  }
+
+  List<_TimelineItem> _buildTimelineItems(BuildContext context) {
+    final items = <_TimelineItem>[];
+    final teamSubmissions = _visibleTeamSubmissions();
+    final visibleDetectedValues = detectedItems
+        .where(
+            (item) => showIncorrectSubmissions || item.state != SubmissionState.incorrect)
+        .where((item) =>
+            item.state == SubmissionState.correct ||
+            item.state == SubmissionState.incorrect)
+        .map((item) => item.value)
+        .toSet();
+
+    for (final hint in hints) {
+      items.add(_TimelineItem(
+        timestamp: hint.receivedAt,
+        widget: _buildHintTile(hint),
+      ));
+    }
+
+    for (final item in detectedItems) {
+      if (!showIncorrectSubmissions && item.state == SubmissionState.incorrect) {
+        continue;
+      }
+
+      items.add(_TimelineItem(
+        timestamp: item.submittedAt,
+        widget: _buildItem(context, item),
+      ));
+    }
+
+    for (final submission in teamSubmissions) {
+      if (visibleDetectedValues.contains(submission.submission)) {
+        continue;
+      }
+      items.add(_TimelineItem(
+        timestamp: submission.insertedAt,
+        widget: _buildSubmissionTile(submission),
+      ));
+    }
+
+    final insertionOrder = <_TimelineItem, int>{
+      for (var i = 0; i < items.length; i++) items[i]: i,
+    };
+
+    items.sort((a, b) {
+      final timeCompare = b.timestamp.compareTo(a.timestamp);
+      if (timeCompare != 0) {
+        return timeCompare;
+      }
+      return insertionOrder[b]!.compareTo(insertionOrder[a]!);
+    });
+    return items;
   }
 
   @override
   Widget build(BuildContext context) {
-    final int totalItems = detectedItems.length + hints.length;
+    final timelineItems = _buildTimelineItems(context);
 
     final unrevealedHintsExist = widget.run.specification.answers
         ?.any((answer) => answer.hasHint && answer.hint == null);
@@ -352,6 +390,19 @@ class CollectorGameState extends State<CollectorGame>
       appBar: AppBar(
         title: Text(widget.runtimeType.toString()),
         actions: [
+          IconButton(
+            icon: Icon(showIncorrectSubmissions
+                ? Icons.visibility
+                : Icons.visibility_off),
+            tooltip: showIncorrectSubmissions
+                ? 'Hide incorrect submissions'
+                : 'Show incorrect submissions',
+            onPressed: () {
+              setState(() {
+                showIncorrectSubmissions = !showIncorrectSubmissions;
+              });
+            },
+          ),
           if (showHintButton)
             IconButton(
               icon: isLoadingHint
@@ -379,13 +430,14 @@ class CollectorGameState extends State<CollectorGame>
           else
             widget.inputBuilder(context, widget.detector),
           Expanded(
-            child: AnimatedList(
-              key: _listKey,
-              initialItemCount: totalItems,
-              itemBuilder: (context, index, animation) {
-                return _buildListItem(context, index, animation);
-              },
-            ),
+            child: timelineItems.isEmpty
+                ? const Center(child: Text('No submissions yet.'))
+                : ListView.builder(
+                    itemCount: timelineItems.length,
+                    itemBuilder: (context, index) {
+                      return timelineItems[index].widget;
+                    },
+                  ),
           ),
         ],
       ),
@@ -413,4 +465,11 @@ class CollectorGameState extends State<CollectorGame>
     widget.detector.dispose();
     super.dispose();
   }
+}
+
+class _TimelineItem {
+  final DateTime timestamp;
+  final Widget widget;
+
+  const _TimelineItem({required this.timestamp, required this.widget});
 }

@@ -27,10 +27,20 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
 
   Future<void> fetchMySpecifications() async {
     const endpoint = '/waydowntown/specifications/mine';
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+        isRequestError = false;
+      });
+    }
     try {
       final response = await widget.dio.get(
         endpoint,
       );
+
+      if (!mounted) {
+        return;
+      }
 
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
@@ -142,14 +152,25 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
                     icon: const Icon(Icons.play_arrow),
                   ),
                   IconButton(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => EditSpecificationWidget(
-                          dio: widget.dio,
-                          specification: spec,
+                    onPressed: () async {
+                      final didUpdate =
+                          await Navigator.of(context).push<bool>(
+                        MaterialPageRoute(
+                          builder: (context) => EditSpecificationWidget(
+                            dio: widget.dio,
+                            specification: spec,
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+
+                      if (!mounted) {
+                        return;
+                      }
+
+                      if (didUpdate == true) {
+                        await fetchMySpecifications();
+                      }
+                    },
                     icon: const Icon(Icons.edit),
                   ),
                 ],
