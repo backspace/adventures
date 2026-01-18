@@ -419,9 +419,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -436,9 +440,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -515,8 +523,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = BC7CE70418D06F42F8777156 /* Pods-Runner.debug-local.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				LAUNCH_SCREEN_STORYBOARD = localLaunchScreen.storyboard;
 				PRODUCT_NAME = Runner;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = "Debug-local";
 		};
@@ -524,8 +537,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 756D130110B177996752C091 /* Pods-Runner.profile-local.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				LAUNCH_SCREEN_STORYBOARD = localLaunchScreen.storyboard;
 				PRODUCT_NAME = Runner;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = "Profile-local";
 		};
@@ -533,8 +551,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 491F6264BCFC87A29688B23C /* Pods-Runner.release-local.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				LAUNCH_SCREEN_STORYBOARD = localLaunchScreen.storyboard;
 				PRODUCT_NAME = Runner;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = "Release-local";
 		};
@@ -542,8 +565,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CAD4359CB3D7737540624C90 /* Pods-Runner.debug-production.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				LAUNCH_SCREEN_STORYBOARD = productionLaunchScreen.storyboard;
 				PRODUCT_NAME = Runner;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = "Debug-production";
 		};
@@ -551,8 +579,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3B60AB8BFD401F69A0C12191 /* Pods-Runner.profile-production.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				LAUNCH_SCREEN_STORYBOARD = productionLaunchScreen.storyboard;
 				PRODUCT_NAME = Runner;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = "Profile-production";
 		};
@@ -560,8 +593,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 9581D1FAA0092EF4020B0F04 /* Pods-Runner.release-production.xcconfig */;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RH9KW4462X;
 				LAUNCH_SCREEN_STORYBOARD = productionLaunchScreen.storyboard;
 				PRODUCT_NAME = Runner;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = "Release-production";
 		};
@@ -822,6 +860,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = RH9KW4462X;
 				ENABLE_BITCODE = NO;
@@ -834,6 +874,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = ca.chromatin.waydowntown;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -1091,7 +1132,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = RH9KW4462X;
 				ENABLE_BITCODE = NO;
@@ -1104,6 +1146,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = ca.chromatin.waydowntown;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
@@ -1123,6 +1166,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = RH9KW4462X;
 				ENABLE_BITCODE = NO;
@@ -1135,6 +1180,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = ca.chromatin.waydowntown;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
