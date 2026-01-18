@@ -1,8 +1,8 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/participation.dart';
@@ -114,8 +114,7 @@ class TestHelpers {
 
     dioAdapter.onPost(
       setup.route,
-      (server) =>
-          server.reply(201, generateSubmissionResponseJson(response)),
+      (server) => server.reply(201, generateSubmissionResponseJson(response)),
       data: requestJson,
     );
   }
