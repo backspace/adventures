@@ -55,9 +55,10 @@ void main() {
     when(device3.remoteId).thenReturn(const DeviceIdentifier("3"));
   });
 
-  setUp(() {
+  setUp(() async {
     mockFlutterBluePlus = MockFlutterBluePlusMockable();
     dotenv.testLoad(fileInput: File('.env').readAsStringSync());
+    await TestHelpers.setMockUser();
 
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());

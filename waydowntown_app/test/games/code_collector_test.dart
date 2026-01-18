@@ -29,9 +29,10 @@ void main() {
 
   late MockMobileScannerController mockController;
 
-  setUp(() {
+  setUp(() async {
     mockController = MockMobileScannerController();
     dotenv.testLoad(fileInput: File('.env').readAsStringSync());
+    await TestHelpers.setMockUser();
 
     dio = Dio(BaseOptions(baseUrl: dotenv.env['API_ROOT']!));
     dio.interceptors.add(PrettyDioLogger());

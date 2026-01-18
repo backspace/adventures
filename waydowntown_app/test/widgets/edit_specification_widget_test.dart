@@ -219,29 +219,26 @@ another_concept:
     await tester.pumpAndSettle();
 
     // Alphabetic sort by default
-    final azButtonFinder = find.widgetWithText(ElevatedButton, 'A-Z');
-    final nearestButtonFinder = find.widgetWithText(ElevatedButton, 'Nearest');
+    final azButtonFinder = find.byKey(const Key('region-sort-alpha'));
+    final nearestButtonFinder = find.byKey(const Key('region-sort-nearest'));
 
-    ElevatedButton azButton = tester.widget(azButtonFinder);
-    ElevatedButton nearestButton = tester.widget(nearestButtonFinder);
+    IconButton azButton = tester.widget(azButtonFinder);
+    IconButton nearestButton = tester.widget(nearestButtonFinder);
 
-    expect(azButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
+    expect(azButton.style?.backgroundColor?.resolve({}),
         equals(Theme.of(tester.element(azButtonFinder)).primaryColor));
-    expect(nearestButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
-        isNot(Theme.of(tester.element(nearestButtonFinder)).primaryColor));
+    expect(nearestButton.style?.backgroundColor?.resolve({}), isNull);
 
+    await tester.ensureVisible(azButtonFinder);
     await tester.tap(azButtonFinder);
     await tester.pumpAndSettle();
 
     azButton = tester.widget(azButtonFinder);
     nearestButton = tester.widget(nearestButtonFinder);
 
-    expect(azButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
+    expect(azButton.style?.backgroundColor?.resolve({}),
         equals(Theme.of(tester.element(azButtonFinder)).primaryColor));
-    expect(
-        nearestButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
-        isNot(equals(
-            Theme.of(tester.element(nearestButtonFinder)).primaryColor)));
+    expect(nearestButton.style?.backgroundColor?.resolve({}), isNull);
 
     // Regions should be sorted case-insensitive
 
@@ -258,18 +255,20 @@ another_concept:
     expect(find.text('2 km'), findsNothing);
     expect(find.text('3 km'), findsNothing);
 
+    // Close the dropdown before interacting with other controls.
+    await tester.tap(find.text('region 1').last);
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(nearestButtonFinder);
     await tester.tap(nearestButtonFinder);
     await tester.pumpAndSettle();
 
     azButton = tester.widget(azButtonFinder);
     nearestButton = tester.widget(nearestButtonFinder);
 
-    expect(azButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
-        (equals(Theme.of(tester.element(azButtonFinder)).primaryColor)));
-    expect(
-        nearestButton.style?.backgroundColor?.resolve({WidgetState.pressed}),
-        isNot(equals(
-            Theme.of(tester.element(nearestButtonFinder)).primaryColor)));
+    expect(azButton.style?.backgroundColor?.resolve({}), isNull);
+    expect(nearestButton.style?.backgroundColor?.resolve({}),
+        equals(Theme.of(tester.element(nearestButtonFinder)).primaryColor));
 
     await tester.tap(find.byKey(const Key('region-dropdown')));
     await tester.pumpAndSettle();
@@ -297,12 +296,9 @@ another_concept:
     expect(find.text(specification.startDescription!), findsOneWidget);
     expect(find.text(specification.taskDescription!), findsOneWidget);
     expect(find.text(specification.duration.toString()), findsOneWidget);
-    expect(
-        find.descendant(
-          of: find.byType(MenuItemButton),
-          matching: find.text('region 1'),
-        ),
-        findsOneWidget);
+    final regionDropdownState =
+        tester.state<FormFieldState<String>>(find.byKey(const Key('region-dropdown')));
+    expect(regionDropdownState.value, equals('region1'));
 
     await tester.tap(find.byType(DropdownButtonFormField<String>).first);
     await tester.pumpAndSettle();
@@ -424,7 +420,9 @@ another_concept:
 
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('New'));
+    final addRegionButton = find.byKey(const Key('region-sort-add'));
+    await tester.ensureVisible(addRegionButton);
+    await tester.tap(addRegionButton);
     await tester.pumpAndSettle();
 
     expect(find.text('Create New Region'), findsOneWidget);
@@ -437,11 +435,8 @@ another_concept:
     await tester.tap(find.text('Save Region'));
     await tester.pumpAndSettle();
 
-    expect(
-        find.descendant(
-          of: find.byType(MenuItemButton),
-          matching: find.text('New Region'),
-        ),
-        findsOneWidget);
+    final regionDropdownState =
+        tester.state<FormFieldState<String>>(find.byKey(const Key('region-dropdown')));
+    expect(regionDropdownState.value, equals('new_region'));
   });
 }
