@@ -8,6 +8,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:waydowntown/models/run.dart';
+import 'package:waydowntown/models/submission.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
 import 'package:waydowntown/routes/run_launch_route.dart';
 import 'package:waydowntown/services/user_service.dart';
@@ -74,6 +76,10 @@ void main() {
 bluetooth_collector:
   name: Bluetooth Collector
   instructions: Collect Bluetooth devices
+payphone_collector:
+  name: Payphone Collector
+  instructions: Collect phone numbers
+  long_running: true
 ''');
 
     (mockSocket, _, _) = TestHelpers.setupMockSocket();
@@ -120,5 +126,62 @@ bluetooth_collector:
     await tester.pumpAndSettle();
 
     expect(find.text('Error fetching game'), findsOneWidget);
+  });
+
+  testWidgets(
+      'RequestRunRoute resumes long-running runs and shows existing submissions',
+      (WidgetTester tester) async {
+    final now = DateTime.now();
+    final baseRun = TestHelpers.createMockRun(
+      concept: 'payphone_collector',
+      description: 'Collect phone numbers',
+      startedAt: now.subtract(const Duration(minutes: 5)),
+    );
+    final run = Run(
+      id: baseRun.id,
+      specification: baseRun.specification,
+      correctSubmissions: 1,
+      totalAnswers: baseRun.totalAnswers,
+      startedAt: baseRun.startedAt,
+      taskDescription: baseRun.taskDescription,
+      participations: baseRun.participations,
+      submissions: [
+        Submission(
+          id: 'submission-1',
+          submission: '555-1234',
+          correct: true,
+          insertedAt: now.subtract(const Duration(minutes: 4)),
+          creatorId: 'user1',
+        ),
+      ],
+    );
+
+    final runJson = TestHelpers.generateRunJson(run);
+
+    dioAdapter.onGet(
+      '/waydowntown/runs?filter[started]=true&filter[specification.concept]=payphone_collector',
+      (server) => server.reply(200, {
+        'data': [runJson['data']],
+        'included': runJson['included'],
+      }),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: DefaultAssetBundle(
+          bundle: testAssetBundle,
+          child: RequestRunRoute(dio: dio, testSocket: mockSocket),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RunLaunchRoute), findsOneWidget);
+    expect(find.text('Resume Game'), findsOneWidget);
+
+    await tester.tap(find.text('Resume Game'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('555-1234'), findsOneWidget);
   });
 }

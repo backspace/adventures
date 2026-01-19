@@ -14,14 +14,24 @@ class Submission {
   });
 
   factory Submission.fromJson(Map<String, dynamic> json) {
-    print('submission json');
-    print(json);
+    final id = json['id'];
+    if (id is! String) {
+      throw const FormatException('Submission must have an id');
+    }
+
+    final attributes = json['attributes'] as Map<String, dynamic>?;
+    final relationships = json['relationships'] as Map<String, dynamic>?;
+    final insertedAtRaw = attributes?['inserted_at'];
+    final insertedAt = insertedAtRaw is String
+        ? DateTime.parse(insertedAtRaw)
+        : DateTime.fromMillisecondsSinceEpoch(0);
+
     return Submission(
-      id: json['id'],
-      submission: json['attributes']['submission'],
-      correct: json['attributes']['correct'],
-      insertedAt: DateTime.parse(json['attributes']['inserted_at']),
-      creatorId: json['relationships']['creator']['data']['id'],
+      id: id,
+      submission: attributes?['submission'] as String? ?? '',
+      correct: attributes?['correct'] == true,
+      insertedAt: insertedAt,
+      creatorId: relationships?['creator']?['data']?['id'] as String?,
     );
   }
 }
