@@ -608,7 +608,15 @@ defmodule RegistrationsWeb.RunControllerTest do
 
       {:ok, not_started_run} = Waydowntown.create_run(user, %{}, %{"concept" => specification.concept})
 
-      %{user: user, started_run: started_run, not_started_run: not_started_run}
+      submission =
+        Repo.insert!(%Submission{
+          submission: "first",
+          correct: true,
+          creator_id: user.id,
+          run_id: started_run.id
+        })
+
+      %{user: user, started_run: started_run, not_started_run: not_started_run, submission: submission}
     end
 
     test "lists all started runs when filter[started]=true", %{conn: conn, started_run: started_run} do
@@ -632,6 +640,23 @@ defmodule RegistrationsWeb.RunControllerTest do
       response = json_response(conn, 200)
 
       assert length(response["data"]) == 2
+    end
+
+    test "includes submission creator relationship data", %{
+      conn: conn,
+      started_run: started_run,
+      submission: submission,
+      user: user
+    } do
+      conn = get(conn, Routes.run_path(conn, :index, filter: %{started: "true"}))
+      response = json_response(conn, 200)
+
+      assert Enum.any?(response["data"], &(&1["id"] == started_run.id))
+
+      included_submission =
+        Enum.find(response["included"], &(&1["type"] == "submissions" && &1["id"] == submission.id))
+
+      assert included_submission["relationships"]["creator"]["data"]["id"] == user.id
     end
   end
 

@@ -110,7 +110,6 @@ defmodule Registrations.Waydowntown do
     |> Repo.preload(run_preloads())
     |> Repo.preload(participations: [run: run_preloads()])
     |> Repo.preload([participations: [:user]], prefix: "public")
-    |> Repo.preload([submissions: [:creator]], prefix: "public")
   end
 
   def create_run(current_user, attrs \\ %{}, specification_filter \\ nil) do
@@ -353,7 +352,6 @@ defmodule Registrations.Waydowntown do
       Submission
       |> Repo.get!(id)
       |> Repo.preload(submission_preloads())
-      |> Repo.preload([:creator, run: [submissions: [:creator]]], prefix: "public")
 
   def create_submission(conn, %{"submission" => submission_text, "run_id" => run_id} = params) do
     current_user_id = conn.assigns[:current_user].id
@@ -716,24 +714,37 @@ defmodule Registrations.Waydowntown do
   end
 
   defp run_preloads do
+    user_query = user_preload_query()
+
     [
       participations: [
         run: [
           :participations,
           specification: [answers: [:reveals, :region]],
-          submissions: [answer: [:reveals, :region]]
+          submissions: [creator: user_query, answer: [:reveals, :region]]
         ]
       ],
-      submissions: [answer: [:reveals, :region]],
+      submissions: [creator: user_query, answer: [:reveals, :region]],
       specification: [answers: [:reveals, :region], region: [parent: [parent: [:parent]]]]
     ]
   end
 
   defp submission_preloads do
+    user_query = user_preload_query()
+
     [
+      creator: user_query,
       answer: [:reveals, :region],
-      run: [:participations, specification: [answers: [:reveals, :region]], submissions: [answer: [:reveals, :region]]]
+      run: [
+        :participations,
+        specification: [answers: [:reveals, :region]],
+        submissions: [creator: user_query, answer: [:reveals, :region]]
+      ]
     ]
+  end
+
+  defp user_preload_query do
+    from(u in User, prefix: "public")
   end
 
   def get_participation!(id),

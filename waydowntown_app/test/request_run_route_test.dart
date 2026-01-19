@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:waydowntown/models/participation.dart';
 import 'package:waydowntown/models/run.dart';
 import 'package:waydowntown/models/submission.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
@@ -131,12 +132,34 @@ payphone_collector:
   testWidgets(
       'RequestRunRoute resumes long-running runs and shows existing submissions',
       (WidgetTester tester) async {
+    final binding = tester.binding;
+    await binding.setSurfaceSize(const Size(800, 1200));
+    addTearDown(() async {
+      await binding.setSurfaceSize(null);
+    });
+
     final now = DateTime.now();
     final baseRun = TestHelpers.createMockRun(
       concept: 'payphone_collector',
       description: 'Collect phone numbers',
       startedAt: now.subtract(const Duration(minutes: 5)),
     );
+    final participations = [
+      Participation(
+        id: 'participation-1',
+        userId: 'user1',
+        userName: 'Test User',
+        runId: baseRun.id,
+        readyAt: null,
+      ),
+      Participation(
+        id: 'participation-2',
+        userId: 'user2',
+        userName: 'Teammate',
+        runId: baseRun.id,
+        readyAt: null,
+      ),
+    ];
     final run = Run(
       id: baseRun.id,
       specification: baseRun.specification,
@@ -144,7 +167,7 @@ payphone_collector:
       totalAnswers: baseRun.totalAnswers,
       startedAt: baseRun.startedAt,
       taskDescription: baseRun.taskDescription,
-      participations: baseRun.participations,
+      participations: participations,
       submissions: [
         Submission(
           id: 'submission-1',
@@ -170,16 +193,24 @@ payphone_collector:
       MaterialApp(
         home: DefaultAssetBundle(
           bundle: testAssetBundle,
-          child: RequestRunRoute(dio: dio, testSocket: mockSocket),
+          child: RequestRunRoute(
+            dio: dio,
+            concept: 'payphone_collector',
+            testSocket: mockSocket,
+          ),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
     expect(find.byType(RunLaunchRoute), findsOneWidget);
-    expect(find.text('Resume Game'), findsOneWidget);
+    final resumeButton =
+        find.widgetWithText(ElevatedButton, 'Resume Game');
+    await tester.scrollUntilVisible(resumeButton, 100);
+    await tester.ensureVisible(resumeButton);
+    expect(resumeButton, findsOneWidget);
 
-    await tester.tap(find.text('Resume Game'));
+    await tester.tap(resumeButton);
     await tester.pumpAndSettle();
 
     expect(find.text('555-1234'), findsOneWidget);
