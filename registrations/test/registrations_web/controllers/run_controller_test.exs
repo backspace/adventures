@@ -642,6 +642,25 @@ defmodule RegistrationsWeb.RunControllerTest do
       assert length(response["data"]) == 2
     end
 
+    test "filters runs by specification concept", %{conn: conn, user: user} do
+      Repo.insert!(%Specification{concept: "payphone_collector"})
+      Repo.insert!(%Specification{concept: "elevator_collector"})
+
+      {:ok, payphone_run} = Waydowntown.create_run(user, %{}, %{"concept" => "payphone_collector"})
+      {:ok, _} = Waydowntown.create_run(user, %{}, %{"concept" => "elevator_collector"})
+
+      conn =
+        get(
+          conn,
+          Routes.run_path(conn, :index, filter: %{"specification.concept" => "payphone_collector"})
+        )
+
+      response = json_response(conn, 200)
+
+      assert length(response["data"]) == 1
+      assert Enum.at(response["data"], 0)["id"] == payphone_run.id
+    end
+
     test "includes submission creator relationship data", %{
       conn: conn,
       started_run: started_run,

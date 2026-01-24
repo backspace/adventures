@@ -98,6 +98,9 @@ defmodule Registrations.Waydowntown do
       {"started", "false"}, query ->
         from(r in query, where: is_nil(r.started_at))
 
+      {"specification.concept", concept}, query when is_binary(concept) ->
+        from(r in query, join: s in assoc(r, :specification), where: s.concept == ^concept)
+
       _, query ->
         query
     end)
