@@ -208,7 +208,7 @@ defmodule Registrations.Pages.Nav do
     rescue
       Wallaby.StaleReferenceError -> :error
       Wallaby.QueryError -> :error
-      RuntimeError = error -> handle_runtime_dom_error(error, __STACKTRACE__)
+      error in RuntimeError -> handle_runtime_dom_error(error, __STACKTRACE__)
     end
   end
 

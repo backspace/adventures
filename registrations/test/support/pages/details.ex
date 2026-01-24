@@ -215,7 +215,7 @@ defmodule Registrations.Pages.Details do
         rescue
           Wallaby.StaleReferenceError -> :error
           Wallaby.QueryError -> :error
-          RuntimeError = error -> handle_runtime_dom_error(error, __STACKTRACE__)
+          error in RuntimeError -> handle_runtime_dom_error(error, __STACKTRACE__)
         end
       end
 
@@ -299,7 +299,7 @@ defmodule Registrations.Pages.Details do
     rescue
       Wallaby.StaleReferenceError -> :retry
       Wallaby.QueryError -> :retry
-      RuntimeError = error -> handle_runtime_dom_error(error, __STACKTRACE__)
+      error in RuntimeError -> handle_runtime_dom_error(error, __STACKTRACE__)
     end
   end
 
