@@ -679,7 +679,7 @@ defmodule Registrations.Waydowntown do
   end
 
   defp normalise_submission_for_concept(concept, submission) do
-    if concept_normalizes_submissions?(concept) do
+    if concept_normalises_submissions?(concept) do
       normalize_string(submission)
     else
       submission
@@ -687,14 +687,14 @@ defmodule Registrations.Waydowntown do
   end
 
   defp normalize_answer_for_concept(concept, answer) do
-    if concept_normalizes_submissions?(concept) do
+    if concept_normalises_submissions?(concept) do
       normalize_string(answer)
     else
       answer
     end
   end
 
-  defp concept_normalizes_submissions?(concept) do
+  defp concept_normalises_submissions?(concept) do
     concept_flag?(concept, "normalise_submissions") or concept == "string_collector"
   end
 
