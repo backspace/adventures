@@ -29,7 +29,8 @@ defmodule Registrations.Integration.Invitations do
 
     Details.InviteButton.click(session)
 
-    refute Details.InviteButton.present?(session)
+    Nav.assert_info_text(session, "Invitation sent")
+    Details.InviteButton.assert_absent(session)
 
     wait_for_emails([invitation_email])
     assert invitation_email.to == [{"", "bedap@example.com"}]

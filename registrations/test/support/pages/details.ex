@@ -149,6 +149,7 @@ defmodule Registrations.Pages.Details do
     @moduledoc false
     alias Wallaby.Browser
     alias Wallaby.Query
+    require WaitForIt
 
     def present?(session) do
       Browser.has?(session, Query.css("[data-test-invite]"))
@@ -156,6 +157,14 @@ defmodule Registrations.Pages.Details do
 
     def click(session) do
       Browser.click(session, Query.css("[data-test-invite]"))
+    end
+
+    def assert_absent(session, message \\ nil) do
+      WaitForIt.wait!(!present?(session))
+
+      if present?(session) do
+        raise(message || "Expected invite button to be absent")
+      end
     end
   end
 

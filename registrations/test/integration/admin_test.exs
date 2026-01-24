@@ -214,6 +214,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav
   alias Wallaby.Query
+  require WaitForIt
 
   test "admin can create and update settings", %{session: session} do
     insert(:octavia, admin: true)
@@ -235,10 +236,9 @@ defmodule Registrations.Integration.UnmnemonicDevices.Admin do
 
     click(session, Query.css("button[type=submit]"))
 
-    assert current_path(session) == "/settings"
-
-    assert has?(session, Query.css("#settings_begun:checked"))
-    assert text(session, Query.css(".alert-info")) == "Settings updated successfully."
+    WaitForIt.wait!(current_path(session) == "/settings")
+    Nav.assert_info_text(session, "Settings updated successfully.")
+    WaitForIt.wait!(has?(session, Query.css("#settings_begun:checked")))
   end
 
   test "non-admins cannot access the user list or messages", %{session: session} do
