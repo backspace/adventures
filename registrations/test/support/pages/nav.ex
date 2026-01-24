@@ -88,7 +88,17 @@ defmodule Registrations.Pages.Nav do
 
     def click(session) do
       WaitForIt.wait!(Browser.has?(session, Query.css(@selector)), timeout: @logout_timeout)
-      Browser.click(session, Query.css(@selector))
+      WaitForIt.wait!(
+        try do
+          Browser.click(session, Query.css(@selector))
+          true
+        rescue
+          Wallaby.StaleReferenceError -> false
+          Wallaby.QueryError -> false
+          RuntimeError -> false
+        end,
+        timeout: @logout_timeout
+      )
       WaitForIt.wait!(
         not Browser.has?(session, Query.css(@selector)) or
           Browser.has?(session, Query.css("a.login")),
