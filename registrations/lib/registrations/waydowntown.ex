@@ -28,8 +28,19 @@ defmodule Registrations.Waydowntown do
     Map.keys(concepts_yaml())
   end
 
+  def concept_is_long_running(concept) do
+    concept_flag?(concept, "long_running")
+  end
+
   def concept_is_placed(concept) do
-    !(concepts_yaml()[concept]["placeless"] == true)
+    concept_data = Map.get(concepts_yaml(), concept, %{})
+    concept_data["placeless"] != true
+  end
+
+  defp concept_flag?(concept, key) do
+    concepts_yaml()
+    |> Map.get(concept, %{})
+    |> Map.get(key) == true
   end
 
   def list_regions do
@@ -87,6 +98,9 @@ defmodule Registrations.Waydowntown do
       {"started", "false"}, query ->
         from(r in query, where: is_nil(r.started_at))
 
+      {"specification.concept", concept}, query when is_binary(concept) ->
+        from(r in query, join: s in assoc(r, :specification), where: s.concept == ^concept)
+
       _, query ->
         query
     end)
@@ -99,7 +113,6 @@ defmodule Registrations.Waydowntown do
     |> Repo.preload(run_preloads())
     |> Repo.preload(participations: [run: run_preloads()])
     |> Repo.preload([participations: [:user]], prefix: "public")
-    |> Repo.preload([submissions: [:creator]], prefix: "public")
   end
 
   def create_run(current_user, attrs \\ %{}, specification_filter \\ nil) do
@@ -153,7 +166,7 @@ defmodule Registrations.Waydowntown do
         {:error, "No placed specification available"}
 
       specification ->
-        {:ok, Run.changeset(%Run{}, Map.put(attrs, "specification_id", specification.id))}
+        {:ok, build_run_changeset(attrs, specification)}
     end
   end
 
@@ -163,7 +176,7 @@ defmodule Registrations.Waydowntown do
         {:error, "No specification found near the specified position"}
 
       specification ->
-        {:ok, Run.changeset(%Run{}, Map.put(attrs, "specification_id", specification.id))}
+        {:ok, build_run_changeset(attrs, specification)}
     end
   end
 
@@ -178,7 +191,7 @@ defmodule Registrations.Waydowntown do
           {:error, "No specification with the specified concept available"}
 
         specification ->
-          {:ok, Run.changeset(%Run{}, Map.put(attrs, "specification_id", specification.id))}
+          {:ok, build_run_changeset(attrs, specification)}
       end
     end
   end
@@ -189,7 +202,7 @@ defmodule Registrations.Waydowntown do
         {:error, "Specification not found"}
 
       specification ->
-        {:ok, Run.changeset(%Run{}, Map.put(attrs, "specification_id", specification.id))}
+        {:ok, build_run_changeset(attrs, specification)}
     end
   end
 
@@ -209,7 +222,23 @@ defmodule Registrations.Waydowntown do
              task_description: concept_data["instructions"]
            }),
          {:ok, _} <- create_answers(specification, answers) do
-      {:ok, Run.changeset(%Run{}, Map.put(attrs, "specification_id", specification.id))}
+      {:ok, build_run_changeset(attrs, specification)}
+    end
+  end
+
+  defp build_run_changeset(attrs, %Specification{concept: concept} = specification) do
+    attrs = Map.put(attrs, "specification_id", specification.id)
+
+    %Run{}
+    |> Run.changeset(attrs)
+    |> maybe_start_long_running_run(concept)
+  end
+
+  defp maybe_start_long_running_run(changeset, concept) do
+    if concept_is_long_running(concept) do
+      Ecto.Changeset.put_change(changeset, :started_at, DateTime.utc_now())
+    else
+      changeset
     end
   end
 
@@ -303,14 +332,14 @@ defmodule Registrations.Waydowntown do
   end
 
   def list_specifications do
-    Specification |> Repo.all() |> Repo.preload(region: [parent: [parent: [:parent]]])
+    Specification |> Repo.all() |> Repo.preload(answers: [:region], region: [parent: [parent: [:parent]]])
   end
 
   def list_specifications_for(user) do
     from(i in Specification)
     |> where([i], i.creator_id == ^user.id)
     |> Repo.all()
-    |> Repo.preload(answers: [:reveals], region: [parent: [parent: [:parent]]])
+    |> Repo.preload(answers: [:reveals, :region], region: [parent: [parent: [:parent]]])
   end
 
   def get_specification!(id), do: Repo.get!(Specification, id)
@@ -321,12 +350,7 @@ defmodule Registrations.Waydowntown do
     |> Repo.update()
   end
 
-  def get_submission!(id),
-    do:
-      Submission
-      |> Repo.get!(id)
-      |> Repo.preload(submission_preloads())
-      |> Repo.preload([:creator, run: [submissions: [:creator]]], prefix: "public")
+  def get_submission!(id), do: Submission |> Repo.get!(id) |> Repo.preload(submission_preloads())
 
   def create_submission(conn, %{"submission" => submission_text, "run_id" => run_id} = params) do
     current_user_id = conn.assigns[:current_user].id
@@ -386,28 +410,32 @@ defmodule Registrations.Waydowntown do
   end
 
   defp check_submission_validity(current_user_id, run, submission_text, answer_id) do
-    case run.specification.concept do
-      "string_collector" ->
-        check_for_duplicate_normalised_submission(current_user_id, run, submission_text)
+    concept = run.specification.concept
 
-      concept when concept in ["food_court_frenzy", "fill_in_the_blank", "count_the_items"] ->
+    cond do
+      concept in ["string_collector", "payphone_collector", "elevator_collector"] ->
+        check_for_duplicate_normalised_submission(current_user_id, run, submission_text, concept)
+
+      concept in ["food_court_frenzy", "fill_in_the_blank", "count_the_items"] ->
         check_for_paired_answer(current_user_id, run, answer_id)
 
-      concept when concept in ["orientation_memory", "cardinal_memory"] ->
+      concept in ["orientation_memory", "cardinal_memory"] ->
         check_for_ordered_answer(current_user_id, run, answer_id)
 
-      _ ->
+      true ->
         {:ok, nil}
     end
   end
 
-  defp check_for_duplicate_normalised_submission(current_user_id, run, submission_text) do
-    normalized_submission = normalize_string(submission_text)
+  defp check_for_duplicate_normalised_submission(current_user_id, run, submission_text, concept) do
+    normalised_submission = normalise_submission_for_concept(concept, submission_text)
 
     existing_submissions =
-      Enum.map(Enum.filter(run.submissions, &(&1.creator_id == current_user_id)), &normalize_string(&1.submission))
+      run.submissions
+      |> Enum.filter(&(&1.creator_id == current_user_id))
+      |> Enum.map(&normalise_submission_for_concept(concept, &1.submission))
 
-    if normalized_submission in existing_submissions do
+    if normalised_submission in existing_submissions do
       {:error, "Submission already submitted"}
     else
       {:ok, nil}
@@ -491,8 +519,10 @@ defmodule Registrations.Waydowntown do
   defp run_expired?(_), do: false
 
   def get_run_progress(run, current_user_id) do
+    concept = run.specification.concept
+
     correct_submissions =
-      if run.specification.concept in ["orientation_memory", "cardinal_memory"] do
+      if concept in ["orientation_memory", "cardinal_memory"] do
         latest_submission =
           run.submissions
           |> Enum.filter(&(&1.creator_id == current_user_id))
@@ -547,15 +577,19 @@ defmodule Registrations.Waydowntown do
          submission_text,
          _answer_id
        )
-       when concept in ["bluetooth_collector", "code_collector", "string_collector"] do
-    normalized_answer = if concept == "string_collector", do: normalize_string(submission_text), else: submission_text
+       when concept in [
+              "bluetooth_collector",
+              "code_collector",
+              "string_collector",
+              "payphone_collector",
+              "elevator_collector"
+            ] do
+    normalised_submission = normalise_submission_for_concept(concept, submission_text)
 
     correct_answers =
-      if concept == "string_collector",
-        do: Enum.map(answers, &normalize_string(&1.answer)),
-        else: Enum.map(answers, & &1.answer)
+      Enum.map(answers, &normalize_answer_for_concept(concept, &1.answer))
 
-    normalized_answer in correct_answers
+    normalised_submission in correct_answers
   end
 
   defp check_submission_correctness(
@@ -602,7 +636,15 @@ defmodule Registrations.Waydowntown do
       "count_the_items" ->
         true
 
-      concept when concept in ["bluetooth_collector", "code_collector", "string_collector", "food_court_frenzy"] ->
+      concept
+      when concept in [
+             "bluetooth_collector",
+             "code_collector",
+             "string_collector",
+             "payphone_collector",
+             "elevator_collector",
+             "food_court_frenzy"
+           ] ->
         run_answer_count = length(run.specification.answers)
         correct_submissions = Enum.filter(run.submissions, & &1.correct)
         correct_submissions_by_user = Enum.group_by(correct_submissions, & &1.creator_id)
@@ -632,6 +674,26 @@ defmodule Registrations.Waydowntown do
     |> String.downcase()
   end
 
+  defp normalise_submission_for_concept(concept, submission) do
+    if concept_normalises_submissions?(concept) do
+      normalize_string(submission)
+    else
+      submission
+    end
+  end
+
+  defp normalize_answer_for_concept(concept, answer) do
+    if concept_normalises_submissions?(concept) do
+      normalize_string(answer)
+    else
+      answer
+    end
+  end
+
+  defp concept_normalises_submissions?(concept) do
+    concept_flag?(concept, "normalise_submissions") or concept == "string_collector"
+  end
+
   def start_run(current_user, %Run{} = run) do
     run_has_current_user_participation = run.participations |> Enum.map(& &1.user_id) |> Enum.member?(current_user.id)
 
@@ -651,15 +713,37 @@ defmodule Registrations.Waydowntown do
   end
 
   defp run_preloads do
+    user_query = user_preload_query()
+
     [
-      participations: [run: [:participations, specification: [answers: [:reveals]], submissions: [answer: [:reveals]]]],
-      submissions: [answer: [:reveals]],
-      specification: [answers: [:reveals], region: [parent: [parent: [:parent]]]]
+      participations: [
+        run: [
+          :participations,
+          specification: [answers: [:reveals, :region]],
+          submissions: [creator: user_query, answer: [:reveals, :region]]
+        ]
+      ],
+      submissions: [creator: user_query, answer: [:reveals, :region]],
+      specification: [answers: [:reveals, :region], region: [parent: [parent: [:parent]]]]
     ]
   end
 
   defp submission_preloads do
-    [answer: [:reveals], run: [:participations, specification: [answers: [:reveals]], submissions: [answer: [:reveals]]]]
+    user_query = user_preload_query()
+
+    [
+      creator: user_query,
+      answer: [:reveals, :region],
+      run: [
+        :participations,
+        specification: [answers: [:reveals, :region]],
+        submissions: [creator: user_query, answer: [:reveals, :region]]
+      ]
+    ]
+  end
+
+  defp user_preload_query do
+    from(u in User, prefix: "public")
   end
 
   def get_participation!(id),

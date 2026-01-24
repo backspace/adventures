@@ -381,6 +381,19 @@ class TestHelpers {
         ? getAllRegions(run.specification.region!)
         : <Region>[];
 
+    final submissionRelationships = run.submissions.isEmpty
+        ? {}
+        : {
+            "submissions": {
+              "data": run.submissions
+                  .map((submission) => {
+                        "type": "submissions",
+                        "id": submission.id,
+                      })
+                  .toList(),
+            }
+          };
+
     return {
       "data": {
         "id": run.id,
@@ -402,8 +415,9 @@ class TestHelpers {
                       "id": p.id,
                     })
                 .toList(),
-          }
-        }
+          },
+          ...submissionRelationships,
+        },
       },
       "included": [
         {
@@ -491,6 +505,23 @@ class TestHelpers {
               "attributes": {
                 "name": p.userName,
               },
+            }),
+        ...run.submissions.map((submission) => {
+              "id": submission.id,
+              "type": "submissions",
+              "attributes": {
+                "submission": submission.submission,
+                "correct": submission.correct,
+                "inserted_at": submission.insertedAt.toUtc().toIso8601String(),
+              },
+              "relationships": {
+                "creator": {
+                  "data": {
+                    "type": "users",
+                    "id": submission.creatorId ?? "user1"
+                  }
+                }
+              }
             }),
       ],
     };

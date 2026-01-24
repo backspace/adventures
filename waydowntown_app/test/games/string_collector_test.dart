@@ -9,6 +9,7 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/games/string_collector.dart';
 import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/run.dart';
+import 'package:waydowntown/models/submission.dart';
 
 import '../test_helpers.dart';
 import '../test_helpers.mocks.dart';
@@ -121,6 +122,50 @@ void main() {
         isA<Text>().having((t) => t.data, 'text', 'incorrect'));
     expect(tester.widget<ListTile>(listItems.at(3)).title,
         isA<Text>().having((t) => t.data, 'text', 'correct1'));
+  });
+
+  testWidgets('StringCollectorGame labels submissions by creator',
+      (WidgetTester tester) async {
+    final now = DateTime.now();
+    final runWithSubmissions = Run(
+      id: game.id,
+      specification: game.specification,
+      correctSubmissions: game.correctSubmissions,
+      totalAnswers: game.totalAnswers,
+      startedAt: game.startedAt,
+      taskDescription: game.taskDescription,
+      participations: game.participations,
+      submissions: [
+        Submission(
+          id: 'submission-1',
+          submission: '204-555-0112',
+          correct: true,
+          insertedAt: now.subtract(const Duration(seconds: 5)),
+          creatorId: 'user1',
+        ),
+        Submission(
+          id: 'submission-2',
+          submission: '204-555-0133',
+          correct: true,
+          insertedAt: now.subtract(const Duration(seconds: 10)),
+          creatorId: 'user2',
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: StringCollectorGame(
+        run: runWithSubmissions,
+        dio: dio,
+        channel: mockChannel,
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('204-555-0112'), findsOneWidget);
+    expect(find.text('204-555-0133'), findsOneWidget);
+    expect(find.text('You'), findsOneWidget);
+    expect(find.text('Teammate'), findsOneWidget);
   });
 
   testWidgets('StringCollectorGame handles errors',

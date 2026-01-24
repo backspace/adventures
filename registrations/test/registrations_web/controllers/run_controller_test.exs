@@ -52,7 +52,8 @@ defmodule RegistrationsWeb.RunControllerTest do
         Repo.insert!(%Answer{
           label: "answer_1",
           hint: "hint_1",
-          specification: specification
+          specification: specification,
+          region_id: child_region.id
         })
 
       answer_2 =
@@ -171,7 +172,8 @@ defmodule RegistrationsWeb.RunControllerTest do
       user: user,
       conn: conn,
       run: run,
-      answers: [answer | _]
+      answers: [answer | _],
+      child_region: child_region
     } do
       {:ok, _reveal} = Waydowntown.create_reveal(user, answer.id, run.id)
 
@@ -181,6 +183,7 @@ defmodule RegistrationsWeb.RunControllerTest do
       revealed_answer = Enum.find(included, &(&1["type"] == "answers" && &1["id"] == answer.id))
 
       assert revealed_answer["attributes"]["hint"] == answer.hint
+      assert revealed_answer["relationships"]["region"]["data"]["id"] == child_region.id
     end
 
     test "answer hint is null when not revealed for this user", %{
@@ -488,6 +491,72 @@ defmodule RegistrationsWeb.RunControllerTest do
       specification = Waydowntown.get_specification!(run.specification_id)
       assert specification.concept == "food_court_frenzy"
     end
+
+    test "creates run with payphone_collector concept", %{conn: conn} do
+      Repo.insert!(%Specification{
+        concept: "payphone_collector",
+        answers: [
+          %Answer{answer: "204-555-0112", hint: "Payphone near the mural"},
+          %Answer{answer: "204-555-0199", hint: "Payphone by the red benches"}
+        ],
+        region: Repo.insert!(%Region{})
+      })
+
+      conn =
+        post(
+          conn,
+          Routes.run_path(conn, :create) <> "?filter[specification.concept]=payphone_collector",
+          %{
+            "data" => %{
+              "type" => "runs",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
+      assert sideloaded_specification["attributes"]["concept"] == "payphone_collector"
+
+      run = Waydowntown.get_run!(id)
+      specification = Waydowntown.get_specification!(run.specification_id)
+      assert specification.concept == "payphone_collector"
+    end
+
+    test "creates run with elevator_collector concept", %{conn: conn} do
+      Repo.insert!(%Specification{
+        concept: "elevator_collector",
+        answers: [
+          %Answer{answer: "EP-71-449", hint: "East elevator bank"},
+          %Answer{answer: "EP-83-120", hint: "Service elevator by loading bay"}
+        ],
+        region: Repo.insert!(%Region{})
+      })
+
+      conn =
+        post(
+          conn,
+          Routes.run_path(conn, :create) <> "?filter[specification.concept]=elevator_collector",
+          %{
+            "data" => %{
+              "type" => "runs",
+              "attributes" => %{}
+            }
+          }
+        )
+
+      assert %{"id" => id} = json_response(conn, 201)["data"]
+      assert %{"included" => included} = json_response(conn, 201)
+
+      sideloaded_specification = Enum.find(included, &(&1["type"] == "specifications"))
+      assert sideloaded_specification["attributes"]["concept"] == "elevator_collector"
+
+      run = Waydowntown.get_run!(id)
+      specification = Waydowntown.get_specification!(run.specification_id)
+      assert specification.concept == "elevator_collector"
+    end
   end
 
   describe "start run" do
@@ -539,7 +608,15 @@ defmodule RegistrationsWeb.RunControllerTest do
 
       {:ok, not_started_run} = Waydowntown.create_run(user, %{}, %{"concept" => specification.concept})
 
-      %{user: user, started_run: started_run, not_started_run: not_started_run}
+      submission =
+        Repo.insert!(%Submission{
+          submission: "first",
+          correct: true,
+          creator_id: user.id,
+          run_id: started_run.id
+        })
+
+      %{user: user, started_run: started_run, not_started_run: not_started_run, submission: submission}
     end
 
     test "lists all started runs when filter[started]=true", %{conn: conn, started_run: started_run} do
@@ -563,6 +640,42 @@ defmodule RegistrationsWeb.RunControllerTest do
       response = json_response(conn, 200)
 
       assert length(response["data"]) == 2
+    end
+
+    test "filters runs by specification concept", %{conn: conn, user: user} do
+      Repo.insert!(%Specification{concept: "payphone_collector"})
+      Repo.insert!(%Specification{concept: "elevator_collector"})
+
+      {:ok, payphone_run} = Waydowntown.create_run(user, %{}, %{"concept" => "payphone_collector"})
+      {:ok, _} = Waydowntown.create_run(user, %{}, %{"concept" => "elevator_collector"})
+
+      conn =
+        get(
+          conn,
+          Routes.run_path(conn, :index, filter: %{"specification.concept" => "payphone_collector"})
+        )
+
+      response = json_response(conn, 200)
+
+      assert length(response["data"]) == 1
+      assert Enum.at(response["data"], 0)["id"] == payphone_run.id
+    end
+
+    test "includes submission creator relationship data", %{
+      conn: conn,
+      started_run: started_run,
+      submission: submission,
+      user: user
+    } do
+      conn = get(conn, Routes.run_path(conn, :index, filter: %{started: "true"}))
+      response = json_response(conn, 200)
+
+      assert Enum.any?(response["data"], &(&1["id"] == started_run.id))
+
+      included_submission =
+        Enum.find(response["included"], &(&1["type"] == "submissions" && &1["id"] == submission.id))
+
+      assert included_submission["relationships"]["creator"]["data"]["id"] == user.id
     end
   end
 

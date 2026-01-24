@@ -97,6 +97,12 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
     setup do
       user = insert(:octavia, admin: true)
 
+      answer_region =
+        Repo.insert!(%Region{
+          name: "Answer Region",
+          geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}
+        })
+
       my_specification_1 =
         Repo.insert!(%Specification{
           creator_id: user.id,
@@ -111,7 +117,14 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
           notes: "This is a test note"
         })
 
-      answer_1 = Repo.insert!(%Answer{answer: "Answer 1", hint: "Hint 1", specification_id: my_specification_1.id})
+      answer_1 =
+        Repo.insert!(%Answer{
+          answer: "Answer 1",
+          hint: "Hint 1",
+          specification_id: my_specification_1.id,
+          region_id: answer_region.id
+        })
+
       answer_2 = Repo.insert!(%Answer{answer: "Answer 2", hint: "Hint 2", specification_id: my_specification_2.id})
 
       other_specification = Repo.insert!(%Specification{creator_id: insert(:user).id})
@@ -133,6 +146,7 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
         other_specification: other_specification,
         answer_1: answer_1,
         answer_2: answer_2,
+        answer_region: answer_region,
         user: user
       }
     end
@@ -144,7 +158,8 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
       my_specification_2: my_specification_2,
       other_specification: other_specification,
       answer_1: answer_1,
-      answer_2: answer_2
+      answer_2: answer_2,
+      answer_region: answer_region
     } do
       conn =
         conn
@@ -210,6 +225,26 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
 
       assert "Hint 1" in included_answer_hints
       assert "Hint 2" in included_answer_hints
+
+      included_answers =
+        conn
+        |> json_response(200)
+        |> Map.get("included")
+        |> Enum.filter(fn item -> item["type"] == "answers" end)
+
+      answer_1_data = Enum.find(included_answers, &(&1["id"] == answer_1.id))
+      answer_2_data = Enum.find(included_answers, &(&1["id"] == answer_2.id))
+
+      assert answer_1_data["relationships"]["region"]["data"]["id"] == answer_region.id
+      assert answer_2_data["relationships"]["region"]["data"] == nil
+
+      included_regions =
+        conn
+        |> json_response(200)
+        |> Map.get("included")
+        |> Enum.filter(fn item -> item["type"] == "regions" end)
+
+      assert Enum.any?(included_regions, fn region -> region["id"] == answer_region.id end)
     end
   end
 

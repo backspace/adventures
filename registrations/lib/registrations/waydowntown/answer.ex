@@ -14,6 +14,7 @@ defmodule Registrations.Waydowntown.Answer do
     field(:order, :integer)
 
     belongs_to(:specification, Registrations.Waydowntown.Specification, type: :binary_id)
+    belongs_to(:region, Registrations.Waydowntown.Region, type: :binary_id)
 
     has_many(:reveals, Registrations.Waydowntown.Reveal, on_delete: :delete_all)
 
@@ -23,8 +24,9 @@ defmodule Registrations.Waydowntown.Answer do
   @doc false
   def changeset(answer, attrs) do
     answer
-    |> cast(attrs, [:answer, :order, :specification_id])
+    |> cast(attrs, [:answer, :order, :specification_id, :region_id])
     |> validate_required([:answer, :order, :specification_id])
     |> assoc_constraint(:specification)
+    |> assoc_constraint(:region)
   end
 end

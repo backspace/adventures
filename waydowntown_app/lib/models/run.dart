@@ -84,14 +84,19 @@ class Run {
           data['relationships']['submissions']['data'] as List;
 
       submissions = submissionsData
-          .map((submissionData) => Submission.fromJson(included.firstWhere(
-                (item) =>
-                    item['type'] == 'submissions' &&
-                    item['id'] == submissionData['id'] &&
-                    // FIXME serialisation crisis
-                    item['relationships']['creator'] != null,
-                orElse: () => <String, Object>{},
-              )))
+          .map((submissionData) {
+            final submissionJson = included.firstWhere(
+              (item) =>
+                  item['type'] == 'submissions' &&
+                  item['id'] == submissionData['id'],
+              orElse: () => <String, Object>{},
+            );
+            if (submissionJson.isEmpty || submissionJson['id'] == null) {
+              return null;
+            }
+            return Submission.fromJson(submissionJson);
+          })
+          .whereType<Submission>()
           .toList();
     }
 
