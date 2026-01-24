@@ -16,15 +16,11 @@ defmodule Registrations.Pages.Details do
   end
 
   def proposers(session, opts \\ []) do
-    session
-    |> rows_with_wait("[data-test-proposers]", opts)
-    |> Enum.map(&email_and_text_row(&1))
+    map_rows_with_wait(session, "[data-test-proposers]", opts, &email_and_text_row/1)
   end
 
   def mutuals(session, opts \\ []) do
-    session
-    |> rows_with_wait("[data-test-mutuals]", opts)
-    |> Enum.map(fn row ->
+    map_rows_with_wait(session, "[data-test-mutuals]", opts, fn row ->
       proposed_team_name_element = Browser.find(row, Query.css(".proposed-team-name"))
       risk_aversion_element = Browser.find(row, Query.css(".risk-aversion"))
 
@@ -46,21 +42,20 @@ defmodule Registrations.Pages.Details do
   end
 
   def proposals_by_mutuals(session, opts \\ []) do
-    session
-    |> rows_with_wait("[data-test-proposals-by-mutuals]", opts)
-    |> Enum.map(&email_and_text_row(&1))
+    map_rows_with_wait(
+      session,
+      "[data-test-proposals-by-mutuals]",
+      opts,
+      &email_and_text_row/1
+    )
   end
 
   def invalids(session, opts \\ []) do
-    session
-    |> rows_with_wait("[data-test-invalids]", opts)
-    |> Enum.map(&email_and_text_row(&1))
+    map_rows_with_wait(session, "[data-test-invalids]", opts, &email_and_text_row/1)
   end
 
   def proposees(session, opts \\ []) do
-    session
-    |> rows_with_wait("[data-test-proposees]", opts)
-    |> Enum.map(&email_and_text_row(&1))
+    map_rows_with_wait(session, "[data-test-proposees]", opts, &email_and_text_row/1)
   end
 
   def fill_team_emails(session, team_emails) do
@@ -199,18 +194,36 @@ defmodule Registrations.Pages.Details do
       end
 
       def assert_present(session, message \\ nil) do
-        WaitForIt.wait!(present?(session))
+        WaitForIt.wait!(safe_present?(session) == {:ok, true})
 
-        if not present?(session) do
+        if safe_present?(session) != {:ok, true} do
           raise(message || "Expected attending error to be present")
         end
       end
 
       def assert_absent(session, message \\ nil) do
-        WaitForIt.wait!(!present?(session))
+        WaitForIt.wait!(safe_present?(session) == {:ok, false})
 
-        if present?(session) do
+        if safe_present?(session) != {:ok, false} do
           raise(message || "Expected attending error to be absent")
+        end
+      end
+
+      defp safe_present?(session) do
+        try do
+          {:ok, present?(session)}
+        rescue
+          Wallaby.StaleReferenceError -> :error
+          Wallaby.QueryError -> :error
+          RuntimeError = error -> handle_runtime_dom_error(error, __STACKTRACE__)
+        end
+      end
+
+      defp handle_runtime_dom_error(%RuntimeError{message: message} = error, stacktrace) do
+        if String.contains?(message, "does not belong to the document") do
+          :error
+        else
+          reraise error, stacktrace
         end
       end
     end
@@ -246,14 +259,15 @@ defmodule Registrations.Pages.Details do
     Browser.click(session, Query.css("#submit"))
   end
 
-  defp rows_with_wait(session, selector, opts) do
+  defp map_rows_with_wait(session, selector, opts, mapper) do
     expected = Keyword.get(opts, :count)
 
-    if expected do
-      WaitForIt.wait!(length(Browser.all(session, Query.css(selector))) == expected)
-    end
+    WaitForIt.wait!(match?({:ok, _}, safe_map_rows(session, selector, expected, mapper)))
 
-    Browser.all(session, Query.css(selector))
+    case safe_map_rows(session, selector, expected, mapper) do
+      {:ok, rows} -> rows
+      :retry -> map_rows_with_wait(session, selector, opts, mapper)
+    end
   end
 
   defp email_and_text_row(row) do
@@ -271,6 +285,30 @@ defmodule Registrations.Pages.Details do
     |> to_string()
     |> String.split()
     |> Enum.member?(class_name)
+  end
+
+  defp safe_map_rows(session, selector, expected, mapper) do
+    try do
+      rows = Browser.all(session, Query.css(selector))
+
+      if expected && length(rows) != expected do
+        :retry
+      else
+        {:ok, Enum.map(rows, mapper)}
+      end
+    rescue
+      Wallaby.StaleReferenceError -> :retry
+      Wallaby.QueryError -> :retry
+      RuntimeError = error -> handle_runtime_dom_error(error, __STACKTRACE__)
+    end
+  end
+
+  defp handle_runtime_dom_error(%RuntimeError{message: message} = error, stacktrace) do
+    if String.contains?(message, "does not belong to the document") do
+      :retry
+    else
+      reraise error, stacktrace
+    end
   end
 
 end

@@ -208,6 +208,15 @@ defmodule Registrations.Pages.Nav do
     rescue
       Wallaby.StaleReferenceError -> :error
       Wallaby.QueryError -> :error
+      RuntimeError = error -> handle_runtime_dom_error(error, __STACKTRACE__)
+    end
+  end
+
+  defp handle_runtime_dom_error(%RuntimeError{message: message} = error, stacktrace) do
+    if String.contains?(message, "does not belong to the document") do
+      :error
+    else
+      reraise error, stacktrace
     end
   end
 
