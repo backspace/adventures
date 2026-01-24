@@ -350,11 +350,7 @@ defmodule Registrations.Waydowntown do
     |> Repo.update()
   end
 
-  def get_submission!(id),
-    do:
-      Submission
-      |> Repo.get!(id)
-      |> Repo.preload(submission_preloads())
+  def get_submission!(id), do: Submission |> Repo.get!(id) |> Repo.preload(submission_preloads())
 
   def create_submission(conn, %{"submission" => submission_text, "run_id" => run_id} = params) do
     current_user_id = conn.assigns[:current_user].id
