@@ -1,0 +1,90 @@
+name: Full-stack integration tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "waydowntown_app/**"
+      - "registrations/**"
+      - ".github/workflows/ci-full-stack.yml"
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgis/postgis:16-3.4
+        ports: ["5432:5432"]
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setup Elixir/Erlang
+      - name: Setup Erlang/OTP environment
+        uses: erlef/setup-beam@v1
+        with:
+          version-file: .tool-versions
+          version-type: strict
+
+      - name: Retrieve cached Elixir dependencies
+        uses: actions/cache@v4
+        id: mix-cache
+        with:
+          path: |
+            registrations/deps
+            registrations/_build
+          key: ${{ runner.os }}-mix-${{ hashFiles('registrations/mix.lock') }}
+
+      - name: Install Elixir dependencies
+        working-directory: registrations
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+          mix deps.compile
+
+      # Setup and start Phoenix
+      - name: Setup database
+        working-directory: registrations
+        run: MIX_ENV=test mix ecto.reset
+
+      - name: Start Phoenix server
+        working-directory: registrations
+        run: |
+          MIX_ENV=test mix phx.server &
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -s http://localhost:4001/powapi/session > /dev/null 2>&1; then
+              echo "Phoenix server is ready"
+              break
+            fi
+            echo "Waiting for Phoenix server... ($i)"
+            sleep 1
+          done
+
+      # Setup Flutter
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - name: Create Flutter env file
+        run: touch .env.local
+        working-directory: waydowntown_app
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+        working-directory: waydowntown_app
+
+      # Run integration tests on Android emulator
+      - name: Run full-stack integration tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          working-directory: waydowntown_app
+          api-level: 21
+          arch: x86_64
+          profile: Nexus 6
+          script: flutter test integration_test/ --dart-define=API_BASE_URL=http://10.0.2.2:4001
