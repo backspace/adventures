@@ -1,4 +1,4 @@
-name: Full-stack integration tests
+name: waydowntown full-stack tests
 
 on:
   push:
