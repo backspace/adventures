@@ -13,6 +13,24 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// Fix for AGP 8.x: auto-set namespace for plugins that don't specify one
+subprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin("com.android.library")) {
+            def android = project.extensions.findByName("android")
+            if (android != null && (android.namespace == null || android.namespace.isEmpty())) {
+                def manifest = project.file("src/main/AndroidManifest.xml")
+                if (manifest.exists()) {
+                    def packageName = new groovy.xml.XmlSlurper().parse(manifest).@package.toString()
+                    if (packageName) {
+                        android.namespace = packageName
+                    }
+                }
+            }
+        }
+    }
+}
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
