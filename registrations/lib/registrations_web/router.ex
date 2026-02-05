@@ -149,6 +149,8 @@ defmodule RegistrationsWeb.Router do
   scope "/waydowntown", RegistrationsWeb do
     pipe_through([:pow_json_api_protected])
 
+    get("/team-negotiation", TeamNegotiationController, :show)
+
     resources "/participations", ParticipationController, only: [:create, :update]
     resources "/reveals", RevealController, only: [:create]
 

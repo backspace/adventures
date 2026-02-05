@@ -6,10 +6,19 @@ defmodule RegistrationsWeb.ApiUserController do
 
   action_fallback(RegistrationsWeb.FallbackController)
 
+  @team_fields ~w(team_emails proposed_team_name risk_aversion)
+
   def update(conn, params) do
     user = Pow.Plug.current_user(conn)
 
-    case Waydowntown.update_user(user, params) do
+    result =
+      if has_team_fields?(params) do
+        Waydowntown.update_user_details(user, params)
+      else
+        Waydowntown.update_user(user, params)
+      end
+
+    case result do
       {:ok, updated_user} ->
         conn
         |> put_view(UserView)
@@ -30,5 +39,9 @@ defmodule RegistrationsWeb.ApiUserController do
             end)
         })
     end
+  end
+
+  defp has_team_fields?(params) do
+    Enum.any?(@team_fields, fn field -> Map.has_key?(params, field) end)
   end
 end
