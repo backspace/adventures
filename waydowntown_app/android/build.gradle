@@ -3,6 +3,21 @@ allprojects {
         google()
         mavenCentral()
     }
+
+    // Fix for AGP 8.x: auto-set namespace for plugins that don't specify one
+    pluginManager.withPlugin("com.android.library") {
+        def androidExtension = project.extensions.getByType(com.android.build.gradle.LibraryExtension)
+        if (androidExtension.namespace == null) {
+            def manifestFile = project.file("src/main/AndroidManifest.xml")
+            if (manifestFile.exists()) {
+                def manifest = new XmlSlurper().parse(manifestFile)
+                def packageName = manifest.@package.toString()
+                if (packageName) {
+                    androidExtension.namespace = packageName
+                }
+            }
+        }
+    }
 }
 
 rootProject.buildDir = "../build"
@@ -11,24 +26,6 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
-}
-
-// Fix for AGP 8.x: auto-set namespace for plugins that don't specify one
-subprojects {
-    afterEvaluate { project ->
-        if (project.plugins.hasPlugin("com.android.library")) {
-            def android = project.extensions.findByName("android")
-            if (android != null && (android.namespace == null || android.namespace.isEmpty())) {
-                def manifest = project.file("src/main/AndroidManifest.xml")
-                if (manifest.exists()) {
-                    def packageName = new groovy.xml.XmlSlurper().parse(manifest).@package.toString()
-                    if (packageName) {
-                        android.namespace = packageName
-                    }
-                }
-            }
-        }
-    }
 }
 
 tasks.register("clean", Delete) {
