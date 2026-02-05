@@ -23,7 +23,6 @@ class TeamFormWidget extends StatefulWidget {
 class _TeamFormWidgetState extends State<TeamFormWidget> {
   late TextEditingController _teamEmailsController;
   late TextEditingController _proposedTeamNameController;
-  int? _riskAversion;
   bool _isSaving = false;
   String? _error;
 
@@ -34,7 +33,6 @@ class _TeamFormWidgetState extends State<TeamFormWidget> {
         TextEditingController(text: widget.negotiation.teamEmails ?? '');
     _proposedTeamNameController =
         TextEditingController(text: widget.negotiation.proposedTeamName ?? '');
-    _riskAversion = widget.negotiation.riskAversion;
   }
 
   @override
@@ -61,7 +59,6 @@ class _TeamFormWidgetState extends State<TeamFormWidget> {
             'attributes': {
               'team_emails': _teamEmailsController.text,
               'proposed_team_name': _proposedTeamNameController.text,
-              'risk_aversion': _riskAversion,
             }
           }
         },
@@ -119,34 +116,6 @@ class _TeamFormWidgetState extends State<TeamFormWidget> {
             labelText: 'Proposed team name',
             border: OutlineInputBorder(),
           ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Risk aversion',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: 8),
-        RadioListTile<int>(
-          title: const Text('Low risk (1)'),
-          subtitle:
-              const Text('Prefer challenges that are quicker and easier'),
-          value: 1,
-          groupValue: _riskAversion,
-          onChanged: (value) => setState(() => _riskAversion = value),
-        ),
-        RadioListTile<int>(
-          title: const Text('Medium risk (2)'),
-          subtitle: const Text('Balanced mix of challenge and accessibility'),
-          value: 2,
-          groupValue: _riskAversion,
-          onChanged: (value) => setState(() => _riskAversion = value),
-        ),
-        RadioListTile<int>(
-          title: const Text('High risk (3)'),
-          subtitle: const Text('Prefer more challenging and involved tasks'),
-          value: 3,
-          groupValue: _riskAversion,
-          onChanged: (value) => setState(() => _riskAversion = value),
         ),
         if (_error != null) ...[
           const SizedBox(height: 8),

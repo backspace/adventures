@@ -138,10 +138,6 @@ class _TeamNegotiationRouteState extends State<TeamNegotiationRoute> {
                     const SizedBox(height: 8),
                     Text(team.notes!),
                   ],
-                  if (team.riskAversion != null) ...[
-                    const SizedBox(height: 8),
-                    Text('Risk aversion: ${team.riskAversion}'),
-                  ],
                   const SizedBox(height: 16),
                   const Divider(),
                   const SizedBox(height: 8),
