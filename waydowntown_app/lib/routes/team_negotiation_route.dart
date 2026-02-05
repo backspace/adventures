@@ -18,11 +18,27 @@ class _TeamNegotiationRouteState extends State<TeamNegotiationRoute> {
   TeamNegotiation? _negotiation;
   bool _isLoading = true;
   String? _error;
+  final TextEditingController _teamEmailsController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _fetchTeamNegotiation();
+  }
+
+  @override
+  void dispose() {
+    _teamEmailsController.dispose();
+    super.dispose();
+  }
+
+  void _addEmailToTeam(String email) {
+    final currentText = _teamEmailsController.text.trim();
+    final emails = currentText.isEmpty ? <String>[] : currentText.split(RegExp(r'\s+'));
+    if (!emails.contains(email)) {
+      emails.add(email);
+      _teamEmailsController.text = emails.join(' ');
+    }
   }
 
   Future<void> _fetchTeamNegotiation() async {
@@ -34,8 +50,10 @@ class _TeamNegotiationRouteState extends State<TeamNegotiationRoute> {
     try {
       final response = await widget.dio.get('/waydowntown/team-negotiation');
       if (response.statusCode == 200) {
+        final negotiation = TeamNegotiation.fromJson(response.data);
+        _teamEmailsController.text = negotiation.teamEmails ?? '';
         setState(() {
-          _negotiation = TeamNegotiation.fromJson(response.data);
+          _negotiation = negotiation;
           _isLoading = false;
         });
       } else {
@@ -99,11 +117,15 @@ class _TeamNegotiationRouteState extends State<TeamNegotiationRoute> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TeamStatusWidget(negotiation: _negotiation!),
+            TeamStatusWidget(
+              negotiation: _negotiation!,
+              onAddEmail: _addEmailToTeam,
+            ),
             const SizedBox(height: 24),
             TeamFormWidget(
               dio: widget.dio,
               negotiation: _negotiation!,
+              teamEmailsController: _teamEmailsController,
               onSaved: _fetchTeamNegotiation,
             ),
           ],

@@ -3,8 +3,13 @@ import 'package:waydowntown/models/team_negotiation.dart';
 
 class TeamStatusWidget extends StatelessWidget {
   final TeamNegotiation negotiation;
+  final void Function(String email)? onAddEmail;
 
-  const TeamStatusWidget({super.key, required this.negotiation});
+  const TeamStatusWidget({
+    super.key,
+    required this.negotiation,
+    this.onAddEmail,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +57,13 @@ class TeamStatusWidget extends StatelessWidget {
                 .map((m) => _MemberDisplay(
                       name: m.name ?? m.email,
                       email: m.name != null ? m.email : null,
+                      tappableEmail: m.email,
                     ))
                 .toList(),
-            hint:
-                'Add their email to your team emails to confirm the connection.',
+            hint: onAddEmail != null
+                ? 'Tap to add their email to your team.'
+                : 'Add their email to your team emails to confirm the connection.',
+            onTap: onAddEmail,
           ),
         ],
         if (negotiation.proposees.isNotEmpty) ...[
@@ -98,6 +106,7 @@ class TeamStatusWidget extends StatelessWidget {
     required Color iconColor,
     required List<_MemberDisplay> items,
     String? hint,
+    void Function(String email)? onTap,
   }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -127,36 +136,60 @@ class TeamStatusWidget extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 8),
-            ...items.map((item) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.person, size: 16),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(item.name),
-                            if (item.email != null)
-                              Text(
-                                item.email!,
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            if (item.subtitle != null)
-                              Text(
-                                item.subtitle!,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: Colors.grey[600]),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
+            ...items.map((item) {
+              final isTappable = onTap != null && item.tappableEmail != null;
+              final content = Row(
+                children: [
+                  Icon(
+                    isTappable ? Icons.add_circle_outline : Icons.person,
+                    size: 16,
+                    color: isTappable ? Colors.blue : null,
                   ),
-                )),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.name,
+                          style: isTappable
+                              ? const TextStyle(color: Colors.blue)
+                              : null,
+                        ),
+                        if (item.email != null)
+                          Text(
+                            item.email!,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        if (item.subtitle != null)
+                          Text(
+                            item.subtitle!,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(color: Colors.grey[600]),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+
+              if (isTappable) {
+                return InkWell(
+                  onTap: () => onTap(item.tappableEmail!),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: content,
+                  ),
+                );
+              }
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: content,
+              );
+            }),
           ],
         ),
       ),
@@ -168,6 +201,12 @@ class _MemberDisplay {
   final String name;
   final String? email;
   final String? subtitle;
+  final String? tappableEmail;
 
-  _MemberDisplay({required this.name, this.email, this.subtitle});
+  _MemberDisplay({
+    required this.name,
+    this.email,
+    this.subtitle,
+    this.tappableEmail,
+  });
 }

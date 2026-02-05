@@ -7,12 +7,14 @@ import 'package:waydowntown/services/user_service.dart';
 class TeamFormWidget extends StatefulWidget {
   final Dio dio;
   final TeamNegotiation negotiation;
+  final TextEditingController teamEmailsController;
   final VoidCallback onSaved;
 
   const TeamFormWidget({
     super.key,
     required this.dio,
     required this.negotiation,
+    required this.teamEmailsController,
     required this.onSaved,
   });
 
@@ -21,7 +23,6 @@ class TeamFormWidget extends StatefulWidget {
 }
 
 class _TeamFormWidgetState extends State<TeamFormWidget> {
-  late TextEditingController _teamEmailsController;
   late TextEditingController _proposedTeamNameController;
   bool _isSaving = false;
   String? _error;
@@ -29,15 +30,12 @@ class _TeamFormWidgetState extends State<TeamFormWidget> {
   @override
   void initState() {
     super.initState();
-    _teamEmailsController =
-        TextEditingController(text: widget.negotiation.teamEmails ?? '');
     _proposedTeamNameController =
         TextEditingController(text: widget.negotiation.proposedTeamName ?? '');
   }
 
   @override
   void dispose() {
-    _teamEmailsController.dispose();
     _proposedTeamNameController.dispose();
     super.dispose();
   }
@@ -57,7 +55,7 @@ class _TeamFormWidgetState extends State<TeamFormWidget> {
             'type': 'users',
             'id': userId,
             'attributes': {
-              'team_emails': _teamEmailsController.text,
+              'team_emails': widget.teamEmailsController.text,
               'proposed_team_name': _proposedTeamNameController.text,
             }
           }
@@ -101,7 +99,7 @@ class _TeamFormWidgetState extends State<TeamFormWidget> {
         ),
         const SizedBox(height: 16),
         TextFormField(
-          controller: _teamEmailsController,
+          controller: widget.teamEmailsController,
           decoration: const InputDecoration(
             labelText: 'Team member emails',
             helperText: 'Enter email addresses separated by spaces',
