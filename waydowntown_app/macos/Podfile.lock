@@ -81,7 +81,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   flutter_blue_plus: e2868679021f19d12a8c0c58a33f1df66ec7fa6a
   flutter_secure_storage_macos: 59459653abe1adb92abbc8ea747d79f8d19866c9
-  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   geolocator_apple: 72a78ae3f3e4ec0db62117bd93e34523f5011d58
   mobile_scanner: 0a05256215b047af27b9495db3b77640055e8824
   package_info_plus: fa739dd842b393193c5ca93c26798dff6e3d0e0c
@@ -92,6 +92,6 @@ SPEC CHECKSUMS:
   sqlite3: 0bb0e6389d824e40296f531b858a2a0b71c0d2fb
   sqlite3_flutter_libs: 5ca46c1a04eddfbeeb5b16566164aa7ad1616e7b
 
-PODFILE CHECKSUM: c7446ec0700d0a01a2def96a8043bdb8298a6b8b
+PODFILE CHECKSUM: 94fd3e6244163a532048d84d2cad0eae21740248
 
 COCOAPODS: 1.16.2
