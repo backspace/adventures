@@ -73,7 +73,7 @@ PODS:
     - FlutterMacOS
   - PromisesObjC (2.4.0)
   - Sentry/HybridSDK (8.56.2)
-  - sentry_flutter (9.9.1):
+  - sentry_flutter (9.10.0):
     - Flutter
     - FlutterMacOS
     - Sentry/HybridSDK (= 8.56.2)
@@ -162,7 +162,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqlite3_flutter_libs/ios"
 
 SPEC CHECKSUMS:
-  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_blue_plus: 4837da7d00cf5d441fdd6635b3a57f936778ea96
   flutter_compass: cbbd285cea1584c7ac9c4e0c3e1f17cbea55e855
   flutter_native_splash: edf599c81f74d093a4daf8e17bd7a018854bc778
@@ -186,11 +186,11 @@ SPEC CHECKSUMS:
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   Sentry: b53951377b78e21a734f5dc8318e333dbfc682d7
-  sentry_flutter: d44ce25f0ed7b944b885c5d34883092a3e6b2aa9
+  sentry_flutter: bbcc012a946214d9baba4567feac162ea87700fa
   share_plus: 8875f4f2500512ea181eef553c3e27dba5135aad
   sqlite3: 0bb0e6389d824e40296f531b858a2a0b71c0d2fb
   sqlite3_flutter_libs: c00457ebd31e59fa6bb830380ddba24d44fbcd3b
 
-PODFILE CHECKSUM: 5237cba4d6ff587d8d8bda8a5d1a9a3c10ac95cf
+PODFILE CHECKSUM: ee4552b72e2d7d4b7dab11edcda70c513765396f
 
 COCOAPODS: 1.16.2
