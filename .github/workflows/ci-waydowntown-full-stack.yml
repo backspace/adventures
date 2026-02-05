@@ -10,7 +10,7 @@ on:
       - ".github/workflows/ci-full-stack.yml"
 
 jobs:
-  integration-test:
+  waydowntown-full-stack-test:
     runs-on: ubuntu-latest
     services:
       db:
