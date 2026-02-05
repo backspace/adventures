@@ -84,7 +84,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           working-directory: waydowntown_app
-          api-level: 21
+          api-level: 24
           arch: x86_64
           profile: Nexus 6
           script: flutter test integration_test/ --dart-define=API_BASE_URL=http://10.0.2.2:4001
