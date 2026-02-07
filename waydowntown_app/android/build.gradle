@@ -4,9 +4,11 @@ allprojects {
         mavenCentral()
     }
 
-    // Fix for AGP 8.x: auto-set namespace for plugins that don't specify one
+    // Fix for AGP 8.x: auto-set namespace for library plugins
     pluginManager.withPlugin("com.android.library") {
         def androidExtension = project.extensions.getByType(com.android.build.gradle.LibraryExtension)
+
+        // Set namespace from manifest if not specified
         if (androidExtension.namespace == null) {
             def manifestFile = project.file("src/main/AndroidManifest.xml")
             if (manifestFile.exists()) {
@@ -15,6 +17,23 @@ allprojects {
                 if (packageName) {
                     androidExtension.namespace = packageName
                 }
+            }
+        }
+    }
+}
+
+// Force Java 17 and Kotlin JVM target 17 for all subprojects AFTER they're evaluated
+gradle.afterProject { project ->
+    if (project.plugins.hasPlugin("com.android.library")) {
+        project.android {
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+        }
+        project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = "17"
             }
         }
     }
