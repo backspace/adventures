@@ -84,12 +84,10 @@ void main() {
     final runId = createRunResponse.data['data']['id'];
     expect(runId, isNotNull);
 
-    // Verify specification is included
+    // Verify specification is included (task_description is hidden until run starts)
     final included = createRunResponse.data['included'] as List;
     final specData = included.firstWhere((i) => i['type'] == 'specifications');
     expect(specData['attributes']['concept'], equals('fill_in_the_blank'));
-    expect(specData['attributes']['task_description'],
-        equals('What is the answer to this test?'));
 
     // Verify answer is included (with label but not the actual answer)
     final answerData = included.firstWhere((i) => i['type'] == 'answers');
@@ -109,6 +107,10 @@ void main() {
     expect(startRunResponse.statusCode, equals(200));
     expect(
         startRunResponse.data['data']['attributes']['started_at'], isNotNull);
+
+    // Now task_description should be visible on the run
+    expect(startRunResponse.data['data']['attributes']['task_description'],
+        equals('What is the answer to this test?'));
 
     // Step 3: Submit an incorrect answer first
     final wrongSubmissionResponse = await dio.post(
@@ -167,21 +169,25 @@ void main() {
       (WidgetTester tester) async {
     expect(setupData.gameData, isNotNull);
 
-    // Create and start a run
+    // Create a run
     final createRunResponse = await dio.post(
       '/waydowntown/runs?filter[specification.concept]=fill_in_the_blank',
       data: {
         'data': {'type': 'runs', 'attributes': {}},
       },
     );
+    expect(createRunResponse.statusCode, equals(201));
     final runId = createRunResponse.data['data']['id'];
+    expect(runId, isNotNull);
 
-    await dio.post(
+    // Start the run
+    final startRunResponse = await dio.post(
       '/waydowntown/runs/$runId/start',
       data: {
         'data': {'type': 'runs', 'id': runId},
       },
     );
+    expect(startRunResponse.statusCode, equals(200));
 
     // Submit answer with different case and whitespace
     final submissionResponse = await dio.post(
