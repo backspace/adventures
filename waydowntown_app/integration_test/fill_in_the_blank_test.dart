@@ -92,6 +92,7 @@ void main() {
     // Verify answer is included (with label but not the actual answer)
     final answerData = included.firstWhere((i) => i['type'] == 'answers');
     expect(answerData['attributes']['label'], equals('The answer is ____'));
+    final answerId = answerData['id'];
 
     // Step 2: Start the run
     final startRunResponse = await dio.post(
@@ -113,6 +114,7 @@ void main() {
         equals('What is the answer to this test?'));
 
     // Step 3: Submit an incorrect answer first
+    // Note: fill_in_the_blank requires answer_id in submission
     final wrongSubmissionResponse = await dio.post(
       '/waydowntown/submissions',
       data: {
@@ -122,6 +124,9 @@ void main() {
           'relationships': {
             'run': {
               'data': {'type': 'runs', 'id': runId},
+            },
+            'answer': {
+              'data': {'type': 'answers', 'id': answerId},
             },
           },
         },
@@ -148,6 +153,9 @@ void main() {
           'relationships': {
             'run': {
               'data': {'type': 'runs', 'id': runId},
+            },
+            'answer': {
+              'data': {'type': 'answers', 'id': answerId},
             },
           },
         },
@@ -180,6 +188,11 @@ void main() {
     final runId = createRunResponse.data['data']['id'];
     expect(runId, isNotNull);
 
+    // Get answer ID from included data
+    final included = createRunResponse.data['included'] as List;
+    final answerData = included.firstWhere((i) => i['type'] == 'answers');
+    final answerId = answerData['id'];
+
     // Start the run
     final startRunResponse = await dio.post(
       '/waydowntown/runs/$runId/start',
@@ -190,6 +203,7 @@ void main() {
     expect(startRunResponse.statusCode, equals(200));
 
     // Submit answer with different case and whitespace
+    // Note: fill_in_the_blank requires answer_id in submission
     final submissionResponse = await dio.post(
       '/waydowntown/submissions',
       data: {
@@ -200,6 +214,9 @@ void main() {
             'run': {
               'data': {'type': 'runs', 'id': runId},
             },
+            'answer': {
+              'data': {'type': 'answers', 'id': answerId},
+            },
           },
         },
       },
@@ -209,9 +226,9 @@ void main() {
     expect(submissionResponse.data['data']['attributes']['correct'], isTrue);
 
     // Verify run is complete
-    final included = submissionResponse.data['included'] as List;
-    final runData =
-        included.firstWhere((i) => i['type'] == 'runs' && i['id'] == runId);
+    final submissionIncluded = submissionResponse.data['included'] as List;
+    final runData = submissionIncluded
+        .firstWhere((i) => i['type'] == 'runs' && i['id'] == runId);
     expect(runData['attributes']['complete'], isTrue);
   });
 }
