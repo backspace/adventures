@@ -26,5 +26,5 @@ config :registrations, Registrations.Repo,
   pool: Ecto.Adapters.SQL.Sandbox
 
 config :registrations, RegistrationsWeb.Endpoint,
-  http: [port: 4001],
+  http: [ip: {0, 0, 0, 0}, port: 4001],
   server: true
