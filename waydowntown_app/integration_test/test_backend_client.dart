@@ -23,6 +23,38 @@ class TestUserCredentials {
   }
 }
 
+/// Game data returned when creating test games.
+class TestGameData {
+  final String specificationId;
+  final String answerId;
+  final String correctAnswer;
+
+  TestGameData({
+    required this.specificationId,
+    required this.answerId,
+    required this.correctAnswer,
+  });
+
+  factory TestGameData.fromJson(Map<String, dynamic> json) {
+    return TestGameData(
+      specificationId: json['specification_id'],
+      answerId: json['answer_id'],
+      correctAnswer: json['correct_answer'],
+    );
+  }
+}
+
+/// Combined response from reset endpoint with user and optional game data.
+class TestSetupData {
+  final TestUserCredentials credentials;
+  final TestGameData? gameData;
+
+  TestSetupData({
+    required this.credentials,
+    this.gameData,
+  });
+}
+
 /// Tokens returned by the login endpoint.
 class TestTokens {
   final String accessToken;
@@ -49,18 +81,30 @@ class TestBackendClient {
           },
         ));
 
-  /// Resets the database and optionally creates a test user.
+  /// Resets the database and optionally creates a test user and game.
   /// Returns credentials if [createUser] is true.
-  Future<TestUserCredentials?> resetDatabase({bool createUser = true}) async {
+  /// If [game] is specified, creates test data for that game type.
+  Future<TestSetupData?> resetDatabase({
+    bool createUser = true,
+    String? game,
+  }) async {
     final response = await _dio.post(
       '/test/reset',
       data: {
         'create_user': createUser ? 'true' : 'false',
+        if (game != null) 'game': game,
       },
     );
 
     if (createUser && response.statusCode == 200) {
-      return TestUserCredentials.fromJson(response.data);
+      final credentials = TestUserCredentials.fromJson(response.data);
+      TestGameData? gameData;
+
+      if (game != null && response.data['specification_id'] != null) {
+        gameData = TestGameData.fromJson(response.data);
+      }
+
+      return TestSetupData(credentials: credentials, gameData: gameData);
     }
     return null;
   }

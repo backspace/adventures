@@ -31,11 +31,21 @@ defmodule RegistrationsWeb.TestController do
       if params["create_user"] == "true" do
         user = create_or_reset_test_user()
 
-        %{
+        base_response = %{
           user_id: user.id,
           email: @test_email,
           password: @test_password
         }
+
+        # Optionally create game data based on concept parameter
+        case params["game"] do
+          "fill_in_the_blank" ->
+            game_data = create_fill_in_the_blank_game()
+            Map.merge(base_response, game_data)
+
+          _ ->
+            base_response
+        end
       else
         %{message: "Database reset complete"}
       end
@@ -43,6 +53,27 @@ defmodule RegistrationsWeb.TestController do
     conn
     |> put_status(:ok)
     |> json(response)
+  end
+
+  defp create_fill_in_the_blank_game do
+    region = Repo.insert!(%Region{name: "Test Region"})
+
+    specification =
+      Repo.insert!(%Specification{
+        concept: "fill_in_the_blank",
+        task_description: "What is the answer to this test?",
+        answers: [%Answer{label: "The answer is ____", answer: "correct"}],
+        region: region,
+        duration: 300
+      })
+
+    answer = List.first(specification.answers)
+
+    %{
+      specification_id: specification.id,
+      answer_id: answer.id,
+      correct_answer: "correct"
+    }
   end
 
   defp create_or_reset_test_user do

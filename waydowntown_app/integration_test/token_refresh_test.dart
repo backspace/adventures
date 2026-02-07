@@ -12,7 +12,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   late TestBackendClient testClient;
-  late TestUserCredentials credentials;
+  late TestSetupData setupData;
   late TestTokens tokens;
 
   setUp(() async {
@@ -22,11 +22,11 @@ void main() {
     testClient = TestBackendClient();
 
     // Reset database and create test user
-    final creds = await testClient.resetDatabase(createUser: true);
-    credentials = creds!;
+    final data = await testClient.resetDatabase(createUser: true);
+    setupData = data!;
 
     // Login to get tokens
-    tokens = await testClient.login(credentials.email, credentials.password);
+    tokens = await testClient.login(setupData.credentials.email, setupData.credentials.password);
 
     // Store tokens in secure storage
     await UserService.setTokens(tokens.accessToken, tokens.renewalToken);
@@ -79,7 +79,7 @@ void main() {
 
     expect(response.statusCode, equals(200));
     expect(response.data['data']['attributes']['email'],
-        equals(credentials.email));
+        equals(setupData.credentials.email));
   });
 
   testWidgets('token refresh works with invalid access token + valid renewal token',
@@ -134,7 +134,7 @@ void main() {
     // The interceptor should have refreshed the token and retried
     expect(response.statusCode, equals(200));
     expect(response.data['data']['attributes']['email'],
-        equals(credentials.email));
+        equals(setupData.credentials.email));
 
     // Verify tokens were updated
     final newAccessToken = await UserService.getAccessToken();
