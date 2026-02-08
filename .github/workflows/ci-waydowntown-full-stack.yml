@@ -93,4 +93,11 @@ jobs:
           api-level: 24
           arch: x86_64
           profile: Nexus 6
-          script: flutter test integration_test/ --flavor local --dart-define=API_BASE_URL=http://10.0.2.2:4001
+          script: flutter test integration_test/ --flavor local --dart-define=API_BASE_URL=http://10.0.2.2:4001 --file-reporter json:test-results.json
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: "Full-stack integration test results"
+          files: waydowntown_app/test-results.json

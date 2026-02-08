@@ -43,6 +43,10 @@ defmodule RegistrationsWeb.TestController do
             game_data = create_fill_in_the_blank_game()
             Map.merge(base_response, game_data)
 
+          "string_collector" ->
+            game_data = create_string_collector_game()
+            Map.merge(base_response, game_data)
+
           _ ->
             base_response
         end
@@ -78,6 +82,31 @@ defmodule RegistrationsWeb.TestController do
       specification_id: specification.id,
       answer_id: answer.id,
       correct_answer: "correct"
+    }
+  end
+
+  defp create_string_collector_game do
+    region = Repo.insert!(%Region{name: "Test Region"})
+
+    specification =
+      Repo.insert!(%Specification{
+        concept: "string_collector",
+        task_description: "Find all the hidden words",
+        start_description: "Look around for words",
+        region: region,
+        duration: 300
+      })
+
+    # Insert answers separately (has_many relationship)
+    answer1 = Repo.insert!(%Answer{answer: "apple", specification_id: specification.id})
+    answer2 = Repo.insert!(%Answer{answer: "banana", specification_id: specification.id})
+    answer3 = Repo.insert!(%Answer{answer: "cherry", specification_id: specification.id})
+
+    %{
+      specification_id: specification.id,
+      correct_answers: ["apple", "banana", "cherry"],
+      total_answers: 3,
+      answer_ids: [answer1.id, answer2.id, answer3.id]
     }
   end
 

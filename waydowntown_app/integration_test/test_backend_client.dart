@@ -24,24 +24,31 @@ class TestUserCredentials {
 }
 
 /// Game data returned when creating test games.
+/// Fields vary by game type - use the raw data map for game-specific fields.
 class TestGameData {
   final String specificationId;
-  final String answerId;
-  final String correctAnswer;
+  final Map<String, dynamic> raw;
 
   TestGameData({
     required this.specificationId,
-    required this.answerId,
-    required this.correctAnswer,
+    required this.raw,
   });
 
   factory TestGameData.fromJson(Map<String, dynamic> json) {
     return TestGameData(
       specificationId: json['specification_id'],
-      answerId: json['answer_id'],
-      correctAnswer: json['correct_answer'],
+      raw: json,
     );
   }
+
+  // fill_in_the_blank specific
+  String? get answerId => raw['answer_id'];
+  String? get correctAnswer => raw['correct_answer'];
+
+  // string_collector specific
+  List<String>? get correctAnswers =>
+      (raw['correct_answers'] as List?)?.cast<String>();
+  int? get totalAnswers => raw['total_answers'];
 }
 
 /// Combined response from reset endpoint with user and optional game data.
