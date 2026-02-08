@@ -69,9 +69,11 @@ void main() {
     expect(setupData.gameData!.orderedAnswers,
         equals(['north', 'east', 'south']));
 
-    // Create a run
+    // Create a run using the specific specification ID (orientation_memory is placeless,
+    // so we must use specification.id filter to use our test data)
+    final specificationId = setupData.gameData!.specificationId;
     final createRunResponse = await dio.post(
-      '/waydowntown/runs?filter[specification.concept]=orientation_memory',
+      '/waydowntown/runs?filter[specification.id]=$specificationId',
       data: {
         'data': {'type': 'runs', 'attributes': {}},
       },
@@ -186,9 +188,10 @@ void main() {
       (WidgetTester tester) async {
     expect(setupData.gameData, isNotNull);
 
-    // Create and start a run
+    // Create and start a run using specification ID (orientation_memory is placeless)
+    final specificationId = setupData.gameData!.specificationId;
     final createRunResponse = await dio.post(
-      '/waydowntown/runs?filter[specification.concept]=orientation_memory',
+      '/waydowntown/runs?filter[specification.id]=$specificationId',
       data: {
         'data': {'type': 'runs', 'attributes': {}},
       },
@@ -245,9 +248,10 @@ void main() {
       (WidgetTester tester) async {
     expect(setupData.gameData, isNotNull);
 
-    // Create and start a run
+    // Create and start a run using specification ID (orientation_memory is placeless)
+    final specificationId = setupData.gameData!.specificationId;
     final createRunResponse = await dio.post(
-      '/waydowntown/runs?filter[specification.concept]=orientation_memory',
+      '/waydowntown/runs?filter[specification.id]=$specificationId',
       data: {
         'data': {'type': 'runs', 'attributes': {}},
       },
