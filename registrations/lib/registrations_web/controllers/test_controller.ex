@@ -7,25 +7,15 @@ defmodule RegistrationsWeb.TestController do
 
   alias Registrations.Repo
   alias Registrations.Waydowntown.Answer
-  alias Registrations.Waydowntown.Participation
   alias Registrations.Waydowntown.Region
-  alias Registrations.Waydowntown.Reveal
-  alias Registrations.Waydowntown.Run
   alias Registrations.Waydowntown.Specification
-  alias Registrations.Waydowntown.Submission
 
   @test_email "test@example.com"
   @test_password "TestPassword123!"
 
   def reset(conn, params) do
-    # Delete waydowntown tables in FK order
-    Repo.delete_all(Reveal)
-    Repo.delete_all(Submission)
-    Repo.delete_all(Participation)
-    Repo.delete_all(Run)
-    Repo.delete_all(Answer)
-    Repo.delete_all(Specification)
-    Repo.delete_all(Region)
+    # Truncate all waydowntown tables - CASCADE handles foreign key dependencies
+    Repo.query!("TRUNCATE waydowntown.reveals, waydowntown.submissions, waydowntown.participations, waydowntown.runs, waydowntown.answers, waydowntown.specifications, waydowntown.regions CASCADE")
 
     response =
       if params["create_user"] == "true" do
