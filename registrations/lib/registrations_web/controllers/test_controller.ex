@@ -62,12 +62,17 @@ defmodule RegistrationsWeb.TestController do
       Repo.insert!(%Specification{
         concept: "fill_in_the_blank",
         task_description: "What is the answer to this test?",
-        answers: [%Answer{label: "The answer is ____", answer: "correct"}],
         region: region,
         duration: 300
       })
 
-    answer = List.first(specification.answers)
+    # Insert answer separately (has_many relationship)
+    answer =
+      Repo.insert!(%Answer{
+        label: "The answer is ____",
+        answer: "correct",
+        specification_id: specification.id
+      })
 
     %{
       specification_id: specification.id,
