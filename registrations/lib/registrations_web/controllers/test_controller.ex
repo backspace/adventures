@@ -47,6 +47,10 @@ defmodule RegistrationsWeb.TestController do
             game_data = create_string_collector_game()
             Map.merge(base_response, game_data)
 
+          "orientation_memory" ->
+            game_data = create_orientation_memory_game()
+            Map.merge(base_response, game_data)
+
           _ ->
             base_response
         end
@@ -105,6 +109,31 @@ defmodule RegistrationsWeb.TestController do
     %{
       specification_id: specification.id,
       correct_answers: ["apple", "banana", "cherry"],
+      total_answers: 3,
+      answer_ids: [answer1.id, answer2.id, answer3.id]
+    }
+  end
+
+  defp create_orientation_memory_game do
+    region = Repo.insert!(%Region{name: "Test Region"})
+
+    specification =
+      Repo.insert!(%Specification{
+        concept: "orientation_memory",
+        task_description: "Remember the sequence of directions",
+        start_description: "Watch the pattern carefully",
+        region: region,
+        duration: 300
+      })
+
+    # Insert ordered answers (order field is required for orientation_memory)
+    answer1 = Repo.insert!(%Answer{answer: "north", order: 1, specification_id: specification.id})
+    answer2 = Repo.insert!(%Answer{answer: "east", order: 2, specification_id: specification.id})
+    answer3 = Repo.insert!(%Answer{answer: "south", order: 3, specification_id: specification.id})
+
+    %{
+      specification_id: specification.id,
+      ordered_answers: ["north", "east", "south"],
       total_answers: 3,
       answer_ids: [answer1.id, answer2.id, answer3.id]
     }

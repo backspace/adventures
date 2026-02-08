@@ -49,6 +49,12 @@ class TestGameData {
   List<String>? get correctAnswers =>
       (raw['correct_answers'] as List?)?.cast<String>();
   int? get totalAnswers => raw['total_answers'];
+
+  // orientation_memory specific
+  List<String>? get orderedAnswers =>
+      (raw['ordered_answers'] as List?)?.cast<String>();
+  List<String>? get answerIds =>
+      (raw['answer_ids'] as List?)?.cast<String>();
 }
 
 /// Combined response from reset endpoint with user and optional game data.
