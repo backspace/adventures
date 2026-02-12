@@ -1,10 +1,11 @@
-import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:waydowntown/refresh_token_interceptor.dart';
+import 'package:waydowntown/app.dart';
 import 'package:waydowntown/services/user_service.dart';
 
+import 'helpers.dart';
 import 'test_backend_client.dart';
 import 'test_config.dart';
 
@@ -12,136 +13,29 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   late TestBackendClient testClient;
-  late TestSetupData setupData;
-  late TestTokens tokens;
 
   setUp(() async {
-    // Initialize mock storage for tests
     FlutterSecureStorage.setMockInitialValues({});
-
+    dotenv.testLoad(fileInput: 'API_ROOT=${TestConfig.apiBaseUrl}');
     testClient = TestBackendClient();
-
-    // Reset database and create test user
-    final data = await testClient.resetDatabase(createUser: true);
-    setupData = data!;
-
-    // Login to get tokens
-    tokens = await testClient.login(setupData.credentials.email, setupData.credentials.password);
-
-    // Store tokens in secure storage
-    await UserService.setTokens(tokens.accessToken, tokens.renewalToken);
   });
 
-  testWidgets('login and access protected resource', (tester) async {
-    // Create Dio instances matching the app.dart pattern
-    final dio = Dio(BaseOptions(
-      baseUrl: TestConfig.apiBaseUrl,
-      headers: {
-        'Content-Type': 'application/vnd.api+json',
-        'Accept': 'application/vnd.api+json',
-      },
-    ));
+  testWidgets('refreshes expired token and shows user email', (tester) async {
+    final resetData = await testClient.resetDatabase();
+    final email = resetData['email'] as String;
+    final tokens = await testClient.login(
+      email,
+      resetData['password'] as String,
+    );
 
-    final renewalDio = Dio(BaseOptions(
-      baseUrl: TestConfig.apiBaseUrl,
-    ));
+    // Store an invalid access token with a valid renewal token.
+    // When SessionWidget checks the session, it will get a 401,
+    // the RefreshTokenInterceptor will use the renewal token to get
+    // a fresh access token, and retry the request.
+    await UserService.setTokens('expired_invalid_token', tokens.renewalToken);
 
-    final postRenewalDio = Dio(BaseOptions(
-      baseUrl: TestConfig.apiBaseUrl,
-      headers: {
-        'Content-Type': 'application/vnd.api+json',
-        'Accept': 'application/vnd.api+json',
-      },
-    ));
+    await tester.pumpWidget(const Waydowntown());
 
-    dio.interceptors.add(RefreshTokenInterceptor(
-      dio: dio,
-      renewalDio: renewalDio,
-      postRenewalDio: postRenewalDio,
-    ));
-
-    // Access a protected endpoint (session check)
-    final sessionDio = Dio(BaseOptions(
-      baseUrl: TestConfig.apiBaseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
-
-    sessionDio.interceptors.add(RefreshTokenInterceptor(
-      dio: sessionDio,
-      renewalDio: renewalDio,
-      postRenewalDio: postRenewalDio,
-    ));
-
-    final response = await sessionDio.get('/fixme/session');
-
-    expect(response.statusCode, equals(200));
-    expect(response.data['data']['attributes']['email'],
-        equals(setupData.credentials.email));
-  });
-
-  testWidgets('token refresh works with invalid access token + valid renewal token',
-      (tester) async {
-    // Invalidate the access token but keep valid renewal token
-    await UserService.setTokens('invalid_access_token', tokens.renewalToken);
-
-    // Create Dio instances matching the app.dart pattern
-    final dio = Dio(BaseOptions(
-      baseUrl: TestConfig.apiBaseUrl,
-      headers: {
-        'Content-Type': 'application/vnd.api+json',
-        'Accept': 'application/vnd.api+json',
-      },
-    ));
-
-    final renewalDio = Dio(BaseOptions(
-      baseUrl: TestConfig.apiBaseUrl,
-    ));
-
-    final postRenewalDio = Dio(BaseOptions(
-      baseUrl: TestConfig.apiBaseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
-
-    dio.interceptors.add(RefreshTokenInterceptor(
-      dio: dio,
-      renewalDio: renewalDio,
-      postRenewalDio: postRenewalDio,
-    ));
-
-    // Access protected endpoint - should fail initially, then refresh and succeed
-    final sessionDio = Dio(BaseOptions(
-      baseUrl: TestConfig.apiBaseUrl,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
-
-    sessionDio.interceptors.add(RefreshTokenInterceptor(
-      dio: sessionDio,
-      renewalDio: renewalDio,
-      postRenewalDio: postRenewalDio,
-    ));
-
-    final response = await sessionDio.get('/fixme/session');
-
-    // The interceptor should have refreshed the token and retried
-    expect(response.statusCode, equals(200));
-    expect(response.data['data']['attributes']['email'],
-        equals(setupData.credentials.email));
-
-    // Verify tokens were updated
-    final newAccessToken = await UserService.getAccessToken();
-    final newRenewalToken = await UserService.getRenewalToken();
-
-    expect(newAccessToken, isNot(equals('invalid_access_token')));
-    expect(newAccessToken, isNotNull);
-    expect(newRenewalToken, isNotNull);
+    await waitFor(tester, find.text(email));
   });
 }
