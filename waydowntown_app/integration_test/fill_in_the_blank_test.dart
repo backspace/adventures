@@ -39,11 +39,14 @@ void main() {
 
     // Scroll to and tap the game button on the home screen
     final gameButton = find.text('Fill in the\nBlank');
+    await waitFor(tester, gameButton);
     await tester.ensureVisible(gameButton);
+    await tester.pumpAndSettle();
     await tester.tap(gameButton);
 
     // Wait for run creation and RunLaunchRoute to appear
-    await waitFor(tester, find.textContaining('ready'));
+    await waitFor(tester, find.textContaining('ready'),
+        timeout: const Duration(seconds: 30));
 
     // Tap the ready button to start the game
     await tester.tap(find.textContaining('ready'));

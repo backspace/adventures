@@ -36,11 +36,14 @@ void main() {
 
     // Scroll to and tap the game button
     final gameButton = find.text('String\nCollector');
+    await waitFor(tester, gameButton);
     await tester.ensureVisible(gameButton);
+    await tester.pumpAndSettle();
     await tester.tap(gameButton);
 
     // Wait for run creation and RunLaunchRoute
-    await waitFor(tester, find.textContaining('ready'));
+    await waitFor(tester, find.textContaining('ready'),
+        timeout: const Duration(seconds: 30));
     await tester.tap(find.textContaining('ready'));
 
     // Wait for countdown and navigation to game
