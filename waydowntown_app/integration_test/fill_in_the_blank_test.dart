@@ -41,7 +41,7 @@ void main() {
     final gameButton = find.text('Fill in the\nBlank');
     await waitFor(tester, gameButton);
     await tester.ensureVisible(gameButton);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(gameButton);
 
     // Wait for run creation and RunLaunchRoute to appear

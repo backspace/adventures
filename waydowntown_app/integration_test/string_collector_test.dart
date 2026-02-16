@@ -38,7 +38,7 @@ void main() {
     final gameButton = find.text('String\nCollector');
     await waitFor(tester, gameButton);
     await tester.ensureVisible(gameButton);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(gameButton);
 
     // Wait for run creation and RunLaunchRoute
