@@ -11,7 +11,7 @@ defmodule RegistrationsWeb.TestController do
   alias Registrations.Waydowntown.Specification
 
   @test_email "test@example.com"
-  @test_password "TestPassword123!"
+  @test_password "TestPassword1234"
 
   def reset(conn, params) do
     # Truncate all waydowntown tables - CASCADE handles foreign key dependencies
@@ -139,6 +139,8 @@ defmodule RegistrationsWeb.TestController do
           password_confirmation: @test_password
         })
         |> Repo.insert!()
+        |> Ecto.Changeset.change(%{name: "Test User"})
+        |> Repo.update!()
 
       existing_user ->
         # Delete and recreate to ensure clean state
@@ -151,6 +153,8 @@ defmodule RegistrationsWeb.TestController do
           password_confirmation: @test_password
         })
         |> Repo.insert!()
+        |> Ecto.Changeset.change(%{name: "Test User"})
+        |> Repo.update!()
     end
   end
 end

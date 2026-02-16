@@ -65,5 +65,8 @@ void main() {
     await tester.enterText(find.byType(TextFormField), 'correct');
     await tester.tap(find.text('Submit'));
     await waitFor(tester, find.textContaining('Congratulations'));
+
+    // Let confetti animation timers fire while widget tree is still alive
+    await tester.pump(const Duration(seconds: 1));
   });
 }
