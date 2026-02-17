@@ -88,13 +88,18 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   }
 
   Future<void> _initializeConnection() async {
+    print('RunLaunchRoute: _initializeConnection starting for run ${widget.run.id}');
     _currentUserId = await UserService.getUserId();
+    print('RunLaunchRoute: got userId=$_currentUserId');
     // Retry connection up to 3 times to handle transient failures
     for (var attempt = 1; attempt <= 3; attempt++) {
       try {
+        print('RunLaunchRoute: connection attempt $attempt/3');
         await _connectToSocket();
+        print('RunLaunchRoute: connection attempt $attempt succeeded');
         return;
       } catch (e) {
+        print('RunLaunchRoute: connection attempt $attempt failed: $e');
         if (attempt == 3) rethrow;
         await Future.delayed(Duration(seconds: attempt * 2));
       }
@@ -104,6 +109,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   Future<void> _connectToSocket() async {
     final apiRoot = dotenv.env['API_ROOT']!.replaceFirst('http', 'ws');
     final userToken = await UserService.getAccessToken();
+    print('RunLaunchRoute: _connectToSocket apiRoot=$apiRoot, hasToken=${userToken != null}');
 
     final socketOptions =
         PhoenixSocketOptions(params: {'Authorization': userToken!});
@@ -112,16 +118,20 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
         PhoenixSocket('$apiRoot/socket/websocket',
             socketOptions: socketOptions);
 
+    print('RunLaunchRoute: calling socket.connect()...');
     await socket!.connect().timeout(
       const Duration(seconds: 15),
       onTimeout: () => throw TimeoutException('WebSocket connection timed out'),
     );
+    print('RunLaunchRoute: socket.connect() completed');
 
     channel = socket!.addChannel(topic: 'run:${widget.run.id}');
+    print('RunLaunchRoute: calling channel.join() for topic run:${widget.run.id}...');
     await channel!.join().future.timeout(
       const Duration(seconds: 15),
       onTimeout: () => throw TimeoutException('Channel join timed out'),
     );
+    print('RunLaunchRoute: channel.join() completed');
 
     channel!.messages.listen((message) {
       if (message.event == const PhoenixChannelEvent.custom('run_update')) {
@@ -191,6 +201,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
     return FutureBuilder<void>(
       future: connectionFuture,
       builder: (context, snapshot) {
+        print('RunLaunchRoute build: connectionFuture state=${snapshot.connectionState}, hasError=${snapshot.hasError}, error=${snapshot.error}');
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
@@ -209,6 +220,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
         return FutureBuilder<Map<String, dynamic>>(
           future: _gameInfoFuture,
           builder: (context, snapshot) {
+            print('RunLaunchRoute build: gameInfoFuture state=${snapshot.connectionState}, hasError=${snapshot.hasError}, data=${snapshot.data}');
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
                 body: Center(child: CircularProgressIndicator()),
