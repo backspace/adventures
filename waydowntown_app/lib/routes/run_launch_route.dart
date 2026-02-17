@@ -44,6 +44,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   DateTime? startTime;
   Timer? countdownTimer;
   late Future<void> connectionFuture;
+  Future<Map<String, dynamic>>? _gameInfoFuture;
   String? _currentUserId;
 
   List<String> get opponents {
@@ -78,6 +79,12 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
     super.initState();
     startTime = widget.run.startedAt;
     connectionFuture = _initializeConnection();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _gameInfoFuture ??= _loadGameInfo(context);
   }
 
   Future<void> _initializeConnection() async {
@@ -200,7 +207,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
         }
 
         return FutureBuilder<Map<String, dynamic>>(
-          future: _loadGameInfo(context),
+          future: _gameInfoFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
