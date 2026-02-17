@@ -45,8 +45,9 @@ void main() {
     await tester.tap(gameButton);
 
     // Wait for run creation and RunLaunchRoute to appear
+    // WebSocket connection can be slow on CI emulators without hardware acceleration
     await waitFor(tester, find.textContaining('ready'),
-        timeout: const Duration(seconds: 30));
+        timeout: const Duration(seconds: 120));
 
     // Tap the ready button to start the game
     await tester.tap(find.textContaining('ready'));

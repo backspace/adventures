@@ -27,4 +27,5 @@ config :registrations, Registrations.Repo,
 
 config :registrations, RegistrationsWeb.Endpoint,
   http: [ip: {0, 0, 0, 0}, port: 4001],
-  server: true
+  server: true,
+  check_origin: false
