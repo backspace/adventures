@@ -93,7 +93,7 @@ jobs:
           api-level: 24
           arch: x86_64
           profile: Nexus 6
-          script: flutter test integration_test/token_refresh_test.dart integration_test/fill_in_the_blank_test.dart integration_test/string_collector_test.dart --flavor local --dart-define=API_BASE_URL=http://10.0.2.2:4001 --timeout none --file-reporter json:test-results.json
+          script: flutter test integration_test/token_refresh_test.dart integration_test/string_collector_test.dart integration_test/fill_in_the_blank_test.dart --flavor local --dart-define=API_BASE_URL=http://10.0.2.2:4001 --timeout none --file-reporter json:test-results.json
 
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
