@@ -41,18 +41,27 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(gameButton);
 
-    // Wait for run creation and RunLaunchRoute
+    // Wait for run creation and RunLaunchRoute to appear
     // WebSocket connection can be slow on CI emulators without hardware acceleration
-    await waitFor(tester, find.textContaining('ready'),
+    await waitFor(tester, find.text('String Collector'),
         timeout: const Duration(seconds: 120),
         failOn: find.textContaining('Error'));
+
+    // The ready button may be below the viewport on small screens due to
+    // Instructions, Players, Starting point, Goal, Duration, and Location cards.
+    // Use scrollUntilVisible to scroll the ListView until the button appears.
+    await tester.scrollUntilVisible(
+      find.textContaining('ready'),
+      200.0,
+      scrollable: find.byType(Scrollable).last,
+    );
     await tester.tap(find.textContaining('ready'));
 
     // Wait for countdown and navigation to game
     await waitFor(
       tester,
       find.text('Enter a string!'),
-      timeout: const Duration(seconds: 15),
+      timeout: const Duration(seconds: 30),
     );
 
     // Verify initial progress shows 0/3

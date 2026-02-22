@@ -46,9 +46,17 @@ void main() {
 
     // Wait for run creation and RunLaunchRoute to appear
     // WebSocket connection can be slow on CI emulators without hardware acceleration
-    await waitFor(tester, find.textContaining('ready'),
+    await waitFor(tester, find.text('Fill in the Blank'),
         timeout: const Duration(seconds: 120),
-        failOn: find.textContaining('Error connecting'));
+        failOn: find.textContaining('Error'));
+
+    // The ready button may be below the viewport on small screens.
+    // Use scrollUntilVisible to scroll the ListView until the button appears.
+    await tester.scrollUntilVisible(
+      find.textContaining('ready'),
+      200.0,
+      scrollable: find.byType(Scrollable).last,
+    );
 
     // Tap the ready button to start the game
     await tester.tap(find.textContaining('ready'));
@@ -58,7 +66,7 @@ void main() {
     await waitFor(
       tester,
       find.text('The answer is ____'),
-      timeout: const Duration(seconds: 15),
+      timeout: const Duration(seconds: 30),
     );
 
     // Submit a wrong answer
