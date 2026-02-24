@@ -5,9 +5,9 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i5;
 
+import 'package:dchs_motion_sensors/dchs_motion_sensors.dart' as _i4;
 import 'package:flutter/services.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:motion_sensors/motion_sensors.dart' as _i4;
 import 'package:vector_math/vector_math_64.dart' as _i3;
 
 // ignore_for_file: type=lint

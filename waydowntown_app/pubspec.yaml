@@ -47,10 +47,7 @@ dependencies:
   mobile_scanner: ^5.1.1
   latlong2: ^0.9.1
   flutter_native_splash: ^2.4.1
-  motion_sensors:
-    git:
-      url: https://github.com/zesage/motion_sensors.git
-      ref: 6dafc3639b3e96460fabc639768a60b431b53610
+  dchs_motion_sensors: ^2.0.1
   vector_math: ^2.1.4
   yaml: ^3.1.2
   flutter_confetti: ^0.3.0

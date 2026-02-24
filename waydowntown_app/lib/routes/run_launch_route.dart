@@ -44,6 +44,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   DateTime? startTime;
   Timer? countdownTimer;
   late Future<void> connectionFuture;
+  Future<Map<String, dynamic>>? _gameInfoFuture;
   String? _currentUserId;
 
   List<String> get opponents {
@@ -80,9 +81,24 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
     connectionFuture = _initializeConnection();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _gameInfoFuture ??= _loadGameInfo(context);
+  }
+
   Future<void> _initializeConnection() async {
     _currentUserId = await UserService.getUserId();
-    await _connectToSocket();
+    // Retry connection up to 3 times to handle transient failures
+    for (var attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await _connectToSocket();
+        return;
+      } catch (e) {
+        if (attempt == 3) rethrow;
+        await Future.delayed(Duration(seconds: attempt * 2));
+      }
+    }
   }
 
   Future<void> _connectToSocket() async {
@@ -96,10 +112,16 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
         PhoenixSocket('$apiRoot/socket/websocket',
             socketOptions: socketOptions);
 
-    await socket!.connect();
+    await socket!.connect().timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => throw TimeoutException('WebSocket connection timed out'),
+    );
 
     channel = socket!.addChannel(topic: 'run:${widget.run.id}');
-    await channel!.join().future;
+    await channel!.join().future.timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => throw TimeoutException('Channel join timed out'),
+    );
 
     channel!.messages.listen((message) {
       if (message.event == const PhoenixChannelEvent.custom('run_update')) {
@@ -185,7 +207,7 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
         }
 
         return FutureBuilder<Map<String, dynamic>>(
-          future: _loadGameInfo(context),
+          future: _gameInfoFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(

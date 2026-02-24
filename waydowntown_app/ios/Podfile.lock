@@ -1,4 +1,6 @@
 PODS:
+  - dchs_motion_sensors (0.0.1):
+    - Flutter
   - Flutter (1.0.0)
   - flutter_blue_plus (0.0.1):
     - Flutter
@@ -59,8 +61,6 @@ PODS:
   - mobile_scanner (5.2.3):
     - Flutter
     - GoogleMLKit/BarcodeScanning (~> 6.0.0)
-  - motion_sensors (0.0.1):
-    - Flutter
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
     - nanopb/encode (= 2.30910.0)
@@ -99,6 +99,7 @@ PODS:
     - sqlite3/rtree
 
 DEPENDENCIES:
+  - dchs_motion_sensors (from `.symlinks/plugins/dchs_motion_sensors/ios`)
   - Flutter (from `Flutter`)
   - flutter_blue_plus (from `.symlinks/plugins/flutter_blue_plus/ios`)
   - flutter_compass (from `.symlinks/plugins/flutter_compass/ios`)
@@ -107,7 +108,6 @@ DEPENDENCIES:
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
   - mobile_scanner (from `.symlinks/plugins/mobile_scanner/ios`)
-  - motion_sensors (from `.symlinks/plugins/motion_sensors/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
@@ -132,6 +132,8 @@ SPEC REPOS:
     - sqlite3
 
 EXTERNAL SOURCES:
+  dchs_motion_sensors:
+    :path: ".symlinks/plugins/dchs_motion_sensors/ios"
   Flutter:
     :path: Flutter
   flutter_blue_plus:
@@ -148,8 +150,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/integration_test/ios"
   mobile_scanner:
     :path: ".symlinks/plugins/mobile_scanner/ios"
-  motion_sensors:
-    :path: ".symlinks/plugins/motion_sensors/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
@@ -162,6 +162,7 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqlite3_flutter_libs/ios"
 
 SPEC CHECKSUMS:
+  dchs_motion_sensors: 9cef816635a39345cda9f0c4943e061f6429f453
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_blue_plus: 4837da7d00cf5d441fdd6635b3a57f936778ea96
   flutter_compass: cbbd285cea1584c7ac9c4e0c3e1f17cbea55e855
@@ -180,7 +181,6 @@ SPEC CHECKSUMS:
   MLKitCommon: afec63980417d29ffbb4790529a1b0a2291699e1
   MLKitVision: e858c5f125ecc288e4a31127928301eaba9ae0c1
   mobile_scanner: 96e91f2e1fb396bb7df8da40429ba8dfad664740
-  motion_sensors: 03f55b7c637a7e365a0b5f9697a449f9059d5d91
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   package_info_plus: 58f0028419748fad15bf008b270aaa8e54380b1c
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46

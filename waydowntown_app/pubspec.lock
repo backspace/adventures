@@ -225,6 +225,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.6"
+  dchs_motion_sensors:
+    dependency: "direct main"
+    description:
+      name: dchs_motion_sensors
+      sha256: "2a6eec0c47fd59d0f923aa758286ded0d74ae79519dec560d003e6d0797877e2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
   dio:
     dependency: "direct main"
     description:
@@ -759,15 +767,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.4.4"
-  motion_sensors:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: "6dafc3639b3e96460fabc639768a60b431b53610"
-      resolved-ref: "6dafc3639b3e96460fabc639768a60b431b53610"
-      url: "https://github.com/zesage/motion_sensors.git"
-    source: git
-    version: "0.1.0"
   nested:
     dependency: transitive
     description:
