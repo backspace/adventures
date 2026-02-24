@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:motion_sensors/motion_sensors.dart';
+import 'package:dchs_motion_sensors/dchs_motion_sensors.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:waydowntown/games/orientation_memory.dart';
 import 'package:waydowntown/models/answer.dart';

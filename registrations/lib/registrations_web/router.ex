@@ -170,4 +170,12 @@ defmodule RegistrationsWeb.Router do
     get("/session", SessionController, :show)
     post("/me", ApiUserController, :update)
   end
+
+  if Mix.env() == :test do
+    scope "/test", RegistrationsWeb do
+      pipe_through(:pow_api)
+
+      post("/reset", TestController, :reset)
+    end
+  end
 end

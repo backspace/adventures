@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:motion_sensors/motion_sensors.dart';
+import 'package:dchs_motion_sensors/dchs_motion_sensors.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
 import 'package:waydowntown/mixins/run_state_mixin.dart';
 import 'package:waydowntown/models/run.dart';
