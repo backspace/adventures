@@ -372,7 +372,7 @@ defmodule Registrations.Waydowntown do
       run = get_run!(run_id)
 
       case result do
-        {:ok, _} when not is_nil(run.winner_submission_id) ->
+        {:ok, _} ->
           broadcast_run_update(run, conn)
 
         _ ->
