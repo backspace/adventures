@@ -92,17 +92,9 @@ class RequestRunRouteState extends State<RequestRunRoute> {
           queryParameters: queryParameters);
 
       if (response.statusCode == 201) {
-        print('RequestRunRoute: POST returned 201, parsing run...');
-        try {
-          final parsedRun = Run.fromJson(response.data);
-          print('RequestRunRoute: Run parsed successfully, id=${parsedRun.id}, concept=${parsedRun.specification.concept}');
-          setState(() {
-            run = parsedRun;
-          });
-        } catch (parseError) {
-          print('RequestRunRoute: Run.fromJson FAILED: $parseError');
-          rethrow;
-        }
+        setState(() {
+          run = Run.fromJson(response.data);
+        });
       } else {
         throw Exception('Failed to load run');
       }
@@ -113,7 +105,6 @@ class RequestRunRouteState extends State<RequestRunRoute> {
           isRequestError = true;
         });
       }
-      print('RequestRunRoute: ERROR fetching/parsing run: $error');
       talker.error('Error fetching run from $endpoint: $error');
     }
   }
