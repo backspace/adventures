@@ -38,4 +38,72 @@ class TestBackendClient {
       renewalToken: data['renewal_token'] as String,
     );
   }
+
+  /// Creates a Dio instance with Bearer auth and JSON:API headers.
+  Dio createAuthenticatedDio(String accessToken) {
+    return Dio(BaseOptions(
+      baseUrl: TestConfig.apiBaseUrl,
+      headers: {
+        'Content-Type': 'application/vnd.api+json',
+        'Accept': 'application/vnd.api+json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    ));
+  }
+
+  /// Lists all runs. Returns the list of run resource objects.
+  Future<List<dynamic>> listRuns(Dio dio) async {
+    final response = await dio.get('/waydowntown/runs');
+    return response.data['data'] as List<dynamic>;
+  }
+
+  /// Joins a run by creating a participation. Returns the participation data.
+  Future<Map<String, dynamic>> joinRun(Dio dio, String runId) async {
+    final response = await dio.post('/waydowntown/participations', data: {
+      'data': {
+        'type': 'participations',
+        'relationships': {
+          'run': {
+            'data': {'type': 'runs', 'id': runId},
+          },
+        },
+      },
+    });
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
+  /// Marks a participation as ready.
+  Future<void> markReady(Dio dio, String participationId) async {
+    await dio.patch('/waydowntown/participations/$participationId', data: {
+      'data': {
+        'type': 'participations',
+        'id': participationId,
+        'attributes': {
+          'ready': true,
+        },
+      },
+    });
+  }
+
+  /// Submits an answer for a run. Returns the submission data.
+  Future<Map<String, dynamic>> submitAnswer(
+    Dio dio,
+    String runId,
+    String submission,
+  ) async {
+    final response = await dio.post('/waydowntown/submissions', data: {
+      'data': {
+        'type': 'submissions',
+        'attributes': {
+          'submission': submission,
+        },
+        'relationships': {
+          'run': {
+            'data': {'type': 'runs', 'id': runId},
+          },
+        },
+      },
+    });
+    return response.data['data'] as Map<String, dynamic>;
+  }
 }
