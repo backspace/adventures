@@ -41,10 +41,6 @@ defmodule RegistrationsWeb.TestController do
             game_data = create_orientation_memory_game()
             Map.merge(base_response, game_data)
 
-          "string_collector_team" ->
-            game_data = create_string_collector_team_game()
-            Map.merge(base_response, game_data)
-
           _ ->
             base_response
         end
@@ -133,63 +129,31 @@ defmodule RegistrationsWeb.TestController do
     }
   end
 
-  defp create_string_collector_team_game do
-    region = Repo.insert!(%Region{name: "Test Region"})
-
-    specification =
-      Repo.insert!(%Specification{
-        concept: "string_collector",
-        task_description: "Find all the hidden words",
-        start_description: "Look around for words",
-        region: region,
-        duration: 300
-      })
-
-    answer1 = Repo.insert!(%Answer{answer: "apple", specification_id: specification.id})
-    answer2 = Repo.insert!(%Answer{answer: "banana", specification_id: specification.id})
-    answer3 = Repo.insert!(%Answer{answer: "cherry", specification_id: specification.id})
-
-    # Create second test user
-    user2 = create_or_reset_user("test2@example.com", @test_password, "Test User 2")
-
-    %{
-      specification_id: specification.id,
-      correct_answers: ["apple", "banana", "cherry"],
-      total_answers: 3,
-      answer_ids: [answer1.id, answer2.id, answer3.id],
-      user2_email: "test2@example.com",
-      user2_password: @test_password
-    }
-  end
-
   defp create_or_reset_test_user do
-    create_or_reset_user(@test_email, @test_password, "Test User")
-  end
-
-  defp create_or_reset_user(email, password, name) do
-    case Repo.get_by(RegistrationsWeb.User, email: email) do
+    case Repo.get_by(RegistrationsWeb.User, email: @test_email) do
       nil ->
         %RegistrationsWeb.User{}
         |> RegistrationsWeb.User.changeset(%{
-          email: email,
-          password: password,
-          password_confirmation: password
+          email: @test_email,
+          password: @test_password,
+          password_confirmation: @test_password
         })
         |> Repo.insert!()
-        |> Ecto.Changeset.change(%{name: name})
+        |> Ecto.Changeset.change(%{name: "Test User"})
         |> Repo.update!()
 
       existing_user ->
+        # Delete and recreate to ensure clean state
         Repo.delete!(existing_user)
 
         %RegistrationsWeb.User{}
         |> RegistrationsWeb.User.changeset(%{
-          email: email,
-          password: password,
-          password_confirmation: password
+          email: @test_email,
+          password: @test_password,
+          password_confirmation: @test_password
         })
         |> Repo.insert!()
-        |> Ecto.Changeset.change(%{name: name})
+        |> Ecto.Changeset.change(%{name: "Test User"})
         |> Repo.update!()
     end
   end
