@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
+import 'package:waydowntown/routes/team_negotiation_route.dart';
 import 'package:waydowntown/services/user_service.dart';
 import 'package:waydowntown/tools/auth_form.dart';
 import 'package:waydowntown/tools/my_specifications_table.dart';
@@ -238,6 +239,15 @@ class _SessionWidgetState extends State<SessionWidget> {
                 ),
               ),
               child: const Text('My specifications'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TeamNegotiationRoute(dio: widget.dio),
+                ),
+              ),
+              child: const Text('Team'),
             ),
           ],
         ),
