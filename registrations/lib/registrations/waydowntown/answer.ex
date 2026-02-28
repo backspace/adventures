@@ -25,7 +25,7 @@ defmodule Registrations.Waydowntown.Answer do
   def changeset(answer, attrs) do
     answer
     |> cast(attrs, [:answer, :order, :specification_id, :region_id, :label, :hint])
-    |> validate_required([:answer, :order, :specification_id])
+    |> validate_required([:answer, :specification_id])
     |> assoc_constraint(:specification)
     |> assoc_constraint(:region)
   end

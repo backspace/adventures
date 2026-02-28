@@ -12,7 +12,6 @@ import 'package:yaml/yaml.dart';
 
 class _AnswerEditState {
   final String? id;
-  final int? order;
   final bool isNew;
   final TextEditingController answerController;
   final TextEditingController labelController;
@@ -23,7 +22,6 @@ class _AnswerEditState {
 
   _AnswerEditState({
     this.id,
-    this.order,
     this.isNew = true,
     required this.answerController,
     required this.labelController,
@@ -41,7 +39,6 @@ class _AnswerEditState {
     final hint = answer.hint ?? '';
     return _AnswerEditState(
       id: answer.id,
-      order: answer.order,
       isNew: false,
       answerController: TextEditingController(text: answerText),
       labelController: TextEditingController(text: label),
@@ -579,7 +576,6 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
                 'answer': answerText,
                 'label': label.isEmpty ? null : label,
                 'hint': hint.isEmpty ? null : hint,
-                'order': answer.order,
               },
             },
           },
