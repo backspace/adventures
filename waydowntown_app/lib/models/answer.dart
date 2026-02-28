@@ -5,6 +5,7 @@ class Answer {
   final String? label;
   final int? order;
   final Region? region;
+  final String? answer;
 
   final String? hint;
   final bool hasHint;
@@ -14,6 +15,7 @@ class Answer {
     required this.label,
     this.order,
     this.region,
+    this.answer,
     this.hint,
     this.hasHint = false,
   });
@@ -43,6 +45,7 @@ class Answer {
       label: attributes?['label'],
       order: attributes?['order'],
       region: region,
+      answer: attributes?['answer'],
       hint: attributes?['hint'],
       hasHint: attributes?['has_hint'] == true,
     );

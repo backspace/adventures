@@ -348,6 +348,33 @@ defmodule Registrations.Waydowntown do
     |> Repo.preload(answers: [:reveals, :region], region: [parent: [parent: [:parent]]])
   end
 
+  def get_answer!(id), do: Repo.get!(Answer, id) |> Repo.preload(:specification)
+
+  def create_answer(attrs) do
+    %Answer{}
+    |> Answer.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def update_answer(%Answer{} = answer, attrs) do
+    answer
+    |> Answer.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_answer(%Answer{} = answer) do
+    Repo.delete(answer)
+  end
+
+  def get_next_answer_order(specification_id) do
+    query = from(a in Answer, where: a.specification_id == ^specification_id, select: max(a.order))
+
+    case Repo.one(query) do
+      nil -> 1
+      max_order -> max_order + 1
+    end
+  end
+
   def get_specification!(id), do: Repo.get!(Specification, id)
 
   def update_specification(%Specification{} = specification, attrs) do

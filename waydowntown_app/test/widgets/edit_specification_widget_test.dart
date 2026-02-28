@@ -8,6 +8,7 @@ import 'package:http_mock_adapter/http_mock_adapter.dart';
 import 'package:mockito/mockito.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/widgets/edit_specification_widget.dart';
@@ -366,8 +367,9 @@ another_concept:
     );
 
     await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: EditSpecificationWidget(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
           dio: dio,
           specification: specification,
         ),
@@ -376,7 +378,9 @@ another_concept:
 
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Save'));
+    final saveButton = find.text('Save');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
     expect(find.text('must be a known concept'), findsOneWidget);
@@ -438,5 +442,256 @@ another_concept:
     final regionDropdownState =
         tester.state<FormFieldState<String>>(find.byKey(const Key('region-dropdown')));
     expect(regionDropdownState.value, equals('new_region'));
+  });
+
+  testWidgets('EditSpecificationWidget displays existing answers',
+      (WidgetTester tester) async {
+    final specWithAnswers = Specification(
+      id: 'spec1',
+      concept: 'bluetooth_collector',
+      placed: false,
+      answers: const [
+        Answer(
+            id: 'a1',
+            label: 'Label 1',
+            answer: 'Answer text 1',
+            hint: 'Hint 1'),
+        Answer(
+            id: 'a2',
+            label: 'Label 2',
+            answer: 'Answer text 2',
+            hint: 'Hint 2'),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: specWithAnswers,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Answers'), findsOneWidget);
+    expect(find.byKey(const Key('answer-card-0')), findsOneWidget);
+    expect(find.byKey(const Key('answer-card-1')), findsOneWidget);
+
+    final answerField0 =
+        tester.widget<TextField>(find.byKey(const Key('answer-text-0')));
+    expect(answerField0.controller!.text, equals('Answer text 1'));
+
+    final labelField0 =
+        tester.widget<TextField>(find.byKey(const Key('answer-label-0')));
+    expect(labelField0.controller!.text, equals('Label 1'));
+
+    final hintField0 =
+        tester.widget<TextField>(find.byKey(const Key('answer-hint-0')));
+    expect(hintField0.controller!.text, equals('Hint 1'));
+  });
+
+  testWidgets('EditSpecificationWidget can add a new answer',
+      (WidgetTester tester) async {
+    final specWithNoAnswers = Specification(
+      id: 'spec1',
+      concept: 'bluetooth_collector',
+      placed: false,
+      answers: const [],
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: specWithNoAnswers,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('answer-card-0')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('add-answer')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('answer-card-0')), findsOneWidget);
+
+    await tester.enterText(
+        find.byKey(const Key('answer-text-0')), 'New answer');
+    await tester.enterText(
+        find.byKey(const Key('answer-label-0')), 'New label');
+    await tester.enterText(
+        find.byKey(const Key('answer-hint-0')), 'New hint');
+
+    final answerField =
+        tester.widget<TextField>(find.byKey(const Key('answer-text-0')));
+    expect(answerField.controller!.text, equals('New answer'));
+  });
+
+  testWidgets('EditSpecificationWidget can delete an unsaved answer',
+      (WidgetTester tester) async {
+    final specWithNoAnswers = Specification(
+      id: 'spec1',
+      concept: 'bluetooth_collector',
+      placed: false,
+      answers: const [],
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: specWithNoAnswers,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('add-answer')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('answer-card-0')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('delete-answer-0')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('answer-card-0')), findsNothing);
+  });
+
+  testWidgets(
+      'EditSpecificationWidget deletes existing answer via API and removes from list',
+      (WidgetTester tester) async {
+    final specWithAnswers = Specification(
+      id: 'spec1',
+      concept: 'bluetooth_collector',
+      placed: false,
+      answers: const [
+        Answer(
+            id: 'a1',
+            label: 'Label 1',
+            answer: 'Answer text 1',
+            hint: 'Hint 1'),
+      ],
+    );
+
+    dioAdapter.onDelete(
+      '/waydowntown/answers/a1',
+      (server) => server.reply(204, ''),
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: specWithAnswers,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('answer-card-0')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('delete-answer-0')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('answer-card-0')), findsNothing);
+  });
+
+  testWidgets(
+      'EditSpecificationWidget saves new and existing answers on save',
+      (WidgetTester tester) async {
+    final specWithAnswers = Specification(
+      id: 'spec1',
+      concept: 'bluetooth_collector',
+      placed: false,
+      answers: const [
+        Answer(
+            id: 'a1',
+            label: 'Label 1',
+            answer: 'Answer text 1',
+            hint: 'Hint 1'),
+      ],
+    );
+
+    dioAdapter.onPatch(
+      '/waydowntown/specifications/spec1',
+      (server) => server.reply(200, {
+        'data': {'id': 'spec1', 'type': 'specifications'}
+      }),
+      data: Matchers.any,
+    );
+
+    dioAdapter.onPatch(
+      '/waydowntown/answers/a1',
+      (server) => server.reply(200, {
+        'data': {
+          'id': 'a1',
+          'type': 'answers',
+          'attributes': {
+            'answer': 'Updated answer',
+            'label': 'Label 1',
+            'hint': 'Hint 1',
+            'order': 1,
+          }
+        }
+      }),
+      data: Matchers.any,
+    );
+
+    dioAdapter.onPost(
+      '/waydowntown/answers',
+      (server) => server.reply(201, {
+        'data': {
+          'id': 'a2',
+          'type': 'answers',
+          'attributes': {
+            'answer': 'Brand new answer',
+            'label': null,
+            'hint': null,
+            'order': 2,
+          }
+        }
+      }),
+      data: Matchers.any,
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: specWithAnswers,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    // Update existing answer
+    await tester.enterText(
+        find.byKey(const Key('answer-text-0')), 'Updated answer');
+
+    // Add a new answer
+    final addButton = find.byKey(const Key('add-answer'));
+    await tester.ensureVisible(addButton);
+    await tester.tap(addButton);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+        find.byKey(const Key('answer-text-1')), 'Brand new answer');
+
+    // Save
+    final saveButton = find.text('Save');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
   });
 }

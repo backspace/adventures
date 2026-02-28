@@ -2,10 +2,51 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:waydowntown/app.dart';
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/widgets/edit_region_form.dart';
 import 'package:yaml/yaml.dart';
+
+class _AnswerEditState {
+  final String? id;
+  final bool isNew;
+  final TextEditingController answerController;
+  final TextEditingController labelController;
+  final TextEditingController hintController;
+
+  _AnswerEditState({
+    this.id,
+    this.isNew = true,
+    required this.answerController,
+    required this.labelController,
+    required this.hintController,
+  });
+
+  factory _AnswerEditState.fromAnswer(Answer answer) {
+    return _AnswerEditState(
+      id: answer.id,
+      isNew: false,
+      answerController: TextEditingController(text: answer.answer ?? ''),
+      labelController: TextEditingController(text: answer.label ?? ''),
+      hintController: TextEditingController(text: answer.hint ?? ''),
+    );
+  }
+
+  factory _AnswerEditState.empty() {
+    return _AnswerEditState(
+      answerController: TextEditingController(),
+      labelController: TextEditingController(),
+      hintController: TextEditingController(),
+    );
+  }
+
+  void dispose() {
+    answerController.dispose();
+    labelController.dispose();
+    hintController.dispose();
+  }
+}
 
 class EditSpecificationWidget extends StatefulWidget {
   final Dio dio;
@@ -33,6 +74,8 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   bool _sortByDistance = false;
   dynamic _concepts;
   bool _isLoading = true;
+  List<_AnswerEditState> _answers = [];
+  final List<String> _deletedAnswerIds = [];
 
   @override
   void initState() {
@@ -46,6 +89,9 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     _notesController = TextEditingController(text: widget.specification.notes);
     _selectedConcept = widget.specification.concept;
     _selectedRegionId = widget.specification.region?.id;
+    _answers = (widget.specification.answers ?? [])
+        .map((a) => _AnswerEditState.fromAnswer(a))
+        .toList();
     _loadRegions();
   }
 
@@ -135,6 +181,8 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
                   'task_description'),
               _buildTextField('Notes', _notesController, 'notes'),
               _buildDurationField(),
+              const SizedBox(height: 16),
+              _buildAnswersSection(),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -332,6 +380,151 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     });
   }
 
+  Widget _buildAnswersSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Answers',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            IconButton(
+              key: const Key('add-answer'),
+              onPressed: _addAnswer,
+              icon: const Icon(Icons.add),
+            ),
+          ],
+        ),
+        ..._answers.asMap().entries.map((entry) {
+          final index = entry.key;
+          final answer = entry.value;
+          return _buildAnswerCard(answer, index);
+        }),
+      ],
+    );
+  }
+
+  Widget _buildAnswerCard(_AnswerEditState answer, int index) {
+    return Card(
+      key: Key('answer-card-$index'),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: Key('answer-text-$index'),
+                    controller: answer.answerController,
+                    decoration: const InputDecoration(
+                      labelText: 'Answer',
+                      isDense: true,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  key: Key('delete-answer-$index'),
+                  onPressed: () => _deleteAnswer(index),
+                  icon: const Icon(Icons.delete),
+                ),
+              ],
+            ),
+            TextField(
+              key: Key('answer-label-$index'),
+              controller: answer.labelController,
+              decoration: const InputDecoration(
+                labelText: 'Label',
+                isDense: true,
+              ),
+            ),
+            TextField(
+              key: Key('answer-hint-$index'),
+              controller: answer.hintController,
+              decoration: const InputDecoration(
+                labelText: 'Hint',
+                isDense: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _addAnswer() {
+    setState(() {
+      _answers.add(_AnswerEditState.empty());
+    });
+  }
+
+  Future<void> _deleteAnswer(int index) async {
+    final answer = _answers[index];
+    if (!answer.isNew && answer.id != null) {
+      try {
+        await widget.dio.delete('/waydowntown/answers/${answer.id}');
+      } catch (e) {
+        talker.error('Error deleting answer: $e');
+        return;
+      }
+      _deletedAnswerIds.add(answer.id!);
+    }
+    answer.dispose();
+    setState(() {
+      _answers.removeAt(index);
+    });
+  }
+
+  Future<void> _saveAnswers() async {
+    for (var i = 0; i < _answers.length; i++) {
+      final answer = _answers[i];
+      final answerText = answer.answerController.text;
+      final label = answer.labelController.text;
+      final hint = answer.hintController.text;
+
+      if (answer.isNew) {
+        await widget.dio.post(
+          '/waydowntown/answers',
+          data: {
+            'data': {
+              'type': 'answers',
+              'attributes': {
+                'answer': answerText,
+                'label': label.isEmpty ? null : label,
+                'hint': hint.isEmpty ? null : hint,
+              },
+              'relationships': {
+                'specification': {
+                  'data': {
+                    'type': 'specifications',
+                    'id': widget.specification.id,
+                  },
+                },
+              },
+            },
+          },
+        );
+      } else if (answer.id != null) {
+        await widget.dio.patch(
+          '/waydowntown/answers/${answer.id}',
+          data: {
+            'data': {
+              'type': 'answers',
+              'id': answer.id,
+              'attributes': {
+                'answer': answerText,
+                'label': label.isEmpty ? null : label,
+                'hint': hint.isEmpty ? null : hint,
+              },
+            },
+          },
+        );
+      }
+    }
+  }
+
   Future<void> _saveSpecification() async {
     try {
       final response = await widget.dio.patch(
@@ -352,8 +545,11 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
         },
       );
 
-      if (response.statusCode == 200 && mounted) {
-        Navigator.of(context).pop(true);
+      if (response.statusCode == 200) {
+        await _saveAnswers();
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
       }
     } on DioException catch (e) {
       talker.error('Error updating specification: $e');
@@ -404,6 +600,9 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     _taskDescriptionController.dispose();
     _durationController.dispose();
     _notesController.dispose();
+    for (final answer in _answers) {
+      answer.dispose();
+    }
     super.dispose();
   }
 }
