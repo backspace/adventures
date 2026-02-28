@@ -73,8 +73,19 @@ class _SensorAnswerScannerState extends State<SensorAnswerScanner> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          Navigator.pop(context, _buildResult());
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context, _buildResult()),
+        ),
         title: Text(widget.title),
         actions: [
           TextButton(
@@ -144,6 +155,7 @@ class _SensorAnswerScannerState extends State<SensorAnswerScanner> {
           ),
         ],
       ),
+    ),
     );
   }
 
