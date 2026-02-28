@@ -95,6 +95,9 @@ void main() {
 bluetooth_collector:
   name: Bluetooth Collector
   instructions: Collect Bluetooth devices
+code_collector:
+  name: Code Collector
+  instructions: Collect barcodes
 fill_in_the_blank:
   name: Fill in the Blank
   instructions: Fill in the blank
@@ -693,5 +696,65 @@ another_concept:
     await tester.ensureVisible(saveButton);
     await tester.tap(saveButton);
     await tester.pumpAndSettle();
+  });
+
+  testWidgets(
+      'scan button appears for bluetooth_collector and code_collector concepts',
+      (WidgetTester tester) async {
+    final btSpec = Specification(
+      id: 'spec1',
+      concept: 'bluetooth_collector',
+      placed: false,
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: btSpec,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    final scanButton = find.byKey(const Key('scan-answers'));
+    await tester.ensureVisible(scanButton);
+    expect(scanButton, findsOneWidget);
+
+    // Change concept to code_collector
+    await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Code Collector').last);
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.byKey(const Key('scan-answers')));
+    expect(find.byKey(const Key('scan-answers')), findsOneWidget);
+  });
+
+  testWidgets(
+      'scan button does not appear for non-sensor concepts',
+      (WidgetTester tester) async {
+    final spec = Specification(
+      id: 'spec1',
+      concept: 'fill_in_the_blank',
+      placed: false,
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: spec,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('scan-answers')), findsNothing);
+    expect(find.byKey(const Key('add-answer')), findsOneWidget);
   });
 }

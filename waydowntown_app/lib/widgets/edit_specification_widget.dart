@@ -6,6 +6,8 @@ import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/widgets/edit_region_form.dart';
+import 'package:waydowntown/widgets/sensor_answer_registry.dart';
+import 'package:waydowntown/widgets/sensor_answer_scanner.dart';
 import 'package:yaml/yaml.dart';
 
 class _AnswerEditState {
@@ -381,6 +383,9 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   }
 
   Widget _buildAnswersSection() {
+    final sensorConfig =
+        SensorAnswerRegistry.configForConcept(_selectedConcept);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -389,10 +394,20 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
           children: [
             const Text('Answers',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            IconButton(
-              key: const Key('add-answer'),
-              onPressed: _addAnswer,
-              icon: const Icon(Icons.add),
+            Row(
+              children: [
+                if (sensorConfig != null)
+                  IconButton(
+                    key: const Key('scan-answers'),
+                    onPressed: () => _openScanner(sensorConfig),
+                    icon: Icon(sensorConfig.icon),
+                  ),
+                IconButton(
+                  key: const Key('add-answer'),
+                  onPressed: _addAnswer,
+                  icon: const Icon(Icons.add),
+                ),
+              ],
             ),
           ],
         ),
@@ -458,6 +473,31 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     setState(() {
       _answers.add(_AnswerEditState.empty());
     });
+  }
+
+  Future<void> _openScanner(SensorConfig config) async {
+    final results = await Navigator.of(context).push<List<ScannedAnswer>>(
+      MaterialPageRoute(
+        builder: (context) => SensorAnswerScanner(
+          detector: config.detectorFactory(),
+          inputBuilder: config.inputBuilder,
+          title: config.title,
+        ),
+      ),
+    );
+
+    if (results != null && results.isNotEmpty) {
+      setState(() {
+        for (final scanned in results) {
+          final answer = _AnswerEditState.empty();
+          answer.answerController.text = scanned.answer;
+          if (scanned.hint != null) {
+            answer.hintController.text = scanned.hint!;
+          }
+          _answers.add(answer);
+        }
+      });
+    }
   }
 
   Future<void> _deleteAnswer(int index) async {
