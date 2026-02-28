@@ -99,7 +99,8 @@ void main() {
     // 16. User 1 should see "banana" and two "Teammate" labels
     await waitFor(tester, find.text('banana'),
         timeout: const Duration(seconds: 15));
-    expect(find.text('Teammate'), findsNWidgets(2));
+    await waitFor(tester, find.text('Teammate'),
+        timeout: const Duration(seconds: 15), count: 2);
 
     // 17. User 2 submits "cherry" (correct, triggers win)
     await testClient.submitAnswer(dio2, runId, 'cherry');

@@ -30,19 +30,19 @@ defmodule RegistrationsWeb.TestController do
         # Optionally create game data based on concept parameter
         case params["game"] do
           "fill_in_the_blank" ->
-            game_data = create_fill_in_the_blank_game()
+            game_data = create_fill_in_the_blank_game(user)
             Map.merge(base_response, game_data)
 
           "string_collector" ->
-            game_data = create_string_collector_game()
+            game_data = create_string_collector_game(user)
             Map.merge(base_response, game_data)
 
           "orientation_memory" ->
-            game_data = create_orientation_memory_game()
+            game_data = create_orientation_memory_game(user)
             Map.merge(base_response, game_data)
 
           "string_collector_team" ->
-            game_data = create_string_collector_team_game()
+            game_data = create_string_collector_team_game(user)
             Map.merge(base_response, game_data)
 
           _ ->
@@ -57,7 +57,7 @@ defmodule RegistrationsWeb.TestController do
     |> json(response)
   end
 
-  defp create_fill_in_the_blank_game do
+  defp create_fill_in_the_blank_game(user) do
     region = Repo.insert!(%Region{name: "Test Region"})
 
     specification =
@@ -65,7 +65,8 @@ defmodule RegistrationsWeb.TestController do
         concept: "fill_in_the_blank",
         task_description: "What is the answer to this test?",
         region: region,
-        duration: 300
+        duration: 300,
+        creator_id: user.id
       })
 
     # Insert answer separately (has_many relationship)
@@ -83,7 +84,7 @@ defmodule RegistrationsWeb.TestController do
     }
   end
 
-  defp create_string_collector_game do
+  defp create_string_collector_game(user) do
     region = Repo.insert!(%Region{name: "Test Region"})
 
     specification =
@@ -92,7 +93,8 @@ defmodule RegistrationsWeb.TestController do
         task_description: "Find all the hidden words",
         start_description: "Look around for words",
         region: region,
-        duration: 300
+        duration: 300,
+        creator_id: user.id
       })
 
     # Insert answers separately (has_many relationship)
@@ -108,7 +110,7 @@ defmodule RegistrationsWeb.TestController do
     }
   end
 
-  defp create_orientation_memory_game do
+  defp create_orientation_memory_game(user) do
     region = Repo.insert!(%Region{name: "Test Region"})
 
     specification =
@@ -117,7 +119,8 @@ defmodule RegistrationsWeb.TestController do
         task_description: "Remember the sequence of directions",
         start_description: "Watch the pattern carefully",
         region: region,
-        duration: 300
+        duration: 300,
+        creator_id: user.id
       })
 
     # Insert ordered answers (order field is required for orientation_memory)
@@ -133,7 +136,7 @@ defmodule RegistrationsWeb.TestController do
     }
   end
 
-  defp create_string_collector_team_game do
+  defp create_string_collector_team_game(user) do
     region = Repo.insert!(%Region{name: "Test Region"})
 
     specification =
@@ -142,7 +145,8 @@ defmodule RegistrationsWeb.TestController do
         task_description: "Find all the hidden words",
         start_description: "Look around for words",
         region: region,
-        duration: 300
+        duration: 300,
+        creator_id: user.id
       })
 
     answer1 = Repo.insert!(%Answer{answer: "apple", specification_id: specification.id})
