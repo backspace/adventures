@@ -519,15 +519,9 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     }
   }
 
-  Future<void> _deleteAnswer(int index) async {
+  void _deleteAnswer(int index) {
     final answer = _answers[index];
     if (!answer.isNew && answer.id != null) {
-      try {
-        await widget.dio.delete('/waydowntown/answers/${answer.id}');
-      } catch (e) {
-        talker.error('Error deleting answer: $e');
-        return;
-      }
       _deletedAnswerIds.add(answer.id!);
     }
     answer.dispose();
@@ -537,6 +531,10 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   }
 
   Future<void> _saveAnswers() async {
+    for (final id in _deletedAnswerIds) {
+      await widget.dio.delete('/waydowntown/answers/$id');
+    }
+
     for (var i = 0; i < _answers.length; i++) {
       final answer = _answers[i];
       final answerText = answer.answerController.text;
