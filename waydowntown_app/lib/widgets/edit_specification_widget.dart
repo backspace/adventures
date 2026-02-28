@@ -12,26 +12,43 @@ import 'package:yaml/yaml.dart';
 
 class _AnswerEditState {
   final String? id;
+  final int? order;
   final bool isNew;
   final TextEditingController answerController;
   final TextEditingController labelController;
   final TextEditingController hintController;
+  final String _originalAnswer;
+  final String _originalLabel;
+  final String _originalHint;
 
   _AnswerEditState({
     this.id,
+    this.order,
     this.isNew = true,
     required this.answerController,
     required this.labelController,
     required this.hintController,
-  });
+    String originalAnswer = '',
+    String originalLabel = '',
+    String originalHint = '',
+  })  : _originalAnswer = originalAnswer,
+        _originalLabel = originalLabel,
+        _originalHint = originalHint;
 
   factory _AnswerEditState.fromAnswer(Answer answer) {
+    final answerText = answer.answer ?? '';
+    final label = answer.label ?? '';
+    final hint = answer.hint ?? '';
     return _AnswerEditState(
       id: answer.id,
+      order: answer.order,
       isNew: false,
-      answerController: TextEditingController(text: answer.answer ?? ''),
-      labelController: TextEditingController(text: answer.label ?? ''),
-      hintController: TextEditingController(text: answer.hint ?? ''),
+      answerController: TextEditingController(text: answerText),
+      labelController: TextEditingController(text: label),
+      hintController: TextEditingController(text: hint),
+      originalAnswer: answerText,
+      originalLabel: label,
+      originalHint: hint,
     );
   }
 
@@ -42,6 +59,11 @@ class _AnswerEditState {
       hintController: TextEditingController(),
     );
   }
+
+  bool get isDirty =>
+      answerController.text != _originalAnswer ||
+      labelController.text != _originalLabel ||
+      hintController.text != _originalHint;
 
   void dispose() {
     answerController.dispose();
@@ -546,7 +568,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
             },
           },
         );
-      } else if (answer.id != null) {
+      } else if (answer.id != null && answer.isDirty) {
         await widget.dio.patch(
           '/waydowntown/answers/${answer.id}',
           data: {
@@ -557,6 +579,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
                 'answer': answerText,
                 'label': label.isEmpty ? null : label,
                 'hint': hint.isEmpty ? null : hint,
+                'order': answer.order,
               },
             },
           },
