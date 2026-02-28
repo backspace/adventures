@@ -114,24 +114,31 @@ class _SensorAnswerScannerState extends State<SensorAnswerScanner> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Checkbox(
-                                    key: Key('include-$index'),
-                                    value: entry.included,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        entry.included = value ?? false;
-                                      });
-                                    },
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      entry.value,
-                                      style: const TextStyle(fontSize: 16),
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    entry.included = !entry.included;
+                                  });
+                                },
+                                child: Row(
+                                  children: [
+                                    Checkbox(
+                                      key: Key('include-$index'),
+                                      value: entry.included,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          entry.included = value ?? false;
+                                        });
+                                      },
                                     ),
-                                  ),
-                                ],
+                                    Expanded(
+                                      child: Text(
+                                        entry.value,
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               if (entry.included)
                                 Padding(
