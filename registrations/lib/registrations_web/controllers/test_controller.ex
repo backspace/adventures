@@ -150,7 +150,7 @@ defmodule RegistrationsWeb.TestController do
     answer3 = Repo.insert!(%Answer{answer: "cherry", specification_id: specification.id})
 
     # Create second test user
-    _user2 = create_or_reset_user("test2@example.com", @test_password, "Test User 2")
+    user2 = create_or_reset_user("test2@example.com", @test_password, "Test User 2")
 
     %{
       specification_id: specification.id,
