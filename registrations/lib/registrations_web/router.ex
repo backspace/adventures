@@ -158,7 +158,9 @@ defmodule RegistrationsWeb.Router do
       post "/start", RunController, :start, as: :start
     end
 
-    resources("/specifications", SpecificationController, only: [:update])
+    resources("/answers", AnswerController, only: [:create, :update, :delete])
+
+    resources("/specifications", SpecificationController, only: [:create, :update])
     get("/specifications/mine", SpecificationController, :mine, as: :my_specifications)
 
     resources("/submissions", SubmissionController, only: [:create, :show])

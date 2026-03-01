@@ -2,19 +2,84 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:waydowntown/app.dart';
+import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/region.dart';
 import 'package:waydowntown/models/specification.dart';
 import 'package:waydowntown/widgets/edit_region_form.dart';
+import 'package:waydowntown/widgets/sensor_answer_registry.dart';
+import 'package:waydowntown/widgets/sensor_answer_scanner.dart';
 import 'package:yaml/yaml.dart';
+
+class _AnswerEditState {
+  final String? id;
+  final bool isNew;
+  final TextEditingController answerController;
+  final TextEditingController labelController;
+  final TextEditingController hintController;
+  final String _originalAnswer;
+  final String _originalLabel;
+  final String _originalHint;
+  bool isEditUnlocked;
+
+  _AnswerEditState({
+    this.id,
+    this.isNew = true,
+    this.isEditUnlocked = true,
+    required this.answerController,
+    required this.labelController,
+    required this.hintController,
+    String originalAnswer = '',
+    String originalLabel = '',
+    String originalHint = '',
+  })  : _originalAnswer = originalAnswer,
+        _originalLabel = originalLabel,
+        _originalHint = originalHint;
+
+  factory _AnswerEditState.fromAnswer(Answer answer) {
+    final answerText = answer.answer ?? '';
+    final label = answer.label ?? '';
+    final hint = answer.hint ?? '';
+    return _AnswerEditState(
+      id: answer.id,
+      isNew: false,
+      isEditUnlocked: false,
+      answerController: TextEditingController(text: answerText),
+      labelController: TextEditingController(text: label),
+      hintController: TextEditingController(text: hint),
+      originalAnswer: answerText,
+      originalLabel: label,
+      originalHint: hint,
+    );
+  }
+
+  factory _AnswerEditState.empty() {
+    return _AnswerEditState(
+      answerController: TextEditingController(),
+      labelController: TextEditingController(),
+      hintController: TextEditingController(),
+    );
+  }
+
+  bool get isDirty =>
+      answerController.text != _originalAnswer ||
+      labelController.text != _originalLabel ||
+      hintController.text != _originalHint;
+
+  void dispose() {
+    answerController.dispose();
+    labelController.dispose();
+    hintController.dispose();
+  }
+}
 
 class EditSpecificationWidget extends StatefulWidget {
   final Dio dio;
-  final Specification specification;
+  final Specification? specification;
 
   const EditSpecificationWidget({
     super.key,
     required this.dio,
-    required this.specification,
+    this.specification,
   });
 
   @override
@@ -33,19 +98,28 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   bool _sortByDistance = false;
   dynamic _concepts;
   bool _isLoading = true;
+  List<_AnswerEditState> _answers = [];
+  final List<String> _deletedAnswerIds = [];
+  String? _createdSpecificationId;
+
+  bool get _isCreateMode => widget.specification == null;
 
   @override
   void initState() {
     super.initState();
+    final spec = widget.specification;
     _startDescriptionController =
-        TextEditingController(text: widget.specification.startDescription);
+        TextEditingController(text: spec?.startDescription);
     _taskDescriptionController =
-        TextEditingController(text: widget.specification.taskDescription);
+        TextEditingController(text: spec?.taskDescription);
     _durationController = TextEditingController(
-        text: widget.specification.duration?.toString() ?? '');
-    _notesController = TextEditingController(text: widget.specification.notes);
-    _selectedConcept = widget.specification.concept;
-    _selectedRegionId = widget.specification.region?.id;
+        text: spec?.duration?.toString() ?? '');
+    _notesController = TextEditingController(text: spec?.notes);
+    _selectedConcept = spec?.concept;
+    _selectedRegionId = spec?.region?.id;
+    _answers = (spec?.answers ?? [])
+        .map((a) => _AnswerEditState.fromAnswer(a))
+        .toList();
     _loadRegions();
   }
 
@@ -119,7 +193,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Specification'),
+        title: Text(_isCreateMode ? 'New Specification' : 'Edit Specification'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -135,6 +209,8 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
                   'task_description'),
               _buildTextField('Notes', _notesController, 'notes'),
               _buildDurationField(),
+              const SizedBox(height: 16),
+              _buildAnswersSection(),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -332,31 +408,314 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     });
   }
 
-  Future<void> _saveSpecification() async {
-    try {
-      final response = await widget.dio.patch(
-        '/waydowntown/specifications/${widget.specification.id}',
-        data: {
-          'data': {
-            'type': 'specifications',
-            'id': widget.specification.id,
-            'attributes': {
-              'concept': _selectedConcept,
-              'start_description': _startDescriptionController.text,
-              'task_description': _taskDescriptionController.text,
-              'duration': int.tryParse(_durationController.text),
-              'region_id': _selectedRegionId,
-              'notes': _notesController.text,
-            },
-          },
+  Widget _buildAnswersSection() {
+    final sensorConfig =
+        SensorAnswerRegistry.configForConcept(_selectedConcept);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Answers',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                if (sensorConfig != null)
+                  IconButton(
+                    key: const Key('scan-answers'),
+                    onPressed: () => _openScanner(sensorConfig),
+                    icon: Icon(sensorConfig.icon),
+                  ),
+                IconButton(
+                  key: const Key('add-answer'),
+                  onPressed: _addAnswer,
+                  icon: const Icon(Icons.add),
+                ),
+              ],
+            ),
+          ],
+        ),
+        ..._answers.asMap().entries.map((entry) {
+          final index = entry.key;
+          final answer = entry.value;
+          return _buildAnswerCard(answer, index);
+        }),
+      ],
+    );
+  }
+
+  Widget _buildAnswerCard(_AnswerEditState answer, int index) {
+    final isSensorConcept =
+        SensorAnswerRegistry.configForConcept(_selectedConcept) != null;
+    final isLocked = isSensorConcept && !answer.isNew && !answer.isEditUnlocked;
+
+    return Card(
+      key: Key('answer-card-$index'),
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    behavior: isLocked ? HitTestBehavior.opaque : HitTestBehavior.deferToChild,
+                    onTap: isLocked ? () => _unlockAnswer(index) : null,
+                    child: AbsorbPointer(
+                      absorbing: isLocked,
+                      child: TextField(
+                        key: Key('answer-text-$index'),
+                        controller: answer.answerController,
+                        decoration: InputDecoration(
+                          labelText: 'Answer',
+                          isDense: true,
+                          suffixIcon: isLocked
+                              ? const Icon(Icons.lock, size: 16)
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  key: Key('delete-answer-$index'),
+                  onPressed: () => _deleteAnswer(index),
+                  icon: const Icon(Icons.delete),
+                ),
+              ],
+            ),
+            TextField(
+              key: Key('answer-label-$index'),
+              controller: answer.labelController,
+              decoration: const InputDecoration(
+                labelText: 'Label',
+                isDense: true,
+              ),
+            ),
+            TextField(
+              key: Key('answer-hint-$index'),
+              controller: answer.hintController,
+              decoration: const InputDecoration(
+                labelText: 'Hint',
+                isDense: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _unlockAnswer(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit sensor answer'),
+          content: const Text(
+              'This answer was produced by sensor input. Editing it may cause it to no longer correspond to real-world data.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              key: const Key('confirm-edit-answer'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                setState(() {
+                  _answers[index].isEditUnlocked = true;
+                });
+              },
+              child: const Text('Edit anyway'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addAnswer() {
+    final sensorConfig =
+        SensorAnswerRegistry.configForConcept(_selectedConcept);
+    if (sensorConfig != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Manual answer'),
+            content: const Text(
+                'This concept uses sensor input. Manually added answers may not correspond to real-world data.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                key: const Key('confirm-manual-answer'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  setState(() {
+                    _answers.add(_AnswerEditState.empty());
+                  });
+                },
+                child: const Text('Add anyway'),
+              ),
+            ],
+          );
         },
       );
+    } else {
+      setState(() {
+        _answers.add(_AnswerEditState.empty());
+      });
+    }
+  }
 
-      if (response.statusCode == 200 && mounted) {
-        Navigator.of(context).pop(true);
+  Future<void> _openScanner(SensorConfig config) async {
+    final results = await Navigator.of(context).push<List<ScannedAnswer>>(
+      MaterialPageRoute(
+        builder: (context) => SensorAnswerScanner(
+          detector: config.detectorFactory(),
+          inputBuilder: config.inputBuilder,
+          title: config.title,
+        ),
+      ),
+    );
+
+    if (results != null && results.isNotEmpty) {
+      setState(() {
+        for (final scanned in results) {
+          final answer = _AnswerEditState.empty();
+          answer.answerController.text = scanned.answer;
+          if (scanned.hint != null) {
+            answer.hintController.text = scanned.hint!;
+          }
+          _answers.add(answer);
+        }
+      });
+    }
+  }
+
+  void _deleteAnswer(int index) {
+    final answer = _answers[index];
+    if (!answer.isNew && answer.id != null) {
+      _deletedAnswerIds.add(answer.id!);
+    }
+    answer.dispose();
+    setState(() {
+      _answers.removeAt(index);
+    });
+  }
+
+  Future<void> _saveAnswers(String specificationId) async {
+    for (final id in _deletedAnswerIds) {
+      await widget.dio.delete('/waydowntown/answers/$id');
+    }
+
+    for (var i = 0; i < _answers.length; i++) {
+      final answer = _answers[i];
+      final answerText = answer.answerController.text;
+      final label = answer.labelController.text;
+      final hint = answer.hintController.text;
+
+      if (answer.isNew) {
+        await widget.dio.post(
+          '/waydowntown/answers',
+          data: {
+            'data': {
+              'type': 'answers',
+              'attributes': {
+                'answer': answerText,
+                'label': label.isEmpty ? null : label,
+                'hint': hint.isEmpty ? null : hint,
+              },
+              'relationships': {
+                'specification': {
+                  'data': {
+                    'type': 'specifications',
+                    'id': specificationId,
+                  },
+                },
+              },
+            },
+          },
+        );
+      } else if (answer.id != null && answer.isDirty) {
+        await widget.dio.patch(
+          '/waydowntown/answers/${answer.id}',
+          data: {
+            'data': {
+              'type': 'answers',
+              'id': answer.id,
+              'attributes': {
+                'answer': answerText,
+                'label': label.isEmpty ? null : label,
+                'hint': hint.isEmpty ? null : hint,
+              },
+            },
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> _saveSpecification() async {
+    try {
+      final Response response;
+      final String specificationId;
+
+      if (_isCreateMode) {
+        response = await widget.dio.post(
+          '/waydowntown/specifications',
+          data: {
+            'data': {
+              'type': 'specifications',
+              'attributes': {
+                'concept': _selectedConcept,
+                'start_description': _startDescriptionController.text,
+                'task_description': _taskDescriptionController.text,
+                'duration': int.tryParse(_durationController.text),
+                'region_id': _selectedRegionId,
+                'notes': _notesController.text,
+              },
+            },
+          },
+        );
+        specificationId = response.data['data']['id'];
+        _createdSpecificationId = specificationId;
+      } else {
+        response = await widget.dio.patch(
+          '/waydowntown/specifications/${widget.specification!.id}',
+          data: {
+            'data': {
+              'type': 'specifications',
+              'id': widget.specification!.id,
+              'attributes': {
+                'concept': _selectedConcept,
+                'start_description': _startDescriptionController.text,
+                'task_description': _taskDescriptionController.text,
+                'duration': int.tryParse(_durationController.text),
+                'region_id': _selectedRegionId,
+                'notes': _notesController.text,
+              },
+            },
+          },
+        );
+        specificationId = widget.specification!.id;
+      }
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await _saveAnswers(specificationId);
+        if (mounted) {
+          Navigator.of(context).pop(true);
+        }
       }
     } on DioException catch (e) {
-      talker.error('Error updating specification: $e');
+      talker.error('Error saving specification: $e');
       if (e.response?.statusCode == 422) {
         final errors = e.response?.data['errors'] as List<dynamic>;
         setState(() {
@@ -369,7 +728,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update specification')),
+          SnackBar(content: Text('Failed to ${_isCreateMode ? 'create' : 'update'} specification')),
         );
       }
     }
@@ -404,6 +763,9 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     _taskDescriptionController.dispose();
     _durationController.dispose();
     _notesController.dispose();
+    for (final answer in _answers) {
+      answer.dispose();
+    }
     super.dispose();
   }
 }

@@ -41,6 +41,7 @@ class BluetoothCollectorGame extends StatelessWidget {
 class BluetoothDetector implements StringDetector {
   final FlutterBluePlusMockable flutterBluePlus;
   final _detectedDevicesController = StreamController<String>.broadcast();
+  StreamSubscription? _scanSubscription;
 
   BluetoothDetector(this.flutterBluePlus);
 
@@ -49,7 +50,7 @@ class BluetoothDetector implements StringDetector {
 
   @override
   void startDetecting() {
-    flutterBluePlus.onScanResults.listen((results) {
+    _scanSubscription = flutterBluePlus.onScanResults.listen((results) {
       for (var result in results) {
         if (result.device.platformName.isNotEmpty) {
           _detectedDevicesController.add(result.device.platformName);
@@ -71,6 +72,7 @@ class BluetoothDetector implements StringDetector {
   @override
   void dispose() {
     FlutterBluePlus.stopScan();
+    _scanSubscription?.cancel();
     _detectedDevicesController.close();
   }
 }

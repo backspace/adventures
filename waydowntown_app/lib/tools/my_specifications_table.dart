@@ -14,10 +14,13 @@ class MySpecificationsTable extends StatefulWidget {
   _MySpecificationsTableState createState() => _MySpecificationsTableState();
 }
 
+enum GroupBy { region, concept }
+
 class _MySpecificationsTableState extends State<MySpecificationsTable> {
   List<Specification> specifications = [];
   bool isLoading = true;
   bool isRequestError = false;
+  GroupBy _groupBy = GroupBy.region;
 
   @override
   void initState() {
@@ -70,6 +73,52 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Specifications'),
+        actions: [
+          ToggleButtons(
+            key: const Key('group-by-toggle'),
+            isSelected: [
+              _groupBy == GroupBy.region,
+              _groupBy == GroupBy.concept,
+            ],
+            onPressed: (index) {
+              setState(() {
+                _groupBy = index == 0 ? GroupBy.region : GroupBy.concept;
+              });
+            },
+            children: const [
+              Padding(
+                key: Key('group-by-region'),
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text('Region'),
+              ),
+              Padding(
+                key: Key('group-by-concept'),
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text('Concept'),
+              ),
+            ],
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            key: const Key('new-specification'),
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              final didCreate = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(
+                  builder: (context) => EditSpecificationWidget(
+                    dio: widget.dio,
+                  ),
+                ),
+              );
+
+              if (!mounted) return;
+
+              if (didCreate == true) {
+                await fetchMySpecifications();
+              }
+            },
+          ),
+        ],
       ),
       body: Builder(
         builder: (BuildContext context) {
@@ -84,12 +133,15 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
                 child: Theme(
                   data: Theme.of(context).copyWith(),
                   child: DataTable(
-                    columns: const [
-                      DataColumn(label: Text('Concept')),
-                      DataColumn(label: Text('Answers')),
-                      DataColumn(label: Text('Start')),
-                      DataColumn(label: Text('Task')),
-                      DataColumn(label: Text('')),
+                    columns: [
+                      DataColumn(
+                          label: Text(_groupBy == GroupBy.region
+                              ? 'Concept'
+                              : 'Region')),
+                      const DataColumn(label: Text('Answers')),
+                      const DataColumn(label: Text('Start')),
+                      const DataColumn(label: Text('Task')),
+                      const DataColumn(label: Text('')),
                     ],
                     rows: _buildTableRows(),
                   ),
@@ -105,22 +157,35 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
   List<DataRow> _buildTableRows() {
     Map<String, List<Specification>> groupedSpecs = {};
     for (var spec in specifications) {
-      String regionName = spec.region?.name ?? 'Unknown';
-      if (!groupedSpecs.containsKey(regionName)) {
-        groupedSpecs[regionName] = [];
+      String groupKey = _groupBy == GroupBy.region
+          ? (spec.region?.name ?? 'Unknown')
+          : spec.concept;
+      if (!groupedSpecs.containsKey(groupKey)) {
+        groupedSpecs[groupKey] = [];
       }
-      groupedSpecs[regionName]!.add(spec);
+      groupedSpecs[groupKey]!.add(spec);
     }
 
     List<DataRow> rows = [];
-    groupedSpecs.forEach((regionName, specs) {
+    final sortedKeys = groupedSpecs.keys.toList()..sort();
+    for (final groupKey in sortedKeys) {
+      final specs = groupedSpecs[groupKey]!;
+      if (_groupBy == GroupBy.concept) {
+        specs.sort((a, b) => (a.region?.name ?? 'Unknown')
+            .compareTo(b.region?.name ?? 'Unknown'));
+      } else {
+        specs.sort((a, b) => a.concept.compareTo(b.concept));
+      }
+    }
+    for (final groupKey in sortedKeys) {
+      final specs = groupedSpecs[groupKey]!;
       rows.add(DataRow(
         cells: [
           DataCell(
             Container(
               color: Theme.of(context).primaryColor.withOpacity(0.1),
               child: Text(
-                regionName,
+                groupKey,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -133,7 +198,9 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
       ));
       rows.addAll(specs.map((spec) => DataRow(
             cells: [
-              DataCell(Text(spec.concept)),
+              DataCell(Text(_groupBy == GroupBy.region
+                  ? spec.concept
+                  : (spec.region?.name ?? 'Unknown'))),
               DataCell(Text(spec.answers?.length.toString() ?? '0')),
               DataCell(_truncatedText(spec.startDescription)),
               DataCell(_truncatedText(spec.taskDescription)),
@@ -177,7 +244,7 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
               )),
             ],
           )));
-    });
+    }
 
     return rows;
   }
