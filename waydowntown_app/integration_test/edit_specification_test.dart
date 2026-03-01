@@ -51,6 +51,11 @@ void main() {
     // 6. Tap edit button on the specification
     final editButton = find.byIcon(Icons.edit);
     await waitFor(tester, editButton);
+    await tester.scrollUntilVisible(
+      editButton,
+      200.0,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.tap(editButton);
 
     // 7. Wait for edit screen to load
@@ -106,7 +111,14 @@ void main() {
         timeout: const Duration(seconds: 15));
 
     // 14. Re-open edit to verify the new answer persisted
-    await tester.tap(find.byIcon(Icons.edit));
+    final editButton2 = find.byIcon(Icons.edit);
+    await waitFor(tester, editButton2);
+    await tester.scrollUntilVisible(
+      editButton2,
+      200.0,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(editButton2);
     await waitFor(tester, find.text('Edit Specification'),
         timeout: const Duration(seconds: 15));
 
