@@ -223,7 +223,7 @@ defmodule Registrations.Waydowntown do
     answers = generate_answers(concept_data)
 
     with {:ok, specification} <-
-           create_specification(%{
+           insert_specification(%{
              concept: concept_key,
              task_description: concept_data["instructions"]
            }),
@@ -268,7 +268,7 @@ defmodule Registrations.Waydowntown do
     end
   end
 
-  defp create_specification(attrs) do
+  defp insert_specification(attrs) do
     %Specification{}
     |> Specification.changeset(attrs)
     |> Repo.insert()
@@ -376,6 +376,16 @@ defmodule Registrations.Waydowntown do
   end
 
   def get_specification!(id), do: Repo.get!(Specification, id)
+
+  def create_specification(attrs) do
+    %Specification{}
+    |> Specification.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, spec} -> {:ok, Repo.preload(spec, answers: [:reveals, :region], region: [parent: [parent: [:parent]]])}
+      error -> error
+    end
+  end
 
   def update_specification(%Specification{} = specification, attrs) do
     specification

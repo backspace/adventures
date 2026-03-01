@@ -160,7 +160,7 @@ defmodule RegistrationsWeb.Router do
 
     resources("/answers", AnswerController, only: [:create, :update, :delete])
 
-    resources("/specifications", SpecificationController, only: [:update])
+    resources("/specifications", SpecificationController, only: [:create, :update])
     get("/specifications/mine", SpecificationController, :mine, as: :my_specifications)
 
     resources("/submissions", SubmissionController, only: [:create, :show])

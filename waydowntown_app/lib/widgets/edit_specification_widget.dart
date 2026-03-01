@@ -71,12 +71,12 @@ class _AnswerEditState {
 
 class EditSpecificationWidget extends StatefulWidget {
   final Dio dio;
-  final Specification specification;
+  final Specification? specification;
 
   const EditSpecificationWidget({
     super.key,
     required this.dio,
-    required this.specification,
+    this.specification,
   });
 
   @override
@@ -97,20 +97,24 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   bool _isLoading = true;
   List<_AnswerEditState> _answers = [];
   final List<String> _deletedAnswerIds = [];
+  String? _createdSpecificationId;
+
+  bool get _isCreateMode => widget.specification == null;
 
   @override
   void initState() {
     super.initState();
+    final spec = widget.specification;
     _startDescriptionController =
-        TextEditingController(text: widget.specification.startDescription);
+        TextEditingController(text: spec?.startDescription);
     _taskDescriptionController =
-        TextEditingController(text: widget.specification.taskDescription);
+        TextEditingController(text: spec?.taskDescription);
     _durationController = TextEditingController(
-        text: widget.specification.duration?.toString() ?? '');
-    _notesController = TextEditingController(text: widget.specification.notes);
-    _selectedConcept = widget.specification.concept;
-    _selectedRegionId = widget.specification.region?.id;
-    _answers = (widget.specification.answers ?? [])
+        text: spec?.duration?.toString() ?? '');
+    _notesController = TextEditingController(text: spec?.notes);
+    _selectedConcept = spec?.concept;
+    _selectedRegionId = spec?.region?.id;
+    _answers = (spec?.answers ?? [])
         .map((a) => _AnswerEditState.fromAnswer(a))
         .toList();
     _loadRegions();
@@ -186,7 +190,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Specification'),
+        title: Text(_isCreateMode ? 'New Specification' : 'Edit Specification'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -530,7 +534,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     });
   }
 
-  Future<void> _saveAnswers() async {
+  Future<void> _saveAnswers(String specificationId) async {
     for (final id in _deletedAnswerIds) {
       await widget.dio.delete('/waydowntown/answers/$id');
     }
@@ -556,7 +560,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
                 'specification': {
                   'data': {
                     'type': 'specifications',
-                    'id': widget.specification.id,
+                    'id': specificationId,
                   },
                 },
               },
@@ -584,32 +588,57 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
 
   Future<void> _saveSpecification() async {
     try {
-      final response = await widget.dio.patch(
-        '/waydowntown/specifications/${widget.specification.id}',
-        data: {
-          'data': {
-            'type': 'specifications',
-            'id': widget.specification.id,
-            'attributes': {
-              'concept': _selectedConcept,
-              'start_description': _startDescriptionController.text,
-              'task_description': _taskDescriptionController.text,
-              'duration': int.tryParse(_durationController.text),
-              'region_id': _selectedRegionId,
-              'notes': _notesController.text,
+      final Response response;
+      final String specificationId;
+
+      if (_isCreateMode) {
+        response = await widget.dio.post(
+          '/waydowntown/specifications',
+          data: {
+            'data': {
+              'type': 'specifications',
+              'attributes': {
+                'concept': _selectedConcept,
+                'start_description': _startDescriptionController.text,
+                'task_description': _taskDescriptionController.text,
+                'duration': int.tryParse(_durationController.text),
+                'region_id': _selectedRegionId,
+                'notes': _notesController.text,
+              },
             },
           },
-        },
-      );
+        );
+        specificationId = response.data['data']['id'];
+        _createdSpecificationId = specificationId;
+      } else {
+        response = await widget.dio.patch(
+          '/waydowntown/specifications/${widget.specification!.id}',
+          data: {
+            'data': {
+              'type': 'specifications',
+              'id': widget.specification!.id,
+              'attributes': {
+                'concept': _selectedConcept,
+                'start_description': _startDescriptionController.text,
+                'task_description': _taskDescriptionController.text,
+                'duration': int.tryParse(_durationController.text),
+                'region_id': _selectedRegionId,
+                'notes': _notesController.text,
+              },
+            },
+          },
+        );
+        specificationId = widget.specification!.id;
+      }
 
-      if (response.statusCode == 200) {
-        await _saveAnswers();
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await _saveAnswers(specificationId);
         if (mounted) {
           Navigator.of(context).pop(true);
         }
       }
     } on DioException catch (e) {
-      talker.error('Error updating specification: $e');
+      talker.error('Error saving specification: $e');
       if (e.response?.statusCode == 422) {
         final errors = e.response?.data['errors'] as List<dynamic>;
         setState(() {
@@ -622,7 +651,7 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update specification')),
+          SnackBar(content: Text('Failed to ${_isCreateMode ? 'create' : 'update'} specification')),
         );
       }
     }

@@ -757,4 +757,196 @@ another_concept:
     expect(find.byKey(const Key('scan-answers')), findsNothing);
     expect(find.byKey(const Key('add-answer')), findsOneWidget);
   });
+
+  testWidgets('EditSpecificationWidget renders empty form in create mode',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('New Specification'), findsOneWidget);
+
+    final startField =
+        tester.widget<TextField>(find.widgetWithText(TextField, 'Start Description'));
+    expect(startField.controller!.text, isEmpty);
+
+    final taskField =
+        tester.widget<TextField>(find.widgetWithText(TextField, 'Task Description'));
+    expect(taskField.controller!.text, isEmpty);
+
+    final durationField =
+        tester.widget<TextField>(find.widgetWithText(TextField, 'Duration (seconds)'));
+    expect(durationField.controller!.text, isEmpty);
+
+    expect(find.byKey(const Key('answer-card-0')), findsNothing);
+  });
+
+  testWidgets('EditSpecificationWidget creates specification via POST',
+      (WidgetTester tester) async {
+    dioAdapter.onPost(
+      '/waydowntown/specifications',
+      (server) => server.reply(201, {
+        'data': {
+          'id': 'new-spec-id',
+          'type': 'specifications',
+          'attributes': {
+            'concept': 'fill_in_the_blank',
+            'task_description': 'A new task',
+            'start_description': 'A new start',
+            'duration': 60,
+            'notes': '',
+          },
+        }
+      }),
+      data: Matchers.any,
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    // Select concept
+    await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Fill in the Blank').last);
+    await tester.pumpAndSettle();
+
+    // Fill in fields
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Task Description'), 'A new task');
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Start Description'), 'A new start');
+    await tester.tap(find.text('1m'));
+
+    // Save
+    final saveButton = find.text('Save');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets(
+      'EditSpecificationWidget in create mode saves answers with new spec ID',
+      (WidgetTester tester) async {
+    dioAdapter.onPost(
+      '/waydowntown/specifications',
+      (server) => server.reply(201, {
+        'data': {
+          'id': 'new-spec-id',
+          'type': 'specifications',
+          'attributes': {
+            'concept': 'fill_in_the_blank',
+            'task_description': 'A new task',
+          },
+        }
+      }),
+      data: Matchers.any,
+    );
+
+    dioAdapter.onPost(
+      '/waydowntown/answers',
+      (server) => server.reply(201, {
+        'data': {
+          'id': 'new-answer-id',
+          'type': 'answers',
+          'attributes': {
+            'answer': 'Test answer',
+            'label': null,
+            'hint': null,
+            'order': 1,
+          }
+        }
+      }),
+      data: Matchers.any,
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    // Select concept
+    await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Fill in the Blank').last);
+    await tester.pumpAndSettle();
+
+    // Fill task description
+    await tester.enterText(
+        find.widgetWithText(TextField, 'Task Description'), 'A new task');
+
+    // Add an answer
+    final addButton = find.byKey(const Key('add-answer'));
+    await tester.ensureVisible(addButton);
+    await tester.tap(addButton);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+        find.byKey(const Key('answer-text-0')), 'Test answer');
+
+    // Save
+    final saveButton = find.text('Save');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('EditSpecificationWidget in create mode shows validation errors',
+      (WidgetTester tester) async {
+    dioAdapter.onPost(
+      '/waydowntown/specifications',
+      (server) => server.reply(422, {
+        'errors': [
+          {
+            'source': {'pointer': '/data/attributes/concept'},
+            'detail': 'must be a known concept',
+          },
+          {
+            'source': {'pointer': '/data/attributes/task_description'},
+            'detail': "can't be blank",
+          },
+        ],
+      }),
+      data: Matchers.any,
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    final saveButton = find.text('Save');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('must be a known concept'), findsOneWidget);
+    expect(find.text("can't be blank"), findsOneWidget);
+  });
 }

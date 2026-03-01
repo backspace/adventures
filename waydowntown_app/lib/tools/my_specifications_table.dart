@@ -99,6 +99,25 @@ class _MySpecificationsTableState extends State<MySpecificationsTable> {
             ],
           ),
           const SizedBox(width: 8),
+          IconButton(
+            key: const Key('new-specification'),
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              final didCreate = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(
+                  builder: (context) => EditSpecificationWidget(
+                    dio: widget.dio,
+                  ),
+                ),
+              );
+
+              if (!mounted) return;
+
+              if (didCreate == true) {
+                await fetchMySpecifications();
+              }
+            },
+          ),
         ],
       ),
       body: Builder(

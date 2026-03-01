@@ -393,4 +393,94 @@ defmodule RegistrationsWeb.SpecificationControllerTest do
                ])
     end
   end
+
+  describe "create specification" do
+    setup do
+      user = insert(:octavia, admin: true)
+
+      region =
+        Repo.insert!(%Region{
+          name: "Test Region",
+          geom: %Geo.Point{coordinates: {-97.0, 40.1}, srid: 4326}
+        })
+
+      authed_conn = build_conn()
+
+      authed_conn =
+        post(authed_conn, Routes.api_session_path(authed_conn, :create), %{
+          "user" => %{"email" => user.email, "password" => "Xenogenesis"}
+        })
+
+      json = json_response(authed_conn, 200)
+      authorization_token = json["data"]["access_token"]
+
+      %{
+        authorization_token: authorization_token,
+        region: region,
+        user: user
+      }
+    end
+
+    test "creates a new specification", %{
+      conn: conn,
+      authorization_token: authorization_token,
+      region: region,
+      user: user
+    } do
+      create_params = %{
+        "data" => %{
+          "type" => "specifications",
+          "attributes" => %{
+            "concept" => "bluetooth_collector",
+            "task_description" => "Find all the devices",
+            "start_description" => "Start at the entrance",
+            "duration" => 120,
+            "region_id" => region.id,
+            "notes" => "Some notes"
+          }
+        }
+      }
+
+      conn =
+        conn
+        |> put_req_header("authorization", "#{authorization_token}")
+        |> post(Routes.specification_path(conn, :create), create_params)
+
+      response = json_response(conn, 201)
+      assert response["data"]["id"]
+      assert response["data"]["type"] == "specifications"
+
+      created_specification = Repo.get!(Specification, response["data"]["id"])
+      assert created_specification.concept == "bluetooth_collector"
+      assert created_specification.task_description == "Find all the devices"
+      assert created_specification.start_description == "Start at the entrance"
+      assert created_specification.duration == 120
+      assert created_specification.region_id == region.id
+      assert created_specification.notes == "Some notes"
+      assert created_specification.creator_id == user.id
+    end
+
+    test "returns error with invalid attributes", %{
+      conn: conn,
+      authorization_token: authorization_token
+    } do
+      create_params = %{
+        "data" => %{
+          "type" => "specifications",
+          "attributes" => %{
+            "concept" => "invalid_concept",
+            "task_description" => ""
+          }
+        }
+      }
+
+      conn =
+        conn
+        |> put_req_header("authorization", "#{authorization_token}")
+        |> post(Routes.specification_path(conn, :create), create_params)
+
+      assert %{"errors" => errors} = json_response(conn, 422)
+      assert length(errors) > 0
+    end
+  end
 end
