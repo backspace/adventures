@@ -522,6 +522,11 @@ another_concept:
     await tester.tap(find.byKey(const Key('add-answer')));
     await tester.pumpAndSettle();
 
+    // Sensor concept shows confirmation dialog
+    expect(find.text('Manual answer'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('confirm-manual-answer')));
+    await tester.pumpAndSettle();
+
     expect(find.byKey(const Key('answer-card-0')), findsOneWidget);
 
     await tester.enterText(
@@ -558,6 +563,8 @@ another_concept:
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('add-answer')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('confirm-manual-answer')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('answer-card-0')), findsOneWidget);
 
@@ -687,6 +694,8 @@ another_concept:
     await tester.ensureVisible(addButton);
     await tester.tap(addButton);
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('confirm-manual-answer')));
+    await tester.pumpAndSettle();
 
     await tester.enterText(
         find.byKey(const Key('answer-text-1')), 'Brand new answer');
@@ -756,6 +765,153 @@ another_concept:
 
     expect(find.byKey(const Key('scan-answers')), findsNothing);
     expect(find.byKey(const Key('add-answer')), findsOneWidget);
+  });
+
+  testWidgets(
+      'add-answer shows warning dialog for sensor concepts and not for others',
+      (WidgetTester tester) async {
+    final spec = Specification(
+      id: 'spec1',
+      concept: 'bluetooth_collector',
+      placed: false,
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: spec,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    // Tap add-answer for sensor concept — dialog should appear
+    await tester.ensureVisible(find.byKey(const Key('add-answer')));
+    await tester.tap(find.byKey(const Key('add-answer')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Manual answer'), findsOneWidget);
+    expect(find.text('This concept uses sensor input. Manually added answers may not correspond to real-world data.'), findsOneWidget);
+
+    // Cancel — no answer should be added
+    await tester.tap(find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.text('Cancel'),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('answer-card-0')), findsNothing);
+
+    // Tap add-answer again and confirm — answer should be added
+    await tester.tap(find.byKey(const Key('add-answer')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('confirm-manual-answer')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('answer-card-0')), findsOneWidget);
+
+    // Switch to a non-sensor concept
+    await tester.tap(find.byType(DropdownButtonFormField<String>).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Fill in the Blank').last);
+    await tester.pumpAndSettle();
+
+    // Tap add-answer for non-sensor concept — no dialog, answer added directly
+    await tester.ensureVisible(find.byKey(const Key('add-answer')));
+    await tester.tap(find.byKey(const Key('add-answer')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Manual answer'), findsNothing);
+    expect(find.byKey(const Key('answer-card-1')), findsOneWidget);
+  });
+
+  testWidgets(
+      'existing sensor-concept answers are locked and require confirmation to edit',
+      (WidgetTester tester) async {
+    final spec = Specification(
+      id: 'spec1',
+      concept: 'bluetooth_collector',
+      placed: false,
+      answers: [
+        Answer(id: 'a1', answer: 'AA:BB:CC:DD:EE:FF', label: 'Device 1'),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: spec,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    // Answer card should be visible with a lock icon
+    expect(find.byKey(const Key('answer-card-0')), findsOneWidget);
+    expect(find.byIcon(Icons.lock), findsOneWidget);
+
+    // Tap on the locked answer text field — dialog should appear
+    await tester.tap(find.byKey(const Key('answer-text-0')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit sensor answer'), findsOneWidget);
+    expect(
+        find.text(
+            'This answer was produced by sensor input. Editing it may cause it to no longer correspond to real-world data.'),
+        findsOneWidget);
+
+    // Cancel — lock icon should remain
+    await tester.tap(find.descendant(
+      of: find.byType(AlertDialog),
+      matching: find.text('Cancel'),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.lock), findsOneWidget);
+
+    // Tap again and confirm
+    await tester.tap(find.byKey(const Key('answer-text-0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('confirm-edit-answer')));
+    await tester.pumpAndSettle();
+
+    // Lock icon should be gone
+    expect(find.byIcon(Icons.lock), findsNothing);
+  });
+
+  testWidgets(
+      'existing non-sensor answers are not locked',
+      (WidgetTester tester) async {
+    final spec = Specification(
+      id: 'spec1',
+      concept: 'fill_in_the_blank',
+      placed: false,
+      answers: [
+        Answer(id: 'a1', answer: 'hello', label: 'Greeting'),
+      ],
+    );
+
+    await tester.pumpWidget(MaterialApp(
+      home: DefaultAssetBundle(
+        bundle: testAssetBundle,
+        child: EditSpecificationWidget(
+          dio: dio,
+          specification: spec,
+        ),
+      ),
+    ));
+
+    await tester.pumpAndSettle();
+
+    // No lock icon for non-sensor concept
+    expect(find.byKey(const Key('answer-card-0')), findsOneWidget);
+    expect(find.byIcon(Icons.lock), findsNothing);
   });
 
   testWidgets('EditSpecificationWidget renders empty form in create mode',

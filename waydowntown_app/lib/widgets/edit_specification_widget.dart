@@ -19,10 +19,12 @@ class _AnswerEditState {
   final String _originalAnswer;
   final String _originalLabel;
   final String _originalHint;
+  bool isEditUnlocked;
 
   _AnswerEditState({
     this.id,
     this.isNew = true,
+    this.isEditUnlocked = true,
     required this.answerController,
     required this.labelController,
     required this.hintController,
@@ -40,6 +42,7 @@ class _AnswerEditState {
     return _AnswerEditState(
       id: answer.id,
       isNew: false,
+      isEditUnlocked: false,
       answerController: TextEditingController(text: answerText),
       labelController: TextEditingController(text: label),
       hintController: TextEditingController(text: hint),
@@ -444,6 +447,10 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
   }
 
   Widget _buildAnswerCard(_AnswerEditState answer, int index) {
+    final isSensorConcept =
+        SensorAnswerRegistry.configForConcept(_selectedConcept) != null;
+    final isLocked = isSensorConcept && !answer.isNew && !answer.isEditUnlocked;
+
     return Card(
       key: Key('answer-card-$index'),
       margin: const EdgeInsets.only(bottom: 8),
@@ -454,12 +461,22 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    key: Key('answer-text-$index'),
-                    controller: answer.answerController,
-                    decoration: const InputDecoration(
-                      labelText: 'Answer',
-                      isDense: true,
+                  child: GestureDetector(
+                    behavior: isLocked ? HitTestBehavior.opaque : HitTestBehavior.deferToChild,
+                    onTap: isLocked ? () => _unlockAnswer(index) : null,
+                    child: AbsorbPointer(
+                      absorbing: isLocked,
+                      child: TextField(
+                        key: Key('answer-text-$index'),
+                        controller: answer.answerController,
+                        decoration: InputDecoration(
+                          labelText: 'Answer',
+                          isDense: true,
+                          suffixIcon: isLocked
+                              ? const Icon(Icons.lock, size: 16)
+                              : null,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -492,10 +509,70 @@ class EditSpecificationWidgetState extends State<EditSpecificationWidget> {
     );
   }
 
+  void _unlockAnswer(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Edit sensor answer'),
+          content: const Text(
+              'This answer was produced by sensor input. Editing it may cause it to no longer correspond to real-world data.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              key: const Key('confirm-edit-answer'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                setState(() {
+                  _answers[index].isEditUnlocked = true;
+                });
+              },
+              child: const Text('Edit anyway'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _addAnswer() {
-    setState(() {
-      _answers.add(_AnswerEditState.empty());
-    });
+    final sensorConfig =
+        SensorAnswerRegistry.configForConcept(_selectedConcept);
+    if (sensorConfig != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Manual answer'),
+            content: const Text(
+                'This concept uses sensor input. Manually added answers may not correspond to real-world data.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                key: const Key('confirm-manual-answer'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  setState(() {
+                    _answers.add(_AnswerEditState.empty());
+                  });
+                },
+                child: const Text('Add anyway'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      setState(() {
+        _answers.add(_AnswerEditState.empty());
+      });
+    }
   }
 
   Future<void> _openScanner(SensorConfig config) async {
