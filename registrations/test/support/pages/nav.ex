@@ -87,13 +87,41 @@ defmodule Registrations.Pages.Nav do
     end
 
     def click(session) do
-      WaitForIt.wait!(Browser.has?(session, Query.css(@selector)), timeout: @logout_timeout)
-      Browser.click(session, Query.css(@selector))
+      WaitForIt.wait!(safe_has?(session, @selector), timeout: @logout_timeout)
       WaitForIt.wait!(
-        not Browser.has?(session, Query.css(@selector)) or
-          Browser.has?(session, Query.css("a.login")),
+        try do
+          Browser.click(session, Query.css(@selector))
+          true
+        rescue
+          Wallaby.StaleReferenceError -> false
+          Wallaby.QueryError -> false
+          error in RuntimeError -> handle_runtime_dom_error(error, __STACKTRACE__)
+        end,
         timeout: @logout_timeout
       )
+      WaitForIt.wait!(
+        not safe_has?(session, @selector) or
+          safe_has?(session, "a.login"),
+        timeout: @logout_timeout
+      )
+    end
+
+    defp safe_has?(session, selector) do
+      try do
+        Browser.has?(session, Query.css(selector))
+      rescue
+        Wallaby.StaleReferenceError -> false
+        Wallaby.QueryError -> false
+        error in RuntimeError -> handle_runtime_dom_error(error, __STACKTRACE__)
+      end
+    end
+
+    defp handle_runtime_dom_error(%RuntimeError{message: message} = error, stacktrace) do
+      if String.contains?(message, "does not belong to the document") do
+        false
+      else
+        reraise error, stacktrace
+      end
     end
   end
 
@@ -198,6 +226,15 @@ defmodule Registrations.Pages.Nav do
     rescue
       Wallaby.StaleReferenceError -> :error
       Wallaby.QueryError -> :error
+      error in RuntimeError -> handle_runtime_dom_error(error, __STACKTRACE__)
+    end
+  end
+
+  defp handle_runtime_dom_error(%RuntimeError{message: message} = error, stacktrace) do
+    if String.contains?(message, "does not belong to the document") do
+      :error
+    else
+      reraise error, stacktrace
     end
   end
 
