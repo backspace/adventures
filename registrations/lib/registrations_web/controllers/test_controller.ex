@@ -6,6 +6,7 @@ defmodule RegistrationsWeb.TestController do
   use RegistrationsWeb, :controller
 
   alias Registrations.Repo
+  alias Registrations.UserRole
   alias Registrations.Waydowntown.Answer
   alias Registrations.Waydowntown.Region
   alias Registrations.Waydowntown.Specification
@@ -15,7 +16,9 @@ defmodule RegistrationsWeb.TestController do
 
   def reset(conn, params) do
     # Truncate all waydowntown tables - CASCADE handles foreign key dependencies
-    Repo.query!("TRUNCATE waydowntown.reveals, waydowntown.submissions, waydowntown.participations, waydowntown.runs, waydowntown.answers, waydowntown.specifications, waydowntown.regions CASCADE")
+    Repo.query!("TRUNCATE waydowntown.validation_comments, waydowntown.specification_validations, waydowntown.reveals, waydowntown.submissions, waydowntown.participations, waydowntown.runs, waydowntown.answers, waydowntown.specifications, waydowntown.regions CASCADE")
+    # Truncate public-schema role tables
+    Repo.query!("TRUNCATE user_roles CASCADE")
 
     response =
       if params["create_user"] == "true" do
@@ -43,6 +46,10 @@ defmodule RegistrationsWeb.TestController do
 
           "string_collector_team" ->
             game_data = create_string_collector_team_game(user)
+            Map.merge(base_response, game_data)
+
+          "validation" ->
+            game_data = create_validation_game(user)
             Map.merge(base_response, game_data)
 
           _ ->
@@ -163,6 +170,56 @@ defmodule RegistrationsWeb.TestController do
       answer_ids: [answer1.id, answer2.id, answer3.id],
       user2_email: "test2@example.com",
       user2_password: @test_password
+    }
+  end
+
+  defp create_validation_game(user) do
+    region = Repo.insert!(%Region{name: "Test Region"})
+
+    specification =
+      Repo.insert!(%Specification{
+        concept: "string_collector",
+        task_description: "Find all the hidden words",
+        start_description: "Look around for words",
+        region: region,
+        duration: 300,
+        creator_id: user.id
+      })
+
+    answer1 = Repo.insert!(%Answer{answer: "apple", specification_id: specification.id})
+    answer2 = Repo.insert!(%Answer{answer: "banana", specification_id: specification.id})
+    _answer3 = Repo.insert!(%Answer{answer: "cherry", specification_id: specification.id})
+
+    # Create overseer user with validation_overseer role
+    overseer = create_or_reset_user("overseer@example.com", @test_password, "Overseer")
+    Repo.insert!(%UserRole{user_id: overseer.id, role: "validation_overseer", assigned_by_id: user.id})
+
+    # Create validator user with validator role
+    validator = create_or_reset_user("validator@example.com", @test_password, "Validator")
+    Repo.insert!(%UserRole{user_id: validator.id, role: "validator", assigned_by_id: overseer.id})
+
+    # Give the main test user admin role for role management testing
+    Repo.query!("UPDATE users SET admin = true WHERE id = '#{user.id}'")
+
+    # Create a specification validation assignment
+    validation =
+      Repo.insert!(%Registrations.Waydowntown.SpecificationValidation{
+        specification_id: specification.id,
+        validator_id: validator.id,
+        assigned_by_id: overseer.id,
+        status: "assigned"
+      })
+
+    %{
+      specification_id: specification.id,
+      answer_ids: [answer1.id, answer2.id],
+      validation_id: validation.id,
+      overseer_email: "overseer@example.com",
+      overseer_password: @test_password,
+      overseer_id: overseer.id,
+      validator_email: "validator@example.com",
+      validator_password: @test_password,
+      validator_id: validator.id
     }
   end
 
