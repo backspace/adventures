@@ -9,14 +9,18 @@ class UserService {
   static const String _accessTokenKey = 'access_token';
   static const String _renewalTokenKey = 'renewal_token';
   static const String _userNameKey = 'user_name';
+  static const String _userRolesKey = 'user_roles';
 
   static Future<void> setUserData(String userId, String email, bool isAdmin,
-      {String? name}) async {
+      {String? name, List<String>? roles}) async {
     await _storage.write(key: _userIdKey, value: userId);
     await _storage.write(key: _userEmailKey, value: email);
     await _storage.write(key: _userIsAdminKey, value: isAdmin.toString());
     if (name != null) {
       await _storage.write(key: _userNameKey, value: name);
+    }
+    if (roles != null) {
+      await _storage.write(key: _userRolesKey, value: roles.join(','));
     }
   }
 
@@ -54,6 +58,21 @@ class UserService {
     await _storage.write(key: _userNameKey, value: name);
   }
 
+  static Future<void> setRoles(List<String> roles) async {
+    await _storage.write(key: _userRolesKey, value: roles.join(','));
+  }
+
+  static Future<List<String>> getRoles() async {
+    final roles = await _storage.read(key: _userRolesKey);
+    if (roles == null || roles.isEmpty) return [];
+    return roles.split(',');
+  }
+
+  static Future<bool> hasRole(String role) async {
+    final roles = await getRoles();
+    return roles.contains(role);
+  }
+
   static Future<void> clearUserData() async {
     await _storage.delete(key: _userIdKey);
     await _storage.delete(key: _userEmailKey);
@@ -61,5 +80,6 @@ class UserService {
     await _storage.delete(key: _userIsAdminKey);
     await _storage.delete(key: _accessTokenKey);
     await _storage.delete(key: _renewalTokenKey);
+    await _storage.delete(key: _userRolesKey);
   }
 }
