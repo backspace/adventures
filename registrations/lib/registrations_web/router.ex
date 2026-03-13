@@ -144,6 +144,7 @@ defmodule RegistrationsWeb.Router do
     pipe_through([:pow_json_api_protected_admin])
 
     resources("/regions", RegionController, only: [:delete])
+    resources("/user-roles", UserRoleController, only: [:index, :create, :delete])
   end
 
   scope "/waydowntown", RegistrationsWeb do
@@ -164,6 +165,12 @@ defmodule RegistrationsWeb.Router do
     get("/specifications/mine", SpecificationController, :mine, as: :my_specifications)
 
     resources("/submissions", SubmissionController, only: [:create, :show])
+
+    resources("/specification-validations", SpecificationValidationController, only: [:index, :show, :create, :update])
+    get("/specification-validations/mine", SpecificationValidationController, :mine, as: :my_validations)
+    get("/specification-validations/oversee", SpecificationValidationController, :oversee, as: :oversee_validations)
+
+    resources("/validation-comments", ValidationCommentController, only: [:create, :update, :delete])
   end
 
   scope "/fixme", RegistrationsWeb do

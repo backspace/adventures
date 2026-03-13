@@ -7,6 +7,9 @@ defmodule RegistrationsWeb.SessionController do
 
   # FIXME can this be tested? It uses HTTPOnly cookie
   def show(conn, params) do
+    user = conn.assigns[:current_user]
+    user = Registrations.Repo.preload(user, :user_roles)
+    conn = assign(conn, :current_user, user)
     render(conn, "show.json", %{conn: conn, params: params})
   end
 
