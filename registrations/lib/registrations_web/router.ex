@@ -145,6 +145,7 @@ defmodule RegistrationsWeb.Router do
 
     resources("/regions", RegionController, only: [:delete])
     resources("/user-roles", UserRoleController, only: [:index, :create, :delete])
+    get("/users", UserRoleController, :users)
   end
 
   scope "/waydowntown", RegistrationsWeb do
@@ -185,6 +186,14 @@ defmodule RegistrationsWeb.Router do
       pipe_through(:pow_api)
 
       post("/reset", TestController, :reset)
+    end
+  end
+
+  if Mix.env() == :dev do
+    scope "/dev" do
+      pipe_through [:browser]
+
+      forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
 end

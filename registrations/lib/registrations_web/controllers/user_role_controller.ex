@@ -1,13 +1,25 @@
 defmodule RegistrationsWeb.UserRoleController do
   use RegistrationsWeb, :controller
 
+  import Ecto.Query, warn: false
+
   alias Registrations.Accounts
+  alias Registrations.Repo
 
   action_fallback(RegistrationsWeb.FallbackController)
 
   def index(conn, params) do
     user_roles = Accounts.list_all_user_roles(params)
     render(conn, "index.json", %{data: user_roles, conn: conn, params: params})
+  end
+
+  def users(conn, params) do
+    users =
+      RegistrationsWeb.User
+      |> order_by(:email)
+      |> Repo.all()
+
+    render(conn, RegistrationsWeb.JSONAPI.UserView, "index.json", %{data: users, conn: conn, params: params})
   end
 
   def create(conn, params) do
