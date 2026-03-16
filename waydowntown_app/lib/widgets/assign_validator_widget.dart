@@ -29,10 +29,8 @@ class _AssignValidatorWidgetState extends State<AssignValidatorWidget> {
     try {
       final specResponse =
           await widget.dio.get('/waydowntown/specifications');
-      final roleResponse = await widget.dio.get(
-        '/waydowntown/user-roles',
-        queryParameters: {'role': 'validator'},
-      );
+      final validatorsResponse =
+          await widget.dio.get('/waydowntown/validators');
 
       final specs = (specResponse.data['data'] as List<dynamic>)
           .map((s) => {
@@ -42,28 +40,14 @@ class _AssignValidatorWidgetState extends State<AssignValidatorWidget> {
               })
           .toList();
 
-      final included =
-          (roleResponse.data['included'] as List<dynamic>?) ?? [];
-      final validators = <Map<String, dynamic>>[];
-      final seenIds = <String>{};
-
-      for (final role in roleResponse.data['data'] as List<dynamic>) {
-        final userId =
-            role['relationships']?['user']?['data']?['id'] as String?;
-        if (userId != null && !seenIds.contains(userId)) {
-          seenIds.add(userId);
-          final userJson = included.firstWhere(
-            (item) => item['type'] == 'users' && item['id'] == userId,
-            orElse: () => null,
-          );
-          validators.add({
-            'id': userId,
-            'name': userJson?['attributes']?['name'] ??
-                userJson?['attributes']?['email'] ??
-                userId,
-          });
-        }
-      }
+      final validators = (validatorsResponse.data['data'] as List<dynamic>)
+          .map((u) => {
+                'id': u['id'],
+                'name': u['attributes']?['name'] ??
+                    u['attributes']?['email'] ??
+                    u['id'],
+              })
+          .toList();
 
       setState(() {
         _specifications = specs;

@@ -172,6 +172,8 @@ defmodule RegistrationsWeb.Router do
     get("/specification-validations/oversee", SpecificationValidationController, :oversee, as: :oversee_validations)
 
     resources("/validation-comments", ValidationCommentController, only: [:create, :update, :delete])
+
+    get("/validators", UserRoleController, :validators)
   end
 
   scope "/fixme", RegistrationsWeb do
