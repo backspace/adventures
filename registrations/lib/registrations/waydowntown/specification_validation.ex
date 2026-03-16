@@ -11,7 +11,7 @@ defmodule Registrations.Waydowntown.SpecificationValidation do
     "assigned" => ["in_progress"],
     "in_progress" => ["submitted"]
   }
-  @overseer_transitions %{
+  @supervisor_transitions %{
     "submitted" => ["accepted", "rejected"]
   }
 
@@ -48,7 +48,7 @@ defmodule Registrations.Waydowntown.SpecificationValidation do
       transitions =
         case role do
           :validator -> @validator_transitions
-          :overseer -> @overseer_transitions
+          :supervisor -> @supervisor_transitions
         end
 
       allowed = Map.get(transitions, current_status, [])

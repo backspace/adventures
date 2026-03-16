@@ -2,11 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
 
-const _knownRoles = ['validator', 'validation_overseer'];
+const _knownRoles = ['validator', 'validation_supervisor'];
 
 const _roleLabels = {
   'validator': 'Validator',
-  'validation_overseer': 'Validation Overseer',
+  'validation_supervisor': 'Validation Supervisor',
 };
 
 class RoleManagement extends StatefulWidget {

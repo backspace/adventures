@@ -5,17 +5,17 @@ import 'package:waydowntown/models/specification_validation.dart';
 import 'package:waydowntown/routes/review_validation_route.dart';
 import 'package:waydowntown/widgets/assign_validator_widget.dart';
 
-class OverseerDashboardRoute extends StatefulWidget {
+class SupervisorDashboardRoute extends StatefulWidget {
   final Dio dio;
 
-  const OverseerDashboardRoute({super.key, required this.dio});
+  const SupervisorDashboardRoute({super.key, required this.dio});
 
   @override
-  State<OverseerDashboardRoute> createState() =>
-      _OverseerDashboardRouteState();
+  State<SupervisorDashboardRoute> createState() =>
+      _SupervisorDashboardRouteState();
 }
 
-class _OverseerDashboardRouteState extends State<OverseerDashboardRoute>
+class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<SpecificationValidation> _validations = [];
@@ -43,7 +43,7 @@ class _OverseerDashboardRouteState extends State<OverseerDashboardRoute>
 
     try {
       final response = await widget.dio
-          .get('/waydowntown/specification-validations/oversee');
+          .get('/waydowntown/specification-validations/supervise');
 
       if (response.statusCode == 200) {
         final data = response.data['data'] as List<dynamic>;
@@ -147,7 +147,7 @@ class _OverseerDashboardRouteState extends State<OverseerDashboardRoute>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Overseer Dashboard'),
+        title: const Text('Supervisor Dashboard'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

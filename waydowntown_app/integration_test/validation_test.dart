@@ -130,14 +130,14 @@ void main() {
     await waitFor(tester, find.text('submitted'));
   });
 
-  testWidgets('overseer flow: view submitted validation, accept it',
+  testWidgets('supervisor flow: view submitted validation, accept it',
       (tester) async {
     // 1. Reset DB with validation game data
     final resetData = await testClient.resetDatabase(game: 'validation');
     final validatorEmail = resetData['validator_email'] as String;
     final validatorPassword = resetData['validator_password'] as String;
-    final overseerEmail = resetData['overseer_email'] as String;
-    final overseerPassword = resetData['overseer_password'] as String;
+    final supervisorEmail = resetData['supervisor_email'] as String;
+    final supervisorPassword = resetData['supervisor_password'] as String;
 
     // 2. First, login as validator and submit the validation
     final validatorTokens =
@@ -176,23 +176,23 @@ void main() {
       },
     );
 
-    // 3. Now login as overseer
-    final overseerTokens =
-        await testClient.login(overseerEmail, overseerPassword);
+    // 3. Now login as supervisor
+    final supervisorTokens =
+        await testClient.login(supervisorEmail, supervisorPassword);
     await UserService.setTokens(
-        overseerTokens.accessToken, overseerTokens.renewalToken);
+        supervisorTokens.accessToken, supervisorTokens.renewalToken);
 
     // 4. Launch app
     await tester.pumpWidget(const Waydowntown());
-    await waitFor(tester, find.text(overseerEmail));
+    await waitFor(tester, find.text(supervisorEmail));
 
-    // 5. Tap Oversee button
-    final overseeButton = find.text('Oversee');
-    await waitFor(tester, overseeButton);
-    await tester.tap(overseeButton);
+    // 5. Tap Supervise button
+    final superviseButton = find.text('Supervise');
+    await waitFor(tester, superviseButton);
+    await tester.tap(superviseButton);
 
-    // 6. Wait for Overseer Dashboard
-    await waitFor(tester, find.text('Overseer Dashboard'));
+    // 6. Wait for Supervisor Dashboard
+    await waitFor(tester, find.text('Supervisor Dashboard'));
 
     // 7. The "Pending Review" tab should show the submitted validation
     await waitFor(tester, find.text('string_collector'));

@@ -954,7 +954,7 @@ defmodule Registrations.Waydowntown do
     |> Repo.preload(validation_preloads())
   end
 
-  def list_validations_for_overseer(user) do
+  def list_validations_for_supervisor(user) do
     from(v in SpecificationValidation, where: v.assigned_by_id == ^user.id, order_by: [desc: v.inserted_at])
     |> Repo.all()
     |> Repo.preload(validation_preloads())

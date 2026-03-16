@@ -5,7 +5,7 @@ defmodule Registrations.UserRole do
 
   @primary_key {:id, :binary_id, autogenerate: true}
 
-  @valid_roles ~w(validator validation_overseer)
+  @valid_roles ~w(validator validation_supervisor)
 
   schema "user_roles" do
     field(:role, :string)

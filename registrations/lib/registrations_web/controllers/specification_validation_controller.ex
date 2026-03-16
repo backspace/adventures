@@ -9,10 +9,10 @@ defmodule RegistrationsWeb.SpecificationValidationController do
   def create(conn, params) do
     current_user = Pow.Plug.current_user(conn)
 
-    unless Accounts.has_role?(current_user, "validation_overseer") do
+    unless Accounts.has_role?(current_user, "validation_supervisor") do
       conn
       |> put_status(:forbidden)
-      |> json(%{errors: [%{detail: "Must be a validation overseer"}]})
+      |> json(%{errors: [%{detail: "Must be a validation supervisor"}]})
     else
       validator_id = params["validator_id"]
 
@@ -54,9 +54,9 @@ defmodule RegistrationsWeb.SpecificationValidationController do
     render(conn, "index.json", %{data: validations, conn: conn, params: params})
   end
 
-  def oversee(conn, params) do
+  def supervise(conn, params) do
     current_user = Pow.Plug.current_user(conn)
-    validations = Waydowntown.list_validations_for_overseer(current_user)
+    validations = Waydowntown.list_validations_for_supervisor(current_user)
     render(conn, "index.json", %{data: validations, conn: conn, params: params})
   end
 
@@ -89,7 +89,7 @@ defmodule RegistrationsWeb.SpecificationValidationController do
         end
 
       validation.assigned_by_id == current_user.id ->
-        case Waydowntown.update_specification_validation(validation, params, :overseer) do
+        case Waydowntown.update_specification_validation(validation, params, :supervisor) do
           {:ok, updated} ->
             render(conn, "show.json", %{data: updated, conn: conn, params: params})
 

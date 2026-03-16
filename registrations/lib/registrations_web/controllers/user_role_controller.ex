@@ -25,10 +25,10 @@ defmodule RegistrationsWeb.UserRoleController do
   def validators(conn, params) do
     current_user = Pow.Plug.current_user(conn)
 
-    unless Accounts.has_role?(current_user, "validation_overseer") or current_user.admin do
+    unless Accounts.has_role?(current_user, "validation_supervisor") or current_user.admin do
       conn
       |> put_status(:forbidden)
-      |> json(%{errors: [%{detail: "Must be a validation overseer or admin"}]})
+      |> json(%{errors: [%{detail: "Must be a validation supervisor or admin"}]})
     else
       validators = Accounts.list_users_with_role("validator")
       render(conn, RegistrationsWeb.JSONAPI.UserView, "index.json", %{data: validators, conn: conn, params: params})

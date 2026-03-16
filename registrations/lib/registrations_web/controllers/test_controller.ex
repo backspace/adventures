@@ -190,13 +190,13 @@ defmodule RegistrationsWeb.TestController do
     answer2 = Repo.insert!(%Answer{answer: "banana", specification_id: specification.id})
     _answer3 = Repo.insert!(%Answer{answer: "cherry", specification_id: specification.id})
 
-    # Create overseer user with validation_overseer role
-    overseer = create_or_reset_user("overseer@example.com", @test_password, "Overseer")
-    Repo.insert!(%UserRole{user_id: overseer.id, role: "validation_overseer", assigned_by_id: user.id})
+    # Create supervisor user with validation_supervisor role
+    supervisor = create_or_reset_user("supervisor@example.com", @test_password, "Supervisor")
+    Repo.insert!(%UserRole{user_id: supervisor.id, role: "validation_supervisor", assigned_by_id: user.id})
 
     # Create validator user with validator role
     validator = create_or_reset_user("validator@example.com", @test_password, "Validator")
-    Repo.insert!(%UserRole{user_id: validator.id, role: "validator", assigned_by_id: overseer.id})
+    Repo.insert!(%UserRole{user_id: validator.id, role: "validator", assigned_by_id: supervisor.id})
 
     # Give the main test user admin role for role management testing
     Repo.query!("UPDATE users SET admin = true WHERE id = '#{user.id}'")
@@ -206,7 +206,7 @@ defmodule RegistrationsWeb.TestController do
       Repo.insert!(%Registrations.Waydowntown.SpecificationValidation{
         specification_id: specification.id,
         validator_id: validator.id,
-        assigned_by_id: overseer.id,
+        assigned_by_id: supervisor.id,
         status: "assigned"
       })
 
@@ -214,9 +214,9 @@ defmodule RegistrationsWeb.TestController do
       specification_id: specification.id,
       answer_ids: [answer1.id, answer2.id],
       validation_id: validation.id,
-      overseer_email: "overseer@example.com",
-      overseer_password: @test_password,
-      overseer_id: overseer.id,
+      supervisor_email: "supervisor@example.com",
+      supervisor_password: @test_password,
+      supervisor_id: supervisor.id,
       validator_email: "validator@example.com",
       validator_password: @test_password,
       validator_id: validator.id

@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
-import 'package:waydowntown/routes/overseer_dashboard_route.dart';
+import 'package:waydowntown/routes/supervisor_dashboard_route.dart';
 import 'package:waydowntown/routes/team_negotiation_route.dart';
 import 'package:waydowntown/routes/validator_assignments_route.dart';
 import 'package:waydowntown/services/user_service.dart';
@@ -273,17 +273,17 @@ class _SessionWidgetState extends State<SessionWidget> {
                 ),
                 label: const Text('Validate'),
               ),
-            if (_roles.contains('validation_overseer'))
+            if (_roles.contains('validation_supervisor'))
               ElevatedButton.icon(
                 icon: const Icon(Icons.supervisor_account),
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        OverseerDashboardRoute(dio: widget.dio),
+                        SupervisorDashboardRoute(dio: widget.dio),
                   ),
                 ),
-                label: const Text('Oversee'),
+                label: const Text('Supervise'),
               ),
             if (_isAdmin == true)
               ElevatedButton.icon(
