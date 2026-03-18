@@ -68,9 +68,9 @@ class SpecificationValidation {
     String? assignedById;
     String? assignedByName;
     if (relationships != null &&
-        relationships['assigned-by'] != null &&
-        relationships['assigned-by']['data'] != null) {
-      assignedById = relationships['assigned-by']['data']['id'];
+        relationships['assigned_by'] != null &&
+        relationships['assigned_by']['data'] != null) {
+      assignedById = relationships['assigned_by']['data']['id'];
       final assignerJson = included.firstWhere(
         (item) =>
             item['type'] == 'users' && item['id'] == assignedById,
@@ -91,10 +91,10 @@ class SpecificationValidation {
 
     List<ValidationComment> comments = [];
     if (relationships != null &&
-        relationships['validation-comments'] != null &&
-        relationships['validation-comments']['data'] != null) {
+        relationships['validation_comments'] != null &&
+        relationships['validation_comments']['data'] != null) {
       final commentDataList =
-          relationships['validation-comments']['data'] as List<dynamic>;
+          relationships['validation_comments']['data'] as List<dynamic>;
       for (final commentData in commentDataList) {
         final commentJson = included.firstWhere(
           (item) =>
