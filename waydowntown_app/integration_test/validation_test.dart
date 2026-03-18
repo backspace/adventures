@@ -130,7 +130,8 @@ void main() {
     await waitFor(tester, find.text('submitted'));
   });
 
-  testWidgets('supervisor flow: view submitted validation, accept it',
+  testWidgets(
+      'supervisor flow: see unvalidated specs with creator, review and accept',
       (tester) async {
     // 1. Reset DB with validation game data
     final resetData = await testClient.resetDatabase(game: 'validation');
@@ -139,13 +140,12 @@ void main() {
     final supervisorEmail = resetData['supervisor_email'] as String;
     final supervisorPassword = resetData['supervisor_password'] as String;
 
-    // 2. First, login as validator and submit the validation
+    // 2. Submit the validation via API so the supervisor can review it
     final validatorTokens =
         await testClient.login(validatorEmail, validatorPassword);
     final validatorDio =
         testClient.createAuthenticatedDio(validatorTokens.accessToken);
 
-    // Move validation to in_progress
     final validationId = resetData['validation_id'] as String;
     await validatorDio.patch(
       '/waydowntown/specification-validations/$validationId',
@@ -160,8 +160,6 @@ void main() {
         }
       },
     );
-
-    // Submit validation with notes
     await validatorDio.patch(
       '/waydowntown/specification-validations/$validationId',
       data: {
@@ -176,7 +174,7 @@ void main() {
       },
     );
 
-    // 3. Now login as supervisor
+    // 3. Login as supervisor
     final supervisorTokens =
         await testClient.login(supervisorEmail, supervisorPassword);
     await UserService.setTokens(
@@ -191,23 +189,33 @@ void main() {
     await waitFor(tester, superviseButton);
     await tester.tap(superviseButton);
 
-    // 6. Wait for Supervisor Dashboard
+    // 6. Wait for Supervisor Dashboard — starts on Unvalidated tab
     await waitFor(tester, find.text('Supervisor Dashboard'));
 
-    // 7. The "Pending Review" tab should show the submitted validation
+    // 7. Verify the Unvalidated tab shows specs with creator name
+    // The test user "Test User" created the spec, so their name should appear
+    await waitFor(tester, find.textContaining('Test User'));
+
+    // 8. Tap "Pending Review" tab to see the submitted validation
+    final pendingTab = find.textContaining('Pending Review');
+    await waitFor(tester, pendingTab);
+    await tester.tap(pendingTab);
+    await tester.pumpAndSettle();
+
+    // 9. Should see the submitted validation
     await waitFor(tester, find.text('string_collector'));
 
-    // 8. Tap to review
+    // 10. Tap to review
     await tester.tap(find.text('string_collector'));
 
-    // 9. Wait for review screen
+    // 11. Wait for review screen
     await waitFor(tester, find.text('Review Validation'));
     await waitFor(tester, find.text('submitted'));
 
-    // 10. Verify validator's notes are shown
+    // 12. Verify validator's notes are shown
     await waitFor(tester, find.text('Looks good overall'));
 
-    // 11. Accept the validation
+    // 13. Accept the validation
     final acceptButton = find.text('Accept');
     await tester.scrollUntilVisible(
       acceptButton,
@@ -216,7 +224,7 @@ void main() {
     );
     await tester.tap(acceptButton);
 
-    // 12. Verify status changes to accepted
+    // 14. Verify status changes to accepted
     await waitFor(tester, find.text('accepted'));
   });
 }
