@@ -192,10 +192,10 @@ class _ValidationDetailRouteState extends State<ValidationDetailRoute> {
                       Text('Play Mode',
                           style: Theme.of(context).textTheme.titleMedium),
                       RadioListTile<String>(
-                        title: const Text('Play blind'),
+                        title: const Text('Play without answers'),
                         subtitle: const Text(
                             'Play without seeing the expected answers'),
-                        value: 'blind',
+                        value: 'without_answers',
                         groupValue: _selectedPlayMode,
                         onChanged: (v) =>
                             setState(() => _selectedPlayMode = v),

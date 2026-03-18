@@ -155,7 +155,7 @@ void main() {
           'id': validationId,
           'attributes': {
             'status': 'in_progress',
-            'play_mode': 'blind',
+            'play_mode': 'without_answers',
           },
         }
       },
