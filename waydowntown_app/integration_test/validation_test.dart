@@ -203,10 +203,10 @@ void main() {
     await tester.pumpAndSettle();
 
     // 9. Should see the submitted validation
-    await waitFor(tester, find.text('string_collector'));
+    await waitFor(tester, find.text('String Collector'));
 
     // 10. Tap to review
-    await tester.tap(find.text('string_collector'));
+    await tester.tap(find.text('String Collector'));
 
     // 11. Wait for review screen
     await waitFor(tester, find.text('Review Validation'));

@@ -4,6 +4,7 @@ import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/specification_validation.dart';
 import 'package:waydowntown/routes/review_validation_route.dart';
 import 'package:waydowntown/widgets/assign_validator_widget.dart';
+import 'package:yaml/yaml.dart';
 
 class SupervisorDashboardRoute extends StatefulWidget {
   final Dio dio;
@@ -20,6 +21,7 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
   late TabController _tabController;
   List<SpecificationValidation> _validations = [];
   List<Map<String, dynamic>> _unvalidatedSpecs = [];
+  YamlMap? _concepts;
   bool _isLoading = true;
   String? _error;
 
@@ -43,6 +45,10 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
     });
 
     try {
+      final yamlString = await DefaultAssetBundle.of(context)
+          .loadString('assets/concepts.yaml');
+      _concepts = loadYaml(yamlString);
+
       final validationsResponse = await widget.dio
           .get('/waydowntown/specification-validations/supervise');
       final specsResponse =
@@ -127,6 +133,15 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
     }
   }
 
+  String _conceptName(String? concept) {
+    if (concept == null) return 'Unknown';
+    final info = _concepts?[concept];
+    if (info is YamlMap && info['name'] != null) {
+      return info['name'] as String;
+    }
+    return concept;
+  }
+
   Color _statusColor(String status) {
     switch (status) {
       case 'assigned':
@@ -145,8 +160,9 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
   }
 
   Future<void> _assignValidator(Map<String, dynamic> spec) async {
+    final conceptDisplay = _conceptName(spec['concept']);
     final label =
-        '${spec['concept']}${spec['start_description'] != null ? ' - ${spec['start_description']}' : ''}';
+        '$conceptDisplay${spec['start_description'] != null ? ' - ${spec['start_description']}' : ''}';
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -171,7 +187,7 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
         final validation = validations[index];
         final spec = validation.specification;
         return ListTile(
-          title: Text(spec?.concept ?? 'Unknown'),
+          title: Text(_conceptName(spec?.concept)),
           subtitle: Text(
             'Validator: ${validation.validatorName ?? 'Unknown'}',
           ),
@@ -213,7 +229,7 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
             'No description';
         final creatorName = spec['creator_name'];
         return ListTile(
-          title: Text(spec['concept']),
+          title: Text(_conceptName(spec['concept'])),
           subtitle: Text(
             creatorName != null
                 ? 'by $creatorName\n$description'
