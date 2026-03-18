@@ -19,14 +19,15 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<SpecificationValidation> _validations = [];
+  List<Map<String, dynamic>> _unvalidatedSpecs = [];
   bool _isLoading = true;
   String? _error;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _fetchValidations();
+    _tabController = TabController(length: 4, vsync: this);
+    _fetchData();
   }
 
   @override
@@ -35,32 +36,55 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
     super.dispose();
   }
 
-  Future<void> _fetchValidations() async {
+  Future<void> _fetchData() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      final response = await widget.dio
+      final validationsResponse = await widget.dio
           .get('/waydowntown/specification-validations/supervise');
+      final specsResponse =
+          await widget.dio.get('/waydowntown/specifications');
 
-      if (response.statusCode == 200) {
-        final data = response.data['data'] as List<dynamic>;
-        final included =
-            (response.data['included'] as List<dynamic>?) ?? [];
-        setState(() {
-          _validations = data
-              .map((json) =>
-                  SpecificationValidation.fromJson(json, included))
-              .toList();
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      talker.error('Error fetching validations: $e');
+      final validationsData =
+          validationsResponse.data['data'] as List<dynamic>;
+      final validationsIncluded =
+          (validationsResponse.data['included'] as List<dynamic>?) ?? [];
+
+      final validations = validationsData
+          .map((json) =>
+              SpecificationValidation.fromJson(json, validationsIncluded))
+          .toList();
+
+      // Find spec IDs that already have validations
+      final validatedSpecIds =
+          validations.map((v) => v.specification?.id).whereType<String>().toSet();
+
+      // Build unvalidated specs list
+      final allSpecs = specsResponse.data['data'] as List<dynamic>;
+      final unvalidated = allSpecs
+          .where((s) => !validatedSpecIds.contains(s['id']))
+          .map((s) => {
+                'id': s['id'] as String,
+                'concept': s['attributes']['concept'] as String? ?? 'Unknown',
+                'start_description':
+                    s['attributes']['start_description'] as String?,
+                'task_description':
+                    s['attributes']['task_description'] as String?,
+              })
+          .toList();
+
       setState(() {
-        _error = 'Failed to load validations';
+        _validations = validations;
+        _unvalidatedSpecs = unvalidated;
+        _isLoading = false;
+      });
+    } catch (e) {
+      talker.error('Error fetching data: $e');
+      setState(() {
+        _error = 'Failed to load data';
         _isLoading = false;
       });
     }
@@ -104,7 +128,23 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
     }
   }
 
-  Widget _buildList(List<SpecificationValidation> validations) {
+  Future<void> _assignValidator(Map<String, dynamic> spec) async {
+    final label =
+        '${spec['concept']}${spec['start_description'] != null ? ' - ${spec['start_description']}' : ''}';
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AssignValidatorRoute(
+          dio: widget.dio,
+          specificationId: spec['id'],
+          specificationLabel: label,
+        ),
+      ),
+    );
+    if (result == true) _fetchData();
+  }
+
+  Widget _buildValidationList(List<SpecificationValidation> validations) {
     if (validations.isEmpty) {
       return const Center(child: Text('No validations'));
     }
@@ -136,8 +176,36 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
                 ),
               ),
             );
-            _fetchValidations();
+            _fetchData();
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildUnvalidatedList() {
+    if (_unvalidatedSpecs.isEmpty) {
+      return const Center(child: Text('All specifications have validations'));
+    }
+
+    return ListView.builder(
+      itemCount: _unvalidatedSpecs.length,
+      itemBuilder: (context, index) {
+        final spec = _unvalidatedSpecs[index];
+        return ListTile(
+          title: Text(spec['concept']),
+          subtitle: Text(
+            spec['start_description'] ??
+                spec['task_description'] ??
+                'No description',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.person_add),
+            tooltip: 'Assign validator',
+            onPressed: () => _assignValidator(spec),
+          ),
         );
       },
     );
@@ -150,22 +218,22 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
         title: const Text('Supervisor Dashboard'),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Pending Review'),
-            Tab(text: 'Active'),
-            Tab(text: 'Completed'),
+          isScrollable: true,
+          tabs: [
+            Tab(
+                text:
+                    'Unvalidated (${_isLoading ? '...' : _unvalidatedSpecs.length})'),
+            Tab(
+                text:
+                    'Pending Review (${_isLoading ? '...' : _filterByTab(0).length})'),
+            Tab(
+                text:
+                    'Active (${_isLoading ? '...' : _filterByTab(1).length})'),
+            Tab(
+                text:
+                    'Completed (${_isLoading ? '...' : _filterByTab(2).length})'),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await showDialog(
-            context: context,
-            builder: (context) => AssignValidatorWidget(dio: widget.dio),
-          );
-          _fetchValidations();
-        },
-        child: const Icon(Icons.add),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -174,9 +242,10 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
               : TabBarView(
                   controller: _tabController,
                   children: [
-                    _buildList(_filterByTab(0)),
-                    _buildList(_filterByTab(1)),
-                    _buildList(_filterByTab(2)),
+                    _buildUnvalidatedList(),
+                    _buildValidationList(_filterByTab(0)),
+                    _buildValidationList(_filterByTab(1)),
+                    _buildValidationList(_filterByTab(2)),
                   ],
                 ),
     );

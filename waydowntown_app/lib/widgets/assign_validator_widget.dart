@@ -2,19 +2,24 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
 
-class AssignValidatorWidget extends StatefulWidget {
+class AssignValidatorRoute extends StatefulWidget {
   final Dio dio;
+  final String specificationId;
+  final String specificationLabel;
 
-  const AssignValidatorWidget({super.key, required this.dio});
+  const AssignValidatorRoute({
+    super.key,
+    required this.dio,
+    required this.specificationId,
+    required this.specificationLabel,
+  });
 
   @override
-  State<AssignValidatorWidget> createState() => _AssignValidatorWidgetState();
+  State<AssignValidatorRoute> createState() => _AssignValidatorRouteState();
 }
 
-class _AssignValidatorWidgetState extends State<AssignValidatorWidget> {
-  List<Map<String, dynamic>> _specifications = [];
+class _AssignValidatorRouteState extends State<AssignValidatorRoute> {
   List<Map<String, dynamic>> _validators = [];
-  String? _selectedSpecificationId;
   String? _selectedValidatorId;
   bool _isLoading = true;
   bool _isSaving = false;
@@ -22,48 +27,34 @@ class _AssignValidatorWidgetState extends State<AssignValidatorWidget> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadValidators();
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadValidators() async {
     try {
-      final specResponse =
-          await widget.dio.get('/waydowntown/specifications');
-      final validatorsResponse =
-          await widget.dio.get('/waydowntown/validators');
-
-      final specs = (specResponse.data['data'] as List<dynamic>)
-          .map((s) => {
-                'id': s['id'],
-                'concept': s['attributes']['concept'],
-                'start_description': s['attributes']['start_description'],
-              })
-          .toList();
-
-      final validators = (validatorsResponse.data['data'] as List<dynamic>)
+      final response = await widget.dio.get('/waydowntown/validators');
+      final validators = (response.data['data'] as List<dynamic>)
           .map((u) => {
                 'id': u['id'],
                 'name': u['attributes']?['name'] ??
                     u['attributes']?['email'] ??
                     u['id'],
+                'email': u['attributes']?['email'] ?? '',
               })
           .toList();
 
       setState(() {
-        _specifications = specs;
         _validators = validators;
         _isLoading = false;
       });
     } catch (e) {
-      talker.error('Error loading data: $e');
+      talker.error('Error loading validators: $e');
       setState(() => _isLoading = false);
     }
   }
 
   Future<void> _assignValidator() async {
-    if (_selectedSpecificationId == null || _selectedValidatorId == null) {
-      return;
-    }
+    if (_selectedValidatorId == null) return;
 
     setState(() => _isSaving = true);
 
@@ -78,7 +69,7 @@ class _AssignValidatorWidgetState extends State<AssignValidatorWidget> {
               'specification': {
                 'data': {
                   'type': 'specifications',
-                  'id': _selectedSpecificationId,
+                  'id': widget.specificationId,
                 }
               },
               'validator': {
@@ -91,7 +82,7 @@ class _AssignValidatorWidgetState extends State<AssignValidatorWidget> {
           }
         },
       );
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       talker.error('Error assigning validator: $e');
       if (mounted) {
@@ -106,64 +97,60 @@ class _AssignValidatorWidgetState extends State<AssignValidatorWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Assign Validator'),
-      content: _isLoading
-          ? const SizedBox(
-              height: 100,
-              child: Center(child: CircularProgressIndicator()),
-            )
-          : SingleChildScrollView(
+    return Scaffold(
+      appBar: AppBar(title: const Text('Assign Validator')),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DropdownButtonFormField<String>(
-                    value: _selectedSpecificationId,
-                    decoration: const InputDecoration(
-                        labelText: 'Specification'),
-                    items: _specifications
-                        .map((s) => DropdownMenuItem<String>(
-                              value: s['id'],
-                              child: Text(
-                                '${s['concept']}${s['start_description'] != null ? ' - ${s['start_description']}' : ''}',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ))
-                        .toList(),
-                    onChanged: (v) =>
-                        setState(() => _selectedSpecificationId = v),
+                  Text('Specification',
+                      style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(height: 4),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(widget.specificationLabel),
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _selectedValidatorId,
-                    decoration:
-                        const InputDecoration(labelText: 'Validator'),
-                    items: _validators
-                        .map((v) => DropdownMenuItem<String>(
-                              value: v['id'],
-                              child: Text(v['name']),
-                            ))
-                        .toList(),
-                    onChanged: (v) =>
-                        setState(() => _selectedValidatorId = v),
+                  const SizedBox(height: 24),
+                  Text('Validator',
+                      style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(height: 8),
+                  ..._validators.map((v) => RadioListTile<String>(
+                        title: Text(v['name']),
+                        subtitle: Text(v['email']),
+                        value: v['id'],
+                        groupValue: _selectedValidatorId,
+                        onChanged: (val) =>
+                            setState(() => _selectedValidatorId = val),
+                      )),
+                  if (_validators.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Text('No validators available'),
+                    ),
+                  const Spacer(),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSaving || _selectedValidatorId == null
+                          ? null
+                          : _assignValidator,
+                      child: _isSaving
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Assign'),
+                    ),
                   ),
                 ],
               ),
             ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: _isSaving ||
-                  _selectedSpecificationId == null ||
-                  _selectedValidatorId == null
-              ? null
-              : _assignValidator,
-          child: const Text('Assign'),
-        ),
-      ],
     );
   }
 }
