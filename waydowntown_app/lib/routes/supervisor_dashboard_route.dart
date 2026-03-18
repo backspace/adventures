@@ -64,16 +64,32 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
 
       // Build unvalidated specs list
       final allSpecs = specsResponse.data['data'] as List<dynamic>;
+      final specsIncluded =
+          (specsResponse.data['included'] as List<dynamic>?) ?? [];
       final unvalidated = allSpecs
           .where((s) => !validatedSpecIds.contains(s['id']))
-          .map((s) => {
-                'id': s['id'] as String,
-                'concept': s['attributes']['concept'] as String? ?? 'Unknown',
-                'start_description':
-                    s['attributes']['start_description'] as String?,
-                'task_description':
-                    s['attributes']['task_description'] as String?,
-              })
+          .map((s) {
+            final creatorId =
+                s['relationships']?['creator']?['data']?['id'] as String?;
+            String? creatorName;
+            if (creatorId != null) {
+              final creatorJson = specsIncluded.cast<Map<String, dynamic>?>().firstWhere(
+                (item) => item?['type'] == 'users' && item?['id'] == creatorId,
+                orElse: () => null,
+              );
+              creatorName = creatorJson?['attributes']?['name'] as String? ??
+                  creatorJson?['attributes']?['email'] as String?;
+            }
+            return {
+              'id': s['id'] as String,
+              'concept': s['attributes']['concept'] as String? ?? 'Unknown',
+              'start_description':
+                  s['attributes']['start_description'] as String?,
+              'task_description':
+                  s['attributes']['task_description'] as String?,
+              'creator_name': creatorName,
+            };
+          })
           .toList();
 
       setState(() {
@@ -192,15 +208,20 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
       itemCount: _unvalidatedSpecs.length,
       itemBuilder: (context, index) {
         final spec = _unvalidatedSpecs[index];
+        final description = spec['start_description'] ??
+            spec['task_description'] ??
+            'No description';
+        final creatorName = spec['creator_name'];
         return ListTile(
           title: Text(spec['concept']),
           subtitle: Text(
-            spec['start_description'] ??
-                spec['task_description'] ??
-                'No description',
-            maxLines: 2,
+            creatorName != null
+                ? 'by $creatorName\n$description'
+                : description,
+            maxLines: 3,
             overflow: TextOverflow.ellipsis,
           ),
+          isThreeLine: creatorName != null,
           trailing: IconButton(
             icon: const Icon(Icons.person_add),
             tooltip: 'Assign validator',
