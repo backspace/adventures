@@ -190,6 +190,17 @@ defmodule RegistrationsWeb.TestController do
     answer2 = Repo.insert!(%Answer{answer: "banana", specification_id: specification.id})
     _answer3 = Repo.insert!(%Answer{answer: "cherry", specification_id: specification.id})
 
+    # Create a second spec (no validation) so supervisor sees it as unvalidated
+    _unvalidated_spec =
+      Repo.insert!(%Specification{
+        concept: "string_collector",
+        task_description: "Find more hidden words",
+        start_description: "Search the area",
+        region: region,
+        duration: 300,
+        creator_id: user.id
+      })
+
     # Create supervisor user with validation_supervisor role
     supervisor = create_or_reset_user("supervisor@example.com", @test_password, "Supervisor")
     Repo.insert!(%UserRole{user_id: supervisor.id, role: "validation_supervisor", assigned_by_id: user.id})
