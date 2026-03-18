@@ -167,9 +167,9 @@ defmodule RegistrationsWeb.Router do
 
     resources("/submissions", SubmissionController, only: [:create, :show])
 
-    resources("/specification-validations", SpecificationValidationController, only: [:index, :show, :create, :update])
     get("/specification-validations/mine", SpecificationValidationController, :mine, as: :my_validations)
     get("/specification-validations/supervise", SpecificationValidationController, :supervise, as: :supervise_validations)
+    resources("/specification-validations", SpecificationValidationController, only: [:index, :show, :create, :update])
 
     resources("/validation-comments", ValidationCommentController, only: [:create, :update, :delete])
 
