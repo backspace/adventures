@@ -36,6 +36,8 @@ defmodule RegistrationsWeb.User do
 
     field(:admin, :boolean)
 
+    has_many(:user_roles, Registrations.UserRole, on_delete: :delete_all)
+
     field(:attending, :boolean)
 
     belongs_to(:team, RegistrationsWeb.Team, type: :binary_id)

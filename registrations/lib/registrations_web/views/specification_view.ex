@@ -12,7 +12,8 @@ defmodule RegistrationsWeb.SpecificationView do
   def relationships do
     [
       region: {RegistrationsWeb.RegionView, :include},
-      answers: {RegistrationsWeb.AnswerView, :include}
+      answers: {RegistrationsWeb.AnswerView, :include},
+      creator: {RegistrationsWeb.JSONAPI.UserView, :include}
     ]
   end
 end
