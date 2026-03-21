@@ -24,12 +24,19 @@ class ValidationAnnotationOverlay extends StatefulWidget {
 
 class _ValidationAnnotationOverlayState
     extends State<ValidationAnnotationOverlay> {
-  List<ValidationComment> _comments = [];
+  final ValueNotifier<List<ValidationComment>> _commentsNotifier =
+      ValueNotifier([]);
 
   @override
   void initState() {
     super.initState();
     _fetchComments();
+  }
+
+  @override
+  void dispose() {
+    _commentsNotifier.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchComments() async {
@@ -42,7 +49,8 @@ class _ValidationAnnotationOverlayState
         final relationships =
             response.data['data']['relationships'] as Map<String, dynamic>?;
         final commentDataList =
-            (relationships?['validation_comments']?['data'] as List<dynamic>?) ??
+            (relationships?['validation_comments']?['data']
+                    as List<dynamic>?) ??
                 [];
 
         final comments = <ValidationComment>[];
@@ -58,16 +66,12 @@ class _ValidationAnnotationOverlayState
           }
         }
         if (mounted) {
-          setState(() => _comments = comments);
+          _commentsNotifier.value = comments;
         }
       }
     } catch (e) {
       talker.error('Error fetching comments: $e');
     }
-  }
-
-  List<ValidationComment> _commentsForAnswer(String answerId) {
-    return _comments.where((c) => c.answerId == answerId).toList();
   }
 
   @override
@@ -78,13 +82,16 @@ class _ValidationAnnotationOverlayState
         Positioned(
           right: 16,
           bottom: 80,
-          child: FloatingActionButton(
-            heroTag: 'validation_notes',
-            onPressed: () => _showAnnotationSheet(context),
-            child: Badge(
-              isLabelVisible: _comments.isNotEmpty,
-              label: Text('${_comments.length}'),
-              child: const Icon(Icons.edit_note),
+          child: ValueListenableBuilder<List<ValidationComment>>(
+            valueListenable: _commentsNotifier,
+            builder: (context, comments, _) => FloatingActionButton(
+              heroTag: 'validation_notes',
+              onPressed: () => _showAnnotationSheet(context),
+              child: Badge(
+                isLabelVisible: comments.isNotEmpty,
+                label: Text('${comments.length}'),
+                child: const Icon(Icons.edit_note),
+              ),
             ),
           ),
         ),
@@ -105,8 +112,7 @@ class _ValidationAnnotationOverlayState
           dio: widget.dio,
           validationId: widget.validationId,
           answers: widget.answers,
-          comments: _comments,
-          commentsForAnswer: _commentsForAnswer,
+          commentsNotifier: _commentsNotifier,
           scrollController: scrollController,
           onCommentSaved: _fetchComments,
         ),
@@ -119,8 +125,7 @@ class _AnnotationSheet extends StatefulWidget {
   final Dio dio;
   final String validationId;
   final List<Map<String, dynamic>> answers;
-  final List<ValidationComment> comments;
-  final List<ValidationComment> Function(String) commentsForAnswer;
+  final ValueNotifier<List<ValidationComment>> commentsNotifier;
   final ScrollController scrollController;
   final VoidCallback onCommentSaved;
 
@@ -128,8 +133,7 @@ class _AnnotationSheet extends StatefulWidget {
     required this.dio,
     required this.validationId,
     required this.answers,
-    required this.comments,
-    required this.commentsForAnswer,
+    required this.commentsNotifier,
     required this.scrollController,
     required this.onCommentSaved,
   });
@@ -213,7 +217,6 @@ class _AnnotationSheetState extends State<_AnnotationSheet> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Handle
         Container(
           margin: const EdgeInsets.only(top: 8),
           width: 40,
@@ -230,7 +233,6 @@ class _AnnotationSheetState extends State<_AnnotationSheet> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
         ),
-        // Quick comment input
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
@@ -294,54 +296,61 @@ class _AnnotationSheetState extends State<_AnnotationSheet> {
           ),
         ),
         const Divider(height: 24),
-        // Existing comments
         Expanded(
-          child: widget.comments.isEmpty
-              ? const Center(
+          child: ValueListenableBuilder<List<ValidationComment>>(
+            valueListenable: widget.commentsNotifier,
+            builder: (context, comments, _) {
+              if (comments.isEmpty) {
+                return const Center(
                   child: Text(
                     'No notes yet',
                     style: TextStyle(color: Colors.grey),
                   ),
-                )
-              : ListView.builder(
-                  controller: widget.scrollController,
-                  itemCount: widget.comments.length,
-                  itemBuilder: (context, index) {
-                    final comment = widget.comments[index];
-                    final answerInfo = comment.answerId != null
-                        ? widget.answers.cast<Map<String, dynamic>?>().firstWhere(
+                );
+              }
+              return ListView.builder(
+                controller: widget.scrollController,
+                itemCount: comments.length,
+                itemBuilder: (context, index) {
+                  final comment = comments[index];
+                  final answerInfo = comment.answerId != null
+                      ? widget.answers
+                          .cast<Map<String, dynamic>?>()
+                          .firstWhere(
                             (a) => a?['id'] == comment.answerId,
                             orElse: () => null,
                           )
-                        : null;
+                      : null;
 
-                    return ListTile(
-                      dense: true,
-                      leading: Icon(
-                        comment.answerId != null
-                            ? Icons.question_answer
-                            : Icons.notes,
-                        size: 20,
-                        color: Colors.grey,
-                      ),
-                      title: Text(comment.comment ?? ''),
-                      subtitle: Text(
-                        answerInfo != null
-                            ? 'Re: ${answerInfo['label'] ?? answerInfo['answer'] ?? 'Answer'}'
-                            : 'General',
-                        style: const TextStyle(fontSize: 12),
-                      ),
-                      trailing: comment.suggestedValue != null
-                          ? Chip(
-                              label: Text(
-                                comment.suggestedValue!,
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            )
-                          : null,
-                    );
-                  },
-                ),
+                  return ListTile(
+                    dense: true,
+                    leading: Icon(
+                      comment.answerId != null
+                          ? Icons.question_answer
+                          : Icons.notes,
+                      size: 20,
+                      color: Colors.grey,
+                    ),
+                    title: Text(comment.comment ?? ''),
+                    subtitle: Text(
+                      answerInfo != null
+                          ? 'Re: ${answerInfo['label'] ?? answerInfo['answer'] ?? 'Answer'}'
+                          : 'General',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    trailing: comment.suggestedValue != null
+                        ? Chip(
+                            label: Text(
+                              comment.suggestedValue!,
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          )
+                        : null,
+                  );
+                },
+              );
+            },
+          ),
         ),
       ],
     );
