@@ -33,6 +33,7 @@ class ValidationFieldCommentCard extends StatefulWidget {
 class _ValidationFieldCommentCardState
     extends State<ValidationFieldCommentCard> {
   bool _expanded = false;
+  bool _didPrefill = false;
   final _commentController = TextEditingController();
   final _suggestedValueController = TextEditingController();
   bool _isSaving = false;
@@ -126,7 +127,15 @@ class _ValidationFieldCommentCardState
                 IconButton(
                   icon:
                       Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-                  onPressed: () => setState(() => _expanded = !_expanded),
+                  onPressed: () {
+                    setState(() {
+                      _expanded = !_expanded;
+                      if (_expanded && !_didPrefill) {
+                        _didPrefill = true;
+                        _suggestedValueController.text = widget.fieldValue;
+                      }
+                    });
+                  },
                 ),
               ],
             ),
@@ -145,7 +154,7 @@ class _ValidationFieldCommentCardState
                           )
                         : null,
                     trailing: widget.readOnly
-                        ? null
+                        ? _commentStatusIcon(comment.status)
                         : IconButton(
                             icon: const Icon(Icons.delete, size: 18),
                             onPressed: () => _deleteComment(comment.id),
@@ -186,5 +195,16 @@ class _ValidationFieldCommentCardState
         ],
       ),
     );
+  }
+
+  Widget? _commentStatusIcon(String status) {
+    switch (status) {
+      case 'accepted':
+        return const Icon(Icons.check_circle, color: Colors.green, size: 20);
+      case 'rejected':
+        return const Icon(Icons.cancel, color: Colors.red, size: 20);
+      default:
+        return null;
+    }
   }
 }

@@ -4,6 +4,7 @@ class ValidationComment {
   final String? field;
   final String? comment;
   final String? suggestedValue;
+  final String status;
 
   const ValidationComment({
     required this.id,
@@ -11,6 +12,7 @@ class ValidationComment {
     this.field,
     this.comment,
     this.suggestedValue,
+    this.status = 'pending',
   });
 
   factory ValidationComment.fromJson(
@@ -31,6 +33,7 @@ class ValidationComment {
       field: attributes?['field'],
       comment: attributes?['comment'],
       suggestedValue: attributes?['suggested_value'],
+      status: attributes?['status'] as String? ?? 'pending',
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/answer.dart';
 import 'package:waydowntown/models/specification_validation.dart';
+import 'package:waydowntown/models/validation_comment.dart';
 
 class ReviewValidationRoute extends StatefulWidget {
   final Dio dio;
@@ -20,7 +21,6 @@ class ReviewValidationRoute extends StatefulWidget {
 
 class _ReviewValidationRouteState extends State<ReviewValidationRoute> {
   late SpecificationValidation _validation;
-  bool _isSaving = false;
 
   @override
   void initState() {
@@ -45,35 +45,26 @@ class _ReviewValidationRouteState extends State<ReviewValidationRoute> {
     }
   }
 
-  Future<void> _updateStatus(String status) async {
-    setState(() => _isSaving = true);
-
+  Future<void> _updateCommentStatus(String commentId, String status) async {
     try {
       await widget.dio.patch(
-        '/waydowntown/specification-validations/${_validation.id}',
+        '/waydowntown/validation-comments/$commentId',
         data: {
           'data': {
-            'type': 'specification-validations',
-            'id': _validation.id,
+            'type': 'validation-comments',
+            'id': commentId,
             'attributes': {'status': status},
           }
         },
       );
       await _refreshValidation();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Validation $status')),
-        );
-      }
     } catch (e) {
-      talker.error('Error updating status: $e');
+      talker.error('Error updating comment status: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.toString()}')),
         );
       }
-    } finally {
-      setState(() => _isSaving = false);
     }
   }
 
@@ -136,8 +127,8 @@ class _ReviewValidationRouteState extends State<ReviewValidationRoute> {
               Card(
                 child: ListTile(
                   title: const Text('Play Mode'),
-                  trailing: Text(
-                      _validation.playMode!.replaceAll('_', ' ')),
+                  trailing:
+                      Text(_validation.playMode!.replaceAll('_', ' ')),
                 ),
               ),
             const SizedBox(height: 8),
@@ -156,97 +147,105 @@ class _ReviewValidationRouteState extends State<ReviewValidationRoute> {
               const SizedBox(height: 16),
             ],
 
-            // Comments
+            // Annotations grouped for review
             if (_validation.comments.isNotEmpty) ...[
-              Text('Comments',
+              Text('Annotations',
                   style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               ..._validation.comments.map((comment) {
-                // Find the matching answer
                 Answer? answer;
                 if (comment.answerId != null) {
                   answer = spec?.answers?.cast<Answer?>().firstWhere(
-                    (a) => a?.id == comment.answerId,
-                    orElse: () => null,
-                  );
+                        (a) => a?.id == comment.answerId,
+                        orElse: () => null,
+                      );
                 }
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            if (answer != null && answer.label != null)
-                              Chip(label: Text(answer.label!)),
-                            if (comment.field != null)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: Chip(
-                                  label: Text(comment.field!),
-                                  backgroundColor: Colors.grey[200],
-                                ),
-                              ),
-                          ],
-                        ),
-                        if (comment.comment != null) ...[
-                          const SizedBox(height: 4),
-                          Text(comment.comment!),
-                        ],
-                        if (comment.suggestedValue != null) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Text('Suggested: ',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                              Expanded(
-                                child: Text(
-                                  comment.suggestedValue!,
-                                  style: const TextStyle(
-                                      fontStyle: FontStyle.italic),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                );
+                return _buildAnnotationCard(context, comment, answer);
               }),
-              const SizedBox(height: 16),
             ],
+          ],
+        ),
+      ),
+    );
+  }
 
-            // Accept / Reject buttons
-            if (_validation.status == 'submitted') ...[
+  Widget _buildAnnotationCard(
+      BuildContext context, ValidationComment comment, Answer? answer) {
+    final isSpecField = comment.answerId == null && comment.field != null;
+    String targetLabel;
+    if (isSpecField) {
+      targetLabel = comment.field!.replaceAll('_', ' ');
+      // Capitalize
+      targetLabel = targetLabel[0].toUpperCase() + targetLabel.substring(1);
+    } else if (answer != null) {
+      targetLabel = answer.label ?? 'Answer';
+      if (comment.field != null) {
+        targetLabel += ' (${comment.field})';
+      }
+    } else {
+      targetLabel = 'General';
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      color: _cardColor(comment.status),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Chip(
+                    label: Text(targetLabel, style: const TextStyle(fontSize: 12)),
+                  ),
+                ),
+                _statusBadge(comment.status),
+              ],
+            ),
+            if (comment.comment != null) ...[
+              const SizedBox(height: 4),
+              Text(comment.comment!),
+            ],
+            if (comment.suggestedValue != null) ...[
+              const SizedBox(height: 4),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text('Suggested: ',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed:
-                          _isSaving ? null : () => _updateStatus('accepted'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text('Accept'),
+                    child: Text(
+                      comment.suggestedValue!,
+                      style: const TextStyle(fontStyle: FontStyle.italic),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed:
-                          _isSaving ? null : () => _updateStatus('rejected'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text('Reject'),
-                    ),
+                ],
+              ),
+            ],
+            if (comment.status == 'pending') ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    onPressed: () =>
+                        _updateCommentStatus(comment.id, 'accepted'),
+                    icon:
+                        const Icon(Icons.check, color: Colors.green, size: 18),
+                    label: const Text('Accept',
+                        style: TextStyle(color: Colors.green)),
+                  ),
+                  const SizedBox(width: 8),
+                  TextButton.icon(
+                    onPressed: () =>
+                        _updateCommentStatus(comment.id, 'rejected'),
+                    icon:
+                        const Icon(Icons.close, color: Colors.red, size: 18),
+                    label: const Text('Reject',
+                        style: TextStyle(color: Colors.red)),
                   ),
                 ],
               ),
@@ -255,6 +254,36 @@ class _ReviewValidationRouteState extends State<ReviewValidationRoute> {
         ),
       ),
     );
+  }
+
+  Widget _statusBadge(String status) {
+    switch (status) {
+      case 'accepted':
+        return const Chip(
+          label: Text('Accepted', style: TextStyle(fontSize: 10, color: Colors.white)),
+          backgroundColor: Colors.green,
+        );
+      case 'rejected':
+        return const Chip(
+          label: Text('Rejected', style: TextStyle(fontSize: 10, color: Colors.white)),
+          backgroundColor: Colors.red,
+        );
+      default:
+        return const Chip(
+          label: Text('Pending', style: TextStyle(fontSize: 10)),
+        );
+    }
+  }
+
+  Color? _cardColor(String status) {
+    switch (status) {
+      case 'accepted':
+        return Colors.green[50];
+      case 'rejected':
+        return Colors.red[50];
+      default:
+        return null;
+    }
   }
 
   Color _statusColor(String status) {

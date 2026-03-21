@@ -31,7 +31,9 @@ defmodule RegistrationsWeb.ValidationCommentController do
     comment = Waydowntown.get_validation_comment!(id)
     validation = Waydowntown.get_specification_validation!(comment.specification_validation_id)
 
-    if validation.validator_id == current_user.id do
+    if validation.validator_id == current_user.id or
+         validation.assigned_by_id == current_user.id or
+         current_user.admin do
       case Waydowntown.update_validation_comment(comment, params) do
         {:ok, updated} ->
           render(conn, "show.json", %{data: updated, conn: conn, params: params})

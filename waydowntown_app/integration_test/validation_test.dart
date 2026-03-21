@@ -169,7 +169,7 @@ void main() {
     final validatorEmail = resetData['validator_email'] as String;
     final validatorPassword = resetData['validator_password'] as String;
     final validatorId = resetData['validator_id'] as String;
-    final supervisorId = resetData['supervisor_id'] as String;
+    // supervisorId available in resetData['supervisor_id']
     final specificationId = resetData['specification_id'] as String;
     final validationId = resetData['validation_id'] as String;
 
@@ -352,7 +352,7 @@ void main() {
   });
 
   testWidgets(
-      'supervisor flow: see unvalidated specs with creator, review and accept',
+      'supervisor flow: see unvalidated specs, review and accept/reject annotations',
       (tester) async {
     // 1. Reset DB with validation game data
     final resetData = await testClient.resetDatabase(game: 'validation');
@@ -361,13 +361,15 @@ void main() {
     final supervisorEmail = resetData['supervisor_email'] as String;
     final supervisorPassword = resetData['supervisor_password'] as String;
 
-    // 2. Submit the validation via API so the supervisor can review it
+    // 2. Submit the validation with annotations via API
     final validatorTokens =
         await testClient.login(validatorEmail, validatorPassword);
     final validatorDio =
         testClient.createAuthenticatedDio(validatorTokens.accessToken);
 
     final validationId = resetData['validation_id'] as String;
+    final answerId = (resetData['answer_ids'] as List<dynamic>).first;
+
     await validatorDio.patch(
       '/waydowntown/specification-validations/$validationId',
       data: {
@@ -381,6 +383,36 @@ void main() {
         }
       },
     );
+
+    // Add an annotation
+    await validatorDio.post(
+      '/waydowntown/validation-comments',
+      data: {
+        'data': {
+          'type': 'validation-comments',
+          'attributes': {
+            'comment': 'This answer is wrong',
+            'suggested_value': 'pear',
+            'field': 'answer',
+          },
+          'relationships': {
+            'specification-validation': {
+              'data': {
+                'type': 'specification-validations',
+                'id': validationId,
+              }
+            },
+            'answer': {
+              'data': {
+                'type': 'answers',
+                'id': answerId,
+              }
+            },
+          },
+        }
+      },
+    );
+
     await validatorDio.patch(
       '/waydowntown/specification-validations/$validationId',
       data: {
@@ -435,7 +467,12 @@ void main() {
     // 12. Verify validator's notes are shown
     await waitFor(tester, find.text('Looks good overall'));
 
-    // 13. Accept the validation
+    // 13. Verify the annotation is shown with pending status
+    await waitFor(tester, find.text('This answer is wrong'));
+    await waitFor(tester, find.text('Suggested: pear'));
+    await waitFor(tester, find.text('Pending'));
+
+    // 14. Accept the annotation
     final acceptButton = find.text('Accept');
     await tester.scrollUntilVisible(
       acceptButton,
@@ -444,7 +481,7 @@ void main() {
     );
     await tester.tap(acceptButton);
 
-    // 14. Verify status changes to accepted
-    await waitFor(tester, find.text('accepted'));
+    // 15. Verify annotation status changes to accepted
+    await waitFor(tester, find.text('Accepted'));
   });
 }

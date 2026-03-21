@@ -42,6 +42,25 @@ class _ValidationAnswerCardState extends State<ValidationAnswerCard> {
     super.dispose();
   }
 
+  String? _currentValueForField(String? field) {
+    switch (field) {
+      case 'label':
+        return widget.answer.label;
+      case 'answer':
+        return widget.showExpectedAnswers ? widget.answer.answer : null;
+      case 'hint':
+        return widget.answer.hint;
+      default:
+        return null;
+    }
+  }
+
+  void _onFieldChanged(String? field) {
+    setState(() => _selectedField = field);
+    final currentValue = _currentValueForField(field);
+    _suggestedValueController.text = currentValue ?? '';
+  }
+
   Future<void> _saveComment() async {
     if (_commentController.text.isEmpty &&
         _suggestedValueController.text.isEmpty) {
@@ -113,15 +132,28 @@ class _ValidationAnswerCardState extends State<ValidationAnswerCard> {
 
   @override
   Widget build(BuildContext context) {
+    final answer = widget.answer;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: Column(
         children: [
           ListTile(
-            title: Text(widget.answer.label ?? 'Answer'),
-            subtitle: widget.showExpectedAnswers && widget.answer.answer != null
-                ? Text('Expected: ${widget.answer.answer}')
-                : null,
+            title: Text(answer.label ?? 'Answer'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (widget.showExpectedAnswers && answer.answer != null)
+                  Text('Expected: ${answer.answer}'),
+                if (answer.hint != null)
+                  Text('Hint: ${answer.hint}',
+                      style: const TextStyle(fontStyle: FontStyle.italic)),
+                if (answer.hasHint && answer.hint == null)
+                  const Text('Has hint (not revealed)',
+                      style: TextStyle(
+                          fontStyle: FontStyle.italic, color: Colors.grey)),
+              ],
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -131,94 +163,106 @@ class _ValidationAnswerCardState extends State<ValidationAnswerCard> {
                     child: const Icon(Icons.comment),
                   ),
                 IconButton(
-                  icon: Icon(_expanded
-                      ? Icons.expand_less
-                      : Icons.expand_more),
-                  onPressed: () =>
-                      setState(() => _expanded = !_expanded),
+                  icon: Icon(
+                      _expanded ? Icons.expand_less : Icons.expand_more),
+                  onPressed: () => setState(() => _expanded = !_expanded),
                 ),
               ],
             ),
           ),
           if (_expanded) ...[
             const Divider(),
-            // Existing comments
             if (widget.existingComments.isNotEmpty)
-              ...widget.existingComments.map((comment) => ListTile(
-                    dense: true,
-                    title: Text(comment.comment ?? ''),
-                    subtitle: comment.suggestedValue != null
-                        ? Text(
-                            'Suggested: ${comment.suggestedValue}',
-                            style: const TextStyle(
-                                fontStyle: FontStyle.italic),
-                          )
-                        : null,
-                    leading: comment.field != null
-                        ? Chip(
-                            label: Text(comment.field!,
-                                style: const TextStyle(fontSize: 10)),
-                          )
-                        : null,
-                    trailing: widget.readOnly
-                        ? null
-                        : IconButton(
-                            icon: const Icon(Icons.delete, size: 18),
-                            onPressed: () => _deleteComment(comment.id),
-                          ),
-                  )),
-
-            // New comment form (only when editable)
-            if (!widget.readOnly) Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DropdownButtonFormField<String>(
-                    value: _selectedField,
-                    decoration:
-                        const InputDecoration(labelText: 'Field'),
-                    items: const [
-                      DropdownMenuItem(
-                          value: null, child: Text('General')),
-                      DropdownMenuItem(
-                          value: 'answer', child: Text('Answer')),
-                      DropdownMenuItem(
-                          value: 'label', child: Text('Label')),
-                      DropdownMenuItem(
-                          value: 'hint', child: Text('Hint')),
-                    ],
-                    onChanged: (v) =>
-                        setState(() => _selectedField = v),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _commentController,
-                    decoration: const InputDecoration(
-                      labelText: 'Comment',
-                      border: OutlineInputBorder(),
+              ...widget.existingComments.map((comment) => _buildCommentTile(comment)),
+            if (!widget.readOnly)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      value: _selectedField,
+                      decoration:
+                          const InputDecoration(labelText: 'Field'),
+                      items: [
+                        const DropdownMenuItem(
+                            value: null, child: Text('General')),
+                        if (answer.answer != null || widget.showExpectedAnswers)
+                          const DropdownMenuItem(
+                              value: 'answer', child: Text('Answer')),
+                        if (answer.label != null)
+                          const DropdownMenuItem(
+                              value: 'label', child: Text('Label')),
+                        if (answer.hint != null || answer.hasHint)
+                          const DropdownMenuItem(
+                              value: 'hint', child: Text('Hint')),
+                      ],
+                      onChanged: _onFieldChanged,
                     ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _suggestedValueController,
-                    decoration: const InputDecoration(
-                      labelText: 'Suggested value',
-                      border: OutlineInputBorder(),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _commentController,
+                      decoration: const InputDecoration(
+                        labelText: 'Comment',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 2,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  ElevatedButton(
-                    onPressed: _isSaving ? null : _saveComment,
-                    child: const Text('Add Comment'),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _suggestedValueController,
+                      decoration: const InputDecoration(
+                        labelText: 'Suggested replacement',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: _isSaving ? null : _saveComment,
+                      child: const Text('Add Comment'),
+                    ),
+                  ],
+                ),
               ),
-            ),
           ],
         ],
       ),
     );
+  }
+
+  Widget _buildCommentTile(ValidationComment comment) {
+    return ListTile(
+      dense: true,
+      title: Text(comment.comment ?? ''),
+      subtitle: comment.suggestedValue != null
+          ? Text(
+              'Suggested: ${comment.suggestedValue}',
+              style: const TextStyle(fontStyle: FontStyle.italic),
+            )
+          : null,
+      leading: comment.field != null
+          ? Chip(
+              label:
+                  Text(comment.field!, style: const TextStyle(fontSize: 10)),
+            )
+          : null,
+      trailing: widget.readOnly
+          ? _commentStatusIcon(comment.status)
+          : IconButton(
+              icon: const Icon(Icons.delete, size: 18),
+              onPressed: () => _deleteComment(comment.id),
+            ),
+    );
+  }
+
+  Widget? _commentStatusIcon(String status) {
+    switch (status) {
+      case 'accepted':
+        return const Icon(Icons.check_circle, color: Colors.green, size: 20);
+      case 'rejected':
+        return const Icon(Icons.cancel, color: Colors.red, size: 20);
+      default:
+        return null;
+    }
   }
 }

@@ -8,10 +8,13 @@ defmodule Registrations.Waydowntown.ValidationComment do
 
   @valid_fields ~w(answer label hint start_description task_description)
 
+  @valid_statuses ~w(pending accepted rejected)
+
   schema "validation_comments" do
     field(:field, :string)
     field(:comment, :string)
     field(:suggested_value, :string)
+    field(:status, :string, default: "pending")
 
     belongs_to(:specification_validation, Registrations.Waydowntown.SpecificationValidation, type: :binary_id)
     belongs_to(:answer, Registrations.Waydowntown.Answer, type: :binary_id)
@@ -22,9 +25,10 @@ defmodule Registrations.Waydowntown.ValidationComment do
   @doc false
   def changeset(comment, attrs) do
     comment
-    |> cast(attrs, [:specification_validation_id, :answer_id, :field, :comment, :suggested_value])
+    |> cast(attrs, [:specification_validation_id, :answer_id, :field, :comment, :suggested_value, :status])
     |> validate_required([:specification_validation_id])
     |> validate_inclusion(:field, @valid_fields)
+    |> validate_inclusion(:status, @valid_statuses)
     |> validate_has_content()
     |> assoc_constraint(:specification_validation)
   end
