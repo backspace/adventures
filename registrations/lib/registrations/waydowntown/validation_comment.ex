@@ -6,7 +6,7 @@ defmodule Registrations.Waydowntown.ValidationComment do
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "waydowntown"
 
-  @valid_fields ~w(answer label hint)
+  @valid_fields ~w(answer label hint start_description task_description)
 
   schema "validation_comments" do
     field(:field, :string)

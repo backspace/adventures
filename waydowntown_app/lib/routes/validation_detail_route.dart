@@ -4,6 +4,7 @@ import 'package:waydowntown/app.dart';
 import 'package:waydowntown/models/specification_validation.dart';
 import 'package:waydowntown/routes/request_run_route.dart';
 import 'package:waydowntown/widgets/validation_answer_card.dart';
+import 'package:waydowntown/widgets/validation_field_comment_card.dart';
 
 class ValidationDetailRoute extends StatefulWidget {
   final Dio dio;
@@ -192,6 +193,38 @@ class _ValidationDetailRouteState extends State<ValidationDetailRoute> {
               ),
               const SizedBox(height: 8),
             ],
+
+            // Specification field comments
+            if (spec != null && spec.startDescription != null)
+              ValidationFieldCommentCard(
+                dio: widget.dio,
+                validationId: _validation.id,
+                fieldName: 'start_description',
+                fieldLabel: 'Start Description',
+                fieldValue: spec.startDescription!,
+                existingComments: _validation.comments
+                    .where((c) =>
+                        c.answerId == null &&
+                        c.field == 'start_description')
+                    .toList(),
+                onCommentSaved: _refreshValidation,
+                readOnly: !_canEdit,
+              ),
+            if (spec != null && spec.taskDescription != null)
+              ValidationFieldCommentCard(
+                dio: widget.dio,
+                validationId: _validation.id,
+                fieldName: 'task_description',
+                fieldLabel: 'Task Description',
+                fieldValue: spec.taskDescription!,
+                existingComments: _validation.comments
+                    .where((c) =>
+                        c.answerId == null &&
+                        c.field == 'task_description')
+                    .toList(),
+                onCommentSaved: _refreshValidation,
+                readOnly: !_canEdit,
+              ),
 
             // Play mode selection (only when assigned)
             if (_validation.status == 'assigned') ...[

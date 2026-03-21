@@ -311,12 +311,27 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
           title: Text(_conceptName(spec?.concept)),
           subtitle: Text(subtitleParts.join('\n')),
           isThreeLine: subtitleParts.length > 1,
-          trailing: Chip(
-            label: Text(
-              validation.status.replaceAll('_', ' '),
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
-            backgroundColor: _statusColor(validation.status),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Chip(
+                label: Text(
+                  validation.status.replaceAll('_', ' '),
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                ),
+                backgroundColor: _statusColor(validation.status),
+              ),
+              if (spec != null)
+                IconButton(
+                  icon: const Icon(Icons.person_add, size: 20),
+                  tooltip: 'Assign validator',
+                  onPressed: () => _assignValidator({
+                    'id': spec.id,
+                    'concept': spec.concept,
+                    'start_description': spec.startDescription,
+                  }),
+                ),
+            ],
           ),
           onTap: () async {
             await Navigator.push(
