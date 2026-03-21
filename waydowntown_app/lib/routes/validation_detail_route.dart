@@ -249,9 +249,8 @@ class _ValidationDetailRouteState extends State<ValidationDetailRoute> {
               const SizedBox(height: 16),
             ],
 
-            // Answer cards for commenting
-            if (_canEdit &&
-                spec != null &&
+            // Answer cards
+            if (spec != null &&
                 spec.answers != null &&
                 spec.answers!.isNotEmpty) ...[
               Text('Answers',
@@ -267,6 +266,7 @@ class _ValidationDetailRouteState extends State<ValidationDetailRoute> {
                     showExpectedAnswers:
                         _validation.playMode == 'with_answers',
                     onCommentSaved: _refreshValidation,
+                    readOnly: !_canEdit,
                   )),
               const SizedBox(height: 16),
             ],
@@ -312,7 +312,7 @@ class _ValidationDetailRouteState extends State<ValidationDetailRoute> {
                 ),
               ),
 
-            // Read-only view for submitted/accepted/rejected
+            // Read-only overall notes for submitted/accepted/rejected
             if (!_canEdit && _validation.overallNotes != null) ...[
               Text('Overall Notes',
                   style: Theme.of(context).textTheme.titleMedium),

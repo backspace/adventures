@@ -11,6 +11,7 @@ class ValidationAnswerCard extends StatefulWidget {
   final List<ValidationComment> existingComments;
   final bool showExpectedAnswers;
   final VoidCallback onCommentSaved;
+  final bool readOnly;
 
   const ValidationAnswerCard({
     super.key,
@@ -20,6 +21,7 @@ class ValidationAnswerCard extends StatefulWidget {
     required this.existingComments,
     required this.showExpectedAnswers,
     required this.onCommentSaved,
+    this.readOnly = false,
   });
 
   @override
@@ -158,14 +160,16 @@ class _ValidationAnswerCardState extends State<ValidationAnswerCard> {
                                 style: const TextStyle(fontSize: 10)),
                           )
                         : null,
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, size: 18),
-                      onPressed: () => _deleteComment(comment.id),
-                    ),
+                    trailing: widget.readOnly
+                        ? null
+                        : IconButton(
+                            icon: const Icon(Icons.delete, size: 18),
+                            onPressed: () => _deleteComment(comment.id),
+                          ),
                   )),
 
-            // New comment form
-            Padding(
+            // New comment form (only when editable)
+            if (!widget.readOnly) Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
