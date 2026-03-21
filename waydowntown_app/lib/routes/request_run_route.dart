@@ -14,6 +14,8 @@ class RequestRunRoute extends StatefulWidget {
   final String? specificationId;
   final String? position;
   final PhoenixSocket? testSocket;
+  final String? validationId;
+  final List<Map<String, dynamic>>? validationAnswers;
 
   const RequestRunRoute({
     super.key,
@@ -22,6 +24,8 @@ class RequestRunRoute extends StatefulWidget {
     this.specificationId,
     this.position,
     this.testSocket,
+    this.validationId,
+    this.validationAnswers,
   });
 
   @override
@@ -199,6 +203,8 @@ class RequestRunRouteState extends State<RequestRunRoute> {
         run: run!,
         dio: widget.dio,
         testSocket: widget.testSocket,
+        validationId: widget.validationId,
+        validationAnswers: widget.validationAnswers,
       );
     }
   }

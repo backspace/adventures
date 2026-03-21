@@ -102,12 +102,24 @@ class _ValidationDetailRouteState extends State<ValidationDetailRoute> {
   Future<void> _playSpecification() async {
     if (_validation.specification == null) return;
 
+    final spec = _validation.specification!;
+    final answerMaps = spec.answers
+            ?.map((a) => {
+                  'id': a.id,
+                  'label': a.label,
+                  'answer': a.answer,
+                })
+            .toList() ??
+        [];
+
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => RequestRunRoute(
           dio: widget.dio,
-          specificationId: _validation.specification!.id,
+          specificationId: spec.id,
+          validationId: _validation.id,
+          validationAnswers: answerMaps,
         ),
       ),
     );
