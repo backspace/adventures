@@ -86,6 +86,16 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
               creatorName = creatorJson?['attributes']?['name'] as String? ??
                   creatorJson?['attributes']?['email'] as String?;
             }
+            final regionId =
+                s['relationships']?['region']?['data']?['id'] as String?;
+            String? regionName;
+            if (regionId != null) {
+              final regionJson = specsIncluded.cast<Map<String, dynamic>?>().firstWhere(
+                (item) => item?['type'] == 'regions' && item?['id'] == regionId,
+                orElse: () => null,
+              );
+              regionName = regionJson?['attributes']?['name'] as String?;
+            }
             return {
               'id': s['id'] as String,
               'concept': s['attributes']['concept'] as String? ?? 'Unknown',
@@ -94,6 +104,7 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
               'task_description':
                   s['attributes']['task_description'] as String?,
               'creator_name': creatorName,
+              'region_name': regionName,
             };
           })
           .toList();
@@ -186,11 +197,15 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
       itemBuilder: (context, index) {
         final validation = validations[index];
         final spec = validation.specification;
+        final regionName = spec?.region?.name;
+        final subtitleParts = <String>[
+          'Validator: ${validation.validatorName ?? 'Unknown'}',
+          if (regionName != null) regionName,
+        ];
         return ListTile(
           title: Text(_conceptName(spec?.concept)),
-          subtitle: Text(
-            'Validator: ${validation.validatorName ?? 'Unknown'}',
-          ),
+          subtitle: Text(subtitleParts.join('\n')),
+          isThreeLine: subtitleParts.length > 1,
           trailing: Chip(
             label: Text(
               validation.status.replaceAll('_', ' '),
@@ -228,16 +243,20 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
             spec['task_description'] ??
             'No description';
         final creatorName = spec['creator_name'];
+        final regionName = spec['region_name'];
+        final subtitleParts = <String>[
+          if (creatorName != null) 'by $creatorName',
+          if (regionName != null) regionName,
+          description,
+        ];
         return ListTile(
           title: Text(_conceptName(spec['concept'])),
           subtitle: Text(
-            creatorName != null
-                ? 'by $creatorName\n$description'
-                : description,
+            subtitleParts.join('\n'),
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
           ),
-          isThreeLine: creatorName != null,
+          isThreeLine: subtitleParts.length > 1,
           trailing: IconButton(
             icon: const Icon(Icons.person_add),
             tooltip: 'Assign validator',
