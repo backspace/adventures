@@ -336,8 +336,8 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.send));
 
-    // 13. Verify note was saved (snackbar appears)
-    await waitFor(tester, find.text('Note saved'),
+    // 13. Verify note was saved (check icon appears)
+    await waitFor(tester, find.byIcon(Icons.check_circle),
         timeout: const Duration(seconds: 10));
 
     // 14. Verify note appears in the list

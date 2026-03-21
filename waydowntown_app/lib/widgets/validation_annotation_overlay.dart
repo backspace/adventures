@@ -142,6 +142,7 @@ class _AnnotationSheetState extends State<_AnnotationSheet> {
   final _commentController = TextEditingController();
   String? _selectedAnswerId;
   bool _isSaving = false;
+  bool _showSaved = false;
 
   @override
   void dispose() {
@@ -187,17 +188,15 @@ class _AnnotationSheetState extends State<_AnnotationSheet> {
       );
 
       _commentController.clear();
-      setState(() => _selectedAnswerId = null);
+      setState(() {
+        _selectedAnswerId = null;
+        _showSaved = true;
+      });
       widget.onCommentSaved();
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Note saved'),
-            duration: Duration(seconds: 1),
-          ),
-        );
-      }
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _showSaved = false);
+      });
     } catch (e) {
       talker.error('Error saving annotation: $e');
       if (mounted) {
@@ -275,16 +274,20 @@ class _AnnotationSheetState extends State<_AnnotationSheet> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  IconButton.filled(
-                    onPressed: _isSaving ? null : _saveComment,
-                    icon: _isSaving
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.send),
-                  ),
+                  if (_showSaved)
+                    const Icon(Icons.check_circle, color: Colors.green)
+                  else
+                    IconButton.filled(
+                      onPressed: _isSaving ? null : _saveComment,
+                      icon: _isSaving
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child:
+                                  CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.send),
+                    ),
                 ],
               ),
             ],

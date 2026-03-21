@@ -24,6 +24,8 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
   YamlMap? _concepts;
   bool _isLoading = true;
   String? _error;
+  String _sortField = 'concept';
+  bool _sortAscending = true;
 
   @override
   void initState() {
@@ -153,6 +155,104 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
     return concept;
   }
 
+  void _setSort(String field) {
+    setState(() {
+      if (_sortField == field) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortField = field;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  List<SpecificationValidation> _sortValidations(
+      List<SpecificationValidation> list) {
+    final sorted = List<SpecificationValidation>.from(list);
+    sorted.sort((a, b) {
+      String aVal, bVal;
+      switch (_sortField) {
+        case 'concept':
+          aVal = _conceptName(a.specification?.concept);
+          bVal = _conceptName(b.specification?.concept);
+        case 'region':
+          aVal = a.specification?.region?.name ?? '';
+          bVal = b.specification?.region?.name ?? '';
+        case 'creator':
+          aVal = a.validatorName ?? '';
+          bVal = b.validatorName ?? '';
+        default:
+          aVal = '';
+          bVal = '';
+      }
+      return _sortAscending ? aVal.compareTo(bVal) : bVal.compareTo(aVal);
+    });
+    return sorted;
+  }
+
+  List<Map<String, dynamic>> _sortUnvalidated(
+      List<Map<String, dynamic>> list) {
+    final sorted = List<Map<String, dynamic>>.from(list);
+    sorted.sort((a, b) {
+      String aVal, bVal;
+      switch (_sortField) {
+        case 'concept':
+          aVal = _conceptName(a['concept'] as String?);
+          bVal = _conceptName(b['concept'] as String?);
+        case 'region':
+          aVal = (a['region_name'] as String?) ?? '';
+          bVal = (b['region_name'] as String?) ?? '';
+        case 'creator':
+          aVal = (a['creator_name'] as String?) ?? '';
+          bVal = (b['creator_name'] as String?) ?? '';
+        default:
+          aVal = '';
+          bVal = '';
+      }
+      return _sortAscending ? aVal.compareTo(bVal) : bVal.compareTo(aVal);
+    });
+    return sorted;
+  }
+
+  Widget _buildSortBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        children: [
+          const Text('Sort:', style: TextStyle(fontSize: 12)),
+          const SizedBox(width: 4),
+          _sortChip('Concept', 'concept'),
+          _sortChip('Creator', 'creator'),
+          _sortChip('Region', 'region'),
+        ],
+      ),
+    );
+  }
+
+  Widget _sortChip(String label, String field) {
+    final isActive = _sortField == field;
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: ActionChip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 12)),
+            if (isActive)
+              Icon(
+                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                size: 14,
+              ),
+          ],
+        ),
+        backgroundColor: isActive
+            ? Theme.of(context).colorScheme.primaryContainer
+            : null,
+        onPressed: () => _setSort(field),
+      ),
+    );
+  }
+
   Color _statusColor(String status) {
     switch (status) {
       case 'assigned':
@@ -192,10 +292,15 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
       return const Center(child: Text('No validations'));
     }
 
-    return ListView.builder(
-      itemCount: validations.length,
-      itemBuilder: (context, index) {
-        final validation = validations[index];
+    final sorted = _sortValidations(validations);
+    return Column(
+      children: [
+        _buildSortBar(),
+        Expanded(
+          child: ListView.builder(
+            itemCount: sorted.length,
+            itemBuilder: (context, index) {
+              final validation = sorted[index];
         final spec = validation.specification;
         final regionName = spec?.region?.name;
         final subtitleParts = <String>[
@@ -226,7 +331,10 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
             _fetchData();
           },
         );
-      },
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -235,10 +343,15 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
       return const Center(child: Text('All specifications have validations'));
     }
 
-    return ListView.builder(
-      itemCount: _unvalidatedSpecs.length,
-      itemBuilder: (context, index) {
-        final spec = _unvalidatedSpecs[index];
+    final sorted = _sortUnvalidated(_unvalidatedSpecs);
+    return Column(
+      children: [
+        _buildSortBar(),
+        Expanded(
+          child: ListView.builder(
+            itemCount: sorted.length,
+            itemBuilder: (context, index) {
+              final spec = sorted[index];
         final description = spec['start_description'] ??
             spec['task_description'] ??
             'No description';
@@ -263,7 +376,10 @@ class _SupervisorDashboardRouteState extends State<SupervisorDashboardRoute>
             onPressed: () => _assignValidator(spec),
           ),
         );
-      },
+            },
+          ),
+        ),
+      ],
     );
   }
 
