@@ -37,7 +37,6 @@ defmodule Registrations.Waydowntown.SpecificationValidation do
     |> validate_required([:specification_id, :validator_id, :assigned_by_id])
     |> validate_inclusion(:status, @valid_statuses)
     |> validate_inclusion(:play_mode, ~w(without_answers with_answers), message: "must be 'without_answers' or 'with_answers'")
-    |> unique_constraint([:specification_id, :validator_id])
     |> assoc_constraint(:specification)
   end
 
