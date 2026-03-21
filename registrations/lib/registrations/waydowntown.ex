@@ -995,8 +995,32 @@ defmodule Registrations.Waydowntown do
     |> ValidationComment.changeset(attrs)
     |> Repo.update()
     |> case do
-      {:ok, comment} -> {:ok, Repo.preload(comment, [:answer, :specification_validation])}
-      error -> error
+      {:ok, updated_comment} ->
+        updated_comment = Repo.preload(updated_comment, [:answer, specification_validation: [:specification]])
+
+        if updated_comment.status == "accepted" && updated_comment.suggested_value != nil do
+          apply_accepted_suggestion(updated_comment)
+        end
+
+        {:ok, updated_comment}
+
+      error ->
+        error
+    end
+  end
+
+  defp apply_accepted_suggestion(%ValidationComment{} = comment) do
+    cond do
+      comment.answer_id != nil && comment.field != nil ->
+        answer = Repo.get!(Answer, comment.answer_id)
+        update_answer(answer, %{comment.field => comment.suggested_value})
+
+      comment.answer_id == nil && comment.field != nil ->
+        spec = comment.specification_validation.specification
+        if spec, do: update_specification(spec, %{comment.field => comment.suggested_value})
+
+      true ->
+        :ok
     end
   end
 

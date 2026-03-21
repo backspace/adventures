@@ -483,5 +483,22 @@ void main() {
 
     // 15. Verify annotation status changes to accepted
     await waitFor(tester, find.text('Accepted'));
+
+    // 16. Verify the suggestion was applied to the actual answer
+    // Fetch the validation which includes the Owner.AnswerView (with answer values)
+    final supervisorDio =
+        testClient.createAuthenticatedDio(supervisorTokens.accessToken);
+    final valResponse = await supervisorDio
+        .get('/waydowntown/specification-validations/$validationId');
+    final included =
+        (valResponse.data['included'] as List<dynamic>?) ?? [];
+    final answerJson = included.firstWhere(
+      (item) => item['type'] == 'answers' && item['id'] == answerId,
+      orElse: () => null,
+    );
+    expect(answerJson, isNotNull,
+        reason: 'Answer should be in included data');
+    expect(answerJson['attributes']['answer'], equals('pear'),
+        reason: 'Accepted suggestion should update the answer value');
   });
 }
