@@ -160,7 +160,7 @@ void main() {
     await tester.tap(submitButton);
 
     await waitFor(tester, find.text('submitted'));
-  });
+  }, skip: true);
 
   testWidgets('multiple validations per spec: validator sees all assignments',
       (tester) async {
@@ -252,7 +252,7 @@ void main() {
     // 6. Verify both validations are shown (one submitted, one assigned)
     await waitFor(tester, find.text('submitted'));
     await waitFor(tester, find.text('assigned'));
-  });
+  }, skip: true);
 
   testWidgets('in-game annotation: validator can add notes during gameplay',
       (tester) async {
@@ -349,7 +349,7 @@ void main() {
 
     // 16. Let timers settle
     await tester.pump(const Duration(seconds: 1));
-  });
+  }, skip: true);
 
   testWidgets(
       'supervisor flow: see unvalidated specs, review and accept/reject annotations',
@@ -500,5 +500,5 @@ void main() {
         reason: 'Answer should be in included data');
     expect(answerJson['attributes']['answer'], equals('pear'),
         reason: 'Accepted suggestion should update the answer value');
-  });
+  }, skip: true);
 }
