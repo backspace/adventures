@@ -9,7 +9,9 @@ defmodule Registrations.Waydowntown do
   alias Registrations.Waydowntown.Reveal
   alias Registrations.Waydowntown.Run
   alias Registrations.Waydowntown.Specification
+  alias Registrations.Waydowntown.SpecificationValidation
   alias Registrations.Waydowntown.Submission
+  alias Registrations.Waydowntown.ValidationComment
   alias RegistrationsWeb.User
 
   def update_user(user, attrs) do
@@ -338,7 +340,7 @@ defmodule Registrations.Waydowntown do
   end
 
   def list_specifications do
-    Specification |> Repo.all() |> Repo.preload(answers: [:region], region: [parent: [parent: [:parent]]])
+    Specification |> Repo.all() |> Repo.preload(answers: [:region], region: [parent: [parent: [:parent]]], creator: user_preload_query())
   end
 
   def list_specifications_for(user) do
@@ -903,5 +905,132 @@ defmodule Registrations.Waydowntown do
     Reveal
     |> Repo.get!(id)
     |> Repo.preload([:answer, :user])
+  end
+
+  # Specification Validations
+
+  defp validation_preloads do
+    user_query = user_preload_query()
+
+    [
+      specification: [answers: [:region], region: [parent: [parent: [:parent]]]],
+      validation_comments: [:answer],
+      validator: user_query,
+      assigned_by: user_query,
+      run: []
+    ]
+  end
+
+  def create_specification_validation(attrs) do
+    %SpecificationValidation{}
+    |> SpecificationValidation.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, validation} -> {:ok, Repo.preload(validation, validation_preloads())}
+      error -> error
+    end
+  end
+
+  def get_specification_validation!(id) do
+    SpecificationValidation
+    |> Repo.get!(id)
+    |> Repo.preload(validation_preloads())
+  end
+
+  def update_specification_validation(%SpecificationValidation{} = validation, attrs, role) do
+    validation
+    |> SpecificationValidation.changeset(attrs)
+    |> SpecificationValidation.validate_status_transition(validation.status, role)
+    |> Repo.update()
+    |> case do
+      {:ok, validation} -> {:ok, Repo.preload(validation, validation_preloads())}
+      error -> error
+    end
+  end
+
+  def list_validations_for_validator(user) do
+    from(v in SpecificationValidation, where: v.validator_id == ^user.id, order_by: [desc: v.inserted_at])
+    |> Repo.all()
+    |> Repo.preload(validation_preloads())
+  end
+
+  def list_validations_for_supervisor(user) do
+    from(v in SpecificationValidation, where: v.assigned_by_id == ^user.id, order_by: [desc: v.inserted_at])
+    |> Repo.all()
+    |> Repo.preload(validation_preloads())
+  end
+
+  def list_validations_for_specification(specification_id) do
+    from(v in SpecificationValidation, where: v.specification_id == ^specification_id, order_by: [desc: v.inserted_at])
+    |> Repo.all()
+    |> Repo.preload(validation_preloads())
+  end
+
+  def list_specification_validations do
+    SpecificationValidation
+    |> Repo.all()
+    |> Repo.preload(validation_preloads())
+  end
+
+  # Validation Comments
+
+  def create_validation_comment(attrs) do
+    %ValidationComment{}
+    |> ValidationComment.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, comment} -> {:ok, Repo.preload(comment, [:answer, :specification_validation])}
+      error -> error
+    end
+  end
+
+  def get_validation_comment!(id) do
+    ValidationComment
+    |> Repo.get!(id)
+    |> Repo.preload([:answer, :specification_validation])
+  end
+
+  def update_validation_comment(%ValidationComment{} = comment, attrs) do
+    comment
+    |> ValidationComment.changeset(attrs)
+    |> Repo.update()
+    |> case do
+      {:ok, updated_comment} ->
+        updated_comment = Repo.preload(updated_comment, [:answer, specification_validation: [:specification]])
+
+        if updated_comment.status == "accepted" && updated_comment.suggested_value != nil do
+          apply_accepted_suggestion(updated_comment)
+        end
+
+        {:ok, updated_comment}
+
+      error ->
+        error
+    end
+  end
+
+  defp apply_accepted_suggestion(%ValidationComment{} = comment) do
+    cond do
+      comment.answer_id != nil && comment.field != nil ->
+        answer = Repo.get!(Answer, comment.answer_id)
+        update_answer(answer, %{comment.field => comment.suggested_value})
+
+      comment.answer_id == nil && comment.field != nil ->
+        spec = comment.specification_validation.specification
+        if spec, do: update_specification(spec, %{comment.field => comment.suggested_value})
+
+      true ->
+        :ok
+    end
+  end
+
+  def delete_validation_comment(%ValidationComment{} = comment) do
+    Repo.delete(comment)
+  end
+
+  def list_validation_comments(validation_id) do
+    from(c in ValidationComment, where: c.specification_validation_id == ^validation_id)
+    |> Repo.all()
+    |> Repo.preload([:answer, :specification_validation])
   end
 end

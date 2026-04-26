@@ -72,4 +72,16 @@ defmodule Registrations.Factory do
   def submission_factory do
     %Registrations.Waydowntown.Submission{}
   end
+
+  def user_role_factory do
+    %Registrations.UserRole{}
+  end
+
+  def specification_validation_factory do
+    %Registrations.Waydowntown.SpecificationValidation{}
+  end
+
+  def validation_comment_factory do
+    %Registrations.Waydowntown.ValidationComment{}
+  end
 end

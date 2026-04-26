@@ -19,18 +19,23 @@ import 'package:waydowntown/services/user_service.dart';
 import 'package:waydowntown/util/get_region_path.dart';
 import 'package:waydowntown/widgets/countdown_timer.dart';
 import 'package:waydowntown/widgets/game_map.dart';
+import 'package:waydowntown/widgets/validation_annotation_overlay.dart';
 import 'package:yaml/yaml.dart';
 
 class RunLaunchRoute extends StatefulWidget {
   Run run;
   final Dio dio;
   final PhoenixSocket? testSocket;
+  final String? validationId;
+  final List<Map<String, dynamic>>? validationAnswers;
 
   RunLaunchRoute({
     super.key,
     required this.run,
     required this.dio,
     this.testSocket,
+    this.validationId,
+    this.validationAnswers,
   });
 
   @override
@@ -170,10 +175,18 @@ class _RunLaunchRouteState extends State<RunLaunchRoute> {
   }
 
   void _navigateToGame() {
+    final gameWidget = _buildGameWidget(widget.run);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => _buildGameWidget(widget.run),
+        builder: (context) => widget.validationId != null
+            ? ValidationAnnotationOverlay(
+                dio: widget.dio,
+                validationId: widget.validationId!,
+                answers: widget.validationAnswers ?? [],
+                child: gameWidget,
+              )
+            : gameWidget,
       ),
     );
   }

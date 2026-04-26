@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:waydowntown/app.dart';
+import 'package:waydowntown/routes/supervisor_dashboard_route.dart';
 import 'package:waydowntown/routes/team_negotiation_route.dart';
+import 'package:waydowntown/routes/validator_assignments_route.dart';
 import 'package:waydowntown/services/user_service.dart';
 import 'package:waydowntown/tools/auth_form.dart';
 import 'package:waydowntown/tools/my_specifications_table.dart';
+import 'package:waydowntown/tools/role_management.dart';
 
 class SessionWidget extends StatefulWidget {
   final Dio dio;
@@ -20,6 +23,7 @@ class _SessionWidgetState extends State<SessionWidget> {
   String? _email;
   String? _name;
   bool? _isAdmin;
+  List<String> _roles = [];
   bool _isLoading = true;
 
   @override
@@ -38,26 +42,33 @@ class _SessionWidgetState extends State<SessionWidget> {
 
       if (response.statusCode == 200) {
         final attributes = response.data['data']['attributes'];
+        final roles = (attributes['roles'] as List<dynamic>?)
+                ?.map((r) => r.toString())
+                .toList() ??
+            [];
         setState(() {
           _email = attributes['email'];
           _name = attributes['name'];
           _isAdmin = attributes['admin'] ?? false;
+          _roles = roles;
           _isLoading = false;
         });
         await UserService.setUserData(
             response.data['data']['id'], _email!, _isAdmin!,
-            name: _name);
+            name: _name, roles: roles);
         return;
       }
 
       final email = await UserService.getUserEmail();
       final name = await UserService.getUserName();
       final isAdmin = await UserService.getUserIsAdmin();
+      final roles = await UserService.getRoles();
 
       setState(() {
         _email = email;
         _name = name;
         _isAdmin = isAdmin;
+        _roles = roles;
         _isLoading = false;
       });
     } catch (error) {
@@ -85,6 +96,7 @@ class _SessionWidgetState extends State<SessionWidget> {
     setState(() {
       _email = null;
       _isAdmin = null;
+      _roles = [];
       _isLoading = false;
     });
 
@@ -249,6 +261,41 @@ class _SessionWidgetState extends State<SessionWidget> {
               ),
               child: const Text('Team'),
             ),
+            if (_roles.contains('validator'))
+              ElevatedButton.icon(
+                icon: const Icon(Icons.verified_user),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ValidatorAssignmentsRoute(dio: widget.dio),
+                  ),
+                ),
+                label: const Text('Validate'),
+              ),
+            if (_roles.contains('validation_supervisor'))
+              ElevatedButton.icon(
+                icon: const Icon(Icons.supervisor_account),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        SupervisorDashboardRoute(dio: widget.dio),
+                  ),
+                ),
+                label: const Text('Supervise'),
+              ),
+            if (_isAdmin == true)
+              ElevatedButton.icon(
+                icon: const Icon(Icons.manage_accounts),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RoleManagement(dio: widget.dio),
+                  ),
+                ),
+                label: const Text('Roles'),
+              ),
           ],
         ),
       );
