@@ -1,0 +1,22 @@
+@import 'foundation-sites/scss/util/unit';
+@import 'foundation-sites/scss/util/util';
+@import 'poles/settings';
+@import '_shared';
+
+@import '~foundation-sites/scss/foundation';
+
+@include foundation-everything;
+@include foundation-flex-grid;
+
+body {
+  background: $black;
+}
+
+.row.title {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.alert-info.success, .alert-danger.alert {
+  color: black;
+}

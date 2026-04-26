@@ -1,0 +1,41 @@
+msgid "title"
+msgstr "Poles"
+
+msgid "email_title"
+msgstr "poles"
+
+msgid "description"
+msgstr "Poles."
+
+msgid "change_deadline"
+msgstr " "
+
+msgid "team_emails_label"
+msgstr "Collaborator emails"
+
+msgid "team_emails_help"
+msgstr "Enter collaborator email addresses, space-separated"
+
+msgid "team_name_help"
+msgstr "How other teams will identify you"
+
+msgid "accessibility_help"
+msgstr "Do you have any accessibility needs that might impact your participation?"
+
+msgid "source_help"
+msgstr "How did you hear about this?"
+
+msgid "risk_aversion_label_1"
+msgstr "Go easy on me"
+
+msgid "risk_aversion_label_2"
+msgstr "Push me a little"
+
+msgid "risk_aversion_label_3"
+msgstr "Don’t hold back"
+
+msgid "risk_avoidance"
+msgstr "You can always decline a task."
+
+msgid "risk_scope"
+msgstr "The following are beyond the scope of the game:"

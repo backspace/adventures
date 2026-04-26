@@ -1,0 +1,21 @@
+$xy-grid: false;
+$global-flexbox: false;
+
+$body-font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
+$body-font-color: black;
+$global-width: rem-calc(480) !default;
+
+$primary-color: #4a90e2;
+$success-color: #7ed321;
+$alert-color: $primary-color;
+$warning-color: #f5a623;
+
+$callout-background-fade: 10%;
+
+$highlight: #111;
+
+$form-label-color: black;
+$helptext-color: black;
+$helptext-font-style: normal;
+$input-color: $highlight;
+$button-color: $highlight;
