@@ -22,6 +22,53 @@ defmodule Registrations.Poles do
     Repo.get_by(Pole, barcode: barcode)
   end
 
+  def get_puzzlet(id), do: Repo.get(Puzzlet, id)
+
+  @doc """
+  Returns each pole with its current owner team_id and locked state.
+  Returns a list of `%{pole: %Pole{}, current_owner_team_id: id|nil, locked?: bool}`.
+  """
+  def list_poles_with_state do
+    Pole
+    |> Repo.all()
+    |> Enum.map(&pole_with_state/1)
+  end
+
+  def pole_with_state(%Pole{} = pole) do
+    %{
+      pole: pole,
+      current_owner_team_id: current_owner_team_id_for_pole(pole),
+      locked?: pole_locked?(pole)
+    }
+  end
+
+  @doc """
+  Returns the full payload for a barcode scan by a particular team:
+  pole state plus active puzzlet (or nil if locked) and the team's
+  remaining attempts on that puzzlet.
+  """
+  def scan_payload(barcode, team_id) do
+    case get_pole_by_barcode(barcode) do
+      nil ->
+        {:error, :not_found}
+
+      pole ->
+        state = pole_with_state(pole)
+        active = active_puzzlet_for_pole(pole)
+
+        attempts_remaining =
+          case active do
+            nil ->
+              nil
+
+            puzzlet ->
+              max(@max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id), 0)
+          end
+
+        {:ok, Map.merge(state, %{active_puzzlet: active, attempts_remaining: attempts_remaining})}
+    end
+  end
+
   def create_pole(attrs) do
     %Pole{}
     |> Pole.changeset(attrs)
