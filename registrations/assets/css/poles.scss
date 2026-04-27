@@ -3,7 +3,7 @@
 @import 'poles/settings';
 @import '_shared';
 
-@import '~foundation-sites/scss/foundation';
+@import 'foundation-sites/scss/foundation';
 
 @include foundation-everything;
 @include foundation-flex-grid;

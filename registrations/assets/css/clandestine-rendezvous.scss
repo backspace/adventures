@@ -6,11 +6,11 @@
 /* Blackout Sunrise */
 @font-face {
     font-family: 'Blackout Sunrise';
-    src: url('../static/fonts/clandestine-rendezvous/blackout_sunrise-webfont.eot');
-    src: url('../static/fonts/clandestine-rendezvous/blackout_sunrise-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../static/fonts/clandestine-rendezvous/blackout_sunrise-webfont.woff') format('woff'),
-         url('../static/fonts/clandestine-rendezvous/blackout_sunrise-webfont.ttf') format('truetype'),
-         url('../static/fonts/clandestine-rendezvous/blackout_sunrise-webfont.svg#BlackoutSunrise') format('svg');
+    src: url('/fonts/clandestine-rendezvous/blackout_sunrise-webfont.eot');
+    src: url('/fonts/clandestine-rendezvous/blackout_sunrise-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/fonts/clandestine-rendezvous/blackout_sunrise-webfont.woff') format('woff'),
+         url('/fonts/clandestine-rendezvous/blackout_sunrise-webfont.ttf') format('truetype'),
+         url('/fonts/clandestine-rendezvous/blackout_sunrise-webfont.svg#BlackoutSunrise') format('svg');
     font-weight: normal;
     font-style: normal;
 
@@ -20,27 +20,27 @@
   font-family: 'Oswald';
   font-weight: 300;
   font-style: normal;
-  src: url('../static/fonts/clandestine-rendezvous/Oswald-Light.woff2') format('woff2'),
-       url('../static/fonts/clandestine-rendezvous/Oswald-Light.woff') format('woff');
+  src: url('/fonts/clandestine-rendezvous/Oswald-Light.woff2') format('woff2'),
+       url('/fonts/clandestine-rendezvous/Oswald-Light.woff') format('woff');
 }
 
 @font-face {
   font-family: 'Oswald';
   font-weight: 400;
   font-style: normal;
-  src: url('../static/fonts/clandestine-rendezvous/Oswald-Regular.woff2') format('woff2'),
-       url('../static/fonts/clandestine-rendezvous/Oswald-Regular.woff') format('woff');
+  src: url('/fonts/clandestine-rendezvous/Oswald-Regular.woff2') format('woff2'),
+       url('/fonts/clandestine-rendezvous/Oswald-Regular.woff') format('woff');
 }
 
 @font-face {
   font-family: 'Oswald';
   font-weight: 700;
   font-style: normal;
-  src: url('../static/fonts/clandestine-rendezvous/Oswald-Bold.woff2') format('woff2'),
-       url('../static/fonts/clandestine-rendezvous/Oswald-Bold.woff') format('woff');
+  src: url('/fonts/clandestine-rendezvous/Oswald-Bold.woff2') format('woff2'),
+       url('/fonts/clandestine-rendezvous/Oswald-Bold.woff') format('woff');
 }
 
-@import '~foundation-sites/scss/foundation';
+@import 'foundation-sites/scss/foundation';
 
 @include foundation-everything;
 @include foundation-flex-grid;

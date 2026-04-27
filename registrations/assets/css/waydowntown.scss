@@ -3,7 +3,7 @@
 @import 'waydowntown/settings';
 @import '_shared';
 
-@import '~foundation-sites/scss/foundation';
+@import 'foundation-sites/scss/foundation';
 
 @include foundation-everything;
 @include foundation-flex-grid;
@@ -12,8 +12,8 @@
 
 @font-face {
   font-family: 'waydowntown-heading';
-  src: url('../static/fonts/waydowntown/heading.woff2') format('woff2'),
-       url('../static/fonts/waydowntown/heading.woff') format('woff');
+  src: url('/fonts/waydowntown/heading.woff2') format('woff2'),
+       url('/fonts/waydowntown/heading.woff') format('woff');
   font-weight: normal;
   font-style: normal;
 }

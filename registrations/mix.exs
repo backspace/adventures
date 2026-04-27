@@ -70,7 +70,9 @@ defmodule Registrations.Mixfile do
       {:email_checker, "~> 0.2"},
       {:geo, "~> 3.6"},
       {:geo_postgis, "~> 3.7"},
-      {:con_cache, "~> 1.0"}
+      {:con_cache, "~> 1.0"},
+      {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
+      {:dart_sass, "~> 0.7", runtime: Mix.env() == :dev}
     ]
   end
 
@@ -92,7 +94,13 @@ defmodule Registrations.Mixfile do
         "ecto.rollback",
         "ecto.dump -d ../unmnemonic_devices_vrs/tests/fixtures/schema.sql"
       ],
-      test: ["ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate", "test"],
+      "assets.setup": ["esbuild.install --if-missing", "sass.install --if-missing"],
+      "assets.build": ["esbuild registrations", "sass registrations"],
+      "assets.deploy": [
+        "esbuild registrations --minify",
+        "sass registrations --no-source-map --style=compressed"
+      ]
     ]
   end
 end
