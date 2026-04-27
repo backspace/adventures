@@ -28,10 +28,8 @@ config :registrations, RegistrationsWeb.Endpoint,
   cache_static_lookup: false,
   check_origin: false,
   watchers: [
-    pnpm: [
-      "watch",
-      cd: Path.expand("../assets", __DIR__)
-    ]
+    esbuild: {Esbuild, :install_and_run, [:registrations, ~w(--sourcemap=inline --watch)]},
+    sass: {DartSass, :install_and_run, [:registrations, ~w(--watch)]}
   ]
 
 # Watch static and templates for browser reloading.

@@ -59,8 +59,10 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
         working-directory: registrations/assets
-      - run: pnpm build
-        working-directory: registrations/assets
+      - run: mix assets.setup
+        working-directory: registrations
+      - run: mix assets.deploy
+        working-directory: registrations
       - uses: nanasess/setup-chromedriver@v2
 
       - run: mix test

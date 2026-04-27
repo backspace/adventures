@@ -59,3 +59,36 @@ config :registrations, :pow_assent, user_identities_context: RegistrationsWeb.Po
 
 # Configure phoenix generators
 config :registrations, ecto_repos: [Registrations.Repo]
+
+config :esbuild,
+  version: "0.21.5",
+  registrations: [
+    args: ~w(
+      js/clandestine-rendezvous.js
+      js/poles.js
+      js/unmnemonic-devices.js
+      js/waydowntown.js
+      --bundle
+      --target=es2017
+      --outdir=../priv/static/js
+    ),
+    cd: Path.expand("../assets", __DIR__),
+    env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
+
+config :dart_sass,
+  version: "1.77.8",
+  registrations: [
+    args: ~w(
+      --load-path=node_modules
+      css/clandestine-rendezvous.scss:../priv/static/css/clandestine-rendezvous.css
+      css/clandestine-rendezvous-email.scss:../priv/static/css/clandestine-rendezvous-email.css
+      css/poles.scss:../priv/static/css/poles.css
+      css/poles-email.scss:../priv/static/css/poles-email.css
+      css/unmnemonic-devices.scss:../priv/static/css/unmnemonic-devices.css
+      css/unmnemonic-devices-email.scss:../priv/static/css/unmnemonic-devices-email.css
+      css/waydowntown.scss:../priv/static/css/waydowntown.css
+      css/waydowntown-email.scss:../priv/static/css/waydowntown-email.css
+    ),
+    cd: Path.expand("../assets", __DIR__)
+  ]
