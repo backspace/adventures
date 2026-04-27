@@ -1,7 +1,7 @@
 import $ from 'jquery';
 import THREE from 'three/build/three';
 import './three-objloader';
-import TweenMax from 'gsap/TweenMax';
+import TweenMax, { Linear } from 'gsap/esm/TweenMax';
 
 /*
   Copyright (c) 2022 by Mark Mankarious (https://codepen.io/markmanx01/pen/MePEPa)
