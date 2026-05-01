@@ -25,8 +25,16 @@ class _ScanRouteState extends State<ScanRoute> {
     await _controller.stop();
 
     try {
-      final ScanResult result = await widget.api.scan(barcode);
+      final ScanResult? result = await widget.api.scan(barcode);
       if (!mounted) return;
+
+      if (result == null) {
+        await _showUnknownBarcodeDialog(barcode);
+        if (!mounted) return;
+        setState(() => _processing = false);
+        _controller.start();
+        return;
+      }
 
       if (result.activePuzzlet == null) {
         _showSnack(result.pole.locked
@@ -58,6 +66,33 @@ class _ScanRouteState extends State<ScanRoute> {
 
   void _showSnack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _showUnknownBarcodeDialog(String barcode) {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Unknown barcode'),
+        content: Text(
+          '“$barcode” doesn\'t match any known pole. '
+          'Make sure you scanned a poles barcode and try again.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop();
+              Navigator.of(context).pop();
+            },
+            child: const Text('Back to map'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Try again'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

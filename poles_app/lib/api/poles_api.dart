@@ -51,9 +51,15 @@ class PolesApi {
         .toList(growable: false);
   }
 
-  Future<ScanResult> scan(String barcode) async {
-    final response = await dio.get('/poles/poles/$barcode');
-    return ScanResult.fromJson(response.data as Map<String, dynamic>);
+  /// Returns null when the barcode doesn't match any known pole (404).
+  Future<ScanResult?> scan(String barcode) async {
+    try {
+      final response = await dio.get('/poles/poles/$barcode');
+      return ScanResult.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
   }
 
   Future<AttemptOutcome> submitAnswer(String puzzletId, String answer) async {
