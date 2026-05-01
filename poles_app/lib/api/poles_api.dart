@@ -57,8 +57,8 @@ class PolesApi {
       return ScanFound(ScanResult.fromJson(response.data as Map<String, dynamic>));
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) return const ScanUnknownBarcode();
-      final code = e.response?.data?['error']?['code'];
-      final poleJson = e.response?.data?['pole'] as Map<String, dynamic>?;
+      final code = _errorCode(e);
+      final poleJson = _poleJson(e);
       if (code == 'already_owner' && poleJson != null) {
         return ScanAlreadyOwner(Pole.fromJson(poleJson));
       }
@@ -90,7 +90,7 @@ class PolesApi {
             const [],
       );
     } on DioException catch (e) {
-      final code = e.response?.data?['error']?['code'];
+      final code = _errorCode(e);
       if (e.response?.statusCode == 423 || code == 'locked_out') {
         return const AttemptLockedOut();
       }
@@ -102,6 +102,22 @@ class PolesApi {
       }
       rethrow;
     }
+  }
+
+  String? _errorCode(DioException e) {
+    final data = e.response?.data;
+    if (data is! Map) return null;
+    final error = data['error'];
+    if (error is! Map) return null;
+    final code = error['code'];
+    return code is String ? code : null;
+  }
+
+  Map<String, dynamic>? _poleJson(DioException e) {
+    final data = e.response?.data;
+    if (data is! Map) return null;
+    final pole = data['pole'];
+    return pole is Map<String, dynamic> ? pole : null;
   }
 
   Future<void> logout() async {
