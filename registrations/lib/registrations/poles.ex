@@ -53,19 +53,29 @@ defmodule Registrations.Poles do
         {:error, :not_found}
 
       pole ->
-        state = pole_with_state(pole)
-        active = active_puzzlet_for_pole(pole)
+        cond do
+          pole_locked?(pole) ->
+            state = pole_with_state(pole)
+            {:ok, Map.merge(state, %{active_puzzlet: nil, attempts_remaining: nil})}
 
-        attempts_remaining =
-          case active do
-            nil ->
-              nil
+          pole_owned_by_team?(pole, team_id) ->
+            {:error, :already_owner, pole}
 
-            puzzlet ->
-              max(@max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id), 0)
-          end
+          true ->
+            state = pole_with_state(pole)
+            active = active_puzzlet_for_pole(pole)
 
-        {:ok, Map.merge(state, %{active_puzzlet: active, attempts_remaining: attempts_remaining})}
+            attempts_remaining =
+              case active do
+                nil ->
+                  nil
+
+                puzzlet ->
+                  max(@max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id), 0)
+              end
+
+            {:ok, Map.merge(state, %{active_puzzlet: active, attempts_remaining: attempts_remaining})}
+        end
     end
   end
 
@@ -104,6 +114,12 @@ defmodule Registrations.Poles do
     |> order_by([p], asc: p.difficulty, asc: p.inserted_at)
     |> limit(1)
     |> Repo.one()
+  end
+
+  def pole_owned_by_team?(_pole, nil), do: false
+
+  def pole_owned_by_team?(%Pole{} = pole, team_id) do
+    current_owner_team_id_for_pole(pole) == team_id
   end
 
   def current_owner_team_id_for_pole(%Pole{id: pole_id}) do
@@ -166,41 +182,49 @@ defmodule Registrations.Poles do
   Returns:
     * {:ok, %{result: :captured, attempt: attempt, capture: capture}}
     * {:ok, %{result: :incorrect, attempt: attempt, attempts_remaining: n}}
+    * {:error, :already_owner}     — team is the current owner of this pole
     * {:error, :locked_out}        — team has hit max wrong attempts on puzzlet
     * {:error, :already_captured}  — another team got there first
     * {:error, changeset}
   """
   def record_attempt(%Puzzlet{} = puzzlet, team_id, user_id, answer_given) do
-    if team_locked_out?(puzzlet, team_id) do
-      {:error, :locked_out}
-    else
-      correct? = answers_match?(puzzlet.answer, answer_given)
+    pole = puzzlet.pole_id && Repo.get(Pole, puzzlet.pole_id)
 
-      Repo.transaction(fn ->
-        attempt =
-          %Attempt{}
-          |> Attempt.changeset(%{
-            puzzlet_id: puzzlet.id,
-            team_id: team_id,
-            user_id: user_id,
-            answer_given: answer_given,
-            correct: correct?
-          })
-          |> Repo.insert!()
+    cond do
+      pole && pole_owned_by_team?(pole, team_id) ->
+        {:error, :already_owner}
 
-        if correct? do
-          case insert_capture(puzzlet.id, team_id) do
-            {:ok, capture} ->
-              %{result: :captured, attempt: attempt, capture: capture}
+      team_locked_out?(puzzlet, team_id) ->
+        {:error, :locked_out}
 
-            {:error, :already_captured} ->
-              Repo.rollback(:already_captured)
+      true ->
+        correct? = answers_match?(puzzlet.answer, answer_given)
+
+        Repo.transaction(fn ->
+          attempt =
+            %Attempt{}
+            |> Attempt.changeset(%{
+              puzzlet_id: puzzlet.id,
+              team_id: team_id,
+              user_id: user_id,
+              answer_given: answer_given,
+              correct: correct?
+            })
+            |> Repo.insert!()
+
+          if correct? do
+            case insert_capture(puzzlet.id, team_id) do
+              {:ok, capture} ->
+                %{result: :captured, attempt: attempt, capture: capture}
+
+              {:error, :already_captured} ->
+                Repo.rollback(:already_captured)
+            end
+          else
+            remaining = @max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id)
+            %{result: :incorrect, attempt: attempt, attempts_remaining: max(remaining, 0)}
           end
-        else
-          remaining = @max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id)
-          %{result: :incorrect, attempt: attempt, attempts_remaining: max(remaining, 0)}
-        end
-      end)
+        end)
     end
   end
 

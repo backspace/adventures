@@ -25,37 +25,45 @@ class _ScanRouteState extends State<ScanRoute> {
     await _controller.stop();
 
     try {
-      final ScanResult? result = await widget.api.scan(barcode);
+      final outcome = await widget.api.scan(barcode);
       if (!mounted) return;
 
-      if (result == null) {
-        await _showUnknownBarcodeDialog(barcode);
-        if (!mounted) return;
-        setState(() => _processing = false);
-        _controller.start();
-        return;
+      switch (outcome) {
+        case ScanUnknownBarcode():
+          await _showUnknownBarcodeDialog(barcode);
+          if (!mounted) return;
+          setState(() => _processing = false);
+          _controller.start();
+          return;
+
+        case ScanAlreadyOwner(:final pole):
+          await _showAlreadyOwnerDialog(pole);
+          if (!mounted) return;
+          Navigator.of(context).pop(barcode);
+          return;
+
+        case ScanFound(:final result):
+          if (result.activePuzzlet == null) {
+            _showSnack(result.pole.locked
+                ? 'This pole is fully captured.'
+                : 'No active puzzlet for this pole.');
+            Navigator.of(context).pop(barcode);
+            return;
+          }
+
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => PuzzletRoute(
+                api: widget.api,
+                pole: result.pole,
+                puzzlet: result.activePuzzlet!,
+              ),
+            ),
+          );
+
+          if (!mounted) return;
+          Navigator.of(context).pop(barcode);
       }
-
-      if (result.activePuzzlet == null) {
-        _showSnack(result.pole.locked
-            ? 'This pole is fully captured.'
-            : 'No active puzzlet for this pole.');
-        Navigator.of(context).pop(barcode);
-        return;
-      }
-
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => PuzzletRoute(
-            api: widget.api,
-            pole: result.pole,
-            puzzlet: result.activePuzzlet!,
-          ),
-        ),
-      );
-
-      if (!mounted) return;
-      Navigator.of(context).pop(barcode);
     } catch (e) {
       if (!mounted) return;
       _showSnack('Scan failed: $e');
@@ -89,6 +97,26 @@ class _ScanRouteState extends State<ScanRoute> {
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Try again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAlreadyOwnerDialog(Pole pole) {
+    final name = pole.label ?? pole.barcode;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Already yours'),
+        content: Text(
+          'Your team already owns $name. Wait for a rival to capture it before you can claim it again.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('OK'),
           ),
         ],
       ),

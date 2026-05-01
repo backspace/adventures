@@ -85,3 +85,25 @@ class AttemptLockedOut extends AttemptOutcome {
 class AttemptAlreadyCaptured extends AttemptOutcome {
   const AttemptAlreadyCaptured();
 }
+
+class AttemptAlreadyOwner extends AttemptOutcome {
+  const AttemptAlreadyOwner();
+}
+
+sealed class ScanOutcome {
+  const ScanOutcome();
+}
+
+class ScanFound extends ScanOutcome {
+  final ScanResult result;
+  const ScanFound(this.result);
+}
+
+class ScanUnknownBarcode extends ScanOutcome {
+  const ScanUnknownBarcode();
+}
+
+class ScanAlreadyOwner extends ScanOutcome {
+  final Pole pole;
+  const ScanAlreadyOwner(this.pole);
+}

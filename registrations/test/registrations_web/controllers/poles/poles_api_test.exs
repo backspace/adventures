@@ -83,6 +83,17 @@ defmodule RegistrationsWeb.Poles.PolesApiTest do
       body = conn |> get("/poles/poles/NOPE") |> json_response(404)
       assert body["error"]["code"] == "pole_not_found"
     end
+
+    test "returns 409 when this team is the current owner", %{conn: conn, team: team} do
+      pole = insert(:pole)
+      puzzlet = insert(:puzzlet, pole: pole, answer: "a", difficulty: 1)
+      _other = insert(:puzzlet, pole: pole, answer: "b", difficulty: 5)
+      insert(:capture, puzzlet: puzzlet, team: team)
+
+      body = conn |> get("/poles/poles/#{pole.barcode}") |> json_response(409)
+      assert body["error"]["code"] == "already_owner"
+      assert body["pole"]["id"] == pole.id
+    end
   end
 
   describe "POST /poles/puzzlets/:puzzlet_id/attempts" do
@@ -128,6 +139,20 @@ defmodule RegistrationsWeb.Poles.PolesApiTest do
         |> json_response(423)
 
       assert body["error"]["code"] == "locked_out"
+    end
+
+    test "rejects 409 when this team already owns the pole", %{conn: conn, team: team} do
+      pole = insert(:pole)
+      easy = insert(:puzzlet, pole: pole, answer: "a", difficulty: 1)
+      hard = insert(:puzzlet, pole: pole, answer: "b", difficulty: 5)
+      insert(:capture, puzzlet: easy, team: team)
+
+      body =
+        conn
+        |> post("/poles/puzzlets/#{hard.id}/attempts", %{"answer" => "b"})
+        |> json_response(409)
+
+      assert body["error"]["code"] == "already_owner"
     end
 
     test "second team gets 409 if puzzlet already captured", %{conn: conn} do

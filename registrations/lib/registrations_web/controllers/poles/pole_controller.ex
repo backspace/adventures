@@ -22,6 +22,17 @@ defmodule RegistrationsWeb.Poles.PoleController do
         conn
         |> put_status(:not_found)
         |> json(%{error: %{code: "pole_not_found", detail: "No pole with that barcode."}})
+
+      {:error, :already_owner, pole} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{
+          error: %{
+            code: "already_owner",
+            detail: "Your team already owns this pole. Wait for a rival to capture it."
+          },
+          pole: render_pole_state(Poles.pole_with_state(pole))
+        })
     end
   end
 

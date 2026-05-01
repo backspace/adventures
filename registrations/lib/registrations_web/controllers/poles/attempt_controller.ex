@@ -35,6 +35,11 @@ defmodule RegistrationsWeb.Poles.AttemptController do
       {:ok, %{result: :incorrect, attempts_remaining: remaining}} ->
         json(conn, %{correct: false, attempts_remaining: remaining})
 
+      {:error, :already_owner} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{error: %{code: "already_owner", detail: "Your team already owns this pole."}})
+
       {:error, :locked_out} ->
         conn
         |> put_status(:locked)

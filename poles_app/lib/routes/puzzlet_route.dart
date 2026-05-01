@@ -59,6 +59,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       AttemptIncorrect() => 'Incorrect. ${o.attemptsRemaining} attempt(s) left.',
       AttemptLockedOut() => 'Locked out — too many wrong answers.',
       AttemptAlreadyCaptured() => 'Another team captured this puzzlet first.',
+      AttemptAlreadyOwner() => 'Your team already owns this pole. Wait for a rival.',
       _ => null,
     };
   }
@@ -66,7 +67,10 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   Color? _outcomeColor() => switch (_outcome) {
         AttemptCorrect() => Colors.green.shade700,
         AttemptIncorrect() => Colors.orange.shade700,
-        AttemptLockedOut() || AttemptAlreadyCaptured() => Colors.red.shade700,
+        AttemptLockedOut() ||
+        AttemptAlreadyCaptured() ||
+        AttemptAlreadyOwner() =>
+          Colors.red.shade700,
         _ => null,
       };
 
@@ -82,6 +86,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
         _outcome is AttemptCorrect ||
             _outcome is AttemptLockedOut ||
             _outcome is AttemptAlreadyCaptured ||
+            _outcome is AttemptAlreadyOwner ||
             (_attemptsRemaining ?? 0) <= 0;
 
     final outcomeText = _outcomeText();

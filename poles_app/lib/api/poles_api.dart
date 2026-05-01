@@ -51,13 +51,19 @@ class PolesApi {
         .toList(growable: false);
   }
 
-  /// Returns null when the barcode doesn't match any known pole (404).
-  Future<ScanResult?> scan(String barcode) async {
+  Future<ScanOutcome> scan(String barcode) async {
     try {
       final response = await dio.get('/poles/poles/$barcode');
-      return ScanResult.fromJson(response.data as Map<String, dynamic>);
+      return ScanFound(ScanResult.fromJson(response.data as Map<String, dynamic>));
     } on DioException catch (e) {
-      if (e.response?.statusCode == 404) return null;
+      if (e.response?.statusCode == 404) return const ScanUnknownBarcode();
+      final code = e.response?.data?['error']?['code'];
+      if (e.response?.statusCode == 409 && code == 'already_owner') {
+        final poleJson = e.response?.data?['pole'] as Map<String, dynamic>?;
+        if (poleJson != null) {
+          return ScanAlreadyOwner(Pole.fromJson(poleJson));
+        }
+      }
       rethrow;
     }
   }
@@ -80,6 +86,9 @@ class PolesApi {
       final code = e.response?.data?['error']?['code'];
       if (e.response?.statusCode == 423 || code == 'locked_out') {
         return const AttemptLockedOut();
+      }
+      if (code == 'already_owner') {
+        return const AttemptAlreadyOwner();
       }
       if (e.response?.statusCode == 409 || code == 'already_captured') {
         return const AttemptAlreadyCaptured();
