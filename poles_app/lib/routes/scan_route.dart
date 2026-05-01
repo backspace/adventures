@@ -42,6 +42,12 @@ class _ScanRouteState extends State<ScanRoute> {
           Navigator.of(context).pop(barcode);
           return;
 
+        case ScanTeamLockedOut(:final pole):
+          await _showTeamLockedOutDialog(pole);
+          if (!mounted) return;
+          Navigator.of(context).pop(barcode);
+          return;
+
         case ScanFound(:final result):
           if (result.activePuzzlet == null) {
             _showSnack(result.pole.locked
@@ -112,6 +118,27 @@ class _ScanRouteState extends State<ScanRoute> {
         title: const Text('Already yours'),
         content: Text(
           'Your team already owns $name. Wait for a rival to capture it before you can claim it again.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showTeamLockedOutDialog(Pole pole) {
+    final name = pole.label ?? pole.barcode;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Out of guesses'),
+        content: Text(
+          'Your team has used all guesses on the current puzzlet for $name. '
+          'Wait for another team to capture it before you can try again.',
         ),
         actions: [
           FilledButton(

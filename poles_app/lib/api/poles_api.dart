@@ -58,11 +58,12 @@ class PolesApi {
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) return const ScanUnknownBarcode();
       final code = e.response?.data?['error']?['code'];
-      if (e.response?.statusCode == 409 && code == 'already_owner') {
-        final poleJson = e.response?.data?['pole'] as Map<String, dynamic>?;
-        if (poleJson != null) {
-          return ScanAlreadyOwner(Pole.fromJson(poleJson));
-        }
+      final poleJson = e.response?.data?['pole'] as Map<String, dynamic>?;
+      if (code == 'already_owner' && poleJson != null) {
+        return ScanAlreadyOwner(Pole.fromJson(poleJson));
+      }
+      if (code == 'team_locked_out' && poleJson != null) {
+        return ScanTeamLockedOut(Pole.fromJson(poleJson));
       }
       rethrow;
     }

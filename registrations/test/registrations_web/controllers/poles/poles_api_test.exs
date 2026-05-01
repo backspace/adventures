@@ -94,6 +94,20 @@ defmodule RegistrationsWeb.Poles.PolesApiTest do
       assert body["error"]["code"] == "already_owner"
       assert body["pole"]["id"] == pole.id
     end
+
+    test "returns 423 when this team has used all guesses on the active puzzlet",
+         %{conn: conn, user: user, team: team} do
+      pole = insert(:pole)
+      puzzlet = insert(:puzzlet, pole: pole, answer: "right", difficulty: 1)
+
+      Enum.each(1..3, fn _ ->
+        Poles.record_attempt(puzzlet, team.id, user.id, "wrong")
+      end)
+
+      body = conn |> get("/poles/poles/#{pole.barcode}") |> json_response(423)
+      assert body["error"]["code"] == "team_locked_out"
+      assert body["pole"]["id"] == pole.id
+    end
   end
 
   describe "POST /poles/puzzlets/:puzzlet_id/attempts" do

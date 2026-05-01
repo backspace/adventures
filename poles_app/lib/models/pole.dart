@@ -107,3 +107,8 @@ class ScanAlreadyOwner extends ScanOutcome {
   final Pole pole;
   const ScanAlreadyOwner(this.pole);
 }
+
+class ScanTeamLockedOut extends ScanOutcome {
+  final Pole pole;
+  const ScanTeamLockedOut(this.pole);
+}

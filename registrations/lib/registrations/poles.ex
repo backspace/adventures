@@ -65,16 +65,22 @@ defmodule Registrations.Poles do
             state = pole_with_state(pole)
             active = active_puzzlet_for_pole(pole)
 
-            attempts_remaining =
-              case active do
-                nil ->
-                  nil
+            cond do
+              active && team_locked_out?(active, team_id) ->
+                {:error, :team_locked_out, pole}
 
-                puzzlet ->
-                  max(@max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id), 0)
-              end
+              true ->
+                attempts_remaining =
+                  case active do
+                    nil ->
+                      nil
 
-            {:ok, Map.merge(state, %{active_puzzlet: active, attempts_remaining: attempts_remaining})}
+                    puzzlet ->
+                      max(@max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id), 0)
+                  end
+
+                {:ok, Map.merge(state, %{active_puzzlet: active, attempts_remaining: attempts_remaining})}
+            end
         end
     end
   end

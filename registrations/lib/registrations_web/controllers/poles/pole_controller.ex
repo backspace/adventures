@@ -33,6 +33,19 @@ defmodule RegistrationsWeb.Poles.PoleController do
           },
           pole: render_pole_state(Poles.pole_with_state(pole))
         })
+
+      {:error, :team_locked_out, pole} ->
+        conn
+        |> put_status(:locked)
+        |> json(%{
+          error: %{
+            code: "team_locked_out",
+            detail:
+              "Your team has used all guesses on the current puzzlet for this pole. " <>
+                "Wait for another team to capture it before you can try again."
+          },
+          pole: render_pole_state(Poles.pole_with_state(pole))
+        })
     end
   end
 
