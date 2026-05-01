@@ -82,7 +82,13 @@ class PolesApi {
           poleLocked: body['pole']['locked'] as bool,
         );
       }
-      return AttemptIncorrect(body['attempts_remaining'] as int);
+      return AttemptIncorrect(
+        attemptsRemaining: body['attempts_remaining'] as int,
+        previousWrongAnswers: (body['previous_wrong_answers'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
+      );
     } on DioException catch (e) {
       final code = e.response?.data?['error']?['code'];
       if (e.response?.statusCode == 423 || code == 'locked_out') {

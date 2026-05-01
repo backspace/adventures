@@ -33,12 +33,14 @@ class Puzzlet {
   final String instructions;
   final int difficulty;
   final int attemptsRemaining;
+  final List<String> previousWrongAnswers;
 
   Puzzlet({
     required this.id,
     required this.instructions,
     required this.difficulty,
     required this.attemptsRemaining,
+    required this.previousWrongAnswers,
   });
 
   factory Puzzlet.fromJson(Map<String, dynamic> json) => Puzzlet(
@@ -46,6 +48,10 @@ class Puzzlet {
         instructions: json['instructions'] as String,
         difficulty: json['difficulty'] as int,
         attemptsRemaining: json['attempts_remaining'] as int? ?? 0,
+        previousWrongAnswers: (json['previous_wrong_answers'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
       );
 }
 
@@ -75,7 +81,11 @@ class AttemptCorrect extends AttemptOutcome {
 
 class AttemptIncorrect extends AttemptOutcome {
   final int attemptsRemaining;
-  const AttemptIncorrect(this.attemptsRemaining);
+  final List<String> previousWrongAnswers;
+  const AttemptIncorrect({
+    required this.attemptsRemaining,
+    required this.previousWrongAnswers,
+  });
 }
 
 class AttemptLockedOut extends AttemptOutcome {

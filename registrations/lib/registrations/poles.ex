@@ -56,7 +56,13 @@ defmodule Registrations.Poles do
         cond do
           pole_locked?(pole) ->
             state = pole_with_state(pole)
-            {:ok, Map.merge(state, %{active_puzzlet: nil, attempts_remaining: nil})}
+
+            {:ok,
+             Map.merge(state, %{
+               active_puzzlet: nil,
+               attempts_remaining: nil,
+               previous_wrong_answers: []
+             })}
 
           pole_owned_by_team?(pole, team_id) ->
             {:error, :already_owner, pole}
@@ -70,16 +76,22 @@ defmodule Registrations.Poles do
                 {:error, :team_locked_out, pole}
 
               true ->
-                attempts_remaining =
+                {attempts_remaining, prior_wrong} =
                   case active do
                     nil ->
-                      nil
+                      {nil, []}
 
                     puzzlet ->
-                      max(@max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id), 0)
+                      {max(@max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id), 0),
+                       team_wrong_answers(puzzlet, team_id)}
                   end
 
-                {:ok, Map.merge(state, %{active_puzzlet: active, attempts_remaining: attempts_remaining})}
+                {:ok,
+                 Map.merge(state, %{
+                   active_puzzlet: active,
+                   attempts_remaining: attempts_remaining,
+                   previous_wrong_answers: prior_wrong
+                 })}
             end
         end
     end
@@ -178,6 +190,22 @@ defmodule Registrations.Poles do
 
   def team_locked_out?(%Puzzlet{} = puzzlet, team_id) do
     team_wrong_attempts(puzzlet, team_id) >= @max_attempts_per_puzzlet
+  end
+
+  @doc """
+  Distinct wrong answers this team has submitted for this puzzlet, in
+  chronological order of first occurrence.
+  """
+  def team_wrong_answers(_puzzlet, nil), do: []
+
+  def team_wrong_answers(%Puzzlet{id: puzzlet_id}, team_id) do
+    from(a in Attempt,
+      where: a.puzzlet_id == ^puzzlet_id and a.team_id == ^team_id and a.correct == false,
+      order_by: [asc: a.inserted_at],
+      select: a.answer_given
+    )
+    |> Repo.all()
+    |> Enum.uniq()
   end
 
   @doc """

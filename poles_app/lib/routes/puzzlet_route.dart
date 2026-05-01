@@ -23,11 +23,13 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   bool _busy = false;
   int? _attemptsRemaining;
   AttemptOutcome? _outcome;
+  late List<String> _previousWrongAnswers;
 
   @override
   void initState() {
     super.initState();
     _attemptsRemaining = widget.puzzlet.attemptsRemaining;
+    _previousWrongAnswers = List.of(widget.puzzlet.previousWrongAnswers);
   }
 
   Future<void> _submit() async {
@@ -44,6 +46,8 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       _outcome = outcome;
       if (outcome is AttemptIncorrect) {
         _attemptsRemaining = outcome.attemptsRemaining;
+        _previousWrongAnswers = List.of(outcome.previousWrongAnswers);
+        _answerController.clear();
       } else if (outcome is AttemptLockedOut) {
         _attemptsRemaining = 0;
       }
@@ -107,6 +111,10 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
             const SizedBox(height: 12),
             Text('Difficulty: ${widget.puzzlet.difficulty}'),
             Text('Attempts remaining: ${_attemptsRemaining ?? 0}'),
+            if (_previousWrongAnswers.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              _PreviousWrongAnswers(answers: _previousWrongAnswers),
+            ],
             const SizedBox(height: 24),
             TextField(
               controller: _answerController,
@@ -134,6 +142,54 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PreviousWrongAnswers extends StatelessWidget {
+  final List<String> answers;
+  const _PreviousWrongAnswers({required this.answers});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer.withValues(alpha: 0.5),
+        border: Border.all(color: theme.colorScheme.error.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Already tried by your team:',
+            style: theme.textTheme.labelLarge
+                ?.copyWith(color: theme.colorScheme.onErrorContainer),
+          ),
+          const SizedBox(height: 6),
+          ...answers.map(
+            (a) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  const Icon(Icons.close, size: 16),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      a,
+                      style: const TextStyle(
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

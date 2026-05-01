@@ -33,7 +33,12 @@ defmodule RegistrationsWeb.Poles.AttemptController do
         json(conn, render_capture(outcome, pole))
 
       {:ok, %{result: :incorrect, attempts_remaining: remaining}} ->
-        json(conn, %{correct: false, attempts_remaining: remaining})
+        wrong_answers = Poles.team_wrong_answers(puzzlet, user.team_id)
+        json(conn, %{
+          correct: false,
+          attempts_remaining: remaining,
+          previous_wrong_answers: wrong_answers
+        })
 
       {:error, :already_owner} ->
         conn

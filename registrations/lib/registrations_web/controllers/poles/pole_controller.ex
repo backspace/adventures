@@ -15,7 +15,12 @@ defmodule RegistrationsWeb.Poles.PoleController do
       {:ok, state} ->
         json(conn, %{
           pole: render_pole_state(state),
-          active_puzzlet: render_puzzlet(state.active_puzzlet, state.attempts_remaining)
+          active_puzzlet:
+            render_puzzlet(
+              state.active_puzzlet,
+              state.attempts_remaining,
+              state.previous_wrong_answers
+            )
         })
 
       {:error, :not_found} ->
@@ -61,14 +66,15 @@ defmodule RegistrationsWeb.Poles.PoleController do
     }
   end
 
-  defp render_puzzlet(nil, _), do: nil
+  defp render_puzzlet(nil, _, _), do: nil
 
-  defp render_puzzlet(puzzlet, attempts_remaining) do
+  defp render_puzzlet(puzzlet, attempts_remaining, previous_wrong_answers) do
     %{
       id: puzzlet.id,
       instructions: puzzlet.instructions,
       difficulty: puzzlet.difficulty,
-      attempts_remaining: attempts_remaining
+      attempts_remaining: attempts_remaining,
+      previous_wrong_answers: previous_wrong_answers
     }
   end
 end

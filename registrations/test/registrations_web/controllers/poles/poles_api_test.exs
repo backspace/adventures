@@ -122,6 +122,22 @@ defmodule RegistrationsWeb.Poles.PolesApiTest do
 
       assert body["correct"] == false
       assert body["attempts_remaining"] == Poles.max_attempts_per_puzzlet() - 1
+      assert body["previous_wrong_answers"] == ["wrong"]
+    end
+
+    test "previous_wrong_answers accumulates across attempts", %{conn: conn} do
+      pole = insert(:pole)
+      puzzlet = insert(:puzzlet, pole: pole, answer: "right")
+
+      conn |> post("/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "first"})
+      conn |> post("/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "first"})
+
+      body =
+        conn
+        |> post("/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "second"})
+        |> json_response(200)
+
+      assert body["previous_wrong_answers"] == ["first", "second"]
     end
 
     test "correct answer captures the pole", %{conn: conn, team: team} do
