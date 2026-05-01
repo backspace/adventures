@@ -6,7 +6,11 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
+  try {
+    await dotenv.load(fileName: '.env.local');
+  } catch (_) {
+    await dotenv.load(fileName: '.env');
+  }
   F.appFlavor ??= Flavor.local;
 
   final sentryDsn = dotenv.maybeGet('SENTRY_DSN');
