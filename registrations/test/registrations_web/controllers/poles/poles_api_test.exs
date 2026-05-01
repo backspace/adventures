@@ -152,4 +152,57 @@ defmodule RegistrationsWeb.Poles.PolesApiTest do
       assert response(conn, 401)
     end
   end
+
+  describe "user without a team" do
+    test "can still scan a pole without crashing", %{conn: _conn} do
+      teamless = insert(:octavia, email: "noteam@example.com", team: nil)
+
+      auth_conn =
+        post(build_conn(), Routes.api_session_path(build_conn(), :create), %{
+          "user" => %{"email" => teamless.email, "password" => "Xenogenesis"}
+        })
+
+      token = json_response(auth_conn, 200)["data"]["access_token"]
+
+      teamless_conn =
+        build_conn()
+        |> put_req_header("accept", "application/json")
+        |> put_req_header("content-type", "application/json")
+        |> put_req_header("authorization", token)
+
+      pole = insert(:pole)
+      _puzzlet = insert(:puzzlet, pole: pole, answer: "x")
+
+      body = teamless_conn |> get("/poles/poles/#{pole.barcode}") |> json_response(200)
+      assert body["pole"]["id"] == pole.id
+      assert body["active_puzzlet"]["attempts_remaining"] == Poles.max_attempts_per_puzzlet()
+    end
+
+    test "is rejected when attempting an answer", %{conn: _conn} do
+      teamless = insert(:octavia, email: "noteam2@example.com", team: nil)
+
+      auth_conn =
+        post(build_conn(), Routes.api_session_path(build_conn(), :create), %{
+          "user" => %{"email" => teamless.email, "password" => "Xenogenesis"}
+        })
+
+      token = json_response(auth_conn, 200)["data"]["access_token"]
+
+      teamless_conn =
+        build_conn()
+        |> put_req_header("accept", "application/json")
+        |> put_req_header("content-type", "application/json")
+        |> put_req_header("authorization", token)
+
+      pole = insert(:pole)
+      puzzlet = insert(:puzzlet, pole: pole, answer: "x")
+
+      body =
+        teamless_conn
+        |> post("/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "x"})
+        |> json_response(403)
+
+      assert body["error"]["code"] == "no_team"
+    end
+  end
 end

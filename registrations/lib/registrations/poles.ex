@@ -140,7 +140,10 @@ defmodule Registrations.Poles do
 
   @doc """
   How many times this team has answered this puzzlet incorrectly.
+  Returns 0 when team_id is nil (a user not yet on a team has no attempts).
   """
+  def team_wrong_attempts(_puzzlet, nil), do: 0
+
   def team_wrong_attempts(%Puzzlet{id: puzzlet_id}, team_id) do
     from(a in Attempt,
       where: a.puzzlet_id == ^puzzlet_id and a.team_id == ^team_id and a.correct == false,
@@ -148,6 +151,8 @@ defmodule Registrations.Poles do
     )
     |> Repo.one()
   end
+
+  def team_locked_out?(_puzzlet, nil), do: false
 
   def team_locked_out?(%Puzzlet{} = puzzlet, team_id) do
     team_wrong_attempts(puzzlet, team_id) >= @max_attempts_per_puzzlet
