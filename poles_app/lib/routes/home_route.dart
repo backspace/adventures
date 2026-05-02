@@ -96,7 +96,10 @@ class _HomeRouteState extends State<HomeRoute> {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                      subdomains: const ['a', 'b', 'c', 'd'],
+                      retinaMode: RetinaMode.isHighDensity(context),
                       userAgentPackageName: 'ca.chromatin.poles',
                     ),
                     MarkerLayer(
@@ -112,12 +115,40 @@ class _HomeRouteState extends State<HomeRoute> {
                         );
                       }).toList(),
                     ),
+                    const _MapAttribution(),
                   ],
                 ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openScanner,
         icon: const Icon(Icons.qr_code_scanner),
         label: const Text('Scan'),
+      ),
+    );
+  }
+}
+
+class _MapAttribution extends StatelessWidget {
+  const _MapAttribution();
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 4, bottom: 4),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.75),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            child: Text(
+              '© CartoDB · © OpenStreetMap',
+              style: TextStyle(fontSize: 10, color: Colors.black87),
+            ),
+          ),
+        ),
       ),
     );
   }
