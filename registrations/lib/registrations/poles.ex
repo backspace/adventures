@@ -47,13 +47,16 @@ defmodule Registrations.Poles do
   pole state plus active puzzlet (or nil if locked) and the team's
   remaining attempts on that puzzlet.
   """
-  def scan_payload(barcode, team_id) do
+  def scan_payload(barcode, team_id, user_id \\ nil) do
     case get_pole_by_barcode(barcode) do
       nil ->
         {:error, :not_found}
 
       pole ->
         cond do
+          user_id && pole.creator_id == user_id ->
+            {:error, :own_creation, pole}
+
           pole_locked?(pole) ->
             state = pole_with_state(pole)
 
@@ -69,7 +72,7 @@ defmodule Registrations.Poles do
 
           true ->
             state = pole_with_state(pole)
-            active = active_puzzlet_for_pole(pole)
+            active = active_puzzlet_for_pole(pole, user_id)
 
             cond do
               active && team_locked_out?(active, team_id) ->
@@ -103,6 +106,30 @@ defmodule Registrations.Poles do
     |> Repo.insert()
   end
 
+  def update_pole(%Pole{} = pole, attrs) do
+    pole
+    |> Pole.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_pole(%Pole{} = pole), do: Repo.delete(pole)
+
+  def list_drafts_for_user(%{id: user_id}) do
+    poles =
+      Pole
+      |> where([p], p.creator_id == ^user_id)
+      |> order_by([p], desc: p.inserted_at)
+      |> Repo.all()
+
+    puzzlets =
+      Puzzlet
+      |> where([p], p.creator_id == ^user_id)
+      |> order_by([p], desc: p.inserted_at)
+      |> Repo.all()
+
+    %{poles: poles, puzzlets: puzzlets}
+  end
+
   def list_puzzlets do
     Repo.all(Puzzlet)
   end
@@ -117,21 +144,43 @@ defmodule Registrations.Poles do
     |> Repo.insert()
   end
 
+  def update_puzzlet(%Puzzlet{} = puzzlet, attrs) do
+    puzzlet
+    |> Puzzlet.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_puzzlet(%Puzzlet{} = puzzlet), do: Repo.delete(puzzlet)
+
   @doc """
   Returns the easiest validated puzzlet for the pole that has not yet been
   captured. Returns nil when the pole is locked (all puzzlets captured) or has
   no validated puzzlets assigned.
+
+  When `user_id` is provided, puzzlets authored by that user are skipped in
+  the rotation — the author silently rotates past their own work.
   """
-  def active_puzzlet_for_pole(%Pole{id: pole_id}) do
+  def active_puzzlet_for_pole(pole, user_id \\ nil)
+
+  def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id) do
     captured_puzzlet_ids = from(c in Capture, select: c.puzzlet_id)
 
-    Puzzlet
-    |> where([p], p.pole_id == ^pole_id)
-    |> where([p], p.status == :validated)
-    |> where([p], p.id not in subquery(captured_puzzlet_ids))
-    |> order_by([p], asc: p.difficulty, asc: p.inserted_at)
-    |> limit(1)
-    |> Repo.one()
+    query =
+      Puzzlet
+      |> where([p], p.pole_id == ^pole_id)
+      |> where([p], p.status == :validated)
+      |> where([p], p.id not in subquery(captured_puzzlet_ids))
+      |> order_by([p], asc: p.difficulty, asc: p.inserted_at)
+      |> limit(1)
+
+    query =
+      if user_id do
+        where(query, [p], is_nil(p.creator_id) or p.creator_id != ^user_id)
+      else
+        query
+      end
+
+    Repo.one(query)
   end
 
   def pole_owned_by_team?(_pole, nil), do: false
@@ -225,6 +274,12 @@ defmodule Registrations.Poles do
     pole = puzzlet.pole_id && Repo.get(Pole, puzzlet.pole_id)
 
     cond do
+      puzzlet.creator_id == user_id ->
+        {:error, :own_creation}
+
+      pole && pole.creator_id == user_id ->
+        {:error, :own_creation}
+
       pole && pole_owned_by_team?(pole, team_id) ->
         {:error, :already_owner}
 

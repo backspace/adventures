@@ -11,7 +11,7 @@ defmodule RegistrationsWeb.Poles.PoleController do
   def show(conn, %{"barcode" => barcode}) do
     user = Pow.Plug.current_user(conn)
 
-    case Poles.scan_payload(barcode, user.team_id) do
+    case Poles.scan_payload(barcode, user.team_id, user.id) do
       {:ok, state} ->
         json(conn, %{
           pole: render_pole_state(state),
@@ -35,6 +35,17 @@ defmodule RegistrationsWeb.Poles.PoleController do
           error: %{
             code: "already_owner",
             detail: "Your team already owns this pole. Wait for a rival to capture it."
+          },
+          pole: render_pole_state(Poles.pole_with_state(pole))
+        })
+
+      {:error, :own_creation, pole} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{
+          error: %{
+            code: "own_creation",
+            detail: "You created this pole — you can't capture it."
           },
           pole: render_pole_state(Poles.pole_with_state(pole))
         })

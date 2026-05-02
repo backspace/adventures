@@ -40,6 +40,16 @@ defmodule RegistrationsWeb.Poles.AttemptController do
           previous_wrong_answers: wrong_answers
         })
 
+      {:error, :own_creation} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{
+          error: %{
+            code: "own_creation",
+            detail: "You created this puzzlet or pole — you can't capture it."
+          }
+        })
+
       {:error, :already_owner} ->
         conn
         |> put_status(:conflict)

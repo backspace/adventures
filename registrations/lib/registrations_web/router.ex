@@ -59,6 +59,13 @@ defmodule RegistrationsWeb.Router do
     plug(RegistrationsWeb.Plugs.AdminAPI)
   end
 
+  pipeline :poles_author do
+    plug(:accepts, ["json"])
+    plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
+    plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+    plug(RegistrationsWeb.Plugs.RequireRole, role: "author")
+  end
+
   pipeline :skip_csrf_protection do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -183,6 +190,18 @@ defmodule RegistrationsWeb.Router do
     get("/poles", PoleController, :index)
     get("/poles/:barcode", PoleController, :show)
     post("/puzzlets/:puzzlet_id/attempts", AttemptController, :create)
+  end
+
+  scope "/poles/drafts", RegistrationsWeb.Poles, as: :poles_drafts do
+    pipe_through([:poles_author])
+
+    get("/mine", DraftController, :index)
+    post("/poles", DraftController, :create_pole)
+    patch("/poles/:id", DraftController, :update_pole)
+    delete("/poles/:id", DraftController, :delete_pole)
+    post("/puzzlets", DraftController, :create_puzzlet)
+    patch("/puzzlets/:id", DraftController, :update_puzzlet)
+    delete("/puzzlets/:id", DraftController, :delete_puzzlet)
   end
 
   scope "/fixme", RegistrationsWeb do

@@ -208,6 +208,53 @@ defmodule RegistrationsWeb.Poles.PolesApiTest do
     end
   end
 
+  describe "creator restrictions" do
+    test "scan returns own_creation when user is the pole creator",
+         %{conn: conn, user: user} do
+      pole = insert(:pole, creator: user)
+      _puzzlet = insert(:puzzlet, pole: pole, answer: "x")
+
+      body = conn |> get("/poles/poles/#{pole.barcode}") |> json_response(409)
+      assert body["error"]["code"] == "own_creation"
+    end
+
+    test "scan skips puzzlets the user authored", %{conn: conn, user: user} do
+      pole = insert(:pole)
+      _theirs = insert(:puzzlet, pole: pole, answer: "x", difficulty: 1, creator: user)
+      ok = insert(:puzzlet, pole: pole, answer: "y", difficulty: 5)
+
+      body = conn |> get("/poles/poles/#{pole.barcode}") |> json_response(200)
+      assert body["active_puzzlet"]["id"] == ok.id
+    end
+
+    test "attempt is rejected on a puzzlet the user authored",
+         %{conn: conn, user: user, team: team} do
+      pole = insert(:pole)
+      mine = insert(:puzzlet, pole: pole, answer: "x", creator: user)
+
+      body =
+        conn
+        |> post("/poles/puzzlets/#{mine.id}/attempts", %{"answer" => "x"})
+        |> json_response(409)
+
+      assert body["error"]["code"] == "own_creation"
+      _ = team
+    end
+
+    test "attempt is rejected on a puzzlet whose pole the user authored",
+         %{conn: conn, user: user} do
+      pole = insert(:pole, creator: user)
+      other = insert(:puzzlet, pole: pole, answer: "x")
+
+      body =
+        conn
+        |> post("/poles/puzzlets/#{other.id}/attempts", %{"answer" => "x"})
+        |> json_response(409)
+
+      assert body["error"]["code"] == "own_creation"
+    end
+  end
+
   describe "user without a team" do
     test "can still scan a pole without crashing", %{conn: _conn} do
       teamless = insert(:octavia, email: "noteam@example.com", team: nil)
