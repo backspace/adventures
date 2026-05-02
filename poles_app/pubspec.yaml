@@ -26,6 +26,8 @@ dependencies:
   sentry_flutter: ^9.9.1
   sentry: any
 
+  phoenix_socket: ^0.7.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

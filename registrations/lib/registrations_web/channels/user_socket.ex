@@ -4,6 +4,7 @@ defmodule RegistrationsWeb.UserSocket do
   alias RegistrationsWeb.PowAuthPlug
 
   channel "run:*", RegistrationsWeb.RunChannel
+  channel "poles:*", RegistrationsWeb.PolesChannel
 
   def connect(%{"Authorization" => token}, socket) when is_binary(token) do
     config = Application.get_env(:registrations, :pow)

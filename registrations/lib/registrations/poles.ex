@@ -234,32 +234,50 @@ defmodule Registrations.Poles do
       true ->
         correct? = answers_match?(puzzlet.answer, answer_given)
 
-        Repo.transaction(fn ->
-          attempt =
-            %Attempt{}
-            |> Attempt.changeset(%{
-              puzzlet_id: puzzlet.id,
-              team_id: team_id,
-              user_id: user_id,
-              answer_given: answer_given,
-              correct: correct?
-            })
-            |> Repo.insert!()
+        result =
+          Repo.transaction(fn ->
+            attempt =
+              %Attempt{}
+              |> Attempt.changeset(%{
+                puzzlet_id: puzzlet.id,
+                team_id: team_id,
+                user_id: user_id,
+                answer_given: answer_given,
+                correct: correct?
+              })
+              |> Repo.insert!()
 
-          if correct? do
-            case insert_capture(puzzlet.id, team_id) do
-              {:ok, capture} ->
-                %{result: :captured, attempt: attempt, capture: capture}
+            if correct? do
+              case insert_capture(puzzlet.id, team_id) do
+                {:ok, capture} ->
+                  %{result: :captured, attempt: attempt, capture: capture}
 
-              {:error, :already_captured} ->
-                Repo.rollback(:already_captured)
+                {:error, :already_captured} ->
+                  Repo.rollback(:already_captured)
+              end
+            else
+              remaining = @max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id)
+              %{result: :incorrect, attempt: attempt, attempts_remaining: max(remaining, 0)}
             end
-          else
-            remaining = @max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id)
-            %{result: :incorrect, attempt: attempt, attempts_remaining: max(remaining, 0)}
-          end
-        end)
+          end)
+
+        with {:ok, %{result: :captured, capture: capture}} <- result,
+             %Pole{} = captured_pole <- pole do
+          broadcast_pole_update(captured_pole, capture)
+        end
+
+        result
     end
+  end
+
+  defp broadcast_pole_update(%Pole{} = pole, %Capture{} = capture) do
+    RegistrationsWeb.Endpoint.broadcast("poles:map", "pole_updated", %{
+      id: pole.id,
+      current_owner_team_id: capture.team_id,
+      locked: pole_locked?(pole),
+      captured_by_team_id: capture.team_id,
+      captured_at: capture.inserted_at
+    })
   end
 
   defp insert_capture(puzzlet_id, team_id) do

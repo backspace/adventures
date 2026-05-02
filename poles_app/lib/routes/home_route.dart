@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/pole.dart';
 import 'package:poles/routes/login_route.dart';
 import 'package:poles/routes/scan_route.dart';
+import 'package:poles/services/poles_socket.dart';
 import 'package:poles/services/user_service.dart';
 
 class HomeRoute extends StatefulWidget {
@@ -21,10 +25,53 @@ class _HomeRouteState extends State<HomeRoute> {
   String? _teamName;
   String? _error;
 
+  PolesSocket? _socket;
+  StreamSubscription<PoleUpdate>? _updatesSub;
+  StreamSubscription<void>? _reconnectsSub;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _connectSocket();
+  }
+
+  Future<void> _connectSocket() async {
+    final apiRoot = dotenv.maybeGet('API_ROOT') ?? 'http://localhost:4000';
+    final socket = PolesSocket(apiRoot: apiRoot);
+    _socket = socket;
+    _updatesSub = socket.updates.listen(_applyUpdate);
+    _reconnectsSub = socket.reconnects.listen((_) => _load());
+    await socket.connect();
+  }
+
+  void _applyUpdate(PoleUpdate update) {
+    final list = _poles;
+    if (list == null) return;
+    final index = list.indexWhere((p) => p.id == update.id);
+    if (index < 0) return;
+    final old = list[index];
+    final replaced = Pole(
+      id: old.id,
+      barcode: old.barcode,
+      label: old.label,
+      latitude: old.latitude,
+      longitude: old.longitude,
+      currentOwnerTeamId: update.currentOwnerTeamId,
+      locked: update.locked,
+    );
+    if (!mounted) return;
+    setState(() {
+      _poles = [...list]..[index] = replaced;
+    });
+  }
+
+  @override
+  void dispose() {
+    _updatesSub?.cancel();
+    _reconnectsSub?.cancel();
+    _socket?.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {

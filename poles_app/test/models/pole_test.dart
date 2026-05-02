@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:poles/models/pole.dart';
+import 'package:poles/services/poles_socket.dart';
 
 void main() {
   group('Pole.fromJson', () {
@@ -122,6 +123,32 @@ void main() {
       expect(r.pole.label, 'Lab');
       expect(r.activePuzzlet, isNotNull);
       expect(r.activePuzzlet!.id, 'pz1');
+    });
+  });
+
+  group('PoleUpdate.fromJson', () {
+    test('parses a capture broadcast payload', () {
+      final u = PoleUpdate.fromJson({
+        'id': 'p1',
+        'current_owner_team_id': 't2',
+        'locked': false,
+        'captured_by_team_id': 't2',
+        'captured_at': '2026-04-30T12:00:00Z',
+      });
+
+      expect(u.id, 'p1');
+      expect(u.currentOwnerTeamId, 't2');
+      expect(u.locked, isFalse);
+    });
+
+    test('tolerates a null new owner', () {
+      final u = PoleUpdate.fromJson({
+        'id': 'p1',
+        'current_owner_team_id': null,
+        'locked': false,
+      });
+
+      expect(u.currentOwnerTeamId, isNull);
     });
   });
 }
