@@ -176,6 +176,15 @@ defmodule RegistrationsWeb.Router do
     get("/validators", UserRoleController, :validators)
   end
 
+  scope "/poles", RegistrationsWeb.Poles, as: :poles do
+    pipe_through([:pow_api, :pow_api_protected])
+
+    get("/me", MeController, :show)
+    get("/poles", PoleController, :index)
+    get("/poles/:barcode", PoleController, :show)
+    post("/puzzlets/:puzzlet_id/attempts", AttemptController, :create)
+  end
+
   scope "/fixme", RegistrationsWeb do
     pipe_through([:pow_json_api_protected])
 

@@ -1,0 +1,34 @@
+name: poles_app checks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - "poles_app/**"
+      - ".github/workflows/ci-poles-app.yml"
+
+jobs:
+  flutter-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      # Create asset file declared in pubspec but gitignored
+      - run: touch .env.local
+        working-directory: poles_app
+
+      - run: flutter pub get
+        working-directory: poles_app
+
+      - run: flutter analyze
+        working-directory: poles_app
+
+      - run: flutter test
+        working-directory: poles_app

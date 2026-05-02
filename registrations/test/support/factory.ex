@@ -84,4 +84,32 @@ defmodule Registrations.Factory do
   def validation_comment_factory do
     %Registrations.Waydowntown.ValidationComment{}
   end
+
+  def pole_factory do
+    %Registrations.Poles.Pole{
+      barcode: sequence(:barcode, &"BC-#{&1}"),
+      latitude: 51.04,
+      longitude: -114.07
+    }
+  end
+
+  def puzzlet_factory do
+    %Registrations.Poles.Puzzlet{
+      instructions: "Find the answer",
+      answer: "Foo",
+      difficulty: 1,
+      status: :validated
+    }
+  end
+
+  def capture_factory do
+    %Registrations.Poles.Capture{}
+  end
+
+  def attempt_factory do
+    %Registrations.Poles.Attempt{
+      answer_given: "x",
+      correct: false
+    }
+  end
 end

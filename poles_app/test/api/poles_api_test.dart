@@ -1,0 +1,179 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:http_mock_adapter/http_mock_adapter.dart';
+import 'package:poles/api/poles_api.dart';
+import 'package:poles/models/pole.dart';
+
+void main() {
+  late Dio dio;
+  late DioAdapter adapter;
+  late PolesApi api;
+
+  setUp(() {
+    dio = Dio(BaseOptions(baseUrl: 'http://test.invalid'));
+    adapter = DioAdapter(dio: dio);
+    api = PolesApi(dio);
+  });
+
+  Map<String, dynamic> polePayload({bool locked = false, String? owner}) => {
+        'id': 'p1',
+        'barcode': 'POLE-004',
+        'label': 'Esplanade Riel',
+        'latitude': 49.8898,
+        'longitude': -97.1267,
+        'current_owner_team_id': owner,
+        'locked': locked,
+      };
+
+  Map<String, dynamic> puzzletPayload({int remaining = 3, List<String> wrong = const []}) => {
+        'id': 'pz1',
+        'instructions': 'Which river?',
+        'difficulty': 1,
+        'attempts_remaining': remaining,
+        'previous_wrong_answers': wrong,
+      };
+
+  group('scan', () {
+    test('returns ScanFound on 200', () async {
+      adapter.onGet(
+        '/poles/poles/POLE-004',
+        (server) => server.reply(200, {
+          'pole': polePayload(),
+          'active_puzzlet': puzzletPayload(),
+        }),
+      );
+
+      final outcome = await api.scan('POLE-004');
+      expect(outcome, isA<ScanFound>());
+      final found = outcome as ScanFound;
+      expect(found.result.pole.barcode, 'POLE-004');
+      expect(found.result.activePuzzlet?.id, 'pz1');
+    });
+
+    test('returns ScanUnknownBarcode on 404', () async {
+      adapter.onGet(
+        '/poles/poles/NOPE',
+        (server) => server.reply(404, {
+          'error': {'code': 'pole_not_found', 'detail': 'No pole with that barcode.'}
+        }),
+      );
+
+      final outcome = await api.scan('NOPE');
+      expect(outcome, isA<ScanUnknownBarcode>());
+    });
+
+    test('returns ScanAlreadyOwner on 409 already_owner', () async {
+      adapter.onGet(
+        '/poles/poles/POLE-004',
+        (server) => server.reply(409, {
+          'error': {'code': 'already_owner', 'detail': '...'},
+          'pole': polePayload(owner: 't1'),
+        }),
+      );
+
+      final outcome = await api.scan('POLE-004');
+      expect(outcome, isA<ScanAlreadyOwner>());
+      expect((outcome as ScanAlreadyOwner).pole.label, 'Esplanade Riel');
+    });
+
+    test('returns ScanTeamLockedOut on 423 team_locked_out', () async {
+      adapter.onGet(
+        '/poles/poles/POLE-004',
+        (server) => server.reply(423, {
+          'error': {'code': 'team_locked_out', 'detail': '...'},
+          'pole': polePayload(),
+        }),
+      );
+
+      final outcome = await api.scan('POLE-004');
+      expect(outcome, isA<ScanTeamLockedOut>());
+    });
+
+    test('rethrows on network/5xx', () async {
+      adapter.onGet(
+        '/poles/poles/POLE-004',
+        (server) => server.reply(500, {'error': 'boom'}),
+      );
+
+      expect(() => api.scan('POLE-004'), throwsA(isA<DioException>()));
+    });
+  });
+
+  group('submitAnswer', () {
+    test('returns AttemptCorrect on correct answer', () async {
+      adapter.onPost(
+        '/poles/puzzlets/pz1/attempts',
+        (server) => server.reply(200, {
+          'correct': true,
+          'captured': true,
+          'capture': {'id': 'c1', 'team_id': 't1', 'puzzlet_id': 'pz1'},
+          'pole': {'id': 'p1', 'locked': false, 'current_owner_team_id': 't1'},
+        }),
+        data: {'answer': 'Red'},
+      );
+
+      final outcome = await api.submitAnswer('pz1', 'Red');
+      expect(outcome, isA<AttemptCorrect>());
+      final correct = outcome as AttemptCorrect;
+      expect(correct.captureTeamId, 't1');
+      expect(correct.poleLocked, isFalse);
+    });
+
+    test('returns AttemptIncorrect with previous wrong answers', () async {
+      adapter.onPost(
+        '/poles/puzzlets/pz1/attempts',
+        (server) => server.reply(200, {
+          'correct': false,
+          'attempts_remaining': 2,
+          'previous_wrong_answers': ['blue'],
+        }),
+        data: {'answer': 'blue'},
+      );
+
+      final outcome = await api.submitAnswer('pz1', 'blue');
+      expect(outcome, isA<AttemptIncorrect>());
+      final incorrect = outcome as AttemptIncorrect;
+      expect(incorrect.attemptsRemaining, 2);
+      expect(incorrect.previousWrongAnswers, ['blue']);
+    });
+
+    test('returns AttemptLockedOut on 423 locked_out', () async {
+      adapter.onPost(
+        '/poles/puzzlets/pz1/attempts',
+        (server) => server.reply(423, {
+          'error': {'code': 'locked_out', 'detail': '...'},
+        }),
+        data: {'answer': 'x'},
+      );
+
+      final outcome = await api.submitAnswer('pz1', 'x');
+      expect(outcome, isA<AttemptLockedOut>());
+    });
+
+    test('returns AttemptAlreadyOwner on 409 already_owner', () async {
+      adapter.onPost(
+        '/poles/puzzlets/pz1/attempts',
+        (server) => server.reply(409, {
+          'error': {'code': 'already_owner', 'detail': '...'},
+        }),
+        data: {'answer': 'x'},
+      );
+
+      final outcome = await api.submitAnswer('pz1', 'x');
+      expect(outcome, isA<AttemptAlreadyOwner>());
+    });
+
+    test('returns AttemptAlreadyCaptured on 409 already_captured', () async {
+      adapter.onPost(
+        '/poles/puzzlets/pz1/attempts',
+        (server) => server.reply(409, {
+          'error': {'code': 'already_captured', 'detail': '...'},
+        }),
+        data: {'answer': 'x'},
+      );
+
+      final outcome = await api.submitAnswer('pz1', 'x');
+      expect(outcome, isA<AttemptAlreadyCaptured>());
+    });
+  });
+}
