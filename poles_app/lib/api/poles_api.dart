@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:poles/models/draft.dart';
 import 'package:poles/models/pole.dart';
 import 'package:poles/services/user_service.dart';
 
@@ -34,12 +35,14 @@ class PolesApi {
     final response = await dio.get('/poles/me');
     final user = response.data['user'] as Map<String, dynamic>;
     final team = response.data['team'] as Map<String, dynamic>?;
+    final roles = (user['roles'] as List?)?.map((r) => r as String).toList() ?? const [];
     await UserService.setUserData(
       user['id'] as String,
       user['email'] as String,
       name: user['name'] as String?,
       teamId: team?['id'] as String?,
       teamName: team?['name'] as String?,
+      roles: roles,
     );
   }
 
@@ -119,6 +122,49 @@ class PolesApi {
     final pole = data['pole'];
     return pole is Map<String, dynamic> ? pole : null;
   }
+
+  Future<MyDrafts> listMyDrafts() async {
+    final response = await dio.get('/poles/drafts/mine');
+    return MyDrafts.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<DraftPole> createDraftPole({
+    required String barcode,
+    required double latitude,
+    required double longitude,
+    String? label,
+    String? notes,
+    double? accuracyM,
+  }) async {
+    final response = await dio.post('/poles/drafts/poles', data: {
+      'barcode': barcode,
+      'latitude': latitude,
+      'longitude': longitude,
+      if (label != null) 'label': label,
+      if (notes != null) 'notes': notes,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
+    });
+    return DraftPole.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<DraftPuzzlet> createDraftPuzzlet({
+    required String instructions,
+    required String answer,
+    required int difficulty,
+  }) async {
+    final response = await dio.post('/poles/drafts/puzzlets', data: {
+      'instructions': instructions,
+      'answer': answer,
+      'difficulty': difficulty,
+    });
+    return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteDraftPole(String id) =>
+      dio.delete('/poles/drafts/poles/$id');
+
+  Future<void> deleteDraftPuzzlet(String id) =>
+      dio.delete('/poles/drafts/puzzlets/$id');
 
   Future<void> logout() async {
     try {

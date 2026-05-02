@@ -47,5 +47,7 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Poles uses the camera to scan barcodes on poles.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Poles records the location of new poles you submit, so the game knows where to put them on the map.</string>
 </dict>
 </plist>

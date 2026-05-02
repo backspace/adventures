@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/pole.dart';
+import 'package:poles/routes/author/author_route.dart';
 import 'package:poles/routes/login_route.dart';
 import 'package:poles/routes/scan_route.dart';
 import 'package:poles/services/poles_socket.dart';
@@ -24,6 +25,7 @@ class _HomeRouteState extends State<HomeRoute> {
   String? _teamId;
   String? _teamName;
   String? _error;
+  bool _isAuthor = false;
 
   PolesSocket? _socket;
   StreamSubscription<PoleUpdate>? _updatesSub;
@@ -79,12 +81,14 @@ class _HomeRouteState extends State<HomeRoute> {
     try {
       final teamId = await UserService.getTeamId();
       final teamName = await UserService.getTeamName();
+      final isAuthor = await UserService.hasRole('author');
       final poles = await widget.api.listPoles();
       if (!mounted) return;
       setState(() {
         _poles = poles;
         _teamId = teamId;
         _teamName = teamName;
+        _isAuthor = isAuthor;
       });
     } catch (e) {
       if (!mounted) return;
@@ -128,6 +132,14 @@ class _HomeRouteState extends State<HomeRoute> {
       appBar: AppBar(
         title: Text(_teamName == null ? 'Poles' : 'Poles — $_teamName'),
         actions: [
+          if (_isAuthor)
+            IconButton(
+              tooltip: 'Author',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => AuthorRoute(api: widget.api)),
+              ),
+              icon: const Icon(Icons.edit_note),
+            ),
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
           IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],

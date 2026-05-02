@@ -176,4 +176,95 @@ void main() {
       expect(outcome, isA<AttemptAlreadyCaptured>());
     });
   });
+
+  group('drafts', () {
+    test('createDraftPole posts the expected fields', () async {
+      adapter.onPost(
+        '/poles/drafts/poles',
+        (server) => server.reply(201, {
+          'id': 'p1',
+          'barcode': 'POLE-X',
+          'label': 'Test',
+          'latitude': 49.89,
+          'longitude': -97.13,
+          'notes': null,
+          'accuracy_m': 6.4,
+          'status': 'draft',
+          'creator_id': 'u1',
+          'inserted_at': '2026-04-30T00:00:00Z',
+        }),
+        data: {
+          'barcode': 'POLE-X',
+          'latitude': 49.89,
+          'longitude': -97.13,
+          'label': 'Test',
+          'accuracy_m': 6.4,
+        },
+      );
+
+      final pole = await api.createDraftPole(
+        barcode: 'POLE-X',
+        latitude: 49.89,
+        longitude: -97.13,
+        label: 'Test',
+        accuracyM: 6.4,
+      );
+
+      expect(pole.barcode, 'POLE-X');
+      expect(pole.accuracyM, 6.4);
+    });
+
+    test('createDraftPuzzlet posts the expected fields', () async {
+      adapter.onPost(
+        '/poles/drafts/puzzlets',
+        (server) => server.reply(201, {
+          'id': 'pz1',
+          'instructions': 'What?',
+          'answer': 'cat',
+          'difficulty': 4,
+          'status': 'draft',
+          'pole_id': null,
+          'creator_id': 'u1',
+          'inserted_at': '2026-04-30T00:00:00Z',
+        }),
+        data: {'instructions': 'What?', 'answer': 'cat', 'difficulty': 4},
+      );
+
+      final puzzlet = await api.createDraftPuzzlet(
+        instructions: 'What?',
+        answer: 'cat',
+        difficulty: 4,
+      );
+
+      expect(puzzlet.id, 'pz1');
+      expect(puzzlet.poleId, isNull);
+    });
+
+    test('listMyDrafts parses both lists', () async {
+      adapter.onGet(
+        '/poles/drafts/mine',
+        (server) => server.reply(200, {
+          'poles': [
+            {
+              'id': 'p1',
+              'barcode': 'b',
+              'label': null,
+              'latitude': 49.0,
+              'longitude': -97.0,
+              'notes': null,
+              'accuracy_m': null,
+              'status': 'draft',
+              'creator_id': 'u1',
+              'inserted_at': null,
+            }
+          ],
+          'puzzlets': [],
+        }),
+      );
+
+      final drafts = await api.listMyDrafts();
+      expect(drafts.poles, hasLength(1));
+      expect(drafts.puzzlets, isEmpty);
+    });
+  });
 }
