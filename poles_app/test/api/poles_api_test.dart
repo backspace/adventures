@@ -214,7 +214,7 @@ void main() {
       expect(pole.accuracyM, 6.4);
     });
 
-    test('createDraftPuzzlet posts the expected fields', () async {
+    test('createDraftPuzzlet posts location fields', () async {
       adapter.onPost(
         '/poles/drafts/puzzlets',
         (server) => server.reply(201, {
@@ -225,19 +225,34 @@ void main() {
           'status': 'draft',
           'pole_id': null,
           'creator_id': 'u1',
+          'latitude': 49.89,
+          'longitude': -97.13,
+          'accuracy_m': 6.4,
           'inserted_at': '2026-04-30T00:00:00Z',
         }),
-        data: {'instructions': 'What?', 'answer': 'cat', 'difficulty': 4},
+        data: {
+          'instructions': 'What?',
+          'answer': 'cat',
+          'difficulty': 4,
+          'latitude': 49.89,
+          'longitude': -97.13,
+          'accuracy_m': 6.4,
+        },
       );
 
       final puzzlet = await api.createDraftPuzzlet(
         instructions: 'What?',
         answer: 'cat',
         difficulty: 4,
+        latitude: 49.89,
+        longitude: -97.13,
+        accuracyM: 6.4,
       );
 
       expect(puzzlet.id, 'pz1');
       expect(puzzlet.poleId, isNull);
+      expect(puzzlet.latitude, 49.89);
+      expect(puzzlet.accuracyM, 6.4);
     });
 
     test('listMyDrafts parses both lists', () async {

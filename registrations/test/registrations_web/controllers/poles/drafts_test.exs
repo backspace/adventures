@@ -63,19 +63,25 @@ defmodule RegistrationsWeb.Poles.DraftsTest do
       assert body["accuracy_m"] == 7.4
     end
 
-    test "creates an unassigned draft puzzlet", %{conn: conn, user: user} do
+    test "creates an unassigned draft puzzlet with location", %{conn: conn, user: user} do
       body =
         conn
         |> post("/poles/drafts/puzzlets", %{
           "instructions" => "What's the colour?",
           "answer" => "red",
-          "difficulty" => 3
+          "difficulty" => 3,
+          "latitude" => 49.89,
+          "longitude" => -97.13,
+          "accuracy_m" => 7.4
         })
         |> json_response(201)
 
       assert body["status"] == "draft"
       assert body["creator_id"] == user.id
       assert body["pole_id"] == nil
+      assert body["latitude"] == 49.89
+      assert body["longitude"] == -97.13
+      assert body["accuracy_m"] == 7.4
     end
 
     test "lists my drafts", %{conn: conn, user: user} do

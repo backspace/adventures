@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/services/location_service.dart';
+import 'package:poles/widgets/location_card.dart';
 
 class CapturePuzzletRoute extends StatefulWidget {
   final PolesApi api;
@@ -16,10 +18,42 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
   int _difficulty = 3;
   bool _submitting = false;
 
+  LocationFix? _fix;
+  String? _locationError;
+  bool _gettingFix = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _captureLocation();
+  }
+
+  Future<void> _captureLocation() async {
+    setState(() {
+      _gettingFix = true;
+      _locationError = null;
+    });
+    try {
+      final fix = await LocationService.getCurrent();
+      if (!mounted) return;
+      setState(() {
+        _fix = fix;
+        _gettingFix = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _locationError = e.toString();
+        _gettingFix = false;
+      });
+    }
+  }
+
   Future<void> _submit() async {
     final instructions = _instructionsController.text.trim();
     final answer = _answerController.text.trim();
-    if (instructions.isEmpty || answer.isEmpty) return;
+    final fix = _fix;
+    if (instructions.isEmpty || answer.isEmpty || fix == null || !fix.isUsable) return;
 
     setState(() => _submitting = true);
     try {
@@ -27,6 +61,9 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
         instructions: instructions,
         answer: answer,
         difficulty: _difficulty,
+        latitude: fix.latitude,
+        longitude: fix.longitude,
+        accuracyM: fix.accuracyM,
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -58,6 +95,11 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
 
   @override
   Widget build(BuildContext context) {
+    final canSubmit = _fix?.isUsable == true &&
+        !_submitting &&
+        _instructionsController.text.trim().isNotEmpty &&
+        _answerController.text.trim().isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Submit a puzzlet')),
       body: SingleChildScrollView(
@@ -67,14 +109,23 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
           children: [
             Text(
               'Puzzlets are pooled and assigned to poles later by an admin. '
+              'Capturing your location now helps the admin pair this puzzlet with the right pole. '
               'Difficulty is your initial estimate; validators may adjust it.',
               style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            LocationCard(
+              fix: _fix,
+              error: _locationError,
+              busy: _gettingFix,
+              onRetry: _captureLocation,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _instructionsController,
               minLines: 3,
               maxLines: 6,
+              onChanged: (_) => setState(() {}),
               decoration: const InputDecoration(
                 labelText: 'Instructions',
                 hintText: 'What does the player need to find or do?',
@@ -84,6 +135,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
             const SizedBox(height: 12),
             TextField(
               controller: _answerController,
+              onChanged: (_) => setState(() {}),
               decoration: const InputDecoration(
                 labelText: 'Answer',
                 hintText: 'Case-insensitive, whitespace trimmed',
@@ -102,7 +154,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
-              onPressed: _submitting ? null : _submit,
+              onPressed: canSubmit ? _submit : null,
               icon: _submitting
                   ? const SizedBox(
                       width: 18,

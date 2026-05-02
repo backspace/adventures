@@ -151,11 +151,17 @@ class PolesApi {
     required String instructions,
     required String answer,
     required int difficulty,
+    double? latitude,
+    double? longitude,
+    double? accuracyM,
   }) async {
     final response = await dio.post('/poles/drafts/puzzlets', data: {
       'instructions': instructions,
       'answer': answer,
       'difficulty': difficulty,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }

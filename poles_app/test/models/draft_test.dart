@@ -53,6 +53,26 @@ void main() {
       });
       expect(p.poleId, isNull);
       expect(p.status, DraftStatus.validated);
+      expect(p.latitude, isNull);
+    });
+
+    test('parses location fields when present', () {
+      final p = DraftPuzzlet.fromJson({
+        'id': 'pz1',
+        'instructions': 'i',
+        'answer': 'a',
+        'difficulty': 2,
+        'status': 'draft',
+        'pole_id': null,
+        'creator_id': null,
+        'latitude': 49.89,
+        'longitude': -97.13,
+        'accuracy_m': 5.5,
+        'inserted_at': null,
+      });
+      expect(p.latitude, 49.89);
+      expect(p.longitude, -97.13);
+      expect(p.accuracyM, 5.5);
     });
   });
 

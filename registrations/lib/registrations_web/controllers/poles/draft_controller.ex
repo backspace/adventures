@@ -78,7 +78,7 @@ defmodule RegistrationsWeb.Poles.DraftController do
 
     attrs =
       params
-      |> Map.take(["instructions", "answer", "difficulty"])
+      |> Map.take(["instructions", "answer", "difficulty", "latitude", "longitude", "accuracy_m"])
       |> Map.put("creator_id", user.id)
       |> Map.put("status", "draft")
 
@@ -106,7 +106,15 @@ defmodule RegistrationsWeb.Poles.DraftController do
         forbidden(conn, "Only drafts can be edited; this puzzlet is #{puzzlet.status}.")
 
       true ->
-        attrs = Map.take(params, ["instructions", "answer", "difficulty"])
+        attrs =
+          Map.take(params, [
+            "instructions",
+            "answer",
+            "difficulty",
+            "latitude",
+            "longitude",
+            "accuracy_m"
+          ])
 
         case Poles.update_puzzlet(puzzlet, attrs) do
           {:ok, updated} -> json(conn, render_puzzlet(updated))
@@ -159,6 +167,9 @@ defmodule RegistrationsWeb.Poles.DraftController do
       status: puzzlet.status,
       pole_id: puzzlet.pole_id,
       creator_id: puzzlet.creator_id,
+      latitude: puzzlet.latitude,
+      longitude: puzzlet.longitude,
+      accuracy_m: puzzlet.accuracy_m,
       inserted_at: puzzlet.inserted_at
     }
   end

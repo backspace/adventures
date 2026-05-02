@@ -136,8 +136,10 @@ class _PuzzletTile extends StatelessWidget {
       ),
       subtitle: Text(
         'Answer: ${puzzlet.answer} · Difficulty ${puzzlet.difficulty}'
-        '${puzzlet.poleId == null ? ' · unassigned' : ''}',
+        '${puzzlet.poleId == null ? ' · unassigned' : ''}'
+        '${puzzlet.latitude != null ? '\n${puzzlet.latitude!.toStringAsFixed(5)}, ${puzzlet.longitude!.toStringAsFixed(5)}${puzzlet.accuracyM != null ? ' · ±${puzzlet.accuracyM!.toStringAsFixed(0)} m' : ''}' : ''}',
       ),
+      isThreeLine: puzzlet.latitude != null,
     );
   }
 }

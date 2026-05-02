@@ -17,6 +17,10 @@ defmodule Registrations.Poles.Puzzlet do
     field(:difficulty, :integer)
     field(:status, Ecto.Enum, values: [:draft, :validated, :retired], default: :draft)
 
+    field(:latitude, :float)
+    field(:longitude, :float)
+    field(:accuracy_m, :float)
+
     belongs_to(:pole, Pole, type: :binary_id)
     belongs_to(:creator, RegistrationsWeb.User, type: :binary_id, foreign_key: :creator_id)
 
@@ -29,9 +33,22 @@ defmodule Registrations.Poles.Puzzlet do
   @doc false
   def changeset(puzzlet, attrs) do
     puzzlet
-    |> cast(attrs, [:instructions, :answer, :difficulty, :status, :pole_id, :creator_id])
+    |> cast(attrs, [
+      :instructions,
+      :answer,
+      :difficulty,
+      :status,
+      :pole_id,
+      :creator_id,
+      :latitude,
+      :longitude,
+      :accuracy_m
+    ])
     |> validate_required([:instructions, :answer, :difficulty])
     |> validate_number(:difficulty, greater_than_or_equal_to: 1)
+    |> validate_number(:latitude, greater_than_or_equal_to: -90, less_than_or_equal_to: 90)
+    |> validate_number(:longitude, greater_than_or_equal_to: -180, less_than_or_equal_to: 180)
+    |> validate_number(:accuracy_m, greater_than_or_equal_to: 0)
     |> assoc_constraint(:pole)
     |> assoc_constraint(:creator)
   end

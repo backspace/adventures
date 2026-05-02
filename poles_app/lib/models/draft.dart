@@ -53,6 +53,9 @@ class DraftPuzzlet {
   final DraftStatus status;
   final String? poleId;
   final String? creatorId;
+  final double? latitude;
+  final double? longitude;
+  final double? accuracyM;
   final DateTime? insertedAt;
 
   DraftPuzzlet({
@@ -63,6 +66,9 @@ class DraftPuzzlet {
     required this.status,
     required this.poleId,
     required this.creatorId,
+    required this.latitude,
+    required this.longitude,
+    required this.accuracyM,
     required this.insertedAt,
   });
 
@@ -74,6 +80,9 @@ class DraftPuzzlet {
         status: _statusFromString(json['status'] as String?),
         poleId: json['pole_id'] as String?,
         creatorId: json['creator_id'] as String?,
+        latitude: (json['latitude'] as num?)?.toDouble(),
+        longitude: (json['longitude'] as num?)?.toDouble(),
+        accuracyM: (json['accuracy_m'] as num?)?.toDouble(),
         insertedAt: DateTime.tryParse(json['inserted_at'] as String? ?? ''),
       );
 }
