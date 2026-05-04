@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
+import 'package:poles/widgets/map_pin.dart';
+import 'package:poles/widgets/pin_map.dart';
+
+enum _DraftView { list, map }
 
 class MyDraftsRoute extends StatefulWidget {
   final PolesApi api;
@@ -13,6 +18,7 @@ class MyDraftsRoute extends StatefulWidget {
 class _MyDraftsRouteState extends State<MyDraftsRoute> {
   MyDrafts? _drafts;
   String? _error;
+  _DraftView _view = _DraftView.list;
 
   @override
   void initState() {
@@ -32,6 +38,38 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
     }
   }
 
+  Color _statusColor(DraftStatus s) => switch (s) {
+        DraftStatus.draft => Colors.orange.shade700,
+        DraftStatus.validated => Colors.green.shade700,
+        DraftStatus.retired => Colors.grey.shade700,
+      };
+
+  List<MapPin> _pins(MyDrafts drafts) {
+    final pins = <MapPin>[];
+    for (final p in drafts.poles) {
+      pins.add(MapPin(
+        position: LatLng(p.latitude, p.longitude),
+        label: p.label ?? p.barcode,
+        icon: Icons.location_on,
+        color: _statusColor(p.status),
+      ));
+    }
+    for (final p in drafts.puzzlets) {
+      if (p.latitude != null && p.longitude != null) {
+        pins.add(MapPin(
+          position: LatLng(p.latitude!, p.longitude!),
+          label: p.instructions,
+          icon: Icons.edit_note,
+          color: _statusColor(p.status),
+        ));
+      }
+    }
+    return pins;
+  }
+
+  int _puzzletsWithoutLocation(MyDrafts drafts) =>
+      drafts.puzzlets.where((p) => p.latitude == null).length;
+
   @override
   Widget build(BuildContext context) {
     final drafts = _drafts;
@@ -39,32 +77,97 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
       appBar: AppBar(
         title: const Text('My drafts'),
         actions: [IconButton(onPressed: _load, icon: const Icon(Icons.refresh))],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: SegmentedButton<_DraftView>(
+              segments: const [
+                ButtonSegment(
+                    value: _DraftView.list,
+                    label: Text('List'),
+                    icon: Icon(Icons.list)),
+                ButtonSegment(
+                    value: _DraftView.map,
+                    label: Text('Map'),
+                    icon: Icon(Icons.map)),
+              ],
+              selected: {_view},
+              onSelectionChanged: (set) => setState(() => _view = set.first),
+            ),
+          ),
+        ),
       ),
       body: _error != null
           ? Center(child: Text(_error!))
           : drafts == null
               ? const Center(child: CircularProgressIndicator())
-              : ListView(
-                  children: [
-                    if (drafts.poles.isEmpty && drafts.puzzlets.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Center(child: Text('Nothing yet. Capture a pole or puzzlet.')),
-                      ),
-                    if (drafts.poles.isNotEmpty)
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-                        child: Text('Poles', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                    ...drafts.poles.map((p) => _PoleTile(pole: p)),
-                    if (drafts.puzzlets.isNotEmpty)
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-                        child: Text('Puzzlets', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                    ...drafts.puzzlets.map((p) => _PuzzletTile(puzzlet: p)),
-                  ],
-                ),
+              : _view == _DraftView.list
+                  ? _ListView(drafts: drafts)
+                  : _MapView(
+                      pins: _pins(drafts),
+                      orphanCount: _puzzletsWithoutLocation(drafts),
+                    ),
+    );
+  }
+}
+
+class _ListView extends StatelessWidget {
+  final MyDrafts drafts;
+  const _ListView({required this.drafts});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: [
+        if (drafts.poles.isEmpty && drafts.puzzlets.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(24),
+            child: Center(child: Text('Nothing yet. Capture a pole or puzzlet.')),
+          ),
+        if (drafts.poles.isNotEmpty)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: Text('Poles', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ...drafts.poles.map((p) => _PoleTile(pole: p)),
+        if (drafts.puzzlets.isNotEmpty)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: Text('Puzzlets', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ...drafts.puzzlets.map((p) => _PuzzletTile(puzzlet: p)),
+      ],
+    );
+  }
+}
+
+class _MapView extends StatelessWidget {
+  final List<MapPin> pins;
+  final int orphanCount;
+  const _MapView({required this.pins, required this.orphanCount});
+
+  @override
+  Widget build(BuildContext context) {
+    if (pins.isEmpty && orphanCount == 0) {
+      return const Center(child: Text('No drafts to show on a map.'));
+    }
+    return Column(
+      children: [
+        Expanded(
+          child: pins.isEmpty
+              ? const Center(child: Text('No drafts have a captured location yet.'))
+              : PinMap(pins: pins),
+        ),
+        if (orphanCount > 0)
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(
+              '$orphanCount puzzlet${orphanCount == 1 ? '' : 's'} without a location',
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+          ),
+      ],
     );
   }
 }

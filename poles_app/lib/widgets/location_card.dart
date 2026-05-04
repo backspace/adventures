@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:poles/services/location_service.dart';
+import 'package:poles/widgets/mini_location_map.dart';
 
 class LocationCard extends StatelessWidget {
   final LocationFix? fix;
@@ -65,6 +66,8 @@ class LocationCard extends StatelessWidget {
                   : 'Accuracy: $accuracy m — too imprecise. Move to a clearer spot.',
             ),
             const SizedBox(height: 8),
+            MiniLocationMap(latitude: f.latitude, longitude: f.longitude),
+            const SizedBox(height: 4),
             TextButton(onPressed: onRetry, child: const Text('Re-acquire')),
           ],
         ));
