@@ -166,6 +166,46 @@ class PolesApi {
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<DraftPole> updateDraftPole(
+    String id, {
+    String? barcode,
+    String? label,
+    String? notes,
+    double? latitude,
+    double? longitude,
+    double? accuracyM,
+  }) async {
+    final response = await dio.patch('/poles/drafts/poles/$id', data: {
+      if (barcode != null) 'barcode': barcode,
+      if (label != null) 'label': label,
+      if (notes != null) 'notes': notes,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
+    });
+    return DraftPole.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<DraftPuzzlet> updateDraftPuzzlet(
+    String id, {
+    String? instructions,
+    String? answer,
+    int? difficulty,
+    double? latitude,
+    double? longitude,
+    double? accuracyM,
+  }) async {
+    final response = await dio.patch('/poles/drafts/puzzlets/$id', data: {
+      if (instructions != null) 'instructions': instructions,
+      if (answer != null) 'answer': answer,
+      if (difficulty != null) 'difficulty': difficulty,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
+    });
+    return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<void> deleteDraftPole(String id) =>
       dio.delete('/poles/drafts/poles/$id');
 

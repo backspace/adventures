@@ -255,6 +255,53 @@ void main() {
       expect(puzzlet.accuracyM, 6.4);
     });
 
+    test('updateDraftPole patches editable fields', () async {
+      adapter.onPatch(
+        '/poles/drafts/poles/p1',
+        (server) => server.reply(200, {
+          'id': 'p1',
+          'barcode': 'b',
+          'label': 'edited',
+          'latitude': 49.89,
+          'longitude': -97.13,
+          'notes': 'updated note',
+          'accuracy_m': 6.0,
+          'status': 'draft',
+          'creator_id': 'u1',
+          'inserted_at': null,
+        }),
+        data: {'label': 'edited', 'notes': 'updated note'},
+      );
+
+      final pole = await api.updateDraftPole('p1', label: 'edited', notes: 'updated note');
+      expect(pole.label, 'edited');
+      expect(pole.notes, 'updated note');
+    });
+
+    test('updateDraftPuzzlet patches difficulty and answer', () async {
+      adapter.onPatch(
+        '/poles/drafts/puzzlets/pz1',
+        (server) => server.reply(200, {
+          'id': 'pz1',
+          'instructions': 'i',
+          'answer': 'cat',
+          'difficulty': 7,
+          'status': 'draft',
+          'pole_id': null,
+          'creator_id': 'u1',
+          'latitude': null,
+          'longitude': null,
+          'accuracy_m': null,
+          'inserted_at': null,
+        }),
+        data: {'answer': 'cat', 'difficulty': 7},
+      );
+
+      final p = await api.updateDraftPuzzlet('pz1', answer: 'cat', difficulty: 7);
+      expect(p.answer, 'cat');
+      expect(p.difficulty, 7);
+    });
+
     test('listMyDrafts parses both lists', () async {
       adapter.onGet(
         '/poles/drafts/mine',

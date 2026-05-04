@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
+import 'package:poles/routes/author/edit_pole_route.dart';
+import 'package:poles/routes/author/edit_puzzlet_route.dart';
 import 'package:poles/widgets/map_pin.dart';
 import 'package:poles/widgets/pin_map.dart';
 
@@ -103,7 +105,7 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
           : drafts == null
               ? const Center(child: CircularProgressIndicator())
               : _view == _DraftView.list
-                  ? _ListView(drafts: drafts)
+                  ? _ListView(drafts: drafts, api: widget.api, onChanged: _load)
                   : _MapView(
                       pins: _pins(drafts),
                       orphanCount: _puzzletsWithoutLocation(drafts),
@@ -114,7 +116,10 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
 
 class _ListView extends StatelessWidget {
   final MyDrafts drafts;
-  const _ListView({required this.drafts});
+  final PolesApi api;
+  final Future<void> Function() onChanged;
+
+  const _ListView({required this.drafts, required this.api, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -130,13 +135,15 @@ class _ListView extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
             child: Text('Poles', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-        ...drafts.poles.map((p) => _PoleTile(pole: p)),
+        ...drafts.poles
+            .map((p) => _PoleTile(pole: p, api: api, onChanged: onChanged)),
         if (drafts.puzzlets.isNotEmpty)
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
             child: Text('Puzzlets', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-        ...drafts.puzzlets.map((p) => _PuzzletTile(puzzlet: p)),
+        ...drafts.puzzlets
+            .map((p) => _PuzzletTile(puzzlet: p, api: api, onChanged: onChanged)),
       ],
     );
   }
@@ -197,10 +204,13 @@ class _StatusBadge extends StatelessWidget {
 
 class _PoleTile extends StatelessWidget {
   final DraftPole pole;
-  const _PoleTile({required this.pole});
+  final PolesApi api;
+  final Future<void> Function() onChanged;
+  const _PoleTile({required this.pole, required this.api, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
+    final editable = pole.status == DraftStatus.draft;
     return ListTile(
       title: Row(
         children: [
@@ -214,16 +224,30 @@ class _PoleTile extends StatelessWidget {
         '${pole.accuracyM != null ? ' · ±${pole.accuracyM!.toStringAsFixed(0)} m' : ''}',
       ),
       isThreeLine: true,
+      trailing: editable ? const Icon(Icons.chevron_right) : null,
+      onTap: editable
+          ? () async {
+              final changed = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(
+                  builder: (_) => EditPoleRoute(api: api, pole: pole),
+                ),
+              );
+              if (changed == true) await onChanged();
+            }
+          : null,
     );
   }
 }
 
 class _PuzzletTile extends StatelessWidget {
   final DraftPuzzlet puzzlet;
-  const _PuzzletTile({required this.puzzlet});
+  final PolesApi api;
+  final Future<void> Function() onChanged;
+  const _PuzzletTile({required this.puzzlet, required this.api, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
+    final editable = puzzlet.status == DraftStatus.draft;
     return ListTile(
       title: Row(
         children: [
@@ -243,6 +267,17 @@ class _PuzzletTile extends StatelessWidget {
         '${puzzlet.latitude != null ? '\n${puzzlet.latitude!.toStringAsFixed(5)}, ${puzzlet.longitude!.toStringAsFixed(5)}${puzzlet.accuracyM != null ? ' · ±${puzzlet.accuracyM!.toStringAsFixed(0)} m' : ''}' : ''}',
       ),
       isThreeLine: puzzlet.latitude != null,
+      trailing: editable ? const Icon(Icons.chevron_right) : null,
+      onTap: editable
+          ? () async {
+              final changed = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(
+                  builder: (_) => EditPuzzletRoute(api: api, puzzlet: puzzlet),
+                ),
+              );
+              if (changed == true) await onChanged();
+            }
+          : null,
     );
   }
 }
