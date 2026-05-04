@@ -136,5 +136,100 @@ defmodule RegistrationsWeb.Poles.DraftsTest do
 
       assert body["error"]["code"] == "forbidden"
     end
+
+    test "rejects edits to a validated puzzlet", %{conn: conn, user: user} do
+      {:ok, puzzlet} =
+        Poles.create_puzzlet(%{
+          instructions: "i",
+          answer: "a",
+          difficulty: 1,
+          creator_id: user.id,
+          status: :validated
+        })
+
+      body =
+        conn
+        |> patch("/poles/drafts/puzzlets/#{puzzlet.id}", %{"answer" => "edited"})
+        |> json_response(403)
+
+      assert body["error"]["code"] == "forbidden"
+    end
+
+    test "rejects edits to someone else's draft puzzlet", %{conn: conn} do
+      stranger = insert(:user, email: "stranger#{System.unique_integer([:positive])}@example.com")
+
+      {:ok, puzzlet} =
+        Poles.create_puzzlet(%{
+          instructions: "i",
+          answer: "a",
+          difficulty: 1,
+          creator_id: stranger.id,
+          status: :draft
+        })
+
+      body =
+        conn
+        |> patch("/poles/drafts/puzzlets/#{puzzlet.id}", %{"answer" => "hijack"})
+        |> json_response(403)
+
+      assert body["error"]["code"] == "forbidden"
+    end
+
+    test "rejects deletes of a validated pole", %{conn: conn, user: user} do
+      {:ok, pole} =
+        Poles.create_pole(%{
+          barcode: "VALD-#{System.unique_integer([:positive])}",
+          latitude: 49.89,
+          longitude: -97.13,
+          creator_id: user.id,
+          status: :validated
+        })
+
+      body = conn |> delete("/poles/drafts/poles/#{pole.id}") |> json_response(403)
+      assert body["error"]["code"] == "forbidden"
+    end
+
+    test "rejects deletes of a validated puzzlet", %{conn: conn, user: user} do
+      {:ok, puzzlet} =
+        Poles.create_puzzlet(%{
+          instructions: "i",
+          answer: "a",
+          difficulty: 1,
+          creator_id: user.id,
+          status: :validated
+        })
+
+      body = conn |> delete("/poles/drafts/puzzlets/#{puzzlet.id}") |> json_response(403)
+      assert body["error"]["code"] == "forbidden"
+    end
+
+    test "rejects deletes of someone else's draft puzzlet", %{conn: conn} do
+      stranger = insert(:user, email: "del-stranger#{System.unique_integer([:positive])}@example.com")
+
+      {:ok, puzzlet} =
+        Poles.create_puzzlet(%{
+          instructions: "i",
+          answer: "a",
+          difficulty: 1,
+          creator_id: stranger.id,
+          status: :draft
+        })
+
+      body = conn |> delete("/poles/drafts/puzzlets/#{puzzlet.id}") |> json_response(403)
+      assert body["error"]["code"] == "forbidden"
+    end
+
+    test "allows the author to delete their own draft", %{conn: conn, user: user} do
+      {:ok, pole} =
+        Poles.create_pole(%{
+          barcode: "DEL-#{System.unique_integer([:positive])}",
+          latitude: 49.89,
+          longitude: -97.13,
+          creator_id: user.id,
+          status: :draft
+        })
+
+      conn |> delete("/poles/drafts/poles/#{pole.id}") |> response(204)
+    end
   end
 end
