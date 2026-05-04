@@ -16,7 +16,7 @@ defmodule Registrations.Poles.Pole do
     field(:longitude, :float)
     field(:notes, :string)
     field(:accuracy_m, :float)
-    field(:status, Ecto.Enum, values: [:draft, :validated, :retired], default: :draft)
+    field(:status, Ecto.Enum, values: [:draft, :in_review, :validated, :retired], default: :draft)
 
     belongs_to(:creator, RegistrationsWeb.User, type: :binary_id, foreign_key: :creator_id)
 

@@ -15,7 +15,7 @@ defmodule Registrations.Poles.Puzzlet do
     field(:instructions, :string)
     field(:answer, :string)
     field(:difficulty, :integer)
-    field(:status, Ecto.Enum, values: [:draft, :validated, :retired], default: :draft)
+    field(:status, Ecto.Enum, values: [:draft, :in_review, :validated, :retired], default: :draft)
 
     field(:latitude, :float)
     field(:longitude, :float)
