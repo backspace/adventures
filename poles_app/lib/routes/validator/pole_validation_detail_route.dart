@@ -25,6 +25,7 @@ class PoleValidationDetailRoute extends StatefulWidget {
 class _PoleValidationDetailRouteState extends State<PoleValidationDetailRoute> {
   late PoleValidationModel _v;
   bool _busy = false;
+  bool _dirty = false;
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _PoleValidationDetailRouteState extends State<PoleValidationDetailRoute> {
       setState(() {
         _v = updated;
         _busy = false;
+        _dirty = true;
       });
     } on DioException catch (e) {
       _showError(e);
@@ -58,8 +60,6 @@ class _PoleValidationDetailRouteState extends State<PoleValidationDetailRoute> {
         comment: draft.comment,
         suggestedValue: draft.suggestedValue,
       );
-      // Easiest refresh: reload the parent list view via pop(true) after,
-      // and re-fetch this validation now to show the new comment.
       final mine = await widget.api.listMyValidations();
       final refreshed = mine.poleValidations.firstWhere(
         (p) => p.id == _v.id,
@@ -69,6 +69,7 @@ class _PoleValidationDetailRouteState extends State<PoleValidationDetailRoute> {
       setState(() {
         _v = refreshed;
         _busy = false;
+        _dirty = true;
       });
     } on DioException catch (e) {
       _showError(e);
@@ -88,6 +89,7 @@ class _PoleValidationDetailRouteState extends State<PoleValidationDetailRoute> {
       setState(() {
         _v = refreshed;
         _busy = false;
+        _dirty = true;
       });
     } on DioException catch (e) {
       _showError(e);
@@ -111,7 +113,12 @@ class _PoleValidationDetailRouteState extends State<PoleValidationDetailRoute> {
     final canSubmit = _v.status == ValidationStatus.inProgress;
     final canEditComments = _v.status == ValidationStatus.inProgress;
 
-    return Scaffold(
+    return PopScope<bool>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Navigator.of(context).pop<bool>(_dirty);
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(pole?.label ?? pole?.barcode ?? 'Validation'),
         actions: [
@@ -166,6 +173,7 @@ class _PoleValidationDetailRouteState extends State<PoleValidationDetailRoute> {
               label: const Text('Submit for supervisor'),
             ),
         ],
+      ),
       ),
     );
   }
