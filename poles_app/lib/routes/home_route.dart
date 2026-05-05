@@ -9,6 +9,8 @@ import 'package:poles/models/pole.dart';
 import 'package:poles/routes/author/author_route.dart';
 import 'package:poles/routes/login_route.dart';
 import 'package:poles/routes/scan_route.dart';
+import 'package:poles/routes/supervisor/supervisor_route.dart';
+import 'package:poles/routes/validator/validator_route.dart';
 import 'package:poles/services/poles_socket.dart';
 import 'package:poles/services/user_service.dart';
 
@@ -26,6 +28,8 @@ class _HomeRouteState extends State<HomeRoute> {
   String? _teamName;
   String? _error;
   bool _isAuthor = false;
+  bool _isValidator = false;
+  bool _isSupervisor = false;
 
   PolesSocket? _socket;
   StreamSubscription<PoleUpdate>? _updatesSub;
@@ -82,6 +86,8 @@ class _HomeRouteState extends State<HomeRoute> {
       final teamId = await UserService.getTeamId();
       final teamName = await UserService.getTeamName();
       final isAuthor = await UserService.hasRole('author');
+      final isValidator = await UserService.hasRole('validator');
+      final isSupervisor = await UserService.hasRole('validation_supervisor');
       final poles = await widget.api.listPoles();
       if (!mounted) return;
       setState(() {
@@ -89,6 +95,8 @@ class _HomeRouteState extends State<HomeRoute> {
         _teamId = teamId;
         _teamName = teamName;
         _isAuthor = isAuthor;
+        _isValidator = isValidator;
+        _isSupervisor = isSupervisor;
       });
     } catch (e) {
       if (!mounted) return;
@@ -139,6 +147,22 @@ class _HomeRouteState extends State<HomeRoute> {
                 MaterialPageRoute(builder: (_) => AuthorRoute(api: widget.api)),
               ),
               icon: const Icon(Icons.edit_note),
+            ),
+          if (_isValidator)
+            IconButton(
+              tooltip: 'Validate',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => ValidatorRoute(api: widget.api)),
+              ),
+              icon: const Icon(Icons.fact_check_outlined),
+            ),
+          if (_isSupervisor)
+            IconButton(
+              tooltip: 'Supervise',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => SupervisorRoute(api: widget.api)),
+              ),
+              icon: const Icon(Icons.supervisor_account),
             ),
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
           IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),

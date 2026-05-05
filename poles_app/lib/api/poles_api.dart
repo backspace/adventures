@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/models/pole.dart';
+import 'package:poles/models/validation.dart';
 import 'package:poles/services/user_service.dart';
 
 class PolesApi {
@@ -211,6 +212,193 @@ class PolesApi {
 
   Future<void> deleteDraftPuzzlet(String id) =>
       dio.delete('/poles/drafts/puzzlets/$id');
+
+  // ────────── Validator surface ──────────
+
+  Future<MyValidations> listMyValidations() async {
+    final response = await dio.get('/poles/validation/mine');
+    return MyValidations.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<PoleValidationModel> transitionPoleValidation(
+      String id, String status) async {
+    final response = await dio.patch(
+      '/poles/validation/pole-validations/$id',
+      data: {'status': status},
+    );
+    return PoleValidationModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<PuzzletValidationModel> transitionPuzzletValidation(
+      String id, String status) async {
+    final response = await dio.patch(
+      '/poles/validation/puzzlet-validations/$id',
+      data: {'status': status},
+    );
+    return PuzzletValidationModel.fromJson(
+        response.data as Map<String, dynamic>);
+  }
+
+  Future<ValidationComment> createPoleComment(
+    String validationId, {
+    required String field,
+    String? comment,
+    String? suggestedValue,
+  }) async {
+    final response = await dio.post(
+      '/poles/validation/pole-validations/$validationId/comments',
+      data: {
+        'field': field,
+        if (comment != null) 'comment': comment,
+        if (suggestedValue != null) 'suggested_value': suggestedValue,
+      },
+    );
+    return ValidationComment.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<ValidationComment> createPuzzletComment(
+    String validationId, {
+    required String field,
+    String? comment,
+    String? suggestedValue,
+  }) async {
+    final response = await dio.post(
+      '/poles/validation/puzzlet-validations/$validationId/comments',
+      data: {
+        'field': field,
+        if (comment != null) 'comment': comment,
+        if (suggestedValue != null) 'suggested_value': suggestedValue,
+      },
+    );
+    return ValidationComment.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> deletePoleComment(String id) =>
+      dio.delete('/poles/validation/pole-comments/$id');
+
+  Future<void> deletePuzzletComment(String id) =>
+      dio.delete('/poles/validation/puzzlet-comments/$id');
+
+  // ────────── Supervisor surface ──────────
+
+  Future<DashboardCounts> supervisorDashboard() async {
+    final response = await dio.get('/poles/supervision/dashboard');
+    return DashboardCounts.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<List<ValidatorUser>> listValidators({String? excludeUserId}) async {
+    final response = await dio.get('/poles/supervision/validators',
+        queryParameters: {
+          if (excludeUserId != null) 'exclude_user_id': excludeUserId
+        });
+    final list = response.data['validators'] as List;
+    return list
+        .map((e) => ValidatorUser.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<List<DraftPole>> supervisionListPoles({String? status}) async {
+    final response = await dio.get('/poles/supervision/poles',
+        queryParameters: {if (status != null) 'status': status});
+    return (response.data['poles'] as List)
+        .map((e) => DraftPole.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<List<DraftPuzzlet>> supervisionListPuzzlets({String? status}) async {
+    final response = await dio.get('/poles/supervision/puzzlets',
+        queryParameters: {if (status != null) 'status': status});
+    return (response.data['puzzlets'] as List)
+        .map((e) => DraftPuzzlet.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<PoleValidationModel> assignPoleValidation(
+      String poleId, String validatorId) async {
+    final response = await dio.post(
+      '/poles/supervision/poles/$poleId/validations',
+      data: {'validator_id': validatorId},
+    );
+    return PoleValidationModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<PuzzletValidationModel> assignPuzzletValidation(
+      String puzzletId, String validatorId) async {
+    final response = await dio.post(
+      '/poles/supervision/puzzlets/$puzzletId/validations',
+      data: {'validator_id': validatorId},
+    );
+    return PuzzletValidationModel.fromJson(
+        response.data as Map<String, dynamic>);
+  }
+
+  Future<PoleValidationModel> supervisorTransitionPoleValidation(
+      String id, String status) async {
+    final response = await dio.patch(
+      '/poles/supervision/pole-validations/$id',
+      data: {'status': status},
+    );
+    return PoleValidationModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<PuzzletValidationModel> supervisorTransitionPuzzletValidation(
+      String id, String status) async {
+    final response = await dio.patch(
+      '/poles/supervision/puzzlet-validations/$id',
+      data: {'status': status},
+    );
+    return PuzzletValidationModel.fromJson(
+        response.data as Map<String, dynamic>);
+  }
+
+  Future<ValidationComment> decidePoleComment(String id, String status) async {
+    final response = await dio.patch(
+      '/poles/supervision/pole-comments/$id',
+      data: {'status': status},
+    );
+    return ValidationComment.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<ValidationComment> decidePuzzletComment(
+      String id, String status) async {
+    final response = await dio.patch(
+      '/poles/supervision/puzzlet-comments/$id',
+      data: {'status': status},
+    );
+    return ValidationComment.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<DraftPole> supervisorEditPole(
+    String id, {
+    String? barcode,
+    String? label,
+    String? notes,
+    double? latitude,
+    double? longitude,
+  }) async {
+    final response = await dio.patch('/poles/supervision/poles/$id', data: {
+      if (barcode != null) 'barcode': barcode,
+      if (label != null) 'label': label,
+      if (notes != null) 'notes': notes,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+    });
+    return DraftPole.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<DraftPuzzlet> supervisorEditPuzzlet(
+    String id, {
+    String? instructions,
+    String? answer,
+    int? difficulty,
+  }) async {
+    final response = await dio.patch('/poles/supervision/puzzlets/$id', data: {
+      if (instructions != null) 'instructions': instructions,
+      if (answer != null) 'answer': answer,
+      if (difficulty != null) 'difficulty': difficulty,
+    });
+    return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
+  }
 
   Future<void> logout() async {
     try {
