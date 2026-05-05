@@ -41,6 +41,16 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
     json(conn, %{puzzlets: Enum.map(puzzlets, &render_puzzlet/1)})
   end
 
+  def list_pole_validations(conn, %{"id" => pole_id}) do
+    validations = Validations.list_validations_for_pole(pole_id)
+    json(conn, %{validations: Enum.map(validations, &render_pole_validation/1)})
+  end
+
+  def list_puzzlet_validations(conn, %{"id" => puzzlet_id}) do
+    validations = Validations.list_validations_for_puzzlet(puzzlet_id)
+    json(conn, %{validations: Enum.map(validations, &render_puzzlet_validation/1)})
+  end
+
   # ──────── Assign ─────────────────────────────────────────────────
 
   def assign_pole(conn, %{"id" => pole_id, "validator_id" => validator_id}) do

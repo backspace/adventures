@@ -23,21 +23,45 @@ class PoleSupervisionDetailRoute extends StatefulWidget {
 
 class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute> {
   late DraftPole _pole;
+  List<PoleValidationModel> _validations = const [];
   PoleValidationModel? _activeValidation;
+  bool _loading = true;
   bool _busy = false;
 
   @override
   void initState() {
     super.initState();
     _pole = widget.pole;
-    _loadActiveValidation();
+    _loadValidations();
   }
 
-  Future<void> _loadActiveValidation() async {
-    // Find a non-terminal validation for this pole. We don't have a direct
-    // "validations for pole" endpoint, so for now we don't show prior history;
-    // when assigned, we have a fresh validation in hand from the response.
-    setState(() {});
+  Future<void> _loadValidations() async {
+    setState(() => _loading = true);
+    try {
+      final list = await widget.api.listPoleValidations(_pole.id);
+      if (!mounted) return;
+      setState(() {
+        _validations = list;
+        _activeValidation = _pickActive(list);
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not load validations: $e')),
+      );
+    }
+  }
+
+  PoleValidationModel? _pickActive(List<PoleValidationModel> list) {
+    for (final v in list) {
+      if (v.status != ValidationStatus.accepted &&
+          v.status != ValidationStatus.rejected) {
+        return v;
+      }
+    }
+    return null;
   }
 
   Future<void> _assign() async {
@@ -55,6 +79,7 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
       if (!mounted) return;
       setState(() {
         _activeValidation = validation;
+        _validations = [validation, ..._validations];
         _pole = DraftPole(
           id: _pole.id,
           barcode: _pole.barcode,
@@ -139,10 +164,15 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
     final canAssign = v == null && _pole.status == DraftStatus.draft;
     final canDecide = v?.status == ValidationStatus.submitted;
 
+    final pastValidations = _validations
+        .where((vv) => vv.id != _activeValidation?.id)
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_pole.label ?? _pole.barcode),
         actions: [
+          IconButton(onPressed: _loading ? null : _loadValidations, icon: const Icon(Icons.refresh)),
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Center(
@@ -154,7 +184,9 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
           ),
         ],
       ),
-      body: ListView(
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Card(
@@ -256,6 +288,46 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
                     ),
                   ),
                 ],
+              ),
+          ],
+          if (pastValidations.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Text('History', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            for (final past in pastValidations)
+              Card(
+                child: ExpansionTile(
+                  title: Row(
+                    children: [
+                      Expanded(child: Text(validationStatusLabel(past.status))),
+                      StatusBadge(
+                        label: past.status.name,
+                        color: statusColorFor(past.status.name),
+                      ),
+                    ],
+                  ),
+                  subtitle: Text(
+                    '${past.comments.length} comment${past.comments.length == 1 ? '' : 's'}',
+                  ),
+                  children: past.comments
+                      .map((c) => ListTile(
+                            title: Text(c.field,
+                                style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (c.suggestedValue != null)
+                                  Text('Suggest: ${c.suggestedValue}'),
+                                if (c.comment != null) Text(c.comment!),
+                              ],
+                            ),
+                            trailing: StatusBadge(
+                              label: c.status.name,
+                              color: statusColorFor(c.status.name),
+                            ),
+                          ))
+                      .toList(),
+                ),
               ),
           ],
         ],

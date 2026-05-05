@@ -313,6 +313,20 @@ class PolesApi {
         .toList(growable: false);
   }
 
+  Future<List<PoleValidationModel>> listPoleValidations(String poleId) async {
+    final response = await dio.get('/poles/supervision/poles/$poleId/validations');
+    return ((response.data['validations'] as List?) ?? const [])
+        .map((e) => PoleValidationModel.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<List<PuzzletValidationModel>> listPuzzletValidations(String puzzletId) async {
+    final response = await dio.get('/poles/supervision/puzzlets/$puzzletId/validations');
+    return ((response.data['validations'] as List?) ?? const [])
+        .map((e) => PuzzletValidationModel.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
   Future<PoleValidationModel> assignPoleValidation(
       String poleId, String validatorId) async {
     final response = await dio.post(

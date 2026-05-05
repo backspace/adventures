@@ -219,6 +219,21 @@ defmodule RegistrationsWeb.Poles.SupervisionControllerTest do
       assert Enum.all?(body["poles"], &(&1["status"] == "draft"))
     end
 
+    test "GET /poles/:id/validations returns validations with comments",
+         %{conn: conn, supervisor: supervisor} do
+      validator = insert(:user, email: unique_email("v"))
+      author = insert(:user, email: unique_email("a"))
+      pole = insert(:pole, creator: author, status: :draft)
+
+      {:ok, validation} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+      {:ok, validation} = Validations.transition_pole_validation_as_validator(validation, validator.id, "in_progress")
+      {:ok, _} = Validations.add_pole_comment(validation, validator.id, %{"field" => "label", "comment" => "x"})
+
+      body = conn |> get("/poles/supervision/poles/#{pole.id}/validations") |> json_response(200)
+      assert length(body["validations"]) == 1
+      assert hd(body["validations"])["comments"] |> length() == 1
+    end
+
     test "dashboard returns counts", %{conn: conn} do
       body = conn |> get("/poles/supervision/dashboard") |> json_response(200)
       assert is_map(body["poles"])

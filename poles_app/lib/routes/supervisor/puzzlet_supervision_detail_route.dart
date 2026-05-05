@@ -24,13 +24,45 @@ class PuzzletSupervisionDetailRoute extends StatefulWidget {
 class _PuzzletSupervisionDetailRouteState
     extends State<PuzzletSupervisionDetailRoute> {
   late DraftPuzzlet _puzzlet;
+  List<PuzzletValidationModel> _validations = const [];
   PuzzletValidationModel? _activeValidation;
+  bool _loading = true;
   bool _busy = false;
 
   @override
   void initState() {
     super.initState();
     _puzzlet = widget.puzzlet;
+    _loadValidations();
+  }
+
+  Future<void> _loadValidations() async {
+    setState(() => _loading = true);
+    try {
+      final list = await widget.api.listPuzzletValidations(_puzzlet.id);
+      if (!mounted) return;
+      setState(() {
+        _validations = list;
+        _activeValidation = _pickActive(list);
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not load validations: $e')),
+      );
+    }
+  }
+
+  PuzzletValidationModel? _pickActive(List<PuzzletValidationModel> list) {
+    for (final v in list) {
+      if (v.status != ValidationStatus.accepted &&
+          v.status != ValidationStatus.rejected) {
+        return v;
+      }
+    }
+    return null;
   }
 
   Future<void> _assign() async {
@@ -48,6 +80,7 @@ class _PuzzletSupervisionDetailRouteState
       if (!mounted) return;
       setState(() {
         _activeValidation = validation;
+        _validations = [validation, ..._validations];
         _busy = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
@@ -121,10 +154,15 @@ class _PuzzletSupervisionDetailRouteState
     final canAssign = v == null && _puzzlet.status == DraftStatus.draft;
     final canDecide = v?.status == ValidationStatus.submitted;
 
+    final pastValidations = _validations
+        .where((vv) => vv.id != _activeValidation?.id)
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Puzzlet'),
         actions: [
+          IconButton(onPressed: _loading ? null : _loadValidations, icon: const Icon(Icons.refresh)),
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Center(
@@ -136,7 +174,9 @@ class _PuzzletSupervisionDetailRouteState
           ),
         ],
       ),
-      body: ListView(
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Card(
@@ -238,6 +278,46 @@ class _PuzzletSupervisionDetailRouteState
                     ),
                   ),
                 ],
+              ),
+          ],
+          if (pastValidations.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Text('History', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            for (final past in pastValidations)
+              Card(
+                child: ExpansionTile(
+                  title: Row(
+                    children: [
+                      Expanded(child: Text(validationStatusLabel(past.status))),
+                      StatusBadge(
+                        label: past.status.name,
+                        color: statusColorFor(past.status.name),
+                      ),
+                    ],
+                  ),
+                  subtitle: Text(
+                    '${past.comments.length} comment${past.comments.length == 1 ? '' : 's'}',
+                  ),
+                  children: past.comments
+                      .map((c) => ListTile(
+                            title: Text(c.field,
+                                style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (c.suggestedValue != null)
+                                  Text('Suggest: ${c.suggestedValue}'),
+                                if (c.comment != null) Text(c.comment!),
+                              ],
+                            ),
+                            trailing: StatusBadge(
+                              label: c.status.name,
+                              color: statusColorFor(c.status.name),
+                            ),
+                          ))
+                      .toList(),
+                ),
               ),
           ],
         ],

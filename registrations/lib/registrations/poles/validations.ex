@@ -413,6 +413,22 @@ defmodule Registrations.Poles.Validations do
     Repo.all(query)
   end
 
+  def list_validations_for_pole(pole_id) do
+    PoleValidation
+    |> where([v], v.pole_id == ^pole_id)
+    |> order_by([v], desc: v.inserted_at)
+    |> Repo.all()
+    |> Repo.preload([:comments])
+  end
+
+  def list_validations_for_puzzlet(puzzlet_id) do
+    PuzzletValidation
+    |> where([v], v.puzzlet_id == ^puzzlet_id)
+    |> order_by([v], desc: v.inserted_at)
+    |> Repo.all()
+    |> Repo.preload([:comments])
+  end
+
   def list_poles_for_supervision(filter \\ %{}) do
     Pole
     |> filter_by_status(filter[:status])
