@@ -194,8 +194,8 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
             padding: const EdgeInsets.only(right: 12),
             child: Center(
               child: StatusBadge(
-                label: _pole.status.name,
-                color: statusColorFor(_pole.status.name),
+                label: draftStatusLabel(_pole.status),
+                color: statusColorFor(draftStatusLabel(_pole.status)),
               ),
             ),
           ),

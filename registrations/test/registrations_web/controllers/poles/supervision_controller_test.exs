@@ -210,6 +210,22 @@ defmodule RegistrationsWeb.Poles.SupervisionControllerTest do
       assert Repo.get!(Pole, pole.id).label == "after"
     end
 
+    test "list_poles includes active_validation summary when assigned",
+         %{conn: conn, supervisor: supervisor} do
+      validator = insert(:user, email: unique_email("v"))
+      author = insert(:user, email: unique_email("a"))
+      pole = insert(:pole, creator: author, status: :draft)
+      {:ok, validation} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+      {:ok, validation} = Validations.transition_pole_validation_as_validator(validation, validator.id, "in_progress")
+      {:ok, _} = Validations.add_pole_comment(validation, validator.id, %{"field" => "label", "comment" => "x"})
+
+      body = conn |> get("/poles/supervision/poles?status=in_review") |> json_response(200)
+      target = Enum.find(body["poles"], &(&1["id"] == pole.id))
+      assert target != nil
+      assert target["active_validation"]["status"] == "in_progress"
+      assert target["active_validation"]["comment_count"] == 1
+    end
+
     test "list_poles can filter by status", %{conn: conn} do
       author = insert(:user, email: unique_email("a"))
       _draft = insert(:pole, creator: author, status: :draft, barcode: "FILT-D-#{System.unique_integer([:positive])}")

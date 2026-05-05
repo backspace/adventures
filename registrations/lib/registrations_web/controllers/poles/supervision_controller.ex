@@ -33,12 +33,41 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
 
   def list_poles(conn, params) do
     poles = Validations.list_poles_for_supervision(%{status: params["status"]})
-    json(conn, %{poles: Enum.map(poles, &render_pole/1)})
+    active = Validations.active_validations_by_pole(Enum.map(poles, & &1.id))
+    json(conn, %{
+      poles: Enum.map(poles, fn p -> render_pole_with_active(p, Map.get(active, p.id)) end)
+    })
   end
 
   def list_puzzlets(conn, params) do
     puzzlets = Validations.list_puzzlets_for_supervision(%{status: params["status"]})
-    json(conn, %{puzzlets: Enum.map(puzzlets, &render_puzzlet/1)})
+    active = Validations.active_validations_by_puzzlet(Enum.map(puzzlets, & &1.id))
+    json(conn, %{
+      puzzlets:
+        Enum.map(puzzlets, fn p -> render_puzzlet_with_active(p, Map.get(active, p.id)) end)
+    })
+  end
+
+  defp render_pole_with_active(pole, validation) do
+    pole
+    |> render_pole()
+    |> Map.put(:active_validation, render_active_summary(validation))
+  end
+
+  defp render_puzzlet_with_active(puzzlet, validation) do
+    puzzlet
+    |> render_puzzlet()
+    |> Map.put(:active_validation, render_active_summary(validation))
+  end
+
+  defp render_active_summary(nil), do: nil
+
+  defp render_active_summary(%{} = validation) do
+    %{
+      id: validation.id,
+      status: validation.status,
+      comment_count: length(validation.comments || [])
+    }
   end
 
   def list_pole_validations(conn, %{"id" => pole_id}) do

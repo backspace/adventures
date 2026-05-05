@@ -42,6 +42,7 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
 
   Color _statusColor(DraftStatus s) => switch (s) {
         DraftStatus.draft => Colors.orange.shade700,
+        DraftStatus.inReview => Colors.blue.shade700,
         DraftStatus.validated => Colors.green.shade700,
         DraftStatus.retired => Colors.grey.shade700,
       };
@@ -187,6 +188,7 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
       DraftStatus.draft => ('draft', Colors.orange.shade700),
+      DraftStatus.inReview => ('in_review', Colors.blue.shade700),
       DraftStatus.validated => ('validated', Colors.green.shade700),
       DraftStatus.retired => ('retired', Colors.grey.shade700),
     };

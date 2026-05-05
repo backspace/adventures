@@ -12,6 +12,69 @@ import 'package:poles/widgets/status_badge.dart';
 
 enum _ListOrMap { list, map }
 
+List<Widget> _poleBadges(DraftPole p) {
+  final v = p.activeValidation;
+  if (v == null) {
+    return [
+      StatusBadge(
+        label: draftStatusLabel(p.status),
+        color: statusColorFor(draftStatusLabel(p.status)),
+      ),
+    ];
+  }
+  return [
+    StatusBadge(label: v.status, color: statusColorFor(v.status)),
+    if (v.commentCount > 0) ...[
+      const SizedBox(width: 4),
+      _CommentChip(v.commentCount),
+    ],
+  ];
+}
+
+List<Widget> _puzzletBadges(DraftPuzzlet p) {
+  final v = p.activeValidation;
+  if (v == null) {
+    return [
+      StatusBadge(
+        label: draftStatusLabel(p.status),
+        color: statusColorFor(draftStatusLabel(p.status)),
+      ),
+    ];
+  }
+  return [
+    StatusBadge(label: v.status, color: statusColorFor(v.status)),
+    if (v.commentCount > 0) ...[
+      const SizedBox(width: 4),
+      _CommentChip(v.commentCount),
+    ],
+  ];
+}
+
+class _CommentChip extends StatelessWidget {
+  final int count;
+  const _CommentChip(this.count);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.purple.withValues(alpha: 0.15),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.mode_comment_outlined, size: 12, color: Colors.purple),
+          const SizedBox(width: 2),
+          Text('$count', style: const TextStyle(fontSize: 12, color: Colors.purple)),
+        ],
+      ),
+    );
+  }
+}
+
 class SupervisorRoute extends StatefulWidget {
   final PolesApi api;
   const SupervisorRoute({super.key, required this.api});
@@ -238,10 +301,7 @@ class _PolesTabState extends State<_PolesTab> {
           title: Row(
             children: [
               Expanded(child: Text(p.label ?? p.barcode)),
-              StatusBadge(
-                label: p.status.name,
-                color: statusColorFor(p.status.name),
-              ),
+              ..._poleBadges(p),
             ],
           ),
           subtitle: Text(p.barcode),
@@ -271,7 +331,7 @@ class _PolesTabState extends State<_PolesTab> {
               position: LatLng(p.latitude, p.longitude),
               label: p.label ?? p.barcode,
               icon: Icons.location_on,
-              color: statusColorFor(p.status.name),
+              color: statusColorFor(draftStatusLabel(p.status)),
               onTap: () => _onPinTap(p),
             ))
         .toList();
@@ -390,10 +450,7 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              StatusBadge(
-                label: p.status.name,
-                color: statusColorFor(p.status.name),
-              ),
+              ..._puzzletBadges(p),
             ],
           ),
           subtitle: Text(
@@ -426,7 +483,7 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
               position: LatLng(p.latitude!, p.longitude!),
               label: p.instructions,
               icon: Icons.edit_note,
-              color: statusColorFor(p.status.name),
+              color: statusColorFor(draftStatusLabel(p.status)),
               onTap: () => _onPinTap(p),
             ))
         .toList();

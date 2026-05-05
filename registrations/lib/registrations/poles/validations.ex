@@ -413,6 +413,33 @@ defmodule Registrations.Poles.Validations do
     Repo.all(query)
   end
 
+  @doc """
+  For a list of pole ids, returns a map of pole_id => latest active
+  (non-terminal) PoleValidation, with comments preloaded. Poles without an
+  active validation are absent from the map.
+  """
+  def active_validations_by_pole(pole_ids) when is_list(pole_ids) do
+    PoleValidation
+    |> where([v], v.pole_id in ^pole_ids)
+    |> where([v], v.status not in ^["accepted", "rejected"])
+    |> order_by([v], desc: v.inserted_at)
+    |> Repo.all()
+    |> Repo.preload(:comments)
+    |> Enum.group_by(& &1.pole_id)
+    |> Map.new(fn {pole_id, vs} -> {pole_id, hd(vs)} end)
+  end
+
+  def active_validations_by_puzzlet(puzzlet_ids) when is_list(puzzlet_ids) do
+    PuzzletValidation
+    |> where([v], v.puzzlet_id in ^puzzlet_ids)
+    |> where([v], v.status not in ^["accepted", "rejected"])
+    |> order_by([v], desc: v.inserted_at)
+    |> Repo.all()
+    |> Repo.preload(:comments)
+    |> Enum.group_by(& &1.puzzlet_id)
+    |> Map.new(fn {puzzlet_id, vs} -> {puzzlet_id, hd(vs)} end)
+  end
+
   def list_validations_for_pole(pole_id) do
     PoleValidation
     |> where([v], v.pole_id == ^pole_id)

@@ -1,10 +1,37 @@
-enum DraftStatus { draft, validated, retired }
+enum DraftStatus { draft, inReview, validated, retired }
 
 DraftStatus _statusFromString(String? raw) => switch (raw) {
+      'in_review' => DraftStatus.inReview,
       'validated' => DraftStatus.validated,
       'retired' => DraftStatus.retired,
       _ => DraftStatus.draft,
     };
+
+String draftStatusLabel(DraftStatus s) => switch (s) {
+      DraftStatus.draft => 'draft',
+      DraftStatus.inReview => 'in_review',
+      DraftStatus.validated => 'validated',
+      DraftStatus.retired => 'retired',
+    };
+
+class ActiveValidationSummary {
+  final String id;
+  final String status;
+  final int commentCount;
+
+  ActiveValidationSummary({
+    required this.id,
+    required this.status,
+    required this.commentCount,
+  });
+
+  factory ActiveValidationSummary.fromJson(Map<String, dynamic> json) =>
+      ActiveValidationSummary(
+        id: json['id'] as String,
+        status: json['status'] as String,
+        commentCount: json['comment_count'] as int? ?? 0,
+      );
+}
 
 class DraftPole {
   final String id;
@@ -17,6 +44,7 @@ class DraftPole {
   final DraftStatus status;
   final String? creatorId;
   final DateTime? insertedAt;
+  final ActiveValidationSummary? activeValidation;
 
   DraftPole({
     required this.id,
@@ -29,6 +57,7 @@ class DraftPole {
     required this.status,
     required this.creatorId,
     required this.insertedAt,
+    this.activeValidation,
   });
 
   factory DraftPole.fromJson(Map<String, dynamic> json) => DraftPole(
@@ -42,6 +71,10 @@ class DraftPole {
         status: _statusFromString(json['status'] as String?),
         creatorId: json['creator_id'] as String?,
         insertedAt: DateTime.tryParse(json['inserted_at'] as String? ?? ''),
+        activeValidation: json['active_validation'] == null
+            ? null
+            : ActiveValidationSummary.fromJson(
+                json['active_validation'] as Map<String, dynamic>),
       );
 }
 
@@ -57,6 +90,7 @@ class DraftPuzzlet {
   final double? longitude;
   final double? accuracyM;
   final DateTime? insertedAt;
+  final ActiveValidationSummary? activeValidation;
 
   DraftPuzzlet({
     required this.id,
@@ -70,6 +104,7 @@ class DraftPuzzlet {
     required this.longitude,
     required this.accuracyM,
     required this.insertedAt,
+    this.activeValidation,
   });
 
   factory DraftPuzzlet.fromJson(Map<String, dynamic> json) => DraftPuzzlet(
@@ -84,6 +119,10 @@ class DraftPuzzlet {
         longitude: (json['longitude'] as num?)?.toDouble(),
         accuracyM: (json['accuracy_m'] as num?)?.toDouble(),
         insertedAt: DateTime.tryParse(json['inserted_at'] as String? ?? ''),
+        activeValidation: json['active_validation'] == null
+            ? null
+            : ActiveValidationSummary.fromJson(
+                json['active_validation'] as Map<String, dynamic>),
       );
 }
 

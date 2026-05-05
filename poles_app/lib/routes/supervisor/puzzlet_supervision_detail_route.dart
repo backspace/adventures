@@ -185,8 +185,8 @@ class _PuzzletSupervisionDetailRouteState
             padding: const EdgeInsets.only(right: 12),
             child: Center(
               child: StatusBadge(
-                label: _puzzlet.status.name,
-                color: statusColorFor(_puzzlet.status.name),
+                label: draftStatusLabel(_puzzlet.status),
+                color: statusColorFor(draftStatusLabel(_puzzlet.status)),
               ),
             ),
           ),
