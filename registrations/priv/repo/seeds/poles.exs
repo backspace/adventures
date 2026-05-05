@@ -5,7 +5,9 @@
 import Ecto.Query, only: [from: 2]
 
 alias Pow.Ecto.Schema.Password
+alias Registrations.Accounts
 alias Registrations.Poles
+alias Registrations.Poles.Pole
 alias Registrations.Poles.Puzzlet
 alias Registrations.Repo
 alias RegistrationsWeb.Team
@@ -57,12 +59,67 @@ defmodule Seed do
         pole
     end
   end
+
+  def ensure_role(user, role) do
+    if Accounts.has_role?(user, role) do
+      :ok
+    else
+      {:ok, _} = Accounts.assign_role(user.id, role)
+      IO.puts("assigned '#{role}' to #{user.email}")
+      :ok
+    end
+  end
+
+  def upsert_draft_pole(attrs, creator) do
+    case Repo.get_by(Pole, barcode: attrs.barcode) do
+      nil ->
+        attrs =
+          attrs
+          |> Map.put(:status, :draft)
+          |> Map.put(:creator_id, creator.id)
+
+        {:ok, pole} = Poles.create_pole(attrs)
+        IO.puts("seeded draft pole #{attrs.barcode} (#{creator.email})")
+        pole
+
+      pole ->
+        IO.puts("draft pole #{attrs.barcode} already exists, skipping")
+        pole
+    end
+  end
+
+  def upsert_draft_puzzlet(attrs, creator) do
+    existing =
+      Repo.one(
+        from(p in Puzzlet,
+          where: p.creator_id == ^creator.id and p.instructions == ^attrs.instructions,
+          limit: 1
+        )
+      )
+
+    case existing do
+      nil ->
+        attrs =
+          attrs
+          |> Map.put(:status, :draft)
+          |> Map.put(:creator_id, creator.id)
+
+        {:ok, _} = Poles.create_puzzlet(attrs)
+        IO.puts("seeded draft puzzlet for #{creator.email}: #{String.slice(attrs.instructions, 0, 40)}…")
+
+      _ ->
+        IO.puts("draft puzzlet for #{creator.email} already exists, skipping")
+    end
+  end
 end
 
 alpha = Seed.upsert_team("Alpha Wolves")
 beta = Seed.upsert_team("Beta Bears")
-Seed.upsert_user("dev@example.com", "Xenogenesis", alpha)
-Seed.upsert_user("dev2@example.com", "Xenogenesis", beta)
+dev1 = Seed.upsert_user("dev@example.com", "Xenogenesis", alpha)
+dev2 = Seed.upsert_user("dev2@example.com", "Xenogenesis", beta)
+
+Seed.ensure_role(dev1, "author")
+Seed.ensure_role(dev2, "author")
 
 # Coordinates clustered around downtown Winnipeg. Edit to fit your playing field.
 poles = [
@@ -128,5 +185,87 @@ if existing_unassigned == 0 do
 else
   IO.puts("unassigned puzzlets already present, skipping")
 end
+
+# Draft poles authored by the dev users — for exercising the supervision
+# workflow (assign → validate → accept). All in :draft status, awaiting review.
+draft_poles_dev1 = [
+  %{
+    barcode: "DRAFT-D1-001",
+    label: "Manitoba Hydro Place",
+    latitude: 49.8911,
+    longitude: -97.1409,
+    notes: "Pole near the south entrance, tricky GPS in the urban canyon.",
+    accuracy_m: 14.0
+  },
+  %{
+    barcode: "DRAFT-D1-002",
+    label: "Old Market Square",
+    latitude: 49.8989,
+    longitude: -97.1394,
+    notes: "By the bandshell; flexible timing for puzzlets here.",
+    accuracy_m: 6.5
+  }
+]
+
+draft_poles_dev2 = [
+  %{
+    barcode: "DRAFT-D2-001",
+    label: "Millennium Library",
+    latitude: 49.8930,
+    longitude: -97.1413,
+    notes: "Main entrance, well-lit at night.",
+    accuracy_m: 4.2
+  },
+  %{
+    barcode: "DRAFT-D2-002",
+    label: "Winnipeg Art Gallery",
+    latitude: 49.8881,
+    longitude: -97.1437,
+    notes: "By the Inuit Art Centre side, sometimes blocked by events.",
+    accuracy_m: 9.8
+  }
+]
+
+Enum.each(draft_poles_dev1, &Seed.upsert_draft_pole(&1, dev1))
+Enum.each(draft_poles_dev2, &Seed.upsert_draft_pole(&1, dev2))
+
+# Draft puzzlets (unassigned to a pole) — admin will pair them later. Locations
+# are where the author was when they wrote the question, not where they belong.
+draft_puzzlets_dev1 = [
+  %{
+    instructions: "What four-letter word is etched above the main library doors?",
+    answer: "READ",
+    difficulty: 2,
+    latitude: 49.8930,
+    longitude: -97.1413
+  },
+  %{
+    instructions: "How many bronze plaques line the entrance to the legislative grounds?",
+    answer: "6",
+    difficulty: 5,
+    latitude: 49.8884,
+    longitude: -97.1373
+  }
+]
+
+draft_puzzlets_dev2 = [
+  %{
+    instructions: "Name the sculpture by the river at The Forks (the tall, twisted one).",
+    answer: "Path of Time",
+    difficulty: 6,
+    latitude: 49.8889,
+    longitude: -97.1303
+  },
+  %{
+    instructions: "What's the visible street number above the Exchange District café entrance?",
+    answer: "108",
+    difficulty: 3,
+    latitude: 49.8989,
+    longitude: -97.1394
+  }
+]
+
+Enum.each(draft_puzzlets_dev1, &Seed.upsert_draft_puzzlet(&1, dev1))
+Enum.each(draft_puzzlets_dev2, &Seed.upsert_draft_puzzlet(&1, dev2))
 
 IO.puts("\nDone. Try: POST /powapi/session with dev@example.com / Xenogenesis")
