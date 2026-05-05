@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/models/validation.dart';
+import 'package:poles/routes/supervisor/supervisor_edit_pole_route.dart';
 import 'package:poles/routes/supervisor/validator_picker.dart';
 import 'package:poles/widgets/status_badge.dart';
 
@@ -148,6 +149,17 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
     }
   }
 
+  Future<void> _editFields() async {
+    final updated = await Navigator.of(context).push<DraftPole>(
+      MaterialPageRoute(
+        builder: (_) => SupervisorEditPoleRoute(api: widget.api, pole: _pole),
+      ),
+    );
+    if (updated != null && mounted) {
+      setState(() => _pole = updated);
+    }
+  }
+
   void _showError(DioException e) {
     if (!mounted) return;
     final detail = e.response?.data?['error']?['detail'] ??
@@ -172,6 +184,11 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
       appBar: AppBar(
         title: Text(_pole.label ?? _pole.barcode),
         actions: [
+          IconButton(
+            tooltip: 'Edit fields',
+            onPressed: _busy ? null : _editFields,
+            icon: const Icon(Icons.edit_outlined),
+          ),
           IconButton(onPressed: _loading ? null : _loadValidations, icon: const Icon(Icons.refresh)),
           Padding(
             padding: const EdgeInsets.only(right: 12),
