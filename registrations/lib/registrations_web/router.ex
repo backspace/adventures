@@ -73,6 +73,13 @@ defmodule RegistrationsWeb.Router do
     plug(RegistrationsWeb.Plugs.RequireRole, role: "validator")
   end
 
+  pipeline :poles_supervisor do
+    plug(:accepts, ["json"])
+    plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
+    plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+    plug(RegistrationsWeb.Plugs.RequireRole, role: "validation_supervisor")
+  end
+
   pipeline :skip_csrf_protection do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -227,6 +234,27 @@ defmodule RegistrationsWeb.Router do
     patch("/puzzlet-comments/:id", ValidationController, :update_puzzlet_comment)
     delete("/pole-comments/:id", ValidationController, :delete_pole_comment)
     delete("/puzzlet-comments/:id", ValidationController, :delete_puzzlet_comment)
+  end
+
+  scope "/poles/supervision", RegistrationsWeb.Poles, as: :poles_supervision do
+    pipe_through([:poles_supervisor])
+
+    get("/dashboard", SupervisionController, :dashboard)
+    get("/validators", SupervisionController, :list_validators)
+    get("/poles", SupervisionController, :list_poles)
+    get("/puzzlets", SupervisionController, :list_puzzlets)
+
+    post("/poles/:id/validations", SupervisionController, :assign_pole)
+    post("/puzzlets/:id/validations", SupervisionController, :assign_puzzlet)
+
+    patch("/pole-validations/:id", SupervisionController, :update_pole_validation)
+    patch("/puzzlet-validations/:id", SupervisionController, :update_puzzlet_validation)
+
+    patch("/pole-comments/:id", SupervisionController, :update_pole_comment)
+    patch("/puzzlet-comments/:id", SupervisionController, :update_puzzlet_comment)
+
+    patch("/poles/:id", SupervisionController, :update_pole)
+    patch("/puzzlets/:id", SupervisionController, :update_puzzlet)
   end
 
   scope "/fixme", RegistrationsWeb do

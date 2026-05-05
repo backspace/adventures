@@ -235,4 +235,226 @@ defmodule Registrations.Poles.Validations do
 
   defp parent_id_for_comment(%PoleValidationComment{pole_validation_id: id}), do: id
   defp parent_id_for_comment(%PuzzletValidationComment{puzzlet_validation_id: id}), do: id
+
+  # ──────── Supervisor: accept/reject validations ────────────────────
+
+  def accept_pole_validation(%PoleValidation{} = v) do
+    decide_pole_validation(v, "accepted", :validated)
+  end
+
+  def reject_pole_validation(%PoleValidation{} = v) do
+    decide_pole_validation(v, "rejected", :draft)
+  end
+
+  defp decide_pole_validation(validation, new_status, target_status) do
+    Repo.transaction(fn ->
+      changeset =
+        validation
+        |> PoleValidation.changeset(%{status: new_status})
+        |> Lifecycle.validate_status_transition(validation.status, :supervisor)
+
+      with {:ok, updated} <- Repo.update(changeset),
+           pole <- Repo.get!(Pole, validation.pole_id),
+           {:ok, _} <- pole |> Ecto.Changeset.change(status: target_status) |> Repo.update() do
+        updated
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  def accept_puzzlet_validation(%PuzzletValidation{} = v) do
+    decide_puzzlet_validation(v, "accepted", :validated)
+  end
+
+  def reject_puzzlet_validation(%PuzzletValidation{} = v) do
+    decide_puzzlet_validation(v, "rejected", :draft)
+  end
+
+  defp decide_puzzlet_validation(validation, new_status, target_status) do
+    Repo.transaction(fn ->
+      changeset =
+        validation
+        |> PuzzletValidation.changeset(%{status: new_status})
+        |> Lifecycle.validate_status_transition(validation.status, :supervisor)
+
+      with {:ok, updated} <- Repo.update(changeset),
+           puzzlet <- Repo.get!(Puzzlet, validation.puzzlet_id),
+           {:ok, _} <- puzzlet |> Ecto.Changeset.change(status: target_status) |> Repo.update() do
+        updated
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  # ──────── Supervisor: decide comments (apply suggestion) ───────────
+
+  def accept_pole_comment(%PoleValidationComment{} = comment) do
+    apply_comment_decision(comment, "accepted", &apply_pole_suggestion/2)
+  end
+
+  def reject_pole_comment(%PoleValidationComment{} = comment) do
+    apply_comment_decision(comment, "rejected", fn _, _ -> :ok end)
+  end
+
+  def accept_puzzlet_comment(%PuzzletValidationComment{} = comment) do
+    apply_comment_decision(comment, "accepted", &apply_puzzlet_suggestion/2)
+  end
+
+  def reject_puzzlet_comment(%PuzzletValidationComment{} = comment) do
+    apply_comment_decision(comment, "rejected", fn _, _ -> :ok end)
+  end
+
+  defp apply_comment_decision(comment, new_status, apply_fun) do
+    Repo.transaction(fn ->
+      cs =
+        case comment do
+          %PoleValidationComment{} -> PoleValidationComment.changeset(comment, %{status: new_status})
+          %PuzzletValidationComment{} -> PuzzletValidationComment.changeset(comment, %{status: new_status})
+        end
+
+      with {:ok, updated} <- Repo.update(cs),
+           :ok <- maybe_apply(apply_fun, updated) do
+        updated
+      else
+        {:error, error} -> Repo.rollback(error)
+      end
+    end)
+  end
+
+  defp maybe_apply(_fun, %{status: status} = _comment) when status != "accepted", do: :ok
+
+  defp maybe_apply(fun, comment) do
+    case fun.(comment, comment.suggested_value) do
+      :ok -> :ok
+      {:ok, _} -> :ok
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  defp apply_pole_suggestion(_comment, nil), do: :ok
+
+  defp apply_pole_suggestion(%PoleValidationComment{} = c, suggested) do
+    parent = Repo.get!(PoleValidation, c.pole_validation_id)
+    pole = Repo.get!(Pole, parent.pole_id)
+    apply_field_to(pole, c.field, suggested, &Pole.changeset/2)
+  end
+
+  defp apply_puzzlet_suggestion(_comment, nil), do: :ok
+
+  defp apply_puzzlet_suggestion(%PuzzletValidationComment{} = c, suggested) do
+    parent = Repo.get!(PuzzletValidation, c.puzzlet_validation_id)
+    puzzlet = Repo.get!(Puzzlet, parent.puzzlet_id)
+    apply_field_to(puzzlet, c.field, suggested, &Puzzlet.changeset/2)
+  end
+
+  defp apply_field_to(record, field, raw_value, changeset_fun) do
+    with {:ok, parsed} <- coerce_value(field, raw_value),
+         attrs <- %{field => parsed},
+         {:ok, _} <- record |> changeset_fun.(attrs) |> Repo.update() do
+      :ok
+    end
+  end
+
+  defp coerce_value("latitude", v), do: parse_float(v)
+  defp coerce_value("longitude", v), do: parse_float(v)
+  defp coerce_value("difficulty", v), do: parse_int(v)
+  defp coerce_value(_, v), do: {:ok, v}
+
+  defp parse_float(v) when is_binary(v) do
+    case Float.parse(v) do
+      {f, ""} -> {:ok, f}
+      _ -> {:error, :bad_number}
+    end
+  end
+
+  defp parse_int(v) when is_binary(v) do
+    case Integer.parse(v) do
+      {i, ""} -> {:ok, i}
+      _ -> {:error, :bad_number}
+    end
+  end
+
+  # ──────── Supervisor: direct edit of target ────────────────────────
+
+  def supervisor_update_pole(%Pole{} = pole, attrs) do
+    pole
+    |> Pole.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def supervisor_update_puzzlet(%Puzzlet{} = puzzlet, attrs) do
+    puzzlet
+    |> Puzzlet.changeset(attrs)
+    |> Repo.update()
+  end
+
+  # ──────── Supervisor: lookups for the dashboard / pickers ──────────
+
+  @doc """
+  Lists users with the validator role. If `exclude_user_id` is given, that
+  user is filtered out — useful when the picker is for a specific pole or
+  puzzlet whose creator can't validate it.
+  """
+  def list_validators(opts \\ []) do
+    exclude = Keyword.get(opts, :exclude_user_id)
+
+    query =
+      from(r in Registrations.UserRole,
+        where: r.role == "validator",
+        join: u in RegistrationsWeb.User,
+        on: u.id == r.user_id,
+        select: u
+      )
+
+    query = if exclude, do: where(query, [r, u], u.id != ^exclude), else: query
+
+    Repo.all(query)
+  end
+
+  def list_poles_for_supervision(filter \\ %{}) do
+    Pole
+    |> filter_by_status(filter[:status])
+    |> order_by([p], desc: p.inserted_at)
+    |> Repo.all()
+  end
+
+  def list_puzzlets_for_supervision(filter \\ %{}) do
+    Puzzlet
+    |> filter_by_status(filter[:status])
+    |> order_by([p], desc: p.inserted_at)
+    |> Repo.all()
+  end
+
+  defp filter_by_status(query, nil), do: query
+  defp filter_by_status(query, ""), do: query
+
+  defp filter_by_status(query, status) when is_binary(status) do
+    where(query, [p], p.status == ^status)
+  end
+
+  def dashboard_counts do
+    pole_counts = count_by_status(Pole)
+    puzzlet_counts = count_by_status(Puzzlet)
+    submitted_pv = count_by_validation_status(PoleValidation, "submitted")
+    submitted_zv = count_by_validation_status(PuzzletValidation, "submitted")
+
+    %{
+      poles: pole_counts,
+      puzzlets: puzzlet_counts,
+      pole_validations_submitted: submitted_pv,
+      puzzlet_validations_submitted: submitted_zv
+    }
+  end
+
+  defp count_by_status(schema) do
+    from(s in schema, group_by: s.status, select: {s.status, count(s.id)})
+    |> Repo.all()
+    |> Map.new()
+  end
+
+  defp count_by_validation_status(schema, status) do
+    Repo.aggregate(from(v in schema, where: v.status == ^status), :count, :id)
+  end
 end
