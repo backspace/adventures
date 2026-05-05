@@ -142,22 +142,34 @@ class _Overview extends StatelessWidget {
     if (error != null) return Center(child: Text(error!));
     if (counts == null) return const Center(child: CircularProgressIndicator());
 
+    final submittedTotal = counts!.poleValidationsSubmitted + counts!.puzzletValidationsSubmitted;
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        if (submittedTotal > 0)
+          Card(
+            color: Colors.purple.shade50,
+            child: ListTile(
+              leading: const Icon(Icons.assignment_turned_in, color: Colors.purple),
+              title: Text(
+                '$submittedTotal awaiting your review',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                '${counts!.poleValidationsSubmitted} pole · '
+                '${counts!.puzzletValidationsSubmitted} puzzlet',
+              ),
+            ),
+          ),
+        if (submittedTotal > 0) const SizedBox(height: 16),
         _Section('Poles by status', counts!.poles),
         const SizedBox(height: 16),
         _Section('Puzzlets by status', counts!.puzzlets),
         const SizedBox(height: 16),
-        Card(
-          child: ListTile(
-            title: const Text('Submitted validations'),
-            subtitle: Text(
-              '${counts!.poleValidationsSubmitted} pole · '
-              '${counts!.puzzletValidationsSubmitted} puzzlet awaiting review',
-            ),
-          ),
-        ),
+        _Section('Pole validations', counts!.poleValidations),
+        const SizedBox(height: 16),
+        _Section('Puzzlet validations', counts!.puzzletValidations),
       ],
     );
   }

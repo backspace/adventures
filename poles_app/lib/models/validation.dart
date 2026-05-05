@@ -221,27 +221,31 @@ class ValidatorUser {
 class DashboardCounts {
   final Map<String, int> poles;
   final Map<String, int> puzzlets;
-  final int poleValidationsSubmitted;
-  final int puzzletValidationsSubmitted;
+  final Map<String, int> poleValidations;
+  final Map<String, int> puzzletValidations;
 
   DashboardCounts({
     required this.poles,
     required this.puzzlets,
-    required this.poleValidationsSubmitted,
-    required this.puzzletValidationsSubmitted,
+    required this.poleValidations,
+    required this.puzzletValidations,
   });
 
+  int get poleValidationsSubmitted => poleValidations['submitted'] ?? 0;
+  int get puzzletValidationsSubmitted => puzzletValidations['submitted'] ?? 0;
+
   factory DashboardCounts.fromJson(Map<String, dynamic> json) {
-    final p = <String, int>{};
-    (json['poles'] as Map?)?.forEach((k, v) => p[k as String] = v as int);
-    final z = <String, int>{};
-    (json['puzzlets'] as Map?)?.forEach((k, v) => z[k as String] = v as int);
+    Map<String, int> readMap(String key) {
+      final out = <String, int>{};
+      (json[key] as Map?)?.forEach((k, v) => out[k as String] = v as int);
+      return out;
+    }
+
     return DashboardCounts(
-      poles: p,
-      puzzlets: z,
-      poleValidationsSubmitted: json['pole_validations_submitted'] as int? ?? 0,
-      puzzletValidationsSubmitted:
-          json['puzzlet_validations_submitted'] as int? ?? 0,
+      poles: readMap('poles'),
+      puzzlets: readMap('puzzlets'),
+      poleValidations: readMap('pole_validations'),
+      puzzletValidations: readMap('puzzlet_validations'),
     );
   }
 }

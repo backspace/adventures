@@ -77,16 +77,19 @@ void main() {
   });
 
   group('DashboardCounts.fromJson', () {
-    test('parses status maps', () {
+    test('parses status maps and validation breakdowns', () {
       final c = DashboardCounts.fromJson({
         'poles': {'draft': 3, 'validated': 1},
         'puzzlets': {'draft': 5},
-        'pole_validations_submitted': 2,
-        'puzzlet_validations_submitted': 0,
+        'pole_validations': {'submitted': 2, 'in_progress': 1},
+        'puzzlet_validations': {'submitted': 0},
       });
       expect(c.poles['draft'], 3);
       expect(c.puzzlets['draft'], 5);
+      expect(c.poleValidations['submitted'], 2);
+      expect(c.poleValidations['in_progress'], 1);
       expect(c.poleValidationsSubmitted, 2);
+      expect(c.puzzletValidationsSubmitted, 0);
     });
   });
 }

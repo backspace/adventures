@@ -250,11 +250,12 @@ defmodule RegistrationsWeb.Poles.SupervisionControllerTest do
       assert hd(body["validations"])["comments"] |> length() == 1
     end
 
-    test "dashboard returns counts", %{conn: conn} do
+    test "dashboard returns counts including validation breakdowns", %{conn: conn} do
       body = conn |> get("/poles/supervision/dashboard") |> json_response(200)
       assert is_map(body["poles"])
       assert is_map(body["puzzlets"])
-      assert is_integer(body["pole_validations_submitted"])
+      assert is_map(body["pole_validations"])
+      assert is_map(body["puzzlet_validations"])
     end
   end
 end

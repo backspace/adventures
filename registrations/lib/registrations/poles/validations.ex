@@ -480,14 +480,14 @@ defmodule Registrations.Poles.Validations do
   def dashboard_counts do
     pole_counts = count_by_status(Pole)
     puzzlet_counts = count_by_status(Puzzlet)
-    submitted_pv = count_by_validation_status(PoleValidation, "submitted")
-    submitted_zv = count_by_validation_status(PuzzletValidation, "submitted")
+    pole_validation_counts = count_by_validation_status(PoleValidation)
+    puzzlet_validation_counts = count_by_validation_status(PuzzletValidation)
 
     %{
       poles: pole_counts,
       puzzlets: puzzlet_counts,
-      pole_validations_submitted: submitted_pv,
-      puzzlet_validations_submitted: submitted_zv
+      pole_validations: pole_validation_counts,
+      puzzlet_validations: puzzlet_validation_counts
     }
   end
 
@@ -497,7 +497,9 @@ defmodule Registrations.Poles.Validations do
     |> Map.new()
   end
 
-  defp count_by_validation_status(schema, status) do
-    Repo.aggregate(from(v in schema, where: v.status == ^status), :count, :id)
+  defp count_by_validation_status(schema) do
+    from(v in schema, group_by: v.status, select: {v.status, count(v.id)})
+    |> Repo.all()
+    |> Map.new()
   end
 end
