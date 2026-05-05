@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/models/validation.dart';
+import 'package:poles/routes/supervisor/pin_action_sheet.dart';
 import 'package:poles/routes/supervisor/pole_supervision_detail_route.dart';
 import 'package:poles/routes/supervisor/puzzlet_supervision_detail_route.dart';
+import 'package:poles/widgets/map_pin.dart';
+import 'package:poles/widgets/pin_map.dart';
 import 'package:poles/widgets/status_badge.dart';
+
+enum _ListOrMap { list, map }
 
 class SupervisorRoute extends StatefulWidget {
   final PolesApi api;
@@ -144,6 +150,7 @@ class _PolesTab extends StatefulWidget {
 
 class _PolesTabState extends State<_PolesTab> {
   String _filter = 'draft';
+  _ListOrMap _view = _ListOrMap.list;
   List<DraftPole>? _poles;
   String? _error;
 
@@ -165,10 +172,29 @@ class _PolesTabState extends State<_PolesTab> {
     }
   }
 
+  Future<void> _onPinTap(DraftPole pole) async {
+    final result = await showPolePinSheet(context, api: widget.api, pole: pole);
+    if (result == PinActionResult.changed) {
+      await _load();
+      await widget.onChanged();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: SegmentedButton<_ListOrMap>(
+            segments: const [
+              ButtonSegment(value: _ListOrMap.list, label: Text('List'), icon: Icon(Icons.list)),
+              ButtonSegment(value: _ListOrMap.map, label: Text('Map'), icon: Icon(Icons.map)),
+            ],
+            selected: {_view},
+            onSelectionChanged: (set) => setState(() => _view = set.first),
+          ),
+        ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.all(8),
@@ -195,42 +221,61 @@ class _PolesTabState extends State<_PolesTab> {
                   ? const Center(child: CircularProgressIndicator())
                   : _poles!.isEmpty
                       ? const Center(child: Text('Nothing here.'))
-                      : ListView.builder(
-                          itemCount: _poles!.length,
-                          itemBuilder: (_, i) {
-                            final p = _poles![i];
-                            return ListTile(
-                              title: Row(
-                                children: [
-                                  Expanded(child: Text(p.label ?? p.barcode)),
-                                  StatusBadge(
-                                    label: p.status.name,
-                                    color: statusColorFor(p.status.name),
-                                  ),
-                                ],
-                              ),
-                              subtitle: Text(p.barcode),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () async {
-                                final changed = await Navigator.of(context).push<bool>(
-                                  MaterialPageRoute(
-                                    builder: (_) => PoleSupervisionDetailRoute(
-                                      api: widget.api,
-                                      pole: p,
-                                    ),
-                                  ),
-                                );
-                                if (changed == true) {
-                                  await _load();
-                                  await widget.onChanged();
-                                }
-                              },
-                            );
-                          },
-                        ),
+                      : _view == _ListOrMap.list
+                          ? _buildList()
+                          : _buildMap(),
         ),
       ],
     );
+  }
+
+  Widget _buildList() {
+    return ListView.builder(
+      itemCount: _poles!.length,
+      itemBuilder: (_, i) {
+        final p = _poles![i];
+        return ListTile(
+          title: Row(
+            children: [
+              Expanded(child: Text(p.label ?? p.barcode)),
+              StatusBadge(
+                label: p.status.name,
+                color: statusColorFor(p.status.name),
+              ),
+            ],
+          ),
+          subtitle: Text(p.barcode),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () async {
+            final changed = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(
+                builder: (_) => PoleSupervisionDetailRoute(
+                  api: widget.api,
+                  pole: p,
+                ),
+              ),
+            );
+            if (changed == true) {
+              await _load();
+              await widget.onChanged();
+            }
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMap() {
+    final pins = _poles!
+        .map((p) => MapPin(
+              position: LatLng(p.latitude, p.longitude),
+              label: p.label ?? p.barcode,
+              icon: Icons.location_on,
+              color: statusColorFor(p.status.name),
+              onTap: () => _onPinTap(p),
+            ))
+        .toList();
+    return PinMap(pins: pins);
   }
 }
 
@@ -248,6 +293,7 @@ class _PuzzletsTab extends StatefulWidget {
 
 class _PuzzletsTabState extends State<_PuzzletsTab> {
   String _filter = 'draft';
+  _ListOrMap _view = _ListOrMap.list;
   List<DraftPuzzlet>? _puzzlets;
   String? _error;
 
@@ -269,10 +315,32 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
     }
   }
 
+  Future<void> _onPinTap(DraftPuzzlet p) async {
+    final result = await showPuzzletPinSheet(context, api: widget.api, puzzlet: p);
+    if (result == PinActionResult.changed) {
+      await _load();
+      await widget.onChanged();
+    }
+  }
+
+  int _orphanCount() =>
+      _puzzlets?.where((p) => p.latitude == null).length ?? 0;
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: SegmentedButton<_ListOrMap>(
+            segments: const [
+              ButtonSegment(value: _ListOrMap.list, label: Text('List'), icon: Icon(Icons.list)),
+              ButtonSegment(value: _ListOrMap.map, label: Text('Map'), icon: Icon(Icons.map)),
+            ],
+            selected: {_view},
+            onSelectionChanged: (set) => setState(() => _view = set.first),
+          ),
+        ),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.all(8),
@@ -299,48 +367,86 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
                   ? const Center(child: CircularProgressIndicator())
                   : _puzzlets!.isEmpty
                       ? const Center(child: Text('Nothing here.'))
-                      : ListView.builder(
-                          itemCount: _puzzlets!.length,
-                          itemBuilder: (_, i) {
-                            final p = _puzzlets![i];
-                            return ListTile(
-                              title: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      p.instructions,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  StatusBadge(
-                                    label: p.status.name,
-                                    color: statusColorFor(p.status.name),
-                                  ),
-                                ],
-                              ),
-                              subtitle: Text(
-                                'Difficulty ${p.difficulty} · Answer: ${p.answer}',
-                              ),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () async {
-                                final changed = await Navigator.of(context).push<bool>(
-                                  MaterialPageRoute(
-                                    builder: (_) => PuzzletSupervisionDetailRoute(
-                                      api: widget.api,
-                                      puzzlet: p,
-                                    ),
-                                  ),
-                                );
-                                if (changed == true) {
-                                  await _load();
-                                  await widget.onChanged();
-                                }
-                              },
-                            );
-                          },
-                        ),
+                      : _view == _ListOrMap.list
+                          ? _buildList()
+                          : _buildMap(),
         ),
+      ],
+    );
+  }
+
+  Widget _buildList() {
+    return ListView.builder(
+      itemCount: _puzzlets!.length,
+      itemBuilder: (_, i) {
+        final p = _puzzlets![i];
+        return ListTile(
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  p.instructions,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              StatusBadge(
+                label: p.status.name,
+                color: statusColorFor(p.status.name),
+              ),
+            ],
+          ),
+          subtitle: Text(
+            'Difficulty ${p.difficulty} · Answer: ${p.answer}',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () async {
+            final changed = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(
+                builder: (_) => PuzzletSupervisionDetailRoute(
+                  api: widget.api,
+                  puzzlet: p,
+                ),
+              ),
+            );
+            if (changed == true) {
+              await _load();
+              await widget.onChanged();
+            }
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMap() {
+    final located = _puzzlets!.where((p) => p.latitude != null).toList();
+    final pins = located
+        .map((p) => MapPin(
+              position: LatLng(p.latitude!, p.longitude!),
+              label: p.instructions,
+              icon: Icons.edit_note,
+              color: statusColorFor(p.status.name),
+              onTap: () => _onPinTap(p),
+            ))
+        .toList();
+
+    final orphan = _orphanCount();
+    return Column(
+      children: [
+        Expanded(
+          child: pins.isEmpty
+              ? const Center(child: Text('No puzzlets with a captured location.'))
+              : PinMap(pins: pins),
+        ),
+        if (orphan > 0)
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(
+              '$orphan puzzlet${orphan == 1 ? '' : 's'} without a location — see the list view',
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+          ),
       ],
     );
   }

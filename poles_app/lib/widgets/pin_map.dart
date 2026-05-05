@@ -48,9 +48,13 @@ class PinMap extends StatelessWidget {
                     point: p.position,
                     width: 36,
                     height: 36,
-                    child: Tooltip(
-                      message: p.label,
-                      child: Icon(p.icon, color: p.color, size: 36),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: p.onTap,
+                      child: Tooltip(
+                        message: p.label,
+                        child: Icon(p.icon, color: p.color, size: 36),
+                      ),
                     ),
                   ))
               .toList(),

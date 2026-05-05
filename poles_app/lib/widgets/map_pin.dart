@@ -6,11 +6,13 @@ class MapPin {
   final String label;
   final IconData icon;
   final Color color;
+  final VoidCallback? onTap;
 
   const MapPin({
     required this.position,
     required this.label,
     required this.icon,
     required this.color,
+    this.onTap,
   });
 }
