@@ -66,6 +66,13 @@ defmodule RegistrationsWeb.Router do
     plug(RegistrationsWeb.Plugs.RequireRole, role: "author")
   end
 
+  pipeline :poles_validator do
+    plug(:accepts, ["json"])
+    plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
+    plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+    plug(RegistrationsWeb.Plugs.RequireRole, role: "validator")
+  end
+
   pipeline :skip_csrf_protection do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -202,6 +209,24 @@ defmodule RegistrationsWeb.Router do
     post("/puzzlets", DraftController, :create_puzzlet)
     patch("/puzzlets/:id", DraftController, :update_puzzlet)
     delete("/puzzlets/:id", DraftController, :delete_puzzlet)
+  end
+
+  scope "/poles/validation", RegistrationsWeb.Poles, as: :poles_validation do
+    pipe_through([:poles_validator])
+
+    get("/mine", ValidationController, :mine)
+    patch("/pole-validations/:id", ValidationController, :update_pole_validation)
+    patch("/puzzlet-validations/:id", ValidationController, :update_puzzlet_validation)
+
+    post("/pole-validations/:validation_id/comments",
+         ValidationController, :create_pole_comment)
+    post("/puzzlet-validations/:validation_id/comments",
+         ValidationController, :create_puzzlet_comment)
+
+    patch("/pole-comments/:id", ValidationController, :update_pole_comment)
+    patch("/puzzlet-comments/:id", ValidationController, :update_puzzlet_comment)
+    delete("/pole-comments/:id", ValidationController, :delete_pole_comment)
+    delete("/puzzlet-comments/:id", ValidationController, :delete_puzzlet_comment)
   end
 
   scope "/fixme", RegistrationsWeb do
