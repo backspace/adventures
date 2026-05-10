@@ -104,16 +104,22 @@ if config_env() == :prod do
       environment variable SENTRY_DSN is missing.
       """
 
-  # ## Configuring the mailer
-  #
-  # In production you need to configure the mailer to use a different adapter.
-  # Also, you may need to configure the Swoosh API client of your choice if you
-  # are not using SMTP. Here is an example of the configuration:
-  #
+  mailgun_api_key =
+    System.get_env("MAILGUN_API_KEY") ||
+      raise """
+      environment variable MAILGUN_API_KEY is missing.
+      """
+
+  mailgun_domain =
+    System.get_env("MAILGUN_DOMAIN") ||
+      raise """
+      environment variable MAILGUN_DOMAIN is missing.
+      """
+
   config :registrations, Registrations.Mailer,
     adapter: Swoosh.Adapters.Mailgun,
-    api_key: System.get_env("MAILGUN_API_KEY"),
-    domain: System.get_env("MAILGUN_DOMAIN")
+    api_key: mailgun_api_key,
+    domain: mailgun_domain
 
   config :registrations, Registrations.Repo,
     # ssl: true,
