@@ -1,0 +1,386 @@
+openapi: 3.0.0
+info:
+  title: Games API
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /games:
+    post:
+      parameters:
+      - description: Optional concept for the game
+        explode: true
+        in: query
+        name: concept
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter incarnations by concept
+        explode: true
+        in: query
+        name: "incarnation_filter[concept]"
+        required: false
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameInput'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_games_post_201_response'
+          description: Successfully created game
+      summary: Create a new game
+  /games/{id}:
+    get:
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_games__id__get_200_response'
+          description: Successfully fetched game
+      summary: Fetch a game
+  /answers:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnswerInput'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Answer'
+          description: Successfully created answer
+      summary: Create a new answer
+components:
+  schemas:
+    GameInput:
+      example:
+        incarnation_id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        incarnation_id:
+          format: uuid
+          type: string
+      type: object
+    Game:
+      example:
+        relationships:
+          winner_answer:
+            data:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          incarnation:
+            data:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        attributes:
+          complete: true
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          format: uuid
+          type: string
+        attributes:
+          $ref: '#/components/schemas/Game_attributes'
+        relationships:
+          $ref: '#/components/schemas/Game_relationships'
+      type: object
+    Incarnation:
+      example:
+        relationships:
+          region:
+            data:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        attributes:
+          answer: answer
+          concept: concept
+          answers:
+          - answers
+          - answers
+          mask: mask
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          format: uuid
+          type: string
+        attributes:
+          $ref: '#/components/schemas/Incarnation_attributes'
+        relationships:
+          $ref: '#/components/schemas/Incarnation_relationships'
+      type: object
+    Region:
+      properties:
+        id:
+          format: uuid
+          type: string
+        attributes:
+          $ref: '#/components/schemas/Region_attributes'
+        relationships:
+          $ref: '#/components/schemas/Region_relationships'
+      type: object
+    AnswerInput:
+      example:
+        game:
+          data:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        answer: answer
+      properties:
+        answer:
+          type: string
+        game:
+          $ref: '#/components/schemas/Game_relationships_incarnation'
+      type: object
+    Answer:
+      example:
+        relationships:
+          game:
+            data:
+              id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        attributes:
+          answer: answer
+          correct: true
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          format: uuid
+          type: string
+        attributes:
+          $ref: '#/components/schemas/Answer_attributes'
+        relationships:
+          $ref: '#/components/schemas/Answer_relationships'
+      type: object
+    _games_post_201_response_included_inner:
+      oneOf:
+      - $ref: '#/components/schemas/Incarnation'
+      - $ref: '#/components/schemas/Region'
+    _games_post_201_response:
+      example:
+        data:
+          relationships:
+            winner_answer:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            incarnation:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          attributes:
+            complete: true
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        included:
+        - relationships:
+            region:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          attributes:
+            answer: answer
+            concept: concept
+            answers:
+            - answers
+            - answers
+            mask: mask
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        - relationships:
+            region:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          attributes:
+            answer: answer
+            concept: concept
+            answers:
+            - answers
+            - answers
+            mask: mask
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        data:
+          $ref: '#/components/schemas/Game'
+        included:
+          items:
+            $ref: '#/components/schemas/_games_post_201_response_included_inner'
+          type: array
+      type: object
+    _games__id__get_200_response_included_inner:
+      oneOf:
+      - $ref: '#/components/schemas/Incarnation'
+      - $ref: '#/components/schemas/Region'
+      - $ref: '#/components/schemas/Answer'
+    _games__id__get_200_response:
+      example:
+        data:
+          relationships:
+            winner_answer:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+            incarnation:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          attributes:
+            complete: true
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        included:
+        - relationships:
+            region:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          attributes:
+            answer: answer
+            concept: concept
+            answers:
+            - answers
+            - answers
+            mask: mask
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        - relationships:
+            region:
+              data:
+                id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          attributes:
+            answer: answer
+            concept: concept
+            answers:
+            - answers
+            - answers
+            mask: mask
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        data:
+          $ref: '#/components/schemas/Game'
+        included:
+          items:
+            $ref: '#/components/schemas/_games__id__get_200_response_included_inner'
+          type: array
+      type: object
+    Game_attributes:
+      example:
+        complete: true
+      properties:
+        complete:
+          type: boolean
+      type: object
+    Game_relationships_incarnation_data:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          format: uuid
+          type: string
+      type: object
+    Game_relationships_incarnation:
+      example:
+        data:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        data:
+          $ref: '#/components/schemas/Game_relationships_incarnation_data'
+      type: object
+    Game_relationships_winner_answer_data:
+      example:
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      nullable: true
+      properties:
+        id:
+          format: uuid
+          type: string
+      type: object
+    Game_relationships_winner_answer:
+      example:
+        data:
+          id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        data:
+          $ref: '#/components/schemas/Game_relationships_winner_answer_data'
+      type: object
+    Game_relationships:
+      example:
+        winner_answer:
+          data:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        incarnation:
+          data:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        incarnation:
+          $ref: '#/components/schemas/Game_relationships_incarnation'
+        winner_answer:
+          $ref: '#/components/schemas/Game_relationships_winner_answer'
+      type: object
+    Incarnation_attributes:
+      example:
+        answer: answer
+        concept: concept
+        answers:
+        - answers
+        - answers
+        mask: mask
+      properties:
+        concept:
+          type: string
+        mask:
+          type: string
+        answer:
+          type: string
+        answers:
+          items:
+            type: string
+          type: array
+      type: object
+    Incarnation_relationships:
+      example:
+        region:
+          data:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        region:
+          $ref: '#/components/schemas/Game_relationships_incarnation'
+      type: object
+    Region_attributes:
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      type: object
+    Region_relationships:
+      properties:
+        parent:
+          $ref: '#/components/schemas/Game_relationships_winner_answer'
+      type: object
+    Answer_attributes:
+      example:
+        answer: answer
+        correct: true
+      properties:
+        answer:
+          type: string
+        correct:
+          type: boolean
+      type: object
+    Answer_relationships:
+      example:
+        game:
+          data:
+            id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        game:
+          $ref: '#/components/schemas/Game_relationships_incarnation'
+      type: object
+
