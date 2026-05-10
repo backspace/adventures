@@ -26,24 +26,33 @@ defmodule Registrations.Application do
     Logger.info("Hack: #{inspect(specification_placed_hack)}")
     Logger.info("Hack: #{inspect(specification_position_hack)}")
 
-    children = [
-      # Start the Ecto repository
-      Registrations.Repo,
-      # Start the Telemetry supervisor
-      RegistrationsWeb.Telemetry,
-      # Start the PubSub system
-      {Phoenix.PubSub, name: Registrations.PubSub},
-      # Start the Endpoint (http/https)
-      RegistrationsWeb.Endpoint,
-      # Start a worker by calling: Registrations.Worker.start_link(arg)
-      # {Registrations.Worker, arg}
-      {ConCache, [name: :registrations_cache, ttl_check_interval: false]}
-    ]
+    children =
+      [
+        # Start the Ecto repository
+        Registrations.Repo,
+        # Start the Telemetry supervisor
+        RegistrationsWeb.Telemetry,
+        # Start the PubSub system
+        {Phoenix.PubSub, name: Registrations.PubSub},
+        # Start the Endpoint (http/https)
+        RegistrationsWeb.Endpoint,
+        # Start a worker by calling: Registrations.Worker.start_link(arg)
+        # {Registrations.Worker, arg}
+        {ConCache, [name: :registrations_cache, ttl_check_interval: false]}
+      ] ++ redix_child()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Registrations.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp redix_child do
+    case System.get_env("REDIS_URL") do
+      nil -> []
+      "" -> []
+      url -> [{Redix, {url, [name: :redix]}}]
+    end
   end
 
   # Tell Phoenix to update the endpoint configuration

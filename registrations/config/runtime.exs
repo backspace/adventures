@@ -116,6 +116,13 @@ if config_env() == :prod do
       environment variable MAILGUN_DOMAIN is missing.
       """
 
+  System.get_env("REDIS_URL") ||
+    raise """
+    environment variable REDIS_URL is missing.
+    The Pow session cache is backed by Redis in production; without it
+    POST /session and all authenticated requests will crash with :noproc.
+    """
+
   config :registrations, Registrations.Mailer,
     adapter: Swoosh.Adapters.Mailgun,
     api_key: mailgun_api_key,
