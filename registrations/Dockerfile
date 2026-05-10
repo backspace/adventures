@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 ARG ELIXIR_VERSION=1.17.2
 ARG OTP_VERSION=27.0.1
 ARG DEBIAN_VERSION=bookworm-20260505-slim
@@ -23,21 +24,27 @@ RUN mix local.hex --force && mix local.rebar --force
 ENV MIX_ENV="prod"
 
 COPY mix.exs mix.lock ./
-RUN mix deps.get --only $MIX_ENV
+RUN --mount=type=cache,target=/root/.hex \
+    --mount=type=cache,target=/root/.mix \
+    mix deps.get --only $MIX_ENV
 
 RUN mkdir config
 COPY config/config.exs config/${MIX_ENV}.exs config/
-RUN mix deps.compile
+RUN --mount=type=cache,target=/root/.hex \
+    --mount=type=cache,target=/root/.mix \
+    mix deps.compile
 
 COPY priv priv
 COPY lib lib
 COPY assets assets
 
 WORKDIR /app/assets
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 WORKDIR /app
 
-RUN mix assets.setup
+RUN --mount=type=cache,target=/root/.mix \
+    mix assets.setup
 RUN mix assets.deploy
 RUN mix compile
 
