@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/flavors.dart';
 import 'package:poles/routes/home_route.dart';
+import 'package:poles/routes/settings_route.dart';
+import 'package:poles/services/env_service.dart';
 
 class LoginRoute extends StatefulWidget {
   final PolesApi api;
@@ -50,12 +53,33 @@ class _LoginRouteState extends State<LoginRoute> {
 
   @override
   Widget build(BuildContext context) {
+    final apiRoot = EnvService.instance.currentApiRoot.value ?? '';
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign in')),
+      appBar: AppBar(
+        title: const Text('Sign in'),
+        actions: [
+          if (F.allowsEnvSwitch)
+            IconButton(
+              tooltip: 'Switch environment',
+              icon: const Icon(Icons.dns_outlined),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsRoute()),
+              ),
+            ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            _EnvBanner(
+              flavorTitle: F.title,
+              apiRoot: apiRoot,
+              showSwitcher: F.allowsEnvSwitch,
+            ),
+            const SizedBox(height: 24),
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -84,6 +108,53 @@ class _LoginRouteState extends State<LoginRoute> {
                     )
                   : const Text('Sign in'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EnvBanner extends StatelessWidget {
+  final String flavorTitle;
+  final String apiRoot;
+  final bool showSwitcher;
+
+  const _EnvBanner({
+    required this.flavorTitle,
+    required this.apiRoot,
+    required this.showSwitcher,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(flavorTitle,
+                      style: theme.textTheme.titleMedium),
+                  Text(
+                    apiRoot,
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            if (showSwitcher)
+              TextButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SettingsRoute()),
+                ),
+                icon: const Icon(Icons.swap_horiz),
+                label: const Text('Switch'),
+              ),
           ],
         ),
       ),

@@ -1,14 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/pole.dart';
+import 'package:poles/flavors.dart';
 import 'package:poles/routes/author/author_route.dart';
 import 'package:poles/routes/login_route.dart';
 import 'package:poles/routes/scan_route.dart';
+import 'package:poles/routes/settings_route.dart';
 import 'package:poles/routes/supervisor/supervisor_route.dart';
 import 'package:poles/routes/validator/validator_route.dart';
 import 'package:poles/services/poles_socket.dart';
@@ -43,8 +44,7 @@ class _HomeRouteState extends State<HomeRoute> {
   }
 
   Future<void> _connectSocket() async {
-    final apiRoot = dotenv.maybeGet('API_ROOT') ?? 'http://localhost:4000';
-    final socket = PolesSocket(apiRoot: apiRoot);
+    final socket = PolesSocket(apiRoot: widget.api.dio.options.baseUrl);
     _socket = socket;
     _updatesSub = socket.updates.listen(_applyUpdate);
     _reconnectsSub = socket.reconnects.listen((_) => _load());
@@ -136,9 +136,23 @@ class _HomeRouteState extends State<HomeRoute> {
 
   @override
   Widget build(BuildContext context) {
+    final titleText = _teamName == null ? 'Poles' : 'Poles — $_teamName';
     return Scaffold(
       appBar: AppBar(
-        title: Text(_teamName == null ? 'Poles' : 'Poles — $_teamName'),
+        title: F.allowsEnvSwitch
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(titleText),
+                  Text(
+                    '${F.title} · ${widget.api.dio.options.baseUrl}',
+                    style: const TextStyle(fontSize: 10),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              )
+            : Text(titleText),
         actions: [
           if (_isAuthor)
             IconButton(
@@ -163,6 +177,14 @@ class _HomeRouteState extends State<HomeRoute> {
                 MaterialPageRoute(builder: (_) => SupervisorRoute(api: widget.api)),
               ),
               icon: const Icon(Icons.supervisor_account),
+            ),
+          if (F.allowsEnvSwitch)
+            IconButton(
+              tooltip: 'Settings',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsRoute()),
+              ),
+              icon: const Icon(Icons.settings_outlined),
             ),
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
           IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
