@@ -41,6 +41,8 @@ config :phoenix, :generators,
 
 config :phoenix, :json_library, Jason
 
+config :sentry, dsn: nil
+
 config :registrations, Registrations.Repo, types: Registrations.Waydowntown.PostgresTypes
 
 config :registrations, :pow,
