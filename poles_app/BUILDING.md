@@ -22,6 +22,18 @@ flutter run -d <device>
 # uses dev flavor by default, reads .env.local or .env for API_ROOT
 ```
 
+## Versioning
+
+`pubspec.yaml` carries the marketing version (e.g. `version: 1.0.0+1`). Bump the left side (`1.0.0` → `1.1.0`) by hand when you want a new public version; the right side is overridden at build time so its value doesn't matter.
+
+The build number is derived from git commit count, which is always monotonic and reproducible:
+
+```bash
+--build-number=$(git rev-list --count HEAD)
+```
+
+That number maps back to a git revision if you ever need to investigate a crash. Apple wants the build number to increase per marketing version; Google wants it to increase across all releases ever. Commit count satisfies both because it only ever goes up.
+
 ## Alpha build
 
 For testers who need to switch environments.
@@ -30,9 +42,10 @@ For testers who need to switch environments.
 
 ```bash
 flutter build ipa \
+  --build-number=$(git rev-list --count HEAD) \
   --dart-define=FLAVOR_NAME=alpha \
   --dart-define=API_ROOT=https://poles-staging.chromatin.ca \
-  --dart-define=SENTRY_DSN=$ALPHA_SENTRY_DSN
+  --dart-define=SENTRY_DSN=$SENTRY_DSN
 ```
 
 Upload the resulting `build/ios/ipa/poles.ipa` via Xcode → Window → Organizer, or `xcrun altool --upload-app`. Add to TestFlight Internal group.
@@ -41,9 +54,10 @@ Upload the resulting `build/ios/ipa/poles.ipa` via Xcode → Window → Organize
 
 ```bash
 flutter build appbundle \
+  --build-number=$(git rev-list --count HEAD) \
   --dart-define=FLAVOR_NAME=alpha \
   --dart-define=API_ROOT=https://poles-staging.chromatin.ca \
-  --dart-define=SENTRY_DSN=$ALPHA_SENTRY_DSN
+  --dart-define=SENTRY_DSN=$SENTRY_DSN
 ```
 
 Upload `build/app/outputs/bundle/release/app-release.aab` to Play Console → Testing → Internal testing → Create new release.
@@ -56,9 +70,10 @@ For everyone else. No env switcher in the UI.
 
 ```bash
 flutter build ipa \
+  --build-number=$(git rev-list --count HEAD) \
   --dart-define=FLAVOR_NAME=production \
   --dart-define=API_ROOT=https://poles.chromatin.ca \
-  --dart-define=SENTRY_DSN=$PROD_SENTRY_DSN
+  --dart-define=SENTRY_DSN=$SENTRY_DSN
 ```
 
 Upload to TestFlight (external testing review) or App Store.
@@ -67,9 +82,10 @@ Upload to TestFlight (external testing review) or App Store.
 
 ```bash
 flutter build appbundle \
+  --build-number=$(git rev-list --count HEAD) \
   --dart-define=FLAVOR_NAME=production \
   --dart-define=API_ROOT=https://poles.chromatin.ca \
-  --dart-define=SENTRY_DSN=$PROD_SENTRY_DSN
+  --dart-define=SENTRY_DSN=$SENTRY_DSN
 ```
 
 Upload to Play Console → Testing → Closed testing (or Production directly).
