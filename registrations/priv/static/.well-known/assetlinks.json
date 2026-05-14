@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.get_login_creds"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "ca.chromatin.poles",
+      "sha256_cert_fingerprints": [
+        "7B:7A:F6:7C:6B:65:B4:DB:9A:A4:7E:FE:5A:CB:1A:EB:E6:F6:2F:B8:8C:A4:9D:80:11:32:BE:1F:8C:D6:82:55",
+        "84:0E:F1:99:F8:86:06:34:AB:CC:DD:D3:6F:2E:9A:31:ED:86:D8:29:B3:93:A4:EB:B0:9F:6E:B2:90:92:FD:6E"
+      ]
+    }
+  }
+]
