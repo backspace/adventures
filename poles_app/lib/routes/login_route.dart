@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/flavors.dart';
 import 'package:poles/routes/home_route.dart';
@@ -33,6 +34,7 @@ class _LoginRouteState extends State<LoginRoute> {
     if (!mounted) return;
 
     if (ok) {
+      TextInput.finishAutofillContext();
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => HomeRoute(api: widget.api)),
       );
@@ -80,17 +82,28 @@ class _LoginRouteState extends State<LoginRoute> {
               showSwitcher: F.allowsEnvSwitch,
             ),
             const SizedBox(height: 24),
-            TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password'),
+            AutofillGroup(
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    autocorrect: false,
+                    autofillHints: const [AutofillHints.email, AutofillHints.username],
+                    textInputAction: TextInputAction.next,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    autofillHints: const [AutofillHints.password],
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _submit(),
+                    decoration: const InputDecoration(labelText: 'Password'),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
             if (_error != null)
