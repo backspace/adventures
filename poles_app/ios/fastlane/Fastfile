@@ -30,12 +30,23 @@ def asc_api_key
   )
 end
 
+def next_build_number
+  commit_count = `git rev-list --count HEAD`.strip.to_i
+  latest = latest_testflight_build_number(
+    api_key: asc_api_key,
+    app_identifier: "ca.chromatin.poles",
+    initial_build_number: 0
+  )
+  [commit_count, latest + 1].max
+end
+
 def flutter_build_ipa(flavor:, api_root:, sentry_dsn:)
-  build_number = `git rev-list --count HEAD`.strip
+  build_number = next_build_number
   Dir.chdir(FLUTTER_PROJECT_DIR) do
     sh(
       "flutter", "build", "ipa",
       "--build-number=#{build_number}",
+      "--export-options-plist=ios/ExportOptions.plist",
       "--dart-define=FLAVOR_NAME=#{flavor}",
       "--dart-define=API_ROOT=#{api_root}",
       "--dart-define=SENTRY_DSN=#{sentry_dsn}"
