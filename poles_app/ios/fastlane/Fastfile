@@ -13,8 +13,14 @@ end
 
 ALPHA_API_ROOT      = "https://poles-staging.chromatin.ca"
 PRODUCTION_API_ROOT = "https://poles.chromatin.ca"
-IPA_PATH            = "../build/ios/ipa/poles.ipa"
 FLUTTER_PROJECT_DIR = File.expand_path("../..", __dir__)
+IPA_DIR             = File.join(FLUTTER_PROJECT_DIR, "build/ios/ipa")
+
+def find_ipa
+  ipa = Dir.glob(File.join(IPA_DIR, "*.ipa")).max_by { |f| File.mtime(f) }
+  UI.user_error!("No .ipa found in #{IPA_DIR} — did flutter build ipa succeed?") if ipa.nil?
+  ipa
+end
 
 def asc_api_key
   app_store_connect_api_key(
