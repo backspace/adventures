@@ -70,9 +70,11 @@ ENV MIX_ENV="prod" \
     PHX_SERVER="true"
 
 COPY --from=builder --chown=nobody:root /app/_build/${MIX_ENV}/rel/registrations ./
+COPY --chown=nobody:root bin/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 USER nobody
 
 EXPOSE 4000
 
-CMD ["/app/bin/registrations", "start"]
+CMD ["/app/entrypoint.sh"]
