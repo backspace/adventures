@@ -40,6 +40,14 @@ spam_strings =
 config :registrations,
   spam_strings: spam_strings
 
+# Use the Redis-backed Pow cache whenever REDIS_URL is set, so sessions persist
+# across server restarts. Required in prod; optional in dev (set REDIS_URL to
+# opt in to persistent local sessions). Application.ex starts the Redix child
+# on the same condition.
+if System.get_env("REDIS_URL") do
+  config :registrations, :pow, cache_store_backend: RegistrationsWeb.Pow.RedisCache
+end
+
 if config_env() == :prod do
   location =
     System.get_env("LOCATION") ||
