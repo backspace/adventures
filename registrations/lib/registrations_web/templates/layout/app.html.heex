@@ -73,6 +73,13 @@
                         ) %>
                       </li>
                     <% end %>
+                    <%= if is_poles() do %>
+                      <li>
+                        <%= active_link("Event", @conn, Routes.poles_event_path(@conn, :edit),
+                          class: "event"
+                        ) %>
+                      </li>
+                    <% end %>
                   <% end %>
                 <% else %>
                   <li>

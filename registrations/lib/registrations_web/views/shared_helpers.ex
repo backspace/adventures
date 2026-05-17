@@ -74,6 +74,10 @@ defmodule RegistrationsWeb.SharedHelpers do
     Application.get_env(:registrations, :adventure) == "waydowntown"
   end
 
+  def is_poles do
+    Application.get_env(:registrations, :adventure) == "poles"
+  end
+
   defp formatted_start_time(format_string) do
     Calendar.strftime(parsed_start_time(), format_string)
   end

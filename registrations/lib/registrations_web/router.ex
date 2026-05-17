@@ -121,6 +121,9 @@ defmodule RegistrationsWeb.Router do
 
     resources "/settings", SettingsController
 
+    get("/poles-event", PolesEventController, :edit, as: :poles_event)
+    put("/poles-event", PolesEventController, :update, as: :poles_event)
+
     get("/delete", UserController, :delete_show)
     post("/delete", UserController, :delete)
     put("/delete", UserController, :delete)
@@ -201,6 +204,7 @@ defmodule RegistrationsWeb.Router do
     pipe_through([:pow_api, :pow_api_protected])
 
     get("/me", MeController, :show)
+    get("/event", EventController, :show)
     get("/poles", PoleController, :index)
     get("/poles/:barcode", PoleController, :show)
     post("/puzzlets/:puzzlet_id/attempts", AttemptController, :create)

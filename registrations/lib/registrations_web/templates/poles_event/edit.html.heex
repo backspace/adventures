@@ -1,0 +1,41 @@
+<div class="row">
+  <div class="small-12 columns">
+    <h2>Poles event</h2>
+
+    <p>
+      <strong>Started:</strong>
+      <%= cond do %>
+        <% is_nil(@event.start_time) -> %>
+          no (start time not set)
+        <% DateTime.compare(DateTime.utc_now(), @event.start_time) == :lt -> %>
+          not yet (begins <%= @event.start_time %> UTC)
+        <% true -> %>
+          yes (began <%= @event.start_time %> UTC)
+      <% end %>
+    </p>
+
+    <.form let={f} for={@changeset} action={Routes.poles_event_path(@conn, :update)}>
+      <%= if @changeset.action do %>
+        <div class="alert alert-danger">
+          <p>Oops, something went wrong! Please check the errors below.</p>
+        </div>
+      <% end %>
+
+      <%= label(f, :name) %>
+      <%= text_input(f, :name) %>
+      <%= error_tag(f, :name) %>
+
+      <br />
+
+      <%= label(f, :start_time, "Start time (UTC, blank to unset)") %>
+      <%= datetime_local_input(f, :start_time) %>
+      <%= error_tag(f, :start_time) %>
+
+      <br />
+
+      <div>
+        <%= submit("Save", class: "button") %>
+      </div>
+    </.form>
+  </div>
+</div>

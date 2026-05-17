@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/pole.dart';
+import 'package:poles/models/poles_event.dart';
 import 'package:poles/flavors.dart';
 import 'package:poles/routes/author/author_route.dart';
 import 'package:poles/routes/login_route.dart';
@@ -31,6 +32,7 @@ class _HomeRouteState extends State<HomeRoute> {
   bool _isAuthor = false;
   bool _isValidator = false;
   bool _isSupervisor = false;
+  PolesEvent? _event;
 
   PolesSocket? _socket;
   StreamSubscription<PoleUpdate>? _updatesSub;
@@ -88,7 +90,12 @@ class _HomeRouteState extends State<HomeRoute> {
       final isAuthor = await UserService.hasRole('author');
       final isValidator = await UserService.hasRole('validator');
       final isSupervisor = await UserService.hasRole('validation_supervisor');
-      final poles = await widget.api.listPoles();
+      final results = await Future.wait([
+        widget.api.getEvent(),
+        widget.api.listPoles(),
+      ]);
+      final event = results[0] as PolesEvent;
+      final poles = results[1] as List<Pole>;
       if (!mounted) return;
       setState(() {
         _poles = poles;
@@ -97,6 +104,7 @@ class _HomeRouteState extends State<HomeRoute> {
         _isAuthor = isAuthor;
         _isValidator = isValidator;
         _isSupervisor = isSupervisor;
+        _event = event;
       });
     } catch (e) {
       if (!mounted) return;
@@ -137,6 +145,8 @@ class _HomeRouteState extends State<HomeRoute> {
   @override
   Widget build(BuildContext context) {
     final titleText = _teamName == null ? 'Poles' : 'Poles — $_teamName';
+    final preEvent = _event != null && !_event!.started;
+
     return Scaffold(
       appBar: AppBar(
         title: F.allowsEnvSwitch
@@ -154,7 +164,7 @@ class _HomeRouteState extends State<HomeRoute> {
               )
             : Text(titleText),
         actions: [
-          if (_isAuthor)
+          if (!preEvent && _isAuthor)
             IconButton(
               tooltip: 'Author',
               onPressed: () => Navigator.of(context).push(
@@ -162,7 +172,7 @@ class _HomeRouteState extends State<HomeRoute> {
               ),
               icon: const Icon(Icons.edit_note),
             ),
-          if (_isValidator)
+          if (!preEvent && _isValidator)
             IconButton(
               tooltip: 'Validate',
               onPressed: () => Navigator.of(context).push(
@@ -170,7 +180,7 @@ class _HomeRouteState extends State<HomeRoute> {
               ),
               icon: const Icon(Icons.fact_check_outlined),
             ),
-          if (_isSupervisor)
+          if (!preEvent && _isSupervisor)
             IconButton(
               tooltip: 'Supervise',
               onPressed: () => Navigator.of(context).push(
@@ -192,9 +202,25 @@ class _HomeRouteState extends State<HomeRoute> {
       ),
       body: _error != null
           ? Center(child: Text(_error!))
-          : _poles == null
+          : _poles == null || _event == null
               ? const Center(child: CircularProgressIndicator())
-              : FlutterMap(
+              : preEvent
+                  ? _PreEventBody(
+                      event: _event!,
+                      isAuthor: _isAuthor,
+                      isValidator: _isValidator,
+                      isSupervisor: _isSupervisor,
+                      onAuthor: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => AuthorRoute(api: widget.api)),
+                      ),
+                      onValidate: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => ValidatorRoute(api: widget.api)),
+                      ),
+                      onSupervise: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => SupervisorRoute(api: widget.api)),
+                      ),
+                    )
+                  : FlutterMap(
                   options: MapOptions(
                     initialCenter: _center(),
                     initialZoom: 14,
@@ -223,10 +249,122 @@ class _HomeRouteState extends State<HomeRoute> {
                     const _MapAttribution(),
                   ],
                 ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openScanner,
-        icon: const Icon(Icons.qr_code_scanner),
-        label: const Text('Scan'),
+      floatingActionButton: preEvent
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _openScanner,
+              icon: const Icon(Icons.qr_code_scanner),
+              label: const Text('Scan'),
+            ),
+    );
+  }
+}
+
+class _PreEventBody extends StatelessWidget {
+  final PolesEvent event;
+  final bool isAuthor;
+  final bool isValidator;
+  final bool isSupervisor;
+  final VoidCallback onAuthor;
+  final VoidCallback onValidate;
+  final VoidCallback onSupervise;
+
+  const _PreEventBody({
+    required this.event,
+    required this.isAuthor,
+    required this.isValidator,
+    required this.isSupervisor,
+    required this.onAuthor,
+    required this.onValidate,
+    required this.onSupervise,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final headline = event.startTime == null
+        ? 'Event not yet scheduled'
+        : 'Event begins ${_formatStart(event.startTime!)}';
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(headline, style: theme.textTheme.titleLarge),
+            const SizedBox(height: 8),
+            Text(
+              'Gameplay opens at start time. Until then, finish preparing your poles and puzzlets.',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 24),
+            if (isAuthor)
+              _BigButton(
+                icon: Icons.edit_note,
+                label: 'Author',
+                onPressed: onAuthor,
+              ),
+            if (isValidator) ...[
+              const SizedBox(height: 12),
+              _BigButton(
+                icon: Icons.fact_check_outlined,
+                label: 'Validate',
+                onPressed: onValidate,
+              ),
+            ],
+            if (isSupervisor) ...[
+              const SizedBox(height: 12),
+              _BigButton(
+                icon: Icons.supervisor_account,
+                label: 'Supervise',
+                onPressed: onSupervise,
+              ),
+            ],
+            if (!isAuthor && !isValidator && !isSupervisor)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text(
+                  'No tasks for your role yet. Check back when the event begins.',
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static String _formatStart(DateTime utc) {
+    final local = utc.toLocal();
+    final y = local.year.toString().padLeft(4, '0');
+    final m = local.month.toString().padLeft(2, '0');
+    final d = local.day.toString().padLeft(2, '0');
+    final hh = local.hour.toString().padLeft(2, '0');
+    final mm = local.minute.toString().padLeft(2, '0');
+    return '$y-$m-$d $hh:$mm';
+  }
+}
+
+class _BigButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  const _BigButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 72,
+      child: FilledButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 32),
+        label: Text(label, style: const TextStyle(fontSize: 20)),
       ),
     );
   }

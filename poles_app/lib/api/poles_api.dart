@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/models/pole.dart';
+import 'package:poles/models/poles_event.dart';
 import 'package:poles/models/validation.dart';
 import 'package:poles/services/user_service.dart';
 
@@ -45,6 +46,11 @@ class PolesApi {
       teamName: team?['name'] as String?,
       roles: roles,
     );
+  }
+
+  Future<PolesEvent> getEvent() async {
+    final response = await dio.get('/poles/event');
+    return PolesEvent.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<List<Pole>> listPoles() async {
