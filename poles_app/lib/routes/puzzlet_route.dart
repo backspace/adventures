@@ -99,7 +99,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       appBar: AppBar(
         title: Text(widget.pole.label ?? widget.pole.barcode),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
