@@ -143,7 +143,7 @@ class _AttachmentsSectionState extends State<AttachmentsSection> {
   }
 }
 
-class _Thumbnail extends StatelessWidget {
+class _Thumbnail extends StatefulWidget {
   final PolesApi api;
   final String attachmentId;
   final VoidCallback onDelete;
@@ -155,14 +155,35 @@ class _Thumbnail extends StatelessWidget {
   });
 
   @override
+  State<_Thumbnail> createState() => _ThumbnailState();
+}
+
+class _ThumbnailState extends State<_Thumbnail> {
+  late Future<Uint8List?> _bytes;
+
+  @override
+  void initState() {
+    super.initState();
+    _bytes = _fetchBytes();
+  }
+
+  @override
+  void didUpdateWidget(_Thumbnail old) {
+    super.didUpdateWidget(old);
+    if (old.attachmentId != widget.attachmentId) {
+      _bytes = _fetchBytes();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onLongPress: onDelete,
+      onLongPress: widget.onDelete,
       onTap: () => _openFullScreen(context),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: FutureBuilder<Uint8List?>(
-          future: _fetchBytes(),
+          future: _bytes,
           builder: (context, snapshot) {
             if (snapshot.connectionState != ConnectionState.done) {
               return _placeholder(child: const CircularProgressIndicator(strokeWidth: 2));
@@ -188,12 +209,12 @@ class _Thumbnail extends StatelessWidget {
 
   Future<Uint8List?> _fetchBytes() async {
     try {
-      final headers = await _authHeaders();
-      final response = await api.dio.get<List<int>>(
-        '/poles/attachments/$attachmentId/thumb',
+      final token = await UserService.getAccessToken();
+      final response = await widget.api.dio.get<List<int>>(
+        '/poles/attachments/${widget.attachmentId}/thumb',
         options: Options(
           responseType: ResponseType.bytes,
-          headers: headers,
+          headers: token == null ? {} : {'Authorization': token},
         ),
       );
       final data = response.data;
@@ -203,17 +224,12 @@ class _Thumbnail extends StatelessWidget {
     }
   }
 
-  Future<Map<String, String>> _authHeaders() async {
-    final token = await UserService.getAccessToken();
-    return token == null ? {} : {'Authorization': token};
-  }
-
   void _openFullScreen(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => _FullScreenAttachment(
-          api: api,
-          attachmentId: attachmentId,
+          api: widget.api,
+          attachmentId: widget.attachmentId,
         ),
       ),
     );
