@@ -50,3 +50,6 @@ app.*.map.json
 ios/fastlane/.env.fastlane
 ios/fastlane/report.xml
 ios/fastlane/README.md
+android/fastlane/.env.fastlane
+android/fastlane/report.xml
+android/fastlane/README.md

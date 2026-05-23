@@ -1,0 +1,88 @@
+default_platform(:android)
+
+# Load secrets if present. Real values live in .env.fastlane (gitignored);
+# .env.fastlane.example documents what should be set.
+env_file = File.expand_path(".env.fastlane", __dir__)
+if File.exist?(env_file)
+  File.foreach(env_file) do |line|
+    next if line.strip.empty? || line.start_with?("#")
+    key, value = line.strip.split("=", 2)
+    ENV[key] ||= value if key && value
+  end
+end
+
+ALPHA_API_ROOT      = "https://poles-staging.chromatin.ca"
+PRODUCTION_API_ROOT = "https://poles.chromatin.ca"
+FLUTTER_PROJECT_DIR = File.expand_path("../..", __dir__)
+AAB_DIR             = File.join(FLUTTER_PROJECT_DIR, "build/app/outputs/bundle/release")
+
+def find_aab
+  aab = Dir.glob(File.join(AAB_DIR, "*.aab")).max_by { |f| File.mtime(f) }
+  UI.user_error!("No .aab found in #{AAB_DIR} — did flutter build appbundle succeed?") if aab.nil?
+  aab
+end
+
+def next_build_number(track)
+  commit_count = `git rev-list --count HEAD`.strip.to_i
+  latest =
+    google_play_track_version_codes(
+      package_name: "ca.chromatin.poles",
+      track: track,
+      json_key: File.expand_path(ENV.fetch("PLAY_JSON_KEY_PATH"))
+    ).max || 0
+  [commit_count, latest + 1].max
+end
+
+def flutter_build_aab(flavor:, api_root:, sentry_dsn:, build_number:)
+  Dir.chdir(FLUTTER_PROJECT_DIR) do
+    sh(
+      "flutter", "build", "appbundle",
+      "--build-number=#{build_number}",
+      "--dart-define=FLAVOR_NAME=#{flavor}",
+      "--dart-define=API_ROOT=#{api_root}",
+      "--dart-define=SENTRY_DSN=#{sentry_dsn}"
+    )
+  end
+end
+
+platform :android do
+  desc "Build with alpha flavor (staging API) and upload to Play Internal Testing"
+  lane :alpha do
+    build_number = next_build_number("internal")
+    flutter_build_aab(
+      flavor: "alpha",
+      api_root: ALPHA_API_ROOT,
+      sentry_dsn: ENV.fetch("SENTRY_DSN", ""),
+      build_number: build_number
+    )
+    upload_to_play_store(
+      aab: find_aab,
+      track: "internal",
+      release_status: "draft",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Build with production flavor (production API) and upload to Play Closed Testing"
+  lane :production do
+    build_number = next_build_number("production")
+    flutter_build_aab(
+      flavor: "production",
+      api_root: PRODUCTION_API_ROOT,
+      sentry_dsn: ENV.fetch("SENTRY_DSN", ""),
+      build_number: build_number
+    )
+    upload_to_play_store(
+      aab: find_aab,
+      track: "production",
+      release_status: "draft",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+end
