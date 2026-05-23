@@ -4,6 +4,7 @@ import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/routes/author/edit_pole_route.dart';
 import 'package:poles/routes/author/edit_puzzlet_route.dart';
+import 'package:poles/widgets/attachments_badge.dart';
 import 'package:poles/widgets/map_pin.dart';
 import 'package:poles/widgets/pin_map.dart';
 
@@ -218,6 +219,10 @@ class _PoleTile extends StatelessWidget {
         children: [
           Expanded(child: Text(pole.label ?? pole.barcode)),
           _StatusBadge(pole.status),
+          if (pole.attachmentIds.isNotEmpty) ...[
+            const SizedBox(width: 4),
+            AttachmentsBadge(count: pole.attachmentIds.length),
+          ],
         ],
       ),
       subtitle: Text(
@@ -261,6 +266,10 @@ class _PuzzletTile extends StatelessWidget {
             ),
           ),
           _StatusBadge(puzzlet.status),
+          if (puzzlet.attachmentIds.isNotEmpty) ...[
+            const SizedBox(width: 4),
+            AttachmentsBadge(count: puzzlet.attachmentIds.length),
+          ],
         ],
       ),
       subtitle: Text(

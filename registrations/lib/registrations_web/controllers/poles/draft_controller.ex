@@ -154,7 +154,8 @@ defmodule RegistrationsWeb.Poles.DraftController do
       accuracy_m: pole.accuracy_m,
       status: pole.status,
       creator_id: pole.creator_id,
-      inserted_at: pole.inserted_at
+      inserted_at: pole.inserted_at,
+      attachment_ids: Poles.list_pole_attachment_ids(pole.id)
     }
   end
 
@@ -170,7 +171,8 @@ defmodule RegistrationsWeb.Poles.DraftController do
       latitude: puzzlet.latitude,
       longitude: puzzlet.longitude,
       accuracy_m: puzzlet.accuracy_m,
-      inserted_at: puzzlet.inserted_at
+      inserted_at: puzzlet.inserted_at,
+      attachment_ids: Poles.list_puzzlet_attachment_ids(puzzlet.id)
     }
   end
 

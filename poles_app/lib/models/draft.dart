@@ -45,6 +45,7 @@ class DraftPole {
   final String? creatorId;
   final DateTime? insertedAt;
   final ActiveValidationSummary? activeValidation;
+  final List<String> attachmentIds;
 
   DraftPole({
     required this.id,
@@ -58,6 +59,7 @@ class DraftPole {
     required this.creatorId,
     required this.insertedAt,
     this.activeValidation,
+    this.attachmentIds = const [],
   });
 
   factory DraftPole.fromJson(Map<String, dynamic> json) => DraftPole(
@@ -75,6 +77,10 @@ class DraftPole {
             ? null
             : ActiveValidationSummary.fromJson(
                 json['active_validation'] as Map<String, dynamic>),
+        attachmentIds: (json['attachment_ids'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
       );
 }
 
@@ -91,6 +97,7 @@ class DraftPuzzlet {
   final double? accuracyM;
   final DateTime? insertedAt;
   final ActiveValidationSummary? activeValidation;
+  final List<String> attachmentIds;
 
   DraftPuzzlet({
     required this.id,
@@ -105,6 +112,7 @@ class DraftPuzzlet {
     required this.accuracyM,
     required this.insertedAt,
     this.activeValidation,
+    this.attachmentIds = const [],
   });
 
   factory DraftPuzzlet.fromJson(Map<String, dynamic> json) => DraftPuzzlet(
@@ -123,6 +131,10 @@ class DraftPuzzlet {
             ? null
             : ActiveValidationSummary.fromJson(
                 json['active_validation'] as Map<String, dynamic>),
+        attachmentIds: (json['attachment_ids'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
       );
 }
 

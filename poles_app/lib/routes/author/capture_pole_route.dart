@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/location_card.dart';
+import 'package:poles/widgets/pending_photos_section.dart';
 
 class CapturePoleRoute extends StatefulWidget {
   final PolesApi api;
@@ -23,6 +26,7 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
   String? _locationError;
   bool _gettingFix = false;
   bool _submitting = false;
+  List<Uint8List> _pendingPhotos = const [];
 
   Future<void> _onDetect(BarcodeCapture capture) async {
     if (_barcode != null) return;
@@ -61,7 +65,7 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
 
     setState(() => _submitting = true);
     try {
-      await widget.api.createDraftPole(
+      final created = await widget.api.createDraftPole(
         barcode: barcode,
         latitude: fix.latitude,
         longitude: fix.longitude,
@@ -69,10 +73,26 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
         label: _labelController.text.trim().isEmpty ? null : _labelController.text.trim(),
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
       );
+
+      final photoErrors = <String>[];
+      for (final bytes in _pendingPhotos) {
+        try {
+          await widget.api.uploadPoleAttachment(
+            poleId: created.id,
+            bytes: bytes,
+            filename: 'photo.jpg',
+            contentType: 'image/jpeg',
+          );
+        } catch (e) {
+          photoErrors.add(e.toString());
+        }
+      }
+
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pole submitted as draft.')),
-      );
+      final message = photoErrors.isEmpty
+          ? 'Pole submitted as draft.'
+          : 'Pole saved; ${photoErrors.length} photo(s) failed to upload.';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       Navigator.of(context).pop();
     } on DioException catch (e) {
       if (!mounted) return;
@@ -159,6 +179,11 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
               hintText: 'Anything tricky about finding it',
               border: OutlineInputBorder(),
             ),
+          ),
+          const SizedBox(height: 16),
+          PendingPhotosSection(
+            bytes: _pendingPhotos,
+            onChanged: (next) => setState(() => _pendingPhotos = next),
           ),
           const SizedBox(height: 24),
           FilledButton.icon(

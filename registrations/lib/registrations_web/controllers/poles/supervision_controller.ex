@@ -274,7 +274,8 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
       notes: pole.notes,
       accuracy_m: pole.accuracy_m,
       status: pole.status,
-      creator_id: pole.creator_id
+      creator_id: pole.creator_id,
+      attachment_ids: Registrations.Poles.list_pole_attachment_ids(pole.id)
     }
   end
 
@@ -288,7 +289,8 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
       pole_id: puzzlet.pole_id,
       latitude: puzzlet.latitude,
       longitude: puzzlet.longitude,
-      creator_id: puzzlet.creator_id
+      creator_id: puzzlet.creator_id,
+      attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id)
     }
   end
 

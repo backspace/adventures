@@ -3,6 +3,7 @@ import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/validation.dart';
 import 'package:poles/routes/validator/pole_validation_detail_route.dart';
 import 'package:poles/routes/validator/puzzlet_validation_detail_route.dart';
+import 'package:poles/widgets/attachments_badge.dart';
 import 'package:poles/widgets/status_badge.dart';
 
 class ValidatorRoute extends StatefulWidget {
@@ -99,6 +100,10 @@ class _PoleValidationsList extends StatelessWidget {
                 label: validationStatusLabel(v.status),
                 color: statusColorFor(v.status.name),
               ),
+              if ((v.pole?.attachmentIds.length ?? 0) > 0) ...[
+                const SizedBox(width: 4),
+                AttachmentsBadge(count: v.pole!.attachmentIds.length),
+              ],
             ],
           ),
           subtitle: Text(
@@ -153,6 +158,10 @@ class _PuzzletValidationsList extends StatelessWidget {
                 label: validationStatusLabel(v.status),
                 color: statusColorFor(v.status.name),
               ),
+              if ((v.puzzlet?.attachmentIds.length ?? 0) > 0) ...[
+                const SizedBox(width: 4),
+                AttachmentsBadge(count: v.puzzlet!.attachmentIds.length),
+              ],
             ],
           ),
           subtitle: Text(

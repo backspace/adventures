@@ -2,6 +2,7 @@ defmodule Registrations.Poles do
   @moduledoc false
   import Ecto.Query, warn: false
 
+  alias Registrations.Poles.Attachment
   alias Registrations.Poles.Attempt
   alias Registrations.Poles.Capture
   alias Registrations.Poles.Pole
@@ -113,6 +114,34 @@ defmodule Registrations.Poles do
   end
 
   def delete_pole(%Pole{} = pole), do: Repo.delete(pole)
+
+  def create_attachment(attrs) do
+    %Attachment{}
+    |> Attachment.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def get_attachment(id), do: Repo.get(Attachment, id)
+
+  def get_attachment!(id), do: Repo.get!(Attachment, id)
+
+  def delete_attachment(%Attachment{} = attachment), do: Repo.delete(attachment)
+
+  def list_pole_attachment_ids(pole_id) do
+    Attachment
+    |> where([a], a.pole_id == ^pole_id)
+    |> order_by([a], asc: a.inserted_at)
+    |> select([a], a.id)
+    |> Repo.all()
+  end
+
+  def list_puzzlet_attachment_ids(puzzlet_id) do
+    Attachment
+    |> where([a], a.puzzlet_id == ^puzzlet_id)
+    |> order_by([a], asc: a.inserted_at)
+    |> select([a], a.id)
+    |> Repo.all()
+  end
 
   def list_drafts_for_user(%{id: user_id}) do
     poles =

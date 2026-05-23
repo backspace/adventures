@@ -29,7 +29,7 @@ defmodule RegistrationsWeb.Endpoint do
   plug(Plug.Logger)
 
   plug(Plug.Parsers,
-    parsers: [:urlencoded, :multipart, :json],
+    parsers: [:urlencoded, {:multipart, length: 16_000_000}, :json],
     pass: ["*/*"],
     json_decoder: Jason
   )

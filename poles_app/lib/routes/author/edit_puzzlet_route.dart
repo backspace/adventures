@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/services/location_service.dart';
+import 'package:poles/widgets/attachments_section.dart';
 import 'package:poles/widgets/location_card.dart';
 
 class EditPuzzletRoute extends StatefulWidget {
@@ -195,6 +196,13 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
               divisions: 9,
               label: '$_difficulty',
               onChanged: (v) => setState(() => _difficulty = v.round()),
+            ),
+            const SizedBox(height: 16),
+            AttachmentsSection(
+              api: widget.api,
+              kind: AttachmentParentKind.puzzlet,
+              parentId: widget.puzzlet.id,
+              initialIds: widget.puzzlet.attachmentIds,
             ),
             const SizedBox(height: 16),
             FilledButton.icon(

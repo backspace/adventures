@@ -219,6 +219,52 @@ class PolesApi {
   Future<void> deleteDraftPuzzlet(String id) =>
       dio.delete('/poles/drafts/puzzlets/$id');
 
+  Future<String> uploadPoleAttachment({
+    required String poleId,
+    required List<int> bytes,
+    required String filename,
+    required String contentType,
+  }) async {
+    final form = FormData.fromMap({
+      'photo': MultipartFile.fromBytes(
+        bytes,
+        filename: filename,
+        contentType: DioMediaType.parse(contentType),
+      ),
+    });
+    final response = await dio.post(
+      '/poles/drafts/poles/$poleId/attachments',
+      data: form,
+    );
+    return (response.data as Map<String, dynamic>)['id'] as String;
+  }
+
+  Future<String> uploadPuzzletAttachment({
+    required String puzzletId,
+    required List<int> bytes,
+    required String filename,
+    required String contentType,
+  }) async {
+    final form = FormData.fromMap({
+      'photo': MultipartFile.fromBytes(
+        bytes,
+        filename: filename,
+        contentType: DioMediaType.parse(contentType),
+      ),
+    });
+    final response = await dio.post(
+      '/poles/drafts/puzzlets/$puzzletId/attachments',
+      data: form,
+    );
+    return (response.data as Map<String, dynamic>)['id'] as String;
+  }
+
+  Future<void> deleteAttachment(String id) =>
+      dio.delete('/poles/drafts/attachments/$id');
+
+  String attachmentUrl(String id) =>
+      '${dio.options.baseUrl}/poles/attachments/$id';
+
   // ────────── Validator surface ──────────
 
   Future<MyValidations> listMyValidations() async {

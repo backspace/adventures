@@ -29,7 +29,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Poles uses the camera to scan barcodes on poles.</string>
+	<string>Poles uses the camera to scan barcodes on poles and to attach photos to drafts.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Poles lets you attach photos from your library to pole and puzzlet drafts.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Poles uses your location to show which poles are nearby.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

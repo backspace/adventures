@@ -48,6 +48,9 @@ class ValidationComment {
       );
 }
 
+List<String> _attachmentIdsFromJson(dynamic raw) =>
+    (raw as List?)?.map((e) => e as String).toList(growable: false) ?? const [];
+
 class ValidationPoleSummary {
   final String id;
   final String barcode;
@@ -56,6 +59,7 @@ class ValidationPoleSummary {
   final double longitude;
   final String? notes;
   final String status;
+  final List<String> attachmentIds;
 
   ValidationPoleSummary({
     required this.id,
@@ -65,6 +69,7 @@ class ValidationPoleSummary {
     required this.longitude,
     required this.notes,
     required this.status,
+    this.attachmentIds = const [],
   });
 
   factory ValidationPoleSummary.fromJson(Map<String, dynamic> json) =>
@@ -76,6 +81,7 @@ class ValidationPoleSummary {
         longitude: (json['longitude'] as num).toDouble(),
         notes: json['notes'] as String?,
         status: json['status'] as String? ?? 'draft',
+        attachmentIds: _attachmentIdsFromJson(json['attachment_ids']),
       );
 }
 
@@ -87,6 +93,7 @@ class ValidationPuzzletSummary {
   final String status;
   final double? latitude;
   final double? longitude;
+  final List<String> attachmentIds;
 
   ValidationPuzzletSummary({
     required this.id,
@@ -96,6 +103,7 @@ class ValidationPuzzletSummary {
     required this.status,
     required this.latitude,
     required this.longitude,
+    this.attachmentIds = const [],
   });
 
   factory ValidationPuzzletSummary.fromJson(Map<String, dynamic> json) =>
@@ -107,6 +115,7 @@ class ValidationPuzzletSummary {
         status: json['status'] as String? ?? 'draft',
         latitude: (json['latitude'] as num?)?.toDouble(),
         longitude: (json['longitude'] as num?)?.toDouble(),
+        attachmentIds: _attachmentIdsFromJson(json['attachment_ids']),
       );
 }
 

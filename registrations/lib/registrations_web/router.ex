@@ -207,6 +207,7 @@ defmodule RegistrationsWeb.Router do
     get("/event", EventController, :show)
     get("/poles", PoleController, :index)
     get("/poles/:barcode", PoleController, :show)
+    get("/attachments/:id", AttachmentController, :show)
     post("/puzzlets/:puzzlet_id/attempts", AttemptController, :create)
   end
 
@@ -217,9 +218,12 @@ defmodule RegistrationsWeb.Router do
     post("/poles", DraftController, :create_pole)
     patch("/poles/:id", DraftController, :update_pole)
     delete("/poles/:id", DraftController, :delete_pole)
+    post("/poles/:pole_id/attachments", AttachmentController, :create_for_pole)
     post("/puzzlets", DraftController, :create_puzzlet)
     patch("/puzzlets/:id", DraftController, :update_puzzlet)
     delete("/puzzlets/:id", DraftController, :delete_puzzlet)
+    post("/puzzlets/:puzzlet_id/attachments", AttachmentController, :create_for_puzzlet)
+    delete("/attachments/:id", AttachmentController, :delete)
   end
 
   scope "/poles/validation", RegistrationsWeb.Poles, as: :poles_validation do

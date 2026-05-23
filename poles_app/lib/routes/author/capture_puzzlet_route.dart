@@ -1,8 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/location_card.dart';
+import 'package:poles/widgets/pending_photos_section.dart';
 
 class CapturePuzzletRoute extends StatefulWidget {
   final PolesApi api;
@@ -17,6 +20,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
   final _answerController = TextEditingController();
   int _difficulty = 3;
   bool _submitting = false;
+  List<Uint8List> _pendingPhotos = const [];
 
   LocationFix? _fix;
   String? _locationError;
@@ -57,7 +61,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
 
     setState(() => _submitting = true);
     try {
-      await widget.api.createDraftPuzzlet(
+      final created = await widget.api.createDraftPuzzlet(
         instructions: instructions,
         answer: answer,
         difficulty: _difficulty,
@@ -65,10 +69,26 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
         longitude: fix.longitude,
         accuracyM: fix.accuracyM,
       );
+
+      final photoErrors = <String>[];
+      for (final bytes in _pendingPhotos) {
+        try {
+          await widget.api.uploadPuzzletAttachment(
+            puzzletId: created.id,
+            bytes: bytes,
+            filename: 'photo.jpg',
+            contentType: 'image/jpeg',
+          );
+        } catch (e) {
+          photoErrors.add(e.toString());
+        }
+      }
+
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Puzzlet submitted as draft.')),
-      );
+      final message = photoErrors.isEmpty
+          ? 'Puzzlet submitted as draft.'
+          : 'Puzzlet saved; ${photoErrors.length} photo(s) failed to upload.';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
       Navigator.of(context).pop();
     } on DioException catch (e) {
       if (!mounted) return;
@@ -151,6 +171,11 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
               divisions: 9,
               label: '$_difficulty',
               onChanged: (v) => setState(() => _difficulty = v.round()),
+            ),
+            const SizedBox(height: 16),
+            PendingPhotosSection(
+              bytes: _pendingPhotos,
+              onChanged: (next) => setState(() => _pendingPhotos = next),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(

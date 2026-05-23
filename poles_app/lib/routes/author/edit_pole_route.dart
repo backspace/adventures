@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/services/location_service.dart';
+import 'package:poles/widgets/attachments_section.dart';
 import 'package:poles/widgets/location_card.dart';
 
 class EditPoleRoute extends StatefulWidget {
@@ -180,6 +181,13 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
                 labelText: 'Notes for validators (optional)',
                 border: OutlineInputBorder(),
               ),
+            ),
+            const SizedBox(height: 24),
+            AttachmentsSection(
+              api: widget.api,
+              kind: AttachmentParentKind.pole,
+              parentId: widget.pole.id,
+              initialIds: widget.pole.attachmentIds,
             ),
             const SizedBox(height: 24),
             FilledButton.icon(

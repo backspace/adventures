@@ -8,18 +8,27 @@ import 'package:poles/routes/supervisor/pole_supervision_detail_route.dart';
 import 'package:poles/routes/supervisor/puzzlet_supervision_detail_route.dart';
 import 'package:poles/widgets/map_pin.dart';
 import 'package:poles/widgets/pin_map.dart';
+import 'package:poles/widgets/attachments_badge.dart';
 import 'package:poles/widgets/status_badge.dart';
 
 enum _ListOrMap { list, map }
 
 List<Widget> _poleBadges(DraftPole p) {
   final v = p.activeValidation;
+  final attachmentCount = p.attachmentIds.length;
+  final tail = <Widget>[
+    if (attachmentCount > 0) ...[
+      const SizedBox(width: 4),
+      AttachmentsBadge(count: attachmentCount),
+    ],
+  ];
   if (v == null) {
     return [
       StatusBadge(
         label: draftStatusLabel(p.status),
         color: statusColorFor(draftStatusLabel(p.status)),
       ),
+      ...tail,
     ];
   }
   return [
@@ -28,17 +37,26 @@ List<Widget> _poleBadges(DraftPole p) {
       const SizedBox(width: 4),
       _CommentChip(v.commentCount),
     ],
+    ...tail,
   ];
 }
 
 List<Widget> _puzzletBadges(DraftPuzzlet p) {
   final v = p.activeValidation;
+  final attachmentCount = p.attachmentIds.length;
+  final tail = <Widget>[
+    if (attachmentCount > 0) ...[
+      const SizedBox(width: 4),
+      AttachmentsBadge(count: attachmentCount),
+    ],
+  ];
   if (v == null) {
     return [
       StatusBadge(
         label: draftStatusLabel(p.status),
         color: statusColorFor(draftStatusLabel(p.status)),
       ),
+      ...tail,
     ];
   }
   return [
@@ -47,6 +65,7 @@ List<Widget> _puzzletBadges(DraftPuzzlet p) {
       const SizedBox(width: 4),
       _CommentChip(v.commentCount),
     ],
+    ...tail,
   ];
 }
 

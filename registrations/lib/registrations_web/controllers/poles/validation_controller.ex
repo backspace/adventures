@@ -271,7 +271,8 @@ defmodule RegistrationsWeb.Poles.ValidationController do
       latitude: pole.latitude,
       longitude: pole.longitude,
       notes: pole.notes,
-      status: pole.status
+      status: pole.status,
+      attachment_ids: Registrations.Poles.list_pole_attachment_ids(pole.id)
     }
   end
 
@@ -286,7 +287,8 @@ defmodule RegistrationsWeb.Poles.ValidationController do
       difficulty: puzzlet.difficulty,
       status: puzzlet.status,
       latitude: puzzlet.latitude,
-      longitude: puzzlet.longitude
+      longitude: puzzlet.longitude,
+      attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id)
     }
   end
 
