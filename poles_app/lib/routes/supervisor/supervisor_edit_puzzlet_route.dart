@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
+import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
 
 class SupervisorEditPuzzletRoute extends StatefulWidget {
@@ -46,6 +47,17 @@ class _SupervisorEditPuzzletRouteState
     _instructions.dispose();
     _answer.dispose();
     super.dispose();
+  }
+
+  Future<void> _scanAnswer() async {
+    final scanned = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) =>
+            const BarcodeScannerRoute(title: 'Scan answer barcode'),
+      ),
+    );
+    if (scanned == null || scanned.isEmpty) return;
+    _answer.text = scanned;
   }
 
   Future<void> _save() async {
@@ -111,9 +123,14 @@ class _SupervisorEditPuzzletRouteState
             const SizedBox(height: 12),
             TextField(
               controller: _answer,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Answer',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  tooltip: 'Scan barcode as answer',
+                  icon: const Icon(Icons.qr_code_scanner),
+                  onPressed: _scanAnswer,
+                ),
               ),
             ),
             const SizedBox(height: 16),

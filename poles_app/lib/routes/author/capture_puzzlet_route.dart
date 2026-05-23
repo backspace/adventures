@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/location_card.dart';
@@ -60,6 +61,17 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
         _gettingFix = false;
       });
     }
+  }
+
+  Future<void> _scanAnswer() async {
+    final scanned = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) =>
+            const BarcodeScannerRoute(title: 'Scan answer barcode'),
+      ),
+    );
+    if (scanned == null || scanned.isEmpty) return;
+    _answerController.text = scanned;
   }
 
   Future<void> _submit() async {
@@ -175,10 +187,15 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
             TextField(
               controller: _answerController,
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Answer',
                 hintText: 'Case-insensitive, whitespace trimmed',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  tooltip: 'Scan barcode as answer',
+                  icon: const Icon(Icons.qr_code_scanner),
+                  onPressed: _scanAnswer,
+                ),
               ),
             ),
             const SizedBox(height: 16),

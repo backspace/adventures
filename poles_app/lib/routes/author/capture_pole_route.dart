@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/location_card.dart';
@@ -18,20 +18,8 @@ class CapturePoleRoute extends StatefulWidget {
 }
 
 class _CapturePoleRouteState extends State<CapturePoleRoute> {
-  final _scannerController = MobileScannerController();
   late final TextEditingController _labelController;
   late final TextEditingController _notesController;
-
-  @override
-  void initState() {
-    super.initState();
-    _labelController = TextEditingController()..addListener(_onTextChanged);
-    _notesController = TextEditingController()..addListener(_onTextChanged);
-  }
-
-  void _onTextChanged() {
-    if (mounted) setState(() {});
-  }
 
   String? _barcode;
   LocationFix? _fix;
@@ -47,13 +35,43 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
           _notesController.text.isNotEmpty ||
           _pendingPhotos.isNotEmpty);
 
-  Future<void> _onDetect(BarcodeCapture capture) async {
-    if (_barcode != null) return;
-    final value = capture.barcodes.firstOrNull?.rawValue;
-    if (value == null) return;
-    await _scannerController.stop();
-    setState(() => _barcode = value);
+  @override
+  void initState() {
+    super.initState();
+    _labelController = TextEditingController()..addListener(_onTextChanged);
+    _notesController = TextEditingController()..addListener(_onTextChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _launchInitialScan());
+  }
+
+  void _onTextChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _launchInitialScan() async {
+    final scanned = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => const BarcodeScannerRoute(title: 'Scan a pole'),
+      ),
+    );
+    if (!mounted) return;
+    if (scanned == null || scanned.isEmpty) {
+      // User backed out of the scanner without picking a barcode — close
+      // the capture flow too.
+      Navigator.of(context).pop();
+      return;
+    }
+    setState(() => _barcode = scanned);
     _captureLocation();
+  }
+
+  Future<void> _rescan() async {
+    final scanned = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => const BarcodeScannerRoute(title: 'Scan a pole'),
+      ),
+    );
+    if (scanned == null || scanned.isEmpty || !mounted) return;
+    setState(() => _barcode = scanned);
   }
 
   Future<void> _captureLocation() async {
@@ -128,20 +146,8 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
     }
   }
 
-  void _reset() {
-    setState(() {
-      _barcode = null;
-      _fix = null;
-      _locationError = null;
-      _labelController.clear();
-      _notesController.clear();
-    });
-    _scannerController.start();
-  }
-
   @override
   void dispose() {
-    _scannerController.dispose();
     _labelController.dispose();
     _notesController.dispose();
     super.dispose();
@@ -161,12 +167,12 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
       },
       child: Scaffold(
         appBar: AppBar(title: const Text('Capture a pole')),
-        body: _barcode == null ? _scanner() : _form(canSubmit),
+        body: _barcode == null
+            ? const Center(child: CircularProgressIndicator())
+            : _form(canSubmit),
       ),
     );
   }
-
-  Widget _scanner() => MobileScanner(controller: _scannerController, onDetect: _onDetect);
 
   Widget _form(bool canSubmit) {
     return SingleChildScrollView(
@@ -181,7 +187,7 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
                 child: Text('Barcode: $_barcode',
                     style: Theme.of(context).textTheme.titleMedium),
               ),
-              TextButton(onPressed: _reset, child: const Text('Re-scan')),
+              TextButton(onPressed: _rescan, child: const Text('Re-scan')),
             ],
           ),
           const SizedBox(height: 16),
@@ -228,8 +234,4 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
       ),
     );
   }
-}
-
-extension<T> on List<T> {
-  T? get firstOrNull => isEmpty ? null : first;
 }
