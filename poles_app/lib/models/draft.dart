@@ -46,6 +46,8 @@ class DraftPole {
   final DateTime? insertedAt;
   final ActiveValidationSummary? activeValidation;
   final List<String> attachmentIds;
+  final List<String> accessibilityTags;
+  final String? accessibilityNotes;
 
   DraftPole({
     required this.id,
@@ -60,6 +62,8 @@ class DraftPole {
     required this.insertedAt,
     this.activeValidation,
     this.attachmentIds = const [],
+    this.accessibilityTags = const [],
+    this.accessibilityNotes,
   });
 
   factory DraftPole.fromJson(Map<String, dynamic> json) => DraftPole(
@@ -81,6 +85,11 @@ class DraftPole {
                 ?.map((e) => e as String)
                 .toList(growable: false) ??
             const [],
+        accessibilityTags: (json['accessibility_tags'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
+        accessibilityNotes: json['accessibility_notes'] as String?,
       );
 }
 
@@ -98,6 +107,8 @@ class DraftPuzzlet {
   final DateTime? insertedAt;
   final ActiveValidationSummary? activeValidation;
   final List<String> attachmentIds;
+  final List<String> accessibilityTags;
+  final String? accessibilityNotes;
 
   DraftPuzzlet({
     required this.id,
@@ -113,6 +124,8 @@ class DraftPuzzlet {
     required this.insertedAt,
     this.activeValidation,
     this.attachmentIds = const [],
+    this.accessibilityTags = const [],
+    this.accessibilityNotes,
   });
 
   factory DraftPuzzlet.fromJson(Map<String, dynamic> json) => DraftPuzzlet(
@@ -135,6 +148,11 @@ class DraftPuzzlet {
                 ?.map((e) => e as String)
                 .toList(growable: false) ??
             const [],
+        accessibilityTags: (json['accessibility_tags'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
+        accessibilityNotes: json['accessibility_notes'] as String?,
       );
 }
 

@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/models/accessibility.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
+import 'package:poles/widgets/accessibility_tags_field.dart';
 
 class SupervisorEditPuzzletRoute extends StatefulWidget {
   final PolesApi api;
@@ -25,6 +27,8 @@ class _SupervisorEditPuzzletRouteState
   late final TextEditingController _instructions;
   late final TextEditingController _answer;
   late int _difficulty;
+  late final TextEditingController _accessibilityNotes;
+  late List<String> _accessibilityTags;
   bool _busy = false;
   bool _dirty = false;
 
@@ -39,6 +43,10 @@ class _SupervisorEditPuzzletRouteState
       ..addListener(_markDirty);
     _answer = TextEditingController(text: widget.puzzlet.answer)
       ..addListener(_markDirty);
+    _accessibilityNotes =
+        TextEditingController(text: widget.puzzlet.accessibilityNotes ?? '')
+          ..addListener(_markDirty);
+    _accessibilityTags = [...widget.puzzlet.accessibilityTags];
     _difficulty = widget.puzzlet.difficulty;
   }
 
@@ -46,6 +54,7 @@ class _SupervisorEditPuzzletRouteState
   void dispose() {
     _instructions.dispose();
     _answer.dispose();
+    _accessibilityNotes.dispose();
     super.dispose();
   }
 
@@ -75,6 +84,8 @@ class _SupervisorEditPuzzletRouteState
         instructions: _instructions.text.trim(),
         answer: _answer.text.trim(),
         difficulty: _difficulty,
+        accessibilityTags: _accessibilityTags,
+        accessibilityNotes: _accessibilityNotes.text.trim(),
       );
       if (!mounted) return;
       _dirty = false;
@@ -145,6 +156,26 @@ class _SupervisorEditPuzzletRouteState
                 _difficulty = v.round();
                 _dirty = true;
               }),
+            ),
+            const SizedBox(height: 16),
+            AccessibilityTagsField(
+              selected: _accessibilityTags,
+              primary: kPuzzletPrimaryTags,
+              onChanged: (next) {
+                setState(() {
+                  _accessibilityTags = next;
+                  _dirty = true;
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _accessibilityNotes,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'Accessibility notes (optional)',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(

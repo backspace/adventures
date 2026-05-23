@@ -209,7 +209,17 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
 
       pole ->
         attrs =
-          Map.take(params, ["barcode", "label", "latitude", "longitude", "notes", "accuracy_m", "status"])
+          Map.take(params, [
+            "barcode",
+            "label",
+            "latitude",
+            "longitude",
+            "notes",
+            "accuracy_m",
+            "status",
+            "accessibility_tags",
+            "accessibility_notes"
+          ])
 
         case Validations.supervisor_update_pole(pole, attrs) do
           {:ok, updated} -> json(conn, render_pole(updated))
@@ -235,7 +245,9 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
             "longitude",
             "accuracy_m",
             "pole_id",
-            "status"
+            "status",
+            "accessibility_tags",
+            "accessibility_notes"
           ])
 
         case Validations.supervisor_update_puzzlet(puzzlet, attrs) do
@@ -275,7 +287,9 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
       accuracy_m: pole.accuracy_m,
       status: pole.status,
       creator_id: pole.creator_id,
-      attachment_ids: Registrations.Poles.list_pole_attachment_ids(pole.id)
+      attachment_ids: Registrations.Poles.list_pole_attachment_ids(pole.id),
+      accessibility_tags: pole.accessibility_tags || [],
+      accessibility_notes: pole.accessibility_notes
     }
   end
 
@@ -290,7 +304,9 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
       latitude: puzzlet.latitude,
       longitude: puzzlet.longitude,
       creator_id: puzzlet.creator_id,
-      attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id)
+      attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id),
+      accessibility_tags: puzzlet.accessibility_tags || [],
+      accessibility_notes: puzzlet.accessibility_notes
     }
   end
 

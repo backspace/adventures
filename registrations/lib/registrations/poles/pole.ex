@@ -4,6 +4,7 @@ defmodule Registrations.Poles.Pole do
 
   import Ecto.Changeset
 
+  alias Registrations.Poles.AccessibilityTag
   alias Registrations.Poles.Puzzlet
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -17,6 +18,8 @@ defmodule Registrations.Poles.Pole do
     field(:notes, :string)
     field(:accuracy_m, :float)
     field(:status, Ecto.Enum, values: [:draft, :in_review, :validated, :retired], default: :draft)
+    field(:accessibility_tags, {:array, :string}, default: [])
+    field(:accessibility_notes, :string)
 
     belongs_to(:creator, RegistrationsWeb.User, type: :binary_id, foreign_key: :creator_id)
 
@@ -28,11 +31,23 @@ defmodule Registrations.Poles.Pole do
   @doc false
   def changeset(pole, attrs) do
     pole
-    |> cast(attrs, [:barcode, :label, :latitude, :longitude, :notes, :accuracy_m, :status, :creator_id])
+    |> cast(attrs, [
+      :barcode,
+      :label,
+      :latitude,
+      :longitude,
+      :notes,
+      :accuracy_m,
+      :status,
+      :creator_id,
+      :accessibility_tags,
+      :accessibility_notes
+    ])
     |> validate_required([:barcode, :latitude, :longitude])
     |> validate_number(:latitude, greater_than_or_equal_to: -90, less_than_or_equal_to: 90)
     |> validate_number(:longitude, greater_than_or_equal_to: -180, less_than_or_equal_to: 180)
     |> validate_number(:accuracy_m, greater_than_or_equal_to: 0)
+    |> validate_subset(:accessibility_tags, AccessibilityTag.all())
     |> unique_constraint(:barcode)
     |> assoc_constraint(:creator)
   end

@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/models/accessibility.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
+import 'package:poles/widgets/accessibility_tags_field.dart';
 import 'package:poles/widgets/attachments_section.dart';
 import 'package:poles/widgets/location_card.dart';
 
@@ -21,6 +23,8 @@ class EditPuzzletRoute extends StatefulWidget {
 class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
   late final TextEditingController _instructionsController;
   late final TextEditingController _answerController;
+  late final TextEditingController _accessibilityNotesController;
+  late List<String> _accessibilityTags;
   late int _difficulty;
 
   LocationFix? _newFix;
@@ -41,6 +45,10 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
           ..addListener(_markDirty);
     _answerController = TextEditingController(text: widget.puzzlet.answer)
       ..addListener(_markDirty);
+    _accessibilityNotesController =
+        TextEditingController(text: widget.puzzlet.accessibilityNotes ?? '')
+          ..addListener(_markDirty);
+    _accessibilityTags = [...widget.puzzlet.accessibilityTags];
     _difficulty = widget.puzzlet.difficulty;
   }
 
@@ -88,6 +96,8 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
         latitude: _newFix?.latitude,
         longitude: _newFix?.longitude,
         accuracyM: _newFix?.accuracyM,
+        accessibilityTags: _accessibilityTags,
+        accessibilityNotes: _accessibilityNotesController.text.trim(),
       );
       if (!mounted) return;
       _dirty = false;
@@ -153,6 +163,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
   void dispose() {
     _instructionsController.dispose();
     _answerController.dispose();
+    _accessibilityNotesController.dispose();
     super.dispose();
   }
 
@@ -235,6 +246,27 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
                 _difficulty = v.round();
                 _dirty = true;
               }),
+            ),
+            const SizedBox(height: 16),
+            AccessibilityTagsField(
+              selected: _accessibilityTags,
+              primary: kPuzzletPrimaryTags,
+              onChanged: (next) {
+                setState(() {
+                  _accessibilityTags = next;
+                  _dirty = true;
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _accessibilityNotesController,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'Accessibility notes (optional)',
+                hintText: 'Anything tags don\'t cover',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 16),
             AttachmentsSection(

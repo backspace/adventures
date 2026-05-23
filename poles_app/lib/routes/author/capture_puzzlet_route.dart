@@ -3,9 +3,11 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/models/accessibility.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
+import 'package:poles/widgets/accessibility_tags_field.dart';
 import 'package:poles/widgets/location_card.dart';
 import 'package:poles/widgets/pending_photos_section.dart';
 
@@ -20,9 +22,11 @@ class CapturePuzzletRoute extends StatefulWidget {
 class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
   final _instructionsController = TextEditingController();
   final _answerController = TextEditingController();
+  final _accessibilityNotesController = TextEditingController();
   int _difficulty = 3;
   bool _submitting = false;
   List<Uint8List> _pendingPhotos = const [];
+  List<String> _accessibilityTags = const [];
   bool _saved = false;
 
   bool get _isDirty =>
@@ -30,6 +34,8 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
       (_instructionsController.text.isNotEmpty ||
           _answerController.text.isNotEmpty ||
           _pendingPhotos.isNotEmpty ||
+          _accessibilityTags.isNotEmpty ||
+          _accessibilityNotesController.text.isNotEmpty ||
           _difficulty != 3);
 
   LocationFix? _fix;
@@ -89,6 +95,10 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
         latitude: fix.latitude,
         longitude: fix.longitude,
         accuracyM: fix.accuracyM,
+        accessibilityTags: _accessibilityTags,
+        accessibilityNotes: _accessibilityNotesController.text.trim().isEmpty
+            ? null
+            : _accessibilityNotesController.text.trim(),
       );
 
       final photoErrors = <String>[];
@@ -132,6 +142,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
   void dispose() {
     _instructionsController.dispose();
     _answerController.dispose();
+    _accessibilityNotesController.dispose();
     super.dispose();
   }
 
@@ -207,6 +218,25 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
               divisions: 9,
               label: '$_difficulty',
               onChanged: (v) => setState(() => _difficulty = v.round()),
+            ),
+            const SizedBox(height: 16),
+            AccessibilityTagsField(
+              selected: _accessibilityTags,
+              primary: kPuzzletPrimaryTags,
+              onChanged: (next) {
+                setState(() => _accessibilityTags = next);
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _accessibilityNotesController,
+              maxLines: 2,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
+                labelText: 'Accessibility notes (optional)',
+                hintText: 'Anything tags don\'t cover',
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 16),
             PendingPhotosSection(

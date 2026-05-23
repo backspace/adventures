@@ -3,9 +3,11 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/models/accessibility.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
+import 'package:poles/widgets/accessibility_tags_field.dart';
 import 'package:poles/widgets/location_card.dart';
 import 'package:poles/widgets/pending_photos_section.dart';
 
@@ -27,19 +29,24 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
   bool _gettingFix = false;
   bool _submitting = false;
   List<Uint8List> _pendingPhotos = const [];
+  List<String> _accessibilityTags = const [];
+  final _accessibilityNotesController = TextEditingController();
   bool _saved = false;
 
   bool get _isDirty =>
       !_saved &&
       (_labelController.text.isNotEmpty ||
           _notesController.text.isNotEmpty ||
-          _pendingPhotos.isNotEmpty);
+          _pendingPhotos.isNotEmpty ||
+          _accessibilityTags.isNotEmpty ||
+          _accessibilityNotesController.text.isNotEmpty);
 
   @override
   void initState() {
     super.initState();
     _labelController = TextEditingController()..addListener(_onTextChanged);
     _notesController = TextEditingController()..addListener(_onTextChanged);
+    _accessibilityNotesController.addListener(_onTextChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) => _launchInitialScan());
   }
 
@@ -109,6 +116,10 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
         accuracyM: fix.accuracyM,
         label: _labelController.text.trim().isEmpty ? null : _labelController.text.trim(),
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        accessibilityTags: _accessibilityTags,
+        accessibilityNotes: _accessibilityNotesController.text.trim().isEmpty
+            ? null
+            : _accessibilityNotesController.text.trim(),
       );
 
       final photoErrors = <String>[];
@@ -150,6 +161,7 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
   void dispose() {
     _labelController.dispose();
     _notesController.dispose();
+    _accessibilityNotesController.dispose();
     super.dispose();
   }
 
@@ -213,6 +225,22 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
             decoration: const InputDecoration(
               labelText: 'Notes for validators (optional)',
               hintText: 'Anything tricky about finding it',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          AccessibilityTagsField(
+            selected: _accessibilityTags,
+            primary: kPolePrimaryTags,
+            onChanged: (next) => setState(() => _accessibilityTags = next),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _accessibilityNotesController,
+            maxLines: 2,
+            decoration: const InputDecoration(
+              labelText: 'Accessibility notes (optional)',
+              hintText: 'Anything tags don\'t cover',
               border: OutlineInputBorder(),
             ),
           ),

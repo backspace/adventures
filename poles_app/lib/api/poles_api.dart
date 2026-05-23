@@ -142,6 +142,8 @@ class PolesApi {
     String? label,
     String? notes,
     double? accuracyM,
+    List<String>? accessibilityTags,
+    String? accessibilityNotes,
   }) async {
     final response = await dio.post('/poles/drafts/poles', data: {
       'barcode': barcode,
@@ -150,6 +152,8 @@ class PolesApi {
       if (label != null) 'label': label,
       if (notes != null) 'notes': notes,
       if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
+      if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
     });
     return DraftPole.fromJson(response.data as Map<String, dynamic>);
   }
@@ -161,6 +165,8 @@ class PolesApi {
     double? latitude,
     double? longitude,
     double? accuracyM,
+    List<String>? accessibilityTags,
+    String? accessibilityNotes,
   }) async {
     final response = await dio.post('/poles/drafts/puzzlets', data: {
       'instructions': instructions,
@@ -169,6 +175,8 @@ class PolesApi {
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
       if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
+      if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }
@@ -181,6 +189,8 @@ class PolesApi {
     double? latitude,
     double? longitude,
     double? accuracyM,
+    List<String>? accessibilityTags,
+    String? accessibilityNotes,
   }) async {
     final response = await dio.patch('/poles/drafts/poles/$id', data: {
       if (barcode != null) 'barcode': barcode,
@@ -189,6 +199,8 @@ class PolesApi {
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
       if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
+      if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
     });
     return DraftPole.fromJson(response.data as Map<String, dynamic>);
   }
@@ -201,6 +213,8 @@ class PolesApi {
     double? latitude,
     double? longitude,
     double? accuracyM,
+    List<String>? accessibilityTags,
+    String? accessibilityNotes,
   }) async {
     final response = await dio.patch('/poles/drafts/puzzlets/$id', data: {
       if (instructions != null) 'instructions': instructions,
@@ -209,6 +223,8 @@ class PolesApi {
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
       if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
+      if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }
@@ -444,6 +460,8 @@ class PolesApi {
     String? notes,
     double? latitude,
     double? longitude,
+    List<String>? accessibilityTags,
+    String? accessibilityNotes,
   }) async {
     final response = await dio.patch('/poles/supervision/poles/$id', data: {
       if (barcode != null) 'barcode': barcode,
@@ -451,6 +469,8 @@ class PolesApi {
       if (notes != null) 'notes': notes,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
+      if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
     });
     return DraftPole.fromJson(response.data as Map<String, dynamic>);
   }
@@ -460,11 +480,15 @@ class PolesApi {
     String? instructions,
     String? answer,
     int? difficulty,
+    List<String>? accessibilityTags,
+    String? accessibilityNotes,
   }) async {
     final response = await dio.patch('/poles/supervision/puzzlets/$id', data: {
       if (instructions != null) 'instructions': instructions,
       if (answer != null) 'answer': answer,
       if (difficulty != null) 'difficulty': difficulty,
+      if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
+      if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }

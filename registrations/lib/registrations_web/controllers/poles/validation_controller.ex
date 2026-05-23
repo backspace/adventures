@@ -272,7 +272,9 @@ defmodule RegistrationsWeb.Poles.ValidationController do
       longitude: pole.longitude,
       notes: pole.notes,
       status: pole.status,
-      attachment_ids: Registrations.Poles.list_pole_attachment_ids(pole.id)
+      attachment_ids: Registrations.Poles.list_pole_attachment_ids(pole.id),
+      accessibility_tags: pole.accessibility_tags || [],
+      accessibility_notes: pole.accessibility_notes
     }
   end
 
@@ -288,7 +290,9 @@ defmodule RegistrationsWeb.Poles.ValidationController do
       status: puzzlet.status,
       latitude: puzzlet.latitude,
       longitude: puzzlet.longitude,
-      attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id)
+      attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id),
+      accessibility_tags: puzzlet.accessibility_tags || [],
+      accessibility_notes: puzzlet.accessibility_notes
     }
   end
 

@@ -20,7 +20,16 @@ defmodule RegistrationsWeb.Poles.DraftController do
 
     attrs =
       params
-      |> Map.take(["barcode", "label", "latitude", "longitude", "notes", "accuracy_m"])
+      |> Map.take([
+        "barcode",
+        "label",
+        "latitude",
+        "longitude",
+        "notes",
+        "accuracy_m",
+        "accessibility_tags",
+        "accessibility_notes"
+      ])
       |> Map.put("creator_id", user.id)
       |> Map.put("status", "draft")
 
@@ -47,7 +56,16 @@ defmodule RegistrationsWeb.Poles.DraftController do
       true ->
         attrs =
           params
-          |> Map.take(["label", "latitude", "longitude", "notes", "accuracy_m", "barcode"])
+          |> Map.take([
+            "label",
+            "latitude",
+            "longitude",
+            "notes",
+            "accuracy_m",
+            "barcode",
+            "accessibility_tags",
+            "accessibility_notes"
+          ])
 
         case Poles.update_pole(pole, attrs) do
           {:ok, updated} -> json(conn, render_pole(updated))
@@ -78,7 +96,16 @@ defmodule RegistrationsWeb.Poles.DraftController do
 
     attrs =
       params
-      |> Map.take(["instructions", "answer", "difficulty", "latitude", "longitude", "accuracy_m"])
+      |> Map.take([
+        "instructions",
+        "answer",
+        "difficulty",
+        "latitude",
+        "longitude",
+        "accuracy_m",
+        "accessibility_tags",
+        "accessibility_notes"
+      ])
       |> Map.put("creator_id", user.id)
       |> Map.put("status", "draft")
 
@@ -113,7 +140,9 @@ defmodule RegistrationsWeb.Poles.DraftController do
             "difficulty",
             "latitude",
             "longitude",
-            "accuracy_m"
+            "accuracy_m",
+            "accessibility_tags",
+            "accessibility_notes"
           ])
 
         case Poles.update_puzzlet(puzzlet, attrs) do
@@ -155,7 +184,9 @@ defmodule RegistrationsWeb.Poles.DraftController do
       status: pole.status,
       creator_id: pole.creator_id,
       inserted_at: pole.inserted_at,
-      attachment_ids: Poles.list_pole_attachment_ids(pole.id)
+      attachment_ids: Poles.list_pole_attachment_ids(pole.id),
+      accessibility_tags: pole.accessibility_tags || [],
+      accessibility_notes: pole.accessibility_notes
     }
   end
 
@@ -172,7 +203,9 @@ defmodule RegistrationsWeb.Poles.DraftController do
       longitude: puzzlet.longitude,
       accuracy_m: puzzlet.accuracy_m,
       inserted_at: puzzlet.inserted_at,
-      attachment_ids: Poles.list_puzzlet_attachment_ids(puzzlet.id)
+      attachment_ids: Poles.list_puzzlet_attachment_ids(puzzlet.id),
+      accessibility_tags: puzzlet.accessibility_tags || [],
+      accessibility_notes: puzzlet.accessibility_notes
     }
   end
 

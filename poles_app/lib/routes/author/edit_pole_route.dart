@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/models/accessibility.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
+import 'package:poles/widgets/accessibility_tags_field.dart';
 import 'package:poles/widgets/attachments_section.dart';
 import 'package:poles/widgets/location_card.dart';
 
@@ -20,6 +22,8 @@ class EditPoleRoute extends StatefulWidget {
 class _EditPoleRouteState extends State<EditPoleRoute> {
   late final TextEditingController _labelController;
   late final TextEditingController _notesController;
+  late final TextEditingController _accessibilityNotesController;
+  late List<String> _accessibilityTags;
 
   LocationFix? _newFix;
   String? _locationError;
@@ -38,6 +42,10 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
       ..addListener(_markDirty);
     _notesController = TextEditingController(text: widget.pole.notes ?? '')
       ..addListener(_markDirty);
+    _accessibilityNotesController =
+        TextEditingController(text: widget.pole.accessibilityNotes ?? '')
+          ..addListener(_markDirty);
+    _accessibilityTags = [...widget.pole.accessibilityTags];
   }
 
   Future<void> _reacquireLocation() async {
@@ -72,6 +80,8 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
         latitude: _newFix?.latitude,
         longitude: _newFix?.longitude,
         accuracyM: _newFix?.accuracyM,
+        accessibilityTags: _accessibilityTags,
+        accessibilityNotes: _accessibilityNotesController.text.trim(),
       );
       if (!mounted) return;
       _dirty = false;
@@ -136,6 +146,7 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
   void dispose() {
     _labelController.dispose();
     _notesController.dispose();
+    _accessibilityNotesController.dispose();
     super.dispose();
   }
 
@@ -198,6 +209,27 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
               maxLines: 3,
               decoration: const InputDecoration(
                 labelText: 'Notes for validators (optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 24),
+            AccessibilityTagsField(
+              selected: _accessibilityTags,
+              primary: kPolePrimaryTags,
+              onChanged: (next) {
+                setState(() {
+                  _accessibilityTags = next;
+                  _dirty = true;
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _accessibilityNotesController,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'Accessibility notes (optional)',
+                hintText: 'Anything tags don\'t cover',
                 border: OutlineInputBorder(),
               ),
             ),

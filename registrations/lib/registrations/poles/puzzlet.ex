@@ -4,6 +4,7 @@ defmodule Registrations.Poles.Puzzlet do
 
   import Ecto.Changeset
 
+  alias Registrations.Poles.AccessibilityTag
   alias Registrations.Poles.Attempt
   alias Registrations.Poles.Capture
   alias Registrations.Poles.Pole
@@ -20,6 +21,9 @@ defmodule Registrations.Poles.Puzzlet do
     field(:latitude, :float)
     field(:longitude, :float)
     field(:accuracy_m, :float)
+
+    field(:accessibility_tags, {:array, :string}, default: [])
+    field(:accessibility_notes, :string)
 
     belongs_to(:pole, Pole, type: :binary_id)
     belongs_to(:creator, RegistrationsWeb.User, type: :binary_id, foreign_key: :creator_id)
@@ -42,13 +46,16 @@ defmodule Registrations.Poles.Puzzlet do
       :creator_id,
       :latitude,
       :longitude,
-      :accuracy_m
+      :accuracy_m,
+      :accessibility_tags,
+      :accessibility_notes
     ])
     |> validate_required([:instructions, :answer, :difficulty])
     |> validate_number(:difficulty, greater_than_or_equal_to: 1)
     |> validate_number(:latitude, greater_than_or_equal_to: -90, less_than_or_equal_to: 90)
     |> validate_number(:longitude, greater_than_or_equal_to: -180, less_than_or_equal_to: 180)
     |> validate_number(:accuracy_m, greater_than_or_equal_to: 0)
+    |> validate_subset(:accessibility_tags, AccessibilityTag.all())
     |> assoc_constraint(:pole)
     |> assoc_constraint(:creator)
   end

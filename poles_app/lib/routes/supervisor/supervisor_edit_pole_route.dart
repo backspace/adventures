@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/models/accessibility.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/services/discard_changes.dart';
+import 'package:poles/widgets/accessibility_tags_field.dart';
 
 class SupervisorEditPoleRoute extends StatefulWidget {
   final PolesApi api;
@@ -24,6 +26,8 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
   late final TextEditingController _latitude;
   late final TextEditingController _longitude;
   late final TextEditingController _notes;
+  late final TextEditingController _accessibilityNotes;
+  late List<String> _accessibilityTags;
   bool _busy = false;
   bool _dirty = false;
 
@@ -44,6 +48,10 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
       ..addListener(_markDirty);
     _notes = TextEditingController(text: widget.pole.notes ?? '')
       ..addListener(_markDirty);
+    _accessibilityNotes =
+        TextEditingController(text: widget.pole.accessibilityNotes ?? '')
+          ..addListener(_markDirty);
+    _accessibilityTags = [...widget.pole.accessibilityTags];
   }
 
   @override
@@ -53,6 +61,7 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
     _latitude.dispose();
     _longitude.dispose();
     _notes.dispose();
+    _accessibilityNotes.dispose();
     super.dispose();
   }
 
@@ -76,6 +85,8 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
         notes: _notes.text.trim(),
         latitude: lat,
         longitude: lng,
+        accessibilityTags: _accessibilityTags,
+        accessibilityNotes: _accessibilityNotes.text.trim(),
       );
       if (!mounted) return;
       _dirty = false;
@@ -161,6 +172,26 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
               maxLines: 3,
               decoration: const InputDecoration(
                 labelText: 'Notes',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            AccessibilityTagsField(
+              selected: _accessibilityTags,
+              primary: kPolePrimaryTags,
+              onChanged: (next) {
+                setState(() {
+                  _accessibilityTags = next;
+                  _dirty = true;
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _accessibilityNotes,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'Accessibility notes (optional)',
                 border: OutlineInputBorder(),
               ),
             ),
