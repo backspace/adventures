@@ -190,7 +190,7 @@ class _Thumbnail extends StatelessWidget {
     try {
       final headers = await _authHeaders();
       final response = await api.dio.get<List<int>>(
-        '/poles/attachments/$attachmentId',
+        '/poles/attachments/$attachmentId/thumb',
         options: Options(
           responseType: ResponseType.bytes,
           headers: headers,

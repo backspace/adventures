@@ -208,6 +208,7 @@ defmodule RegistrationsWeb.Router do
     get("/poles", PoleController, :index)
     get("/poles/:barcode", PoleController, :show)
     get("/attachments/:id", AttachmentController, :show)
+    get("/attachments/:id/thumb", AttachmentController, :show_thumb)
     post("/puzzlets/:puzzlet_id/attempts", AttemptController, :create)
   end
 

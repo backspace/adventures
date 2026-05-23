@@ -18,6 +18,18 @@ defmodule Registrations.Release do
     {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :down, to: version))
   end
 
+  @doc """
+  Generate thumbnails for any attachments that don't yet have one. Run once
+  after deploying the migration that adds thumbnail columns.
+  """
+  def backfill_thumbnails do
+    load_app()
+    {:ok, _} = Application.ensure_all_started(:registrations)
+    result = Registrations.Poles.backfill_thumbnails()
+    IO.puts("Backfilled thumbnails: #{result.ok} ok, #{result.error} errors")
+    result
+  end
+
   defp repos do
     Application.fetch_env!(@app, :ecto_repos)
   end

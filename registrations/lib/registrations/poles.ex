@@ -116,6 +116,8 @@ defmodule Registrations.Poles do
   def delete_pole(%Pole{} = pole), do: Repo.delete(pole)
 
   def create_attachment(attrs) do
+    attrs = maybe_add_thumbnail(attrs)
+
     %Attachment{}
     |> Attachment.changeset(attrs)
     |> Repo.insert()
@@ -126,6 +128,48 @@ defmodule Registrations.Poles do
   def get_attachment!(id), do: Repo.get!(Attachment, id)
 
   def delete_attachment(%Attachment{} = attachment), do: Repo.delete(attachment)
+
+  @doc """
+  Generate thumbnails for all attachments that don't have one yet. Intended
+  to be called once from a release task after the migration adds the
+  thumbnail columns. Safe to re-run; only processes rows still missing a
+  thumbnail.
+  """
+  def backfill_thumbnails do
+    Attachment
+    |> where([a], is_nil(a.thumbnail_data))
+    |> Repo.all()
+    |> Enum.reduce(%{ok: 0, error: 0}, fn att, acc ->
+      case Registrations.Poles.Thumbnail.from_bytes(att.data) do
+        {:ok, thumb} ->
+          att
+          |> Attachment.changeset(%{
+            thumbnail_data: thumb,
+            thumbnail_byte_size: byte_size(thumb)
+          })
+          |> Repo.update!()
+
+          %{acc | ok: acc.ok + 1}
+
+        _ ->
+          %{acc | error: acc.error + 1}
+      end
+    end)
+  end
+
+  defp maybe_add_thumbnail(%{data: data} = attrs) when is_binary(data) do
+    case Registrations.Poles.Thumbnail.from_bytes(data) do
+      {:ok, thumb} ->
+        attrs
+        |> Map.put(:thumbnail_data, thumb)
+        |> Map.put(:thumbnail_byte_size, byte_size(thumb))
+
+      _ ->
+        attrs
+    end
+  end
+
+  defp maybe_add_thumbnail(attrs), do: attrs
 
   def list_pole_attachment_ids(pole_id) do
     Attachment

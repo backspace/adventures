@@ -16,6 +16,8 @@ defmodule Registrations.Poles.Attachment do
     field :data, :binary
     field :content_type, :string
     field :byte_size, :integer
+    field :thumbnail_data, :binary
+    field :thumbnail_byte_size, :integer
     field :creator_id, :binary_id
 
     timestamps()
@@ -26,7 +28,16 @@ defmodule Registrations.Poles.Attachment do
 
   def changeset(attachment, attrs) do
     attachment
-    |> cast(attrs, [:pole_id, :puzzlet_id, :data, :content_type, :byte_size, :creator_id])
+    |> cast(attrs, [
+      :pole_id,
+      :puzzlet_id,
+      :data,
+      :content_type,
+      :byte_size,
+      :thumbnail_data,
+      :thumbnail_byte_size,
+      :creator_id
+    ])
     |> validate_required([:data, :content_type, :byte_size, :creator_id])
     |> validate_inclusion(:content_type, @allowed_types,
       message: "must be JPEG, PNG, WEBP, or HEIC"

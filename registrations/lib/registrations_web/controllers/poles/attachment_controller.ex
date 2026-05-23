@@ -22,6 +22,32 @@ defmodule RegistrationsWeb.Poles.AttachmentController do
     end
   end
 
+  @doc """
+  Serve a small JPEG thumbnail for thumbnail/grid views. Falls back to the
+  full-size bytes if the attachment predates thumbnail generation and the
+  backfill hasn't been run yet.
+  """
+  def show_thumb(conn, %{"id" => id}) do
+    case Poles.get_attachment(id) do
+      nil ->
+        conn |> put_status(:not_found) |> json(%{error: %{code: "not_found"}})
+
+      %{thumbnail_data: thumb} = attachment when is_binary(thumb) ->
+        conn
+        |> put_resp_header("content-type", "image/jpeg")
+        |> put_resp_header("cache-control", "private, max-age=31536000, immutable")
+        |> put_resp_header("etag", inspect({attachment.id, :thumb}))
+        |> send_resp(:ok, thumb)
+
+      attachment ->
+        # No thumbnail yet — fall back to full bytes so the UI still works.
+        conn
+        |> put_resp_header("content-type", attachment.content_type)
+        |> put_resp_header("cache-control", "private, max-age=300")
+        |> send_resp(:ok, attachment.data)
+    end
+  end
+
   def create_for_pole(conn, %{"pole_id" => pole_id} = params) do
     user = Pow.Plug.current_user(conn)
 

@@ -72,7 +72,8 @@ defmodule Registrations.Mixfile do
       {:geo_postgis, "~> 3.7"},
       {:con_cache, "~> 1.0"},
       {:esbuild, "~> 0.8", runtime: Mix.env() == :dev},
-      {:dart_sass, "~> 0.7", runtime: Mix.env() == :dev}
+      {:dart_sass, "~> 0.7", runtime: Mix.env() == :dev},
+      {:vix, "~> 0.31"}
     ]
   end
 

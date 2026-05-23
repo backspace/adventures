@@ -265,6 +265,9 @@ class PolesApi {
   String attachmentUrl(String id) =>
       '${dio.options.baseUrl}/poles/attachments/$id';
 
+  String attachmentThumbUrl(String id) =>
+      '${dio.options.baseUrl}/poles/attachments/$id/thumb';
+
   // ────────── Validator surface ──────────
 
   Future<MyValidations> listMyValidations() async {
