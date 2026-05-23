@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/location_card.dart';
 import 'package:poles/widgets/pending_photos_section.dart';
@@ -18,8 +19,19 @@ class CapturePoleRoute extends StatefulWidget {
 
 class _CapturePoleRouteState extends State<CapturePoleRoute> {
   final _scannerController = MobileScannerController();
-  final _labelController = TextEditingController();
-  final _notesController = TextEditingController();
+  late final TextEditingController _labelController;
+  late final TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _labelController = TextEditingController()..addListener(_onTextChanged);
+    _notesController = TextEditingController()..addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    if (mounted) setState(() {});
+  }
 
   String? _barcode;
   LocationFix? _fix;
@@ -27,6 +39,13 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
   bool _gettingFix = false;
   bool _submitting = false;
   List<Uint8List> _pendingPhotos = const [];
+  bool _saved = false;
+
+  bool get _isDirty =>
+      !_saved &&
+      (_labelController.text.isNotEmpty ||
+          _notesController.text.isNotEmpty ||
+          _pendingPhotos.isNotEmpty);
 
   Future<void> _onDetect(BarcodeCapture capture) async {
     if (_barcode != null) return;
@@ -89,6 +108,7 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
       }
 
       if (!mounted) return;
+      _saved = true;
       final message = photoErrors.isEmpty
           ? 'Pole submitted as draft.'
           : 'Pole saved; ${photoErrors.length} photo(s) failed to upload.';
@@ -130,9 +150,19 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
   @override
   Widget build(BuildContext context) {
     final canSubmit = _barcode != null && (_fix?.isUsable ?? false) && !_submitting;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Capture a pole')),
-      body: _barcode == null ? _scanner() : _form(canSubmit),
+    return PopScope(
+      canPop: !_isDirty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final discard = await confirmDiscardChanges(context);
+        if (discard && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Capture a pole')),
+        body: _barcode == null ? _scanner() : _form(canSubmit),
+      ),
     );
   }
 

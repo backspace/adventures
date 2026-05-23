@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/location_card.dart';
 import 'package:poles/widgets/pending_photos_section.dart';
@@ -21,6 +22,14 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
   int _difficulty = 3;
   bool _submitting = false;
   List<Uint8List> _pendingPhotos = const [];
+  bool _saved = false;
+
+  bool get _isDirty =>
+      !_saved &&
+      (_instructionsController.text.isNotEmpty ||
+          _answerController.text.isNotEmpty ||
+          _pendingPhotos.isNotEmpty ||
+          _difficulty != 3);
 
   LocationFix? _fix;
   String? _locationError;
@@ -85,6 +94,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
       }
 
       if (!mounted) return;
+      _saved = true;
       final message = photoErrors.isEmpty
           ? 'Puzzlet submitted as draft.'
           : 'Puzzlet saved; ${photoErrors.length} photo(s) failed to upload.';
@@ -120,9 +130,18 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
         _instructionsController.text.trim().isNotEmpty &&
         _answerController.text.trim().isNotEmpty;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Submit a puzzlet')),
-      body: SingleChildScrollView(
+    return PopScope(
+      canPop: !_isDirty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final discard = await confirmDiscardChanges(context);
+        if (discard && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Submit a puzzlet')),
+        body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,6 +210,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

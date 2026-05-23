@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
+import 'package:poles/services/discard_changes.dart';
 
 class SupervisorEditPoleRoute extends StatefulWidget {
   final PolesApi api;
@@ -24,15 +25,25 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
   late final TextEditingController _longitude;
   late final TextEditingController _notes;
   bool _busy = false;
+  bool _dirty = false;
+
+  void _markDirty() {
+    if (!_dirty) setState(() => _dirty = true);
+  }
 
   @override
   void initState() {
     super.initState();
-    _barcode = TextEditingController(text: widget.pole.barcode);
-    _label = TextEditingController(text: widget.pole.label ?? '');
-    _latitude = TextEditingController(text: widget.pole.latitude.toString());
-    _longitude = TextEditingController(text: widget.pole.longitude.toString());
-    _notes = TextEditingController(text: widget.pole.notes ?? '');
+    _barcode = TextEditingController(text: widget.pole.barcode)
+      ..addListener(_markDirty);
+    _label = TextEditingController(text: widget.pole.label ?? '')
+      ..addListener(_markDirty);
+    _latitude = TextEditingController(text: widget.pole.latitude.toString())
+      ..addListener(_markDirty);
+    _longitude = TextEditingController(text: widget.pole.longitude.toString())
+      ..addListener(_markDirty);
+    _notes = TextEditingController(text: widget.pole.notes ?? '')
+      ..addListener(_markDirty);
   }
 
   @override
@@ -67,6 +78,7 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
         longitude: lng,
       );
       if (!mounted) return;
+      _dirty = false;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pole updated.')),
       );
@@ -84,9 +96,18 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Edit pole')),
-      body: SingleChildScrollView(
+    return PopScope(
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final discard = await confirmDiscardChanges(context);
+        if (discard && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Edit pole')),
+        body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,6 +178,7 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
+import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/attachments_section.dart';
 import 'package:poles/widgets/location_card.dart';
@@ -24,12 +25,19 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
   String? _locationError;
   bool _gettingFix = false;
   bool _busy = false;
+  bool _dirty = false;
+
+  void _markDirty() {
+    if (!_dirty) setState(() => _dirty = true);
+  }
 
   @override
   void initState() {
     super.initState();
-    _labelController = TextEditingController(text: widget.pole.label ?? '');
-    _notesController = TextEditingController(text: widget.pole.notes ?? '');
+    _labelController = TextEditingController(text: widget.pole.label ?? '')
+      ..addListener(_markDirty);
+    _notesController = TextEditingController(text: widget.pole.notes ?? '')
+      ..addListener(_markDirty);
   }
 
   Future<void> _reacquireLocation() async {
@@ -43,6 +51,7 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
       setState(() {
         _newFix = fix;
         _gettingFix = false;
+        _dirty = true;
       });
     } catch (e) {
       if (!mounted) return;
@@ -65,6 +74,7 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
         accuracyM: _newFix?.accuracyM,
       );
       if (!mounted) return;
+      _dirty = false;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Draft updated.')));
       Navigator.of(context).pop(true);
@@ -140,9 +150,18 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
           timestamp: DateTime.now(),
         );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit pole'),
+    return PopScope(
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final discard = await confirmDiscardChanges(context);
+        if (discard && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Edit pole'),
         actions: [
           IconButton(
             tooltip: 'Delete draft',
@@ -200,6 +219,7 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

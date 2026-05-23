@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
+import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/attachments_section.dart';
 import 'package:poles/widgets/location_card.dart';
@@ -25,13 +26,20 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
   String? _locationError;
   bool _gettingFix = false;
   bool _busy = false;
+  bool _dirty = false;
+
+  void _markDirty() {
+    if (!_dirty) setState(() => _dirty = true);
+  }
 
   @override
   void initState() {
     super.initState();
     _instructionsController =
-        TextEditingController(text: widget.puzzlet.instructions);
-    _answerController = TextEditingController(text: widget.puzzlet.answer);
+        TextEditingController(text: widget.puzzlet.instructions)
+          ..addListener(_markDirty);
+    _answerController = TextEditingController(text: widget.puzzlet.answer)
+      ..addListener(_markDirty);
     _difficulty = widget.puzzlet.difficulty;
   }
 
@@ -46,6 +54,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
       setState(() {
         _newFix = fix;
         _gettingFix = false;
+        _dirty = true;
       });
     } catch (e) {
       if (!mounted) return;
@@ -69,6 +78,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
         accuracyM: _newFix?.accuracyM,
       );
       if (!mounted) return;
+      _dirty = false;
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Draft updated.')));
       Navigator.of(context).pop(true);
@@ -147,9 +157,18 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit puzzlet'),
+    return PopScope(
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final discard = await confirmDiscardChanges(context);
+        if (discard && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Edit puzzlet'),
         actions: [
           IconButton(
             tooltip: 'Delete draft',
@@ -195,7 +214,10 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
               max: 10,
               divisions: 9,
               label: '$_difficulty',
-              onChanged: (v) => setState(() => _difficulty = v.round()),
+              onChanged: (v) => setState(() {
+                _difficulty = v.round();
+                _dirty = true;
+              }),
             ),
             const SizedBox(height: 16),
             AttachmentsSection(
@@ -215,6 +237,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:poles/flavors.dart';
+import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/env_service.dart';
 import 'package:poles/services/user_service.dart';
 
@@ -22,6 +23,11 @@ class _SettingsRouteState extends State<SettingsRoute> {
   String? _selected;
   final _customController = TextEditingController();
   bool _useCustom = false;
+  bool _dirty = false;
+
+  void _markDirty() {
+    if (!_dirty) setState(() => _dirty = true);
+  }
 
   @override
   void initState() {
@@ -47,6 +53,9 @@ class _SettingsRouteState extends State<SettingsRoute> {
         }
       }
     });
+    // Attach dirty listener after initial state is set so loading doesn't
+    // mark the form dirty.
+    _customController.addListener(_markDirty);
   }
 
   Future<void> _save() async {
@@ -68,12 +77,14 @@ class _SettingsRouteState extends State<SettingsRoute> {
 
     await EnvService.instance.switchTo(newRoot);
     if (!mounted) return;
+    _dirty = false;
     Navigator.of(context).pop();
   }
 
   Future<void> _reset() async {
     await EnvService.instance.switchTo(null);
     if (!mounted) return;
+    _dirty = false;
     Navigator.of(context).pop();
   }
 
@@ -85,9 +96,18 @@ class _SettingsRouteState extends State<SettingsRoute> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
+    return PopScope(
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final discard = await confirmDiscardChanges(context);
+        if (discard && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Settings')),
+        body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
@@ -120,6 +140,7 @@ class _SettingsRouteState extends State<SettingsRoute> {
                 _useCustom = false;
                 _selected = v;
               }
+              _dirty = true;
             }),
             child: Column(
               children: [
@@ -166,6 +187,7 @@ class _SettingsRouteState extends State<SettingsRoute> {
             ],
           ),
         ],
+      ),
       ),
     );
   }

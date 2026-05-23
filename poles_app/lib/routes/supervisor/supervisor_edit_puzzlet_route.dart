@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
+import 'package:poles/services/discard_changes.dart';
 
 class SupervisorEditPuzzletRoute extends StatefulWidget {
   final PolesApi api;
@@ -24,12 +25,19 @@ class _SupervisorEditPuzzletRouteState
   late final TextEditingController _answer;
   late int _difficulty;
   bool _busy = false;
+  bool _dirty = false;
+
+  void _markDirty() {
+    if (!_dirty) setState(() => _dirty = true);
+  }
 
   @override
   void initState() {
     super.initState();
-    _instructions = TextEditingController(text: widget.puzzlet.instructions);
-    _answer = TextEditingController(text: widget.puzzlet.answer);
+    _instructions = TextEditingController(text: widget.puzzlet.instructions)
+      ..addListener(_markDirty);
+    _answer = TextEditingController(text: widget.puzzlet.answer)
+      ..addListener(_markDirty);
     _difficulty = widget.puzzlet.difficulty;
   }
 
@@ -57,6 +65,7 @@ class _SupervisorEditPuzzletRouteState
         difficulty: _difficulty,
       );
       if (!mounted) return;
+      _dirty = false;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Puzzlet updated.')),
       );
@@ -74,9 +83,18 @@ class _SupervisorEditPuzzletRouteState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Edit puzzlet')),
-      body: SingleChildScrollView(
+    return PopScope(
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final discard = await confirmDiscardChanges(context);
+        if (discard && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Edit puzzlet')),
+        body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +124,10 @@ class _SupervisorEditPuzzletRouteState
               max: 10,
               divisions: 9,
               label: '$_difficulty',
-              onChanged: (v) => setState(() => _difficulty = v.round()),
+              onChanged: (v) => setState(() {
+                _difficulty = v.round();
+                _dirty = true;
+              }),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
@@ -122,6 +143,7 @@ class _SupervisorEditPuzzletRouteState
             ),
           ],
         ),
+      ),
       ),
     );
   }
