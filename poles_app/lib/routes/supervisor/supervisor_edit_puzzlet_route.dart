@@ -31,6 +31,7 @@ class _SupervisorEditPuzzletRouteState
   late int _difficulty;
   late AnswerType _answerType;
   late final TextEditingController _accessibilityNotes;
+  late final TextEditingController _warning;
   late List<String> _accessibilityTags;
   bool _busy = false;
   bool _dirty = false;
@@ -49,6 +50,9 @@ class _SupervisorEditPuzzletRouteState
     _accessibilityNotes =
         TextEditingController(text: widget.puzzlet.accessibilityNotes ?? '')
           ..addListener(_markDirty);
+    _warning =
+        TextEditingController(text: widget.puzzlet.warning ?? '')
+          ..addListener(_markDirty);
     _accessibilityTags = [...widget.puzzlet.accessibilityTags];
     _difficulty = widget.puzzlet.difficulty;
     _answerType = widget.puzzlet.answerType;
@@ -59,6 +63,7 @@ class _SupervisorEditPuzzletRouteState
     _instructions.dispose();
     _answer.dispose();
     _accessibilityNotes.dispose();
+    _warning.dispose();
     super.dispose();
   }
 
@@ -109,6 +114,7 @@ class _SupervisorEditPuzzletRouteState
         difficulty: _difficulty,
         accessibilityTags: _accessibilityTags,
         accessibilityNotes: _accessibilityNotes.text.trim(),
+        warning: _warning.text.trim(),
       );
       if (!mounted) return;
       _dirty = false;
@@ -152,6 +158,17 @@ class _SupervisorEditPuzzletRouteState
               decoration: const InputDecoration(
                 labelText: 'Instructions',
                 border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _warning,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'Warning (optional)',
+                hintText: 'Shown prominently to players. Use for safety / practical alerts.',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.warning_amber_outlined),
               ),
             ),
             const SizedBox(height: 12),

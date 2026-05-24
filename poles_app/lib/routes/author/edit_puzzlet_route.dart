@@ -26,6 +26,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
   late final TextEditingController _instructionsController;
   late final TextEditingController _answerController;
   late final TextEditingController _accessibilityNotesController;
+  late final TextEditingController _warningController;
   late List<String> _accessibilityTags;
   late int _difficulty;
   late AnswerType _answerType;
@@ -50,6 +51,9 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
       ..addListener(_markDirty);
     _accessibilityNotesController =
         TextEditingController(text: widget.puzzlet.accessibilityNotes ?? '')
+          ..addListener(_markDirty);
+    _warningController =
+        TextEditingController(text: widget.puzzlet.warning ?? '')
           ..addListener(_markDirty);
     _accessibilityTags = [...widget.puzzlet.accessibilityTags];
     _difficulty = widget.puzzlet.difficulty;
@@ -121,6 +125,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
         accuracyM: _newFix?.accuracyM,
         accessibilityTags: _accessibilityTags,
         accessibilityNotes: _accessibilityNotesController.text.trim(),
+        warning: _warningController.text.trim(),
       );
       if (!mounted) return;
       _dirty = false;
@@ -187,6 +192,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
     _instructionsController.dispose();
     _answerController.dispose();
     _accessibilityNotesController.dispose();
+    _warningController.dispose();
     super.dispose();
   }
 
@@ -242,6 +248,17 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
               decoration: const InputDecoration(
                 labelText: 'Instructions',
                 border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _warningController,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'Warning (optional)',
+                hintText: 'Shown prominently to players. Use for safety / practical alerts.',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.warning_amber_outlined),
               ),
             ),
             const SizedBox(height: 12),

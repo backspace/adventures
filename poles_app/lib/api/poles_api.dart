@@ -168,6 +168,7 @@ class PolesApi {
     double? accuracyM,
     List<String>? accessibilityTags,
     String? accessibilityNotes,
+    String? warning,
   }) async {
     final response = await dio.post('/poles/drafts/puzzlets', data: {
       'instructions': instructions,
@@ -179,6 +180,7 @@ class PolesApi {
       if (accuracyM != null) 'accuracy_m': accuracyM,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
+      if (warning != null) 'warning': warning,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }
@@ -218,6 +220,7 @@ class PolesApi {
     double? accuracyM,
     List<String>? accessibilityTags,
     String? accessibilityNotes,
+    String? warning,
   }) async {
     final response = await dio.patch('/poles/drafts/puzzlets/$id', data: {
       if (instructions != null) 'instructions': instructions,
@@ -229,6 +232,7 @@ class PolesApi {
       if (accuracyM != null) 'accuracy_m': accuracyM,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
+      if (warning != null) 'warning': warning,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }
@@ -487,6 +491,7 @@ class PolesApi {
     int? difficulty,
     List<String>? accessibilityTags,
     String? accessibilityNotes,
+    String? warning,
   }) async {
     final response = await dio.patch('/poles/supervision/puzzlets/$id', data: {
       if (instructions != null) 'instructions': instructions,
@@ -495,6 +500,7 @@ class PolesApi {
       if (difficulty != null) 'difficulty': difficulty,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
+      if (warning != null) 'warning': warning,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }

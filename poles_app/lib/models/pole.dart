@@ -35,6 +35,7 @@ class Puzzlet {
   final int attemptsRemaining;
   final List<String> previousWrongAnswers;
   final String answerType;
+  final String? warning;
 
   Puzzlet({
     required this.id,
@@ -43,6 +44,7 @@ class Puzzlet {
     required this.attemptsRemaining,
     required this.previousWrongAnswers,
     this.answerType = 'loose_text',
+    this.warning,
   });
 
   factory Puzzlet.fromJson(Map<String, dynamic> json) => Puzzlet(
@@ -55,6 +57,7 @@ class Puzzlet {
                 .toList(growable: false) ??
             const [],
         answerType: json['answer_type'] as String? ?? 'loose_text',
+        warning: json['warning'] as String?,
       );
 }
 

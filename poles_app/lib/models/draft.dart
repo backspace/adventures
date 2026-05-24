@@ -133,6 +133,7 @@ class DraftPuzzlet {
   final List<String> attachmentIds;
   final List<String> accessibilityTags;
   final String? accessibilityNotes;
+  final String? warning;
 
   DraftPuzzlet({
     required this.id,
@@ -151,6 +152,7 @@ class DraftPuzzlet {
     this.attachmentIds = const [],
     this.accessibilityTags = const [],
     this.accessibilityNotes,
+    this.warning,
   });
 
   factory DraftPuzzlet.fromJson(Map<String, dynamic> json) => DraftPuzzlet(
@@ -179,6 +181,7 @@ class DraftPuzzlet {
                 .toList(growable: false) ??
             const [],
         accessibilityNotes: json['accessibility_notes'] as String?,
+        warning: json['warning'] as String?,
       );
 }
 

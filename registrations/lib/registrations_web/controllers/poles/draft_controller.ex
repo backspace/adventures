@@ -105,7 +105,8 @@ defmodule RegistrationsWeb.Poles.DraftController do
         "longitude",
         "accuracy_m",
         "accessibility_tags",
-        "accessibility_notes"
+        "accessibility_notes",
+        "warning"
       ])
       |> Map.put("creator_id", user.id)
       |> Map.put("status", "draft")
@@ -144,7 +145,8 @@ defmodule RegistrationsWeb.Poles.DraftController do
             "longitude",
             "accuracy_m",
             "accessibility_tags",
-            "accessibility_notes"
+            "accessibility_notes",
+            "warning"
           ])
 
         case Poles.update_puzzlet(puzzlet, attrs) do
@@ -208,7 +210,8 @@ defmodule RegistrationsWeb.Poles.DraftController do
       inserted_at: puzzlet.inserted_at,
       attachment_ids: Poles.list_puzzlet_attachment_ids(puzzlet.id),
       accessibility_tags: puzzlet.accessibility_tags || [],
-      accessibility_notes: puzzlet.accessibility_notes
+      accessibility_notes: puzzlet.accessibility_notes,
+      warning: puzzlet.warning
     }
   end
 

@@ -293,7 +293,8 @@ defmodule RegistrationsWeb.Poles.ValidationController do
       longitude: puzzlet.longitude,
       attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id),
       accessibility_tags: puzzlet.accessibility_tags || [],
-      accessibility_notes: puzzlet.accessibility_notes
+      accessibility_notes: puzzlet.accessibility_notes,
+      warning: puzzlet.warning
     }
   end
 

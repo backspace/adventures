@@ -29,6 +29,8 @@ defmodule Registrations.Poles.Puzzlet do
     field(:accessibility_tags, {:array, :string}, default: [])
     field(:accessibility_notes, :string)
 
+    field(:warning, :string)
+
     belongs_to(:pole, Pole, type: :binary_id)
     belongs_to(:creator, RegistrationsWeb.User, type: :binary_id, foreign_key: :creator_id)
 
@@ -53,7 +55,8 @@ defmodule Registrations.Poles.Puzzlet do
       :longitude,
       :accuracy_m,
       :accessibility_tags,
-      :accessibility_notes
+      :accessibility_notes,
+      :warning
     ])
     |> validate_required([:instructions, :answer, :difficulty])
     |> validate_number(:difficulty, greater_than_or_equal_to: 1)

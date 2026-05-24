@@ -26,6 +26,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
   final _instructionsController = TextEditingController();
   final _answerController = TextEditingController();
   final _accessibilityNotesController = TextEditingController();
+  final _warningController = TextEditingController();
   int _difficulty = 3;
   bool _submitting = false;
   List<Uint8List> _pendingPhotos = const [];
@@ -40,6 +41,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
           _pendingPhotos.isNotEmpty ||
           _accessibilityTags.isNotEmpty ||
           _accessibilityNotesController.text.isNotEmpty ||
+          _warningController.text.isNotEmpty ||
           _difficulty != 3 ||
           _answerType != AnswerType.looseText);
 
@@ -121,6 +123,9 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
         accessibilityNotes: _accessibilityNotesController.text.trim().isEmpty
             ? null
             : _accessibilityNotesController.text.trim(),
+        warning: _warningController.text.trim().isEmpty
+            ? null
+            : _warningController.text.trim(),
       );
 
       final photoErrors = <String>[];
@@ -165,6 +170,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
     _instructionsController.dispose();
     _answerController.dispose();
     _accessibilityNotesController.dispose();
+    _warningController.dispose();
     super.dispose();
   }
 
@@ -214,6 +220,18 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
                 labelText: 'Instructions',
                 hintText: 'What does the player need to find or do?',
                 border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _warningController,
+              maxLines: 2,
+              onChanged: (_) => setState(() {}),
+              decoration: const InputDecoration(
+                labelText: 'Warning (optional)',
+                hintText: 'Shown prominently to players. Use for safety / practical alerts.',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.warning_amber_outlined),
               ),
             ),
             const SizedBox(height: 12),

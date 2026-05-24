@@ -132,6 +132,11 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (widget.puzzlet.warning != null &&
+                widget.puzzlet.warning!.trim().isNotEmpty) ...[
+              _WarningBanner(text: widget.puzzlet.warning!),
+              const SizedBox(height: 16),
+            ],
             Text(
               widget.puzzlet.instructions,
               style: Theme.of(context).textTheme.titleMedium,
@@ -241,6 +246,43 @@ class _PreviousWrongAnswers extends StatelessWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WarningBanner extends StatelessWidget {
+  final String text;
+  const _WarningBanner({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.amber.shade100,
+        border: Border.all(color: Colors.amber.shade700, width: 1.5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.warning_amber_rounded,
+              color: Colors.amber.shade900, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: scheme.onSurface,
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                height: 1.3,
               ),
             ),
           ),
