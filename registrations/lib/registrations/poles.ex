@@ -7,6 +7,8 @@ defmodule Registrations.Poles do
   alias Registrations.Poles.Capture
   alias Registrations.Poles.Pole
   alias Registrations.Poles.Puzzlet
+  alias Registrations.Poles.Scope
+  alias Registrations.Poles.TestSession
   alias Registrations.Repo
 
   @max_attempts_per_puzzlet 3
@@ -29,17 +31,17 @@ defmodule Registrations.Poles do
   Returns each pole with its current owner team_id and locked state.
   Returns a list of `%{pole: %Pole{}, current_owner_team_id: id|nil, locked?: bool}`.
   """
-  def list_poles_with_state do
+  def list_poles_with_state(scope \\ Scope.real()) do
     Pole
     |> Repo.all()
-    |> Enum.map(&pole_with_state/1)
+    |> Enum.map(&pole_with_state(&1, scope))
   end
 
-  def pole_with_state(%Pole{} = pole) do
+  def pole_with_state(%Pole{} = pole, scope \\ Scope.real()) do
     %{
       pole: pole,
-      current_owner_team_id: current_owner_team_id_for_pole(pole),
-      locked?: pole_locked?(pole)
+      current_owner_team_id: current_owner_team_id_for_pole(pole, scope),
+      locked?: pole_locked?(pole, scope)
     }
   end
 
@@ -47,19 +49,22 @@ defmodule Registrations.Poles do
   Returns the full payload for a barcode scan by a particular team:
   pole state plus active puzzlet (or nil if locked) and the team's
   remaining attempts on that puzzlet.
+
+  In test scope, the "own creation" check is skipped so authors and
+  validators can rehearse against their own content.
   """
-  def scan_payload(barcode, team_id, user_id \\ nil) do
+  def scan_payload(barcode, team_id, user_id \\ nil, scope \\ Scope.real()) do
     case get_pole_by_barcode(barcode) do
       nil ->
         {:error, :not_found}
 
       pole ->
         cond do
-          user_id && pole.creator_id == user_id ->
+          not Scope.test?(scope) && user_id && pole.creator_id == user_id ->
             {:error, :own_creation, pole}
 
-          pole_locked?(pole) ->
-            state = pole_with_state(pole)
+          pole_locked?(pole, scope) ->
+            state = pole_with_state(pole, scope)
 
             {:ok,
              Map.merge(state, %{
@@ -68,15 +73,15 @@ defmodule Registrations.Poles do
                previous_wrong_answers: []
              })}
 
-          pole_owned_by_team?(pole, team_id) ->
+          pole_owned_by_team?(pole, team_id, scope) ->
             {:error, :already_owner, pole}
 
           true ->
-            state = pole_with_state(pole)
-            active = active_puzzlet_for_pole(pole, user_id)
+            state = pole_with_state(pole, scope)
+            active = active_puzzlet_for_pole(pole, user_id, scope)
 
             cond do
-              active && team_locked_out?(active, team_id) ->
+              active && team_locked_out?(active, team_id, scope) ->
                 {:error, :team_locked_out, pole}
 
               true ->
@@ -86,8 +91,11 @@ defmodule Registrations.Poles do
                       {nil, []}
 
                     puzzlet ->
-                      {max(@max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id), 0),
-                       team_wrong_answers(puzzlet, team_id)}
+                      {max(
+                         @max_attempts_per_puzzlet -
+                           team_wrong_attempts(puzzlet, team_id, scope),
+                         0
+                       ), team_wrong_answers(puzzlet, team_id, scope)}
                   end
 
                 {:ok,
@@ -233,10 +241,13 @@ defmodule Registrations.Poles do
   When `user_id` is provided, puzzlets authored by that user are skipped in
   the rotation — the author silently rotates past their own work.
   """
-  def active_puzzlet_for_pole(pole, user_id \\ nil)
+  def active_puzzlet_for_pole(pole, user_id \\ nil, scope \\ Scope.real())
 
-  def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id) do
-    captured_puzzlet_ids = from(c in Capture, select: c.puzzlet_id)
+  def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id, scope) do
+    captured_puzzlet_ids =
+      Capture
+      |> Scope.apply(scope)
+      |> select([c], c.puzzlet_id)
 
     query =
       Puzzlet
@@ -246,8 +257,10 @@ defmodule Registrations.Poles do
       |> order_by([p], asc: p.difficulty, asc: p.inserted_at)
       |> limit(1)
 
+    # The "skip your own puzzlets" rotation only applies in real gameplay.
+    # In test mode authors should be able to walk through their own puzzlets.
     query =
-      if user_id do
+      if user_id && not Scope.test?(scope) do
         where(query, [p], is_nil(p.creator_id) or p.creator_id != ^user_id)
       else
         query
@@ -256,25 +269,46 @@ defmodule Registrations.Poles do
     Repo.one(query)
   end
 
-  def pole_owned_by_team?(_pole, nil), do: false
+  def pole_owned_by_team?(_pole, nil, _scope), do: false
+  def pole_owned_by_team?(pole, team_id), do: pole_owned_by_team?(pole, team_id, Scope.real())
 
-  def pole_owned_by_team?(%Pole{} = pole, team_id) do
-    current_owner_team_id_for_pole(pole) == team_id
+  def pole_owned_by_team?(%Pole{} = pole, team_id, %Scope{} = scope) do
+    # In test scope, "ownership" means "captured during this session" —
+    # team identity doesn't matter, just session membership.
+    case scope do
+      %Scope{test_session_id: nil} ->
+        current_owner_team_id_for_pole(pole, scope) == team_id
+
+      _ ->
+        not is_nil(current_owner_team_id_for_pole(pole, scope)) or
+          pole_captured_in_scope?(pole, scope)
+    end
   end
 
-  def current_owner_team_id_for_pole(%Pole{id: pole_id}) do
-    from(c in Capture,
-      join: p in Puzzlet,
-      on: p.id == c.puzzlet_id,
-      where: p.pole_id == ^pole_id,
-      order_by: [desc: c.inserted_at],
-      limit: 1,
-      select: c.team_id
-    )
+  defp pole_captured_in_scope?(%Pole{id: pole_id}, scope) do
+    Capture
+    |> Scope.apply(scope)
+    |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
+    |> where([_c, p], p.pole_id == ^pole_id)
+    |> Repo.exists?()
+  end
+
+  def current_owner_team_id_for_pole(pole), do: current_owner_team_id_for_pole(pole, Scope.real())
+
+  def current_owner_team_id_for_pole(%Pole{id: pole_id}, %Scope{} = scope) do
+    Capture
+    |> Scope.apply(scope)
+    |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
+    |> where([_c, p], p.pole_id == ^pole_id)
+    |> order_by([c, _p], desc: c.inserted_at)
+    |> limit(1)
+    |> select([c, _p], c.team_id)
     |> Repo.one()
   end
 
-  def pole_locked?(%Pole{id: pole_id}) do
+  def pole_locked?(pole), do: pole_locked?(pole, Scope.real())
+
+  def pole_locked?(%Pole{id: pole_id}, %Scope{} = scope) do
     validated_count =
       from(p in Puzzlet,
         where: p.pole_id == ^pole_id and p.status == :validated,
@@ -283,52 +317,71 @@ defmodule Registrations.Poles do
       |> Repo.one()
 
     captured_count =
-      from(c in Capture,
-        join: p in Puzzlet,
-        on: p.id == c.puzzlet_id,
-        where: p.pole_id == ^pole_id and p.status == :validated,
-        select: count(c.id)
-      )
+      Capture
+      |> Scope.apply(scope)
+      |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
+      |> where([_c, p], p.pole_id == ^pole_id and p.status == :validated)
+      |> select([c, _p], count(c.id))
       |> Repo.one()
 
     validated_count > 0 and validated_count == captured_count
   end
 
   @doc """
-  How many times this team has answered this puzzlet incorrectly.
-  Returns 0 when team_id is nil (a user not yet on a team has no attempts).
+  How many times this team (or test session) has answered this puzzlet
+  incorrectly. Returns 0 when there's no scope subject (no team in real
+  scope, no session in test scope).
   """
-  def team_wrong_attempts(_puzzlet, nil), do: 0
+  def team_wrong_attempts(puzzlet, team_id), do: team_wrong_attempts(puzzlet, team_id, Scope.real())
 
-  def team_wrong_attempts(%Puzzlet{id: puzzlet_id}, team_id) do
-    from(a in Attempt,
-      where: a.puzzlet_id == ^puzzlet_id and a.team_id == ^team_id and a.correct == false,
-      select: count(a.id)
-    )
+  def team_wrong_attempts(_puzzlet, nil, %Scope{test_session_id: nil}), do: 0
+
+  def team_wrong_attempts(%Puzzlet{id: puzzlet_id}, team_id, %Scope{} = scope) do
+    Attempt
+    |> Scope.apply(scope)
+    |> where([a], a.puzzlet_id == ^puzzlet_id and a.correct == false)
+    |> maybe_filter_team(team_id, scope)
+    |> select([a], count(a.id))
     |> Repo.one()
   end
 
-  def team_locked_out?(_puzzlet, nil), do: false
+  def team_locked_out?(puzzlet, team_id), do: team_locked_out?(puzzlet, team_id, Scope.real())
 
-  def team_locked_out?(%Puzzlet{} = puzzlet, team_id) do
-    team_wrong_attempts(puzzlet, team_id) >= @max_attempts_per_puzzlet
+  def team_locked_out?(_puzzlet, nil, %Scope{test_session_id: nil}), do: false
+
+  def team_locked_out?(%Puzzlet{} = puzzlet, team_id, %Scope{} = scope) do
+    team_wrong_attempts(puzzlet, team_id, scope) >= @max_attempts_per_puzzlet
   end
 
   @doc """
-  Distinct wrong answers this team has submitted for this puzzlet, in
-  chronological order of first occurrence.
+  Distinct wrong answers this team (or test session) has submitted for
+  this puzzlet, in chronological order of first occurrence.
   """
-  def team_wrong_answers(_puzzlet, nil), do: []
+  def team_wrong_answers(puzzlet, team_id), do: team_wrong_answers(puzzlet, team_id, Scope.real())
 
-  def team_wrong_answers(%Puzzlet{id: puzzlet_id}, team_id) do
-    from(a in Attempt,
-      where: a.puzzlet_id == ^puzzlet_id and a.team_id == ^team_id and a.correct == false,
-      order_by: [asc: a.inserted_at],
-      select: a.answer_given
-    )
+  def team_wrong_answers(_puzzlet, nil, %Scope{test_session_id: nil}), do: []
+
+  def team_wrong_answers(%Puzzlet{id: puzzlet_id}, team_id, %Scope{} = scope) do
+    Attempt
+    |> Scope.apply(scope)
+    |> where([a], a.puzzlet_id == ^puzzlet_id and a.correct == false)
+    |> maybe_filter_team(team_id, scope)
+    |> order_by([a], asc: a.inserted_at)
+    |> select([a], a.answer_given)
     |> Repo.all()
     |> Enum.uniq()
   end
+
+  # Real-game queries filter by team_id; test-scope queries are already
+  # narrowed by test_session_id and ignore team_id (no team concept in
+  # solo test play).
+  defp maybe_filter_team(query, _team_id, %Scope{test_session_id: id}) when not is_nil(id),
+    do: query
+
+  defp maybe_filter_team(query, team_id, _scope) when not is_nil(team_id),
+    do: where(query, [a], a.team_id == ^team_id)
+
+  defp maybe_filter_team(query, _team_id, _scope), do: query
 
   @doc """
   Records an attempt by a team/user against a puzzlet. If the answer is
@@ -343,20 +396,26 @@ defmodule Registrations.Poles do
     * {:error, :already_captured}  — another team got there first
     * {:error, changeset}
   """
-  def record_attempt(%Puzzlet{} = puzzlet, team_id, user_id, answer_given) do
+  def record_attempt(puzzlet, team_id, user_id, answer_given),
+    do: record_attempt(puzzlet, team_id, user_id, answer_given, Scope.real())
+
+  def record_attempt(%Puzzlet{} = puzzlet, team_id, user_id, answer_given, %Scope{} = scope) do
     pole = puzzlet.pole_id && Repo.get(Pole, puzzlet.pole_id)
+    test_mode? = Scope.test?(scope)
 
     cond do
-      puzzlet.creator_id == user_id ->
+      # Own-creation block doesn't apply in test mode — testers walking
+      # through their own content should be able to.
+      not test_mode? && puzzlet.creator_id == user_id ->
         {:error, :own_creation}
 
-      pole && pole.creator_id == user_id ->
+      not test_mode? && pole && pole.creator_id == user_id ->
         {:error, :own_creation}
 
-      pole && pole_owned_by_team?(pole, team_id) ->
+      pole && pole_owned_by_team?(pole, team_id, scope) ->
         {:error, :already_owner}
 
-      team_locked_out?(puzzlet, team_id) ->
+      team_locked_out?(puzzlet, team_id, scope) ->
         {:error, :locked_out}
 
       true ->
@@ -371,12 +430,13 @@ defmodule Registrations.Poles do
                 team_id: team_id,
                 user_id: user_id,
                 answer_given: answer_given,
-                correct: correct?
+                correct: correct?,
+                test_session_id: Scope.write_id(scope)
               })
               |> Repo.insert!()
 
             if correct? do
-              case insert_capture(puzzlet.id, team_id) do
+              case insert_capture(puzzlet.id, team_id, scope) do
                 {:ok, capture} ->
                   %{result: :captured, attempt: attempt, capture: capture}
 
@@ -384,13 +444,18 @@ defmodule Registrations.Poles do
                   Repo.rollback(:already_captured)
               end
             else
-              remaining = @max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id)
+              remaining =
+                @max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id, scope)
+
               %{result: :incorrect, attempt: attempt, attempts_remaining: max(remaining, 0)}
             end
           end)
 
+        # Only broadcast pole updates for real captures — test-play captures
+        # are private to the tester and shouldn't appear on the live map.
         with {:ok, %{result: :captured, capture: capture}} <- result,
-             %Pole{} = captured_pole <- pole do
+             %Pole{} = captured_pole <- pole,
+             false <- test_mode? do
           broadcast_pole_update(captured_pole, capture)
         end
 
@@ -408,12 +473,18 @@ defmodule Registrations.Poles do
     })
   end
 
-  defp insert_capture(puzzlet_id, team_id) do
+  defp insert_capture(puzzlet_id, team_id, scope) do
     %Capture{}
-    |> Capture.changeset(%{puzzlet_id: puzzlet_id, team_id: team_id})
+    |> Capture.changeset(%{
+      puzzlet_id: puzzlet_id,
+      team_id: team_id,
+      test_session_id: Scope.write_id(scope)
+    })
     |> Repo.insert()
     |> case do
-      {:ok, capture} -> {:ok, capture}
+      {:ok, capture} ->
+        {:ok, capture}
+
       {:error, %Ecto.Changeset{errors: errors}} ->
         if Keyword.has_key?(errors, :puzzlet_id), do: {:error, :already_captured}, else: {:error, :insert_failed}
     end
@@ -434,4 +505,31 @@ defmodule Registrations.Poles do
   defp answers_match?(_, _, _), do: false
 
   defp normalize_loose(s), do: s |> String.trim() |> String.downcase()
+
+  # ─── Test sessions ───────────────────────────────────────────────────
+
+  def create_test_session(creator, attrs \\ %{}) do
+    attrs = Map.put(attrs, :creator_id, creator.id)
+
+    %TestSession{}
+    |> TestSession.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def get_test_session(id), do: Repo.get(TestSession, id)
+
+  def get_test_session!(id), do: Repo.get!(TestSession, id)
+
+  def list_test_sessions_for_user(%{id: user_id}) do
+    TestSession
+    |> where([s], s.creator_id == ^user_id)
+    |> order_by([s], desc: s.inserted_at)
+    |> Repo.all()
+  end
+
+  def end_test_session(%TestSession{} = session) do
+    session
+    |> TestSession.changeset(%{ended_at: DateTime.utc_now() |> DateTime.truncate(:second)})
+    |> Repo.update()
+  end
 end
