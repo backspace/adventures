@@ -9,6 +9,8 @@ defmodule Registrations.Poles do
   alias Registrations.Poles.Puzzlet
   alias Registrations.Poles.Scope
   alias Registrations.Poles.TestSession
+  alias Registrations.Poles.Validations.PoleValidation
+  alias Registrations.Poles.Validations.PuzzletValidation
   alias Registrations.Repo
 
   @max_attempts_per_puzzlet 3
@@ -33,8 +35,46 @@ defmodule Registrations.Poles do
   """
   def list_poles_with_state(scope \\ Scope.real()) do
     Pole
+    |> filter_visible_poles(scope)
     |> Repo.all()
     |> Enum.map(&pole_with_state(&1, scope))
+  end
+
+  # If the scope restricts visibility (a validator in test play), filter
+  # the pole query to poles the user (a) created, (b) is assigned to
+  # validate, or (c) is validating any puzzlet on. Unrestricted scopes pass
+  # the query through unchanged.
+  defp filter_visible_poles(query, %Scope{visibility_user_id: nil}), do: query
+
+  defp filter_visible_poles(query, %Scope{visibility_user_id: user_id}) do
+    pole_validation_ids =
+      from(pv in PoleValidation, where: pv.validator_id == ^user_id, select: pv.pole_id)
+
+    puzzlet_validation_pole_ids =
+      from(puv in PuzzletValidation,
+        join: pz in Puzzlet,
+        on: pz.id == puv.puzzlet_id,
+        where: puv.validator_id == ^user_id,
+        select: pz.pole_id
+      )
+
+    from(p in query,
+      where:
+        p.creator_id == ^user_id or
+          p.id in subquery(pole_validation_ids) or
+          p.id in subquery(puzzlet_validation_pole_ids)
+    )
+  end
+
+  # Whether a specific pole is visible to a user under the scope. Used by
+  # scan_payload to translate invisibility into :not_found.
+  defp pole_visible?(_pole, %Scope{visibility_user_id: nil}), do: true
+
+  defp pole_visible?(%Pole{id: pole_id}, %Scope{visibility_user_id: user_id}) do
+    Pole
+    |> where([p], p.id == ^pole_id)
+    |> filter_visible_poles(%Scope{visibility_user_id: user_id})
+    |> Repo.exists?()
   end
 
   def pole_with_state(%Pole{} = pole, scope \\ Scope.real()) do
@@ -60,6 +100,10 @@ defmodule Registrations.Poles do
 
       pole ->
         cond do
+          # Invisible poles look like "not found" — don't leak existence.
+          not pole_visible?(pole, scope) ->
+            {:error, :not_found}
+
           not Scope.test?(scope) && user_id && pole.creator_id == user_id ->
             {:error, :own_creation, pole}
 
@@ -243,7 +287,15 @@ defmodule Registrations.Poles do
   """
   def active_puzzlet_for_pole(pole, user_id \\ nil, scope \\ Scope.real())
 
-  def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id, scope) do
+  def active_puzzlet_for_pole(%Pole{} = pole, user_id, scope) do
+    if Scope.test?(scope) do
+      test_active_puzzlet(pole, scope)
+    else
+      real_active_puzzlet(pole, user_id, scope)
+    end
+  end
+
+  defp real_active_puzzlet(%Pole{id: pole_id}, user_id, scope) do
     captured_puzzlet_ids =
       Capture
       |> Scope.apply(scope)
@@ -254,19 +306,82 @@ defmodule Registrations.Poles do
       |> where([p], p.pole_id == ^pole_id)
       |> where([p], p.status == :validated)
       |> where([p], p.id not in subquery(captured_puzzlet_ids))
+      |> filter_visible_puzzlets(scope)
       |> order_by([p], asc: p.difficulty, asc: p.inserted_at)
       |> limit(1)
 
-    # The "skip your own puzzlets" rotation only applies in real gameplay.
-    # In test mode authors should be able to walk through their own puzzlets.
     query =
-      if user_id && not Scope.test?(scope) do
+      if user_id do
         where(query, [p], is_nil(p.creator_id) or p.creator_id != ^user_id)
       else
         query
       end
 
     Repo.one(query)
+  end
+
+  # In a test session, puzzlets are typically not yet wired to specific
+  # poles. Pick from the five geographically-nearest validated puzzlets
+  # (with a location), not yet captured in this session, and randomize
+  # so successive demos visit different ones.
+  defp test_active_puzzlet(%Pole{latitude: lat, longitude: lon}, scope) do
+    captured_puzzlet_ids =
+      Capture
+      |> Scope.apply(scope)
+      |> select([c], c.puzzlet_id)
+
+    candidates =
+      Puzzlet
+      |> where([p], p.status == :validated)
+      |> where([p], p.id not in subquery(captured_puzzlet_ids))
+      |> where([p], not is_nil(p.latitude) and not is_nil(p.longitude))
+      |> filter_visible_puzzlets(scope)
+      |> order_by(
+        [p],
+        fragment(
+          "((? - ?) * (? - ?) + (? - ?) * (? - ?))",
+          p.latitude,
+          ^lat,
+          p.latitude,
+          ^lat,
+          p.longitude,
+          ^lon,
+          p.longitude,
+          ^lon
+        )
+      )
+      |> limit(5)
+      |> Repo.all()
+
+    case candidates do
+      [] -> nil
+      list -> Enum.random(list)
+    end
+  end
+
+  defp filter_visible_puzzlets(query, %Scope{visibility_user_id: nil}), do: query
+
+  defp filter_visible_puzzlets(query, %Scope{visibility_user_id: user_id}) do
+    assigned_puzzlet_ids =
+      from(puv in PuzzletValidation,
+        where: puv.validator_id == ^user_id,
+        select: puv.puzzlet_id
+      )
+
+    # Pole-level validators can see all puzzlets on the poles they're
+    # assigned to — otherwise they couldn't rehearse the pole's gameplay.
+    assigned_pole_ids =
+      from(pv in PoleValidation,
+        where: pv.validator_id == ^user_id,
+        select: pv.pole_id
+      )
+
+    from(p in query,
+      where:
+        p.creator_id == ^user_id or
+          p.id in subquery(assigned_puzzlet_ids) or
+          p.pole_id in subquery(assigned_pole_ids)
+    )
   end
 
   def pole_owned_by_team?(_pole, nil, _scope), do: false

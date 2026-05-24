@@ -56,7 +56,9 @@ defmodule RegistrationsWeb.Poles.TestPlayController do
   def list_poles(conn, %{"session_id" => session_id}) do
     case authorize_session(conn, session_id) do
       {:ok, _session} ->
-        states = Poles.list_poles_with_state(Scope.test(session_id))
+        user = Pow.Plug.current_user(conn)
+        scope = scope_for(user, session_id)
+        states = Poles.list_poles_with_state(scope)
         json(conn, %{poles: Enum.map(states, &render_pole_state/1)})
 
       {:halt, conn} ->
@@ -71,7 +73,7 @@ defmodule RegistrationsWeb.Poles.TestPlayController do
 
       {:ok, _session} ->
         user = Pow.Plug.current_user(conn)
-        scope = Scope.test(session_id)
+        scope = scope_for(user, session_id)
         do_scan_pole(conn, user, scope, barcode)
     end
   end
@@ -126,8 +128,18 @@ defmodule RegistrationsWeb.Poles.TestPlayController do
 
       {:ok, _session} ->
         user = Pow.Plug.current_user(conn)
-        scope = Scope.test(session_id)
+        scope = scope_for(user, session_id)
         do_submit_attempt(conn, user, scope, puzzlet_id, answer)
+    end
+  end
+
+  # Supervisors and admins see everything; validators are restricted to
+  # content they created or are assigned to validate.
+  defp scope_for(user, session_id) do
+    if user.admin or Registrations.Accounts.has_role?(user, "validation_supervisor") do
+      Scope.test(session_id)
+    else
+      Scope.test(session_id, visibility_user_id: user.id)
     end
   end
 
