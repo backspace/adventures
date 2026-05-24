@@ -64,6 +64,6 @@ class AnswerTypeField extends StatelessWidget {
         AnswerType.barcode =>
           'Player will scan a barcode. Type the expected scan value, or use the Scan button on the answer field.',
         AnswerType.nfc =>
-          'Player will tap an NFC tag. NFC reading in the game UI is not wired up yet.',
+          'Player will tap an NFC tag. Use the NFC button on the answer field to capture the tag\'s ID now.',
       };
 }

@@ -32,6 +32,8 @@
 	<string>Poles uses the camera to scan barcodes on poles and to attach photos to drafts.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Poles lets you attach photos from your library to pole and puzzlet drafts.</string>
+	<key>NFCReaderUsageDescription</key>
+	<string>Poles reads NFC tags so authors can register them as puzzlet answers and players can scan them to submit answers.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Poles uses your location to show which poles are nearby.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

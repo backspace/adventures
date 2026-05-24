@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/pole.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
+import 'package:poles/routes/nfc_scanner_route.dart';
 
 class PuzzletRoute extends StatefulWidget {
   final PolesApi api;
@@ -94,6 +95,17 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     await _submit(override: scanned);
   }
 
+  Future<void> _scanForNfcAnswer() async {
+    final scanned = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => const NfcScannerRoute(title: 'Scan the NFC tag'),
+      ),
+    );
+    if (scanned == null || scanned.isEmpty || !mounted) return;
+    _answerController.text = scanned;
+    await _submit(override: scanned);
+  }
+
   @override
   void dispose() {
     _answerController.dispose();
@@ -146,13 +158,13 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
               const SizedBox(height: 16),
             ] else if (widget.puzzlet.answerType == 'nfc') ...[
               FilledButton.icon(
-                onPressed: null,
+                onPressed: (_busy || disabled) ? null : _scanForNfcAnswer,
                 icon: const Icon(Icons.contactless),
-                label: const Text('Tap NFC tag (coming soon)'),
+                label: const Text('Tap NFC tag to answer'),
               ),
               const SizedBox(height: 12),
               Text(
-                'The answer is an NFC tag. NFC reading is not yet supported in the app — type the tag value manually if you know it.',
+                'The answer is an NFC tag. Tap the button, then hold your phone near the tag.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 16),

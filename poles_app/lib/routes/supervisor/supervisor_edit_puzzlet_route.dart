@@ -4,6 +4,7 @@ import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/accessibility.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
+import 'package:poles/routes/nfc_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
 import 'package:poles/widgets/accessibility_tags_field.dart';
 import 'package:poles/widgets/answer_type_field.dart';
@@ -72,6 +73,20 @@ class _SupervisorEditPuzzletRouteState
     setState(() {
       _answer.text = scanned;
       _answerType = AnswerType.barcode;
+      _dirty = true;
+    });
+  }
+
+  Future<void> _scanNfcAnswer() async {
+    final scanned = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => const NfcScannerRoute(title: 'Scan answer NFC tag'),
+      ),
+    );
+    if (scanned == null || scanned.isEmpty) return;
+    setState(() {
+      _answer.text = scanned;
+      _answerType = AnswerType.nfc;
       _dirty = true;
     });
   }
@@ -153,13 +168,19 @@ class _SupervisorEditPuzzletRouteState
               decoration: InputDecoration(
                 labelText: 'Answer',
                 border: const OutlineInputBorder(),
-                suffixIcon: _answerType == AnswerType.barcode
-                    ? IconButton(
-                        tooltip: 'Scan barcode as answer',
-                        icon: const Icon(Icons.qr_code_scanner),
-                        onPressed: _scanAnswer,
-                      )
-                    : null,
+                suffixIcon: switch (_answerType) {
+                  AnswerType.barcode => IconButton(
+                      tooltip: 'Scan barcode as answer',
+                      icon: const Icon(Icons.qr_code_scanner),
+                      onPressed: _scanAnswer,
+                    ),
+                  AnswerType.nfc => IconButton(
+                      tooltip: 'Scan NFC tag as answer',
+                      icon: const Icon(Icons.contactless),
+                      onPressed: _scanNfcAnswer,
+                    ),
+                  _ => null,
+                },
               ),
             ),
             const SizedBox(height: 16),
