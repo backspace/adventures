@@ -1,5 +1,28 @@
 enum DraftStatus { draft, inReview, validated, retired }
 
+enum AnswerType { looseText, strictText, barcode, nfc }
+
+AnswerType answerTypeFromString(String? raw) => switch (raw) {
+      'strict_text' => AnswerType.strictText,
+      'barcode' => AnswerType.barcode,
+      'nfc' => AnswerType.nfc,
+      _ => AnswerType.looseText,
+    };
+
+String answerTypeToString(AnswerType t) => switch (t) {
+      AnswerType.looseText => 'loose_text',
+      AnswerType.strictText => 'strict_text',
+      AnswerType.barcode => 'barcode',
+      AnswerType.nfc => 'nfc',
+    };
+
+String answerTypeLabel(AnswerType t) => switch (t) {
+      AnswerType.looseText => 'Loose text',
+      AnswerType.strictText => 'Strict text',
+      AnswerType.barcode => 'Barcode',
+      AnswerType.nfc => 'NFC tag',
+    };
+
 DraftStatus _statusFromString(String? raw) => switch (raw) {
       'in_review' => DraftStatus.inReview,
       'validated' => DraftStatus.validated,
@@ -97,6 +120,7 @@ class DraftPuzzlet {
   final String id;
   final String instructions;
   final String answer;
+  final AnswerType answerType;
   final int difficulty;
   final DraftStatus status;
   final String? poleId;
@@ -114,6 +138,7 @@ class DraftPuzzlet {
     required this.id,
     required this.instructions,
     required this.answer,
+    this.answerType = AnswerType.looseText,
     required this.difficulty,
     required this.status,
     required this.poleId,
@@ -132,6 +157,7 @@ class DraftPuzzlet {
         id: json['id'] as String,
         instructions: json['instructions'] as String,
         answer: json['answer'] as String,
+        answerType: answerTypeFromString(json['answer_type'] as String?),
         difficulty: json['difficulty'] as int,
         status: _statusFromString(json['status'] as String?),
         poleId: json['pole_id'] as String?,

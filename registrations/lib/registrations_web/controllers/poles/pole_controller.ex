@@ -84,6 +84,7 @@ defmodule RegistrationsWeb.Poles.PoleController do
       id: puzzlet.id,
       instructions: puzzlet.instructions,
       difficulty: puzzlet.difficulty,
+      answer_type: puzzlet.answer_type,
       attempts_remaining: attempts_remaining,
       previous_wrong_answers: previous_wrong_answers
     }

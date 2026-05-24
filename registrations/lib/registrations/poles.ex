@@ -360,7 +360,7 @@ defmodule Registrations.Poles do
         {:error, :locked_out}
 
       true ->
-        correct? = answers_match?(puzzlet.answer, answer_given)
+        correct? = answers_match?(puzzlet.answer_type, puzzlet.answer, answer_given)
 
         result =
           Repo.transaction(fn ->
@@ -419,11 +419,19 @@ defmodule Registrations.Poles do
     end
   end
 
-  defp answers_match?(expected, given) when is_binary(expected) and is_binary(given) do
-    normalize(expected) == normalize(given)
+  defp answers_match?(_type, expected, given)
+       when not (is_binary(expected) and is_binary(given)),
+       do: false
+
+  defp answers_match?(:loose_text, expected, given) do
+    normalize_loose(expected) == normalize_loose(given)
   end
 
-  defp answers_match?(_, _), do: false
+  defp answers_match?(type, expected, given) when type in [:strict_text, :barcode, :nfc] do
+    expected == given
+  end
 
-  defp normalize(s), do: s |> String.trim() |> String.downcase()
+  defp answers_match?(_, _, _), do: false
+
+  defp normalize_loose(s), do: s |> String.trim() |> String.downcase()
 end

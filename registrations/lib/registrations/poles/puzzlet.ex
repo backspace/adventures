@@ -17,6 +17,10 @@ defmodule Registrations.Poles.Puzzlet do
     field(:answer, :string)
     field(:difficulty, :integer)
     field(:status, Ecto.Enum, values: [:draft, :in_review, :validated, :retired], default: :draft)
+    field(:answer_type, Ecto.Enum,
+      values: [:loose_text, :strict_text, :barcode, :nfc],
+      default: :loose_text
+    )
 
     field(:latitude, :float)
     field(:longitude, :float)
@@ -40,6 +44,7 @@ defmodule Registrations.Poles.Puzzlet do
     |> cast(attrs, [
       :instructions,
       :answer,
+      :answer_type,
       :difficulty,
       :status,
       :pole_id,

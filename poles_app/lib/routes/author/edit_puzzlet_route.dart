@@ -7,6 +7,7 @@ import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/accessibility_tags_field.dart';
+import 'package:poles/widgets/answer_type_field.dart';
 import 'package:poles/widgets/attachments_section.dart';
 import 'package:poles/widgets/location_card.dart';
 
@@ -26,6 +27,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
   late final TextEditingController _accessibilityNotesController;
   late List<String> _accessibilityTags;
   late int _difficulty;
+  late AnswerType _answerType;
 
   LocationFix? _newFix;
   String? _locationError;
@@ -50,6 +52,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
           ..addListener(_markDirty);
     _accessibilityTags = [...widget.puzzlet.accessibilityTags];
     _difficulty = widget.puzzlet.difficulty;
+    _answerType = widget.puzzlet.answerType;
   }
 
   Future<void> _reacquireLocation() async {
@@ -82,7 +85,11 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
       ),
     );
     if (scanned == null || scanned.isEmpty) return;
-    _answerController.text = scanned;
+    setState(() {
+      _answerController.text = scanned;
+      _answerType = AnswerType.barcode;
+      _dirty = true;
+    });
   }
 
   Future<void> _save() async {
@@ -92,6 +99,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
         widget.puzzlet.id,
         instructions: _instructionsController.text.trim(),
         answer: _answerController.text.trim(),
+        answerType: _answerType,
         difficulty: _difficulty,
         latitude: _newFix?.latitude,
         longitude: _newFix?.longitude,
@@ -222,16 +230,26 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
               ),
             ),
             const SizedBox(height: 12),
+            AnswerTypeField(
+              value: _answerType,
+              onChanged: (t) => setState(() {
+                _answerType = t;
+                _dirty = true;
+              }),
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: _answerController,
               decoration: InputDecoration(
                 labelText: 'Answer',
                 border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  tooltip: 'Scan barcode as answer',
-                  icon: const Icon(Icons.qr_code_scanner),
-                  onPressed: _scanAnswer,
-                ),
+                suffixIcon: _answerType == AnswerType.barcode
+                    ? IconButton(
+                        tooltip: 'Scan barcode as answer',
+                        icon: const Icon(Icons.qr_code_scanner),
+                        onPressed: _scanAnswer,
+                      )
+                    : null,
               ),
             ),
             const SizedBox(height: 16),

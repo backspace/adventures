@@ -162,6 +162,7 @@ class PolesApi {
     required String instructions,
     required String answer,
     required int difficulty,
+    AnswerType? answerType,
     double? latitude,
     double? longitude,
     double? accuracyM,
@@ -172,6 +173,7 @@ class PolesApi {
       'instructions': instructions,
       'answer': answer,
       'difficulty': difficulty,
+      if (answerType != null) 'answer_type': answerTypeToString(answerType),
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
       if (accuracyM != null) 'accuracy_m': accuracyM,
@@ -209,6 +211,7 @@ class PolesApi {
     String id, {
     String? instructions,
     String? answer,
+    AnswerType? answerType,
     int? difficulty,
     double? latitude,
     double? longitude,
@@ -219,6 +222,7 @@ class PolesApi {
     final response = await dio.patch('/poles/drafts/puzzlets/$id', data: {
       if (instructions != null) 'instructions': instructions,
       if (answer != null) 'answer': answer,
+      if (answerType != null) 'answer_type': answerTypeToString(answerType),
       if (difficulty != null) 'difficulty': difficulty,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
@@ -479,6 +483,7 @@ class PolesApi {
     String id, {
     String? instructions,
     String? answer,
+    AnswerType? answerType,
     int? difficulty,
     List<String>? accessibilityTags,
     String? accessibilityNotes,
@@ -486,6 +491,7 @@ class PolesApi {
     final response = await dio.patch('/poles/supervision/puzzlets/$id', data: {
       if (instructions != null) 'instructions': instructions,
       if (answer != null) 'answer': answer,
+      if (answerType != null) 'answer_type': answerTypeToString(answerType),
       if (difficulty != null) 'difficulty': difficulty,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,

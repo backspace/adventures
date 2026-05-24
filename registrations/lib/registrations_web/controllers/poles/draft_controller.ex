@@ -99,6 +99,7 @@ defmodule RegistrationsWeb.Poles.DraftController do
       |> Map.take([
         "instructions",
         "answer",
+        "answer_type",
         "difficulty",
         "latitude",
         "longitude",
@@ -137,6 +138,7 @@ defmodule RegistrationsWeb.Poles.DraftController do
           Map.take(params, [
             "instructions",
             "answer",
+            "answer_type",
             "difficulty",
             "latitude",
             "longitude",
@@ -195,6 +197,7 @@ defmodule RegistrationsWeb.Poles.DraftController do
       id: puzzlet.id,
       instructions: puzzlet.instructions,
       answer: puzzlet.answer,
+      answer_type: puzzlet.answer_type,
       difficulty: puzzlet.difficulty,
       status: puzzlet.status,
       pole_id: puzzlet.pole_id,

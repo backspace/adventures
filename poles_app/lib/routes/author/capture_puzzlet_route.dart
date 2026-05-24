@@ -4,10 +4,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/accessibility.dart';
+import 'package:poles/models/draft.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/accessibility_tags_field.dart';
+import 'package:poles/widgets/answer_type_field.dart';
 import 'package:poles/widgets/location_card.dart';
 import 'package:poles/widgets/pending_photos_section.dart';
 
@@ -27,6 +29,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
   bool _submitting = false;
   List<Uint8List> _pendingPhotos = const [];
   List<String> _accessibilityTags = const [];
+  AnswerType _answerType = AnswerType.looseText;
   bool _saved = false;
 
   bool get _isDirty =>
@@ -36,7 +39,8 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
           _pendingPhotos.isNotEmpty ||
           _accessibilityTags.isNotEmpty ||
           _accessibilityNotesController.text.isNotEmpty ||
-          _difficulty != 3);
+          _difficulty != 3 ||
+          _answerType != AnswerType.looseText);
 
   LocationFix? _fix;
   String? _locationError;
@@ -77,7 +81,10 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
       ),
     );
     if (scanned == null || scanned.isEmpty) return;
-    _answerController.text = scanned;
+    setState(() {
+      _answerController.text = scanned;
+      _answerType = AnswerType.barcode;
+    });
   }
 
   Future<void> _submit() async {
@@ -91,6 +98,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
       final created = await widget.api.createDraftPuzzlet(
         instructions: instructions,
         answer: answer,
+        answerType: _answerType,
         difficulty: _difficulty,
         latitude: fix.latitude,
         longitude: fix.longitude,
@@ -195,18 +203,24 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
               ),
             ),
             const SizedBox(height: 12),
+            AnswerTypeField(
+              value: _answerType,
+              onChanged: (t) => setState(() => _answerType = t),
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: _answerController,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 labelText: 'Answer',
-                hintText: 'Case-insensitive, whitespace trimmed',
                 border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  tooltip: 'Scan barcode as answer',
-                  icon: const Icon(Icons.qr_code_scanner),
-                  onPressed: _scanAnswer,
-                ),
+                suffixIcon: _answerType == AnswerType.barcode
+                    ? IconButton(
+                        tooltip: 'Scan barcode as answer',
+                        icon: const Icon(Icons.qr_code_scanner),
+                        onPressed: _scanAnswer,
+                      )
+                    : null,
               ),
             ),
             const SizedBox(height: 16),

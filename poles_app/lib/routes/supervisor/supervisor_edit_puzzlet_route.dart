@@ -6,6 +6,7 @@ import 'package:poles/models/draft.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
 import 'package:poles/widgets/accessibility_tags_field.dart';
+import 'package:poles/widgets/answer_type_field.dart';
 
 class SupervisorEditPuzzletRoute extends StatefulWidget {
   final PolesApi api;
@@ -27,6 +28,7 @@ class _SupervisorEditPuzzletRouteState
   late final TextEditingController _instructions;
   late final TextEditingController _answer;
   late int _difficulty;
+  late AnswerType _answerType;
   late final TextEditingController _accessibilityNotes;
   late List<String> _accessibilityTags;
   bool _busy = false;
@@ -48,6 +50,7 @@ class _SupervisorEditPuzzletRouteState
           ..addListener(_markDirty);
     _accessibilityTags = [...widget.puzzlet.accessibilityTags];
     _difficulty = widget.puzzlet.difficulty;
+    _answerType = widget.puzzlet.answerType;
   }
 
   @override
@@ -66,7 +69,11 @@ class _SupervisorEditPuzzletRouteState
       ),
     );
     if (scanned == null || scanned.isEmpty) return;
-    _answer.text = scanned;
+    setState(() {
+      _answer.text = scanned;
+      _answerType = AnswerType.barcode;
+      _dirty = true;
+    });
   }
 
   Future<void> _save() async {
@@ -83,6 +90,7 @@ class _SupervisorEditPuzzletRouteState
         widget.puzzlet.id,
         instructions: _instructions.text.trim(),
         answer: _answer.text.trim(),
+        answerType: _answerType,
         difficulty: _difficulty,
         accessibilityTags: _accessibilityTags,
         accessibilityNotes: _accessibilityNotes.text.trim(),
@@ -132,16 +140,26 @@ class _SupervisorEditPuzzletRouteState
               ),
             ),
             const SizedBox(height: 12),
+            AnswerTypeField(
+              value: _answerType,
+              onChanged: (t) => setState(() {
+                _answerType = t;
+                _dirty = true;
+              }),
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: _answer,
               decoration: InputDecoration(
                 labelText: 'Answer',
                 border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  tooltip: 'Scan barcode as answer',
-                  icon: const Icon(Icons.qr_code_scanner),
-                  onPressed: _scanAnswer,
-                ),
+                suffixIcon: _answerType == AnswerType.barcode
+                    ? IconButton(
+                        tooltip: 'Scan barcode as answer',
+                        icon: const Icon(Icons.qr_code_scanner),
+                        onPressed: _scanAnswer,
+                      )
+                    : null,
               ),
             ),
             const SizedBox(height: 16),

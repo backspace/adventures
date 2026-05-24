@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/pole.dart';
+import 'package:poles/routes/barcode_scanner_route.dart';
 
 class PuzzletRoute extends StatefulWidget {
   final PolesApi api;
@@ -32,8 +33,12 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     _previousWrongAnswers = List.of(widget.puzzlet.previousWrongAnswers);
   }
 
-  Future<void> _submit() async {
-    final answer = _answerController.text.trim();
+  Future<void> _submit({String? override}) async {
+    final raw = override ?? _answerController.text;
+    final isStrict = widget.puzzlet.answerType == 'strict_text' ||
+        widget.puzzlet.answerType == 'barcode' ||
+        widget.puzzlet.answerType == 'nfc';
+    final answer = isStrict ? raw : raw.trim();
     if (answer.isEmpty) return;
 
     setState(() => _busy = true);
@@ -78,6 +83,17 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
         _ => null,
       };
 
+  Future<void> _scanForBarcodeAnswer() async {
+    final scanned = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => const BarcodeScannerRoute(title: 'Scan the barcode'),
+      ),
+    );
+    if (scanned == null || scanned.isEmpty || !mounted) return;
+    _answerController.text = scanned;
+    await _submit(override: scanned);
+  }
+
   @override
   void dispose() {
     _answerController.dispose();
@@ -116,12 +132,39 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
               _PreviousWrongAnswers(answers: _previousWrongAnswers),
             ],
             const SizedBox(height: 24),
+            if (widget.puzzlet.answerType == 'barcode') ...[
+              FilledButton.icon(
+                onPressed: (_busy || disabled) ? null : _scanForBarcodeAnswer,
+                icon: const Icon(Icons.qr_code_scanner),
+                label: const Text('Scan barcode to answer'),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'The answer is a barcode. Tap Scan to read it with the camera.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+            ] else if (widget.puzzlet.answerType == 'nfc') ...[
+              FilledButton.icon(
+                onPressed: null,
+                icon: const Icon(Icons.contactless),
+                label: const Text('Tap NFC tag (coming soon)'),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'The answer is an NFC tag. NFC reading is not yet supported in the app — type the tag value manually if you know it.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 16),
+            ],
             TextField(
               controller: _answerController,
               enabled: !disabled,
-              decoration: const InputDecoration(
-                labelText: 'Answer',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: widget.puzzlet.answerType == 'strict_text'
+                    ? 'Answer (exact match)'
+                    : 'Answer',
+                border: const OutlineInputBorder(),
               ),
               onSubmitted: (_) => disabled ? null : _submit(),
             ),

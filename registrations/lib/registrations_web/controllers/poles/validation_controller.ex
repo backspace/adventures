@@ -286,6 +286,7 @@ defmodule RegistrationsWeb.Poles.ValidationController do
       id: puzzlet.id,
       instructions: puzzlet.instructions,
       answer: puzzlet.answer,
+      answer_type: puzzlet.answer_type,
       difficulty: puzzlet.difficulty,
       status: puzzlet.status,
       latitude: puzzlet.latitude,
