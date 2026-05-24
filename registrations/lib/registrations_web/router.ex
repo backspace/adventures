@@ -124,6 +124,10 @@ defmodule RegistrationsWeb.Router do
     get("/poles-event", PolesEventController, :edit, as: :poles_event)
     put("/poles-event", PolesEventController, :update, as: :poles_event)
 
+    get("/user-roles", AdminUserRoleController, :index, as: :admin_user_role)
+    post("/user-roles", AdminUserRoleController, :create, as: :admin_user_role)
+    delete("/user-roles/:id", AdminUserRoleController, :delete, as: :admin_user_role)
+
     get("/delete", UserController, :delete_show)
     post("/delete", UserController, :delete)
     put("/delete", UserController, :delete)

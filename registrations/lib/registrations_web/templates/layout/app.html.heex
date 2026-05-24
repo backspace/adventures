@@ -66,6 +66,11 @@
                         class: "messages"
                       ) %>
                     </li>
+                    <li>
+                      <%= active_link("Roles", @conn, Routes.admin_user_role_path(@conn, :index),
+                        class: "roles"
+                      ) %>
+                    </li>
                     <%= if is_unmnemonic_devices() do %>
                       <li>
                         <%= active_link("Settings", @conn, Routes.settings_path(@conn, :index),

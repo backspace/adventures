@@ -1,0 +1,74 @@
+<div class="row">
+  <div class="small-12 columns">
+    <h2>User roles</h2>
+
+    <p>Assign or remove author, validator, and validation supervisor roles. Roles take effect immediately and apply at any time (not gated by event start).</p>
+
+    <h3>Assign a role</h3>
+    <form action={Routes.admin_user_role_path(@conn, :create)} method="post">
+      <input type="hidden" name="_csrf_token" value={Plug.CSRFProtection.get_csrf_token()} />
+
+      <label for="user_id">User</label>
+      <select name="user_id" id="user_id" required>
+        <option value="">— pick a user —</option>
+        <%= for user <- @users do %>
+          <option value={user.id}><%= user.email %><%= if user.name && user.name != "", do: " (#{user.name})" %></option>
+        <% end %>
+      </select>
+
+      <br />
+
+      <label for="role">Role</label>
+      <select name="role" id="role" required>
+        <option value="">— pick a role —</option>
+        <%= for role <- @role_choices do %>
+          <option value={role}><%= role %></option>
+        <% end %>
+      </select>
+
+      <br />
+
+      <div>
+        <%= submit("Assign", class: "button") %>
+      </div>
+    </form>
+
+    <h3>Current assignments</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Roles</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= for user <- @users do %>
+          <% user_roles = Map.get(@roles_by_user, user.id, []) %>
+          <%= if user_roles != [] do %>
+            <tr>
+              <td>
+                <%= user.email %>
+                <%= if user.name && user.name != "" do %>
+                  <br /><small><%= user.name %></small>
+                <% end %>
+              </td>
+              <td>
+                <%= for ur <- user_roles do %>
+                  <span style="display: inline-block; margin-right: 0.5rem; padding: 0.25rem 0.5rem; background: #eee; border-radius: 4px;">
+                    <%= ur.role %>
+                    <%= link("✕",
+                      to: Routes.admin_user_role_path(@conn, :delete, ur.id),
+                      method: :delete,
+                      data: [confirm: "Remove #{ur.role} role from #{user.email}?"],
+                      style: "margin-left: 0.25rem; text-decoration: none;"
+                    ) %>
+                  </span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

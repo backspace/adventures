@@ -64,6 +64,10 @@ defmodule Registrations.Pages.Nav do
     Registrations.Pages.Nav.SettingsLink
   end
 
+  def roles_link do
+    Registrations.Pages.Nav.RolesLink
+  end
+
   def edit_details(session) do
     Browser.click(session, Query.css("a.details"))
   end
@@ -198,6 +202,22 @@ defmodule Registrations.Pages.Nav do
 
     def click(session) do
       Browser.click(session, Query.css(@selector))
+    end
+  end
+
+  defmodule RolesLink do
+    @moduledoc false
+    alias Wallaby.Browser
+    alias Wallaby.Query
+
+    @selector "a.roles"
+
+    def click(session) do
+      Browser.click(session, Query.css(@selector))
+    end
+
+    def present?(session) do
+      Browser.has?(session, Query.css(@selector))
     end
   end
 
