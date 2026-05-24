@@ -15,15 +15,16 @@ const List<String> kAccessibilityTags = [
 /// Tags shown first in the chip selector for a pole (location-related).
 /// Others appear after the user taps "Show all."
 const Set<String> kPolePrimaryTags = {
-  'stairs',
   'steep',
   'uneven_surface',
   'narrow_path',
   'dim_lighting',
 };
 
-/// Tags shown first for a puzzlet (task-related).
+/// Tags shown first for a puzzlet (task-related, plus stairs since the
+/// route to find a puzzlet often involves them).
 const Set<String> kPuzzletPrimaryTags = {
+  'stairs',
   'crouch_required',
   'reach_required',
   'requires_hearing',
