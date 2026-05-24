@@ -53,6 +53,8 @@ class LocationCard extends StatelessWidget {
 
     final usable = f.isUsable;
     final accuracy = f.accuracyM.toStringAsFixed(1);
+    final ageMinutes = DateTime.now().difference(f.timestamp).inMinutes;
+    final statusText = _statusText(f, accuracy, ageMinutes);
     return _frame(theme,
         color: usable ? null : theme.colorScheme.errorContainer,
         child: Column(
@@ -60,17 +62,23 @@ class LocationCard extends StatelessWidget {
           children: [
             Text('${f.latitude.toStringAsFixed(5)}, ${f.longitude.toStringAsFixed(5)}'),
             const SizedBox(height: 4),
-            Text(
-              usable
-                  ? 'Accuracy: $accuracy m  ✓'
-                  : 'Accuracy: $accuracy m — too imprecise. Move to a clearer spot.',
-            ),
+            Text(statusText),
             const SizedBox(height: 8),
             MiniLocationMap(latitude: f.latitude, longitude: f.longitude),
             const SizedBox(height: 4),
             TextButton(onPressed: onRetry, child: const Text('Re-acquire')),
           ],
         ));
+  }
+
+  String _statusText(LocationFix f, String accuracy, int ageMinutes) {
+    if (!f.isAccurate) {
+      return 'Accuracy: $accuracy m — too imprecise. Move to a clearer spot.';
+    }
+    if (!f.isFresh) {
+      return 'Accuracy: $accuracy m — fix is $ageMinutes min old. Re-acquire if you\'ve moved.';
+    }
+    return 'Accuracy: $accuracy m  ✓';
   }
 
   Widget _frame(ThemeData theme, {Color? color, required Widget child}) {

@@ -13,8 +13,16 @@ class LocationFix {
     required this.timestamp,
   });
 
-  bool get isFresh => DateTime.now().difference(timestamp).inSeconds < 60;
-  bool get isUsable => isFresh && accuracyM <= 100;
+  /// Whether the timestamp is recent enough that the player likely hasn't
+  /// moved meaningfully since. Set generously so long form-fill sessions
+  /// (puzzlet authoring) don't keep tripping it.
+  bool get isFresh => DateTime.now().difference(timestamp).inMinutes < 5;
+
+  /// Whether the GPS accuracy is good enough to record as the pole's
+  /// location. Independent of staleness.
+  bool get isAccurate => accuracyM <= 100;
+
+  bool get isUsable => isFresh && isAccurate;
 }
 
 class LocationService {
