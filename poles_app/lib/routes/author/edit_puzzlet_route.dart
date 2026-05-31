@@ -114,7 +114,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
   Future<void> _save() async {
     setState(() => _busy = true);
     try {
-      await widget.api.updateDraftPuzzlet(
+      final updated = await widget.api.updateDraftPuzzlet(
         widget.puzzlet.id,
         instructions: _instructionsController.text.trim(),
         answer: _answerController.text.trim(),
@@ -129,8 +129,20 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
       );
       if (!mounted) return;
       _dirty = false;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Draft updated.')));
+      final api = widget.api;
+      final navigator = Navigator.of(context, rootNavigator: true);
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(SnackBar(
+        content: const Text('Draft updated.'),
+        action: SnackBarAction(
+          label: 'Edit',
+          onPressed: () {
+            navigator.push(
+              MaterialPageRoute(builder: (_) => EditPuzzletRoute(api: api, puzzlet: updated)),
+            );
+          },
+        ),
+      ));
       Navigator.of(context).pop(true);
     } on DioException catch (e) {
       _showError(e);

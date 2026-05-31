@@ -73,7 +73,7 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
   Future<void> _save() async {
     setState(() => _busy = true);
     try {
-      await widget.api.updateDraftPole(
+      final updated = await widget.api.updateDraftPole(
         widget.pole.id,
         label: _labelController.text.trim(),
         notes: _notesController.text.trim(),
@@ -85,8 +85,20 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
       );
       if (!mounted) return;
       _dirty = false;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Draft updated.')));
+      final api = widget.api;
+      final navigator = Navigator.of(context, rootNavigator: true);
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(SnackBar(
+        content: const Text('Draft updated.'),
+        action: SnackBarAction(
+          label: 'Edit',
+          onPressed: () {
+            navigator.push(
+              MaterialPageRoute(builder: (_) => EditPoleRoute(api: api, pole: updated)),
+            );
+          },
+        ),
+      ));
       Navigator.of(context).pop(true);
     } on DioException catch (e) {
       _showError(e);

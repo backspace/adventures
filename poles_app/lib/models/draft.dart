@@ -114,6 +114,23 @@ class DraftPole {
             const [],
         accessibilityNotes: json['accessibility_notes'] as String?,
       );
+
+  DraftPole copyWith({List<String>? attachmentIds}) => DraftPole(
+        id: id,
+        barcode: barcode,
+        label: label,
+        latitude: latitude,
+        longitude: longitude,
+        notes: notes,
+        accuracyM: accuracyM,
+        status: status,
+        creatorId: creatorId,
+        insertedAt: insertedAt,
+        activeValidation: activeValidation,
+        attachmentIds: attachmentIds ?? this.attachmentIds,
+        accessibilityTags: accessibilityTags,
+        accessibilityNotes: accessibilityNotes,
+      );
 }
 
 class DraftPuzzlet {
@@ -182,6 +199,26 @@ class DraftPuzzlet {
             const [],
         accessibilityNotes: json['accessibility_notes'] as String?,
         warning: json['warning'] as String?,
+      );
+
+  DraftPuzzlet copyWith({List<String>? attachmentIds}) => DraftPuzzlet(
+        id: id,
+        instructions: instructions,
+        answer: answer,
+        answerType: answerType,
+        difficulty: difficulty,
+        status: status,
+        poleId: poleId,
+        creatorId: creatorId,
+        latitude: latitude,
+        longitude: longitude,
+        accuracyM: accuracyM,
+        insertedAt: insertedAt,
+        activeValidation: activeValidation,
+        attachmentIds: attachmentIds ?? this.attachmentIds,
+        accessibilityTags: accessibilityTags,
+        accessibilityNotes: accessibilityNotes,
+        warning: warning,
       );
 }
 

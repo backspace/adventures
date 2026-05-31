@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/accessibility.dart';
+import 'package:poles/routes/author/edit_puzzlet_route.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/routes/nfc_scanner_route.dart';
@@ -128,15 +129,17 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
             : _warningController.text.trim(),
       );
 
+      final uploadedIds = <String>[];
       final photoErrors = <String>[];
       for (final bytes in _pendingPhotos) {
         try {
-          await widget.api.uploadPuzzletAttachment(
+          final id = await widget.api.uploadPuzzletAttachment(
             puzzletId: created.id,
             bytes: bytes,
             filename: 'photo.jpg',
             contentType: 'image/jpeg',
           );
+          uploadedIds.add(id);
         } catch (e) {
           photoErrors.add(e.toString());
         }
@@ -144,10 +147,26 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
 
       if (!mounted) return;
       _saved = true;
+      final fresh = created.copyWith(
+        attachmentIds: [...created.attachmentIds, ...uploadedIds],
+      );
       final message = photoErrors.isEmpty
           ? 'Puzzlet submitted as draft.'
           : 'Puzzlet saved; ${photoErrors.length} photo(s) failed to upload.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+      final api = widget.api;
+      final navigator = Navigator.of(context, rootNavigator: true);
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(SnackBar(
+        content: Text(message),
+        action: SnackBarAction(
+          label: 'Edit',
+          onPressed: () {
+            navigator.push(
+              MaterialPageRoute(builder: (_) => EditPuzzletRoute(api: api, puzzlet: fresh)),
+            );
+          },
+        ),
+      ));
       Navigator.of(context).pop();
     } on DioException catch (e) {
       if (!mounted) return;
