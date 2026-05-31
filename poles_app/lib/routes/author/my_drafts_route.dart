@@ -51,24 +51,42 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
   List<MapPin> _pins(MyDrafts drafts) {
     final pins = <MapPin>[];
     for (final p in drafts.poles) {
+      final editable = p.status == DraftStatus.draft;
       pins.add(MapPin(
         position: LatLng(p.latitude, p.longitude),
         label: p.label ?? p.barcode,
         icon: Icons.location_on,
         color: _statusColor(p.status),
+        onTap: editable ? () => _openPole(p) : null,
       ));
     }
     for (final p in drafts.puzzlets) {
       if (p.latitude != null && p.longitude != null) {
+        final editable = p.status == DraftStatus.draft;
         pins.add(MapPin(
           position: LatLng(p.latitude!, p.longitude!),
           label: p.instructions,
           icon: Icons.edit_note,
           color: _statusColor(p.status),
+          onTap: editable ? () => _openPuzzlet(p) : null,
         ));
       }
     }
     return pins;
+  }
+
+  Future<void> _openPole(DraftPole pole) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => EditPoleRoute(api: widget.api, pole: pole)),
+    );
+    if (changed == true) await _load();
+  }
+
+  Future<void> _openPuzzlet(DraftPuzzlet puzzlet) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => EditPuzzletRoute(api: widget.api, puzzlet: puzzlet)),
+    );
+    if (changed == true) await _load();
   }
 
   int _puzzletsWithoutLocation(MyDrafts drafts) =>
