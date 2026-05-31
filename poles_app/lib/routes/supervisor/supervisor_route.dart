@@ -133,8 +133,8 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
           title: const Text('Supervision'),
           bottom: const TabBar(tabs: [
             Tab(text: 'Overview'),
-            Tab(text: 'Poles'),
             Tab(text: 'Puzzlets'),
+            Tab(text: 'Poles'),
           ]),
           actions: [
             IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
@@ -142,8 +142,8 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
         ),
         body: TabBarView(children: [
           _Overview(counts: _counts, error: _error),
-          _PolesTab(api: widget.api, onChanged: _load),
           _PuzzletsTab(api: widget.api, onChanged: _load),
+          _PolesTab(api: widget.api, onChanged: _load),
         ]),
       ),
     );
@@ -182,13 +182,13 @@ class _Overview extends StatelessWidget {
             ),
           ),
         if (submittedTotal > 0) const SizedBox(height: 16),
-        _Section('Poles by status', counts!.poles),
-        const SizedBox(height: 16),
         _Section('Puzzlets by status', counts!.puzzlets),
         const SizedBox(height: 16),
-        _Section('Pole validations', counts!.poleValidations),
+        _Section('Poles by status', counts!.poles),
         const SizedBox(height: 16),
         _Section('Puzzlet validations', counts!.puzzletValidations),
+        const SizedBox(height: 16),
+        _Section('Pole validations', counts!.poleValidations),
       ],
     );
   }

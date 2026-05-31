@@ -44,8 +44,8 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
         appBar: AppBar(
           title: const Text('My validations'),
           bottom: const TabBar(tabs: [
-            Tab(text: 'Poles'),
             Tab(text: 'Puzzlets'),
+            Tab(text: 'Poles'),
           ]),
           actions: [
             IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
@@ -56,14 +56,14 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
             : _validations == null
                 ? const Center(child: CircularProgressIndicator())
                 : TabBarView(children: [
-                    _PoleValidationsList(
-                      api: widget.api,
-                      items: _validations!.poleValidations,
-                      onChanged: _load,
-                    ),
                     _PuzzletValidationsList(
                       api: widget.api,
                       items: _validations!.puzzletValidations,
+                      onChanged: _load,
+                    ),
+                    _PoleValidationsList(
+                      api: widget.api,
+                      items: _validations!.poleValidations,
                       onChanged: _load,
                     ),
                   ]),

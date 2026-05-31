@@ -132,13 +132,6 @@ class _ListView extends StatelessWidget {
             padding: EdgeInsets.all(24),
             child: Center(child: Text('Nothing yet. Capture a pole or puzzlet.')),
           ),
-        if (drafts.poles.isNotEmpty)
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
-            child: Text('Poles', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ...drafts.poles
-            .map((p) => _PoleTile(pole: p, api: api, onChanged: onChanged)),
         if (drafts.puzzlets.isNotEmpty)
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -146,6 +139,13 @@ class _ListView extends StatelessWidget {
           ),
         ...drafts.puzzlets
             .map((p) => _PuzzletTile(puzzlet: p, api: api, onChanged: onChanged)),
+        if (drafts.poles.isNotEmpty)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: Text('Poles', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ...drafts.poles
+            .map((p) => _PoleTile(pole: p, api: api, onChanged: onChanged)),
       ],
     );
   }
