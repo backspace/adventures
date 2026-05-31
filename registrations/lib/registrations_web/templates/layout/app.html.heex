@@ -26,7 +26,7 @@
     <link rel="icon" href={"/images/#{adventure()}/favicon.ico"} />
   </head>
 
-  <body>
+  <body class={"deploy-env-#{deploy_env()}"}>
     <%= unless @conn.assigns[:placeholder] do %>
       <div class="row nav">
         <div class="small-12 columns">

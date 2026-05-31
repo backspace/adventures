@@ -40,6 +40,21 @@ spam_strings =
 config :registrations,
   spam_strings: spam_strings
 
+# Distinguishes deployments (production vs staging vs local) so the layout
+# can advertise non-production environments visually. Defaults to the
+# `config_env()` name when DEPLOY_ENV isn't set — so prod machines that
+# don't opt in are still labelled "production".
+deploy_env =
+  System.get_env("DEPLOY_ENV") ||
+    case config_env() do
+      :prod -> "production"
+      :dev -> "development"
+      :test -> "test"
+    end
+
+config :registrations,
+  deploy_env: deploy_env
+
 # Use the Redis-backed Pow cache whenever REDIS_URL is set, so sessions persist
 # across server restarts. Required in prod; optional in dev (set REDIS_URL to
 # opt in to persistent local sessions). Application.ex starts the Redix child

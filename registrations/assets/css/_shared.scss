@@ -1,3 +1,28 @@
 dd + dt {
   margin-top: 1rem;
 }
+
+// Non-production deployments get a striped overlay on the body background
+// so it's impossible to confuse them with real prod at a glance. The
+// `deploy-env-*` class comes from the layout, sourced from the DEPLOY_ENV
+// env var (see config/runtime.exs).
+
+body.deploy-env-staging {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 170, 0, 0.10),
+    rgba(255, 170, 0, 0.10) 16px,
+    transparent 16px,
+    transparent 32px
+  );
+}
+
+body.deploy-env-development {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(0, 140, 255, 0.08),
+    rgba(0, 140, 255, 0.08) 16px,
+    transparent 16px,
+    transparent 32px
+  );
+}

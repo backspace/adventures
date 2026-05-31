@@ -38,6 +38,10 @@ defmodule RegistrationsWeb.SharedHelpers do
     Application.get_env(:registrations, :base_url)
   end
 
+  def deploy_env do
+    Application.get_env(:registrations, :deploy_env, "production")
+  end
+
   def phrase(id) do
     Gettext.dgettext(
       RegistrationsWeb.Gettext,
