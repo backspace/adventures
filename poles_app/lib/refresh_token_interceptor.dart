@@ -11,6 +11,11 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
   final Dio? renewalDio;
   final Dio? postRenewalDio;
 
+  // Single-flight lock: when a renewal is already in progress, concurrent
+  // 401s await the same future instead of each POSTing to /session/renew
+  // with the soon-to-be-rotated refresh token.
+  Future<String?>? _inFlightRenewal;
+
   RefreshTokenInterceptor({
     required this.dio,
     this.renewalDio,
@@ -43,24 +48,42 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
       return handler.next(err);
     }
 
-    await _refreshTokenAndResolveError(err, handler);
-  }
-
-  Future<void> _refreshTokenAndResolveError(
-    DioException err,
-    ErrorInterceptorHandler handler,
-  ) async {
-    _log.d('Refreshing token...');
-    final refreshToken = await UserService.getRenewalToken();
-    if (refreshToken == null) {
+    final newAccessToken = await _renewOnce();
+    if (newAccessToken == null) {
       return handler.next(err);
     }
 
-    final actualRenewalDio = renewalDio ?? (Dio()..options = dio.options);
-
-    late final Response authResponse;
+    err.requestOptions.headers['Authorization'] = newAccessToken;
+    final retryDio = postRenewalDio ?? (Dio()..options = dio.options);
     try {
-      authResponse = await actualRenewalDio.post(
+      final response = await retryDio.fetch(err.requestOptions);
+      handler.resolve(response);
+    } on DioException catch (retryErr) {
+      handler.next(retryErr);
+    }
+  }
+
+  /// Returns the new access token, or null if renewal failed. Concurrent
+  /// callers share a single in-flight renewal so the renewal token (which
+  /// Pow rotates on every successful renew) is only spent once.
+  Future<String?> _renewOnce() {
+    final inFlight = _inFlightRenewal;
+    if (inFlight != null) return inFlight;
+
+    final future = _doRenew();
+    _inFlightRenewal = future;
+    future.whenComplete(() => _inFlightRenewal = null);
+    return future;
+  }
+
+  Future<String?> _doRenew() async {
+    _log.d('Refreshing token...');
+    final refreshToken = await UserService.getRenewalToken();
+    if (refreshToken == null) return null;
+
+    final renewDio = renewalDio ?? (Dio()..options = dio.options);
+    try {
+      final authResponse = await renewDio.post(
         '/powapi/session/renew',
         options: Options(headers: {
           'Authorization': refreshToken,
@@ -68,20 +91,13 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
           'Content-Type': 'application/json',
         }),
       );
-    } catch (e) {
+      final newAccessToken = authResponse.data['data']['access_token'] as String;
+      final newRenewalToken = authResponse.data['data']['renewal_token'] as String;
+      await UserService.setTokens(newAccessToken, newRenewalToken);
+      return newAccessToken;
+    } catch (_) {
       await UserService.clearUserData();
-      if (e is DioException) return handler.next(e);
-      return handler.next(err);
+      return null;
     }
-
-    final newAccessToken = authResponse.data['data']['access_token'];
-    final newRenewalToken = authResponse.data['data']['renewal_token'];
-    await UserService.setTokens(newAccessToken, newRenewalToken);
-
-    err.requestOptions.headers['Authorization'] = newAccessToken;
-
-    final actualPostRenewalDio = postRenewalDio ?? (Dio()..options = dio.options);
-    final refreshResponse = await actualPostRenewalDio.fetch(err.requestOptions);
-    handler.resolve(refreshResponse);
   }
 }
