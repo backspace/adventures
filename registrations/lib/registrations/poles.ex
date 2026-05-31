@@ -243,13 +243,13 @@ defmodule Registrations.Poles do
     poles =
       Pole
       |> where([p], p.creator_id == ^user_id)
-      |> order_by([p], desc: p.inserted_at)
+      |> order_by([p], desc: p.updated_at)
       |> Repo.all()
 
     puzzlets =
       Puzzlet
       |> where([p], p.creator_id == ^user_id)
-      |> order_by([p], desc: p.inserted_at)
+      |> order_by([p], desc: p.updated_at)
       |> Repo.all()
 
     %{poles: poles, puzzlets: puzzlets}

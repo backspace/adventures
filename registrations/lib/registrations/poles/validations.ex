@@ -76,7 +76,7 @@ defmodule Registrations.Poles.Validations do
       PoleValidation
       |> where([v], v.validator_id == ^validator_id)
       |> where([v], v.status not in ^["accepted", "rejected"])
-      |> order_by([v], desc: v.inserted_at)
+      |> order_by([v], desc: v.updated_at)
       |> Repo.all()
       |> Repo.preload([:pole, :comments])
 
@@ -84,7 +84,7 @@ defmodule Registrations.Poles.Validations do
       PuzzletValidation
       |> where([v], v.validator_id == ^validator_id)
       |> where([v], v.status not in ^["accepted", "rejected"])
-      |> order_by([v], desc: v.inserted_at)
+      |> order_by([v], desc: v.updated_at)
       |> Repo.all()
       |> Repo.preload([:puzzlet, :comments])
 
@@ -171,6 +171,10 @@ defmodule Registrations.Poles.Validations do
         struct(schema)
         |> schema.changeset(attrs)
         |> Repo.insert()
+        |> tap(fn
+          {:ok, _} -> touch_validation_and_parent(validation)
+          _ -> :ok
+        end)
     end
   end
 
@@ -200,6 +204,10 @@ defmodule Registrations.Poles.Validations do
         comment
         |> schema.changeset(Map.take(attrs, ["field", "comment", "suggested_value"]))
         |> Repo.update()
+        |> tap(fn
+          {:ok, _} -> touch_validation_and_parent(parent)
+          _ -> :ok
+        end)
     end
   end
 
@@ -227,6 +235,10 @@ defmodule Registrations.Poles.Validations do
 
       true ->
         Repo.delete(comment)
+        |> tap(fn
+          {:ok, _} -> touch_validation_and_parent(parent)
+          _ -> :ok
+        end)
     end
   end
 
@@ -235,6 +247,20 @@ defmodule Registrations.Poles.Validations do
 
   defp parent_id_for_comment(%PoleValidationComment{pole_validation_id: id}), do: id
   defp parent_id_for_comment(%PuzzletValidationComment{puzzlet_validation_id: id}), do: id
+
+  defp touch_validation_and_parent(%PoleValidation{id: id, pole_id: pole_id}) do
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    Repo.update_all(from(v in PoleValidation, where: v.id == ^id), set: [updated_at: now])
+    Repo.update_all(from(p in Pole, where: p.id == ^pole_id), set: [updated_at: now])
+    :ok
+  end
+
+  defp touch_validation_and_parent(%PuzzletValidation{id: id, puzzlet_id: puzzlet_id}) do
+    now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+    Repo.update_all(from(v in PuzzletValidation, where: v.id == ^id), set: [updated_at: now])
+    Repo.update_all(from(p in Puzzlet, where: p.id == ^puzzlet_id), set: [updated_at: now])
+    :ok
+  end
 
   # ──────── Supervisor: accept/reject validations ────────────────────
 
@@ -459,14 +485,14 @@ defmodule Registrations.Poles.Validations do
   def list_poles_for_supervision(filter \\ %{}) do
     Pole
     |> filter_by_status(filter[:status])
-    |> order_by([p], desc: p.inserted_at)
+    |> order_by([p], desc: p.updated_at)
     |> Repo.all()
   end
 
   def list_puzzlets_for_supervision(filter \\ %{}) do
     Puzzlet
     |> filter_by_status(filter[:status])
-    |> order_by([p], desc: p.inserted_at)
+    |> order_by([p], desc: p.updated_at)
     |> Repo.all()
   end
 
