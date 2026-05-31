@@ -6,6 +6,7 @@ import 'package:poles/models/validation.dart';
 import 'package:poles/routes/supervisor/pin_action_sheet.dart';
 import 'package:poles/routes/supervisor/pole_supervision_detail_route.dart';
 import 'package:poles/routes/supervisor/puzzlet_supervision_detail_route.dart';
+import 'package:poles/services/ui_preferences.dart';
 import 'package:poles/widgets/map_pin.dart';
 import 'package:poles/widgets/pin_map.dart';
 import 'package:poles/widgets/attachments_badge.dart';
@@ -243,6 +244,7 @@ class _PolesTab extends StatefulWidget {
 }
 
 class _PolesTabState extends State<_PolesTab> {
+  static const _prefKey = 'supervisor_poles';
   String _filter = 'draft';
   _ListOrMap _view = _ListOrMap.list;
   List<DraftPole>? _poles;
@@ -251,7 +253,19 @@ class _PolesTabState extends State<_PolesTab> {
   @override
   void initState() {
     super.initState();
+    _loadPref();
     _load();
+  }
+
+  Future<void> _loadPref() async {
+    final isMap = await UiPreferences.getMapPreferred(_prefKey);
+    if (!mounted) return;
+    setState(() => _view = isMap ? _ListOrMap.map : _ListOrMap.list);
+  }
+
+  void _setView(_ListOrMap v) {
+    setState(() => _view = v);
+    UiPreferences.setMapPreferred(_prefKey, v == _ListOrMap.map);
   }
 
   Future<void> _load() async {
@@ -286,7 +300,7 @@ class _PolesTabState extends State<_PolesTab> {
               ButtonSegment(value: _ListOrMap.map, label: Text('Map'), icon: Icon(Icons.map)),
             ],
             selected: {_view},
-            onSelectionChanged: (set) => setState(() => _view = set.first),
+            onSelectionChanged: (set) => _setView(set.first),
           ),
         ),
         SingleChildScrollView(
@@ -383,6 +397,7 @@ class _PuzzletsTab extends StatefulWidget {
 }
 
 class _PuzzletsTabState extends State<_PuzzletsTab> {
+  static const _prefKey = 'supervisor_puzzlets';
   String _filter = 'draft';
   _ListOrMap _view = _ListOrMap.list;
   List<DraftPuzzlet>? _puzzlets;
@@ -391,7 +406,19 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
   @override
   void initState() {
     super.initState();
+    _loadPref();
     _load();
+  }
+
+  Future<void> _loadPref() async {
+    final isMap = await UiPreferences.getMapPreferred(_prefKey);
+    if (!mounted) return;
+    setState(() => _view = isMap ? _ListOrMap.map : _ListOrMap.list);
+  }
+
+  void _setView(_ListOrMap v) {
+    setState(() => _view = v);
+    UiPreferences.setMapPreferred(_prefKey, v == _ListOrMap.map);
   }
 
   Future<void> _load() async {
@@ -429,7 +456,7 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
               ButtonSegment(value: _ListOrMap.map, label: Text('Map'), icon: Icon(Icons.map)),
             ],
             selected: {_view},
-            onSelectionChanged: (set) => setState(() => _view = set.first),
+            onSelectionChanged: (set) => _setView(set.first),
           ),
         ),
         SingleChildScrollView(

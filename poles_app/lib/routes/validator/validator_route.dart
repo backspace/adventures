@@ -4,6 +4,7 @@ import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/validation.dart';
 import 'package:poles/routes/validator/pole_validation_detail_route.dart';
 import 'package:poles/routes/validator/puzzlet_validation_detail_route.dart';
+import 'package:poles/services/ui_preferences.dart';
 import 'package:poles/widgets/attachments_badge.dart';
 import 'package:poles/widgets/map_pin.dart';
 import 'package:poles/widgets/pin_map.dart';
@@ -95,7 +96,25 @@ class _PoleValidations extends StatefulWidget {
 }
 
 class _PoleValidationsState extends State<_PoleValidations> {
+  static const _prefKey = 'validator_poles';
   _ListOrMap _view = _ListOrMap.list;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPref();
+  }
+
+  Future<void> _loadPref() async {
+    final isMap = await UiPreferences.getMapPreferred(_prefKey);
+    if (!mounted) return;
+    setState(() => _view = isMap ? _ListOrMap.map : _ListOrMap.list);
+  }
+
+  void _setView(_ListOrMap v) {
+    setState(() => _view = v);
+    UiPreferences.setMapPreferred(_prefKey, v == _ListOrMap.map);
+  }
 
   Future<void> _open(PoleValidationModel v) async {
     final changed = await Navigator.of(context).push<bool>(
@@ -122,7 +141,7 @@ class _PoleValidationsState extends State<_PoleValidations> {
               ButtonSegment(value: _ListOrMap.map, label: Text('Map'), icon: Icon(Icons.map)),
             ],
             selected: {_view},
-            onSelectionChanged: (set) => setState(() => _view = set.first),
+            onSelectionChanged: (set) => _setView(set.first),
           ),
         ),
         Expanded(
@@ -197,7 +216,25 @@ class _PuzzletValidations extends StatefulWidget {
 }
 
 class _PuzzletValidationsState extends State<_PuzzletValidations> {
+  static const _prefKey = 'validator_puzzlets';
   _ListOrMap _view = _ListOrMap.list;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPref();
+  }
+
+  Future<void> _loadPref() async {
+    final isMap = await UiPreferences.getMapPreferred(_prefKey);
+    if (!mounted) return;
+    setState(() => _view = isMap ? _ListOrMap.map : _ListOrMap.list);
+  }
+
+  void _setView(_ListOrMap v) {
+    setState(() => _view = v);
+    UiPreferences.setMapPreferred(_prefKey, v == _ListOrMap.map);
+  }
 
   Future<void> _open(PuzzletValidationModel v) async {
     final changed = await Navigator.of(context).push<bool>(
@@ -224,7 +261,7 @@ class _PuzzletValidationsState extends State<_PuzzletValidations> {
               ButtonSegment(value: _ListOrMap.map, label: Text('Map'), icon: Icon(Icons.map)),
             ],
             selected: {_view},
-            onSelectionChanged: (set) => setState(() => _view = set.first),
+            onSelectionChanged: (set) => _setView(set.first),
           ),
         ),
         Expanded(

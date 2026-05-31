@@ -4,6 +4,7 @@ import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/routes/author/edit_pole_route.dart';
 import 'package:poles/routes/author/edit_puzzlet_route.dart';
+import 'package:poles/services/ui_preferences.dart';
 import 'package:poles/widgets/attachments_badge.dart';
 import 'package:poles/widgets/map_pin.dart';
 import 'package:poles/widgets/pin_map.dart';
@@ -23,10 +24,24 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
   String? _error;
   _DraftView _view = _DraftView.list;
 
+  static const _prefKey = 'drafts';
+
   @override
   void initState() {
     super.initState();
+    _loadPref();
     _load();
+  }
+
+  Future<void> _loadPref() async {
+    final isMap = await UiPreferences.getMapPreferred(_prefKey);
+    if (!mounted) return;
+    setState(() => _view = isMap ? _DraftView.map : _DraftView.list);
+  }
+
+  void _setView(_DraftView v) {
+    setState(() => _view = v);
+    UiPreferences.setMapPreferred(_prefKey, v == _DraftView.map);
   }
 
   Future<void> _load() async {
@@ -115,7 +130,7 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
                     icon: Icon(Icons.map)),
               ],
               selected: {_view},
-              onSelectionChanged: (set) => setState(() => _view = set.first),
+              onSelectionChanged: (set) => _setView(set.first),
             ),
           ),
         ),
