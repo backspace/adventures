@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/models/pole.dart';
 import 'package:poles/models/poles_event.dart';
+import 'package:poles/models/test_session.dart';
 import 'package:poles/models/validation.dart';
 import 'package:poles/services/user_service.dart';
 
@@ -512,5 +513,88 @@ class PolesApi {
       // Ignore — we're clearing local state regardless.
     }
     await UserService.clearUserData();
+  }
+
+  // ─── Test play sessions ─────────────────────────────────────────────
+
+  Future<TestSession> createTestSession({String? name}) async {
+    final response = await dio.post(
+      '/poles/test-play/sessions',
+      data: {if (name != null) 'name': name},
+    );
+    return TestSession.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<List<TestSession>> listTestSessions() async {
+    final response = await dio.get('/poles/test-play/sessions');
+    final list = response.data['sessions'] as List;
+    return list
+        .map((e) => TestSession.fromJson(e as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<TestSession> endTestSession(String id) async {
+    final response = await dio.post('/poles/test-play/sessions/$id/end');
+    return TestSession.fromJson(response.data as Map<String, dynamic>);
+  }
+}
+
+/// PolesApi subclass that redirects gameplay calls (listPoles, scan,
+/// submitAnswer) to the scoped test-play endpoints. Other methods inherit
+/// from the parent unchanged.
+class TestPlayPolesApi extends PolesApi {
+  final String sessionId;
+
+  TestPlayPolesApi(super.dio, this.sessionId);
+
+  @override
+  Future<List<Pole>> listPoles() async {
+    final response =
+        await dio.get('/poles/test-play/sessions/$sessionId/poles');
+    final list = response.data['poles'] as List;
+    return list
+        .map((p) => Pole.fromJson(p as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  @override
+  Future<ScanOutcome> scan(String barcode) async {
+    try {
+      final response = await dio.get(
+        '/poles/test-play/sessions/$sessionId/poles/$barcode',
+      );
+      return ScanFound(ScanResult.fromJson(response.data as Map<String, dynamic>));
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return const ScanUnknownBarcode();
+      rethrow;
+    }
+  }
+
+  @override
+  Future<AttemptOutcome> submitAnswer(String puzzletId, String answer) async {
+    try {
+      final response = await dio.post(
+        '/poles/test-play/sessions/$sessionId/puzzlets/$puzzletId/attempts',
+        data: {'answer': answer},
+      );
+      final body = response.data as Map<String, dynamic>;
+      if (body['correct'] == true) {
+        return AttemptCorrect(
+          captureTeamId: body['pole']?['current_owner_team_id'] as String? ?? '',
+          poleLocked: body['pole']?['locked'] as bool? ?? false,
+        );
+      }
+      return AttemptIncorrect(
+        attemptsRemaining: body['attempts_remaining'] as int,
+        previousWrongAnswers: (body['previous_wrong_answers'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 423) return const AttemptLockedOut();
+      if (e.response?.statusCode == 409) return const AttemptAlreadyCaptured();
+      rethrow;
+    }
   }
 }

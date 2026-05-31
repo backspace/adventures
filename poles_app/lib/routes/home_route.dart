@@ -6,19 +6,22 @@ import 'package:latlong2/latlong.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/pole.dart';
 import 'package:poles/models/poles_event.dart';
+import 'package:poles/models/test_session.dart';
 import 'package:poles/flavors.dart';
 import 'package:poles/routes/author/author_route.dart';
 import 'package:poles/routes/login_route.dart';
 import 'package:poles/routes/scan_route.dart';
 import 'package:poles/routes/settings_route.dart';
 import 'package:poles/routes/supervisor/supervisor_route.dart';
+import 'package:poles/routes/test_play/test_play_entry_route.dart';
 import 'package:poles/routes/validator/validator_route.dart';
 import 'package:poles/services/poles_socket.dart';
 import 'package:poles/services/user_service.dart';
 
 class HomeRoute extends StatefulWidget {
   final PolesApi api;
-  const HomeRoute({super.key, required this.api});
+  final TestSession? testSession;
+  const HomeRoute({super.key, required this.api, this.testSession});
 
   @override
   State<HomeRoute> createState() => _HomeRouteState();
@@ -38,11 +41,15 @@ class _HomeRouteState extends State<HomeRoute> {
   StreamSubscription<PoleUpdate>? _updatesSub;
   StreamSubscription<void>? _reconnectsSub;
 
+  bool get _inTestPlay => widget.testSession != null;
+
   @override
   void initState() {
     super.initState();
     _load();
-    _connectSocket();
+    // Real-time updates only flow for the real game. In a test session
+    // we're isolated and don't need the socket.
+    if (!_inTestPlay) _connectSocket();
   }
 
   Future<void> _connectSocket() async {
@@ -145,7 +152,9 @@ class _HomeRouteState extends State<HomeRoute> {
   @override
   Widget build(BuildContext context) {
     final titleText = _teamName == null ? 'Poles' : 'Poles — $_teamName';
-    final preEvent = _event != null && !_event!.started;
+    // In test play we intentionally bypass the event-start gate — the
+    // whole point of a rehearsal is to play before the event begins.
+    final preEvent = !_inTestPlay && _event != null && !_event!.started;
 
     return Scaffold(
       appBar: AppBar(
@@ -164,7 +173,7 @@ class _HomeRouteState extends State<HomeRoute> {
               )
             : Text(titleText),
         actions: [
-          if (!preEvent && _isAuthor)
+          if (!_inTestPlay && !preEvent && _isAuthor)
             IconButton(
               tooltip: 'Author',
               onPressed: () => Navigator.of(context).push(
@@ -172,7 +181,7 @@ class _HomeRouteState extends State<HomeRoute> {
               ),
               icon: const Icon(Icons.edit_note),
             ),
-          if (!preEvent && _isValidator)
+          if (!_inTestPlay && !preEvent && _isValidator)
             IconButton(
               tooltip: 'Validate',
               onPressed: () => Navigator.of(context).push(
@@ -180,7 +189,7 @@ class _HomeRouteState extends State<HomeRoute> {
               ),
               icon: const Icon(Icons.fact_check_outlined),
             ),
-          if (!preEvent && _isSupervisor)
+          if (!_inTestPlay && !preEvent && _isSupervisor)
             IconButton(
               tooltip: 'Supervise',
               onPressed: () => Navigator.of(context).push(
@@ -188,7 +197,17 @@ class _HomeRouteState extends State<HomeRoute> {
               ),
               icon: const Icon(Icons.supervisor_account),
             ),
-          if (F.allowsEnvSwitch)
+          if (!_inTestPlay && (_isValidator || _isSupervisor))
+            IconButton(
+              tooltip: 'Test play',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => TestPlayEntryRoute(api: widget.api),
+                ),
+              ),
+              icon: const Icon(Icons.science_outlined),
+            ),
+          if (!_inTestPlay && F.allowsEnvSwitch)
             IconButton(
               tooltip: 'Settings',
               onPressed: () => Navigator.of(context).push(
@@ -197,8 +216,44 @@ class _HomeRouteState extends State<HomeRoute> {
               icon: const Icon(Icons.settings_outlined),
             ),
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
-          IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
+          if (_inTestPlay)
+            IconButton(
+              tooltip: 'Exit test play',
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.close),
+            )
+          else
+            IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
+        bottom: _inTestPlay
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(28),
+                child: Container(
+                  width: double.infinity,
+                  color: Colors.amber.shade100,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 4),
+                  child: Row(
+                    children: [
+                      Icon(Icons.science_outlined,
+                          size: 16, color: Colors.amber.shade900),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Test play · ${widget.testSession!.name ?? widget.testSession!.id}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.amber.shade900,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : null,
       ),
       body: _error != null
           ? Center(child: Text(_error!))

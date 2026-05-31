@@ -151,13 +151,36 @@ defmodule RegistrationsWeb.Poles.TestPlayController do
       puzzlet ->
         # Pass nil for team_id; in test scope, scope is the identity.
         case Poles.record_attempt(puzzlet, nil, user.id, answer, scope) do
-          {:ok, %{result: :captured} = result} ->
-            json(conn, %{outcome: "correct", attempt: render_attempt(result.attempt)})
+          {:ok, %{result: :captured} = outcome} ->
+            # Match the real-game response shape so the Flutter parser can
+            # be reused. Use user.id as a stand-in for team_id in solo test
+            # play so "you captured it!" messaging still has a non-null value.
+            pole = puzzlet.pole_id && Poles.get_pole!(puzzlet.pole_id)
 
-          {:ok, %{result: :incorrect} = result} ->
             json(conn, %{
-              outcome: "incorrect",
-              attempts_remaining: result.attempts_remaining,
+              correct: true,
+              captured: true,
+              capture: %{
+                id: outcome.capture.id,
+                puzzlet_id: outcome.capture.puzzlet_id,
+                team_id: user.id
+              },
+              pole:
+                if pole do
+                  %{
+                    id: pole.id,
+                    locked: Poles.pole_locked?(pole, scope),
+                    current_owner_team_id: user.id
+                  }
+                else
+                  nil
+                end
+            })
+
+          {:ok, %{result: :incorrect, attempts_remaining: remaining}} ->
+            json(conn, %{
+              correct: false,
+              attempts_remaining: remaining,
               previous_wrong_answers: Poles.team_wrong_answers(puzzlet, nil, scope)
             })
 
@@ -223,10 +246,6 @@ defmodule RegistrationsWeb.Poles.TestPlayController do
       attempts_remaining: attempts_remaining,
       previous_wrong_answers: previous_wrong_answers
     }
-  end
-
-  defp render_attempt(attempt) do
-    %{id: attempt.id, correct: attempt.correct, answer_given: attempt.answer_given}
   end
 
   defp not_found(conn) do
