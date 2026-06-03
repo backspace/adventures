@@ -238,6 +238,16 @@ defmodule RegistrationsWeb.Router do
     delete("/attachments/:id", AttachmentController, :delete)
   end
 
+  scope "/poles/regions", RegistrationsWeb.Poles, as: :poles_regions do
+    pipe_through([:poles_author])
+
+    get("/", RegionController, :index)
+    post("/", RegionController, :create)
+    get("/:id", RegionController, :show)
+    patch("/:id", RegionController, :update)
+    delete("/:id", RegionController, :delete)
+  end
+
   scope "/poles/validation", RegistrationsWeb.Poles, as: :poles_validation do
     pipe_through([:poles_validator])
 

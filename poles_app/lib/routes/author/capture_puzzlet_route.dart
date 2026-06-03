@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/accessibility.dart';
+import 'package:poles/models/region.dart';
 import 'package:poles/routes/author/edit_puzzlet_route.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
@@ -14,6 +15,7 @@ import 'package:poles/widgets/accessibility_tags_field.dart';
 import 'package:poles/widgets/answer_type_field.dart';
 import 'package:poles/widgets/location_card.dart';
 import 'package:poles/widgets/pending_photos_section.dart';
+import 'package:poles/widgets/region_picker_field.dart';
 
 class CapturePuzzletRoute extends StatefulWidget {
   final PolesApi api;
@@ -33,6 +35,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
   List<Uint8List> _pendingPhotos = const [];
   List<String> _accessibilityTags = const [];
   AnswerType _answerType = AnswerType.looseText;
+  Region? _region;
   bool _saved = false;
 
   bool get _isDirty =>
@@ -44,7 +47,8 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
           _accessibilityNotesController.text.isNotEmpty ||
           _warningController.text.isNotEmpty ||
           _difficulty != 3 ||
-          _answerType != AnswerType.looseText);
+          _answerType != AnswerType.looseText ||
+          _region != null);
 
   LocationFix? _fix;
   String? _locationError;
@@ -124,6 +128,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
         accessibilityNotes: _accessibilityNotesController.text.trim().isEmpty
             ? null
             : _accessibilityNotesController.text.trim(),
+        regionId: _region?.id,
         warning: _warningController.text.trim().isEmpty
             ? null
             : _warningController.text.trim(),
@@ -289,6 +294,12 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
               divisions: 9,
               label: '$_difficulty',
               onChanged: (v) => setState(() => _difficulty = v.round()),
+            ),
+            const SizedBox(height: 16),
+            RegionPickerField(
+              api: widget.api,
+              selected: _region,
+              onChanged: (r) => setState(() => _region = r),
             ),
             const SizedBox(height: 16),
             AccessibilityTagsField(

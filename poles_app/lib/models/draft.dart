@@ -1,3 +1,5 @@
+import 'package:poles/models/region.dart';
+
 enum DraftStatus { draft, inReview, validated, retired }
 
 enum AnswerType { looseText, strictText, barcode, nfc }
@@ -141,6 +143,7 @@ class DraftPuzzlet {
   final int difficulty;
   final DraftStatus status;
   final String? poleId;
+  final String? regionId;
   final String? creatorId;
   final double? latitude;
   final double? longitude;
@@ -150,6 +153,8 @@ class DraftPuzzlet {
   final List<String> attachmentIds;
   final List<String> accessibilityTags;
   final String? accessibilityNotes;
+  final List<String> inheritedTags;
+  final List<InheritedStanza> inheritedStanzas;
   final String? warning;
 
   DraftPuzzlet({
@@ -160,6 +165,7 @@ class DraftPuzzlet {
     required this.difficulty,
     required this.status,
     required this.poleId,
+    this.regionId,
     required this.creatorId,
     required this.latitude,
     required this.longitude,
@@ -169,6 +175,8 @@ class DraftPuzzlet {
     this.attachmentIds = const [],
     this.accessibilityTags = const [],
     this.accessibilityNotes,
+    this.inheritedTags = const [],
+    this.inheritedStanzas = const [],
     this.warning,
   });
 
@@ -180,6 +188,7 @@ class DraftPuzzlet {
         difficulty: json['difficulty'] as int,
         status: _statusFromString(json['status'] as String?),
         poleId: json['pole_id'] as String?,
+        regionId: json['region_id'] as String?,
         creatorId: json['creator_id'] as String?,
         latitude: (json['latitude'] as num?)?.toDouble(),
         longitude: (json['longitude'] as num?)?.toDouble(),
@@ -198,6 +207,14 @@ class DraftPuzzlet {
                 .toList(growable: false) ??
             const [],
         accessibilityNotes: json['accessibility_notes'] as String?,
+        inheritedTags: (json['inherited_tags'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
+        inheritedStanzas: (json['inherited_stanzas'] as List?)
+                ?.map((e) => InheritedStanza.fromJson(e as Map<String, dynamic>))
+                .toList(growable: false) ??
+            const [],
         warning: json['warning'] as String?,
       );
 
@@ -209,6 +226,7 @@ class DraftPuzzlet {
         difficulty: difficulty,
         status: status,
         poleId: poleId,
+        regionId: regionId,
         creatorId: creatorId,
         latitude: latitude,
         longitude: longitude,
@@ -218,6 +236,8 @@ class DraftPuzzlet {
         attachmentIds: attachmentIds ?? this.attachmentIds,
         accessibilityTags: accessibilityTags,
         accessibilityNotes: accessibilityNotes,
+        inheritedTags: inheritedTags,
+        inheritedStanzas: inheritedStanzas,
         warning: warning,
       );
 }

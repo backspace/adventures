@@ -282,20 +282,23 @@ defmodule RegistrationsWeb.Poles.ValidationController do
   defp render_puzzlet(nil), do: nil
 
   defp render_puzzlet(puzzlet) do
-    %{
-      id: puzzlet.id,
-      instructions: puzzlet.instructions,
-      answer: puzzlet.answer,
-      answer_type: puzzlet.answer_type,
-      difficulty: puzzlet.difficulty,
-      status: puzzlet.status,
-      latitude: puzzlet.latitude,
-      longitude: puzzlet.longitude,
-      attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id),
-      accessibility_tags: puzzlet.accessibility_tags || [],
-      accessibility_notes: puzzlet.accessibility_notes,
-      warning: puzzlet.warning
-    }
+    Map.merge(
+      %{
+        id: puzzlet.id,
+        instructions: puzzlet.instructions,
+        answer: puzzlet.answer,
+        answer_type: puzzlet.answer_type,
+        difficulty: puzzlet.difficulty,
+        status: puzzlet.status,
+        latitude: puzzlet.latitude,
+        longitude: puzzlet.longitude,
+        attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id),
+        accessibility_tags: puzzlet.accessibility_tags || [],
+        accessibility_notes: puzzlet.accessibility_notes,
+        warning: puzzlet.warning
+      },
+      Registrations.Poles.Regions.puzzlet_inheritance_payload(puzzlet)
+    )
   end
 
   defp render_comment(%PoleValidationComment{} = c) do

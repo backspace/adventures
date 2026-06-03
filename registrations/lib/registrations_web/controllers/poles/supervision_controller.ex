@@ -296,22 +296,25 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
   end
 
   defp render_puzzlet(%Puzzlet{} = puzzlet) do
-    %{
-      id: puzzlet.id,
-      instructions: puzzlet.instructions,
-      answer: puzzlet.answer,
-      answer_type: puzzlet.answer_type,
-      difficulty: puzzlet.difficulty,
-      status: puzzlet.status,
-      pole_id: puzzlet.pole_id,
-      latitude: puzzlet.latitude,
-      longitude: puzzlet.longitude,
-      creator_id: puzzlet.creator_id,
-      attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id),
-      accessibility_tags: puzzlet.accessibility_tags || [],
-      accessibility_notes: puzzlet.accessibility_notes,
-      warning: puzzlet.warning
-    }
+    Map.merge(
+      %{
+        id: puzzlet.id,
+        instructions: puzzlet.instructions,
+        answer: puzzlet.answer,
+        answer_type: puzzlet.answer_type,
+        difficulty: puzzlet.difficulty,
+        status: puzzlet.status,
+        pole_id: puzzlet.pole_id,
+        latitude: puzzlet.latitude,
+        longitude: puzzlet.longitude,
+        creator_id: puzzlet.creator_id,
+        attachment_ids: Registrations.Poles.list_puzzlet_attachment_ids(puzzlet.id),
+        accessibility_tags: puzzlet.accessibility_tags || [],
+        accessibility_notes: puzzlet.accessibility_notes,
+        warning: puzzlet.warning
+      },
+      Registrations.Poles.Regions.puzzlet_inheritance_payload(puzzlet)
+    )
   end
 
   defp render_pole_validation(%PoleValidation{} = v) do

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/models/pole.dart';
 import 'package:poles/models/poles_event.dart';
+import 'package:poles/models/region.dart';
 import 'package:poles/models/test_session.dart';
 import 'package:poles/models/validation.dart';
 import 'package:poles/services/user_service.dart';
@@ -169,6 +170,7 @@ class PolesApi {
     double? accuracyM,
     List<String>? accessibilityTags,
     String? accessibilityNotes,
+    String? regionId,
     String? warning,
   }) async {
     final response = await dio.post('/poles/drafts/puzzlets', data: {
@@ -181,6 +183,7 @@ class PolesApi {
       if (accuracyM != null) 'accuracy_m': accuracyM,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
+      if (regionId != null) 'region_id': regionId,
       if (warning != null) 'warning': warning,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
@@ -221,6 +224,8 @@ class PolesApi {
     double? accuracyM,
     List<String>? accessibilityTags,
     String? accessibilityNotes,
+    String? regionId,
+    bool clearRegion = false,
     String? warning,
   }) async {
     final response = await dio.patch('/poles/drafts/puzzlets/$id', data: {
@@ -233,6 +238,8 @@ class PolesApi {
       if (accuracyM != null) 'accuracy_m': accuracyM,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
+      if (clearRegion) 'region_id': null
+      else if (regionId != null) 'region_id': regionId,
       if (warning != null) 'warning': warning,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
@@ -243,6 +250,59 @@ class PolesApi {
 
   Future<void> deleteDraftPuzzlet(String id) =>
       dio.delete('/poles/drafts/puzzlets/$id');
+
+  Future<List<Region>> searchRegions({String? query}) async {
+    final response = await dio.get(
+      '/poles/regions',
+      queryParameters: query == null || query.isEmpty ? null : {'q': query},
+    );
+    final list = (response.data as Map<String, dynamic>)['regions'] as List;
+    return list
+        .map((r) => Region.fromJson(r as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<Region> getRegion(String id) async {
+    final response = await dio.get('/poles/regions/$id');
+    return Region.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<Region> createRegion({
+    required String name,
+    String? parentRegionId,
+    List<String>? accessibilityTags,
+    String? accessibilityNotes,
+    String? entryInstructions,
+  }) async {
+    final response = await dio.post('/poles/regions', data: {
+      'name': name,
+      if (parentRegionId != null) 'parent_region_id': parentRegionId,
+      if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
+      if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
+      if (entryInstructions != null) 'entry_instructions': entryInstructions,
+    });
+    return Region.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<Region> updateRegion(
+    String id, {
+    String? name,
+    String? parentRegionId,
+    bool clearParent = false,
+    List<String>? accessibilityTags,
+    String? accessibilityNotes,
+    String? entryInstructions,
+  }) async {
+    final response = await dio.patch('/poles/regions/$id', data: {
+      if (name != null) 'name': name,
+      if (clearParent) 'parent_region_id': null
+      else if (parentRegionId != null) 'parent_region_id': parentRegionId,
+      if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
+      if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
+      if (entryInstructions != null) 'entry_instructions': entryInstructions,
+    });
+    return Region.fromJson(response.data as Map<String, dynamic>);
+  }
 
   Future<String> uploadPoleAttachment({
     required String poleId,

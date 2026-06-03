@@ -4,6 +4,7 @@ defmodule RegistrationsWeb.Poles.DraftController do
   alias Registrations.Poles
   alias Registrations.Poles.Pole
   alias Registrations.Poles.Puzzlet
+  alias Registrations.Poles.Regions
 
   def index(conn, _params) do
     user = Pow.Plug.current_user(conn)
@@ -106,6 +107,7 @@ defmodule RegistrationsWeb.Poles.DraftController do
         "accuracy_m",
         "accessibility_tags",
         "accessibility_notes",
+        "region_id",
         "warning"
       ])
       |> Map.put("creator_id", user.id)
@@ -146,6 +148,7 @@ defmodule RegistrationsWeb.Poles.DraftController do
             "accuracy_m",
             "accessibility_tags",
             "accessibility_notes",
+            "region_id",
             "warning"
           ])
 
@@ -195,24 +198,27 @@ defmodule RegistrationsWeb.Poles.DraftController do
   end
 
   defp render_puzzlet(%Puzzlet{} = puzzlet) do
-    %{
-      id: puzzlet.id,
-      instructions: puzzlet.instructions,
-      answer: puzzlet.answer,
-      answer_type: puzzlet.answer_type,
-      difficulty: puzzlet.difficulty,
-      status: puzzlet.status,
-      pole_id: puzzlet.pole_id,
-      creator_id: puzzlet.creator_id,
-      latitude: puzzlet.latitude,
-      longitude: puzzlet.longitude,
-      accuracy_m: puzzlet.accuracy_m,
-      inserted_at: puzzlet.inserted_at,
-      attachment_ids: Poles.list_puzzlet_attachment_ids(puzzlet.id),
-      accessibility_tags: puzzlet.accessibility_tags || [],
-      accessibility_notes: puzzlet.accessibility_notes,
-      warning: puzzlet.warning
-    }
+    Map.merge(
+      %{
+        id: puzzlet.id,
+        instructions: puzzlet.instructions,
+        answer: puzzlet.answer,
+        answer_type: puzzlet.answer_type,
+        difficulty: puzzlet.difficulty,
+        status: puzzlet.status,
+        pole_id: puzzlet.pole_id,
+        creator_id: puzzlet.creator_id,
+        latitude: puzzlet.latitude,
+        longitude: puzzlet.longitude,
+        accuracy_m: puzzlet.accuracy_m,
+        inserted_at: puzzlet.inserted_at,
+        attachment_ids: Poles.list_puzzlet_attachment_ids(puzzlet.id),
+        accessibility_tags: puzzlet.accessibility_tags || [],
+        accessibility_notes: puzzlet.accessibility_notes,
+        warning: puzzlet.warning
+      },
+      Regions.puzzlet_inheritance_payload(puzzlet)
+    )
   end
 
   defp render_changeset_error(conn, changeset) do

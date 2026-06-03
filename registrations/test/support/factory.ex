@@ -112,4 +112,10 @@ defmodule Registrations.Factory do
       correct: false
     }
   end
+
+  def poles_region_factory do
+    %Registrations.Poles.Region{
+      name: sequence(:region_name, &"Region #{&1}")
+    }
+  end
 end

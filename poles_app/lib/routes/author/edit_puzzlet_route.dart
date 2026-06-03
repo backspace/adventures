@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/accessibility.dart';
 import 'package:poles/models/draft.dart';
+import 'package:poles/models/region.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/routes/nfc_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
@@ -11,6 +12,7 @@ import 'package:poles/widgets/accessibility_tags_field.dart';
 import 'package:poles/widgets/answer_type_field.dart';
 import 'package:poles/widgets/attachments_section.dart';
 import 'package:poles/widgets/location_card.dart';
+import 'package:poles/widgets/region_picker_field.dart';
 
 class EditPuzzletRoute extends StatefulWidget {
   final PolesApi api;
@@ -30,6 +32,8 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
   late List<String> _accessibilityTags;
   late int _difficulty;
   late AnswerType _answerType;
+  Region? _region;
+  bool _regionChanged = false;
 
   LocationFix? _newFix;
   String? _locationError;
@@ -58,6 +62,20 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
     _accessibilityTags = [...widget.puzzlet.accessibilityTags];
     _difficulty = widget.puzzlet.difficulty;
     _answerType = widget.puzzlet.answerType;
+
+    if (widget.puzzlet.regionId != null) {
+      _loadRegion(widget.puzzlet.regionId!);
+    }
+  }
+
+  Future<void> _loadRegion(String id) async {
+    try {
+      final region = await widget.api.getRegion(id);
+      if (!mounted) return;
+      setState(() => _region = region);
+    } catch (_) {
+      // Best-effort: leave _region null; the user can re-pick if needed.
+    }
   }
 
   Future<void> _reacquireLocation() async {
@@ -125,6 +143,8 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
         accuracyM: _newFix?.accuracyM,
         accessibilityTags: _accessibilityTags,
         accessibilityNotes: _accessibilityNotesController.text.trim(),
+        regionId: _regionChanged ? _region?.id : null,
+        clearRegion: _regionChanged && _region == null,
         warning: _warningController.text.trim(),
       );
       if (!mounted) return;
@@ -316,6 +336,24 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
               }),
             ),
             const SizedBox(height: 16),
+            RegionPickerField(
+              api: widget.api,
+              selected: _region,
+              onChanged: (r) => setState(() {
+                _region = r;
+                _regionChanged = true;
+                _dirty = true;
+              }),
+            ),
+            if (widget.puzzlet.inheritedStanzas.isNotEmpty ||
+                widget.puzzlet.inheritedTags.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _InheritedAccessibilitySection(
+                tags: widget.puzzlet.inheritedTags,
+                stanzas: widget.puzzlet.inheritedStanzas,
+              ),
+            ],
+            const SizedBox(height: 16),
             AccessibilityTagsField(
               selected: _accessibilityTags,
               primary: kPuzzletPrimaryTags,
@@ -355,6 +393,70 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
           ],
         ),
       ),
+      ),
+    );
+  }
+}
+
+/// Read-only display of accessibility content inherited from the puzzlet's
+/// region chain. Shown above the puzzlet's own editable fields so the
+/// author can see what's already covered and avoid duplicating it.
+class _InheritedAccessibilitySection extends StatelessWidget {
+  final List<String> tags;
+  final List<InheritedStanza> stanzas;
+
+  const _InheritedAccessibilitySection({
+    required this.tags,
+    required this.stanzas,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.info_outline, size: 16, color: theme.hintColor),
+              const SizedBox(width: 6),
+              Text('Inherited from region',
+                  style: theme.textTheme.labelMedium?.copyWith(color: theme.hintColor)),
+            ],
+          ),
+          if (tags.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              children: tags
+                  .map((t) => Chip(
+                        label: Text(t),
+                        visualDensity: VisualDensity.compact,
+                      ))
+                  .toList(),
+            ),
+          ],
+          for (final s in stanzas) ...[
+            const SizedBox(height: 8),
+            Text(s.source, style: theme.textTheme.labelSmall),
+            if (s.notes != null && s.notes!.isNotEmpty)
+              Text(s.notes!, style: theme.textTheme.bodySmall),
+            if (s.entryInstructions != null && s.entryInstructions!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text('Entry: ${s.entryInstructions!}',
+                    style: theme.textTheme.bodySmall),
+              ),
+          ],
+        ],
       ),
     );
   }

@@ -8,6 +8,7 @@ defmodule Registrations.Poles.Puzzlet do
   alias Registrations.Poles.Attempt
   alias Registrations.Poles.Capture
   alias Registrations.Poles.Pole
+  alias Registrations.Poles.Region
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "poles"
@@ -32,6 +33,7 @@ defmodule Registrations.Poles.Puzzlet do
     field(:warning, :string)
 
     belongs_to(:pole, Pole, type: :binary_id)
+    belongs_to(:region, Region, type: :binary_id)
     belongs_to(:creator, RegistrationsWeb.User, type: :binary_id, foreign_key: :creator_id)
 
     has_many(:attempts, Attempt, on_delete: :nilify_all)
@@ -50,6 +52,7 @@ defmodule Registrations.Poles.Puzzlet do
       :difficulty,
       :status,
       :pole_id,
+      :region_id,
       :creator_id,
       :latitude,
       :longitude,
@@ -65,6 +68,7 @@ defmodule Registrations.Poles.Puzzlet do
     |> validate_number(:accuracy_m, greater_than_or_equal_to: 0)
     |> validate_subset(:accessibility_tags, AccessibilityTag.all())
     |> assoc_constraint(:pole)
+    |> assoc_constraint(:region)
     |> assoc_constraint(:creator)
   end
 end
