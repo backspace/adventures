@@ -172,7 +172,7 @@ class _PromoteToRegionDialogState extends State<PromoteToRegionDialog> {
   }
 
   String _submitLabel(int n) {
-    if (_mode == _Mode.createNew) return 'Promote $n';
+    if (_mode == _Mode.createNew) return 'Group $n';
     return 'Move $n';
   }
 

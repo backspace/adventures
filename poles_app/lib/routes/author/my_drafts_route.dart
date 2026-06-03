@@ -174,7 +174,7 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
           TextButton.icon(
             onPressed: canPromote ? _promote : null,
             icon: const Icon(Icons.merge_type),
-            label: const Text('Promote'),
+            label: const Text('Group'),
           ),
         ],
       );
