@@ -512,6 +512,7 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
             ],
           ),
           subtitle: Text(
+            '${p.region != null ? 'In ${p.region!.breadcrumb} · ' : ''}'
             'Difficulty ${p.difficulty} · Answer: ${p.answer}',
           ),
           trailing: const Icon(Icons.chevron_right),

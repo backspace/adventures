@@ -1,3 +1,5 @@
+import 'package:poles/models/region.dart';
+
 enum ValidationStatus { assigned, inProgress, submitted, accepted, rejected }
 
 ValidationStatus _vsFromString(String? raw) => switch (raw) {
@@ -94,6 +96,7 @@ class ValidationPuzzletSummary {
   final double? latitude;
   final double? longitude;
   final List<String> attachmentIds;
+  final RegionSummary? region;
 
   ValidationPuzzletSummary({
     required this.id,
@@ -104,6 +107,7 @@ class ValidationPuzzletSummary {
     required this.latitude,
     required this.longitude,
     this.attachmentIds = const [],
+    this.region,
   });
 
   factory ValidationPuzzletSummary.fromJson(Map<String, dynamic> json) =>
@@ -116,6 +120,9 @@ class ValidationPuzzletSummary {
         latitude: (json['latitude'] as num?)?.toDouble(),
         longitude: (json['longitude'] as num?)?.toDouble(),
         attachmentIds: _attachmentIdsFromJson(json['attachment_ids']),
+        region: json['region'] == null
+            ? null
+            : RegionSummary.fromJson(json['region'] as Map<String, dynamic>),
       );
 }
 

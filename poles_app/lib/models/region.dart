@@ -55,6 +55,23 @@ class RegionAncestor {
       RegionAncestor(id: json['id'] as String, name: json['name'] as String);
 }
 
+/// Compact summary of a puzzlet's assigned region, embedded in puzzlet
+/// JSON payloads so listings can show "[in Server room]" without a
+/// separate roundtrip.
+class RegionSummary {
+  final String id;
+  final String name;
+  final String breadcrumb;
+
+  RegionSummary({required this.id, required this.name, required this.breadcrumb});
+
+  factory RegionSummary.fromJson(Map<String, dynamic> json) => RegionSummary(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        breadcrumb: json['breadcrumb'] as String? ?? json['name'] as String,
+      );
+}
+
 /// One row in the puzzlet's inherited accessibility view. `source` is the
 /// ancestor region's name; either `notes` or `entryInstructions` is non-null.
 class InheritedStanza {

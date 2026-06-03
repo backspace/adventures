@@ -297,6 +297,7 @@ class _PuzzletValidationsState extends State<_PuzzletValidations> {
             ],
           ),
           subtitle: Text(
+            '${v.puzzlet?.region != null ? 'In ${v.puzzlet!.region!.breadcrumb} · ' : ''}'
             'Difficulty ${v.puzzlet?.difficulty ?? '?'} · ${v.comments.length} comment${v.comments.length == 1 ? '' : 's'}',
           ),
           trailing: const Icon(Icons.chevron_right),

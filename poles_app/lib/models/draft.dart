@@ -144,6 +144,7 @@ class DraftPuzzlet {
   final DraftStatus status;
   final String? poleId;
   final String? regionId;
+  final RegionSummary? region;
   final String? creatorId;
   final double? latitude;
   final double? longitude;
@@ -166,6 +167,7 @@ class DraftPuzzlet {
     required this.status,
     required this.poleId,
     this.regionId,
+    this.region,
     required this.creatorId,
     required this.latitude,
     required this.longitude,
@@ -189,6 +191,9 @@ class DraftPuzzlet {
         status: _statusFromString(json['status'] as String?),
         poleId: json['pole_id'] as String?,
         regionId: json['region_id'] as String?,
+        region: json['region'] == null
+            ? null
+            : RegionSummary.fromJson(json['region'] as Map<String, dynamic>),
         creatorId: json['creator_id'] as String?,
         latitude: (json['latitude'] as num?)?.toDouble(),
         longitude: (json['longitude'] as num?)?.toDouble(),
@@ -227,6 +232,7 @@ class DraftPuzzlet {
         status: status,
         poleId: poleId,
         regionId: regionId,
+        region: region,
         creatorId: creatorId,
         latitude: latitude,
         longitude: longitude,

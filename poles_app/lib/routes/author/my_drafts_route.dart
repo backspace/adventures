@@ -4,6 +4,7 @@ import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/routes/author/edit_pole_route.dart';
 import 'package:poles/routes/author/edit_puzzlet_route.dart';
+import 'package:poles/routes/author/promote_to_region_dialog.dart';
 import 'package:poles/services/ui_preferences.dart';
 import 'package:poles/widgets/attachments_badge.dart';
 import 'package:poles/widgets/map_pin.dart';
@@ -23,6 +24,8 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
   MyDrafts? _drafts;
   String? _error;
   _DraftView _view = _DraftView.list;
+  bool _selectionMode = false;
+  final Set<String> _selectedPuzzletIds = <String>{};
 
   static const _prefKey = 'drafts';
 
@@ -107,40 +110,126 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
   int _puzzletsWithoutLocation(MyDrafts drafts) =>
       drafts.puzzlets.where((p) => p.latitude == null).length;
 
+  void _enterSelectionMode() {
+    setState(() {
+      _selectionMode = true;
+      _selectedPuzzletIds.clear();
+      // Selection only works in list view; force it.
+      _view = _DraftView.list;
+    });
+  }
+
+  void _exitSelectionMode() {
+    setState(() {
+      _selectionMode = false;
+      _selectedPuzzletIds.clear();
+    });
+  }
+
+  void _toggleSelected(String puzzletId) {
+    setState(() {
+      if (!_selectedPuzzletIds.add(puzzletId)) {
+        _selectedPuzzletIds.remove(puzzletId);
+      }
+    });
+  }
+
+  Future<void> _promote() async {
+    final drafts = _drafts;
+    if (drafts == null) return;
+    final selected = drafts.puzzlets
+        .where((p) => _selectedPuzzletIds.contains(p.id))
+        .toList(growable: false);
+    if (selected.length < 2) return;
+
+    final result = await showDialog<PromoteResult>(
+      context: context,
+      builder: (_) =>
+          PromoteToRegionDialog(api: widget.api, puzzlets: selected),
+    );
+    if (!mounted) return;
+    if (result == null) return;
+
+    final failed = result.failedPuzzletIds.length;
+    final msg = failed == 0
+        ? 'Created region "${result.region.name}" and assigned ${result.assignedCount} puzzlet${result.assignedCount == 1 ? '' : 's'}.'
+        : 'Region created. ${result.assignedCount} assigned; $failed failed.';
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    _exitSelectionMode();
+    await _load();
+  }
+
+  PreferredSizeWidget _appBar() {
+    if (_selectionMode) {
+      final canPromote = _selectedPuzzletIds.length >= 2;
+      return AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: _exitSelectionMode,
+        ),
+        title: Text(_selectedPuzzletIds.isEmpty
+            ? 'Select puzzlets'
+            : '${_selectedPuzzletIds.length} selected'),
+        actions: [
+          TextButton.icon(
+            onPressed: canPromote ? _promote : null,
+            icon: const Icon(Icons.merge_type),
+            label: const Text('Promote'),
+          ),
+        ],
+      );
+    }
+    return AppBar(
+      title: const Text('My drafts'),
+      actions: [
+        IconButton(
+          tooltip: 'Select puzzlets to group into a region',
+          onPressed: _enterSelectionMode,
+          icon: const Icon(Icons.check_circle_outline),
+        ),
+        IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(48),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: SegmentedButton<_DraftView>(
+            segments: const [
+              ButtonSegment(
+                  value: _DraftView.list,
+                  label: Text('List'),
+                  icon: Icon(Icons.list)),
+              ButtonSegment(
+                  value: _DraftView.map,
+                  label: Text('Map'),
+                  icon: Icon(Icons.map)),
+            ],
+            selected: {_view},
+            onSelectionChanged: (set) => _setView(set.first),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final drafts = _drafts;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My drafts'),
-        actions: [IconButton(onPressed: _load, icon: const Icon(Icons.refresh))],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: SegmentedButton<_DraftView>(
-              segments: const [
-                ButtonSegment(
-                    value: _DraftView.list,
-                    label: Text('List'),
-                    icon: Icon(Icons.list)),
-                ButtonSegment(
-                    value: _DraftView.map,
-                    label: Text('Map'),
-                    icon: Icon(Icons.map)),
-              ],
-              selected: {_view},
-              onSelectionChanged: (set) => _setView(set.first),
-            ),
-          ),
-        ),
-      ),
+      appBar: _appBar(),
       body: _error != null
           ? Center(child: Text(_error!))
           : drafts == null
               ? const Center(child: CircularProgressIndicator())
               : _view == _DraftView.list
-                  ? _ListView(drafts: drafts, api: widget.api, onChanged: _load)
+                  ? _ListView(
+                      drafts: drafts,
+                      api: widget.api,
+                      onChanged: _load,
+                      selectionMode: _selectionMode,
+                      selectedPuzzletIds: _selectedPuzzletIds,
+                      onTogglePuzzletSelected: _toggleSelected,
+                    )
                   : _MapView(
                       pins: _pins(drafts),
                       orphanCount: _puzzletsWithoutLocation(drafts),
@@ -153,8 +242,18 @@ class _ListView extends StatelessWidget {
   final MyDrafts drafts;
   final PolesApi api;
   final Future<void> Function() onChanged;
+  final bool selectionMode;
+  final Set<String> selectedPuzzletIds;
+  final ValueChanged<String>? onTogglePuzzletSelected;
 
-  const _ListView({required this.drafts, required this.api, required this.onChanged});
+  const _ListView({
+    required this.drafts,
+    required this.api,
+    required this.onChanged,
+    this.selectionMode = false,
+    this.selectedPuzzletIds = const <String>{},
+    this.onTogglePuzzletSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -170,15 +269,23 @@ class _ListView extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
             child: Text('Puzzlets', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-        ...drafts.puzzlets
-            .map((p) => _PuzzletTile(puzzlet: p, api: api, onChanged: onChanged)),
-        if (drafts.poles.isNotEmpty)
+        ...drafts.puzzlets.map((p) => _PuzzletTile(
+              puzzlet: p,
+              api: api,
+              onChanged: onChanged,
+              selectionMode: selectionMode,
+              selected: selectedPuzzletIds.contains(p.id),
+              onToggleSelected: onTogglePuzzletSelected,
+            )),
+        // Poles are hidden in selection mode — promotion is puzzlet-only.
+        if (!selectionMode && drafts.poles.isNotEmpty)
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
             child: Text('Poles', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-        ...drafts.poles
-            .map((p) => _PoleTile(pole: p, api: api, onChanged: onChanged)),
+        if (!selectionMode)
+          ...drafts.poles
+              .map((p) => _PoleTile(pole: p, api: api, onChanged: onChanged)),
       ],
     );
   }
@@ -283,12 +390,31 @@ class _PuzzletTile extends StatelessWidget {
   final DraftPuzzlet puzzlet;
   final PolesApi api;
   final Future<void> Function() onChanged;
-  const _PuzzletTile({required this.puzzlet, required this.api, required this.onChanged});
+  final bool selectionMode;
+  final bool selected;
+  final ValueChanged<String>? onToggleSelected;
+
+  const _PuzzletTile({
+    required this.puzzlet,
+    required this.api,
+    required this.onChanged,
+    this.selectionMode = false,
+    this.selected = false,
+    this.onToggleSelected,
+  });
 
   @override
   Widget build(BuildContext context) {
     final editable = puzzlet.status == DraftStatus.draft;
-    return ListTile(
+    final tile = ListTile(
+      leading: selectionMode
+          ? Checkbox(
+              value: selected,
+              onChanged: editable
+                  ? (_) => onToggleSelected?.call(puzzlet.id)
+                  : null,
+            )
+          : null,
       title: Row(
         children: [
           Expanded(
@@ -306,22 +432,30 @@ class _PuzzletTile extends StatelessWidget {
         ],
       ),
       subtitle: Text(
+        '${puzzlet.region != null ? 'In ${puzzlet.region!.breadcrumb} · ' : ''}'
         'Answer: ${puzzlet.answer} · Difficulty ${puzzlet.difficulty}'
         '${puzzlet.poleId == null ? ' · unassigned' : ''}'
         '${puzzlet.latitude != null ? '\n${puzzlet.latitude!.toStringAsFixed(5)}, ${puzzlet.longitude!.toStringAsFixed(5)}${puzzlet.accuracyM != null ? ' · ±${puzzlet.accuracyM!.toStringAsFixed(0)} m' : ''}' : ''}',
       ),
-      isThreeLine: puzzlet.latitude != null,
-      trailing: editable ? const Icon(Icons.chevron_right) : null,
-      onTap: editable
-          ? () async {
-              final changed = await Navigator.of(context).push<bool>(
-                MaterialPageRoute(
-                  builder: (_) => EditPuzzletRoute(api: api, puzzlet: puzzlet),
-                ),
-              );
-              if (changed == true) await onChanged();
-            }
-          : null,
+      isThreeLine: puzzlet.latitude != null || puzzlet.region != null,
+      trailing: selectionMode
+          ? null
+          : editable
+              ? const Icon(Icons.chevron_right)
+              : null,
+      onTap: selectionMode
+          ? (editable ? () => onToggleSelected?.call(puzzlet.id) : null)
+          : (editable
+              ? () async {
+                  final changed = await Navigator.of(context).push<bool>(
+                    MaterialPageRoute(
+                      builder: (_) => EditPuzzletRoute(api: api, puzzlet: puzzlet),
+                    ),
+                  );
+                  if (changed == true) await onChanged();
+                }
+              : null),
     );
+    return tile;
   }
 }

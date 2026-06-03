@@ -185,12 +185,22 @@ defmodule Registrations.Poles.Regions do
   accessibility info. Safe to call when `puzzlet.region_id` is nil.
   """
   def puzzlet_inheritance_payload(%Puzzlet{region_id: region_id}) do
-    %{inherited_tags: tags, inherited_stanzas: stanzas} = inherited(region_id)
+    chain = ancestor_chain(region_id)
+    %{inherited_tags: tags, inherited_stanzas: stanzas} = inherited(chain)
 
     %{
       region_id: region_id,
+      region: region_summary(chain),
       inherited_tags: tags,
       inherited_stanzas: stanzas
     }
+  end
+
+  defp region_summary([]), do: nil
+
+  defp region_summary(chain) when is_list(chain) do
+    self = List.last(chain)
+    breadcrumb = chain |> Enum.map(& &1.name) |> Enum.join(" > ")
+    %{id: self.id, name: self.name, breadcrumb: breadcrumb}
   end
 end
