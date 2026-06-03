@@ -6,16 +6,23 @@ import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/accessibility.dart';
 import 'package:poles/models/region.dart';
 import 'package:poles/routes/author/edit_puzzlet_route.dart';
+import 'package:poles/routes/author/promote_to_region_dialog.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/routes/nfc_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
+import 'package:poles/services/geo.dart';
 import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/accessibility_tags_field.dart';
 import 'package:poles/widgets/answer_type_field.dart';
 import 'package:poles/widgets/location_card.dart';
 import 'package:poles/widgets/pending_photos_section.dart';
 import 'package:poles/widgets/region_picker_field.dart';
+
+/// Distance in meters within which other region-less puzzlets are
+/// considered "nearby" enough to suggest grouping with the one being
+/// captured. Tuned for the rough scale of one building's footprint.
+const double _kNearbyRadiusM = 30;
 
 class CapturePuzzletRoute extends StatefulWidget {
   final PolesApi api;
@@ -155,6 +162,17 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
       final fresh = created.copyWith(
         attachmentIds: [...created.attachmentIds, ...uploadedIds],
       );
+
+      // Geographic nudge: if this puzzlet has no region, look for other
+      // region-less puzzlets the same author has placed nearby and offer
+      // to group them. Skipped silently when the new puzzlet already has
+      // a region, when nothing nearby qualifies, or when the lookup
+      // fails — we don't want to block the capture flow on this.
+      if (_region == null) {
+        await _maybeOfferNearbyGrouping(fresh);
+        if (!mounted) return;
+      }
+
       final message = photoErrors.isEmpty
           ? 'Puzzlet submitted as draft.'
           : 'Puzzlet saved; ${photoErrors.length} photo(s) failed to upload.';
@@ -187,6 +205,69 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Submit failed: $e')));
     }
+  }
+
+  /// After a puzzlet without a region is created, look for other
+  /// region-less puzzlets the author placed nearby. If any qualify, offer
+  /// to group them all (including the new one) into a region via the
+  /// shared promotion dialog. Best-effort: any failure is swallowed so it
+  /// can't break the capture flow.
+  Future<void> _maybeOfferNearbyGrouping(DraftPuzzlet fresh) async {
+    if (fresh.latitude == null || fresh.longitude == null) return;
+    final List<DraftPuzzlet> nearby;
+    try {
+      final drafts = await widget.api.listMyDrafts();
+      nearby = drafts.puzzlets.where((p) {
+        if (p.id == fresh.id) return false;
+        if (p.regionId != null) return false;
+        if (p.latitude == null || p.longitude == null) return false;
+        return distanceMeters(
+              fresh.latitude!,
+              fresh.longitude!,
+              p.latitude!,
+              p.longitude!,
+            ) <=
+            _kNearbyRadiusM;
+      }).toList(growable: false);
+    } catch (_) {
+      return;
+    }
+
+    if (nearby.isEmpty || !mounted) return;
+
+    final group = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Group nearby puzzlets?'),
+        content: Text(
+          '${nearby.length} other puzzlet${nearby.length == 1 ? '' : 's'} '
+          'you\'ve drafted within ${_kNearbyRadiusM.toStringAsFixed(0)}m '
+          '${nearby.length == 1 ? 'has' : 'have'} no region. '
+          'Group ${nearby.length == 1 ? 'it' : 'them'} together with this '
+          'one into a new or existing region?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Group'),
+          ),
+        ],
+      ),
+    );
+
+    if (group != true || !mounted) return;
+
+    await showDialog<PromoteResult>(
+      context: context,
+      builder: (_) => PromoteToRegionDialog(
+        api: widget.api,
+        puzzlets: [fresh, ...nearby],
+      ),
+    );
   }
 
   @override
