@@ -140,7 +140,7 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
     final selected = drafts.puzzlets
         .where((p) => _selectedPuzzletIds.contains(p.id))
         .toList(growable: false);
-    if (selected.length < 2) return;
+    if (selected.isEmpty) return;
 
     final result = await showDialog<PromoteResult>(
       context: context,
@@ -161,7 +161,7 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
 
   PreferredSizeWidget _appBar() {
     if (_selectionMode) {
-      final canPromote = _selectedPuzzletIds.length >= 2;
+      final canPromote = _selectedPuzzletIds.isNotEmpty;
       return AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close),
