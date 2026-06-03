@@ -31,6 +31,15 @@ const Set<String> kPuzzletPrimaryTags = {
   'requires_vision',
 };
 
+/// Tags shown first for a region. Regions are physical containers, so the
+/// location-related tags lead.
+const Set<String> kRegionPrimaryTags = {
+  'stairs',
+  'steep',
+  'narrow_path',
+  'dim_lighting',
+};
+
 /// Human-readable label for a tag value.
 String accessibilityTagLabel(String tag) => switch (tag) {
       'stairs' => 'Stairs',
