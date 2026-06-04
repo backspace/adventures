@@ -8,19 +8,29 @@ Future<ValidatorUser?> pickValidator(
   BuildContext context, {
   required PolesApi api,
   String? excludeUserId,
+  String? currentValidatorId,
 }) {
   return showModalBottomSheet<ValidatorUser>(
     context: context,
     isScrollControlled: true,
-    builder: (ctx) => _ValidatorPicker(api: api, excludeUserId: excludeUserId),
+    builder: (ctx) => _ValidatorPicker(
+      api: api,
+      excludeUserId: excludeUserId,
+      currentValidatorId: currentValidatorId,
+    ),
   );
 }
 
 class _ValidatorPicker extends StatefulWidget {
   final PolesApi api;
   final String? excludeUserId;
+  final String? currentValidatorId;
 
-  const _ValidatorPicker({required this.api, this.excludeUserId});
+  const _ValidatorPicker({
+    required this.api,
+    this.excludeUserId,
+    this.currentValidatorId,
+  });
 
   @override
   State<_ValidatorPicker> createState() => _ValidatorPickerState();
@@ -73,7 +83,13 @@ class _ValidatorPickerState extends State<_ValidatorPicker> {
                               itemCount: _list!.length,
                               itemBuilder: (_, i) {
                                 final v = _list![i];
+                                final isCurrent =
+                                    v.id == widget.currentValidatorId;
                                 return ListTile(
+                                  leading: isCurrent
+                                      ? const Icon(Icons.check,
+                                          color: Colors.green)
+                                      : const SizedBox(width: 24),
                                   title: Text(v.name ?? v.email),
                                   subtitle: v.name == null ? null : Text(v.email),
                                   onTap: () => Navigator.of(context).pop(v),

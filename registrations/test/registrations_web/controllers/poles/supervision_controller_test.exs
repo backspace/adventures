@@ -257,5 +257,106 @@ defmodule RegistrationsWeb.Poles.SupervisionControllerTest do
       assert is_map(body["pole_validations"])
       assert is_map(body["puzzlet_validations"])
     end
+
+    test "reassign swaps the validator on an in-flight validation",
+         %{conn: conn, supervisor: supervisor} do
+      v1 = insert(:user, email: unique_email("v1"))
+      Accounts.assign_role(v1.id, "validator")
+      v2 = insert(:user, email: unique_email("v2"))
+      Accounts.assign_role(v2.id, "validator")
+      author = insert(:user, email: unique_email("a"))
+      pole = insert(:pole, creator: author, status: :draft)
+
+      {:ok, validation} =
+        Validations.assign_pole_validation(pole.id, v1.id, supervisor.id)
+
+      body =
+        conn
+        |> patch("/poles/supervision/pole-validations/#{validation.id}/validator", %{
+          "validator_id" => v2.id
+        })
+        |> json_response(200)
+
+      assert body["validator_id"] == v2.id
+      assert body["assigned_by_id"] == supervisor.id
+    end
+
+    test "reassign refuses once the validation is accepted",
+         %{conn: conn, supervisor: supervisor} do
+      v1 = insert(:user, email: unique_email("v1"))
+      Accounts.assign_role(v1.id, "validator")
+      v2 = insert(:user, email: unique_email("v2"))
+      Accounts.assign_role(v2.id, "validator")
+      author = insert(:user, email: unique_email("a"))
+      pole = insert(:pole, creator: author, status: :draft)
+
+      {:ok, validation} =
+        Validations.assign_pole_validation(pole.id, v1.id, supervisor.id)
+
+      {:ok, validation} =
+        Validations.transition_pole_validation_as_validator(validation, v1.id, "in_progress")
+
+      {:ok, validation} =
+        Validations.transition_pole_validation_as_validator(validation, v1.id, "submitted")
+
+      {:ok, _} = Validations.accept_pole_validation(validation)
+
+      body =
+        conn
+        |> patch("/poles/supervision/pole-validations/#{validation.id}/validator", %{
+          "validator_id" => v2.id
+        })
+        |> json_response(409)
+
+      assert body["error"]["code"] == "terminal_status"
+    end
+
+    test "unassign deletes a fresh assignment and flips pole back to draft",
+         %{conn: conn, supervisor: supervisor} do
+      validator = insert(:user, email: unique_email("v"))
+      Accounts.assign_role(validator.id, "validator")
+      author = insert(:user, email: unique_email("a"))
+      pole = insert(:pole, creator: author, status: :draft)
+
+      {:ok, validation} =
+        Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+
+      assert Repo.get!(Pole, pole.id).status == :in_review
+
+      conn
+      |> delete("/poles/supervision/pole-validations/#{validation.id}")
+      |> response(204)
+
+      refute Validations.get_pole_validation(validation.id)
+      assert Repo.get!(Pole, pole.id).status == :draft
+    end
+
+    test "unassign refuses once a comment has been added",
+         %{conn: conn, supervisor: supervisor} do
+      validator = insert(:user, email: unique_email("v"))
+      Accounts.assign_role(validator.id, "validator")
+      author = insert(:user, email: unique_email("a"))
+      pole = insert(:pole, creator: author, status: :draft)
+
+      {:ok, validation} =
+        Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+
+      {:ok, validation} =
+        Validations.transition_pole_validation_as_validator(validation, validator.id, "in_progress")
+
+      {:ok, _} =
+        Validations.add_pole_comment(validation, validator.id, %{
+          "field" => "label",
+          "comment" => "x"
+        })
+
+      body =
+        conn
+        |> delete("/poles/supervision/pole-validations/#{validation.id}")
+        |> json_response(409)
+
+      assert body["error"]["code"] == "not_unassignable"
+      assert Validations.get_pole_validation(validation.id)
+    end
   end
 end

@@ -299,6 +299,20 @@ defmodule RegistrationsWeb.Router do
     patch("/pole-validations/:id", SupervisionController, :update_pole_validation)
     patch("/puzzlet-validations/:id", SupervisionController, :update_puzzlet_validation)
 
+    patch(
+      "/pole-validations/:id/validator",
+      SupervisionController,
+      :reassign_pole_validation
+    )
+    patch(
+      "/puzzlet-validations/:id/validator",
+      SupervisionController,
+      :reassign_puzzlet_validation
+    )
+
+    delete("/pole-validations/:id", SupervisionController, :unassign_pole_validation)
+    delete("/puzzlet-validations/:id", SupervisionController, :unassign_puzzlet_validation)
+
     patch("/pole-comments/:id", SupervisionController, :update_pole_comment)
     patch("/puzzlet-comments/:id", SupervisionController, :update_puzzlet_comment)
 

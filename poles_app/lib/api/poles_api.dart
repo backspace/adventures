@@ -486,6 +486,38 @@ class PolesApi {
         response.data as Map<String, dynamic>);
   }
 
+  /// Swap the validator on an in-flight pole validation. Throws a
+  /// DioException with 409 if the validation has already been finalized.
+  Future<PoleValidationModel> reassignPoleValidation(
+      String validationId, String validatorId) async {
+    final response = await dio.patch(
+      '/poles/supervision/pole-validations/$validationId/validator',
+      data: {'validator_id': validatorId},
+    );
+    return PoleValidationModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<PuzzletValidationModel> reassignPuzzletValidation(
+      String validationId, String validatorId) async {
+    final response = await dio.patch(
+      '/poles/supervision/puzzlet-validations/$validationId/validator',
+      data: {'validator_id': validatorId},
+    );
+    return PuzzletValidationModel.fromJson(
+        response.data as Map<String, dynamic>);
+  }
+
+  /// Tear down a fresh assignment (the supervisor's "undo"). Backend
+  /// refuses with 409 if the validation has progressed past the initial
+  /// assigned state.
+  Future<void> unassignPoleValidation(String validationId) async {
+    await dio.delete('/poles/supervision/pole-validations/$validationId');
+  }
+
+  Future<void> unassignPuzzletValidation(String validationId) async {
+    await dio.delete('/poles/supervision/puzzlet-validations/$validationId');
+  }
+
   Future<PoleValidationModel> supervisorTransitionPoleValidation(
       String id, String status) async {
     final response = await dio.patch(

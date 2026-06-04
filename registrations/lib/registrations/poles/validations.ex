@@ -30,7 +30,7 @@ defmodule Registrations.Poles.Validations do
       with {:ok, validation} <- Repo.insert(changeset),
            pole <- Repo.get!(Pole, pole_id),
            {:ok, _} <- maybe_flip_pole(pole, :in_review) do
-        validation
+        preload_validator(validation)
       else
         {:error, changeset} -> Repo.rollback(changeset)
       end
@@ -50,11 +50,19 @@ defmodule Registrations.Poles.Validations do
       with {:ok, validation} <- Repo.insert(changeset),
            puzzlet <- Repo.get!(Puzzlet, puzzlet_id),
            {:ok, _} <- maybe_flip_puzzlet(puzzlet, :in_review) do
-        validation
+        preload_validator(validation)
       else
         {:error, changeset} -> Repo.rollback(changeset)
       end
     end)
+  end
+
+  # User lives in the `public` schema. Without an explicit prefix the
+  # association inherits the parent's `poles` prefix and Ecto tries to
+  # read from `poles.users` (which doesn't exist).
+  defp preload_validator(validation) do
+    user_query = from(u in RegistrationsWeb.User, prefix: "public")
+    Repo.preload(validation, [validator: user_query], force: true)
   end
 
   defp maybe_flip_pole(%Pole{status: :draft} = pole, new_status) do
@@ -68,6 +76,115 @@ defmodule Registrations.Poles.Validations do
   end
 
   defp maybe_flip_puzzlet(puzzlet, _), do: {:ok, puzzlet}
+
+  @doc """
+  Swap the validator on an existing validation in place. Permitted only
+  while the validation is still in flight (`assigned` or `in_progress`);
+  once submitted/accepted/rejected the validation is the validator's
+  artifact and must be resolved through the lifecycle instead.
+
+  Comments stay attached — they're about the entity, not the validator.
+  """
+  def reassign_pole_validation(%PoleValidation{} = v, new_validator_id, assigner_id) do
+    do_reassign(v, new_validator_id, assigner_id, &PoleValidation.changeset/2)
+  end
+
+  def reassign_puzzlet_validation(%PuzzletValidation{} = v, new_validator_id, assigner_id) do
+    do_reassign(v, new_validator_id, assigner_id, &PuzzletValidation.changeset/2)
+  end
+
+  defp do_reassign(validation, new_validator_id, assigner_id, changeset_fun) do
+    if validation.status in ["assigned", "in_progress"] do
+      result =
+        validation
+        |> changeset_fun.(%{
+          validator_id: new_validator_id,
+          assigned_by_id: assigner_id
+        })
+        |> Repo.update()
+
+      case result do
+        {:ok, updated} -> {:ok, preload_validator(updated)}
+        err -> err
+      end
+    else
+      {:error, :terminal_status}
+    end
+  end
+
+  @doc """
+  Tear down a fresh assignment (for the supervisor's "undo" affordance).
+  Allowed only while the validation has just been assigned and has no
+  comments yet — anything beyond that represents validator work we don't
+  want to silently discard. If unassigning leaves the parent pole/puzzlet
+  with no validations at all, its status flips back to :draft so the
+  author can pick it up again.
+  """
+  def unassign_pole_validation(%PoleValidation{} = v) do
+    if unassignable?(v) do
+      Repo.transaction(fn ->
+        {:ok, _} = Repo.delete(v)
+        maybe_revert_pole_status(v.pole_id)
+        :ok
+      end)
+    else
+      {:error, :not_unassignable}
+    end
+  end
+
+  def unassign_puzzlet_validation(%PuzzletValidation{} = v) do
+    if unassignable?(v) do
+      Repo.transaction(fn ->
+        {:ok, _} = Repo.delete(v)
+        maybe_revert_puzzlet_status(v.puzzlet_id)
+        :ok
+      end)
+    else
+      {:error, :not_unassignable}
+    end
+  end
+
+  defp unassignable?(%{status: "assigned"} = v) do
+    case v do
+      %PoleValidation{} ->
+        not Repo.exists?(
+          from(c in Registrations.Poles.Validations.PoleValidationComment,
+            where: c.pole_validation_id == ^v.id
+          )
+        )
+
+      %PuzzletValidation{} ->
+        not Repo.exists?(
+          from(c in Registrations.Poles.Validations.PuzzletValidationComment,
+            where: c.puzzlet_validation_id == ^v.id
+          )
+        )
+    end
+  end
+
+  defp unassignable?(_), do: false
+
+  defp maybe_revert_pole_status(pole_id) do
+    others_exist? =
+      Repo.exists?(from(v in PoleValidation, where: v.pole_id == ^pole_id))
+
+    pole = Repo.get!(Pole, pole_id)
+
+    if not others_exist? and pole.status == :in_review do
+      pole |> Ecto.Changeset.change(status: :draft) |> Repo.update!()
+    end
+  end
+
+  defp maybe_revert_puzzlet_status(puzzlet_id) do
+    others_exist? =
+      Repo.exists?(from(v in PuzzletValidation, where: v.puzzlet_id == ^puzzlet_id))
+
+    puzzlet = Repo.get!(Puzzlet, puzzlet_id)
+
+    if not others_exist? and puzzlet.status == :in_review do
+      puzzlet |> Ecto.Changeset.change(status: :draft) |> Repo.update!()
+    end
+  end
 
   # ──────── Validator queries ────────────────────────────────────────
 
@@ -95,9 +212,17 @@ defmodule Registrations.Poles.Validations do
   def get_puzzlet_validation(id), do: Repo.get(PuzzletValidation, id) |> preload_puzzlet_validation()
 
   defp preload_pole_validation(nil), do: nil
-  defp preload_pole_validation(v), do: Repo.preload(v, [:pole, :comments])
+  defp preload_pole_validation(v) do
+    v
+    |> Repo.preload([:pole, :comments])
+    |> preload_validator()
+  end
   defp preload_puzzlet_validation(nil), do: nil
-  defp preload_puzzlet_validation(v), do: Repo.preload(v, [:puzzlet, :comments])
+  defp preload_puzzlet_validation(v) do
+    v
+    |> Repo.preload([:puzzlet, :comments])
+    |> preload_validator()
+  end
 
   # ──────── Validator status transitions ─────────────────────────────
 

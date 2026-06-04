@@ -14,11 +14,12 @@ Future<PinActionResult> showPolePinSheet(
   BuildContext context, {
   required PolesApi api,
   required DraftPole pole,
+  Future<void> Function()? onUndone,
 }) async {
   final result = await showModalBottomSheet<PinActionResult>(
     context: context,
     isScrollControlled: true,
-    builder: (ctx) => _PolePinSheet(api: api, pole: pole),
+    builder: (ctx) => _PolePinSheet(api: api, pole: pole, onUndone: onUndone),
   );
   return result ?? PinActionResult.unchanged;
 }
@@ -27,11 +28,13 @@ Future<PinActionResult> showPuzzletPinSheet(
   BuildContext context, {
   required PolesApi api,
   required DraftPuzzlet puzzlet,
+  Future<void> Function()? onUndone,
 }) async {
   final result = await showModalBottomSheet<PinActionResult>(
     context: context,
     isScrollControlled: true,
-    builder: (ctx) => _PuzzletPinSheet(api: api, puzzlet: puzzlet),
+    builder: (ctx) =>
+        _PuzzletPinSheet(api: api, puzzlet: puzzlet, onUndone: onUndone),
   );
   return result ?? PinActionResult.unchanged;
 }
@@ -39,7 +42,9 @@ Future<PinActionResult> showPuzzletPinSheet(
 class _PolePinSheet extends StatefulWidget {
   final PolesApi api;
   final DraftPole pole;
-  const _PolePinSheet({required this.api, required this.pole});
+  final Future<void> Function()? onUndone;
+
+  const _PolePinSheet({required this.api, required this.pole, this.onUndone});
 
   @override
   State<_PolePinSheet> createState() => _PolePinSheetState();
@@ -54,16 +59,36 @@ class _PolePinSheetState extends State<_PolePinSheet> {
       api: widget.api,
       excludeUserId: widget.pole.creatorId,
     );
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
 
     setState(() => _busy = true);
     try {
-      await widget.api.assignPoleValidation(widget.pole.id, picked.id);
+      final validation =
+          await widget.api.assignPoleValidation(widget.pole.id, picked.id);
       if (!mounted) return;
+      // Capture before pop: the sheet's BuildContext won't be valid for
+      // the snackbar action callback, but ScaffoldMessenger/Api/onUndone
+      // references survive.
+      final api = widget.api;
+      final messenger = ScaffoldMessenger.of(context);
+      final onUndone = widget.onUndone;
       Navigator.of(context).pop(PinActionResult.changed);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Assigned to ${picked.name ?? picked.email}.')),
-      );
+      messenger.showSnackBar(SnackBar(
+        content: Text('Assigned to ${picked.name ?? picked.email}.'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () async {
+            try {
+              await api.unassignPoleValidation(validation.id);
+              await onUndone?.call();
+            } on DioException catch (e) {
+              final detail = e.response?.data?['error']?['detail'] ?? e.message;
+              messenger.showSnackBar(
+                  SnackBar(content: Text('Undo failed: $detail')));
+            }
+          },
+        ),
+      ));
     } on DioException catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
@@ -155,7 +180,13 @@ class _PolePinSheetState extends State<_PolePinSheet> {
 class _PuzzletPinSheet extends StatefulWidget {
   final PolesApi api;
   final DraftPuzzlet puzzlet;
-  const _PuzzletPinSheet({required this.api, required this.puzzlet});
+  final Future<void> Function()? onUndone;
+
+  const _PuzzletPinSheet({
+    required this.api,
+    required this.puzzlet,
+    this.onUndone,
+  });
 
   @override
   State<_PuzzletPinSheet> createState() => _PuzzletPinSheetState();
@@ -170,16 +201,33 @@ class _PuzzletPinSheetState extends State<_PuzzletPinSheet> {
       api: widget.api,
       excludeUserId: widget.puzzlet.creatorId,
     );
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
 
     setState(() => _busy = true);
     try {
-      await widget.api.assignPuzzletValidation(widget.puzzlet.id, picked.id);
+      final validation =
+          await widget.api.assignPuzzletValidation(widget.puzzlet.id, picked.id);
       if (!mounted) return;
+      final api = widget.api;
+      final messenger = ScaffoldMessenger.of(context);
+      final onUndone = widget.onUndone;
       Navigator.of(context).pop(PinActionResult.changed);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Assigned to ${picked.name ?? picked.email}.')),
-      );
+      messenger.showSnackBar(SnackBar(
+        content: Text('Assigned to ${picked.name ?? picked.email}.'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () async {
+            try {
+              await api.unassignPuzzletValidation(validation.id);
+              await onUndone?.call();
+            } on DioException catch (e) {
+              final detail = e.response?.data?['error']?['detail'] ?? e.message;
+              messenger.showSnackBar(
+                  SnackBar(content: Text('Undo failed: $detail')));
+            }
+          },
+        ),
+      ));
     } on DioException catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);

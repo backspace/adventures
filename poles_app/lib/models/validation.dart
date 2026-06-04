@@ -132,6 +132,7 @@ class PoleValidationModel {
   final String? overallNotes;
   final String poleId;
   final String validatorId;
+  final ValidatorUser? validator;
   final String? assignedById;
   final ValidationPoleSummary? pole;
   final List<ValidationComment> comments;
@@ -142,6 +143,7 @@ class PoleValidationModel {
     required this.overallNotes,
     required this.poleId,
     required this.validatorId,
+    this.validator,
     required this.assignedById,
     required this.pole,
     required this.comments,
@@ -154,6 +156,9 @@ class PoleValidationModel {
         overallNotes: json['overall_notes'] as String?,
         poleId: json['pole_id'] as String,
         validatorId: json['validator_id'] as String,
+        validator: json['validator'] == null
+            ? null
+            : ValidatorUser.fromJson(json['validator'] as Map<String, dynamic>),
         assignedById: json['assigned_by_id'] as String?,
         pole: json['pole'] == null
             ? null
@@ -170,6 +175,7 @@ class PuzzletValidationModel {
   final String? overallNotes;
   final String puzzletId;
   final String validatorId;
+  final ValidatorUser? validator;
   final String? assignedById;
   final ValidationPuzzletSummary? puzzlet;
   final List<ValidationComment> comments;
@@ -180,6 +186,7 @@ class PuzzletValidationModel {
     required this.overallNotes,
     required this.puzzletId,
     required this.validatorId,
+    this.validator,
     required this.assignedById,
     required this.puzzlet,
     required this.comments,
@@ -192,6 +199,9 @@ class PuzzletValidationModel {
         overallNotes: json['overall_notes'] as String?,
         puzzletId: json['puzzlet_id'] as String,
         validatorId: json['validator_id'] as String,
+        validator: json['validator'] == null
+            ? null
+            : ValidatorUser.fromJson(json['validator'] as Map<String, dynamic>),
         assignedById: json['assigned_by_id'] as String?,
         puzzlet: json['puzzlet'] == null
             ? null

@@ -106,6 +106,94 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
     end
   end
 
+  # ──────── Change validator on an in-flight validation ────────────
+
+  def reassign_pole_validation(conn, %{"id" => id, "validator_id" => new_validator_id}) do
+    user = Pow.Plug.current_user(conn)
+
+    case Validations.get_pole_validation(id) do
+      nil ->
+        not_found(conn)
+
+      validation ->
+        case Validations.reassign_pole_validation(validation, new_validator_id, user.id) do
+          {:ok, updated} ->
+            json(conn, render_pole_validation(updated))
+
+          {:error, :terminal_status} ->
+            conn
+            |> put_status(:conflict)
+            |> json(%{
+              error: %{
+                code: "terminal_status",
+                detail: "Cannot reassign a finalized validation."
+              }
+            })
+
+          {:error, %Ecto.Changeset{} = c} ->
+            unprocessable(conn, c)
+        end
+    end
+  end
+
+  def reassign_puzzlet_validation(conn, %{"id" => id, "validator_id" => new_validator_id}) do
+    user = Pow.Plug.current_user(conn)
+
+    case Validations.get_puzzlet_validation(id) do
+      nil ->
+        not_found(conn)
+
+      validation ->
+        case Validations.reassign_puzzlet_validation(validation, new_validator_id, user.id) do
+          {:ok, updated} ->
+            json(conn, render_puzzlet_validation(updated))
+
+          {:error, :terminal_status} ->
+            conn
+            |> put_status(:conflict)
+            |> json(%{
+              error: %{
+                code: "terminal_status",
+                detail: "Cannot reassign a finalized validation."
+              }
+            })
+
+          {:error, %Ecto.Changeset{} = c} ->
+            unprocessable(conn, c)
+        end
+    end
+  end
+
+  # ──────── Unassign (undo of a fresh assignment) ──────────────────
+
+  def unassign_pole_validation(conn, %{"id" => id}) do
+    case Validations.get_pole_validation(id) do
+      nil -> not_found(conn)
+      validation -> handle_unassign(conn, Validations.unassign_pole_validation(validation))
+    end
+  end
+
+  def unassign_puzzlet_validation(conn, %{"id" => id}) do
+    case Validations.get_puzzlet_validation(id) do
+      nil -> not_found(conn)
+      validation -> handle_unassign(conn, Validations.unassign_puzzlet_validation(validation))
+    end
+  end
+
+  defp handle_unassign(conn, {:ok, _}), do: send_resp(conn, :no_content, "")
+
+  defp handle_unassign(conn, {:error, :not_unassignable}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{
+      error: %{
+        code: "not_unassignable",
+        detail:
+          "Validation can only be unassigned right after creation, before any comments are added."
+      }
+    })
+  end
+
   # ──────── Accept / reject validation ─────────────────────────────
 
   def update_pole_validation(conn, %{"id" => id, "status" => status}) do
@@ -323,6 +411,7 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
       status: v.status,
       pole_id: v.pole_id,
       validator_id: v.validator_id,
+      validator: render_assoc(v.validator, &render_user/1),
       assigned_by_id: v.assigned_by_id,
       overall_notes: v.overall_notes,
       pole: render_assoc(v.pole, &render_pole/1),
@@ -336,11 +425,16 @@ defmodule RegistrationsWeb.Poles.SupervisionController do
       status: v.status,
       puzzlet_id: v.puzzlet_id,
       validator_id: v.validator_id,
+      validator: render_assoc(v.validator, &render_user/1),
       assigned_by_id: v.assigned_by_id,
       overall_notes: v.overall_notes,
       puzzlet: render_assoc(v.puzzlet, &render_puzzlet/1),
       comments: render_comments(v.comments)
     }
+  end
+
+  defp render_user(%RegistrationsWeb.User{} = u) do
+    %{id: u.id, email: u.email, name: u.name}
   end
 
   defp render_assoc(%Ecto.Association.NotLoaded{}, _), do: nil

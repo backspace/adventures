@@ -312,7 +312,15 @@ class _PolesTabState extends State<_PolesTab> {
   }
 
   Future<void> _onPinTap(DraftPole pole) async {
-    final result = await showPolePinSheet(context, api: widget.api, pole: pole);
+    final result = await showPolePinSheet(
+      context,
+      api: widget.api,
+      pole: pole,
+      onUndone: () async {
+        await _load();
+        await widget.onChanged();
+      },
+    );
     if (result == PinActionResult.changed) {
       await _load();
       await widget.onChanged();
@@ -493,7 +501,15 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
   }
 
   Future<void> _onPinTap(DraftPuzzlet p) async {
-    final result = await showPuzzletPinSheet(context, api: widget.api, puzzlet: p);
+    final result = await showPuzzletPinSheet(
+      context,
+      api: widget.api,
+      puzzlet: p,
+      onUndone: () async {
+        await _load();
+        await widget.onChanged();
+      },
+    );
     if (result == PinActionResult.changed) {
       await _load();
       await widget.onChanged();

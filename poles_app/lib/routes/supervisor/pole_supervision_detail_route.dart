@@ -65,39 +65,105 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
     return null;
   }
 
-  Future<void> _assign() async {
+  Future<void> _pickAndAssign() async {
+    final previous = _activeValidation;
     final picked = await pickValidator(
       context,
       api: widget.api,
       excludeUserId: _pole.creatorId,
+      currentValidatorId: previous?.validatorId,
     );
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
+    if (previous != null && previous.validatorId == picked.id) return;
 
     setState(() => _busy = true);
     try {
-      final validation =
-          await widget.api.assignPoleValidation(_pole.id, picked.id);
+      final validation = previous == null
+          ? await widget.api.assignPoleValidation(_pole.id, picked.id)
+          : await widget.api.reassignPoleValidation(previous.id, picked.id);
       if (!mounted) return;
       setState(() {
         _activeValidation = validation;
-        _validations = [validation, ..._validations];
-        _pole = DraftPole(
-          id: _pole.id,
-          barcode: _pole.barcode,
-          label: _pole.label,
-          latitude: _pole.latitude,
-          longitude: _pole.longitude,
-          notes: _pole.notes,
-          accuracyM: _pole.accuracyM,
-          status: DraftStatus.draft,
-          creatorId: _pole.creatorId,
-          insertedAt: _pole.insertedAt,
-        );
+        if (previous == null) {
+          _validations = [validation, ..._validations];
+        } else {
+          _validations = _validations
+              .map((v) => v.id == validation.id ? validation : v)
+              .toList();
+        }
+        _busy = false;
+      });
+      _showAssignSnackBar(picked, previous, validation);
+    } on DioException catch (e) {
+      _showError(e);
+    }
+  }
+
+  void _showAssignSnackBar(
+    ValidatorUser picked,
+    PoleValidationModel? previous,
+    PoleValidationModel current,
+  ) {
+    final message = previous == null
+        ? 'Assigned to ${picked.name ?? picked.email}.'
+        : 'Reassigned to ${picked.name ?? picked.email}.';
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      action: SnackBarAction(
+        label: 'Undo',
+        onPressed: () => _undoAssign(previous, current),
+      ),
+    ));
+  }
+
+  Future<void> _unassign() async {
+    final v = _activeValidation;
+    if (v == null) return;
+    setState(() => _busy = true);
+    try {
+      await widget.api.unassignPoleValidation(v.id);
+      if (!mounted) return;
+      setState(() {
+        _activeValidation = null;
+        _validations = _validations.where((vv) => vv.id != v.id).toList();
         _busy = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Assigned to ${picked.name ?? picked.email}.')),
+        const SnackBar(content: Text('Validator unassigned.')),
       );
+    } on DioException catch (e) {
+      _showError(e);
+    }
+  }
+
+  Future<void> _undoAssign(
+    PoleValidationModel? previous,
+    PoleValidationModel current,
+  ) async {
+    setState(() => _busy = true);
+    try {
+      if (previous == null) {
+        await widget.api.unassignPoleValidation(current.id);
+        if (!mounted) return;
+        setState(() {
+          _activeValidation = null;
+          _validations =
+              _validations.where((v) => v.id != current.id).toList();
+          _busy = false;
+        });
+      } else {
+        final reverted = await widget.api
+            .reassignPoleValidation(current.id, previous.validatorId);
+        if (!mounted) return;
+        setState(() {
+          _activeValidation = reverted;
+          _validations = _validations
+              .map((v) => v.id == reverted.id ? reverted : v)
+              .toList();
+          _busy = false;
+        });
+      }
     } on DioException catch (e) {
       _showError(e);
     }
@@ -137,6 +203,7 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
             overallNotes: v.overallNotes,
             poleId: v.poleId,
             validatorId: v.validatorId,
+            validator: v.validator,
             assignedById: v.assignedById,
             pole: v.pole,
             comments: replaced,
@@ -174,6 +241,12 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
   Widget build(BuildContext context) {
     final v = _activeValidation;
     final canAssign = v == null && _pole.status == DraftStatus.draft;
+    final canReassign = v != null &&
+        (v.status == ValidationStatus.assigned ||
+            v.status == ValidationStatus.inProgress);
+    final canUnassign = v != null &&
+        v.status == ValidationStatus.assigned &&
+        v.comments.isEmpty;
     final canDecide = v?.status == ValidationStatus.submitted;
 
     final pastValidations = _validations
@@ -229,9 +302,34 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
           const SizedBox(height: 16),
           if (canAssign)
             FilledButton.icon(
-              onPressed: _busy ? null : _assign,
+              onPressed: _busy ? null : _pickAndAssign,
               icon: const Icon(Icons.assignment_ind),
               label: const Text('Assign to validator'),
+            ),
+          if (canReassign)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _busy ? null : _pickAndAssign,
+                      icon: const Icon(Icons.swap_horiz),
+                      label: Text(v.validator != null
+                          ? 'Change validator (${v.validator!.name ?? v.validator!.email})'
+                          : 'Change validator'),
+                    ),
+                  ),
+                  if (canUnassign) ...[
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: _busy ? null : _unassign,
+                      icon: const Icon(Icons.person_remove_outlined),
+                      label: const Text('Unassign'),
+                    ),
+                  ],
+                ],
+              ),
             ),
           if (v != null) ...[
             Text('Active validation', style: Theme.of(context).textTheme.titleMedium),
@@ -239,7 +337,13 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
             Card(
               child: ListTile(
                 title: Text(validationStatusLabel(v.status)),
-                subtitle: Text('${v.comments.length} comment${v.comments.length == 1 ? '' : 's'}'),
+                subtitle: Text(
+                  [
+                    if (v.validator != null)
+                      'Assigned to ${v.validator!.name ?? v.validator!.email}',
+                    '${v.comments.length} comment${v.comments.length == 1 ? '' : 's'}',
+                  ].join(' · '),
+                ),
               ),
             ),
             for (final c in v.comments)

@@ -66,27 +66,113 @@ class _PuzzletSupervisionDetailRouteState
     return null;
   }
 
-  Future<void> _assign() async {
+  Future<void> _pickAndAssign() async {
+    final previous = _activeValidation;
     final picked = await pickValidator(
       context,
       api: widget.api,
       excludeUserId: _puzzlet.creatorId,
+      currentValidatorId: previous?.validatorId,
     );
-    if (picked == null) return;
+    if (picked == null || !mounted) return;
+    if (previous != null && previous.validatorId == picked.id) {
+      // No-op — picked the same person who's already assigned.
+      return;
+    }
 
     setState(() => _busy = true);
     try {
-      final validation =
-          await widget.api.assignPuzzletValidation(_puzzlet.id, picked.id);
+      final validation = previous == null
+          ? await widget.api.assignPuzzletValidation(_puzzlet.id, picked.id)
+          : await widget.api
+              .reassignPuzzletValidation(previous.id, picked.id);
       if (!mounted) return;
       setState(() {
         _activeValidation = validation;
-        _validations = [validation, ..._validations];
+        if (previous == null) {
+          _validations = [validation, ..._validations];
+        } else {
+          _validations = _validations
+              .map((v) => v.id == validation.id ? validation : v)
+              .toList();
+        }
+        _busy = false;
+      });
+      _showAssignSnackBar(picked, previous, validation);
+    } on DioException catch (e) {
+      _showError(e);
+    }
+  }
+
+  /// Snackbar with an Undo action that either deletes the fresh
+  /// assignment or reassigns back to whoever was on it before.
+  void _showAssignSnackBar(
+    ValidatorUser picked,
+    PuzzletValidationModel? previous,
+    PuzzletValidationModel current,
+  ) {
+    final message = previous == null
+        ? 'Assigned to ${picked.name ?? picked.email}.'
+        : 'Reassigned to ${picked.name ?? picked.email}.';
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      action: SnackBarAction(
+        label: 'Undo',
+        onPressed: () => _undoAssign(previous, current),
+      ),
+    ));
+  }
+
+  /// Tears down a fresh assignment outright (not just undo from a toast).
+  /// Backend refuses if the validation already has comments.
+  Future<void> _unassign() async {
+    final v = _activeValidation;
+    if (v == null) return;
+    setState(() => _busy = true);
+    try {
+      await widget.api.unassignPuzzletValidation(v.id);
+      if (!mounted) return;
+      setState(() {
+        _activeValidation = null;
+        _validations = _validations.where((vv) => vv.id != v.id).toList();
         _busy = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Assigned to ${picked.name ?? picked.email}.')),
+        const SnackBar(content: Text('Validator unassigned.')),
       );
+    } on DioException catch (e) {
+      _showError(e);
+    }
+  }
+
+  Future<void> _undoAssign(
+    PuzzletValidationModel? previous,
+    PuzzletValidationModel current,
+  ) async {
+    setState(() => _busy = true);
+    try {
+      if (previous == null) {
+        await widget.api.unassignPuzzletValidation(current.id);
+        if (!mounted) return;
+        setState(() {
+          _activeValidation = null;
+          _validations =
+              _validations.where((v) => v.id != current.id).toList();
+          _busy = false;
+        });
+      } else {
+        final reverted = await widget.api
+            .reassignPuzzletValidation(current.id, previous.validatorId);
+        if (!mounted) return;
+        setState(() {
+          _activeValidation = reverted;
+          _validations = _validations
+              .map((v) => v.id == reverted.id ? reverted : v)
+              .toList();
+          _busy = false;
+        });
+      }
     } on DioException catch (e) {
       _showError(e);
     }
@@ -127,6 +213,7 @@ class _PuzzletSupervisionDetailRouteState
             overallNotes: v.overallNotes,
             puzzletId: v.puzzletId,
             validatorId: v.validatorId,
+            validator: v.validator,
             assignedById: v.assignedById,
             puzzlet: v.puzzlet,
             comments: replaced,
@@ -165,6 +252,15 @@ class _PuzzletSupervisionDetailRouteState
   Widget build(BuildContext context) {
     final v = _activeValidation;
     final canAssign = v == null && _puzzlet.status == DraftStatus.draft;
+    final canReassign = v != null &&
+        (v.status == ValidationStatus.assigned ||
+            v.status == ValidationStatus.inProgress);
+    // Backend only allows tearing down an assignment that's still fresh
+    // (status: assigned, no comments yet). Hiding the button outside that
+    // window keeps the affordance honest.
+    final canUnassign = v != null &&
+        v.status == ValidationStatus.assigned &&
+        v.comments.isEmpty;
     final canDecide = v?.status == ValidationStatus.submitted;
 
     final pastValidations = _validations
@@ -214,9 +310,34 @@ class _PuzzletSupervisionDetailRouteState
           const SizedBox(height: 16),
           if (canAssign)
             FilledButton.icon(
-              onPressed: _busy ? null : _assign,
+              onPressed: _busy ? null : _pickAndAssign,
               icon: const Icon(Icons.assignment_ind),
               label: const Text('Assign to validator'),
+            ),
+          if (canReassign)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _busy ? null : _pickAndAssign,
+                      icon: const Icon(Icons.swap_horiz),
+                      label: Text(v.validator != null
+                          ? 'Change validator (${v.validator!.name ?? v.validator!.email})'
+                          : 'Change validator'),
+                    ),
+                  ),
+                  if (canUnassign) ...[
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: _busy ? null : _unassign,
+                      icon: const Icon(Icons.person_remove_outlined),
+                      label: const Text('Unassign'),
+                    ),
+                  ],
+                ],
+              ),
             ),
           if (v != null) ...[
             Text('Active validation',
@@ -225,7 +346,12 @@ class _PuzzletSupervisionDetailRouteState
               child: ListTile(
                 title: Text(validationStatusLabel(v.status)),
                 subtitle: Text(
-                    '${v.comments.length} comment${v.comments.length == 1 ? '' : 's'}'),
+                  [
+                    if (v.validator != null)
+                      'Assigned to ${v.validator!.name ?? v.validator!.email}',
+                    '${v.comments.length} comment${v.comments.length == 1 ? '' : 's'}',
+                  ].join(' · '),
+                ),
               ),
             ),
             for (final c in v.comments)
