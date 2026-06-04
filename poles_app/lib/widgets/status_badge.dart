@@ -22,7 +22,7 @@ class StatusBadge extends StatelessWidget {
 
 Color statusColorFor(String status) => switch (status) {
       'draft' => Colors.orange.shade700,
-      'in_review' => Colors.blue.shade700,
+      'in review' || 'in_review' => Colors.blue.shade700,
       'validated' => Colors.green.shade700,
       'retired' => Colors.grey.shade700,
       'assigned' => Colors.blueGrey.shade700,

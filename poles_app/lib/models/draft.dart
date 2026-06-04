@@ -34,10 +34,15 @@ DraftStatus _statusFromString(String? raw) => switch (raw) {
 
 String draftStatusLabel(DraftStatus s) => switch (s) {
       DraftStatus.draft => 'draft',
-      DraftStatus.inReview => 'in_review',
+      DraftStatus.inReview => 'in review',
       DraftStatus.validated => 'validated',
       DraftStatus.retired => 'retired',
     };
+
+/// Human-readable form of a raw status string from the API (e.g. the keys
+/// in `DashboardCounts.poles`). Just swaps underscores for spaces so a
+/// payload like `"in_review"` renders as `"in review"`.
+String prettifyStatus(String raw) => raw.replaceAll('_', ' ');
 
 class ActiveValidationSummary {
   final String id;

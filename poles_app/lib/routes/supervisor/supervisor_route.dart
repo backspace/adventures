@@ -33,7 +33,7 @@ List<Widget> _poleBadges(DraftPole p) {
     ];
   }
   return [
-    StatusBadge(label: v.status, color: statusColorFor(v.status)),
+    StatusBadge(label: prettifyStatus(v.status), color: statusColorFor(v.status)),
     if (v.commentCount > 0) ...[
       const SizedBox(width: 4),
       _CommentChip(v.commentCount),
@@ -61,7 +61,7 @@ List<Widget> _puzzletBadges(DraftPuzzlet p) {
     ];
   }
   return [
-    StatusBadge(label: v.status, color: statusColorFor(v.status)),
+    StatusBadge(label: prettifyStatus(v.status), color: statusColorFor(v.status)),
     if (v.commentCount > 0) ...[
       const SizedBox(width: 4),
       _CommentChip(v.commentCount),
@@ -218,7 +218,7 @@ class _Section extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
-                    StatusBadge(label: e.key, color: statusColorFor(e.key)),
+                    StatusBadge(label: prettifyStatus(e.key), color: statusColorFor(e.key)),
                     const SizedBox(width: 12),
                     Text('${e.value}'),
                   ],
@@ -345,7 +345,7 @@ class _PolesTabState extends State<_PolesTab> {
                 .map((s) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: ChoiceChip(
-                        label: Text(s),
+                        label: Text(prettifyStatus(s)),
                         selected: _filter == s,
                         onSelected: (_) {
                           setState(() => _filter = s);
@@ -529,7 +529,7 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
                 .map((s) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: ChoiceChip(
-                        label: Text(s),
+                        label: Text(prettifyStatus(s)),
                         selected: _filter == s,
                         onSelected: (_) {
                           setState(() => _filter = s);
