@@ -143,8 +143,8 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
         ),
         body: TabBarView(children: [
           _Overview(counts: _counts, error: _error),
-          _PuzzletsTab(api: widget.api, onChanged: _load),
-          _PolesTab(api: widget.api, onChanged: _load),
+          _PuzzletsTab(api: widget.api, counts: _counts, onChanged: _load),
+          _PolesTab(api: widget.api, counts: _counts, onChanged: _load),
         ]),
       ),
     );
@@ -235,9 +235,14 @@ const _allPoleStatuses = ['draft', 'in_review', 'validated', 'retired'];
 
 class _PolesTab extends StatefulWidget {
   final PolesApi api;
+  final DashboardCounts? counts;
   final Future<void> Function() onChanged;
 
-  const _PolesTab({required this.api, required this.onChanged});
+  const _PolesTab({
+    required this.api,
+    required this.counts,
+    required this.onChanged,
+  });
 
   @override
   State<_PolesTab> createState() => _PolesTabState();
@@ -245,7 +250,9 @@ class _PolesTab extends StatefulWidget {
 
 class _PolesTabState extends State<_PolesTab> {
   static const _prefKey = 'supervisor_poles';
-  String _filter = 'draft';
+  // Null until counts are available; once chosen (either from counts or
+  // by the user) we never revert it.
+  String? _filter;
   _ListOrMap _view = _ListOrMap.list;
   List<DraftPole>? _poles;
   String? _error;
@@ -254,6 +261,28 @@ class _PolesTabState extends State<_PolesTab> {
   void initState() {
     super.initState();
     _loadPref();
+    _maybeAdoptInitialFilter();
+  }
+
+  @override
+  void didUpdateWidget(_PolesTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _maybeAdoptInitialFilter();
+  }
+
+  /// Picks the first status with at least one pole as the initial filter
+  /// (so the supervisor doesn't land on an empty "draft" list when
+  /// everything sits in `in_review`, say). Only runs while `_filter` is
+  /// still null, so it can't clobber a user-chosen filter on rebuild.
+  void _maybeAdoptInitialFilter() {
+    if (_filter != null) return;
+    final counts = widget.counts;
+    if (counts == null) return;
+    final chosen = _allPoleStatuses.firstWhere(
+      (s) => (counts.poles[s] ?? 0) > 0,
+      orElse: () => 'draft',
+    );
+    setState(() => _filter = chosen);
     _load();
   }
 
@@ -269,9 +298,11 @@ class _PolesTabState extends State<_PolesTab> {
   }
 
   Future<void> _load() async {
+    final filter = _filter;
+    if (filter == null) return;
     setState(() => _error = null);
     try {
-      final list = await widget.api.supervisionListPoles(status: _filter);
+      final list = await widget.api.supervisionListPoles(status: filter);
       if (!mounted) return;
       setState(() => _poles = list);
     } catch (e) {
@@ -290,6 +321,9 @@ class _PolesTabState extends State<_PolesTab> {
 
   @override
   Widget build(BuildContext context) {
+    if (_filter == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       children: [
         Padding(
@@ -388,9 +422,14 @@ const _allPuzzletStatuses = ['draft', 'in_review', 'validated', 'retired'];
 
 class _PuzzletsTab extends StatefulWidget {
   final PolesApi api;
+  final DashboardCounts? counts;
   final Future<void> Function() onChanged;
 
-  const _PuzzletsTab({required this.api, required this.onChanged});
+  const _PuzzletsTab({
+    required this.api,
+    required this.counts,
+    required this.onChanged,
+  });
 
   @override
   State<_PuzzletsTab> createState() => _PuzzletsTabState();
@@ -398,7 +437,7 @@ class _PuzzletsTab extends StatefulWidget {
 
 class _PuzzletsTabState extends State<_PuzzletsTab> {
   static const _prefKey = 'supervisor_puzzlets';
-  String _filter = 'draft';
+  String? _filter;
   _ListOrMap _view = _ListOrMap.list;
   List<DraftPuzzlet>? _puzzlets;
   String? _error;
@@ -407,6 +446,24 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
   void initState() {
     super.initState();
     _loadPref();
+    _maybeAdoptInitialFilter();
+  }
+
+  @override
+  void didUpdateWidget(_PuzzletsTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _maybeAdoptInitialFilter();
+  }
+
+  void _maybeAdoptInitialFilter() {
+    if (_filter != null) return;
+    final counts = widget.counts;
+    if (counts == null) return;
+    final chosen = _allPuzzletStatuses.firstWhere(
+      (s) => (counts.puzzlets[s] ?? 0) > 0,
+      orElse: () => 'draft',
+    );
+    setState(() => _filter = chosen);
     _load();
   }
 
@@ -422,9 +479,11 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
   }
 
   Future<void> _load() async {
+    final filter = _filter;
+    if (filter == null) return;
     setState(() => _error = null);
     try {
-      final list = await widget.api.supervisionListPuzzlets(status: _filter);
+      final list = await widget.api.supervisionListPuzzlets(status: filter);
       if (!mounted) return;
       setState(() => _puzzlets = list);
     } catch (e) {
@@ -446,6 +505,9 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
 
   @override
   Widget build(BuildContext context) {
+    if (_filter == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Column(
       children: [
         Padding(
