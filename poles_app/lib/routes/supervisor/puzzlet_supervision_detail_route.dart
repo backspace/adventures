@@ -11,10 +11,16 @@ class PuzzletSupervisionDetailRoute extends StatefulWidget {
   final PolesApi api;
   final DraftPuzzlet puzzlet;
 
+  /// Called after any state-changing action on this puzzlet (assign,
+  /// reassign, unassign, undo). The supervisor list uses this to refresh
+  /// without waiting for the user to pop back.
+  final Future<void> Function()? onChanged;
+
   const PuzzletSupervisionDetailRoute({
     super.key,
     required this.api,
     required this.puzzlet,
+    this.onChanged,
   });
 
   @override
@@ -98,6 +104,7 @@ class _PuzzletSupervisionDetailRouteState
         }
         _busy = false;
       });
+      await widget.onChanged?.call();
       _showAssignSnackBar(picked, previous, validation);
     } on DioException catch (e) {
       _showError(e);
@@ -138,7 +145,9 @@ class _PuzzletSupervisionDetailRouteState
         _validations = _validations.where((vv) => vv.id != v.id).toList();
         _busy = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
+      final messenger = ScaffoldMessenger.of(context);
+      await widget.onChanged?.call();
+      messenger.showSnackBar(
         const SnackBar(content: Text('Validator unassigned.')),
       );
     } on DioException catch (e) {
@@ -173,6 +182,7 @@ class _PuzzletSupervisionDetailRouteState
           _busy = false;
         });
       }
+      await widget.onChanged?.call();
     } on DioException catch (e) {
       _showError(e);
     }

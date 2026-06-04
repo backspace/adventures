@@ -101,7 +101,11 @@ class _PolePinSheetState extends State<_PolePinSheet> {
   Future<void> _openDetail() async {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => PoleSupervisionDetailRoute(api: widget.api, pole: widget.pole),
+        builder: (_) => PoleSupervisionDetailRoute(
+          api: widget.api,
+          pole: widget.pole,
+          onChanged: widget.onUndone,
+        ),
       ),
     );
     if (!mounted) return;
@@ -241,7 +245,11 @@ class _PuzzletPinSheetState extends State<_PuzzletPinSheet> {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (_) =>
-            PuzzletSupervisionDetailRoute(api: widget.api, puzzlet: widget.puzzlet),
+            PuzzletSupervisionDetailRoute(
+          api: widget.api,
+          puzzlet: widget.puzzlet,
+          onChanged: widget.onUndone,
+        ),
       ),
     );
     if (!mounted) return;

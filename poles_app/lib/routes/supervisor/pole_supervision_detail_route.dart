@@ -11,10 +11,15 @@ class PoleSupervisionDetailRoute extends StatefulWidget {
   final PolesApi api;
   final DraftPole pole;
 
+  /// Called after any state-changing action on this pole. The supervisor
+  /// list uses this to refresh without waiting for the user to pop back.
+  final Future<void> Function()? onChanged;
+
   const PoleSupervisionDetailRoute({
     super.key,
     required this.api,
     required this.pole,
+    this.onChanged,
   });
 
   @override
@@ -93,6 +98,7 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
         }
         _busy = false;
       });
+      await widget.onChanged?.call();
       _showAssignSnackBar(picked, previous, validation);
     } on DioException catch (e) {
       _showError(e);
@@ -129,7 +135,9 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
         _validations = _validations.where((vv) => vv.id != v.id).toList();
         _busy = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
+      final messenger = ScaffoldMessenger.of(context);
+      await widget.onChanged?.call();
+      messenger.showSnackBar(
         const SnackBar(content: Text('Validator unassigned.')),
       );
     } on DioException catch (e) {
@@ -164,6 +172,7 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
           _busy = false;
         });
       }
+      await widget.onChanged?.call();
     } on DioException catch (e) {
       _showError(e);
     }

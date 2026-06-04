@@ -394,18 +394,20 @@ class _PolesTabState extends State<_PolesTab> {
           subtitle: Text(p.barcode),
           trailing: const Icon(Icons.chevron_right),
           onTap: () async {
+            Future<void> reload() async {
+              await _load();
+              await widget.onChanged();
+            }
             final changed = await Navigator.of(context).push<bool>(
               MaterialPageRoute(
                 builder: (_) => PoleSupervisionDetailRoute(
                   api: widget.api,
                   pole: p,
+                  onChanged: reload,
                 ),
               ),
             );
-            if (changed == true) {
-              await _load();
-              await widget.onChanged();
-            }
+            if (changed == true) await reload();
           },
         );
       },
@@ -595,18 +597,20 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
           ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () async {
+            Future<void> reload() async {
+              await _load();
+              await widget.onChanged();
+            }
             final changed = await Navigator.of(context).push<bool>(
               MaterialPageRoute(
                 builder: (_) => PuzzletSupervisionDetailRoute(
                   api: widget.api,
                   puzzlet: p,
+                  onChanged: reload,
                 ),
               ),
             );
-            if (changed == true) {
-              await _load();
-              await widget.onChanged();
-            }
+            if (changed == true) await reload();
           },
         );
       },
