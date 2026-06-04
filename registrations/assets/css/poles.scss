@@ -12,7 +12,12 @@ body {
   background: $black;
 }
 
+.highlight {
+  background: $secondary-color;
+}
+
 .row.title {
+  background-color: $secondary-color;
   text-align: center;
   margin-bottom: 1rem;
 }
