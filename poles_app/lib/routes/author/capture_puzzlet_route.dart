@@ -16,6 +16,7 @@ import 'package:poles/services/location_service.dart';
 import 'package:poles/widgets/accessibility_tags_field.dart';
 import 'package:poles/widgets/answer_type_field.dart';
 import 'package:poles/widgets/location_card.dart';
+import 'package:poles/widgets/action_snackbar.dart';
 import 'package:poles/widgets/pending_photos_section.dart';
 import 'package:poles/widgets/region_picker_field.dart';
 
@@ -179,7 +180,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
       final api = widget.api;
       final navigator = Navigator.of(context, rootNavigator: true);
       final messenger = ScaffoldMessenger.of(context);
-      messenger.showSnackBar(SnackBar(
+      showActionSnackBar(messenger, SnackBar(
         content: Text(message),
         action: SnackBarAction(
           label: 'Edit',

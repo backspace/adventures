@@ -5,6 +5,7 @@ import 'package:poles/models/draft.dart';
 import 'package:poles/routes/supervisor/pole_supervision_detail_route.dart';
 import 'package:poles/routes/supervisor/puzzlet_supervision_detail_route.dart';
 import 'package:poles/routes/supervisor/validator_picker.dart';
+import 'package:poles/widgets/action_snackbar.dart';
 import 'package:poles/widgets/status_badge.dart';
 
 /// Returned to the map view: tells the parent whether to refresh.
@@ -73,7 +74,7 @@ class _PolePinSheetState extends State<_PolePinSheet> {
       final messenger = ScaffoldMessenger.of(context);
       final onUndone = widget.onUndone;
       Navigator.of(context).pop(PinActionResult.changed);
-      messenger.showSnackBar(SnackBar(
+      showActionSnackBar(messenger, SnackBar(
         content: Text('Assigned to ${picked.name ?? picked.email}.'),
         action: SnackBarAction(
           label: 'Undo',
@@ -216,7 +217,7 @@ class _PuzzletPinSheetState extends State<_PuzzletPinSheet> {
       final messenger = ScaffoldMessenger.of(context);
       final onUndone = widget.onUndone;
       Navigator.of(context).pop(PinActionResult.changed);
-      messenger.showSnackBar(SnackBar(
+      showActionSnackBar(messenger, SnackBar(
         content: Text('Assigned to ${picked.name ?? picked.email}.'),
         action: SnackBarAction(
           label: 'Undo',

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
 import 'package:poles/models/accessibility.dart';
+import 'package:poles/widgets/action_snackbar.dart';
 import 'package:poles/routes/author/edit_pole_route.dart';
 import 'package:poles/routes/barcode_scanner_route.dart';
 import 'package:poles/services/discard_changes.dart';
@@ -150,7 +151,7 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
       final api = widget.api;
       final navigator = Navigator.of(context, rootNavigator: true);
       final messenger = ScaffoldMessenger.of(context);
-      messenger.showSnackBar(SnackBar(
+      showActionSnackBar(messenger, SnackBar(
         content: Text(message),
         action: SnackBarAction(
           label: 'Edit',

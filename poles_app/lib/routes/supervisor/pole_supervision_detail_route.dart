@@ -5,6 +5,7 @@ import 'package:poles/models/draft.dart';
 import 'package:poles/models/validation.dart';
 import 'package:poles/routes/supervisor/supervisor_edit_pole_route.dart';
 import 'package:poles/routes/supervisor/validator_picker.dart';
+import 'package:poles/widgets/action_snackbar.dart';
 import 'package:poles/widgets/status_badge.dart';
 
 class PoleSupervisionDetailRoute extends StatefulWidget {
@@ -114,7 +115,7 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
         ? 'Assigned to ${picked.name ?? picked.email}.'
         : 'Reassigned to ${picked.name ?? picked.email}.';
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    showActionSnackBar(ScaffoldMessenger.of(context), SnackBar(
       content: Text(message),
       action: SnackBarAction(
         label: 'Undo',
