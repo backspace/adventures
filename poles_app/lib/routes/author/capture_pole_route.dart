@@ -187,7 +187,10 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
 
   @override
   Widget build(BuildContext context) {
-    final canSubmit = _barcode != null && (_fix?.isUsable ?? false) && !_submitting;
+    // Accuracy is the hard requirement; freshness is a soft warning so
+    // the author can re-acquire if they've moved.
+    final canSubmit =
+        _barcode != null && (_fix?.isAccurate ?? false) && !_submitting;
     return PopScope(
       canPop: !_isDirty,
       onPopInvokedWithResult: (didPop, _) async {

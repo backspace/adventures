@@ -120,7 +120,7 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
     final instructions = _instructionsController.text.trim();
     final answer = _answerController.text.trim();
     final fix = _fix;
-    if (instructions.isEmpty || answer.isEmpty || fix == null || !fix.isUsable) return;
+    if (instructions.isEmpty || answer.isEmpty || fix == null || !fix.isAccurate) return;
 
     setState(() => _submitting = true);
     try {
@@ -282,7 +282,12 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
 
   @override
   Widget build(BuildContext context) {
-    final canSubmit = _fix?.isUsable == true &&
+    // Accuracy is the hard requirement (we need a precise enough fix to
+    // store). Freshness is a soft warning shown in LocationCard so the
+    // author can re-acquire if they've moved — but if they haven't,
+    // shouldn't block submission of a fix taken before they started
+    // typing the puzzlet.
+    final canSubmit = _fix?.isAccurate == true &&
         !_submitting &&
         _instructionsController.text.trim().isNotEmpty &&
         _answerController.text.trim().isNotEmpty;
