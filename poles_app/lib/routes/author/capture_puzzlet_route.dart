@@ -317,6 +317,12 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
               onRetry: _captureLocation,
             ),
             const SizedBox(height: 16),
+            RegionPickerField(
+              api: widget.api,
+              selected: _region,
+              onChanged: (r) => setState(() => _region = r),
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _instructionsController,
               minLines: 3,
@@ -376,12 +382,6 @@ class _CapturePuzzletRouteState extends State<CapturePuzzletRoute> {
               divisions: 9,
               label: '$_difficulty',
               onChanged: (v) => setState(() => _difficulty = v.round()),
-            ),
-            const SizedBox(height: 16),
-            RegionPickerField(
-              api: widget.api,
-              selected: _region,
-              onChanged: (r) => setState(() => _region = r),
             ),
             const SizedBox(height: 16),
             AccessibilityTagsField(

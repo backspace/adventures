@@ -274,6 +274,16 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
               onRetry: _reacquireLocation,
             ),
             const SizedBox(height: 16),
+            RegionPickerField(
+              api: widget.api,
+              selected: _region,
+              onChanged: (r) => setState(() {
+                _region = r;
+                _regionChanged = true;
+                _dirty = true;
+              }),
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _instructionsController,
               minLines: 3,
@@ -336,19 +346,9 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
                 _dirty = true;
               }),
             ),
-            const SizedBox(height: 16),
-            RegionPickerField(
-              api: widget.api,
-              selected: _region,
-              onChanged: (r) => setState(() {
-                _region = r;
-                _regionChanged = true;
-                _dirty = true;
-              }),
-            ),
             if (widget.puzzlet.inheritedStanzas.isNotEmpty ||
                 widget.puzzlet.inheritedTags.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               _InheritedAccessibilitySection(
                 tags: widget.puzzlet.inheritedTags,
                 stanzas: widget.puzzlet.inheritedStanzas,
