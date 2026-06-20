@@ -15,12 +15,14 @@ class RegionPickerField extends StatelessWidget {
   final PolesApi api;
   final Region? selected;
   final ValueChanged<Region?> onChanged;
+  final String label;
 
   const RegionPickerField({
     super.key,
     required this.api,
     required this.selected,
     required this.onChanged,
+    this.label = 'Region (optional)',
   });
 
   Future<void> _open(BuildContext context) async {
@@ -46,10 +48,10 @@ class RegionPickerField extends StatelessWidget {
       onTap: () => _open(context),
       borderRadius: BorderRadius.circular(4),
       child: InputDecorator(
-        decoration: const InputDecoration(
-          labelText: 'Region (optional)',
-          border: OutlineInputBorder(),
-          suffixIcon: Icon(Icons.arrow_drop_down),
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+          suffixIcon: const Icon(Icons.arrow_drop_down),
         ),
         child: Text(
           selected?.breadcrumb ?? 'No region',
@@ -293,6 +295,8 @@ class _RegionEditorDialogState extends State<_RegionEditorDialog> {
   late final TextEditingController _notesController;
   late final TextEditingController _entryController;
   late List<String> _tags;
+  Region? _parent;
+  bool _parentChanged = false;
   bool _busy = false;
   String? _error;
 
@@ -306,6 +310,18 @@ class _RegionEditorDialogState extends State<_RegionEditorDialog> {
     _notesController = TextEditingController(text: e?.accessibilityNotes ?? '');
     _entryController = TextEditingController(text: e?.entryInstructions ?? '');
     _tags = [...?e?.accessibilityTags];
+
+    // Seed the parent picker from the editing region's ancestor chain.
+    // `ancestors.last` is the immediate parent (the chain is root → self,
+    // self excluded). We only need id+name for the picker's display.
+    if (e != null && e.parentRegionId != null && e.ancestors.isNotEmpty) {
+      final immediate = e.ancestors.last;
+      _parent = Region(
+        id: immediate.id,
+        name: immediate.name,
+        parentRegionId: null,
+      );
+    }
   }
 
   @override
@@ -338,6 +354,8 @@ class _RegionEditorDialogState extends State<_RegionEditorDialog> {
               // previously-filled field.
               accessibilityNotes: notes,
               entryInstructions: entry,
+              parentRegionId: _parentChanged ? _parent?.id : null,
+              clearParent: _parentChanged && _parent == null,
             )
           : await widget.api.createRegion(
               name: name,
@@ -383,6 +401,21 @@ class _RegionEditorDialogState extends State<_RegionEditorDialog> {
                   border: OutlineInputBorder(),
                 ),
               ),
+              if (_isEditing) ...[
+                const SizedBox(height: 12),
+                // Re-parent affordance. Cycles (picking self or a
+                // descendant) get rejected by the backend; the error
+                // surfaces in the `_error` text below.
+                RegionPickerField(
+                  api: widget.api,
+                  selected: _parent,
+                  label: 'Parent region (optional)',
+                  onChanged: (r) => setState(() {
+                    _parent = r;
+                    _parentChanged = true;
+                  }),
+                ),
+              ],
               const SizedBox(height: 12),
               AccessibilityTagsField(
                 selected: _tags,
