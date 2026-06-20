@@ -23,6 +23,38 @@ class _PinMapState extends State<PinMap> {
   LatLng? _userLocation;
   bool _locating = false;
 
+  @override
+  void didUpdateWidget(PinMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_pinsMoved(oldWidget.pins, widget.pins) && _anyPinOutsideView()) {
+      // Only refit when the new pin set is no longer visible — leaves
+      // the user's manual pan/zoom alone when the move is still in view.
+      try {
+        _controller.fitCamera(_fit());
+      } catch (_) {
+        // Camera not laid out yet; ignore and let the next frame settle.
+      }
+    }
+  }
+
+  bool _pinsMoved(List<MapPin> a, List<MapPin> b) {
+    if (a.length != b.length) return true;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].position != b[i].position) return true;
+    }
+    return false;
+  }
+
+  bool _anyPinOutsideView() {
+    if (widget.pins.isEmpty) return false;
+    try {
+      final bounds = _controller.camera.visibleBounds;
+      return widget.pins.any((p) => !bounds.contains(p.position));
+    } catch (_) {
+      return false;
+    }
+  }
+
   CameraFit _fit() {
     if (widget.pins.length <= 1) {
       final position = widget.pins.isEmpty
