@@ -221,6 +221,7 @@ defmodule RegistrationsWeb.Router do
     get("/attachments/:id", AttachmentController, :show)
     get("/attachments/:id/thumb", AttachmentController, :show_thumb)
     post("/puzzlets/:puzzlet_id/attempts", AttemptController, :create)
+    get("/bathrooms", BathroomController, :index)
   end
 
   scope "/poles/drafts", RegistrationsWeb.Poles, as: :poles_drafts do
@@ -236,6 +237,23 @@ defmodule RegistrationsWeb.Router do
     delete("/puzzlets/:id", DraftController, :delete_puzzlet)
     post("/puzzlets/:puzzlet_id/attachments", AttachmentController, :create_for_puzzlet)
     delete("/attachments/:id", AttachmentController, :delete)
+  end
+
+  scope "/poles/bathrooms", RegistrationsWeb.Poles, as: :poles_bathrooms_author do
+    pipe_through([:poles_author])
+
+    get("/mine", BathroomController, :mine)
+    post("/", BathroomController, :create)
+  end
+
+  # PATCH/DELETE allow creator (typically an author) OR a supervisor
+  # override. The controller's can_modify? does the actual gate; we just
+  # need to be past auth here.
+  scope "/poles/bathrooms", RegistrationsWeb.Poles, as: :poles_bathrooms do
+    pipe_through([:pow_api, :pow_api_protected])
+
+    patch("/:id", BathroomController, :update)
+    delete("/:id", BathroomController, :delete)
   end
 
   scope "/poles/regions", RegistrationsWeb.Poles, as: :poles_regions do

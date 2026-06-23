@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/models/bathroom.dart';
 import 'package:poles/models/draft.dart';
+import 'package:poles/routes/author/edit_bathroom_route.dart';
 import 'package:poles/routes/author/edit_pole_route.dart';
 import 'package:poles/routes/author/edit_puzzlet_route.dart';
 import 'package:poles/routes/author/promote_to_region_dialog.dart';
@@ -22,6 +24,7 @@ class MyDraftsRoute extends StatefulWidget {
 
 class _MyDraftsRouteState extends State<MyDraftsRoute> {
   MyDrafts? _drafts;
+  List<Bathroom> _bathrooms = const [];
   String? _error;
   _DraftView _view = _DraftView.list;
   bool _selectionMode = false;
@@ -50,9 +53,15 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
   Future<void> _load() async {
     setState(() => _error = null);
     try {
-      final drafts = await widget.api.listMyDrafts();
+      final results = await Future.wait([
+        widget.api.listMyDrafts(),
+        widget.api.listMyBathrooms(),
+      ]);
       if (!mounted) return;
-      setState(() => _drafts = drafts);
+      setState(() {
+        _drafts = results[0] as MyDrafts;
+        _bathrooms = results[1] as List<Bathroom>;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = 'Could not load drafts: $e');
@@ -90,6 +99,9 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
         ));
       }
     }
+    for (final b in _bathrooms) {
+      pins.add(bathroomPin(b, onTap: () => _openBathroom(b)));
+    }
     return pins;
   }
 
@@ -103,6 +115,15 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
   Future<void> _openPuzzlet(DraftPuzzlet puzzlet) async {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => EditPuzzletRoute(api: widget.api, puzzlet: puzzlet)),
+    );
+    if (changed == true) await _load();
+  }
+
+  Future<void> _openBathroom(Bathroom bathroom) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => EditBathroomRoute(api: widget.api, bathroom: bathroom),
+      ),
     );
     if (changed == true) await _load();
   }
@@ -224,8 +245,10 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
               : _view == _DraftView.list
                   ? _ListView(
                       drafts: drafts,
+                      bathrooms: _bathrooms,
                       api: widget.api,
                       onChanged: _load,
+                      onOpenBathroom: _openBathroom,
                       selectionMode: _selectionMode,
                       selectedPuzzletIds: _selectedPuzzletIds,
                       onTogglePuzzletSelected: _toggleSelected,
@@ -240,16 +263,20 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
 
 class _ListView extends StatelessWidget {
   final MyDrafts drafts;
+  final List<Bathroom> bathrooms;
   final PolesApi api;
   final Future<void> Function() onChanged;
+  final Future<void> Function(Bathroom) onOpenBathroom;
   final bool selectionMode;
   final Set<String> selectedPuzzletIds;
   final ValueChanged<String>? onTogglePuzzletSelected;
 
   const _ListView({
     required this.drafts,
+    required this.bathrooms,
     required this.api,
     required this.onChanged,
+    required this.onOpenBathroom,
     this.selectionMode = false,
     this.selectedPuzzletIds = const <String>{},
     this.onTogglePuzzletSelected,
@@ -257,12 +284,15 @@ class _ListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final empty = drafts.poles.isEmpty &&
+        drafts.puzzlets.isEmpty &&
+        bathrooms.isEmpty;
     return ListView(
       children: [
-        if (drafts.poles.isEmpty && drafts.puzzlets.isEmpty)
+        if (empty)
           const Padding(
             padding: EdgeInsets.all(24),
-            child: Center(child: Text('Nothing yet. Capture a pole or puzzlet.')),
+            child: Center(child: Text('Nothing yet. Capture a pole, puzzlet, or bathroom.')),
           ),
         if (drafts.puzzlets.isNotEmpty)
           const Padding(
@@ -277,7 +307,8 @@ class _ListView extends StatelessWidget {
               selected: selectedPuzzletIds.contains(p.id),
               onToggleSelected: onTogglePuzzletSelected,
             )),
-        // Poles are hidden in selection mode — promotion is puzzlet-only.
+        // Poles and bathrooms are hidden in selection mode — promotion
+        // is puzzlet-only.
         if (!selectionMode && drafts.poles.isNotEmpty)
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -286,7 +317,38 @@ class _ListView extends StatelessWidget {
         if (!selectionMode)
           ...drafts.poles
               .map((p) => _PoleTile(pole: p, api: api, onChanged: onChanged)),
+        if (!selectionMode && bathrooms.isNotEmpty)
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: Text('Bathrooms', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        if (!selectionMode)
+          ...bathrooms.map((b) => _BathroomTile(
+                bathroom: b,
+                onTap: () => onOpenBathroom(b),
+              )),
       ],
+    );
+  }
+}
+
+class _BathroomTile extends StatelessWidget {
+  final Bathroom bathroom;
+  final VoidCallback onTap;
+  const _BathroomTile({required this.bathroom, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final subtitleParts = <String>[
+      if (bathroom.region != null) 'In ${bathroom.region!.breadcrumb}',
+      '${bathroom.latitude.toStringAsFixed(5)}, ${bathroom.longitude.toStringAsFixed(5)}',
+    ];
+    return ListTile(
+      leading: const Icon(Icons.wash),
+      title: Text(bathroom.displayName()),
+      subtitle: Text(subtitleParts.join(' · ')),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
     );
   }
 }

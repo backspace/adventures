@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:poles/models/bathroom.dart';
 import 'package:poles/models/draft.dart';
 import 'package:poles/models/pole.dart';
 import 'package:poles/models/poles_event.dart';
@@ -303,6 +304,80 @@ class PolesApi {
     });
     return Region.fromJson(response.data as Map<String, dynamic>);
   }
+
+  // ─── Bathrooms ──────────────────────────────────────────────
+
+  Future<List<Bathroom>> listBathrooms() async {
+    final response = await dio.get('/poles/bathrooms');
+    final list = (response.data as Map<String, dynamic>)['bathrooms'] as List;
+    return list
+        .map((b) => Bathroom.fromJson(b as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<List<Bathroom>> listMyBathrooms() async {
+    final response = await dio.get('/poles/bathrooms/mine');
+    final list = (response.data as Map<String, dynamic>)['bathrooms'] as List;
+    return list
+        .map((b) => Bathroom.fromJson(b as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  Future<Bathroom> createBathroom({
+    String? name,
+    required double latitude,
+    required double longitude,
+    double? accuracyM,
+    String? notes,
+    List<String>? accessibilityTags,
+    String? accessibilityNotes,
+    String? entryInstructions,
+    String? regionId,
+  }) async {
+    final response = await dio.post('/poles/bathrooms', data: {
+      if (name != null) 'name': name,
+      'latitude': latitude,
+      'longitude': longitude,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (notes != null) 'notes': notes,
+      if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
+      if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
+      if (entryInstructions != null) 'entry_instructions': entryInstructions,
+      if (regionId != null) 'region_id': regionId,
+    });
+    return Bathroom.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<Bathroom> updateBathroom(
+    String id, {
+    String? name,
+    double? latitude,
+    double? longitude,
+    double? accuracyM,
+    String? notes,
+    List<String>? accessibilityTags,
+    String? accessibilityNotes,
+    String? entryInstructions,
+    String? regionId,
+    bool clearRegion = false,
+  }) async {
+    final response = await dio.patch('/poles/bathrooms/$id', data: {
+      if (name != null) 'name': name,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (notes != null) 'notes': notes,
+      if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
+      if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
+      if (entryInstructions != null) 'entry_instructions': entryInstructions,
+      if (clearRegion) 'region_id': null
+      else if (regionId != null) 'region_id': regionId,
+    });
+    return Bathroom.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> deleteBathroom(String id) =>
+      dio.delete('/poles/bathrooms/$id');
 
   Future<String> uploadPoleAttachment({
     required String poleId,

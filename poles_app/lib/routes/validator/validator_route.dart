@@ -7,7 +7,7 @@ import 'package:poles/routes/validator/puzzlet_validation_detail_route.dart';
 import 'package:poles/services/ui_preferences.dart';
 import 'package:poles/widgets/attachments_badge.dart';
 import 'package:poles/widgets/map_pin.dart';
-import 'package:poles/widgets/pin_map.dart';
+import 'package:poles/widgets/map_with_bathrooms.dart';
 import 'package:poles/widgets/status_badge.dart';
 
 enum _ListOrMap { list, map }
@@ -194,7 +194,7 @@ class _PoleValidationsState extends State<_PoleValidations> {
               onTap: () => _open(v),
             ))
         .toList();
-    return PinMap(pins: pins);
+    return MapWithBathrooms(api: widget.api, pins: pins);
   }
 }
 
@@ -339,7 +339,7 @@ class _PuzzletValidationsState extends State<_PuzzletValidations> {
 
     return Column(
       children: [
-        Expanded(child: PinMap(pins: pins)),
+        Expanded(child: MapWithBathrooms(api: widget.api, pins: pins)),
         if (orphanCount > 0)
           Padding(
             padding: const EdgeInsets.all(12),

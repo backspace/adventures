@@ -8,7 +8,7 @@ import 'package:poles/routes/supervisor/pole_supervision_detail_route.dart';
 import 'package:poles/routes/supervisor/puzzlet_supervision_detail_route.dart';
 import 'package:poles/services/ui_preferences.dart';
 import 'package:poles/widgets/map_pin.dart';
-import 'package:poles/widgets/pin_map.dart';
+import 'package:poles/widgets/map_with_bathrooms.dart';
 import 'package:poles/widgets/attachments_badge.dart';
 import 'package:poles/widgets/status_badge.dart';
 
@@ -424,7 +424,11 @@ class _PolesTabState extends State<_PolesTab> {
               onTap: () => _onPinTap(p),
             ))
         .toList();
-    return PinMap(pins: pins);
+    return MapWithBathrooms(
+      api: widget.api,
+      pins: pins,
+      editableBathrooms: true,
+    );
   }
 }
 
@@ -635,7 +639,11 @@ class _PuzzletsTabState extends State<_PuzzletsTab> {
         Expanded(
           child: pins.isEmpty
               ? const Center(child: Text('No puzzlets with a captured location.'))
-              : PinMap(pins: pins),
+              : MapWithBathrooms(
+                  api: widget.api,
+                  pins: pins,
+                  editableBathrooms: true,
+                ),
         ),
         if (orphan > 0)
           Padding(

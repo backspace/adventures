@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/models/bathroom.dart';
 import 'package:poles/models/pole.dart';
 import 'package:poles/models/poles_event.dart';
 import 'package:poles/models/test_session.dart';
@@ -29,6 +30,7 @@ class HomeRoute extends StatefulWidget {
 
 class _HomeRouteState extends State<HomeRoute> {
   List<Pole>? _poles;
+  List<Bathroom> _bathrooms = const [];
   String? _teamId;
   String? _teamName;
   String? _error;
@@ -100,12 +102,17 @@ class _HomeRouteState extends State<HomeRoute> {
       final results = await Future.wait([
         widget.api.getEvent(),
         widget.api.listPoles(),
+        // Bathrooms are independent data — players see them all the time,
+        // and they're cheap. Fetched in parallel with poles.
+        widget.api.listBathrooms(),
       ]);
       final event = results[0] as PolesEvent;
       final poles = results[1] as List<Pole>;
+      final bathrooms = results[2] as List<Bathroom>;
       if (!mounted) return;
       setState(() {
         _poles = poles;
+        _bathrooms = bathrooms;
         _teamId = teamId;
         _teamName = teamName;
         _isAuthor = isAuthor;
@@ -287,6 +294,20 @@ class _HomeRouteState extends State<HomeRoute> {
                       subdomains: const ['a', 'b', 'c', 'd'],
                       retinaMode: RetinaMode.isHighDensity(context),
                       userAgentPackageName: 'ca.chromatin.poles',
+                    ),
+                    MarkerLayer(
+                      markers: _bathrooms.map((b) {
+                        return Marker(
+                          point: LatLng(b.latitude, b.longitude),
+                          width: 24,
+                          height: 24,
+                          child: Tooltip(
+                            message: b.displayName(),
+                            child: Icon(Icons.wash,
+                                color: Colors.blueGrey.shade400, size: 24),
+                          ),
+                        );
+                      }).toList(),
                     ),
                     MarkerLayer(
                       markers: _poles!.map((pole) {

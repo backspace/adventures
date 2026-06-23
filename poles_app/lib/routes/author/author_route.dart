@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:poles/api/poles_api.dart';
+import 'package:poles/routes/author/capture_bathroom_route.dart';
 import 'package:poles/routes/author/capture_pole_route.dart';
 import 'package:poles/routes/author/capture_puzzlet_route.dart';
 import 'package:poles/routes/author/my_drafts_route.dart';
@@ -28,6 +29,14 @@ class AuthorRoute extends StatelessWidget {
             subtitle: 'Write a question and answer for any pole.',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => CapturePuzzletRoute(api: api)),
+            ),
+          ),
+          _Tile(
+            icon: Icons.wash,
+            title: 'Add a bathroom',
+            subtitle: 'Mark a restroom so players can find one.',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => CaptureBathroomRoute(api: api)),
             ),
           ),
           _Tile(

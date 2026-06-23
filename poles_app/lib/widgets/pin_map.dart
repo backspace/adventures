@@ -111,14 +111,14 @@ class _PinMapState extends State<PinMap> {
           markers: widget.pins
               .map((p) => Marker(
                     point: p.position,
-                    width: 36,
-                    height: 36,
+                    width: p.size,
+                    height: p.size,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: p.onTap,
                       child: Tooltip(
                         message: p.label,
-                        child: Icon(p.icon, color: p.color, size: 36),
+                        child: Icon(p.icon, color: p.color, size: p.size),
                       ),
                     ),
                   ))
