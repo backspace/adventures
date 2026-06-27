@@ -78,9 +78,9 @@
                         ) %>
                       </li>
                     <% end %>
-                    <%= if is_poles() do %>
+                    <%= if is_landgrab() do %>
                       <li>
-                        <%= active_link("Event", @conn, Routes.poles_event_path(@conn, :edit),
+                        <%= active_link("Event", @conn, Routes.landgrab_event_path(@conn, :edit),
                           class: "event"
                         ) %>
                       </li>

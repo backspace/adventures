@@ -25,7 +25,7 @@ defmodule Registrations.Release do
   def backfill_thumbnails do
     load_app()
     {:ok, _} = Application.ensure_all_started(:registrations)
-    result = Registrations.Poles.backfill_thumbnails()
+    result = Registrations.Landgrab.backfill_thumbnails()
     IO.puts("Backfilled thumbnails: #{result.ok} ok, #{result.error} errors")
     result
   end

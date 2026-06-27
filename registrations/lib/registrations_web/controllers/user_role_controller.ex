@@ -5,6 +5,7 @@ defmodule RegistrationsWeb.UserRoleController do
 
   alias Registrations.Accounts
   alias Registrations.Repo
+  alias RegistrationsWeb.JSONAPI.UserView
 
   action_fallback(RegistrationsWeb.FallbackController)
 
@@ -19,19 +20,19 @@ defmodule RegistrationsWeb.UserRoleController do
       |> order_by(:email)
       |> Repo.all()
 
-    render(conn, RegistrationsWeb.JSONAPI.UserView, "index.json", %{data: users, conn: conn, params: params})
+    render(conn, UserView, "index.json", %{data: users, conn: conn, params: params})
   end
 
   def validators(conn, params) do
     current_user = Pow.Plug.current_user(conn)
 
-    unless Accounts.has_role?(current_user, "validation_supervisor") or current_user.admin do
+    if Accounts.has_role?(current_user, "validation_supervisor") or current_user.admin do
+      validators = Accounts.list_users_with_role("validator")
+      render(conn, UserView, "index.json", %{data: validators, conn: conn, params: params})
+    else
       conn
       |> put_status(:forbidden)
       |> json(%{errors: [%{detail: "Must be a validation supervisor or admin"}]})
-    else
-      validators = Accounts.list_users_with_role("validator")
-      render(conn, RegistrationsWeb.JSONAPI.UserView, "index.json", %{data: validators, conn: conn, params: params})
     end
   end
 

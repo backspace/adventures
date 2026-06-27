@@ -5,7 +5,9 @@ defmodule RegistrationsWeb.PowAuthPlug do
   use Pow.Plug.Base
 
   alias Plug.Conn
-  alias Pow.{Config, Plug, Store.CredentialsCache}
+  alias Pow.Config
+  alias Pow.Plug
+  alias Pow.Store.CredentialsCache
   alias PowPersistentSession.Store.PersistentSessionCache
 
   @doc """
@@ -15,8 +17,8 @@ defmodule RegistrationsWeb.PowAuthPlug do
   @spec fetch(Conn.t(), Config.t()) :: {Conn.t(), map() | nil}
   def fetch(conn, config) do
     with {:ok, signed_token} <- fetch_access_token(conn),
-         {:ok, token}        <- verify_token(conn, signed_token, config),
-         {user, _metadata}   <- CredentialsCache.get(store_config(config), token) do
+         {:ok, token} <- verify_token(conn, signed_token, config),
+         {user, _metadata} <- CredentialsCache.get(store_config(config), token) do
       {conn, user}
     else
       _any -> {conn, nil}
@@ -33,8 +35,8 @@ defmodule RegistrationsWeb.PowAuthPlug do
   @impl true
   @spec create(Conn.t(), map(), Config.t()) :: {Conn.t(), map()}
   def create(conn, user, config) do
-    store_config  = store_config(config)
-    access_token  = Pow.UUID.generate()
+    store_config = store_config(config)
+    access_token = Pow.UUID.generate()
     renewal_token = Pow.UUID.generate()
 
     conn =
@@ -65,9 +67,8 @@ defmodule RegistrationsWeb.PowAuthPlug do
     store_config = store_config(config)
 
     with {:ok, signed_token} <- fetch_access_token(conn),
-         {:ok, token}        <- verify_token(conn, signed_token, config),
-         {_user, metadata}   <- CredentialsCache.get(store_config, token) do
-
+         {:ok, token} <- verify_token(conn, signed_token, config),
+         {_user, metadata} <- CredentialsCache.get(store_config, token) do
       Conn.register_before_send(conn, fn conn ->
         PersistentSessionCache.delete(store_config, metadata[:renewal_token])
         CredentialsCache.delete(store_config, token)
@@ -91,9 +92,8 @@ defmodule RegistrationsWeb.PowAuthPlug do
     store_config = store_config(config)
 
     with {:ok, signed_token} <- fetch_access_token(conn),
-         {:ok, token}        <- verify_token(conn, signed_token, config),
-         {user, metadata}    <- PersistentSessionCache.get(store_config, token) do
-
+         {:ok, token} <- verify_token(conn, signed_token, config),
+         {user, metadata} <- PersistentSessionCache.get(store_config, token) do
       {conn, user} = create(conn, user, config)
 
       conn =
@@ -114,17 +114,16 @@ defmodule RegistrationsWeb.PowAuthPlug do
     Plug.sign_token(conn, signing_salt(), token, config)
   end
 
-  defp signing_salt(), do: Atom.to_string(__MODULE__)
+  defp signing_salt, do: Atom.to_string(__MODULE__)
 
   defp fetch_access_token(conn) do
     case Conn.get_req_header(conn, "authorization") do
       [token | _rest] -> {:ok, token}
-      _any            -> :error
+      _any -> :error
     end
   end
 
-  defp verify_token(conn, token, config),
-    do: Plug.verify_token(conn, signing_salt(), token, config)
+  defp verify_token(conn, token, config), do: Plug.verify_token(conn, signing_salt(), token, config)
 
   defp store_config(config) do
     backend = Config.get(config, :cache_store_backend, Pow.Store.Backend.EtsCache)

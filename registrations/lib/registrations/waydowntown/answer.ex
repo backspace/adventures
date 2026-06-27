@@ -4,6 +4,8 @@ defmodule Registrations.Waydowntown.Answer do
 
   import Ecto.Changeset
 
+  alias Registrations.Waydowntown.Specification
+
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "waydowntown"
 
@@ -13,7 +15,7 @@ defmodule Registrations.Waydowntown.Answer do
     field(:hint, :string)
     field(:order, :integer)
 
-    belongs_to(:specification, Registrations.Waydowntown.Specification, type: :binary_id)
+    belongs_to(:specification, Specification, type: :binary_id)
     belongs_to(:region, Registrations.Waydowntown.Region, type: :binary_id)
 
     has_many(:reveals, Registrations.Waydowntown.Reveal, on_delete: :delete_all)
@@ -41,20 +43,19 @@ defmodule Registrations.Waydowntown.Answer do
 
   defp requires_order?(answer, changeset) do
     concept =
-      cond do
-        answer.specification && answer.specification.__struct__ != Ecto.Association.NotLoaded ->
-          answer.specification.concept
+      if answer.specification && answer.specification.__struct__ != Ecto.Association.NotLoaded do
+        answer.specification.concept
+      else
+        spec_id = get_field(changeset, :specification_id)
 
-        true ->
-          spec_id = get_field(changeset, :specification_id)
-
-          if spec_id do
-            Registrations.Repo.get(Registrations.Waydowntown.Specification, spec_id)
-            |> case do
-              nil -> nil
-              spec -> spec.concept
-            end
+        if spec_id do
+          Specification
+          |> Registrations.Repo.get(spec_id)
+          |> case do
+            nil -> nil
+            spec -> spec.concept
           end
+        end
       end
 
     concept in @ordered_concepts

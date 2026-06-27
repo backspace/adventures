@@ -86,7 +86,7 @@ defmodule Registrations.Factory do
   end
 
   def pole_factory do
-    %Registrations.Poles.Pole{
+    %Registrations.Landgrab.Pole{
       barcode: sequence(:barcode, &"BC-#{&1}"),
       latitude: 51.04,
       longitude: -114.07
@@ -94,7 +94,7 @@ defmodule Registrations.Factory do
   end
 
   def puzzlet_factory do
-    %Registrations.Poles.Puzzlet{
+    %Registrations.Landgrab.Puzzlet{
       instructions: "Find the answer",
       answer: "Foo",
       difficulty: 1,
@@ -103,18 +103,18 @@ defmodule Registrations.Factory do
   end
 
   def capture_factory do
-    %Registrations.Poles.Capture{}
+    %Registrations.Landgrab.Capture{}
   end
 
   def attempt_factory do
-    %Registrations.Poles.Attempt{
+    %Registrations.Landgrab.Attempt{
       answer_given: "x",
       correct: false
     }
   end
 
   def poles_region_factory do
-    %Registrations.Poles.Region{
+    %Registrations.Landgrab.Region{
       name: sequence(:region_name, &"Region #{&1}")
     }
   end

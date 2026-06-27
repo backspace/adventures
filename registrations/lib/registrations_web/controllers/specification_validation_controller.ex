@@ -9,21 +9,12 @@ defmodule RegistrationsWeb.SpecificationValidationController do
   def create(conn, params) do
     current_user = Pow.Plug.current_user(conn)
 
-    unless Accounts.has_role?(current_user, "validation_supervisor") do
-      conn
-      |> put_status(:forbidden)
-      |> json(%{errors: [%{detail: "Must be a validation supervisor"}]})
-    else
+    if Accounts.has_role?(current_user, "validation_supervisor") do
       validator_id = params["validator_id"]
 
-      unless validator_id && Accounts.has_role?(%{id: validator_id}, "validator") do
-        conn
-        |> put_status(:unprocessable_entity)
-        |> json(%{errors: [%{detail: "Target user must have the validator role"}]})
-      else
+      if validator_id && Accounts.has_role?(%{id: validator_id}, "validator") do
         attrs =
-          params
-          |> Map.put("assigned_by_id", current_user.id)
+          Map.put(params, "assigned_by_id", current_user.id)
 
         case Waydowntown.create_specification_validation(attrs) do
           {:ok, validation} ->
@@ -34,7 +25,15 @@ defmodule RegistrationsWeb.SpecificationValidationController do
           {:error, changeset} ->
             {:error, changeset}
         end
+      else
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: [%{detail: "Target user must have the validator role"}]})
       end
+    else
+      conn
+      |> put_status(:forbidden)
+      |> json(%{errors: [%{detail: "Must be a validation supervisor"}]})
     end
   end
 

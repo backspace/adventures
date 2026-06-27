@@ -340,7 +340,9 @@ defmodule Registrations.Waydowntown do
   end
 
   def list_specifications do
-    Specification |> Repo.all() |> Repo.preload(answers: [:region], region: [parent: [parent: [:parent]]], creator: user_preload_query())
+    Specification
+    |> Repo.all()
+    |> Repo.preload(answers: [:region], region: [parent: [parent: [:parent]]], creator: user_preload_query())
   end
 
   def list_specifications_for(user) do
@@ -350,7 +352,7 @@ defmodule Registrations.Waydowntown do
     |> Repo.preload(answers: [:reveals, :region], region: [parent: [parent: [:parent]]])
   end
 
-  def get_answer!(id), do: Repo.get!(Answer, id) |> Repo.preload(:specification)
+  def get_answer!(id), do: Answer |> Repo.get!(id) |> Repo.preload(:specification)
 
   def create_answer(attrs) do
     %Answer{}

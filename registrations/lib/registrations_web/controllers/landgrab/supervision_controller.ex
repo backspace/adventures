@@ -1,0 +1,471 @@
+defmodule RegistrationsWeb.Landgrab.SupervisionController do
+  use RegistrationsWeb, :controller
+
+  alias Ecto.Association.NotLoaded
+  alias Registrations.Landgrab
+  alias Registrations.Landgrab.Pole
+  alias Registrations.Landgrab.Puzzlet
+  alias Registrations.Landgrab.Validations
+  alias Registrations.Landgrab.Validations.PoleValidation
+  alias Registrations.Landgrab.Validations.PoleValidationComment
+  alias Registrations.Landgrab.Validations.PuzzletValidation
+  alias Registrations.Landgrab.Validations.PuzzletValidationComment
+
+  def dashboard(conn, _params) do
+    json(conn, Validations.dashboard_counts())
+  end
+
+  def list_validators(conn, params) do
+    opts =
+      case params["exclude_user_id"] do
+        nil -> []
+        id -> [exclude_user_id: id]
+      end
+
+    users = Validations.list_validators(opts)
+
+    json(conn, %{
+      validators:
+        Enum.map(users, fn u ->
+          %{id: u.id, email: u.email, name: u.name}
+        end)
+    })
+  end
+
+  def list_poles(conn, params) do
+    poles = Validations.list_poles_for_supervision(%{status: params["status"]})
+    active = Validations.active_validations_by_pole(Enum.map(poles, & &1.id))
+
+    json(conn, %{
+      poles: Enum.map(poles, fn p -> render_pole_with_active(p, Map.get(active, p.id)) end)
+    })
+  end
+
+  def list_puzzlets(conn, params) do
+    puzzlets = Validations.list_puzzlets_for_supervision(%{status: params["status"]})
+    active = Validations.active_validations_by_puzzlet(Enum.map(puzzlets, & &1.id))
+
+    json(conn, %{
+      puzzlets: Enum.map(puzzlets, fn p -> render_puzzlet_with_active(p, Map.get(active, p.id)) end)
+    })
+  end
+
+  defp render_pole_with_active(pole, validation) do
+    pole
+    |> render_pole()
+    |> Map.put(:active_validation, render_active_summary(validation))
+  end
+
+  defp render_puzzlet_with_active(puzzlet, validation) do
+    puzzlet
+    |> render_puzzlet()
+    |> Map.put(:active_validation, render_active_summary(validation))
+  end
+
+  defp render_active_summary(nil), do: nil
+
+  defp render_active_summary(%{} = validation) do
+    %{
+      id: validation.id,
+      status: validation.status,
+      comment_count: length(validation.comments || [])
+    }
+  end
+
+  def list_pole_validations(conn, %{"id" => pole_id}) do
+    validations = Validations.list_validations_for_pole(pole_id)
+    json(conn, %{validations: Enum.map(validations, &render_pole_validation/1)})
+  end
+
+  def list_puzzlet_validations(conn, %{"id" => puzzlet_id}) do
+    validations = Validations.list_validations_for_puzzlet(puzzlet_id)
+    json(conn, %{validations: Enum.map(validations, &render_puzzlet_validation/1)})
+  end
+
+  # ──────── Assign ─────────────────────────────────────────────────
+
+  def assign_pole(conn, %{"id" => pole_id, "validator_id" => validator_id}) do
+    user = Pow.Plug.current_user(conn)
+
+    case Validations.assign_pole_validation(pole_id, validator_id, user.id) do
+      {:ok, validation} ->
+        conn |> put_status(:created) |> json(render_pole_validation(validation))
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        unprocessable(conn, changeset)
+    end
+  end
+
+  def assign_puzzlet(conn, %{"id" => puzzlet_id, "validator_id" => validator_id}) do
+    user = Pow.Plug.current_user(conn)
+
+    case Validations.assign_puzzlet_validation(puzzlet_id, validator_id, user.id) do
+      {:ok, validation} ->
+        conn |> put_status(:created) |> json(render_puzzlet_validation(validation))
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        unprocessable(conn, changeset)
+    end
+  end
+
+  # ──────── Change validator on an in-flight validation ────────────
+
+  def reassign_pole_validation(conn, %{"id" => id, "validator_id" => new_validator_id}) do
+    user = Pow.Plug.current_user(conn)
+
+    case Validations.get_pole_validation(id) do
+      nil ->
+        not_found(conn)
+
+      validation ->
+        case Validations.reassign_pole_validation(validation, new_validator_id, user.id) do
+          {:ok, updated} ->
+            json(conn, render_pole_validation(updated))
+
+          {:error, :terminal_status} ->
+            conn
+            |> put_status(:conflict)
+            |> json(%{
+              error: %{
+                code: "terminal_status",
+                detail: "Cannot reassign a finalized validation."
+              }
+            })
+
+          {:error, %Ecto.Changeset{} = c} ->
+            unprocessable(conn, c)
+        end
+    end
+  end
+
+  def reassign_puzzlet_validation(conn, %{"id" => id, "validator_id" => new_validator_id}) do
+    user = Pow.Plug.current_user(conn)
+
+    case Validations.get_puzzlet_validation(id) do
+      nil ->
+        not_found(conn)
+
+      validation ->
+        case Validations.reassign_puzzlet_validation(validation, new_validator_id, user.id) do
+          {:ok, updated} ->
+            json(conn, render_puzzlet_validation(updated))
+
+          {:error, :terminal_status} ->
+            conn
+            |> put_status(:conflict)
+            |> json(%{
+              error: %{
+                code: "terminal_status",
+                detail: "Cannot reassign a finalized validation."
+              }
+            })
+
+          {:error, %Ecto.Changeset{} = c} ->
+            unprocessable(conn, c)
+        end
+    end
+  end
+
+  # ──────── Unassign (undo of a fresh assignment) ──────────────────
+
+  def unassign_pole_validation(conn, %{"id" => id}) do
+    case Validations.get_pole_validation(id) do
+      nil -> not_found(conn)
+      validation -> handle_unassign(conn, Validations.unassign_pole_validation(validation))
+    end
+  end
+
+  def unassign_puzzlet_validation(conn, %{"id" => id}) do
+    case Validations.get_puzzlet_validation(id) do
+      nil -> not_found(conn)
+      validation -> handle_unassign(conn, Validations.unassign_puzzlet_validation(validation))
+    end
+  end
+
+  defp handle_unassign(conn, {:ok, _}), do: send_resp(conn, :no_content, "")
+
+  defp handle_unassign(conn, {:error, :not_unassignable}) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{
+      error: %{
+        code: "not_unassignable",
+        detail: "Validation can only be unassigned right after creation, before any comments are added."
+      }
+    })
+  end
+
+  # ──────── Accept / reject validation ─────────────────────────────
+
+  def update_pole_validation(conn, %{"id" => id, "status" => status}) do
+    case Validations.get_pole_validation(id) do
+      nil ->
+        not_found(conn)
+
+      validation ->
+        result =
+          case status do
+            "accepted" -> Validations.accept_pole_validation(validation)
+            "rejected" -> Validations.reject_pole_validation(validation)
+            _ -> {:error, :bad_status}
+          end
+
+        case result do
+          {:ok, updated} -> json(conn, render_pole_validation(updated))
+          {:error, :bad_status} -> unprocessable(conn, "status must be 'accepted' or 'rejected'")
+          {:error, %Ecto.Changeset{} = c} -> unprocessable(conn, c)
+        end
+    end
+  end
+
+  def update_puzzlet_validation(conn, %{"id" => id, "status" => status}) do
+    case Validations.get_puzzlet_validation(id) do
+      nil ->
+        not_found(conn)
+
+      validation ->
+        result =
+          case status do
+            "accepted" -> Validations.accept_puzzlet_validation(validation)
+            "rejected" -> Validations.reject_puzzlet_validation(validation)
+            _ -> {:error, :bad_status}
+          end
+
+        case result do
+          {:ok, updated} -> json(conn, render_puzzlet_validation(updated))
+          {:error, :bad_status} -> unprocessable(conn, "status must be 'accepted' or 'rejected'")
+          {:error, %Ecto.Changeset{} = c} -> unprocessable(conn, c)
+        end
+    end
+  end
+
+  # ──────── Decide a single comment (apply suggestion) ─────────────
+
+  def update_pole_comment(conn, %{"id" => id, "status" => status}) do
+    case Validations.get_pole_comment(id) do
+      nil ->
+        not_found(conn)
+
+      comment ->
+        result =
+          case status do
+            "accepted" -> Validations.accept_pole_comment(comment)
+            "rejected" -> Validations.reject_pole_comment(comment)
+            _ -> {:error, :bad_status}
+          end
+
+        case result do
+          {:ok, updated} ->
+            json(conn, render_comment(updated))
+
+          {:error, :bad_status} ->
+            unprocessable(conn, "status must be 'accepted' or 'rejected'")
+
+          {:error, :bad_number} ->
+            unprocessable(conn, "suggested_value cannot be parsed as a number")
+
+          {:error, %Ecto.Changeset{} = c} ->
+            unprocessable(conn, c)
+        end
+    end
+  end
+
+  def update_puzzlet_comment(conn, %{"id" => id, "status" => status}) do
+    case Validations.get_puzzlet_comment(id) do
+      nil ->
+        not_found(conn)
+
+      comment ->
+        result =
+          case status do
+            "accepted" -> Validations.accept_puzzlet_comment(comment)
+            "rejected" -> Validations.reject_puzzlet_comment(comment)
+            _ -> {:error, :bad_status}
+          end
+
+        case result do
+          {:ok, updated} ->
+            json(conn, render_comment(updated))
+
+          {:error, :bad_status} ->
+            unprocessable(conn, "status must be 'accepted' or 'rejected'")
+
+          {:error, :bad_number} ->
+            unprocessable(conn, "suggested_value cannot be parsed as a number")
+
+          {:error, %Ecto.Changeset{} = c} ->
+            unprocessable(conn, c)
+        end
+    end
+  end
+
+  # ──────── Direct edits to target ─────────────────────────────────
+
+  def update_pole(conn, %{"id" => id} = params) do
+    case Landgrab.get_pole!(id) do
+      nil ->
+        not_found(conn)
+
+      pole ->
+        attrs =
+          Map.take(params, [
+            "barcode",
+            "label",
+            "latitude",
+            "longitude",
+            "notes",
+            "accuracy_m",
+            "status",
+            "accessibility_tags",
+            "accessibility_notes"
+          ])
+
+        case Validations.supervisor_update_pole(pole, attrs) do
+          {:ok, updated} -> json(conn, render_pole(updated))
+          {:error, c} -> unprocessable(conn, c)
+        end
+    end
+  rescue
+    Ecto.NoResultsError -> not_found(conn)
+  end
+
+  def update_puzzlet(conn, %{"id" => id} = params) do
+    case Landgrab.get_puzzlet(id) do
+      nil ->
+        not_found(conn)
+
+      puzzlet ->
+        attrs =
+          Map.take(params, [
+            "instructions",
+            "answer",
+            "answer_type",
+            "difficulty",
+            "latitude",
+            "longitude",
+            "accuracy_m",
+            "pole_id",
+            "status",
+            "accessibility_tags",
+            "accessibility_notes",
+            "warning"
+          ])
+
+        case Validations.supervisor_update_puzzlet(puzzlet, attrs) do
+          {:ok, updated} -> json(conn, render_puzzlet(updated))
+          {:error, c} -> unprocessable(conn, c)
+        end
+    end
+  end
+
+  # ──────── Helpers / renderers ────────────────────────────────────
+
+  defp unprocessable(conn, %Ecto.Changeset{} = changeset) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> put_view(RegistrationsWeb.ChangesetView)
+    |> render("error.json", %{changeset: changeset})
+  end
+
+  defp unprocessable(conn, message) when is_binary(message) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> json(%{error: %{detail: message}})
+  end
+
+  defp not_found(conn) do
+    conn |> put_status(:not_found) |> json(%{error: %{code: "not_found"}})
+  end
+
+  defp render_pole(%Pole{} = pole) do
+    %{
+      id: pole.id,
+      barcode: pole.barcode,
+      label: pole.label,
+      latitude: pole.latitude,
+      longitude: pole.longitude,
+      notes: pole.notes,
+      accuracy_m: pole.accuracy_m,
+      status: pole.status,
+      creator_id: pole.creator_id,
+      attachment_ids: Registrations.Landgrab.list_pole_attachment_ids(pole.id),
+      accessibility_tags: pole.accessibility_tags || [],
+      accessibility_notes: pole.accessibility_notes
+    }
+  end
+
+  defp render_puzzlet(%Puzzlet{} = puzzlet) do
+    Map.merge(
+      %{
+        id: puzzlet.id,
+        instructions: puzzlet.instructions,
+        answer: puzzlet.answer,
+        answer_type: puzzlet.answer_type,
+        difficulty: puzzlet.difficulty,
+        status: puzzlet.status,
+        pole_id: puzzlet.pole_id,
+        latitude: puzzlet.latitude,
+        longitude: puzzlet.longitude,
+        creator_id: puzzlet.creator_id,
+        attachment_ids: Registrations.Landgrab.list_puzzlet_attachment_ids(puzzlet.id),
+        accessibility_tags: puzzlet.accessibility_tags || [],
+        accessibility_notes: puzzlet.accessibility_notes,
+        warning: puzzlet.warning
+      },
+      Registrations.Landgrab.Regions.puzzlet_inheritance_payload(puzzlet)
+    )
+  end
+
+  defp render_pole_validation(%PoleValidation{} = v) do
+    %{
+      id: v.id,
+      status: v.status,
+      pole_id: v.pole_id,
+      validator_id: v.validator_id,
+      validator: render_assoc(v.validator, &render_user/1),
+      assigned_by_id: v.assigned_by_id,
+      overall_notes: v.overall_notes,
+      pole: render_assoc(v.pole, &render_pole/1),
+      comments: render_comments(v.comments)
+    }
+  end
+
+  defp render_puzzlet_validation(%PuzzletValidation{} = v) do
+    %{
+      id: v.id,
+      status: v.status,
+      puzzlet_id: v.puzzlet_id,
+      validator_id: v.validator_id,
+      validator: render_assoc(v.validator, &render_user/1),
+      assigned_by_id: v.assigned_by_id,
+      overall_notes: v.overall_notes,
+      puzzlet: render_assoc(v.puzzlet, &render_puzzlet/1),
+      comments: render_comments(v.comments)
+    }
+  end
+
+  defp render_user(%RegistrationsWeb.User{} = u) do
+    %{id: u.id, email: u.email, name: u.name}
+  end
+
+  defp render_assoc(%NotLoaded{}, _), do: nil
+  defp render_assoc(nil, _), do: nil
+  defp render_assoc(record, fun), do: fun.(record)
+
+  defp render_comments(%NotLoaded{}), do: []
+  defp render_comments(nil), do: []
+  defp render_comments(list), do: Enum.map(list, &render_comment/1)
+
+  defp render_comment(%PoleValidationComment{} = c), do: render_comment_map(c)
+  defp render_comment(%PuzzletValidationComment{} = c), do: render_comment_map(c)
+
+  defp render_comment_map(c) do
+    %{
+      id: c.id,
+      field: c.field,
+      comment: c.comment,
+      suggested_value: c.suggested_value,
+      status: c.status
+    }
+  end
+end

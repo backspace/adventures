@@ -2,7 +2,7 @@ defmodule Registrations.Integration.UserRoles do
   @moduledoc false
   use RegistrationsWeb.FeatureCase
   use Registrations.SwooshHelper
-  use Registrations.SetAdventure, adventure: "poles"
+  use Registrations.SetAdventure, adventure: "landgrab"
 
   alias Registrations.Pages.Login
   alias Registrations.Pages.Nav

@@ -78,8 +78,8 @@ defmodule RegistrationsWeb.SharedHelpers do
     Application.get_env(:registrations, :adventure) == "waydowntown"
   end
 
-  def is_poles do
-    Application.get_env(:registrations, :adventure) == "poles"
+  def is_landgrab do
+    Application.get_env(:registrations, :adventure) == "landgrab"
   end
 
   defp formatted_start_time(format_string) do

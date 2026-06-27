@@ -8,6 +8,7 @@ defmodule RegistrationsWeb.Router do
     extensions: [PowResetPassword, PowInvitation, PowPersistentSession]
 
   alias Pow.Plug.RequireAuthenticated
+  alias RegistrationsWeb.Plugs.RequireRole
 
   pipeline :browser do
     plug(:accepts, ["html"])
@@ -59,28 +60,28 @@ defmodule RegistrationsWeb.Router do
     plug(RegistrationsWeb.Plugs.AdminAPI)
   end
 
-  pipeline :poles_author do
+  pipeline :landgrab_author do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
-    plug(RegistrationsWeb.Plugs.RequireRole, role: "author")
+    plug(RequireRole, role: "author")
   end
 
-  pipeline :poles_validator do
+  pipeline :landgrab_validator do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
-    plug(RegistrationsWeb.Plugs.RequireRole, role: "validator")
+    plug(RequireRole, role: "validator")
   end
 
-  pipeline :poles_supervisor do
+  pipeline :landgrab_supervisor do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
-    plug(RegistrationsWeb.Plugs.RequireRole, role: "validation_supervisor")
+    plug(RequireRole, role: "validation_supervisor")
   end
 
-  pipeline :poles_tester do
+  pipeline :landgrab_tester do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
@@ -128,8 +129,8 @@ defmodule RegistrationsWeb.Router do
 
     resources "/settings", SettingsController
 
-    get("/poles-event", PolesEventController, :edit, as: :poles_event)
-    put("/poles-event", PolesEventController, :update, as: :poles_event)
+    get("/landgrab-event", LandgrabEventController, :edit, as: :landgrab_event)
+    put("/landgrab-event", LandgrabEventController, :update, as: :landgrab_event)
 
     get("/user-roles", AdminUserRoleController, :index, as: :admin_user_role)
     post("/user-roles", AdminUserRoleController, :create, as: :admin_user_role)
@@ -211,7 +212,7 @@ defmodule RegistrationsWeb.Router do
     get("/validators", UserRoleController, :validators)
   end
 
-  scope "/poles", RegistrationsWeb.Poles, as: :poles do
+  scope "/landgrab", RegistrationsWeb.Landgrab, as: :landgrab do
     pipe_through([:pow_api, :pow_api_protected])
 
     get("/me", MeController, :show)
@@ -224,8 +225,8 @@ defmodule RegistrationsWeb.Router do
     get("/bathrooms", BathroomController, :index)
   end
 
-  scope "/poles/drafts", RegistrationsWeb.Poles, as: :poles_drafts do
-    pipe_through([:poles_author])
+  scope "/landgrab/drafts", RegistrationsWeb.Landgrab, as: :landgrab_drafts do
+    pipe_through([:landgrab_author])
 
     get("/mine", DraftController, :index)
     post("/poles", DraftController, :create_pole)
@@ -239,8 +240,8 @@ defmodule RegistrationsWeb.Router do
     delete("/attachments/:id", AttachmentController, :delete)
   end
 
-  scope "/poles/bathrooms", RegistrationsWeb.Poles, as: :poles_bathrooms_author do
-    pipe_through([:poles_author])
+  scope "/landgrab/bathrooms", RegistrationsWeb.Landgrab, as: :landgrab_bathrooms_author do
+    pipe_through([:landgrab_author])
 
     get("/mine", BathroomController, :mine)
     post("/", BathroomController, :create)
@@ -249,15 +250,15 @@ defmodule RegistrationsWeb.Router do
   # PATCH/DELETE allow creator (typically an author) OR a supervisor
   # override. The controller's can_modify? does the actual gate; we just
   # need to be past auth here.
-  scope "/poles/bathrooms", RegistrationsWeb.Poles, as: :poles_bathrooms do
+  scope "/landgrab/bathrooms", RegistrationsWeb.Landgrab, as: :landgrab_bathrooms do
     pipe_through([:pow_api, :pow_api_protected])
 
     patch("/:id", BathroomController, :update)
     delete("/:id", BathroomController, :delete)
   end
 
-  scope "/poles/regions", RegistrationsWeb.Poles, as: :poles_regions do
-    pipe_through([:poles_author])
+  scope "/landgrab/regions", RegistrationsWeb.Landgrab, as: :landgrab_regions do
+    pipe_through([:landgrab_author])
 
     get("/", RegionController, :index)
     post("/", RegionController, :create)
@@ -266,17 +267,15 @@ defmodule RegistrationsWeb.Router do
     delete("/:id", RegionController, :delete)
   end
 
-  scope "/poles/validation", RegistrationsWeb.Poles, as: :poles_validation do
-    pipe_through([:poles_validator])
+  scope "/landgrab/validation", RegistrationsWeb.Landgrab, as: :landgrab_validation do
+    pipe_through([:landgrab_validator])
 
     get("/mine", ValidationController, :mine)
     patch("/pole-validations/:id", ValidationController, :update_pole_validation)
     patch("/puzzlet-validations/:id", ValidationController, :update_puzzlet_validation)
 
-    post("/pole-validations/:validation_id/comments",
-         ValidationController, :create_pole_comment)
-    post("/puzzlet-validations/:validation_id/comments",
-         ValidationController, :create_puzzlet_comment)
+    post("/pole-validations/:validation_id/comments", ValidationController, :create_pole_comment)
+    post("/puzzlet-validations/:validation_id/comments", ValidationController, :create_puzzlet_comment)
 
     patch("/pole-comments/:id", ValidationController, :update_pole_comment)
     patch("/puzzlet-comments/:id", ValidationController, :update_puzzlet_comment)
@@ -284,8 +283,8 @@ defmodule RegistrationsWeb.Router do
     delete("/puzzlet-comments/:id", ValidationController, :delete_puzzlet_comment)
   end
 
-  scope "/poles/test-play", RegistrationsWeb.Poles, as: :poles_test_play do
-    pipe_through([:poles_tester])
+  scope "/landgrab/test-play", RegistrationsWeb.Landgrab, as: :landgrab_test_play do
+    pipe_through([:landgrab_tester])
 
     post("/sessions", TestPlayController, :create_session)
     get("/sessions", TestPlayController, :list_sessions)
@@ -293,6 +292,7 @@ defmodule RegistrationsWeb.Router do
 
     get("/sessions/:session_id/poles", TestPlayController, :list_poles)
     get("/sessions/:session_id/poles/:barcode", TestPlayController, :scan_pole)
+
     post(
       "/sessions/:session_id/puzzlets/:puzzlet_id/attempts",
       TestPlayController,
@@ -300,8 +300,8 @@ defmodule RegistrationsWeb.Router do
     )
   end
 
-  scope "/poles/supervision", RegistrationsWeb.Poles, as: :poles_supervision do
-    pipe_through([:poles_supervisor])
+  scope "/landgrab/supervision", RegistrationsWeb.Landgrab, as: :landgrab_supervision do
+    pipe_through([:landgrab_supervisor])
 
     get("/dashboard", SupervisionController, :dashboard)
     get("/validators", SupervisionController, :list_validators)
@@ -322,6 +322,7 @@ defmodule RegistrationsWeb.Router do
       SupervisionController,
       :reassign_pole_validation
     )
+
     patch(
       "/puzzlet-validations/:id/validator",
       SupervisionController,

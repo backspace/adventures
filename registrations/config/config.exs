@@ -67,7 +67,7 @@ config :esbuild,
   registrations: [
     args: ~w(
       js/clandestine-rendezvous.js
-      js/poles.js
+      js/landgrab.js
       js/unmnemonic-devices.js
       js/waydowntown.js
       --bundle
@@ -85,8 +85,8 @@ config :dart_sass,
       --load-path=node_modules
       css/clandestine-rendezvous.scss:../priv/static/css/clandestine-rendezvous.css
       css/clandestine-rendezvous-email.scss:../priv/static/css/clandestine-rendezvous-email.css
-      css/poles.scss:../priv/static/css/poles.css
-      css/poles-email.scss:../priv/static/css/poles-email.css
+      css/landgrab.scss:../priv/static/css/landgrab.css
+      css/landgrab-email.scss:../priv/static/css/landgrab-email.css
       css/unmnemonic-devices.scss:../priv/static/css/unmnemonic-devices.css
       css/unmnemonic-devices-email.scss:../priv/static/css/unmnemonic-devices-email.css
       css/waydowntown.scss:../priv/static/css/waydowntown.css
