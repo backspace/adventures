@@ -1,11 +1,11 @@
 msgid "title"
-msgstr "Poles"
+msgstr "LANDGRAB"
 
 msgid "email_title"
-msgstr "poles"
+msgstr "landgrab"
 
 msgid "description"
-msgstr "Poles."
+msgstr "LANDGRAB — a territory game at The Forks."
 
 msgid "change_deadline"
 msgstr " "

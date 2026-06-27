@@ -1,13 +1,68 @@
-<div class="row title">
-  <div class="small-12 columns">
-    <h1>Poles</h1>
+<% {vb_w, vb_h} = RegistrationsWeb.Poles.view_box() %>
+<div class="landgrab-hero">
+  <div class="landgrab-stage">
+    <svg
+      class="landgrab-map"
+      viewBox={"0 0 #{vb_w} #{vb_h}"}
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+    >
+
+      <rect width={vb_w} height={vb_h} fill="#0a0a0a" />
+      <g class="landgrab-grid" fill="#161616">
+        <%= for col <- 0..19 do %>
+          <%= for row <- 0..11 do %>
+            <circle cx={col * 42 + 12} cy={row * 42 + 12} r="0.7" />
+          <% end %>
+        <% end %>
+      </g>
+
+      <g
+        class="landgrab-rivers-casing"
+        fill="none"
+        stroke="#11283d"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <%= for river <- RegistrationsWeb.Poles.rivers() do %>
+          <path
+            d={river["path"]}
+            data-river-id={river["id"]}
+            data-river-name={river["name"]}
+            stroke-width={RegistrationsWeb.Poles.casing_width(river["name"])}
+          />
+        <% end %>
+      </g>
+      <g
+        class="landgrab-rivers"
+        fill="none"
+        stroke="#2d6a9f"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <%= for river <- RegistrationsWeb.Poles.rivers() do %>
+          <path
+            d={river["path"]}
+            data-river-id={river["id"]}
+            data-river-name={river["name"]}
+            stroke-width={RegistrationsWeb.Poles.stroke_width(river["name"])}
+          />
+        <% end %>
+      </g>
+
+      <g class="landgrab-poles"></g>
+    </svg>
+
+    <div class="landgrab-wordmark" aria-label="LANDGRAB">
+      <span class="landgrab-wordmark-text">LANDGRAB</span>
+    </div>
   </div>
 </div>
 
-<div class="row card">
+<div class="row card landgrab-storyline">
   <div class="small-12 columns">
     <p>
-      Welcome to Poles.
+      FIXME
     </p>
   </div>
 </div>
@@ -16,9 +71,9 @@
   <%= unless @hide_waitlist do %>
     <div class="row card" data-test-placeholder>
       <div class="small-12 columns">
-        <h2>Subscribe</h2>
+        <h2>Get notified</h2>
         <p>
-          Provide your email to receive a one-time notification when the site is ready.
+          Drop your email to hear once when the site goes live.
         </p>
         <%= render(RegistrationsWeb.SharedView, "waitlist.html", conn: @conn) %>
       </div>
@@ -32,3 +87,83 @@
     </div>
   </div>
 <% end %>
+
+<script>
+  // Defer revealing the LANDGRAB wordmark until Anton has actually
+  // loaded — otherwise the Helvetica fallback flashes for a frame
+  // before the swap. CSS hides `.landgrab-wordmark-text` until
+  // `<html>` gets `.font-anton-loaded`. The 3s timeout matches what
+  // `font-display: block` would do on its own: show *something*
+  // eventually even if the font request stalls.
+  (function () {
+    var root = document.documentElement;
+    var reveal = function () { root.classList.add('font-anton-loaded'); };
+    if (document.fonts && document.fonts.load) {
+      document.fonts.load('1em "Anton"').then(reveal, reveal);
+      setTimeout(reveal, 3000);
+    } else {
+      reveal();
+    }
+  })();
+
+  (function () {
+    // Rivers are real OSM data baked into the SVG above. Poles are
+    // scattered at random non-water positions each page load, then
+    // fade in grey before being "claimed" by team green or purple.
+    const svg = document.querySelector('.landgrab-map');
+    if (!svg) return;
+
+    const VBW = <%= vb_w %>;
+    const VBH = <%= vb_h %>;
+    const rivers = Array.from(svg.querySelectorAll('.landgrab-rivers path'));
+    const polesLayer = svg.querySelector('.landgrab-poles');
+    const SVG_NS = 'http://www.w3.org/2000/svg';
+
+    const probe = svg.createSVGPoint();
+    function inWater(x, y) {
+      probe.x = x; probe.y = y;
+      return rivers.some(r => r.isPointInStroke(probe));
+    }
+
+    // A pole "clears" water only if the whole disc — center + edge —
+    // is on land. Otherwise a pole near a riverbank can still bleed
+    // into the water because `isPointInStroke` only tests the centre.
+    const POLE_RADIUS = 6;
+    function poleClearsWater(x, y) {
+      if (inWater(x, y)) return false;
+      const samples = 12;
+      for (let i = 0; i < samples; i++) {
+        const theta = (i / samples) * Math.PI * 2;
+        const ex = x + POLE_RADIUS * Math.cos(theta);
+        const ey = y + POLE_RADIUS * Math.sin(theta);
+        if (inWater(ex, ey)) return false;
+      }
+      return true;
+    }
+
+    const POLE_COUNT = 18;
+    const teamColours = ['#5ec96b', '#a25fd6']; // green or purple
+    for (let i = 0; i < POLE_COUNT; i++) {
+      let x, y, ok = false;
+      for (let t = 0; t < 40; t++) {
+        x = 30 + Math.random() * (VBW - 60);
+        y = 30 + Math.random() * (VBH - 60);
+        if (poleClearsWater(x, y)) { ok = true; break; }
+      }
+      if (!ok) continue;
+      const circle = document.createElementNS(SVG_NS, 'circle');
+      circle.setAttribute('cx', x);
+      circle.setAttribute('cy', y);
+      circle.setAttribute('r', 6);
+      circle.classList.add('landgrab-pole');
+      circle.style.setProperty('--claim',
+        teamColours[Math.floor(Math.random() * teamColours.length)]);
+      // Random delays in [400, 4000]ms so poles are captured in an
+      // unpredictable order rather than left-to-right. They're visible
+      // (grey) from the first frame because the static fill is grey;
+      // the animation only changes the colour once the delay elapses.
+      circle.style.animationDelay = (400 + Math.random() * 3600) + 'ms';
+      polesLayer.appendChild(circle);
+    }
+  })();
+</script>
