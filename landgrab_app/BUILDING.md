@@ -2,11 +2,11 @@
 
 Three flavors, set via `--dart-define`:
 
-| Flavor | Default API | Env switcher visible | Audience |
-|---|---|---|---|
-| `dev` | localhost | yes | local dev (Xcode/Android Studio Run) |
-| `alpha` | staging | yes | TestFlight Internal + Play Internal Testing |
-| `production` | prod | no | TestFlight External / App Store / Play Open Testing |
+| Flavor       | Default API | Env switcher visible | Audience                                            |
+| ------------ | ----------- | -------------------- | --------------------------------------------------- |
+| `dev`        | localhost   | yes                  | local dev (Xcode/Android Studio Run)                |
+| `alpha`      | staging     | yes                  | TestFlight Internal + Play Internal Testing         |
+| `production` | prod        | no                   | TestFlight External / App Store / Play Open Testing |
 
 `F.appFlavor` is set from the `FLAVOR_NAME` build define. `app.dart` resolves the API root in priority order:
 
@@ -72,7 +72,7 @@ For everyone else. No env switcher in the UI.
 flutter build ipa \
   --build-number=$(git rev-list --count HEAD) \
   --dart-define=FLAVOR_NAME=production \
-  --dart-define=API_ROOT=https://poles.chromatin.ca \
+  --dart-define=API_ROOT=https://landgrab.chromatin.ca \
   --dart-define=SENTRY_DSN=$SENTRY_DSN
 ```
 
@@ -84,7 +84,7 @@ Upload to TestFlight (external testing review) or App Store.
 flutter build appbundle \
   --build-number=$(git rev-list --count HEAD) \
   --dart-define=FLAVOR_NAME=production \
-  --dart-define=API_ROOT=https://poles.chromatin.ca \
+  --dart-define=API_ROOT=https://landgrab.chromatin.ca \
   --dart-define=SENTRY_DSN=$SENTRY_DSN
 ```
 

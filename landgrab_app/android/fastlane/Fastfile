@@ -12,7 +12,7 @@ if File.exist?(env_file)
 end
 
 ALPHA_API_ROOT      = "https://poles-staging.chromatin.ca"
-PRODUCTION_API_ROOT = "https://poles.chromatin.ca"
+PRODUCTION_API_ROOT = "https://landgrab.chromatin.ca"
 FLUTTER_PROJECT_DIR = File.expand_path("../..", __dir__)
 AAB_DIR             = File.join(FLUTTER_PROJECT_DIR, "build/app/outputs/bundle/release")
 
