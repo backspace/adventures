@@ -11,9 +11,6 @@ config :logger, level: :warning
 
 config :registrations, Registrations.Mailer, adapter: Swoosh.Adapters.Local
 
-config :registrations,
-  hide_waitlist: false
-
 # Configure your database
 config :registrations, Registrations.Repo,
   adapter: Ecto.Adapters.Postgres,

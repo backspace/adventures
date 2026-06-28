@@ -204,24 +204,6 @@ defmodule Registrations.Waydowntown.Integration.Home do
              "Email: interested@example.com\nQuestion: When will the event take place?\n\nHost: (unset)"
   end
 
-  test "placeholder page does not have waitlist form when hidden", %{session: session} do
-    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
-      :registrations,
-      :placeholder,
-      true
-    )
-
-    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
-      :registrations,
-      :hide_waitlist,
-      true
-    )
-
-    visit(session, "/")
-
-    refute Home.placeholder_exists?(session)
-  end
-
   test "placeholder page shows error for invalid email in waitlist form", %{session: session} do
     Registrations.ApplicationEnvHelpers.put_application_env_for_test(
       :registrations,

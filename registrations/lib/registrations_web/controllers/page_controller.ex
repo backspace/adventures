@@ -23,7 +23,9 @@ defmodule RegistrationsWeb.PageController do
           false
       end
 
-    hide_waitlist = Application.get_env(:registrations, :hide_waitlist, false)
+    # The waitlist form only makes sense while the placeholder is showing,
+    # so we derive `hide_waitlist` as the inverse — no separate config.
+    hide_waitlist = !placeholder
 
     adventure_name = Application.get_env(:registrations, :adventure)
     render(conn, "#{adventure_name}.html", placeholder: placeholder, hide_waitlist: hide_waitlist)
