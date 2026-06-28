@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>landgrab</string>
+	<string>lndgrb</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -29,15 +29,15 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>LANDGRAB uses the camera to scan barcodes on poles and to attach photos to drafts.</string>
+	<string>LNDGRB uses the camera to scan barcodes on poles and to attach photos to drafts.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>LANDGRAB lets you attach photos from your library to pole and puzzlet drafts.</string>
+	<string>LNDGRB lets you attach photos from your library to pole and puzzlet drafts.</string>
 	<key>NFCReaderUsageDescription</key>
-	<string>LANDGRAB reads NFC tags so authors can register them as puzzlet answers and players can scan them to submit answers.</string>
+	<string>LNDGRB reads NFC tags so authors can register them as puzzlet answers and players can scan them to submit answers.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>LANDGRAB uses your location to show which poles are nearby.</string>
+	<string>LNDGRB uses your location to show which poles are nearby.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>LANDGRAB uses your location to show which poles are nearby.</string>
+	<string>LNDGRB uses your location to show which poles are nearby.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

@@ -158,7 +158,7 @@ class _HomeRouteState extends State<HomeRoute> {
 
   @override
   Widget build(BuildContext context) {
-    final titleText = _teamName == null ? 'LANDGRAB' : 'LANDGRAB — $_teamName';
+    final titleText = _teamName == null ? 'LNDGRB' : 'LNDGRB — $_teamName';
     // In test play we intentionally bypass the event-start gate — the
     // whole point of a rehearsal is to play before the event begins.
     final preEvent = !_inTestPlay && _event != null && !_event!.started;

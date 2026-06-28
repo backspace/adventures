@@ -81,6 +81,21 @@ platform :ios do
     end
   end
 
+  desc "Push App Store Connect listing metadata (name, subtitle, description, etc.) without uploading a build."
+  desc "Reads from fastlane/metadata/<locale>/<field>.txt — only files present get pushed; everything else stays as-is in App Store Connect."
+  lane :metadata do
+    upload_to_app_store(
+      api_key: asc_api_key,
+      app_identifier: "ca.chromatin.poles",
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      skip_metadata: false,
+      force: true,
+      precheck_include_in_app_purchases: false,
+      submit_for_review: false
+    )
+  end
+
   desc "Build with production flavor (production API) and upload to TestFlight"
   lane :production do
     flutter_build_ipa(

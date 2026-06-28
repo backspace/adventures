@@ -65,6 +65,20 @@ platform :android do
     )
   end
 
+  desc "Push Play Store listing metadata (title, short/full description, video) without uploading a build."
+  desc "Reads from fastlane/metadata/android/<locale>/<field>.txt — only files present get pushed; everything else stays as-is in Play Console."
+  lane :metadata do
+    upload_to_play_store(
+      package_name: "ca.chromatin.poles",
+      json_key: File.expand_path(ENV.fetch("PLAY_JSON_KEY_PATH")),
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
   desc "Build with production flavor (production API) and upload to Play Closed Testing"
   lane :production do
     build_number = next_build_number("production")
