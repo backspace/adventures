@@ -118,6 +118,25 @@
     }
   })();
 
+  // Scroll-fade the "more below" chevron. Cheap to update directly on
+  // scroll — browsers already throttle scroll events to ~60Hz and a
+  // single style write is well within that budget, so no rAF needed.
+  (function () {
+    const hint = document.querySelector('.landgrab-scroll-hint');
+    if (!hint) return;
+    // Fade is complete by ~quarter-viewport of scrolling — quick enough
+    // that the cue gets out of the way as soon as the user engages,
+    // slow enough that a single mouse-wheel tick doesn't snap it off.
+    function fadeDistance() { return Math.max(120, window.innerHeight * 0.25); }
+    function update() {
+      const o = Math.max(0, 1 - window.scrollY / fadeDistance());
+      hint.style.opacity = String(o);
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
+
   // Per-letter drop driven by Pointer Events — unified across mouse,
   // touch, and stylus. Each slot the pointer crosses gets `.is-active`
   // and that class sticks for the rest of the gesture, so sweeping
@@ -383,6 +402,27 @@
       return choices[Math.floor(Math.random() * choices.length)];
     }
 
+    // Per-pole timer registry so we can pause/resume cleanly when the
+    // tab is backgrounded. Without this, browsers throttle setTimeout
+    // on hidden tabs and then flush a flurry of late captures when the
+    // user returns — every queued flip firing inside a second.
+    const timers = new Map();
+
+    function scheduleCapture(pole) {
+      const isInitial = pole.color === null;
+      const color = isInitial
+        ? TEAMS[Math.floor(Math.random() * TEAMS.length)]
+        : pickNextColor(pole.color);
+      const delay = isInitial
+        ? INITIAL_MIN_MS + Math.random() * (INITIAL_MAX_MS - INITIAL_MIN_MS)
+        : FLIP_MIN_MS + Math.random() * (FLIP_MAX_MS - FLIP_MIN_MS);
+      const id = setTimeout(function () {
+        timers.delete(pole);
+        capture(pole, color);
+      }, delay);
+      timers.set(pole, id);
+    }
+
     function capture(pole, color) {
       pole.color = color;
       // Use inline style rather than the `fill` attribute: the
@@ -395,14 +435,34 @@
       // the custom property so the outline tracks the pole's colour.
       pole.circle.style.setProperty('--pole-color', color);
       spawnPing(pole.x, pole.y, color);
-      const next = FLIP_MIN_MS + Math.random() * (FLIP_MAX_MS - FLIP_MIN_MS);
-      setTimeout(function () { capture(pole, pickNextColor(color)); }, next);
+      scheduleCapture(pole);
     }
 
-    for (const pole of poles) {
-      const color = TEAMS[Math.floor(Math.random() * TEAMS.length)];
-      const delay = INITIAL_MIN_MS + Math.random() * (INITIAL_MAX_MS - INITIAL_MIN_MS);
-      setTimeout(function () { capture(pole, color); }, delay);
+    function startOrResume() {
+      for (const pole of poles) {
+        if (!timers.has(pole)) scheduleCapture(pole);
+      }
     }
+
+    function pause() {
+      for (const id of timers.values()) clearTimeout(id);
+      timers.clear();
+    }
+
+    // Pause while the tab is hidden (no work, no throttled-queue
+    // buildup); on return, give each pole a fresh staggered delay so
+    // the resumption looks like a natural continuation rather than a
+    // synchronised burst.
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        pause();
+      } else {
+        startOrResume();
+      }
+    });
+
+    // Also honour the case of being opened in a background tab: skip
+    // the initial wave until the user actually focuses the page.
+    if (!document.hidden) startOrResume();
   })();
 </script>
