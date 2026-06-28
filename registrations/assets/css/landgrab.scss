@@ -197,20 +197,28 @@ $landgrab-purple:  #a25fd6;
 }
 
 // `hover: hover` means the device has a real cursor — desktop or
-// laptop. Skipping on touch avoids a tap-sticks-the-letter footgun.
-@media (hover: hover) {
-  .landgrab-letter-slot:hover .landgrab-letter {
-    // Gravity-ish ease-in. Drop is 100vh past start so the letter is
-    // gone regardless of viewport size; the stage's overflow:hidden
-    // clips it cleanly at the stage's bottom edge.
-    transition: transform 750ms cubic-bezier(0.55, 0, 0.85, 0.3);
-    transform: translateY(100vh);
-  }
+// laptop. Skipping on touch avoids a tap-sticks-the-letter footgun;
+// touch/pen go through the `.is-active` class driven by Pointer Events
+// in the template's inline script. Shared drop spec lives in a mixin
+// because @extend can't cross media-query boundaries.
+@mixin landgrab-letter-drop {
+  // Gravity-ish ease-in. Drop is 100vh past start so the letter is
+  // gone regardless of viewport size; the stage's overflow:hidden
+  // clips it cleanly at the stage's bottom edge.
+  transition: transform 750ms cubic-bezier(0.55, 0, 0.85, 0.3);
+  transform: translateY(100vh);
 }
+
+@media (hover: hover) {
+  .landgrab-letter-slot:hover .landgrab-letter { @include landgrab-letter-drop; }
+}
+
+.landgrab-letter-slot.is-active .landgrab-letter { @include landgrab-letter-drop; }
 
 @media (prefers-reduced-motion: reduce) {
   .landgrab-letter,
-  .landgrab-letter-slot:hover .landgrab-letter { transition: none; transform: none; }
+  .landgrab-letter-slot:hover .landgrab-letter,
+  .landgrab-letter-slot.is-active .landgrab-letter { transition: none; transform: none; }
 }
 
 // Lowercase tagline sitting under the wordmark. Same Anton family so it
