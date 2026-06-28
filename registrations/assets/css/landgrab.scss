@@ -74,27 +74,47 @@ $landgrab-purple:  #a25fd6;
   display: block;
 }
 
-// Poles are visible from the first frame, sitting in grey. After each
-// pole's individual delay (set inline by JS for the stagger), it
-// animates to its claim colour (green or purple — set via --claim).
-// `animation-fill-mode: forwards` keeps them at the claim colour once
-// the animation finishes.
+// Poles render grey on first paint; JS captures them over time by
+// setting `fill` directly (initially a slow wave, then ongoing flips
+// between teams). The transition smooths each colour change so the
+// flip reads as a gradient rather than a hard cut.
 .landgrab-pole {
+  // `--pole-color` carries the current fill so the stroke can derive
+  // from it. JS sets both `style.fill` and `--pole-color` on capture;
+  // before that, both default to grey via this rule.
+  --pole-color: #{$landgrab-grey};
   fill: $landgrab-grey;
+  // A lightened version of the pole's own colour, drawn as a thin
+  // halo. For dark stripes (black especially) the lift makes the disc
+  // resolve against the page background; for bright stripes it's
+  // almost imperceptible. `color-mix` needs Safari ≥16.4 / Chrome ≥111.
+  stroke: color-mix(in srgb, var(--pole-color) 55%, white 45%);
+  stroke-width: 0.5;
+  stroke-opacity: 0.6;
   opacity: 1;
-  animation: landgrab-pole-claim 700ms ease-out forwards;
+  transition: fill 200ms ease-out, stroke 200ms ease-out;
 }
 
-@keyframes landgrab-pole-claim {
-  to { fill: var(--claim, #{$landgrab-green}); }
+// Capture "ping" — a faint expanding ring spawned at the pole's centre
+// every time a capture happens. JS drops a wrapper <g> at the pole's
+// (x, y); this animation scales the inner circle out from its own
+// origin and fades it. The wrapper carries the static translate, so
+// the keyframe is free to own `transform` for the scale.
+.landgrab-ping {
+  fill: none;
+  stroke-width: 2;
+  pointer-events: none;
+  animation: landgrab-ping 800ms ease-out forwards;
+}
+
+@keyframes landgrab-ping {
+  from { transform: scale(1); opacity: 0.75; }
+  to   { transform: scale(5); opacity: 0;    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landgrab-pole {
-    opacity: 1;
-    fill: var(--claim, #{$landgrab-green});
-    animation: none;
-  }
+  .landgrab-pole { transition: none; }
+  .landgrab-ping { display: none; }
 }
 
 .landgrab-wordmark {

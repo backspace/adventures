@@ -141,7 +141,35 @@
     }
 
     const POLE_COUNT = 18;
-    const teamColours = ['#5ec96b', '#a25fd6']; // green or purple
+    // Intersex-Inclusive Progress Pride flag — the six rainbow stripes
+    // (top→bottom) followed by the chevron colours (outer→inner: black,
+    // brown for BIPOC; light blue, pink, white for trans).
+    const TEAMS = [
+      '#e40303', // red
+      '#ff8c00', // orange
+      '#ffed00', // yellow
+      '#008026', // green
+      '#004dff', // blue
+      '#750787', // purple
+      '#000000', // black
+      '#613915', // brown
+      '#73d7ee', // light blue (trans)
+      '#ffafc7', // pink (trans)
+      '#ffffff'  // white (trans)
+    ];
+    // Initial-wave timing: each pole gets claimed between these bounds,
+    // spread uniformly. Longer than a fast attract-loop so the page
+    // feels like a deliberate territory game, not a hurried sales demo.
+    const INITIAL_MIN_MS = 1500;
+    const INITIAL_MAX_MS = 12000;
+    // Periodic flip timing: after a pole's first capture, it gets
+    // re-captured by a different team within this window, and again,
+    // and again — so the map keeps shifting while the page is open.
+    const FLIP_MIN_MS = 12000;
+    const FLIP_MAX_MS = 40000;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const poles = [];
     for (let i = 0; i < POLE_COUNT; i++) {
       let x, y, ok = false;
       for (let t = 0; t < 40; t++) {
@@ -153,16 +181,59 @@
       const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', x);
       circle.setAttribute('cy', y);
-      circle.setAttribute('r', 6);
+      circle.setAttribute('r', POLE_RADIUS);
       circle.classList.add('landgrab-pole');
-      circle.style.setProperty('--claim',
-        teamColours[Math.floor(Math.random() * teamColours.length)]);
-      // Random delays in [400, 4000]ms so poles are captured in an
-      // unpredictable order rather than left-to-right. They're visible
-      // (grey) from the first frame because the static fill is grey;
-      // the animation only changes the colour once the delay elapses.
-      circle.style.animationDelay = (400 + Math.random() * 3600) + 'ms';
       polesLayer.appendChild(circle);
+      poles.push({ circle, x, y, color: null });
+    }
+
+    function spawnPing(x, y, color) {
+      if (reduced) return;
+      // A static-transform wrapper sets the ping's position so the CSS
+      // keyframe animation on the inner circle is free to drive
+      // `transform: scale(...)` without us having to recompute the
+      // translate — the inner circle scales from its own (0,0) origin,
+      // which is the pole's centre after the wrapper's translate.
+      const g = document.createElementNS(SVG_NS, 'g');
+      g.setAttribute('transform', 'translate(' + x + ' ' + y + ')');
+      const ping = document.createElementNS(SVG_NS, 'circle');
+      ping.setAttribute('cx', '0');
+      ping.setAttribute('cy', '0');
+      ping.setAttribute('r', POLE_RADIUS);
+      ping.setAttribute('stroke', color);
+      ping.classList.add('landgrab-ping');
+      g.appendChild(ping);
+      polesLayer.appendChild(g);
+      ping.addEventListener('animationend', function () { g.remove(); }, { once: true });
+    }
+
+    function pickNextColor(current) {
+      // Any team other than the current one. Excluding `current` keeps
+      // a flip visible — re-picking the same colour would no-op.
+      const choices = TEAMS.filter(function (c) { return c !== current; });
+      return choices[Math.floor(Math.random() * choices.length)];
+    }
+
+    function capture(pole, color) {
+      pole.color = color;
+      // Use inline style rather than the `fill` attribute: the
+      // .landgrab-pole CSS rule sets `fill: grey` for the initial paint,
+      // and a stylesheet `fill` beats an SVG presentation attribute on
+      // the same element. Inline style outranks both, and the
+      // `transition: fill` rule still applies, smoothing the change.
+      pole.circle.style.fill = color;
+      // The stroke is `color-mix(--pole-color, white)` in CSS — update
+      // the custom property so the outline tracks the pole's colour.
+      pole.circle.style.setProperty('--pole-color', color);
+      spawnPing(pole.x, pole.y, color);
+      const next = FLIP_MIN_MS + Math.random() * (FLIP_MAX_MS - FLIP_MIN_MS);
+      setTimeout(function () { capture(pole, pickNextColor(color)); }, next);
+    }
+
+    for (const pole of poles) {
+      const color = TEAMS[Math.floor(Math.random() * TEAMS.length)];
+      const delay = INITIAL_MIN_MS + Math.random() * (INITIAL_MAX_MS - INITIAL_MIN_MS);
+      setTimeout(function () { capture(pole, color); }, delay);
     }
   })();
 </script>
