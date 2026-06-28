@@ -142,6 +142,7 @@ defmodule RegistrationsWeb.Router do
 
     post("/questions", PageController, :questions)
     post("/waitlist", PageController, :waitlist)
+    get("/_icon", PageController, :icon)
     get("/", PageController, :index)
   end
 

@@ -31,6 +31,14 @@ defmodule RegistrationsWeb.PageController do
     render(conn, "#{adventure_name}.html", placeholder: placeholder, hide_waitlist: hide_waitlist)
   end
 
+  # Renders a square page consumed by `mix landgrab.assets` to generate
+  # the app icon. Layout is suppressed so nothing but the icon mark
+  # itself paints; the snapshot runs at 1024×1024 viewport.
+  def icon(conn, _params) do
+    adventure_name = Application.get_env(:registrations, :adventure)
+    render(conn, "#{adventure_name}-icon.html", layout: false)
+  end
+
   def questions(conn, %{"question" => question_params}) do
     Registrations.Mailer.send_question(question_params)
 

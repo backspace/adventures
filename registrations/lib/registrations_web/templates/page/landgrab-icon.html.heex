@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>LANDGRAB icon</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style"
+      href="https://fonts.googleapis.com/css2?family=Anton&display=block" />
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Anton&display=block" />
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #0a0a0a;
+        overflow: hidden;
+      }
+      /* Body fills the entire viewport so the snapshot at 1024×1024
+         produces a tight square with the wordmark centred. Two stacked
+         lines balance LAND (narrower) over GRAB (wider) without
+         feeling lopsided. */
+      body {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Anton', 'Helvetica Neue', sans-serif;
+        color: #ece4d3;
+        text-transform: uppercase;
+        line-height: 0.95;
+        letter-spacing: 0.02em;
+      }
+      .landgrab-icon-line {
+        font-size: 36vw;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="landgrab-icon-line">Land</div>
+    <div class="landgrab-icon-line">Grab</div>
+  </body>
+</html>
