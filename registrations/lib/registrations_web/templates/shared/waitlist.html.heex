@@ -1,7 +1,7 @@
 <%= form_for @conn, Routes.page_path(@conn, :waitlist), [as: :waitlist], fn f -> %>
   <div class="row">
     <div class="small-12 columns">
-      <%= label(f, :email, "Email") %>
+      <%= label(f, :email, "email") %>
       <%= email_input(f, :email, required: true) %>
     </div>
   </div>
