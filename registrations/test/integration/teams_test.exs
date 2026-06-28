@@ -76,10 +76,11 @@ defmodule Registrations.Integration.Teams do
     assert sent_email.from == {"", "b@events.chromatin.ca"}
 
     assert sent_email.subject ==
-             "takver@example.com details changed: accessibility, comments, proposed_team_name, risk_aversion, source, team_emails"
+             "[rendezvous] takver@example.com details changed: accessibility, comments, proposed_team_name, risk_aversion, source, team_emails"
 
     assert sent_email.text_body ==
-             ~s([accessibility: "Some accessibility information", comments: "Some comments", proposed_team_name: "Simultaneity", risk_aversion: 3, source: "A source", team_emails: "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"])
+             ~s([accessibility: "Some accessibility information", comments: "Some comments", proposed_team_name: "Simultaneity", risk_aversion: 3, source: "A source", team_emails: "shevek@example.com bedap@example.com sabul@example.com laia@example.com nooo"]) <>
+               "\n\nHost: (unset)"
 
     [bedap, shevek] = Enum.sort_by(Details.mutuals(session, count: 2), & &1.email)
 

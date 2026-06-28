@@ -198,10 +198,10 @@ defmodule Registrations.Waydowntown.Integration.Home do
     assert sent_email.to == [{"", "mdrysdale@waydown.town"}]
     assert sent_email.from == {"", "mdrysdale@waydown.town"}
 
-    assert sent_email.subject == "Waitlist submission from interested@example.com"
+    assert sent_email.subject == "[waydowntown] Waitlist submission from interested@example.com"
 
     assert sent_email.text_body ==
-             "Email: interested@example.com\nQuestion: When will the event take place?"
+             "Email: interested@example.com\nQuestion: When will the event take place?\n\nHost: (unset)"
   end
 
   test "placeholder page does not have waitlist form when hidden", %{session: session} do

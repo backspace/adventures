@@ -47,7 +47,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     assert admin_email.to == [{"", "b@events.chromatin.ca"}]
     assert admin_email.from == {"", "b@events.chromatin.ca"}
-    assert admin_email.subject == "samuel.delaney@example.com registered"
+    assert admin_email.subject == "[rendezvous] samuel.delaney@example.com registered"
 
     assert welcome_email.to == [{"", "samuel.delaney@example.com"}]
     assert welcome_email.subject == "[rendezvous] Welcome!"
@@ -233,7 +233,7 @@ defmodule Registrations.Integration.ClandestineRendezvous.Registrations do
 
     assert admin_email.to == [{"", "b@events.chromatin.ca"}]
     assert admin_email.from == {"", "b@events.chromatin.ca"}
-    assert admin_email.subject == "octavia.butler@example.com deleted their account"
+    assert admin_email.subject == "[rendezvous] octavia.butler@example.com deleted their account"
   end
 
   test "delete with login", %{session: session} do
@@ -298,7 +298,7 @@ defmodule Registrations.Integration.UnmnemonicDevices.Registrations do
 
     assert admin_email.to == [{"", "knut@chromatin.ca"}]
     assert admin_email.from == {"", "knut@chromatin.ca"}
-    assert admin_email.subject == "samuel.delaney@example.com registered"
+    assert admin_email.subject == "[unmnemonic] samuel.delaney@example.com registered"
 
     assert welcome_email.to == [{"", "samuel.delaney@example.com"}]
     assert welcome_email.from == {"", "knut@chromatin.ca"}

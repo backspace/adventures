@@ -28,10 +28,10 @@ defmodule Registrations.ClandestineRendezvous.Integration.Questions do
     assert sent_email.from == {"", "b@events.chromatin.ca"}
 
     assert sent_email.subject ==
-             "Question from Lucy Parsons <lucy@example.com>: A Word to Tramps"
+             "[rendezvous] Question from Lucy Parsons <lucy@example.com>: A Word to Tramps"
 
     assert sent_email.text_body ==
-             "Can you not see that it is the industrial system and not the \"boss\" which must be changed?"
+             "Can you not see that it is the industrial system and not the \"boss\" which must be changed?\n\nHost: (unset)"
   end
 end
 
@@ -65,9 +65,9 @@ defmodule Registrations.UnmnemonicDevices.Integration.Questions do
     assert sent_email.from == {"", "knut@chromatin.ca"}
 
     assert sent_email.subject ==
-             "Question from Lucy Parsons <lucy@example.com>: A Word to Tramps"
+             "[unmnemonic] Question from Lucy Parsons <lucy@example.com>: A Word to Tramps"
 
     assert sent_email.text_body ==
-             "Can you not see that it is the industrial system and not the \"boss\" which must be changed?"
+             "Can you not see that it is the industrial system and not the \"boss\" which must be changed?\n\nHost: (unset)"
   end
 end
