@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/accessibility.dart';
 import 'package:landgrab/models/region.dart';
+import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/accessibility_tags_field.dart';
 
 /// Form-field-style picker for a puzzlet's region. Shows the currently
@@ -38,7 +39,14 @@ class RegionPickerField extends StatelessWidget {
       ),
     );
     if (result == null) return;
-    onChanged(result.cleared ? null : result.region);
+    final picked = result.cleared ? null : result.region;
+    if (picked != null) {
+      // Remember the choice per-device so the next time this picker opens,
+      // the same region floats to the top of the list. Fire-and-forget —
+      // a transient storage failure should never block the form.
+      unawaited(UiPreferences.setLastPickedRegionId(picked.id));
+    }
+    onChanged(picked);
   }
 
   @override
@@ -95,11 +103,21 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
   List<Region> _results = const [];
   bool _loading = true;
   String? _error;
+  // Cached at sheet open. Doesn't update mid-session — the user can't pick
+  // a region without closing the sheet, so the value is stable for our
+  // purposes and avoids re-reading prefs on every keystroke.
+  String? _recentId;
 
   @override
   void initState() {
     super.initState();
-    _search('');
+    _init();
+  }
+
+  Future<void> _init() async {
+    _recentId = await UiPreferences.getLastPickedRegionId();
+    if (!mounted) return;
+    await _search('');
   }
 
   @override
@@ -107,6 +125,19 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
     _searchController.dispose();
     _debounce?.cancel();
     super.dispose();
+  }
+
+  /// Move the most-recently-picked region to position 0 if it's in the
+  /// results. If the user has searched for something that excludes it,
+  /// it's just not in the list and we don't fight that.
+  List<Region> _hoistRecent(List<Region> list) {
+    if (_recentId == null) return list;
+    final idx = list.indexWhere((r) => r.id == _recentId);
+    if (idx <= 0) return list;
+    final copy = [...list];
+    final picked = copy.removeAt(idx);
+    copy.insert(0, picked);
+    return copy;
   }
 
   Future<void> _search(String q) async {
@@ -118,7 +149,7 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
       final list = await widget.api.searchRegions(query: q);
       if (!mounted) return;
       setState(() {
-        _results = list;
+        _results = _hoistRecent(list);
         _loading = false;
       });
     } catch (e) {

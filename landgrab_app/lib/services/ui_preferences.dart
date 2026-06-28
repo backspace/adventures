@@ -21,4 +21,17 @@ class UiPreferences {
     final p = await _prefs();
     await p.setBool('list_map_view:$screenKey', isMap);
   }
+
+  /// Most-recently-picked region in the region picker. Stored per-device,
+  /// not synced — purely a UX nicety so the picker hoists the last choice
+  /// to the top of the list.
+  static Future<String?> getLastPickedRegionId() async {
+    final p = await _prefs();
+    return p.getString('region_picker:last_id');
+  }
+
+  static Future<void> setLastPickedRegionId(String id) async {
+    final p = await _prefs();
+    await p.setString('region_picker:last_id', id);
+  }
 }
