@@ -154,15 +154,17 @@ $landgrab-purple:  #a25fd6;
   p {
     font-size: 1.05rem;
     line-height: 1.55;
-    color: $landgrab-bone;
     max-width: 36rem;
     margin: 0 auto;
   }
 }
 
 .row.card {
+  background-color: $landgrab-river;
+  border-color: $landgrab-river;
   color: $landgrab-bone;
 
   h2 { color: $landgrab-bone; }
   a  { color: $landgrab-blood; }
+  label { color: $landgrab-bone; }
 }
