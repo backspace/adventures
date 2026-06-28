@@ -132,6 +132,32 @@ $landgrab-purple:  #a25fd6;
   gap: 0.04em;
 }
 
+// Bottom-of-hero "more below" cue. Translucent bone chevron with a gentle
+// 2s up/down loop; centred via `left + margin-left` so the keyframe is
+// free to own `transform` for the bounce without re-stating the centring.
+.landgrab-scroll-hint {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  margin-left: -1.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: rgba(236, 228, 211, 0.45);
+  pointer-events: none;
+  animation: landgrab-scroll-bounce 2s ease-in-out infinite;
+
+  svg { width: 100%; height: 100%; display: block; }
+}
+
+@keyframes landgrab-scroll-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landgrab-scroll-hint { animation: none; }
+}
+
 .landgrab-wordmark-text {
   font-family: 'Anton', 'Helvetica Neue', sans-serif;
   font-weight: 400;
