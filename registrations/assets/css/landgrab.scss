@@ -165,7 +165,6 @@ $landgrab-purple:  #a25fd6;
   font-size: clamp(3rem, 13vw, 9rem);
   letter-spacing: 0.02em;
   color: $landgrab-bone;
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.8);
   line-height: 0.95;
   text-transform: uppercase;
 
@@ -173,10 +172,13 @@ $landgrab-purple:  #a25fd6;
   // hold gesture for the letter-drop easter egg from also triggering
   // text-selection / iOS's Copy-Lookup-Share callout. The accessible
   // name is on the parent's aria-label, so screen-reader behaviour is
-  // unaffected.
+  // unaffected. `tap-highlight-color: transparent` kills iOS's
+  // default tap overlay, which otherwise reads as an inner shadow
+  // on each held letter.
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 
   // Hide the wordmark until the Anton webfont is loaded so we don't
   // flash the Helvetica fallback. `<html>` gets `.font-anton-loaded`
@@ -240,7 +242,6 @@ $landgrab-purple:  #a25fd6;
   font-size: clamp(1.1rem, 2.8vw, 2rem);
   letter-spacing: 0.04em;
   color: $landgrab-bone;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7);
   line-height: 1;
   text-transform: lowercase;
   visibility: hidden;
