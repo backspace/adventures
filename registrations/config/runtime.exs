@@ -40,6 +40,12 @@ spam_strings =
 config :registrations,
   spam_strings: spam_strings
 
+# Whether to show the placeholder page to unauthenticated visitors.
+# Read at boot so staging/prod can flip it via a Coolify env-var change
+# + restart, with no redeploy. Defaults to false when unset.
+config :registrations,
+  placeholder: System.get_env("PLACEHOLDER") == "true"
+
 # Distinguishes deployments (production vs staging vs local) so the layout
 # can advertise non-production environments visually. Defaults to the
 # `config_env()` name when DEPLOY_ENV isn't set — so prod machines that

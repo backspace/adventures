@@ -31,7 +31,6 @@ config :registrations, RegistrationsWeb.Endpoint,
 config :registrations, :pow, cache_store_backend: RegistrationsWeb.Pow.RedisCache
 
 config :registrations,
-  placeholder: true,
   request_confirmation: false,
   registration_closed: false
 
