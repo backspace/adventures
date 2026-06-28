@@ -146,7 +146,12 @@
       return true;
     }
 
-    const POLE_COUNT = 18;
+    // Target pole count at full-viewBox visible (i.e. when the screen
+    // aspect matches 8:5). Narrower visible regions get fewer poles via
+    // sqrt scaling so the *spacing between* poles stays roughly steady
+    // across aspect ratios, rather than the *count*.
+    const POLE_COUNT_BASE = 18;
+    const POLE_COUNT_MIN = 8;
     // Intersex-Inclusive Progress Pride flag — the six rainbow stripes
     // (top→bottom) followed by the chevron colours (outer→inner: black,
     // brown for BIPOC; light blue, pink, white for trans).
@@ -175,12 +180,40 @@
     const FLIP_MAX_MS = 40000;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // With `preserveAspectRatio="xMaxYMax slice"`, the SVG anchors the
+    // bottom-right corner to the screen and crops top/left when the
+    // viewport's aspect is taller than the viewBox's 8:5. Figure out
+    // which viewBox region is actually on-screen so we only scatter
+    // poles where the user can see them.
+    function visibleViewBox() {
+      const r = svg.getBoundingClientRect();
+      const scale = Math.max(r.width / VBW, r.height / VBH);
+      const visW = Math.min(VBW, r.width / scale);
+      const visH = Math.min(VBH, r.height / scale);
+      return { x: VBW - visW, y: VBH - visH, w: visW, h: visH };
+    }
+
+    const visible = visibleViewBox();
+    // Scale count by sqrt(area) so pole-to-pole spacing stays steady as
+    // the visible region shrinks (portrait), rather than the raw count.
+    const poleCount = Math.max(
+      POLE_COUNT_MIN,
+      Math.round(POLE_COUNT_BASE * Math.sqrt((visible.w * visible.h) / (VBW * VBH)))
+    );
+    // Keep poles a small margin inside the visible rect so they don't
+    // hug the edges of the cropped viewport.
+    const PLACE_MARGIN = 30;
+    const minX = visible.x + PLACE_MARGIN;
+    const maxX = visible.x + visible.w - PLACE_MARGIN;
+    const minY = visible.y + PLACE_MARGIN;
+    const maxY = visible.y + visible.h - PLACE_MARGIN;
+
     const poles = [];
-    for (let i = 0; i < POLE_COUNT; i++) {
+    for (let i = 0; i < poleCount; i++) {
       let x, y, ok = false;
       for (let t = 0; t < 40; t++) {
-        x = 30 + Math.random() * (VBW - 60);
-        y = 30 + Math.random() * (VBH - 60);
+        x = minX + Math.random() * (maxX - minX);
+        y = minY + Math.random() * (maxY - minY);
         if (poleClearsWater(x, y)) { ok = true; break; }
       }
       if (!ok) continue;
