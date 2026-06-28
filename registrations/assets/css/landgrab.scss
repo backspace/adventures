@@ -180,6 +180,39 @@ $landgrab-purple:  #a25fd6;
   visibility: visible;
 }
 
+// Per-letter wrappers for the hover easter egg. The *slot* owns the
+// hover hit-test: it stays put while the inner letter transforms
+// downward, so once the cursor lands on a letter, the slot keeps
+// reporting `:hover` even after the letter has slid out of view — the
+// letter completes the full drop without the user needing to chase it.
+.landgrab-letter-slot {
+  display: inline-block;
+  pointer-events: auto;
+}
+
+.landgrab-letter {
+  display: inline-block;
+  transition: transform 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+// `hover: hover` means the device has a real cursor — desktop or
+// laptop. Skipping on touch avoids a tap-sticks-the-letter footgun.
+@media (hover: hover) {
+  .landgrab-letter-slot:hover .landgrab-letter {
+    // Gravity-ish ease-in. Drop is 100vh past start so the letter is
+    // gone regardless of viewport size; the stage's overflow:hidden
+    // clips it cleanly at the stage's bottom edge.
+    transition: transform 750ms cubic-bezier(0.55, 0, 0.85, 0.3);
+    transform: translateY(100vh);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landgrab-letter,
+  .landgrab-letter-slot:hover .landgrab-letter { transition: none; transform: none; }
+}
+
 // Lowercase tagline sitting under the wordmark. Same Anton family so it
 // reads as part of the same masthead, but smaller, dimmer, and
 // lower-case to step out of the all-caps shout above. Same load-gate

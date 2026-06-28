@@ -53,7 +53,13 @@
     </svg>
 
     <div class="landgrab-wordmark" aria-label="LANDGRAB">
-      <span class="landgrab-wordmark-text">LANDGRAB</span>
+      <%# Each letter is wrapped in a static-position "slot" that owns
+          the hover detection. The inner span is what visually drops
+          out; the slot stays put, so once the cursor enters its bounds
+          the letter keeps falling even if the cursor doesn't move with
+          it. aria-label on the parent carries the readable name; these
+          inner spans are decorative. %>
+      <span class="landgrab-wordmark-text" aria-hidden="true"><%= for letter <- String.graphemes("LANDGRAB") do %><span class="landgrab-letter-slot"><span class="landgrab-letter"><%= letter %></span></span><% end %></span>
       <span class="landgrab-wordmark-subtitle"><%= phrase("description") %></span>
     </div>
     <div class="landgrab-scroll-hint" aria-hidden="true">
