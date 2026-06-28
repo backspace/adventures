@@ -118,26 +118,31 @@
     }
   })();
 
-  // Touch/pen equivalent of the per-letter `:hover` drop. Desktop is
-  // handled in CSS via `@media (hover: hover)` and stays untouched.
-  // Here we use Pointer Events so the gesture is unified across touch
-  // and stylus: touch down anywhere in the wordmark, drag across the
-  // letters, and each one drops while it's under the finger; lift to
-  // spring everything back. A quick tap is the degenerate case — a
-  // single down-then-up — and produces a one-shot bounce.
+  // Per-letter drop driven by Pointer Events — unified across mouse,
+  // touch, and stylus. Each slot the pointer crosses gets `.is-active`
+  // and that class sticks for the rest of the gesture, so sweeping
+  // across the wordmark leaves letters mid-fall on their own staggered
+  // timers (each transition starts the moment the pointer first
+  // reached its slot). Release rules differ by input modality: a
+  // mouse releases on pointerleave (exiting the wordmark), touch and
+  // pen release on pointerup/pointercancel.
   (function () {
     const wordmark = document.querySelector('.landgrab-wordmark-text');
     if (!wordmark) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) return;
 
-    let activeSlot = null;
+    const activeSlots = new Set();
 
-    function setActive(slot) {
-      if (activeSlot === slot) return;
-      if (activeSlot) activeSlot.classList.remove('is-active');
-      if (slot) slot.classList.add('is-active');
-      activeSlot = slot;
+    function activate(slot) {
+      if (!slot || activeSlots.has(slot)) return;
+      slot.classList.add('is-active');
+      activeSlots.add(slot);
+    }
+
+    function deactivateAll() {
+      for (const s of activeSlots) s.classList.remove('is-active');
+      activeSlots.clear();
     }
 
     function slotAt(x, y) {
@@ -146,26 +151,33 @@
     }
 
     wordmark.addEventListener('pointerdown', function (e) {
-      // Desktop's `:hover` already handles mice. Skipping mouse here
-      // avoids double-driving the same effect via two paths.
-      if (e.pointerType === 'mouse') return;
-      // `setPointerCapture` keeps `pointermove` events flowing to this
-      // element even when the finger drags outside its bounding box —
-      // otherwise we'd lose moves the moment the user crossed off the
-      // wordmark.
-      wordmark.setPointerCapture(e.pointerId);
-      setActive(slotAt(e.clientX, e.clientY));
+      // Mouse doesn't need to click first — pointermove handles it.
+      // For touch/pen we capture so moves keep flowing past the
+      // wordmark's bounding box.
+      if (e.pointerType !== 'mouse') {
+        wordmark.setPointerCapture(e.pointerId);
+      }
+      activate(slotAt(e.clientX, e.clientY));
     });
 
     wordmark.addEventListener('pointermove', function (e) {
-      if (e.pointerType === 'mouse') return;
-      if (!wordmark.hasPointerCapture(e.pointerId)) return;
-      setActive(slotAt(e.clientX, e.clientY));
+      // Touch/pen: only track while the gesture is in flight (finger
+      // down). Mouse: track unconditionally while over the wordmark.
+      if (e.pointerType !== 'mouse' && !wordmark.hasPointerCapture(e.pointerId)) return;
+      activate(slotAt(e.clientX, e.clientY));
+    });
+
+    // Mouse leaves the wordmark = end of the gesture; spring all
+    // active letters back. Touch/pen ignore this — they release on
+    // pointerup/pointercancel instead, so users can drag a finger
+    // outside the wordmark and back without resetting.
+    wordmark.addEventListener('pointerleave', function (e) {
+      if (e.pointerType === 'mouse') deactivateAll();
     });
 
     function release(e) {
       if (e.pointerType === 'mouse') return;
-      setActive(null);
+      deactivateAll();
     }
     wordmark.addEventListener('pointerup', release);
     wordmark.addEventListener('pointercancel', release);
