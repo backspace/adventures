@@ -5,7 +5,7 @@ msgid "email_title"
 msgstr "landgrab"
 
 msgid "description"
-msgstr "LANDGRAB — simulate settler habits"
+msgstr "A game of simulating settler habits"
 
 msgid "change_deadline"
 msgstr " "
