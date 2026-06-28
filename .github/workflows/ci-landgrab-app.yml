@@ -1,4 +1,4 @@
-name: poles_app checks
+name: landgrab_app checks
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
       - main
   pull_request:
     paths:
-      - "poles_app/**"
-      - ".github/workflows/ci-poles-app.yml"
+      - "landgrab_app/**"
+      - ".github/workflows/ci-landgrab-app.yml"
 
 jobs:
   flutter-test:
@@ -22,13 +22,13 @@ jobs:
 
       # Create asset file declared in pubspec but gitignored
       - run: touch .env.local
-        working-directory: poles_app
+        working-directory: landgrab_app
 
       - run: flutter pub get
-        working-directory: poles_app
+        working-directory: landgrab_app
 
       - run: flutter analyze
-        working-directory: poles_app
+        working-directory: landgrab_app
 
       - run: flutter test
-        working-directory: poles_app
+        working-directory: landgrab_app
