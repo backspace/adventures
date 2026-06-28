@@ -146,6 +146,64 @@
       return true;
     }
 
+    // Restrict pole placement to the geographic "downtown" side of the
+    // two rivers: west of the Red, north of the Assiniboine. We sample
+    // each river path once into an array of viewBox-space points; for a
+    // candidate we find the sample with the nearest Y (Red — river runs
+    // mostly N–S) or nearest X (Assiniboine — runs E–W) and compare.
+    function sampleRivers(nameFragment) {
+      const paths = svg.querySelectorAll(
+        '.landgrab-rivers path[data-river-name*="' + nameFragment + '"]'
+      );
+      const points = [];
+      for (const path of paths) {
+        const len = path.getTotalLength();
+        for (let s = 0; s <= len; s += 3) {
+          points.push(path.getPointAtLength(s));
+        }
+      }
+      return points;
+    }
+    const redSamples = sampleRivers('Red River');
+    const assiniboineSamples = sampleRivers('Assiniboine');
+    // Buffer = half stroke width (Elixir-side: Red 46/2=23, Assini 36/2=18)
+    // + pole radius + a few units of breathing room so poles don't crowd
+    // the bank.
+    const RED_BUFFER = 23 + POLE_RADIUS + 4;
+    const ASSINIBOINE_BUFFER = 18 + POLE_RADIUS + 4;
+    // If the closest sample is further than this in the orthogonal axis,
+    // the river doesn't really pass near this row/column — no constraint
+    // from that river applies.
+    const RIVER_REACH = 30;
+
+    function westOfRed(x, y) {
+      if (redSamples.length === 0) return true;
+      let nearest = null;
+      let bestDy = Infinity;
+      for (const p of redSamples) {
+        const dy = Math.abs(p.y - y);
+        if (dy < bestDy) { bestDy = dy; nearest = p; }
+      }
+      if (bestDy > RIVER_REACH) return true;
+      return x < nearest.x - RED_BUFFER;
+    }
+
+    function northOfAssiniboine(x, y) {
+      if (assiniboineSamples.length === 0) return true;
+      let nearest = null;
+      let bestDx = Infinity;
+      for (const p of assiniboineSamples) {
+        const dx = Math.abs(p.x - x);
+        if (dx < bestDx) { bestDx = dx; nearest = p; }
+      }
+      if (bestDx > RIVER_REACH) return true;
+      return y < nearest.y - ASSINIBOINE_BUFFER;
+    }
+
+    function inAllowedRegion(x, y) {
+      return westOfRed(x, y) && northOfAssiniboine(x, y);
+    }
+
     // Target pole count at full-viewBox visible (i.e. when the screen
     // aspect matches 8:5). Narrower visible regions get fewer poles via
     // sqrt scaling so the *spacing between* poles stays roughly steady
@@ -211,10 +269,10 @@
     const poles = [];
     for (let i = 0; i < poleCount; i++) {
       let x, y, ok = false;
-      for (let t = 0; t < 40; t++) {
+      for (let t = 0; t < 80; t++) {
         x = minX + Math.random() * (maxX - minX);
         y = minY + Math.random() * (maxY - minY);
-        if (poleClearsWater(x, y)) { ok = true; break; }
+        if (poleClearsWater(x, y) && inAllowedRegion(x, y)) { ok = true; break; }
       }
       if (!ok) continue;
       const circle = document.createElementNS(SVG_NS, 'circle');
