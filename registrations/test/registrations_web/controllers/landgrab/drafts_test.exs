@@ -27,7 +27,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
     test "POST /poles/drafts/poles is forbidden", %{conn: conn} do
       body =
         conn
-        |> post("/poles/drafts/poles", %{
+        |> post("/landgrab/drafts/poles", %{
           "barcode" => "AUTHOR-1",
           "latitude" => 49.89,
           "longitude" => -97.13
@@ -48,7 +48,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
     test "creates a draft pole", %{conn: conn, user: user} do
       body =
         conn
-        |> post("/poles/drafts/poles", %{
+        |> post("/landgrab/drafts/poles", %{
           "barcode" => "AUTHORED-#{System.unique_integer([:positive])}",
           "latitude" => 49.89,
           "longitude" => -97.13,
@@ -66,7 +66,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
     test "creates an unassigned draft puzzlet with location", %{conn: conn, user: user} do
       body =
         conn
-        |> post("/poles/drafts/puzzlets", %{
+        |> post("/landgrab/drafts/puzzlets", %{
           "instructions" => "What's the colour?",
           "answer" => "red",
           "difficulty" => 3,
@@ -94,7 +94,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
           status: :draft
         })
 
-      body = conn |> get("/poles/drafts/mine") |> json_response(200)
+      body = conn |> get("/landgrab/drafts/mine") |> json_response(200)
       assert length(body["poles"]) >= 1
       assert Enum.all?(body["poles"], &(&1["creator_id"] == user.id))
     end
@@ -111,7 +111,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
 
       body =
         conn
-        |> patch("/poles/drafts/poles/#{pole.id}", %{"label" => "edited"})
+        |> patch("/landgrab/drafts/poles/#{pole.id}", %{"label" => "edited"})
         |> json_response(403)
 
       assert body["error"]["code"] == "forbidden"
@@ -131,7 +131,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
 
       body =
         conn
-        |> patch("/poles/drafts/poles/#{pole.id}", %{"label" => "hijack"})
+        |> patch("/landgrab/drafts/poles/#{pole.id}", %{"label" => "hijack"})
         |> json_response(403)
 
       assert body["error"]["code"] == "forbidden"
@@ -149,7 +149,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
 
       body =
         conn
-        |> patch("/poles/drafts/puzzlets/#{puzzlet.id}", %{"answer" => "edited"})
+        |> patch("/landgrab/drafts/puzzlets/#{puzzlet.id}", %{"answer" => "edited"})
         |> json_response(403)
 
       assert body["error"]["code"] == "forbidden"
@@ -169,7 +169,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
 
       body =
         conn
-        |> patch("/poles/drafts/puzzlets/#{puzzlet.id}", %{"answer" => "hijack"})
+        |> patch("/landgrab/drafts/puzzlets/#{puzzlet.id}", %{"answer" => "hijack"})
         |> json_response(403)
 
       assert body["error"]["code"] == "forbidden"
@@ -185,7 +185,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
           status: :validated
         })
 
-      body = conn |> delete("/poles/drafts/poles/#{pole.id}") |> json_response(403)
+      body = conn |> delete("/landgrab/drafts/poles/#{pole.id}") |> json_response(403)
       assert body["error"]["code"] == "forbidden"
     end
 
@@ -199,7 +199,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
           status: :validated
         })
 
-      body = conn |> delete("/poles/drafts/puzzlets/#{puzzlet.id}") |> json_response(403)
+      body = conn |> delete("/landgrab/drafts/puzzlets/#{puzzlet.id}") |> json_response(403)
       assert body["error"]["code"] == "forbidden"
     end
 
@@ -215,7 +215,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
           status: :draft
         })
 
-      body = conn |> delete("/poles/drafts/puzzlets/#{puzzlet.id}") |> json_response(403)
+      body = conn |> delete("/landgrab/drafts/puzzlets/#{puzzlet.id}") |> json_response(403)
       assert body["error"]["code"] == "forbidden"
     end
 
@@ -229,7 +229,7 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
           status: :draft
         })
 
-      conn |> delete("/poles/drafts/poles/#{pole.id}") |> response(204)
+      conn |> delete("/landgrab/drafts/poles/#{pole.id}") |> response(204)
     end
   end
 end

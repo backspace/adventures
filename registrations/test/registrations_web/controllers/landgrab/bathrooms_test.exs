@@ -27,8 +27,8 @@ defmodule RegistrationsWeb.Landgrab.BathroomsTest do
     end
 
     test "lists bathrooms but cannot create one", %{conn: conn} do
-      conn |> get("/poles/bathrooms") |> json_response(200)
-      body = conn |> post("/poles/bathrooms", %{"latitude" => 49.89, "longitude" => -97.13}) |> json_response(403)
+      conn |> get("/landgrab/bathrooms") |> json_response(200)
+      body = conn |> post("/landgrab/bathrooms", %{"latitude" => 49.89, "longitude" => -97.13}) |> json_response(403)
       assert body["error"]["code"] == "forbidden"
     end
   end
@@ -43,7 +43,7 @@ defmodule RegistrationsWeb.Landgrab.BathroomsTest do
     test "creates and lists a bathroom", %{conn: conn} do
       body =
         conn
-        |> post("/poles/bathrooms", %{
+        |> post("/landgrab/bathrooms", %{
           "name" => "Main floor bathroom",
           "latitude" => 49.89,
           "longitude" => -97.13,
@@ -54,7 +54,7 @@ defmodule RegistrationsWeb.Landgrab.BathroomsTest do
       assert body["name"] == "Main floor bathroom"
       assert "stairs" in body["accessibility_tags"]
 
-      list = conn |> get("/poles/bathrooms") |> json_response(200)
+      list = conn |> get("/landgrab/bathrooms") |> json_response(200)
       assert Enum.any?(list["bathrooms"], &(&1["id"] == body["id"]))
     end
 
@@ -68,7 +68,7 @@ defmodule RegistrationsWeb.Landgrab.BathroomsTest do
 
       body =
         conn
-        |> patch("/poles/bathrooms/#{b.id}", %{"name" => "Renamed"})
+        |> patch("/landgrab/bathrooms/#{b.id}", %{"name" => "Renamed"})
         |> json_response(200)
 
       assert body["name"] == "Renamed"
@@ -87,7 +87,7 @@ defmodule RegistrationsWeb.Landgrab.BathroomsTest do
 
       body =
         ctx.conn
-        |> patch("/poles/bathrooms/#{b.id}", %{"name" => "Hijack"})
+        |> patch("/landgrab/bathrooms/#{b.id}", %{"name" => "Hijack"})
         |> json_response(403)
 
       assert body["error"]["code"] == "forbidden"
@@ -113,7 +113,7 @@ defmodule RegistrationsWeb.Landgrab.BathroomsTest do
 
       body =
         conn
-        |> patch("/poles/bathrooms/#{b.id}", %{"name" => "Supervisor fix"})
+        |> patch("/landgrab/bathrooms/#{b.id}", %{"name" => "Supervisor fix"})
         |> json_response(200)
 
       assert body["name"] == "Supervisor fix"

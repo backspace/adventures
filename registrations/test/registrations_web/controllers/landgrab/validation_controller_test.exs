@@ -28,7 +28,7 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
     end
 
     test "GET /poles/validation/mine is forbidden", %{conn: conn} do
-      body = conn |> get("/poles/validation/mine") |> json_response(403)
+      body = conn |> get("/landgrab/validation/mine") |> json_response(403)
       assert body["error"]["code"] == "forbidden"
     end
   end
@@ -55,7 +55,7 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
 
       {:ok, _} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
 
-      body = conn |> get("/poles/validation/mine") |> json_response(200)
+      body = conn |> get("/landgrab/validation/mine") |> json_response(200)
       assert length(body["pole_validations"]) == 1
       assert hd(body["pole_validations"])["status"] == "assigned"
       assert hd(body["pole_validations"])["pole"]["id"] == pole.id
@@ -68,14 +68,14 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
 
       body =
         conn
-        |> patch("/poles/validation/pole-validations/#{validation.id}", %{"status" => "in_progress"})
+        |> patch("/landgrab/validation/pole-validations/#{validation.id}", %{"status" => "in_progress"})
         |> json_response(200)
 
       assert body["status"] == "in_progress"
 
       body =
         conn
-        |> patch("/poles/validation/pole-validations/#{validation.id}", %{"status" => "submitted"})
+        |> patch("/landgrab/validation/pole-validations/#{validation.id}", %{"status" => "submitted"})
         |> json_response(200)
 
       assert body["status"] == "submitted"
@@ -98,7 +98,7 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
 
       body =
         conn
-        |> patch("/poles/validation/pole-validations/#{submitted.id}", %{"status" => "accepted"})
+        |> patch("/landgrab/validation/pole-validations/#{submitted.id}", %{"status" => "accepted"})
         |> json_response(422)
 
       assert body["errors"] != nil
@@ -112,7 +112,7 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
 
       body =
         conn
-        |> post("/poles/validation/pole-validations/#{validation.id}/comments", %{
+        |> post("/landgrab/validation/pole-validations/#{validation.id}/comments", %{
           "field" => "label",
           "comment" => "label is misspelled",
           "suggested_value" => "The Forks"
@@ -131,7 +131,7 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
 
       body =
         conn
-        |> post("/poles/validation/pole-validations/#{validation.id}/comments", %{
+        |> post("/landgrab/validation/pole-validations/#{validation.id}/comments", %{
           "field" => "label",
           "comment" => "x"
         })
@@ -150,7 +150,7 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
 
       body =
         conn
-        |> patch("/poles/validation/pole-validations/#{validation.id}", %{"status" => "in_progress"})
+        |> patch("/landgrab/validation/pole-validations/#{validation.id}", %{"status" => "in_progress"})
         |> json_response(403)
 
       assert body["error"]["code"] == "not_assignee"
@@ -163,14 +163,14 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
 
       body =
         conn
-        |> patch("/poles/validation/puzzlet-validations/#{validation.id}", %{"status" => "in_progress"})
+        |> patch("/landgrab/validation/puzzlet-validations/#{validation.id}", %{"status" => "in_progress"})
         |> json_response(200)
 
       assert body["status"] == "in_progress"
 
       body =
         conn
-        |> post("/poles/validation/puzzlet-validations/#{validation.id}/comments", %{
+        |> post("/landgrab/validation/puzzlet-validations/#{validation.id}/comments", %{
           "field" => "answer",
           "suggested_value" => "1989"
         })
@@ -193,13 +193,13 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
 
       body =
         conn
-        |> patch("/poles/validation/pole-comments/#{comment.id}", %{"comment" => "edited"})
+        |> patch("/landgrab/validation/pole-comments/#{comment.id}", %{"comment" => "edited"})
         |> json_response(200)
 
       assert body["comment"] == "edited"
 
       conn
-      |> delete("/poles/validation/pole-comments/#{comment.id}")
+      |> delete("/landgrab/validation/pole-comments/#{comment.id}")
       |> response(204)
     end
   end

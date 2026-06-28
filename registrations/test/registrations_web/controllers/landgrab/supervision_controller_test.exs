@@ -30,7 +30,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
     end
 
     test "GET /poles/supervision/dashboard is forbidden", %{conn: conn} do
-      body = conn |> get("/poles/supervision/dashboard") |> json_response(403)
+      body = conn |> get("/landgrab/supervision/dashboard") |> json_response(403)
       assert body["error"]["code"] == "forbidden"
     end
   end
@@ -50,7 +50,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
 
       body =
         conn
-        |> get("/poles/supervision/validators?exclude_user_id=#{v1.id}")
+        |> get("/landgrab/supervision/validators?exclude_user_id=#{v1.id}")
         |> json_response(200)
 
       ids = Enum.map(body["validators"], & &1["id"])
@@ -66,7 +66,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
 
       body =
         conn
-        |> post("/poles/supervision/poles/#{pole.id}/validations", %{
+        |> post("/landgrab/supervision/poles/#{pole.id}/validations", %{
           "validator_id" => validator.id
         })
         |> json_response(201)
@@ -83,7 +83,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
 
       body =
         conn
-        |> post("/poles/supervision/poles/#{pole.id}/validations", %{
+        |> post("/landgrab/supervision/poles/#{pole.id}/validations", %{
           "validator_id" => author.id
         })
         |> json_response(422)
@@ -103,7 +103,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
 
       body =
         conn
-        |> patch("/poles/supervision/pole-validations/#{validation.id}", %{"status" => "accepted"})
+        |> patch("/landgrab/supervision/pole-validations/#{validation.id}", %{"status" => "accepted"})
         |> json_response(200)
 
       assert body["status"] == "accepted"
@@ -121,7 +121,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
 
       body =
         conn
-        |> patch("/poles/supervision/pole-validations/#{validation.id}", %{"status" => "rejected"})
+        |> patch("/landgrab/supervision/pole-validations/#{validation.id}", %{"status" => "rejected"})
         |> json_response(200)
 
       assert body["status"] == "rejected"
@@ -145,7 +145,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
 
       body =
         conn
-        |> patch("/poles/supervision/pole-comments/#{comment.id}", %{"status" => "accepted"})
+        |> patch("/landgrab/supervision/pole-comments/#{comment.id}", %{"status" => "accepted"})
         |> json_response(200)
 
       assert body["status"] == "accepted"
@@ -168,7 +168,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
         })
 
       conn
-      |> patch("/poles/supervision/puzzlet-comments/#{comment.id}", %{"status" => "accepted"})
+      |> patch("/landgrab/supervision/puzzlet-comments/#{comment.id}", %{"status" => "accepted"})
       |> json_response(200)
 
       assert Repo.get!(Puzzlet, puzzlet.id).difficulty == 7
@@ -190,7 +190,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
         })
 
       conn
-      |> patch("/poles/supervision/pole-comments/#{comment.id}", %{"status" => "rejected"})
+      |> patch("/landgrab/supervision/pole-comments/#{comment.id}", %{"status" => "rejected"})
       |> json_response(200)
 
       assert Repo.get!(Pole, pole.id).label == "keep me"
@@ -203,7 +203,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
 
       body =
         conn
-        |> patch("/poles/supervision/poles/#{pole.id}", %{"label" => "after"})
+        |> patch("/landgrab/supervision/poles/#{pole.id}", %{"label" => "after"})
         |> json_response(200)
 
       assert body["label"] == "after"
@@ -219,7 +219,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
       {:ok, validation} = Validations.transition_pole_validation_as_validator(validation, validator.id, "in_progress")
       {:ok, _} = Validations.add_pole_comment(validation, validator.id, %{"field" => "label", "comment" => "x"})
 
-      body = conn |> get("/poles/supervision/poles?status=in_review") |> json_response(200)
+      body = conn |> get("/landgrab/supervision/poles?status=in_review") |> json_response(200)
       target = Enum.find(body["poles"], &(&1["id"] == pole.id))
       assert target != nil
       assert target["active_validation"]["status"] == "in_progress"
@@ -231,7 +231,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
       _draft = insert(:pole, creator: author, status: :draft, barcode: "FILT-D-#{System.unique_integer([:positive])}")
       _val = insert(:pole, creator: author, status: :validated, barcode: "FILT-V-#{System.unique_integer([:positive])}")
 
-      body = conn |> get("/poles/supervision/poles?status=draft") |> json_response(200)
+      body = conn |> get("/landgrab/supervision/poles?status=draft") |> json_response(200)
       assert Enum.all?(body["poles"], &(&1["status"] == "draft"))
     end
 
@@ -245,13 +245,13 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
       {:ok, validation} = Validations.transition_pole_validation_as_validator(validation, validator.id, "in_progress")
       {:ok, _} = Validations.add_pole_comment(validation, validator.id, %{"field" => "label", "comment" => "x"})
 
-      body = conn |> get("/poles/supervision/poles/#{pole.id}/validations") |> json_response(200)
+      body = conn |> get("/landgrab/supervision/poles/#{pole.id}/validations") |> json_response(200)
       assert length(body["validations"]) == 1
       assert length(hd(body["validations"])["comments"]) == 1
     end
 
     test "dashboard returns counts including validation breakdowns", %{conn: conn} do
-      body = conn |> get("/poles/supervision/dashboard") |> json_response(200)
+      body = conn |> get("/landgrab/supervision/dashboard") |> json_response(200)
       assert is_map(body["poles"])
       assert is_map(body["puzzlets"])
       assert is_map(body["pole_validations"])
@@ -272,7 +272,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
 
       body =
         conn
-        |> patch("/poles/supervision/pole-validations/#{validation.id}/validator", %{
+        |> patch("/landgrab/supervision/pole-validations/#{validation.id}/validator", %{
           "validator_id" => v2.id
         })
         |> json_response(200)
@@ -303,7 +303,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
 
       body =
         conn
-        |> patch("/poles/supervision/pole-validations/#{validation.id}/validator", %{
+        |> patch("/landgrab/supervision/pole-validations/#{validation.id}/validator", %{
           "validator_id" => v2.id
         })
         |> json_response(409)
@@ -324,7 +324,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
       assert Repo.get!(Pole, pole.id).status == :in_review
 
       conn
-      |> delete("/poles/supervision/pole-validations/#{validation.id}")
+      |> delete("/landgrab/supervision/pole-validations/#{validation.id}")
       |> response(204)
 
       refute Validations.get_pole_validation(validation.id)
@@ -352,7 +352,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
 
       body =
         conn
-        |> delete("/poles/supervision/pole-validations/#{validation.id}")
+        |> delete("/landgrab/supervision/pole-validations/#{validation.id}")
         |> json_response(409)
 
       assert body["error"]["code"] == "not_unassignable"

@@ -27,7 +27,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
   describe "GET /poles/me" do
     test "returns the current user and team", %{conn: conn, user: user, team: team} do
-      conn = get(conn, "/poles/me")
+      conn = get(conn, "/landgrab/me")
       body = json_response(conn, 200)
 
       assert body["user"]["id"] == user.id
@@ -42,7 +42,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       pole = insert(:pole, label: "Corner")
       _puzzlet = insert(:puzzlet, pole: pole, answer: "alpha", difficulty: 1)
 
-      body = conn |> get("/poles/poles") |> json_response(200)
+      body = conn |> get("/landgrab/poles") |> json_response(200)
       [returned] = body["poles"]
 
       assert returned["id"] == pole.id
@@ -60,7 +60,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       _hard = insert(:puzzlet, pole: pole, answer: "z", difficulty: 9, instructions: "hard")
       easy = insert(:puzzlet, pole: pole, answer: "a", difficulty: 1, instructions: "easy")
 
-      body = conn |> get("/poles/poles/#{pole.barcode}") |> json_response(200)
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(200)
 
       assert body["pole"]["id"] == pole.id
       assert body["active_puzzlet"]["id"] == easy.id
@@ -73,14 +73,14 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       puzzlet = insert(:puzzlet, pole: pole, answer: "a")
       insert(:capture, puzzlet: puzzlet, team: team)
 
-      body = conn |> get("/poles/poles/#{pole.barcode}") |> json_response(200)
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(200)
       assert body["pole"]["locked"] == true
       assert body["pole"]["current_owner_team_id"] == team.id
       assert body["active_puzzlet"] == nil
     end
 
     test "returns 404 for unknown barcode", %{conn: conn} do
-      body = conn |> get("/poles/poles/NOPE") |> json_response(404)
+      body = conn |> get("/landgrab/poles/NOPE") |> json_response(404)
       assert body["error"]["code"] == "pole_not_found"
     end
 
@@ -90,7 +90,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       _other = insert(:puzzlet, pole: pole, answer: "b", difficulty: 5)
       insert(:capture, puzzlet: puzzlet, team: team)
 
-      body = conn |> get("/poles/poles/#{pole.barcode}") |> json_response(409)
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(409)
       assert body["error"]["code"] == "already_owner"
       assert body["pole"]["id"] == pole.id
     end
@@ -104,7 +104,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
         Landgrab.record_attempt(puzzlet, team.id, user.id, "wrong")
       end)
 
-      body = conn |> get("/poles/poles/#{pole.barcode}") |> json_response(423)
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(423)
       assert body["error"]["code"] == "team_locked_out"
       assert body["pole"]["id"] == pole.id
     end
@@ -117,7 +117,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       body =
         conn
-        |> post("/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "wrong"})
+        |> post("/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "wrong"})
         |> json_response(200)
 
       assert body["correct"] == false
@@ -129,12 +129,12 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, answer: "right")
 
-      post(conn, "/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "first"})
-      post(conn, "/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "first"})
+      post(conn, "/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "first"})
+      post(conn, "/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "first"})
 
       body =
         conn
-        |> post("/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "second"})
+        |> post("/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "second"})
         |> json_response(200)
 
       assert body["previous_wrong_answers"] == ["first", "second"]
@@ -146,7 +146,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       body =
         conn
-        |> post("/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "RIGHT"})
+        |> post("/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "RIGHT"})
         |> json_response(200)
 
       assert body["correct"] == true
@@ -165,7 +165,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       body =
         conn
-        |> post("/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "right"})
+        |> post("/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "right"})
         |> json_response(423)
 
       assert body["error"]["code"] == "locked_out"
@@ -179,7 +179,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       body =
         conn
-        |> post("/poles/puzzlets/#{hard.id}/attempts", %{"answer" => "b"})
+        |> post("/landgrab/puzzlets/#{hard.id}/attempts", %{"answer" => "b"})
         |> json_response(409)
 
       assert body["error"]["code"] == "already_owner"
@@ -193,7 +193,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       body =
         conn
-        |> post("/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "right"})
+        |> post("/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "right"})
         |> json_response(409)
 
       assert body["error"]["code"] == "already_captured"
@@ -203,7 +203,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
   describe "auth" do
     test "rejects unauthenticated requests" do
       conn = put_req_header(build_conn(), "accept", "application/json")
-      conn = get(conn, "/poles/me")
+      conn = get(conn, "/landgrab/me")
       assert response(conn, 401)
     end
   end
@@ -214,7 +214,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       pole = insert(:pole, creator: user)
       _puzzlet = insert(:puzzlet, pole: pole, answer: "x")
 
-      body = conn |> get("/poles/poles/#{pole.barcode}") |> json_response(409)
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(409)
       assert body["error"]["code"] == "own_creation"
     end
 
@@ -223,7 +223,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       _theirs = insert(:puzzlet, pole: pole, answer: "x", difficulty: 1, creator: user)
       ok = insert(:puzzlet, pole: pole, answer: "y", difficulty: 5)
 
-      body = conn |> get("/poles/poles/#{pole.barcode}") |> json_response(200)
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(200)
       assert body["active_puzzlet"]["id"] == ok.id
     end
 
@@ -234,7 +234,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       body =
         conn
-        |> post("/poles/puzzlets/#{mine.id}/attempts", %{"answer" => "x"})
+        |> post("/landgrab/puzzlets/#{mine.id}/attempts", %{"answer" => "x"})
         |> json_response(409)
 
       assert body["error"]["code"] == "own_creation"
@@ -248,7 +248,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       body =
         conn
-        |> post("/poles/puzzlets/#{other.id}/attempts", %{"answer" => "x"})
+        |> post("/landgrab/puzzlets/#{other.id}/attempts", %{"answer" => "x"})
         |> json_response(409)
 
       assert body["error"]["code"] == "own_creation"
@@ -275,7 +275,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       pole = insert(:pole)
       _puzzlet = insert(:puzzlet, pole: pole, answer: "x")
 
-      body = teamless_conn |> get("/poles/poles/#{pole.barcode}") |> json_response(200)
+      body = teamless_conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(200)
       assert body["pole"]["id"] == pole.id
       assert body["active_puzzlet"]["attempts_remaining"] == Landgrab.max_attempts_per_puzzlet()
     end
@@ -301,7 +301,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       body =
         teamless_conn
-        |> post("/poles/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "x"})
+        |> post("/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "x"})
         |> json_response(403)
 
       assert body["error"]["code"] == "no_team"
