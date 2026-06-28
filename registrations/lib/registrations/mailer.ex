@@ -68,8 +68,8 @@ defmodule Registrations.Mailer do
     new()
     |> to(adventure_from())
     |> Swoosh.Email.from(adventure_from())
-    |> subject("Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}")
-    |> text_body(attributes["question"])
+    |> subject("[#{phrase("email_title")}] Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}")
+    |> text_body(attributes["question"] <> host_footer())
     |> deliver()
   end
 
@@ -77,8 +77,8 @@ defmodule Registrations.Mailer do
     new()
     |> to(adventure_from())
     |> Swoosh.Email.from(adventure_from())
-    |> subject("Waitlist submission from #{email}")
-    |> text_body("Email: #{email}\nQuestion: #{question}")
+    |> subject("[#{phrase("email_title")}] Waitlist submission from #{email}")
+    |> text_body("Email: #{email}\nQuestion: #{question}" <> host_footer())
     |> deliver()
   end
 
@@ -86,8 +86,8 @@ defmodule Registrations.Mailer do
     new()
     |> to(adventure_from())
     |> Swoosh.Email.from(adventure_from())
-    |> subject("#{user.email} details changed: #{Enum.join(Enum.sort(Map.keys(changes)), ", ")}")
-    |> text_body(inspect(Enum.sort_by(changes, fn {k, _v} -> k end)))
+    |> subject("[#{phrase("email_title")}] #{user.email} details changed: #{Enum.join(Enum.sort(Map.keys(changes)), ", ")}")
+    |> text_body(inspect(Enum.sort_by(changes, fn {k, _v} -> k end)) <> host_footer())
     |> deliver()
   end
 
@@ -95,8 +95,8 @@ defmodule Registrations.Mailer do
     new()
     |> to(adventure_from())
     |> Swoosh.Email.from(adventure_from())
-    |> subject("#{user.email} deleted their account")
-    |> text_body(inspect(user))
+    |> subject("[#{phrase("email_title")}] #{user.email} deleted their account")
+    |> text_body(inspect(user) <> host_footer())
     |> deliver()
   end
 
@@ -106,9 +106,13 @@ defmodule Registrations.Mailer do
     new()
     |> to(adventure_from())
     |> Swoosh.Email.from(adventure_from())
-    |> subject("#{user.email} registered")
-    |> text_body("Yes")
+    |> subject("[#{phrase("email_title")}] #{user.email} registered")
+    |> text_body("Registered." <> host_footer())
     |> deliver()
+  end
+
+  defp host_footer do
+    "\n\nHost: #{System.get_env("PHX_HOST") || "(unset)"}"
   end
 
   def send_message(message, user, relationships, team) do
