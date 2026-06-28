@@ -169,6 +169,15 @@ $landgrab-purple:  #a25fd6;
   line-height: 0.95;
   text-transform: uppercase;
 
+  // A decorative wordmark — disabling selection avoids the touch-and-
+  // hold gesture for the letter-drop easter egg from also triggering
+  // text-selection / iOS's Copy-Lookup-Share callout. The accessible
+  // name is on the parent's aria-label, so screen-reader behaviour is
+  // unaffected.
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+
   // Hide the wordmark until the Anton webfont is loaded so we don't
   // flash the Helvetica fallback. `<html>` gets `.font-anton-loaded`
   // from the script below; before that, the text is invisible but
