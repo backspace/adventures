@@ -126,10 +126,11 @@ $landgrab-purple:  #a25fd6;
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  gap: 0.04em;
+  gap: 0.25rem;
 }
 
 // Bottom-of-hero "more below" cue. Translucent bone chevron with a gentle
@@ -176,6 +177,26 @@ $landgrab-purple:  #a25fd6;
 }
 
 .font-anton-loaded .landgrab-wordmark-text {
+  visibility: visible;
+}
+
+// Lowercase tagline sitting under the wordmark. Same Anton family so it
+// reads as part of the same masthead, but smaller, dimmer, and
+// lower-case to step out of the all-caps shout above. Same load-gate
+// trick as the wordmark so we don't flash the fallback face.
+.landgrab-wordmark-subtitle {
+  font-family: 'Anton', 'Helvetica Neue', sans-serif;
+  font-weight: 400;
+  font-size: clamp(0.9rem, 2.2vw, 1.5rem);
+  letter-spacing: 0.04em;
+  color: rgba(236, 228, 211, 0.7);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7);
+  line-height: 1;
+  text-transform: lowercase;
+  visibility: hidden;
+}
+
+.font-anton-loaded .landgrab-wordmark-subtitle {
   visibility: visible;
 }
 
