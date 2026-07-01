@@ -23,7 +23,7 @@ defmodule RegistrationsWeb.Router do
     plug(PowPersistentSession.Plug.Cookie)
 
     plug(PowAssent.Plug.Reauthorization,
-      handler: PowAssent.Phoenix.ReauthorizationPlugHandler
+      handler: RegistrationsWeb.PowAssent.ReauthorizationPlugHandler
     )
   end
 

@@ -67,6 +67,16 @@ defmodule RegistrationsWeb.UserController do
         Pow.Plug.delete(conn)
 
         conn
+        # PowAssent's Reauthorization plug (in the :browser pipeline)
+        # remembers the last-used OAuth provider in this cookie so an
+        # unauthenticated request can silently re-run the provider
+        # handshake. Pow.Plug.delete/1 clears Pow's session and its
+        # persistent-session cookie but doesn't know about this one —
+        # if we leave it, a later visit to /session/new re-authorizes
+        # via Google and PowAssent's upsert re-creates the very
+        # account we just deleted. Cookie name is `otp_app`-prefixed
+        # by `PowPlug.prepend_with_namespace/2`.
+        |> Plug.Conn.delete_resp_cookie("registrations_reauthorization_provider")
         |> put_flash(:info, "Your account has been deleted. Sorry to see you go!")
         |> redirect(to: "/")
 
