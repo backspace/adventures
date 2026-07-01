@@ -1,0 +1,14 @@
+<%# Adventure-specific extensions to <head>. Included from
+    `app.html.heex` via `render_existing/3` — the file's presence is
+    the opt-in; drop a `<name>_head.html.heex` alongside this file to
+    add head content for any other adventure. %>
+
+<%# Anton drives the LANDGRAB wordmark on the placeholder hero.
+    Loaded via <link>, not the shared SCSS @import, so it stays out
+    of the email stylesheet — Premailex's Floki-based inliner
+    crashes trying to parse the URL's query string as a CSS selector. %>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Anton&display=swap"
+/>

@@ -24,6 +24,13 @@
     />
 
     <link rel="icon" href={"/images/#{adventure()}/favicon.ico"} />
+
+    <%# Per-adventure extension slot for anything that needs to live in
+        <head>. Drop a `<adventure>_head.html.heex` alongside this file
+        to add content for that adventure only; adventures without one
+        get nothing (render_existing returns nil). %>
+    <%= Phoenix.View.render_existing(RegistrationsWeb.LayoutView,
+          "#{adventure()}_head.html", assigns) %>
   </head>
 
   <body class={"deploy-env-#{deploy_env()}"}>

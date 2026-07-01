@@ -32,10 +32,13 @@ body {
 
 // ─── LANDGRAB placeholder ────────────────────────────────────────────
 //
-// Brutal, condensed display type for the wordmark. Anton is the
-// canonical narrow-heavy-sans on Google Fonts — single weight, very
-// strong vertical strokes, reads as signage / political poster.
-@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+// Anton (the narrow-heavy display face used by the wordmark) is loaded
+// via a <link rel="stylesheet"> in the app layout, not @imported here.
+// The layout link only fires for landgrab; keeping the @import in this
+// file would also pull it into `landgrab-email.scss` (which imports
+// this stylesheet), and Premailex's Floki-based selector parser
+// crashes when it hits the URL's query-string characters when inlining
+// styles into an outgoing email.
 
 $landgrab-bone:    #ece4d3;
 $landgrab-blood:   #b6231e;
