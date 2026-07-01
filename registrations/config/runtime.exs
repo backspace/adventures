@@ -182,6 +182,24 @@ if config_env() == :prod do
 
   config :sentry, dsn: sentry_dsn
 
+  # Optional Google OAuth. Only wired when both env vars are set;
+  # otherwise the shared oauth-links partial simply doesn't render a
+  # Google button and email/password remains the only path. This lets
+  # deployments opt in per environment without a code change.
+  google_client_id = System.get_env("GOOGLE_CLIENT_ID")
+  google_client_secret = System.get_env("GOOGLE_CLIENT_SECRET")
+
+  if google_client_id && google_client_secret do
+    config :registrations, :pow_assent,
+      providers: [
+        google: [
+          client_id: google_client_id,
+          client_secret: google_client_secret,
+          strategy: Assent.Strategy.Google
+        ]
+      ]
+  end
+
   #
   # For this example you need include a HTTP client required by Swoosh API client.
   # Swoosh supports Hackney and Finch out of the box:
