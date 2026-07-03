@@ -68,9 +68,14 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
   # (Apple, `response_mode: "form_post"` — mandatory whenever email or
   # name scope is requested). Form-encoded body params get merged into
   # `conn.params` by `Plug.Parsers`, so the extraction is identical.
-  # We reply with 303 See Other so a browser reaching this endpoint
-  # via POST follows the redirect with a GET — cleanly bailing to the
-  # custom URI scheme.
+  #
+  # Rather than a server-side redirect with a custom-scheme Location
+  # header (which Chrome Custom Tabs on Android often refuses to
+  # follow, leaving the tab stuck on a blank loading page), we return
+  # a small HTML page that fires the scheme via meta-refresh + JS
+  # `location.replace`. Chrome dispatches an in-page navigation to a
+  # non-HTTP scheme to the OS intent handler consistently — which is
+  # what closes the tab and calls back into `flutter_web_auth_2`.
   @spec mobile_bounce(Conn.t(), map()) :: Conn.t()
   def mobile_bounce(conn, params) do
     query =
@@ -78,9 +83,41 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
       |> Map.take(["code", "state", "error"])
       |> URI.encode_query()
 
+    target = "#{@mobile_scheme}://oauth-callback?#{query}"
+    # Fully-qualify to bypass the `alias PowAssent.Plug` at the top of
+    # this file, which would otherwise shadow `Plug` and resolve to
+    # `PowAssent.Plug.HTML` (nonexistent).
+    target_attr = Elixir.Plug.HTML.html_escape(target)
+    target_js = Jason.encode!(target)
+
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Returning to the app…</title>
+      <meta http-equiv="refresh" content="0;url=#{target_attr}">
+      <script>window.location.replace(#{target_js});</script>
+      <style>
+        body { font-family: -apple-system, system-ui, sans-serif;
+               display: flex; align-items: center; justify-content: center;
+               height: 100vh; margin: 0; text-align: center; color: #333; }
+        a { display: inline-block; margin-top: 1rem; }
+      </style>
+    </head>
+    <body>
+      <div>
+        <p>Returning to the app…</p>
+        <a href="#{target_attr}">Tap here if you're not redirected automatically.</a>
+      </div>
+    </body>
+    </html>
+    """
+
     conn
-    |> put_status(:see_other)
-    |> redirect(external: "#{@mobile_scheme}://oauth-callback?#{query}")
+    |> put_resp_content_type("text/html")
+    |> send_resp(200, html)
   end
 
   # Native Sign in with Apple on iOS — the `sign_in_with_apple` package
