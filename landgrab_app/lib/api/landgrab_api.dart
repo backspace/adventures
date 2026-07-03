@@ -43,6 +43,47 @@ class LandgrabApi {
   // Session / Custom Tabs can hand control back to us with the code.
   static const _oauthCallbackScheme = 'ca.chromatin.poles';
 
+  /// Native iOS Sign in with Apple flow. Given the identity token
+  /// (JWT signed by Apple) and the optional user credential returned
+  /// by `SignInWithApple.getAppleIDCredential`, POSTs to the backend
+  /// which verifies the JWT and upserts the user. Returns true on
+  /// success and stores tokens exactly like [login].
+  ///
+  /// [identityToken] comes from `AuthorizationCredentialAppleID.identityToken`.
+  /// [email] / [givenName] / [familyName] are only returned by Apple
+  /// on the FIRST sign-in with the app — pass whatever the credential
+  /// includes; the backend uses them to seed a new account.
+  Future<bool> loginWithAppleNative({
+    required String identityToken,
+    String? email,
+    String? givenName,
+    String? familyName,
+  }) async {
+    try {
+      final response = await dio.post(
+        '/powapi/auth/apple/native_callback',
+        data: {
+          'identity_token': identityToken,
+          if (email != null || givenName != null || familyName != null)
+            'user': {
+              if (email != null) 'email': email,
+              if (givenName != null) 'given_name': givenName,
+              if (familyName != null) 'family_name': familyName,
+            },
+        },
+      );
+      final data = response.data['data'] as Map<String, dynamic>;
+      await UserService.setTokens(
+        data['access_token'] as String,
+        data['renewal_token'] as String,
+      );
+      await loadAndStoreMe();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Runs the "sign in with `<provider>`" flow via a system-provided
   /// browser (Google explicitly blocks embedded WebViews). Returns true
   /// on success and stores the resulting session tokens exactly like

@@ -240,6 +240,15 @@ if config_env() == :prod do
     config :registrations, :pow_assent, providers: oauth_providers
   end
 
+  # Apple Bundle ID — used only for verifying identity tokens returned
+  # by the native iOS Sign in with Apple SDK (the JWT's `aud` claim
+  # must match). Separate from the Services ID (`APPLE_CLIENT_ID`)
+  # because native flow uses the app's Bundle ID as its audience while
+  # the web flow uses the Services ID.
+  if apple_bundle_id = System.get_env("APPLE_BUNDLE_ID") do
+    config :registrations, :apple_bundle_id, apple_bundle_id
+  end
+
   #
   # For this example you need include a HTTP client required by Swoosh API client.
   # Swoosh supports Hackney and Finch out of the box:

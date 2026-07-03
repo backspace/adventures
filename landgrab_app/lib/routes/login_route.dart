@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:landgrab/api/landgrab_api.dart';
@@ -5,6 +7,7 @@ import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/home_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
 import 'package:landgrab/services/env_service.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginRoute extends StatefulWidget {
   final LandgrabApi api;
@@ -48,7 +51,73 @@ class _LoginRouteState extends State<LoginRoute> {
 
   Future<void> _signInWithGoogle() => _signInWithProvider('google', 'Google');
 
-  Future<void> _signInWithApple() => _signInWithProvider('apple', 'Apple');
+  Future<void> _signInWithApple() async {
+    // iOS gets the native "Sign in with Apple" sheet via the platform
+    // SDK; Android has no native flow so we fall back to the standard
+    // OAuth web flow (safari/custom-tabs → mobile_bounce → app).
+    if (Platform.isIOS || Platform.isMacOS) {
+      await _signInWithAppleNative();
+    } else {
+      await _signInWithProvider('apple', 'Apple');
+    }
+  }
+
+  Future<void> _signInWithAppleNative() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: const [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+      final token = credential.identityToken;
+      if (token == null) {
+        if (!mounted) return;
+        setState(() {
+          _busy = false;
+          _error = 'Apple sign-in returned no identity token';
+        });
+        return;
+      }
+      final ok = await widget.api.loginWithAppleNative(
+        identityToken: token,
+        email: credential.email,
+        givenName: credential.givenName,
+        familyName: credential.familyName,
+      );
+      if (!mounted) return;
+      if (ok) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => HomeRoute(api: widget.api)),
+        );
+      } else {
+        setState(() {
+          _busy = false;
+          _error = 'Apple sign-in failed';
+        });
+      }
+    } on SignInWithAppleAuthorizationException catch (e) {
+      // Includes the user tapping "Cancel" on the sheet — treat as a
+      // quiet dismissal rather than an error message.
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = e.code == AuthorizationErrorCode.canceled
+            ? null
+            : 'Apple sign-in failed: ${e.message}';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = 'Apple sign-in failed: $e';
+      });
+    }
+  }
 
   Future<void> _signInWithProvider(String provider, String label) async {
     setState(() {

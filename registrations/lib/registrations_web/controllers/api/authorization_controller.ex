@@ -82,4 +82,85 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
     |> put_status(:see_other)
     |> redirect(external: "#{@mobile_scheme}://oauth-callback?#{query}")
   end
+
+  # Native Sign in with Apple on iOS — the `sign_in_with_apple` package
+  # returns an identity token JWT signed by Apple. We verify the JWT
+  # against Apple's public keys directly (no OAuth code exchange, no
+  # OAuth state to validate) and upsert the user based on the `sub`
+  # (Apple's stable per-user, per-app id).
+  #
+  # Body:
+  #   identity_token: JWT string from `AppleIDCredential.identityToken`
+  #   user:           optional map with :email / :given_name /
+  #                   :family_name — Apple only returns these on the
+  #                   FIRST sign-in, so the app forwards whatever it
+  #                   received; we lean on them for account creation.
+  @spec apple_native_callback(Conn.t(), map()) :: Conn.t()
+  def apple_native_callback(conn, %{"identity_token" => id_token} = params) do
+    bundle_id = Application.fetch_env!(:registrations, :apple_bundle_id)
+    apple_config = [client_id: bundle_id, strategy: Assent.Strategy.Apple]
+    client_user = Map.get(params, "user", %{})
+
+    with {:ok, jwt} <- validate_apple_id_token(apple_config, id_token),
+         claims = jwt.claims,
+         {:ok, user_identity_params, user_params} <- build_upsert_params(claims, client_user),
+         {:ok, user} <- find_or_create_apple_user(user_identity_params, user_params) do
+      conn = Pow.Plug.create(conn, user, Pow.Plug.fetch_config(conn))
+
+      json(conn, %{
+        data: %{
+          access_token: conn.private.api_access_token,
+          renewal_token: conn.private.api_renewal_token
+        }
+      })
+    else
+      {:error, reason} ->
+        conn
+        |> put_status(:unauthorized)
+        |> json(%{error: %{status: 401, message: "Apple sign-in rejected", detail: inspect(reason)}})
+    end
+  end
+
+  defp validate_apple_id_token(apple_config, id_token) do
+    Assent.Strategy.OIDC.validate_id_token(apple_config, id_token)
+  end
+
+  defp build_upsert_params(%{"sub" => sub} = claims, client_user) do
+    email = claims["email"] || Map.get(client_user, "email")
+
+    user_identity_params = %{"provider" => "apple", "uid" => sub}
+    user_params = maybe_put_name(%{"email" => email}, client_user)
+
+    {:ok, user_identity_params, user_params}
+  end
+
+  defp build_upsert_params(_claims, _client_user), do: {:error, :missing_sub}
+
+  defp maybe_put_name(user_params, %{"given_name" => given, "family_name" => family})
+       when is_binary(given) or is_binary(family) do
+    name = [given, family] |> Enum.reject(&is_nil/1) |> Enum.join(" ") |> String.trim()
+    if name == "", do: user_params, else: Map.put(user_params, "name", name)
+  end
+
+  defp maybe_put_name(user_params, _), do: user_params
+
+  # First lookup by (provider, uid). If found, return that user; if
+  # not, invoke our custom UserIdentities.create_user so the same
+  # welcome-email hook fires as the web-flow path.
+  defp find_or_create_apple_user(user_identity_params, user_params) do
+    import Ecto.Query
+
+    existing =
+      Registrations.Repo.one(
+        from(ui in Registrations.UserIdentities.UserIdentity,
+          where: ui.provider == ^user_identity_params["provider"] and ui.uid == ^user_identity_params["uid"],
+          preload: [:user]
+        )
+      )
+
+    case existing do
+      %{user: user} -> {:ok, user}
+      nil -> RegistrationsWeb.PowAssent.UserIdentities.create_user(user_identity_params, user_params, %{})
+    end
+  end
 end

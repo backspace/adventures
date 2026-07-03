@@ -168,6 +168,10 @@ defmodule RegistrationsWeb.Router do
     # as a POST. Same bounce action handles both — form-encoded body
     # params get merged into `conn.params` alongside query params.
     post("/auth/:provider/mobile_bounce", ApiAuthorizationController, :mobile_bounce)
+    # Native Sign in with Apple on iOS — the client's already got a
+    # verified identity token from Apple, so this skips the OAuth
+    # code-exchange dance entirely.
+    post("/auth/apple/native_callback", ApiAuthorizationController, :apple_native_callback)
   end
 
   scope "/waydowntown", RegistrationsWeb do
