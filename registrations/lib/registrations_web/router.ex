@@ -230,6 +230,7 @@ defmodule RegistrationsWeb.Router do
     pipe_through([:landgrab_author])
 
     get("/mine", DraftController, :index)
+    get("/nearby", DraftController, :nearby)
     post("/poles", DraftController, :create_pole)
     patch("/poles/:id", DraftController, :update_pole)
     delete("/poles/:id", DraftController, :delete_pole)

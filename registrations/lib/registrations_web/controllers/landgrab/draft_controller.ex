@@ -16,6 +16,36 @@ defmodule RegistrationsWeb.Landgrab.DraftController do
     })
   end
 
+  @default_radius_m 250.0
+
+  # Mini-map fetch for the mobile author flow. Called from the
+  # CapturePoleRoute after a GPS fix so the author can see nearby
+  # puzzlets (blue pins) and poles (green if assigned, grey if empty)
+  # while deciding where to stake a new pole.
+  def nearby(conn, %{"lat" => lat_s, "lng" => lng_s} = params) do
+    with {lat, ""} <- Float.parse(lat_s),
+         {lng, ""} <- Float.parse(lng_s),
+         {:ok, radius_m} <- parse_radius(params["radius_m"]) do
+      {puzzlets, poles} = Landgrab.list_nearby_authoring(lat, lng, radius_m)
+
+      json(conn, %{
+        puzzlets: Enum.map(puzzlets, &render_puzzlet/1),
+        poles: Enum.map(poles, &render_pole/1)
+      })
+    else
+      _ -> send_resp(conn, 400, "lat, lng, and (optional) radius_m must be numbers")
+    end
+  end
+
+  defp parse_radius(nil), do: {:ok, @default_radius_m}
+
+  defp parse_radius(str) when is_binary(str) do
+    case Float.parse(str) do
+      {r, ""} when r > 0 -> {:ok, r}
+      _ -> :error
+    end
+  end
+
   def create_pole(conn, params) do
     user = Pow.Plug.current_user(conn)
 

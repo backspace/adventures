@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/routes/author/authoring_map_route.dart';
 import 'package:landgrab/routes/author/capture_bathroom_route.dart';
 import 'package:landgrab/routes/author/capture_pole_route.dart';
 import 'package:landgrab/routes/author/capture_puzzlet_route.dart';
@@ -15,6 +16,14 @@ class AuthorRoute extends StatelessWidget {
       appBar: AppBar(title: const Text('Author')),
       body: ListView(
         children: [
+          _Tile(
+            icon: Icons.map_outlined,
+            title: 'Browse the map',
+            subtitle: 'See nearby puzzlets by difficulty and existing poles.',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => AuthoringMapRoute(api: api)),
+            ),
+          ),
           _Tile(
             icon: Icons.qr_code_2,
             title: 'Capture a pole',

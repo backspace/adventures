@@ -262,6 +262,54 @@ defmodule Registrations.Landgrab do
     Repo.all(from(p in Puzzlet, where: is_nil(p.pole_id)))
   end
 
+  @doc """
+  Returns `{puzzlets, poles}` — every puzzlet and pole with a location
+  inside an approximate bounding box of `radius_m` around `(lat, lng)`.
+
+  Used by the mobile author flow's mini-map: while staking a new pole,
+  the author sees which puzzlets and existing poles are around them so
+  they can decide where to plant the pole (or whether to plant one at
+  all — a nearby existing pole may already cover the puzzlet).
+
+  This is a bounding-box filter, not a true radius query — cheaper and
+  fine for the ~100-500m radii the map view uses. Meters convert to
+  degrees using flat-earth approximations at the given latitude.
+  """
+  def list_nearby_authoring(lat, lng, radius_m) do
+    lat_delta = radius_m / 111_000.0
+    # 1° longitude ≈ 111 km × cos(lat) — narrows near the poles.
+    lng_delta = radius_m / (111_000.0 * :math.cos(lat * :math.pi() / 180.0))
+
+    lat_min = lat - lat_delta
+    lat_max = lat + lat_delta
+    lng_min = lng - lng_delta
+    lng_max = lng + lng_delta
+
+    puzzlets =
+      Repo.all(
+        from(p in Puzzlet,
+          where:
+            not is_nil(p.latitude) and not is_nil(p.longitude) and
+              p.latitude >= ^lat_min and p.latitude <= ^lat_max and
+              p.longitude >= ^lng_min and p.longitude <= ^lng_max,
+          order_by: [asc: p.difficulty, asc: p.inserted_at]
+        )
+      )
+
+    poles =
+      Repo.all(
+        from(p in Pole,
+          where:
+            not is_nil(p.latitude) and not is_nil(p.longitude) and
+              p.latitude >= ^lat_min and p.latitude <= ^lat_max and
+              p.longitude >= ^lng_min and p.longitude <= ^lng_max,
+          order_by: [asc: p.inserted_at]
+        )
+      )
+
+    {puzzlets, poles}
+  end
+
   def create_puzzlet(attrs) do
     %Puzzlet{}
     |> Puzzlet.changeset(attrs)

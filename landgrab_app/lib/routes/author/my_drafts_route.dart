@@ -407,6 +407,33 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
+// Colour-coded pill so at a glance the author can tell which puzzlets
+// are the low-difficulty "filler" ones (to seed close-to-start poles)
+// vs the harder ones. Mirrors _StatusBadge's shape so they line up.
+class _DifficultyBadge extends StatelessWidget {
+  final int difficulty;
+  const _DifficultyBadge(this.difficulty);
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (difficulty) {
+      <= 1 => Colors.green.shade700,
+      2 => Colors.lime.shade800,
+      3 => Colors.orange.shade700,
+      _ => Colors.red.shade700,
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text('d$difficulty', style: TextStyle(color: color, fontSize: 12)),
+    );
+  }
+}
+
 class _PoleTile extends StatelessWidget {
   final DraftPole pole;
   final LandgrabApi api;
@@ -486,6 +513,8 @@ class _PuzzletTile extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          _DifficultyBadge(puzzlet.difficulty),
+          const SizedBox(width: 4),
           _StatusBadge(puzzlet.status),
           if (puzzlet.attachmentIds.isNotEmpty) ...[
             const SizedBox(width: 4),

@@ -231,5 +231,80 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
 
       conn |> delete("/landgrab/drafts/poles/#{pole.id}") |> response(204)
     end
+
+    test "GET /landgrab/drafts/nearby returns puzzlets and poles inside the bounding box",
+         %{conn: conn, user: user} do
+      # Anchor at Portage & Main-ish; 250m default radius covers roughly
+      # ±0.00225° lat and ±0.0035° lng at this latitude.
+      {:ok, near_pole} =
+        Landgrab.create_pole(%{
+          barcode: "NEAR-#{System.unique_integer([:positive])}",
+          latitude: 49.895,
+          longitude: -97.138,
+          creator_id: user.id,
+          status: :draft
+        })
+
+      {:ok, far_pole} =
+        Landgrab.create_pole(%{
+          barcode: "FAR-#{System.unique_integer([:positive])}",
+          # ~2km south — well outside the 250m radius.
+          latitude: 49.875,
+          longitude: -97.138,
+          creator_id: user.id,
+          status: :draft
+        })
+
+      {:ok, near_puzzlet} =
+        Landgrab.create_puzzlet(%{
+          instructions: "near",
+          answer: "n",
+          difficulty: 2,
+          latitude: 49.8952,
+          longitude: -97.1378,
+          creator_id: user.id,
+          status: :draft
+        })
+
+      {:ok, _far_puzzlet} =
+        Landgrab.create_puzzlet(%{
+          instructions: "far",
+          answer: "f",
+          difficulty: 1,
+          latitude: 49.875,
+          longitude: -97.138,
+          creator_id: user.id,
+          status: :draft
+        })
+
+      {:ok, _no_location_puzzlet} =
+        Landgrab.create_puzzlet(%{
+          instructions: "unplaced",
+          answer: "u",
+          difficulty: 1,
+          creator_id: user.id,
+          status: :draft
+        })
+
+      body =
+        conn
+        |> get("/landgrab/drafts/nearby?lat=49.895&lng=-97.138")
+        |> json_response(200)
+
+      pole_ids = Enum.map(body["poles"], & &1["id"])
+      puzzlet_ids = Enum.map(body["puzzlets"], & &1["id"])
+
+      assert near_pole.id in pole_ids
+      refute far_pole.id in pole_ids
+      assert near_puzzlet.id in puzzlet_ids
+      # Puzzlets without a location shouldn't appear even inside the box.
+      assert length(body["puzzlets"]) == 1
+    end
+
+    test "GET /landgrab/drafts/nearby with a bad lat rejects with 400", %{conn: conn} do
+      assert conn
+             |> get("/landgrab/drafts/nearby?lat=nope&lng=-97.138")
+             |> response(400)
+    end
   end
 end

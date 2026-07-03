@@ -138,6 +138,26 @@ class LandgrabApi {
     return MyDrafts.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Fetch every puzzlet + pole (regardless of author) within an
+  /// approximate radius of the given point. Backs the mini-map on the
+  /// pole-capture flow so the author sees which nearby puzzlets need a
+  /// pole and where existing poles already sit.
+  Future<MyDrafts> getNearbyDrafts({
+    required double latitude,
+    required double longitude,
+    double? radiusM,
+  }) async {
+    final response = await dio.get(
+      '/landgrab/drafts/nearby',
+      queryParameters: {
+        'lat': latitude,
+        'lng': longitude,
+        if (radiusM != null) 'radius_m': radiusM,
+      },
+    );
+    return MyDrafts.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<DraftPole> createDraftPole({
     required String barcode,
     required double latitude,
