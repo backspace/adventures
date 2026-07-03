@@ -57,5 +57,23 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Register the custom URL scheme flutter_web_auth_2 uses as the
+	     OAuth callback intercept. Google's Web OAuth client redirects
+	     to the server's /powapi/auth/:provider/mobile_bounce, which
+	     302s to `ca.chromatin.poles://oauth-callback` — this scheme
+	     gets that redirect back into the app. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>ca.chromatin.poles.oauth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ca.chromatin.poles</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

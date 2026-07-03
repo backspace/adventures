@@ -162,6 +162,7 @@ defmodule RegistrationsWeb.Router do
 
     get("/auth/:provider/new", ApiAuthorizationController, :new)
     post("/auth/:provider/callback", ApiAuthorizationController, :callback)
+    get("/auth/:provider/mobile_bounce", ApiAuthorizationController, :mobile_bounce)
   end
 
   scope "/waydowntown", RegistrationsWeb do

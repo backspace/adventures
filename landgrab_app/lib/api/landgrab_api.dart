@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/pole.dart';
@@ -32,6 +33,68 @@ class LandgrabApi {
       await loadAndStoreMe();
       return true;
     } on DioException {
+      return false;
+    }
+  }
+
+  // Custom URI scheme the app registered on iOS (CFBundleURLTypes) and
+  // Android (intent-filter on flutter_web_auth_2 CallbackActivity). The
+  // server 302s Google's callback to this scheme so ASWebAuthentication-
+  // Session / Custom Tabs can hand control back to us with the code.
+  static const _oauthCallbackScheme = 'ca.chromatin.poles';
+
+  /// Runs the "sign in with `<provider>`" flow via a system-provided
+  /// browser (Google explicitly blocks embedded WebViews). Returns true
+  /// on success and stores the resulting session tokens exactly like
+  /// [login]. Errors — cancelled tab, network failure, server rejects
+  /// the token exchange — are swallowed to false so the caller can
+  /// surface a single "sign-in failed" message.
+  Future<bool> loginWithOAuth(String provider) async {
+    try {
+      // 1) Ask the server for the Google auth URL and the session
+      //    params it wants back on the callback POST. `client=mobile`
+      //    makes the server select the `mobile_bounce` redirect URI so
+      //    the redirect chain lands back in the app.
+      final newResp = await dio.get(
+        '/powapi/auth/$provider/new',
+        queryParameters: const {'client': 'mobile'},
+      );
+      final data = newResp.data['data'] as Map<String, dynamic>;
+      final authUrl = data['url'] as String;
+      final sessionParams = data['session_params'];
+
+      // 2) Open the system browser, wait for a redirect to our scheme.
+      final callbackUrl = await FlutterWebAuth2.authenticate(
+        url: authUrl,
+        callbackUrlScheme: _oauthCallbackScheme,
+      );
+
+      // 3) Extract the code (and state) from the intercepted URL and
+      //    hand them back to the server for the token exchange.
+      final callbackUri = Uri.parse(callbackUrl);
+      if (callbackUri.queryParameters['error'] != null) return false;
+      final code = callbackUri.queryParameters['code'];
+      final state = callbackUri.queryParameters['state'];
+      if (code == null) return false;
+
+      final callbackResp = await dio.post(
+        '/powapi/auth/$provider/callback',
+        queryParameters: const {'client': 'mobile'},
+        data: {
+          'code': code,
+          if (state != null) 'state': state,
+          'session_params': sessionParams,
+        },
+      );
+
+      final tokens = callbackResp.data['data'] as Map<String, dynamic>;
+      await UserService.setTokens(
+        tokens['access_token'] as String,
+        tokens['renewal_token'] as String,
+      );
+      await loadAndStoreMe();
+      return true;
+    } catch (_) {
       return false;
     }
   }

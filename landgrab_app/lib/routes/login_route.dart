@@ -46,6 +46,25 @@ class _LoginRouteState extends State<LoginRoute> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final ok = await widget.api.loginWithOAuth('google');
+    if (!mounted) return;
+    if (ok) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => HomeRoute(api: widget.api)),
+      );
+    } else {
+      setState(() {
+        _busy = false;
+        _error = 'Google sign-in failed or was cancelled';
+      });
+    }
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -120,6 +139,21 @@ class _LoginRouteState extends State<LoginRoute> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text('Sign in'),
+            ),
+            const SizedBox(height: 20),
+            Row(children: const [
+              Expanded(child: Divider()),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text('or'),
+              ),
+              Expanded(child: Divider()),
+            ]),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _signInWithGoogle,
+              icon: const Icon(Icons.g_mobiledata, size: 28),
+              label: const Text('Sign in with Google'),
             ),
           ],
         ),
