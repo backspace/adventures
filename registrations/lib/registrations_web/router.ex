@@ -163,6 +163,11 @@ defmodule RegistrationsWeb.Router do
     get("/auth/:provider/new", ApiAuthorizationController, :new)
     post("/auth/:provider/callback", ApiAuthorizationController, :callback)
     get("/auth/:provider/mobile_bounce", ApiAuthorizationController, :mobile_bounce)
+    # Apple uses OAuth `response_mode: "form_post"` (mandatory when
+    # `email` or `name` scope is requested), so their callback arrives
+    # as a POST. Same bounce action handles both — form-encoded body
+    # params get merged into `conn.params` alongside query params.
+    post("/auth/:provider/mobile_bounce", ApiAuthorizationController, :mobile_bounce)
   end
 
   scope "/waydowntown", RegistrationsWeb do

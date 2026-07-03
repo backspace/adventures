@@ -46,12 +46,16 @@ class _LoginRouteState extends State<LoginRoute> {
     }
   }
 
-  Future<void> _signInWithGoogle() async {
+  Future<void> _signInWithGoogle() => _signInWithProvider('google', 'Google');
+
+  Future<void> _signInWithApple() => _signInWithProvider('apple', 'Apple');
+
+  Future<void> _signInWithProvider(String provider, String label) async {
     setState(() {
       _busy = true;
       _error = null;
     });
-    final ok = await widget.api.loginWithOAuth('google');
+    final ok = await widget.api.loginWithOAuth(provider);
     if (!mounted) return;
     if (ok) {
       Navigator.of(context).pushReplacement(
@@ -60,7 +64,7 @@ class _LoginRouteState extends State<LoginRoute> {
     } else {
       setState(() {
         _busy = false;
-        _error = 'Google sign-in failed or was cancelled';
+        _error = '$label sign-in failed or was cancelled';
       });
     }
   }
@@ -154,6 +158,12 @@ class _LoginRouteState extends State<LoginRoute> {
               onPressed: _busy ? null : _signInWithGoogle,
               icon: const Icon(Icons.g_mobiledata, size: 28),
               label: const Text('Sign in with Google'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _signInWithApple,
+              icon: const Icon(Icons.apple, size: 22),
+              label: const Text('Sign in with Apple'),
             ),
           ],
         ),

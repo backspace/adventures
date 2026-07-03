@@ -182,22 +182,62 @@ if config_env() == :prod do
 
   config :sentry, dsn: sentry_dsn
 
-  # Optional Google OAuth. Only wired when both env vars are set;
-  # otherwise the shared oauth-links partial simply doesn't render a
-  # Google button and email/password remains the only path. This lets
-  # deployments opt in per environment without a code change.
-  google_client_id = System.get_env("GOOGLE_CLIENT_ID")
-  google_client_secret = System.get_env("GOOGLE_CLIENT_SECRET")
+  # Optional OAuth providers. Each is wired in only when its full set
+  # of env vars is present; missing vars just mean the button won't
+  # render and email/password remains the only path. A single
+  # `config :registrations, :pow_assent, providers: […]` call replaces
+  # the whole list, so we build a keyword list conditionally and set
+  # it once at the end.
+  oauth_providers =
+    []
+    |> then(fn acc ->
+      google_client_id = System.get_env("GOOGLE_CLIENT_ID")
+      google_client_secret = System.get_env("GOOGLE_CLIENT_SECRET")
 
-  if google_client_id && google_client_secret do
-    config :registrations, :pow_assent,
-      providers: [
-        google: [
-          client_id: google_client_id,
-          client_secret: google_client_secret,
-          strategy: Assent.Strategy.Google
-        ]
-      ]
+      if google_client_id && google_client_secret do
+        acc ++
+          [
+            google: [
+              client_id: google_client_id,
+              client_secret: google_client_secret,
+              strategy: Assent.Strategy.Google
+            ]
+          ]
+      else
+        acc
+      end
+    end)
+    |> then(fn acc ->
+      apple_client_id = System.get_env("APPLE_CLIENT_ID")
+      apple_team_id = System.get_env("APPLE_TEAM_ID")
+      apple_key_id = System.get_env("APPLE_KEY_ID")
+      apple_private_key = System.get_env("APPLE_PRIVATE_KEY")
+
+      if apple_client_id && apple_team_id && apple_key_id && apple_private_key do
+        acc ++
+          [
+            apple: [
+              client_id: apple_client_id,
+              team_id: apple_team_id,
+              private_key_id: apple_key_id,
+              private_key: apple_private_key,
+              # Apple rejects `response_mode: "query"` whenever `name`
+              # or `email` scope is requested and returns
+              # `invalid_request: response_mode must be form_post…`.
+              # We keep Assent's default `form_post` and handle the
+              # POST at `mobile_bounce` — the endpoint 303s to the
+              # custom URI scheme regardless of which method Apple
+              # (or Google, which uses GET) used to reach it.
+              strategy: Assent.Strategy.Apple
+            ]
+          ]
+      else
+        acc
+      end
+    end)
+
+  if oauth_providers != [] do
+    config :registrations, :pow_assent, providers: oauth_providers
   end
 
   #

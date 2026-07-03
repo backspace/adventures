@@ -57,12 +57,20 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
     end
   end
 
-  # Google → 302 to this URL (whitelisted as an authorized redirect on
-  # the Google Web OAuth client). We forward `code`, `state`, and
-  # `error` on to the app's custom URI scheme; the app's
-  # `flutter_web_auth_2` handler intercepts the scheme and closes
-  # `ASWebAuthenticationSession`/Custom Tabs, returning the URL to the
-  # Dart caller which then POSTs it to `/callback` above.
+  # Providers → this URL (registered as an authorized redirect on the
+  # respective OAuth client). We forward `code`, `state`, and `error`
+  # on to the app's custom URI scheme; the app's `flutter_web_auth_2`
+  # handler intercepts the scheme and closes ASWebAuthenticationSession
+  # or Custom Tabs, returning the URL to the Dart caller which POSTs
+  # it to `/callback`.
+  #
+  # Handles both GET (Google, `response_mode: "query"`) and POST
+  # (Apple, `response_mode: "form_post"` — mandatory whenever email or
+  # name scope is requested). Form-encoded body params get merged into
+  # `conn.params` by `Plug.Parsers`, so the extraction is identical.
+  # We reply with 303 See Other so a browser reaching this endpoint
+  # via POST follows the redirect with a GET — cleanly bailing to the
+  # custom URI scheme.
   @spec mobile_bounce(Conn.t(), map()) :: Conn.t()
   def mobile_bounce(conn, params) do
     query =
@@ -70,6 +78,8 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
       |> Map.take(["code", "state", "error"])
       |> URI.encode_query()
 
-    redirect(conn, external: "#{@mobile_scheme}://oauth-callback?#{query}")
+    conn
+    |> put_status(:see_other)
+    |> redirect(external: "#{@mobile_scheme}://oauth-callback?#{query}")
   end
 end
