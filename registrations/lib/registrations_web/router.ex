@@ -93,6 +93,16 @@ defmodule RegistrationsWeb.Router do
     plug :fetch_session
     plug :fetch_flash
     plug :put_secure_browser_headers
+
+    # Same Pow + PowAssent stack as `:browser`, minus `:protect_from_forgery`.
+    # Apple's `response_mode: "form_post"` callback comes in as a
+    # cross-origin POST from Apple's servers, so CSRF must be off, but
+    # `Pow.Plug.Session` needs to run so the callback controller can
+    # find its config in the conn (otherwise
+    # `Pow.Phoenix.ViewHelpers.layout/1` raises `ConfigError`).
+    plug RegistrationsWeb.Plugs.Settings
+    plug Pow.Plug.Session, otp_app: :registrations
+    plug PowPersistentSession.Plug.Cookie
   end
 
   scope "/" do
