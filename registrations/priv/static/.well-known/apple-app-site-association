@@ -1,4 +1,18 @@
 {
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["RH9KW4462X.ca.chromatin.poles"],
+        "components": [
+          { "/": "/powapi/*", "exclude": true },
+          { "/": "/api/*", "exclude": true },
+          { "/": "/auth/*", "exclude": true },
+          { "/": "/session/exchange*", "exclude": true },
+          { "/": "*" }
+        ]
+      }
+    ]
+  },
   "webcredentials": {
     "apps": ["RH9KW4462X.ca.chromatin.poles"]
   }

@@ -34,6 +34,19 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Android App Links. autoVerify makes Android fetch
+                 https://<host>/.well-known/assetlinks.json at install
+                 time and, if the sha256 fingerprint matches, mark this
+                 filter as verified so links open the app without a
+                 chooser. If verification fails, links still work but
+                 the user gets an "open with" prompt. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="landgrab.chromatin.ca" />
+                <data android:scheme="https" android:host="poles-staging.chromatin.ca" />
+            </intent-filter>
         </activity>
         <!-- flutter_web_auth_2 callback intercept. Custom-tabs return
              here when the server 302s to `ca.chromatin.poles://…`; the
