@@ -82,6 +82,25 @@ defmodule RegistrationsWeb.SharedHelpers do
     Application.get_env(:registrations, :adventure) == "landgrab"
   end
 
+  # Central switchboard for per-adventure feature toggles. Every
+  # feature is enabled by default; adventures opt *out* by listing
+  # the feature atom here. Kept as a plain module attribute (not
+  # Application config) so the shape is discoverable — one place to
+  # skim to answer "what does this adventure not do?".
+  #
+  # For adventure-specific *content* (e.g. the accessibility-tags
+  # picker whose copy only exists in landgrab's gettext), keep using
+  # `is_landgrab/0` and its siblings — this map is for features that
+  # would otherwise be cross-adventure.
+  @disabled_features_by_adventure %{
+    "landgrab" => [:risk_aversion]
+  }
+
+  def feature_enabled?(feature) do
+    disabled = Map.get(@disabled_features_by_adventure, adventure(), [])
+    feature not in disabled
+  end
+
   defp formatted_start_time(format_string) do
     Calendar.strftime(parsed_start_time(), format_string)
   end

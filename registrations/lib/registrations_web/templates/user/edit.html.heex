@@ -7,7 +7,7 @@
       <dl>
         <dt>Name</dt>
         <dd data-test-assigned-team-name><%= @team.name %></dd>
-        <%= unless is_landgrab() do %>
+        <%= if feature_enabled?(:risk_aversion) do %>
           <dt>Risk aversion</dt>
           <dd data-test-assigned-team-risk-aversion>
             <%= risk_aversion_integer_to_string()[@team.risk_aversion] %>
@@ -67,11 +67,10 @@
         ) %>
         <p class="help-text" id="team-name-help"><%= phrase("team_name_help") %></p>
       </div>
-      <%# Risk aversion doesn't apply to Landgrab — the game doesn't
-          push participants toward risky access, so the whole
-          fieldset is hidden. Kept intact for the other adventures
-          that still use it. %>
-      <%= unless is_landgrab() do %>
+      <%# Risk-aversion fieldset is enabled by default and opted out
+          per-adventure via `@disabled_features_by_adventure` in
+          `SharedHelpers`. See there to add/remove adventures. %>
+      <%= if feature_enabled?(:risk_aversion) do %>
         <div class="form-group">
           <legend>Risk aversion</legend>
           <%= for {integer, string} <- risk_aversion_integer_to_string() do %>
