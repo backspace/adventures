@@ -10,6 +10,7 @@ import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/models/test_session.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/author/author_route.dart';
+import 'package:landgrab/routes/details_webview_route.dart';
 import 'package:landgrab/routes/login_route.dart';
 import 'package:landgrab/routes/scan_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
@@ -213,6 +214,14 @@ class _HomeRouteState extends State<HomeRoute> {
                 ),
               ),
               icon: const Icon(Icons.science_outlined),
+            ),
+          if (!_inTestPlay)
+            IconButton(
+              tooltip: 'Details',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => DetailsWebViewRoute(api: widget.api)),
+              ),
+              icon: const Icon(Icons.badge_outlined),
             ),
           if (!_inTestPlay && F.allowsEnvSwitch)
             IconButton(

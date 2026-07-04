@@ -27,6 +27,7 @@ dependencies:
 
   flutter_web_auth_2: ^4.0.0
   sign_in_with_apple: ^7.0.0
+  webview_flutter: ^4.10.0
 
   sentry_flutter: ^9.9.1
   sentry: any

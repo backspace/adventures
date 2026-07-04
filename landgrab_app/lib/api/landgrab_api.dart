@@ -242,6 +242,17 @@ class LandgrabApi {
     return MyDrafts.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Ask the server for a short-lived signed URL that a WebView can
+  /// hit to transition our API session into a browser cookie session
+  /// on the site (so the app can host `/details` and other web pages
+  /// without asking the user to sign in a second time). Consumers
+  /// should open the URL immediately — server TTL is only 60s.
+  Future<String> mintDetailsExchangeUrl() async {
+    final response = await dio.post('/powapi/session/exchange');
+    final data = response.data['data'] as Map<String, dynamic>;
+    return data['url'] as String;
+  }
+
   /// Fetch every puzzlet + pole (regardless of author) within an
   /// approximate radius of the given point. Backs the mini-map on the
   /// pole-capture flow so the author sees which nearby puzzlets need a

@@ -153,6 +153,11 @@ defmodule RegistrationsWeb.Router do
     post("/questions", PageController, :questions)
     post("/waitlist", PageController, :waitlist)
     get("/_icon", PageController, :icon)
+    # Consumes a signed one-shot URL minted by
+    # `POST /powapi/session/exchange` — creates a Pow session cookie
+    # for the user and redirects to /details so an in-app WebView can
+    # render the site's account form.
+    get("/session/exchange", SessionExchangeController, :redeem)
     get("/", PageController, :index)
   end
 
@@ -172,6 +177,11 @@ defmodule RegistrationsWeb.Router do
 
     get("/auth/:provider/new", ApiAuthorizationController, :new)
     post("/auth/:provider/callback", ApiAuthorizationController, :callback)
+
+    # Mint a short-lived signed URL that a WebView can hit to
+    # transition from API-token auth to a browser-cookie session on
+    # the site (used by the app's "Manage details" button).
+    post("/session/exchange", SessionExchangeController, :mint)
     get("/auth/:provider/mobile_bounce", ApiAuthorizationController, :mobile_bounce)
     # Apple uses OAuth `response_mode: "form_post"` (mandatory when
     # `email` or `name` scope is requested), so their callback arrives
