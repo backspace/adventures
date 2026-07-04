@@ -7,10 +7,12 @@
       <dl>
         <dt>Name</dt>
         <dd data-test-assigned-team-name><%= @team.name %></dd>
-        <dt>Risk aversion</dt>
-        <dd data-test-assigned-team-risk-aversion>
-          <%= risk_aversion_integer_to_string()[@team.risk_aversion] %>
-        </dd>
+        <%= unless is_landgrab() do %>
+          <dt>Risk aversion</dt>
+          <dd data-test-assigned-team-risk-aversion>
+            <%= risk_aversion_integer_to_string()[@team.risk_aversion] %>
+          </dd>
+        <% end %>
         <dt>Emails</dt>
         <dd data-test-assigned-team-emails><%= team_emails(@team) %></dd>
       </dl>
@@ -65,48 +67,54 @@
         ) %>
         <p class="help-text" id="team-name-help"><%= phrase("team_name_help") %></p>
       </div>
-      <div class="form-group">
-        <legend>Risk aversion</legend>
-        <%= for {integer, string} <- risk_aversion_integer_to_string() do %>
-          <label for={"level-#{integer}"}>
-            <%= radio_button(f, :risk_aversion, integer,
-              class: "level-#{integer}",
-              id: "level-#{integer}",
-              "aria-describedby": "risk-aversion-help"
-            ) %>
-            <%= string %>
-          </label>
-        <% end %>
-        <p class="help-text" id="risk-aversion-help">
-          How much risk are you comfortable taking? Do you want to stick to places open to the public, or are you confident enough to push the envelope?
-        </p>
-        <p class="help-text">
-          You <em>never</em>
-          have to do anything you don't want to. <%= phrase("risk_avoidance") %>
-        </p>
-        <p class="help-text">
-          <strong>
-            Choosing a certain level of risk-aversion isn't a guarantee that every location you visit will involve that level of risk.
-          </strong>
-        </p>
-        <p class="help-text">
-          Examples of tasks for the least risk-averse are:
-        </p>
-        <ul class="help-text">
-          <li>entering a back stairwell</li>
-          <li>finding an empty office</li>
-          <li>using a light to illuminate a dark space</li>
-        </ul>
-        <p class="help-text">
-          <%= phrase("risk_scope") %>
-        </p>
-        <ul class="help-text">
-          <li>climbing without a ladder</li>
-          <li>jumping across an empty space</li>
-          <li>picking locks</li>
-          <li>following behind someone to get through a locked door</li>
-        </ul>
-      </div>
+      <%# Risk aversion doesn't apply to Landgrab — the game doesn't
+          push participants toward risky access, so the whole
+          fieldset is hidden. Kept intact for the other adventures
+          that still use it. %>
+      <%= unless is_landgrab() do %>
+        <div class="form-group">
+          <legend>Risk aversion</legend>
+          <%= for {integer, string} <- risk_aversion_integer_to_string() do %>
+            <label for={"level-#{integer}"}>
+              <%= radio_button(f, :risk_aversion, integer,
+                class: "level-#{integer}",
+                id: "level-#{integer}",
+                "aria-describedby": "risk-aversion-help"
+              ) %>
+              <%= string %>
+            </label>
+          <% end %>
+          <p class="help-text" id="risk-aversion-help">
+            How much risk are you comfortable taking? Do you want to stick to places open to the public, or are you confident enough to push the envelope?
+          </p>
+          <p class="help-text">
+            You <em>never</em>
+            have to do anything you don't want to. <%= phrase("risk_avoidance") %>
+          </p>
+          <p class="help-text">
+            <strong>
+              Choosing a certain level of risk-aversion isn't a guarantee that every location you visit will involve that level of risk.
+            </strong>
+          </p>
+          <p class="help-text">
+            Examples of tasks for the least risk-averse are:
+          </p>
+          <ul class="help-text">
+            <li>entering a back stairwell</li>
+            <li>finding an empty office</li>
+            <li>using a light to illuminate a dark space</li>
+          </ul>
+          <p class="help-text">
+            <%= phrase("risk_scope") %>
+          </p>
+          <ul class="help-text">
+            <li>climbing without a ladder</li>
+            <li>jumping across an empty space</li>
+            <li>picking locks</li>
+            <li>following behind someone to get through a locked door</li>
+          </ul>
+        </div>
+      <% end %>
       <%= if is_landgrab() do %>
         <% selected_tags = f.data.accessibility_tags || [] %>
         <div class="form-group accessibility-tags">

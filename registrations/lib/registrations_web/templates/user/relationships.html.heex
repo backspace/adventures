@@ -15,7 +15,9 @@
             <tr>
               <th>Email</th>
               <th>Has you?</th>
-              <th>Risk aversion</th>
+              <%= unless is_landgrab() do %>
+                <th>Risk aversion</th>
+              <% end %>
               <th>Team name</th>
             </tr>
           </thead>
@@ -24,9 +26,11 @@
               <tr data-test-mutuals>
                 <td class="email"><%= @user.email %></td>
                 <td class="symbol"></td>
-                <td class="risk-aversion">
-                  <%= risk_aversion_integer_to_string()[@user.risk_aversion] %>
-                </td>
+                <%= unless is_landgrab() do %>
+                  <td class="risk-aversion">
+                    <%= risk_aversion_integer_to_string()[@user.risk_aversion] %>
+                  </td>
+                <% end %>
                 <td class="proposed-team-name"><%= @user.proposed_team_name %></td>
               </tr>
             <% end %>
@@ -34,11 +38,13 @@
               <tr data-test-mutuals>
                 <td class="email"><%= user.email %></td>
                 <td class="symbol">✓</td>
-                <td class={"risk-aversion #{class_for_attribute(@user, user, :risk_aversion)}"}>
-                  <%= symbol_for_attribute(@user, user, :risk_aversion) %> <%= risk_aversion_integer_to_string()[
-                    user.risk_aversion
-                  ] %>
-                </td>
+                <%= unless is_landgrab() do %>
+                  <td class={"risk-aversion #{class_for_attribute(@user, user, :risk_aversion)}"}>
+                    <%= symbol_for_attribute(@user, user, :risk_aversion) %> <%= risk_aversion_integer_to_string()[
+                      user.risk_aversion
+                    ] %>
+                  </td>
+                <% end %>
                 <td class={
                   "proposed-team-name #{class_for_attribute(@user, user, :proposed_team_name)}"
                 }>
