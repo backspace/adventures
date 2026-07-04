@@ -39,3 +39,63 @@ msgstr "You can always decline a task."
 
 msgid "risk_scope"
 msgstr "The following are beyond the scope of the game:"
+
+# ─── Accessibility tags ─────────────────────────────────────────────
+# Rendered under each chip on /details. The mobile app has its own,
+# out-of-storyline versions in `landgrab_app/lib/models/accessibility.dart`
+# — the two deliberately diverge, since one addresses participants
+# in-fiction and the other addresses authors managing content.
+
+msgid "accessibility_tag.stairs.label"
+msgstr "Stairs"
+
+msgid "accessibility_tag.stairs.help"
+msgstr "Some locations are reached via stairs."
+
+msgid "accessibility_tag.steep.label"
+msgstr "Steep incline"
+
+msgid "accessibility_tag.steep.help"
+msgstr "Some approaches involve a significant hill or ramp."
+
+msgid "accessibility_tag.uneven_surface.label"
+msgstr "Uneven ground"
+
+msgid "accessibility_tag.uneven_surface.help"
+msgstr "Some routes cross gravel, cobblestones, grass, dirt, or broken pavement."
+
+msgid "accessibility_tag.narrow_path.label"
+msgstr "Narrow passage"
+
+msgid "accessibility_tag.narrow_path.help"
+msgstr "Some approaches pass through a corridor or doorway too narrow for a wheelchair or stroller."
+
+msgid "accessibility_tag.dim_lighting.label"
+msgstr "Low light"
+
+msgid "accessibility_tag.dim_lighting.help"
+msgstr "Some locations or approaches are poorly lit, especially after dark."
+
+msgid "accessibility_tag.crouch_required.label"
+msgstr "Crouching"
+
+msgid "accessibility_tag.crouch_required.help"
+msgstr "Some observations require bending or crouching to inspect something at a low level."
+
+msgid "accessibility_tag.reach_required.label"
+msgstr "Reaching"
+
+msgid "accessibility_tag.reach_required.help"
+msgstr "Some observations require looking up or reaching for something elevated."
+
+msgid "accessibility_tag.requires_hearing.label"
+msgstr "Requires hearing"
+
+msgid "accessibility_tag.requires_hearing.help"
+msgstr "Some observations rely on an audio cue."
+
+msgid "accessibility_tag.requires_vision.label"
+msgstr "Requires vision"
+
+msgid "accessibility_tag.requires_vision.help"
+msgstr "Some observations require reading fine print, distinguishing colors, or other visual detail."

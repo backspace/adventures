@@ -50,6 +50,7 @@ defmodule RegistrationsWeb.User do
 
     field(:comments, :string)
     field(:source, :string)
+    field(:accessibility_tags, {:array, :string}, default: [])
 
     # specific to unmnemonic-devices
     field(:voicepass, :string)
@@ -64,7 +65,7 @@ defmodule RegistrationsWeb.User do
   end
 
   @required_fields ~w(email password)a
-  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility comments source team_id)a
+  @optional_fields ~w(team_emails proposed_team_name risk_aversion accessibility accessibility_tags comments source team_id)a
 
   @doc """
   Creates a changeset based on the `model` and `params`.
@@ -92,6 +93,26 @@ defmodule RegistrationsWeb.User do
     model
     |> cast(params, required_fields ++ @optional_fields)
     |> validate_required(required_fields)
+    |> clean_accessibility_tags()
+  end
+
+  # The chip form submits a hidden `""` sentinel alongside checked
+  # values so that unchecking every box still sends the key. Strip
+  # the sentinel out, and drop anything that isn't a known tag so an
+  # API client can't sneak in arbitrary strings.
+  defp clean_accessibility_tags(changeset) do
+    case get_change(changeset, :accessibility_tags) do
+      nil ->
+        changeset
+
+      tags ->
+        cleaned =
+          tags
+          |> Enum.reject(&(&1 == ""))
+          |> Registrations.Landgrab.AccessibilityTag.reject_unknown()
+
+        put_change(changeset, :accessibility_tags, cleaned)
+    end
   end
 
   def name_changeset(model, params \\ %{}) do

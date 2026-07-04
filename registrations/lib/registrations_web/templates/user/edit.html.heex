@@ -107,13 +107,51 @@
           <li>following behind someone to get through a locked door</li>
         </ul>
       </div>
+      <%= if is_landgrab() do %>
+        <% selected_tags = f.data.accessibility_tags || [] %>
+        <div class="form-group accessibility-tags">
+          <label>Accessibility considerations</label>
+          <p class="help-text" id="accessibility-tags-help">
+            Select any that might not work for you. This lets an organiser
+            steer you around specific spots when planning routes.
+          </p>
+          <%# Sentinel so unchecking every box still submits the key. %>
+          <input type="hidden" name="user[accessibility_tags][]" value="" />
+          <ul class="tag-picker" aria-describedby="accessibility-tags-help">
+            <%= for tag <- Registrations.Landgrab.AccessibilityTag.all() do %>
+              <% checked = tag in selected_tags %>
+              <li>
+                <label class="tag-chip">
+                  <input type="checkbox"
+                    name="user[accessibility_tags][]"
+                    value={tag}
+                    checked={checked} />
+                  <span class="tag-chip__label">
+                    <%= phrase("accessibility_tag.#{tag}.label") %>
+                  </span>
+                  <span class="tag-chip__explanation">
+                    <%= phrase("accessibility_tag.#{tag}.help") %>
+                  </span>
+                </label>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
       <div class="form-group">
         <%= label(f, :accessibility) %>
         <%= textarea(f, :accessibility,
           class: "form-control",
           "aria-describedby": "accessibility-help"
         ) %>
-        <p class="help-text" id="accessibility-help"><%= phrase("accessibility_help") %></p>
+        <p class="help-text" id="accessibility-help">
+          <%= if is_landgrab() do %>
+            Anything the tags above don't cover — free-text notes for
+            organisers.
+          <% else %>
+            <%= phrase("accessibility_help") %>
+          <% end %>
+        </p>
       </div>
       <div class="form-group">
         <%= label(f, :source) %>
