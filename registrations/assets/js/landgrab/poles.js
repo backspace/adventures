@@ -95,6 +95,57 @@
     return westOfRed(x, y) && northOfAssiniboine(x, y);
   }
 
+  // Compute the wordmark's footprint in viewBox coords so pole
+  // placement can skip it. Otherwise poles land behind letter glyphs
+  // where the letter-drop hit-boxes intercept the click, making
+  // 100% player dominance (and the celebration flash) unreachable.
+  //
+  // Uses `getScreenCTM().inverse()` so `preserveAspectRatio="slice"`
+  // math is handled by the browser rather than us re-deriving it.
+  // The wordmark is measured while Anton may still be loading; the
+  // fallback (Helvetica Neue) is wider, so we over-exclude a bit
+  // rather than crop poles too close to the letters after Anton
+  // arrives — safe error direction.
+  function wordmarkExclusion() {
+    const title = document.querySelector('.landgrab-wordmark-text');
+    if (!title) return null;
+    const ctm = svg.getScreenCTM();
+    if (!ctm) return null;
+    const inv = ctm.inverse();
+    const subtitle = document.querySelector('.landgrab-wordmark-subtitle');
+    const rects = [title.getBoundingClientRect()];
+    if (subtitle) rects.push(subtitle.getBoundingClientRect());
+    const screenLeft = Math.min.apply(null, rects.map(function (r) { return r.left; }));
+    const screenTop = Math.min.apply(null, rects.map(function (r) { return r.top; }));
+    const screenRight = Math.max.apply(null, rects.map(function (r) { return r.right; }));
+    const screenBottom = Math.max.apply(null, rects.map(function (r) { return r.bottom; }));
+    const pt = svg.createSVGPoint();
+    pt.x = screenLeft; pt.y = screenTop;
+    const tl = pt.matrixTransform(inv);
+    pt.x = screenRight; pt.y = screenBottom;
+    const br = pt.matrixTransform(inv);
+    // Padding is asymmetric because the letter-drop hit-slots extend
+    // noticeably above and below each letter glyph (the slot's box
+    // includes the full line-height, plus inline-block metrics can
+    // spill past the parent's rect). Horizontal padding just avoids
+    // crowding the outermost letters.
+    const PAD_X = 12;
+    const PAD_Y = 30;
+    return {
+      x: tl.x - PAD_X,
+      y: tl.y - PAD_Y,
+      w: (br.x - tl.x) + 2 * PAD_X,
+      h: (br.y - tl.y) + 2 * PAD_Y
+    };
+  }
+  const wordmarkBox = wordmarkExclusion();
+
+  function inWordmark(x, y) {
+    if (!wordmarkBox) return false;
+    return x >= wordmarkBox.x && x <= wordmarkBox.x + wordmarkBox.w &&
+           y >= wordmarkBox.y && y <= wordmarkBox.y + wordmarkBox.h;
+  }
+
   // Target pole count at full-viewBox visible (i.e. when the screen
   // aspect matches 8:5). Narrower visible regions get fewer poles via
   // sqrt scaling so the *spacing between* poles stays roughly steady
@@ -169,7 +220,7 @@
     for (let t = 0; t < 80; t++) {
       x = minX + Math.random() * (maxX - minX);
       y = minY + Math.random() * (maxY - minY);
-      if (poleClearsWater(x, y) && inAllowedRegion(x, y)) { ok = true; break; }
+      if (poleClearsWater(x, y) && inAllowedRegion(x, y) && !inWordmark(x, y)) { ok = true; break; }
     }
     if (!ok) continue;
     const circle = document.createElementNS(SVG_NS, 'circle');
