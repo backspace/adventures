@@ -117,6 +117,12 @@
     '#ffafc7', // pink (trans)
     '#ffffff'  // white (trans)
   ];
+  // Player claims a fixed colour for the session (rerolled on
+  // refresh). AI captures never use this colour, so a player-coloured
+  // pole unambiguously means "I did that" — the player can read
+  // territory at a glance.
+  const PLAYER_COLOR = TEAMS[Math.floor(Math.random() * TEAMS.length)];
+  const AI_TEAMS = TEAMS.filter(function (c) { return c !== PLAYER_COLOR; });
   // Initial-wave timing: each pole gets claimed between these bounds,
   // spread uniformly. Longer than a fast attract-loop so the page
   // feels like a deliberate territory game, not a hurried sales demo.
@@ -200,10 +206,36 @@
   }
 
   function pickNextColor(current) {
-    // Any team other than the current one. Excluding `current` keeps
-    // a flip visible — re-picking the same colour would no-op.
-    const choices = TEAMS.filter(function (c) { return c !== current; });
+    // Any AI team other than the current one. Excluding `current`
+    // keeps a flip visible — re-picking the same colour would no-op.
+    // AI_TEAMS already excludes the player's colour, so the AI can
+    // never hand a pole to the player.
+    const choices = AI_TEAMS.filter(function (c) { return c !== current; });
     return choices[Math.floor(Math.random() * choices.length)];
+  }
+
+  // Fraction of poles currently owned by the player. Used to modulate
+  // how aggressively the AI recaptures player-held poles.
+  function playerDominance() {
+    if (poles.length === 0) return 0;
+    let owned = 0;
+    for (const p of poles) if (p.color === PLAYER_COLOR) owned++;
+    return owned / poles.length;
+  }
+
+  // Delay multiplier applied to player-owned poles' scheduled flips.
+  // At low dominance the player is left alone (multiplier = 1); as
+  // dominance climbs past `CATCHUP_THRESHOLD`, the delay collapses on
+  // a cubic curve so a mild lead barely stings but a runaway lead
+  // gets aggressively contested.
+  const CATCHUP_THRESHOLD = 0.4;
+  const CATCHUP_FLOOR = 0.15;
+  function catchupMultiplier() {
+    const d = playerDominance();
+    if (d < CATCHUP_THRESHOLD) return 1;
+    const t = (d - CATCHUP_THRESHOLD) / (1 - CATCHUP_THRESHOLD);
+    const eased = t * t * t;
+    return 1 - eased * (1 - CATCHUP_FLOOR);
   }
 
   // Per-pole timer registry so we can pause/resume cleanly when the
@@ -215,11 +247,18 @@
   function scheduleCapture(pole) {
     const isInitial = pole.color === null;
     const color = isInitial
-      ? TEAMS[Math.floor(Math.random() * TEAMS.length)]
+      ? AI_TEAMS[Math.floor(Math.random() * AI_TEAMS.length)]
       : pickNextColor(pole.color);
-    const delay = isInitial
+    let delay = isInitial
       ? INITIAL_MIN_MS + Math.random() * (INITIAL_MAX_MS - INITIAL_MIN_MS)
       : FLIP_MIN_MS + Math.random() * (FLIP_MAX_MS - FLIP_MIN_MS);
+    // Only player-held poles feel the catch-up pressure. AI-vs-AI
+    // churn stays at its baseline cadence, so the "world fighting
+    // back" reads as targeted at the player rather than a global
+    // speed-up.
+    if (pole.color === PLAYER_COLOR) {
+      delay *= catchupMultiplier();
+    }
     const id = setTimeout(function () {
       timers.delete(pole);
       capture(pole, color);
@@ -240,6 +279,44 @@
     pole.circle.style.setProperty('--pole-color', color);
     spawnPing(pole.x, pole.y, color);
     scheduleCapture(pole);
+    checkDomination();
+  }
+
+  // Whether we've already celebrated the current 100%-player state.
+  // Reset the moment an AI flip drops us below 100%, so achieving
+  // full dominance again on the next attempt fires a fresh flash.
+  let dominatedFired = false;
+
+  function checkDomination() {
+    const total = poles.length;
+    if (total === 0) return;
+    let owned = 0;
+    for (const p of poles) if (p.color === PLAYER_COLOR) owned++;
+    if (owned === total && !dominatedFired) {
+      dominatedFired = true;
+      celebrate();
+    } else if (owned < total) {
+      dominatedFired = false;
+    }
+  }
+
+  function celebrate() {
+    if (reduced) return;
+    // Full-viewport flash tinted by the player's mixed border colour
+    // (via `--pole-color` + the same `color-mix` used on pole
+    // outlines) so even black or white player colours read as a
+    // brightness pulse rather than a null flash.
+    const flash = document.createElement('div');
+    flash.className = 'landgrab-domination-flash';
+    flash.style.setProperty('--pole-color', PLAYER_COLOR);
+    document.body.appendChild(flash);
+    flash.addEventListener('animationend', function () { flash.remove(); }, { once: true });
+
+    // Every pole pings at once — the "you did it" beat before the
+    // world starts flipping them back.
+    for (const pole of poles) {
+      spawnPing(pole.x, pole.y, PLAYER_COLOR);
+    }
   }
 
   function startOrResume() {
@@ -263,6 +340,26 @@
     } else {
       startOrResume();
     }
+  });
+
+  // Click / tap on a pole → capture it for the player. Delegated on
+  // the poles layer so newly-added poles pick up the handler for
+  // free. `capture()` calls `scheduleCapture()` at its tail, which
+  // now applies the catch-up multiplier if the pole is player-held,
+  // so a player-triggered capture immediately queues the AI's
+  // counter-attack at the appropriate speed.
+  polesLayer.addEventListener('pointerdown', function (e) {
+    const target = e.target.closest('.landgrab-pole');
+    if (!target) return;
+    const pole = poles.find(function (p) { return p.circle === target; });
+    if (!pole) return;
+    // Player takes priority over any pending AI flip on this pole.
+    const pending = timers.get(pole);
+    if (pending !== undefined) {
+      clearTimeout(pending);
+      timers.delete(pole);
+    }
+    capture(pole, PLAYER_COLOR);
   });
 
   // Also honour the case of being opened in a background tab: skip

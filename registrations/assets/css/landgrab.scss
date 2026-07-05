@@ -92,6 +92,8 @@ $landgrab-purple:  #a25fd6;
   // before that, both default to grey via this rule.
   --pole-color: #{$landgrab-grey};
   fill: $landgrab-grey;
+  // Hints at the click-to-capture easter egg without announcing it.
+  cursor: pointer;
   // A lightened version of the pole's own colour, drawn as a thin
   // halo. For dark stripes (black especially) the lift makes the disc
   // resolve against the page background; for bright stripes it's
@@ -124,9 +126,29 @@ $landgrab-purple:  #a25fd6;
   to   { transform: scale(5); opacity: 0;    }
 }
 
+// Full-viewport flash on the transition to 100% player dominance.
+// Tint follows the player's mixed border colour so even black or
+// white player teams read as a distinct pulse rather than a null
+// flash. `pointer-events: none` so the flash doesn't swallow the
+// user's next tap while it fades.
+.landgrab-domination-flash {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--pole-color) 55%, white 45%);
+  pointer-events: none;
+  z-index: 100;
+  animation: landgrab-domination-flash 900ms ease-out forwards;
+}
+
+@keyframes landgrab-domination-flash {
+  from { opacity: 0.4; }
+  to   { opacity: 0;   }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .landgrab-pole { transition: none; }
   .landgrab-ping { display: none; }
+  .landgrab-domination-flash { display: none; }
 }
 
 .landgrab-wordmark {
