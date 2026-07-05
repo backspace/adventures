@@ -188,7 +188,11 @@
     ping.setAttribute('cx', '0');
     ping.setAttribute('cy', '0');
     ping.setAttribute('r', POLE_RADIUS);
-    ping.setAttribute('stroke', color);
+    // Ping stroke is derived from `--pole-color` in CSS via the same
+    // `color-mix` used for the pole's own border, so dark colours
+    // (black especially) still show a visible ring against the dark
+    // page background instead of vanishing into it.
+    ping.style.setProperty('--pole-color', color);
     ping.classList.add('landgrab-ping');
     g.appendChild(ping);
     polesLayer.appendChild(g);

@@ -110,6 +110,10 @@ $landgrab-purple:  #a25fd6;
 // the keyframe is free to own `transform` for the scale.
 .landgrab-ping {
   fill: none;
+  // Same lighten formula as the pole border, driven off `--pole-color`
+  // (set inline by JS at capture time). Keeps black poles visible on
+  // the dark page background.
+  stroke: color-mix(in srgb, var(--pole-color) 55%, white 45%);
   stroke-width: 2;
   pointer-events: none;
   animation: landgrab-ping 800ms ease-out forwards;
