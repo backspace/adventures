@@ -73,6 +73,9 @@
     // Route further pointer events to the slot so a fast drag off
     // the slot's bounds keeps flowing to us.
     slot.setPointerCapture(e.pointerId);
+    // Body-level cursor override — see CSS. Per-slot cursor doesn't
+    // extend once the pointer leaves the slot's bounds.
+    document.body.classList.add('landgrab-h2-dragging');
   });
 
   document.addEventListener('pointermove', function (e) {
@@ -92,6 +95,7 @@
     if (activeSlot && activeSlot.hasPointerCapture(pointerId)) {
       activeSlot.releasePointerCapture(pointerId);
     }
+    document.body.classList.remove('landgrab-h2-dragging');
     activeLetter = null;
     activeSlot = null;
     pointerId = null;

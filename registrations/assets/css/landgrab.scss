@@ -165,12 +165,23 @@ h2 {
   // The slot owns the pointer hit-testing so a fast drag doesn't lose
   // the letter when the transform carries it away from the pointer.
   pointer-events: auto;
+  cursor: grab;
   // Suppress iOS's text-selection callout on tap-and-hold so the
   // drag gesture doesn't fight with the OS's Copy-Lookup-Share menu.
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+// While an h2 letter is being dragged, force the grabbing cursor
+// everywhere — the pointer will often leave the slot's bounds mid-
+// drag (the letter moves *with* the pointer, but the slot stays
+// put), and per-element `:active` cursor doesn't extend past the
+// slot. The body-level override sticks for the whole drag.
+body.landgrab-h2-dragging,
+body.landgrab-h2-dragging * {
+  cursor: grabbing !important;
 }
 
 .landgrab-h2-letter {
