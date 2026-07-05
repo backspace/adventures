@@ -1,0 +1,16 @@
+<%# THIS FILE IS WHITESPACE-SENSITIVE — do not reformat on save.
+
+    The LANDGRAB wordmark relies on there being ZERO whitespace
+    between the letter <span>s. `.landgrab-wordmark-text` uses
+    inline layout (not flex), so any inter-tag whitespace becomes
+    a visible gap between letters — the HEEx formatter helpfully
+    adds that whitespace, so this element lives in its own file so
+    the parent page can be safely reformatted.
+
+    Each letter sits in a static-position "slot" that owns hover
+    detection; the inner span is what visually drops out. The slot
+    stays put, so once the cursor enters, the letter keeps falling
+    even if the pointer doesn't chase it. `aria-label` on the
+    enclosing `.landgrab-wordmark` carries the readable name;
+    these inner spans are decorative. %>
+<span class="landgrab-wordmark-text" aria-hidden="true"><%= for letter <- String.graphemes("LANDGRAB") do %><span class="landgrab-letter-slot"><span class="landgrab-letter"><%= letter %></span></span><% end %></span>
