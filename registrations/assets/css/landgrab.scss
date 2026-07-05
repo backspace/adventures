@@ -16,10 +16,6 @@ body {
   overflow-x: hidden;
 }
 
-.highlight {
-  background: $secondary-color;
-}
-
 .row.title {
   background-color: $secondary-color;
   text-align: center;
@@ -292,13 +288,21 @@ $landgrab-purple:  #a25fd6;
   }
 }
 
-.row.card {
-  background-color: $landgrab-river;
-  border-color: $landgrab-river;
-  color: $landgrab-bone;
+.highlight {
+  background: $secondary-color;
 
-  h2 { color: $landgrab-bone; }
-  a  { color: $landgrab-blood; }
+  a {
+    color: $landgrab-green;
+  }
+}
+
+.row.card {
+  background-color: $landgrab-bone;
+  border-color: $landgrab-river;
+  color: $landgrab-river;
+
+  h2 { color: $landgrab-river; }
+  a  { color: $landgrab-river; }
   label { color: $landgrab-bone; }
 }
 
