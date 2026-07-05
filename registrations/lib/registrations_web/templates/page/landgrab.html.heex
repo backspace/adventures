@@ -109,6 +109,20 @@
 
   <div class="row card">
     <div class="small-12 columns">
+      <h2 class="moving-highlight">
+        Accessibility
+      </h2>
+      <p>
+        Do you have accessibility needs we should know about? Please tell us <%= link(
+          "when you register",
+          to: Routes.pow_registration_path(@conn, :new)
+        ) %> and we will work with you to ensure you can participate.
+      </p>
+    </div>
+  </div>
+
+  <div class="row card">
+    <div class="small-12 columns">
       <h2>Questions</h2>
       <%= render(RegistrationsWeb.SharedView, "question.html", conn: @conn) %>
     </div>
