@@ -214,13 +214,37 @@
   const minY = visible.y + PLACE_MARGIN;
   const maxY = visible.y + visible.h - PLACE_MARGIN;
 
+  // Minimum centre-to-centre spacing so no two poles touch. Set at
+  // 3x pole radius (i.e. one full pole-diameter of clear gap between
+  // discs) so both are independently visible and clickable — closer
+  // than that and the ping animations start to merge visually too.
+  const MIN_SPACING = POLE_RADIUS * 3;
+  const MIN_SPACING_SQ = MIN_SPACING * MIN_SPACING;
+  function tooClose(x, y) {
+    for (const p of poles) {
+      const dx = p.x - x;
+      const dy = p.y - y;
+      if (dx * dx + dy * dy < MIN_SPACING_SQ) return true;
+    }
+    return false;
+  }
+
   const poles = [];
   for (let i = 0; i < poleCount; i++) {
     let x, y, ok = false;
-    for (let t = 0; t < 80; t++) {
+    // Bumped from 80 to 120 because the spacing constraint tightens
+    // the effective placement area — a few extra retries costs
+    // nothing but keeps pole count stable when the visible region
+    // is small.
+    for (let t = 0; t < 120; t++) {
       x = minX + Math.random() * (maxX - minX);
       y = minY + Math.random() * (maxY - minY);
-      if (poleClearsWater(x, y) && inAllowedRegion(x, y) && !inWordmark(x, y)) { ok = true; break; }
+      if (
+        poleClearsWater(x, y) &&
+        inAllowedRegion(x, y) &&
+        !inWordmark(x, y) &&
+        !tooClose(x, y)
+      ) { ok = true; break; }
     }
     if (!ok) continue;
     const circle = document.createElementNS(SVG_NS, 'circle');
