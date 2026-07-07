@@ -33,7 +33,17 @@ android {
         applicationId = "ca.chromatin.poles"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        //
+        // API 24 (Android 7.0 Nougat, 2016) is the effective floor
+        // dictated by shared_preferences_android, image_picker_android,
+        // and webview_flutter_android — the Flutter-team plugins that
+        // set the highest minSdk of anything in our tree. Pinning it
+        // here (rather than deferring to `flutter.minSdkVersion`)
+        // keeps the actual floor visible and prevents a Flutter
+        // upgrade from silently nudging it. Bumping in lock-step with
+        // any plugin that later demands higher is fine; leave the
+        // rationale note above intact when doing so.
+        minSdk = 24
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
