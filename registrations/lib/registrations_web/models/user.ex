@@ -52,6 +52,11 @@ defmodule RegistrationsWeb.User do
     field(:source, :string)
     field(:accessibility_tags, {:array, :string}, default: [])
 
+    # Stamped on every native-app boot ping. Used for
+    # pre-event triage — "who registered but hasn't opened the app
+    # yet." See `RegistrationsWeb.Api.TelemetryController`.
+    field(:last_app_open_at, :utc_datetime)
+
     # specific to unmnemonic-devices
     field(:voicepass, :string)
 

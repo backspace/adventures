@@ -243,6 +243,12 @@ defmodule RegistrationsWeb.Router do
     get("/validators", UserRoleController, :validators)
   end
 
+  scope "/powapi/telemetry", RegistrationsWeb.Api, as: :telemetry do
+    pipe_through([:pow_api, :pow_api_protected])
+
+    post("/app_opened", TelemetryController, :app_opened)
+  end
+
   scope "/landgrab", RegistrationsWeb.Landgrab, as: :landgrab do
     pipe_through([:pow_api, :pow_api_protected])
 

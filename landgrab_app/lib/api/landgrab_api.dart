@@ -140,6 +140,18 @@ class LandgrabApi {
     }
   }
 
+  /// Fire-and-forget boot ping so the server can record that this
+  /// user has opened the app. Called from `_Boot` after we've
+  /// confirmed the user is signed in. Any error is swallowed —
+  /// telemetry must never gate the login → home transition.
+  Future<void> pingAppOpened() async {
+    try {
+      await dio.post('/powapi/telemetry/app_opened');
+    } catch (_) {
+      // Silent — see doc.
+    }
+  }
+
   Future<void> loadAndStoreMe() async {
     final response = await dio.get('/landgrab/me');
     final user = response.data['user'] as Map<String, dynamic>;
@@ -153,6 +165,11 @@ class LandgrabApi {
       teamName: team?['name'] as String?,
       roles: roles,
     );
+    // Piggy-back the boot-telemetry ping on the "user data loaded"
+    // moment, since every login path ends here. The `_Boot` path
+    // (already-logged-in restart) pings directly — this covers the
+    // fresh-login case without instrumenting each login callsite.
+    pingAppOpened();
   }
 
   Future<LandgrabEvent> getEvent() async {

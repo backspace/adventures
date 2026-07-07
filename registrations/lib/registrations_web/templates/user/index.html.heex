@@ -13,6 +13,7 @@
       <th>Source</th>
       <th>Comments</th>
       <th>Teamed</th>
+      <th>App opened</th>
     </tr>
   </thead>
   <tbody>
@@ -36,6 +37,13 @@
             ✓
           <% else %>
             ✘
+          <% end %>
+        </td>
+        <td class="app-opened" title={user.last_app_open_at && to_string(user.last_app_open_at)}>
+          <%= if user.last_app_open_at do %>
+            <%= Calendar.strftime(user.last_app_open_at, "%b %-d %H:%M") %>
+          <% else %>
+            —
           <% end %>
         </td>
         <td>

@@ -84,6 +84,12 @@ class _BootState extends State<_Boot> {
       _api = api;
       _loggedIn = loggedIn;
     });
+    // Boot telemetry: only meaningful once we know the user is
+    // authenticated. Fire-and-forget so a slow / offline network
+    // doesn't stall the UI. The API layer already swallows errors.
+    if (loggedIn) {
+      api.pingAppOpened();
+    }
   }
 
   LandgrabApi _buildApi(String apiRoot) {
