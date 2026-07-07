@@ -47,4 +47,17 @@ defmodule RegistrationsWeb.Landgrab do
 
   @doc "Casing width = inner stroke + a few px so a dark outline shows."
   def casing_width(name), do: stroke_width(name) + 8
+
+  @doc """
+  Preset senders for storyline messages. The admin message form
+  offers these as a dropdown for landgrab-authored messages;
+  selecting "Other…" lets the author still type a one-off identity
+  without a redeploy.
+  """
+  def senders do
+    [
+      {"Sabuk", "sabuk@chromatin.ca"},
+      {"Sabuk’s assistant", "assistant@chromatin.ca"}
+    ]
+  end
 end

@@ -201,6 +201,7 @@ defmodule Registrations.Mailer do
     case RegistrationsWeb.SharedHelpers.adventure() do
       "unmnemonic-devices" -> "knut@chromatin.ca"
       "waydowntown" -> "mdrysdale@waydown.town"
+      "landgrab" -> {"Sabuk’s assistant", "assistant@chromatin.ca"}
       _ -> @from
     end
   end

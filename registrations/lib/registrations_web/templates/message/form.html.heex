@@ -6,14 +6,34 @@
     <%= text_input(f, :subject, class: "form-control") %>
   </div>
 
-  <div class="form-group">
-    <%= label(f, :from_name, "From name", class: "control-label") %>
-    <%= text_input(f, :from_name, class: "form-control") %>
-  </div>
+  <%= if feature_enabled?(:sender_presets) do %>
+    <%# Preset sender picker. Hidden by default; the accompanying JS
+        module in `assets/js/landgrab/message-form` un-hides it on
+        boot and drives visibility of the freeform inputs below.
+        Without JS, the author sees only the freeform inputs — same
+        as pre-feature behaviour. %>
+    <div class="form-group" data-sender-preset hidden>
+      <%= label(:message, :from_preset, "From (preset)", class: "control-label") %>
+      <select data-sender-preset-select class="form-control">
+        <option value="">(Default sender)</option>
+        <%= for {name, address} <- RegistrationsWeb.Landgrab.senders() do %>
+          <option value={name} data-address={address}><%= name %></option>
+        <% end %>
+        <option value="other">Other…</option>
+      </select>
+    </div>
+  <% end %>
 
-  <div class="form-group">
-    <%= label(f, :from_address, "From address", class: "control-label") %>
-    <%= text_input(f, :from_address, class: "form-control") %>
+  <div data-sender-freeform>
+    <div class="form-group">
+      <%= label(f, :from_name, "From name", class: "control-label") %>
+      <%= text_input(f, :from_name, class: "form-control") %>
+    </div>
+
+    <div class="form-group">
+      <%= label(f, :from_address, "From address", class: "control-label") %>
+      <%= text_input(f, :from_address, class: "form-control") %>
+    </div>
   </div>
 
   <div class="form-group">

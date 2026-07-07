@@ -82,23 +82,28 @@ defmodule RegistrationsWeb.SharedHelpers do
     Application.get_env(:registrations, :adventure) == "landgrab"
   end
 
-  # Central switchboard for per-adventure feature toggles. Every
-  # feature is enabled by default; adventures opt *out* by listing
-  # the feature atom here. Kept as a plain module attribute (not
-  # Application config) so the shape is discoverable — one place to
-  # skim to answer "what does this adventure not do?".
+  # Central switchboard for per-adventure feature toggles. Each
+  # feature has a `default` (whether it's on when no adventure
+  # override applies) and an `overrides` map keyed by adventure.
+  # Skim top-to-bottom to answer "which adventures don't do X" (opt-
+  # out features like risk_aversion) or "which adventures uniquely
+  # do Y" (opt-in features like sender_presets).
+  #
+  # Kept as a plain module attribute (not Application config) so the
+  # shape is discoverable in code — one place, greppable.
   #
   # For adventure-specific *content* (e.g. the accessibility-tags
   # picker whose copy only exists in landgrab's gettext), keep using
-  # `is_landgrab/0` and its siblings — this map is for features that
-  # would otherwise be cross-adventure.
-  @disabled_features_by_adventure %{
-    "landgrab" => [:risk_aversion]
+  # `is_landgrab/0` and its siblings — a feature flag needs matching
+  # data in every opted-in adventure to be meaningful.
+  @features %{
+    risk_aversion: %{default: true, overrides: %{"landgrab" => false}},
+    sender_presets: %{default: false, overrides: %{"landgrab" => true}}
   }
 
   def feature_enabled?(feature) do
-    disabled = Map.get(@disabled_features_by_adventure, adventure(), [])
-    feature not in disabled
+    spec = Map.fetch!(@features, feature)
+    Map.get(spec.overrides, adventure(), spec.default)
   end
 
   defp formatted_start_time(format_string) do
