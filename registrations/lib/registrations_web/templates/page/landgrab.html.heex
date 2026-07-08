@@ -133,6 +133,21 @@
 
   <div class="row card">
     <div class="small-12 columns">
+      <h2>Registration</h2>
+      <p>
+        While <%= link(
+          "registration",
+          to: Routes.pow_registration_path(@conn, :new)
+        ) %> is not required, doing so will help us plan and address technical problems in advance.
+      </p>
+      <p>
+        Registering also helps you arrange your team in advance, if you wish to participate with others.
+      </p>
+    </div>
+  </div>
+
+  <div class="row card">
+    <div class="small-12 columns">
       <h2>Accessibility</h2>
       <p>
         Do you have accessibility needs we should know about? Please tell us <%= link(
