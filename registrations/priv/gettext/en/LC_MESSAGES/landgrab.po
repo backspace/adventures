@@ -11,16 +11,16 @@ msgid "change_deadline"
 msgstr " "
 
 msgid "team_emails_label"
-msgstr "Collaborator emails"
+msgstr "Teammate emails"
 
 msgid "team_emails_help"
-msgstr "Enter collaborator email addresses, space-separated"
+msgstr "Enter teammate email addresses, space-separated"
 
 msgid "team_name_help"
 msgstr "How other teams will identify you"
 
 msgid "accessibility_help"
-msgstr "Do you have any accessibility needs that might impact your participation?"
+msgstr "Anything outside of the above we should know about?"
 
 msgid "source_help"
 msgstr "How did you hear about this?"

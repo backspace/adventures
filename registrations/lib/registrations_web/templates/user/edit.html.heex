@@ -119,8 +119,7 @@
         <div class="form-group accessibility-tags">
           <label>Accessibility considerations</label>
           <p class="help-text" id="accessibility-tags-help">
-            Select any that might not work for you. This lets an organiser
-            steer you around specific spots when planning routes.
+            Destinations will be tagged so you aren’t sent somewhere that doesn’t work for you
           </p>
           <%# Sentinel so unchecking every box still submits the key. %>
           <input type="hidden" name="user[accessibility_tags][]" value="" />
@@ -152,12 +151,7 @@
           "aria-describedby": "accessibility-help"
         ) %>
         <p class="help-text" id="accessibility-help">
-          <%= if is_landgrab() do %>
-            Anything the tags above don't cover — free-text notes for
-            organisers.
-          <% else %>
-            <%= phrase("accessibility_help") %>
-          <% end %>
+          <%= phrase("accessibility_help") %>
         </p>
       </div>
       <div class="form-group">
