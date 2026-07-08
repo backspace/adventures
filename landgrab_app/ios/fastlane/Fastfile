@@ -60,6 +60,30 @@ def flutter_build_ipa(flavor:, api_root:, sentry_dsn:)
 end
 
 platform :ios do
+  # Fastlane's default failure banner scrolls off the top of the
+  # terminal during long IPA builds — make it impossible to miss by
+  # firing a macOS notification (pops up in Notification Center) and
+  # a spoken cue. `terminal-notifier` is bundled with fastlane so
+  # the `notification` action works out of the box
+  after_all do |lane|
+    UI.header("✅ #{lane} succeeded")
+    notification(
+      title: "LANDGRAB #{lane}",
+      subtitle: "Succeeded",
+      message: "Build + upload complete."
+    )
+  end
+
+  error do |lane, exception|
+    UI.header("❌ #{lane} FAILED")
+    UI.error(exception.message)
+    notification(
+      title: "LANDGRAB #{lane}",
+      subtitle: "FAILED",
+      message: exception.message.lines.first.to_s.strip
+    )
+  end
+
   desc "Build with alpha flavor (staging API) and upload to TestFlight"
   lane :alpha do
     flutter_build_ipa(
