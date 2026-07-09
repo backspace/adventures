@@ -368,9 +368,15 @@ defmodule Registrations.Landgrab do
   end
 
   # In a test session, puzzlets are typically not yet wired to specific
-  # poles. Pick from the five geographically-nearest validated puzzlets
-  # (with a location), not yet captured in this session, and randomize
-  # so successive demos visit different ones.
+  # poles. Pick from the five geographically-nearest not-yet-retired
+  # puzzlets (with a location), not yet captured in this session, and
+  # randomize so successive demos visit different ones.
+  #
+  # Unlike the real game (which requires `:validated`), test play also
+  # includes `:draft` and `:in_review` — authors need to be able to
+  # rehearse a puzzlet before validation without a separate flag. The
+  # visibility filter (see `filter_visible_puzzlets/2`) still gates
+  # who sees whose drafts.
   defp test_active_puzzlet(%Pole{latitude: lat, longitude: lon}, scope) do
     captured_puzzlet_ids =
       Capture
@@ -379,7 +385,7 @@ defmodule Registrations.Landgrab do
 
     candidates =
       Puzzlet
-      |> where([p], p.status == :validated)
+      |> where([p], p.status in [:draft, :in_review, :validated])
       |> where([p], p.id not in subquery(captured_puzzlet_ids))
       |> where([p], not is_nil(p.latitude) and not is_nil(p.longitude))
       |> filter_visible_puzzlets(scope)
