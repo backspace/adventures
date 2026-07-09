@@ -470,8 +470,20 @@ defmodule Registrations.Landgrab do
     |> where([_c, p], p.pole_id == ^pole_id)
     |> order_by([c, _p], desc: c.inserted_at)
     |> limit(1)
-    |> select([c, _p], c.team_id)
+    |> select_owner_id(scope)
     |> Repo.one()
+  end
+
+  # In real scope, captures.team_id is the owner. In test scope,
+  # team_id is nil (there's no team in test-play, and the FK would
+  # reject a user id), so surface the test_session_id — non-null,
+  # stable per session, and enough for the map to render "captured".
+  defp select_owner_id(query, %Scope{test_session_id: nil}) do
+    select(query, [c, _p], c.team_id)
+  end
+
+  defp select_owner_id(query, %Scope{}) do
+    select(query, [c, _p], c.test_session_id)
   end
 
   def pole_locked?(pole), do: pole_locked?(pole, Scope.real())
