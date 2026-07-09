@@ -147,6 +147,9 @@ class _HomeRouteState extends State<HomeRoute> {
   Color _pinColor(Pole pole) {
     if (pole.locked) return Colors.grey;
     if (pole.currentOwnerTeamId == null) return Colors.blue;
+    // Test-play is single-tester: any capture in the session was you,
+    // so treat any owned pole as green rather than red (rival).
+    if (_inTestPlay) return Colors.green;
     if (pole.currentOwnerTeamId == _teamId) return Colors.green;
     return Colors.red;
   }

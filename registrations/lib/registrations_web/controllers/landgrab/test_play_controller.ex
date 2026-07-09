@@ -145,8 +145,14 @@ defmodule RegistrationsWeb.Landgrab.TestPlayController do
         not_found(conn)
 
       puzzlet ->
-        # Pass nil for team_id; in test scope, scope is the identity.
-        case Landgrab.record_attempt(puzzlet, nil, user.id, answer, scope) do
+        # In test-scope the "team" concept is meaningless (single
+        # tester), but writing `user.id` into `captures.team_id`
+        # matters: `current_owner_team_id_for_pole` reads that column
+        # verbatim, and downstream `list_poles_with_state` needs a
+        # non-null value for the map to render the pole as captured.
+        # `maybe_filter_team` ignores team_id in test scope, so nothing
+        # downstream is confused by user.id sitting in that column.
+        case Landgrab.record_attempt(puzzlet, user.id, user.id, answer, scope) do
           {:ok, %{result: :captured} = outcome} ->
             # Match the real-game response shape so the Flutter parser can
             # be reused. Use user.id as a stand-in for team_id in solo test
