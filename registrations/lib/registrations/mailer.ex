@@ -62,6 +62,7 @@ defmodule Registrations.Mailer do
     |> html_body(welcome_html())
     |> text_body(welcome_text())
     |> deliver()
+    |> log_warnings()
   end
 
   def send_question(attributes) do
@@ -71,6 +72,7 @@ defmodule Registrations.Mailer do
     |> subject("[#{phrase("email_title")}] Question from #{attributes["name"]} <#{attributes["email"]}>: #{attributes["subject"]}")
     |> text_body(attributes["question"] <> host_footer())
     |> deliver()
+    |> log_warnings()
   end
 
   def waitlist_email(email, question) do
@@ -80,6 +82,7 @@ defmodule Registrations.Mailer do
     |> subject("[#{phrase("email_title")}] Waitlist submission from #{email}")
     |> text_body("Email: #{email}\nQuestion: #{question}" <> host_footer())
     |> deliver()
+    |> log_warnings()
   end
 
   def send_user_changes(user, changes) do
@@ -89,6 +92,7 @@ defmodule Registrations.Mailer do
     |> subject("[#{phrase("email_title")}] #{user.email} details changed: #{Enum.join(Enum.sort(Map.keys(changes)), ", ")}")
     |> text_body(inspect(Enum.sort_by(changes, fn {k, _v} -> k end)) <> host_footer())
     |> deliver()
+    |> log_warnings()
   end
 
   def send_user_deletion(user) do
@@ -98,6 +102,7 @@ defmodule Registrations.Mailer do
     |> subject("[#{phrase("email_title")}] #{user.email} deleted their account")
     |> text_body(inspect(user) <> host_footer())
     |> deliver()
+    |> log_warnings()
   end
 
   @spec send_registration(atom() | %{:email => any(), optional(any()) => any()}) ::
@@ -109,6 +114,7 @@ defmodule Registrations.Mailer do
     |> subject("[#{phrase("email_title")}] #{user.email} registered")
     |> text_body("Registered." <> host_footer())
     |> deliver()
+    |> log_warnings()
   end
 
   defp host_footer do
@@ -123,6 +129,7 @@ defmodule Registrations.Mailer do
     |> text_body(message_text(message, user, relationships, team))
     |> html_body(message_html(message, user, relationships, team))
     |> deliver()
+    |> log_warnings()
   end
 
   def send_backlog(messages, user) do
@@ -139,6 +146,7 @@ defmodule Registrations.Mailer do
     |> text_body(backlog_text(messages))
     |> html_body(backlog_html(messages))
     |> deliver()
+    |> log_warnings()
   end
 
   defp welcome_html do
