@@ -20,6 +20,7 @@ import 'package:landgrab/routes/test_play/test_play_entry_route.dart';
 import 'package:landgrab/routes/validator/validator_route.dart';
 import 'package:landgrab/services/landgrab_socket.dart';
 import 'package:landgrab/services/user_service.dart';
+import 'package:landgrab/widgets/bathroom_layer.dart';
 
 class HomeRoute extends StatefulWidget {
   final LandgrabApi api;
@@ -305,20 +306,7 @@ class _HomeRouteState extends State<HomeRoute> {
                       retinaMode: RetinaMode.isHighDensity(context),
                       userAgentPackageName: 'ca.chromatin.poles',
                     ),
-                    MarkerLayer(
-                      markers: _bathrooms.map((b) {
-                        return Marker(
-                          point: LatLng(b.latitude, b.longitude),
-                          width: 24,
-                          height: 24,
-                          child: Tooltip(
-                            message: b.displayName(),
-                            child: Icon(Icons.wash,
-                                color: Colors.blueGrey.shade400, size: 24),
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                    BathroomLayer(bathrooms: _bathrooms),
                     MarkerLayer(
                       markers: _poles!.map((pole) {
                         return Marker(
