@@ -11,9 +11,13 @@ class _FakeApi extends LandgrabApi {
   AttemptOutcome? nextOutcome;
   String? lastAnswer;
 
+  String? lastPoleId;
+
   @override
-  Future<AttemptOutcome> submitAnswer(String puzzletId, String answer) async {
+  Future<AttemptOutcome> submitAnswer(String puzzletId, String answer,
+      {String? poleId}) async {
     lastAnswer = answer;
+    lastPoleId = poleId;
     final outcome = nextOutcome;
     if (outcome == null) {
       throw StateError('FakeApi.nextOutcome was not set before submit');
