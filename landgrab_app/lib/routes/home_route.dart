@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_compass/flutter_map_compass.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/bathroom.dart';
@@ -332,6 +333,11 @@ class _HomeRouteState extends State<HomeRoute> {
                       }).toList(),
                     ),
                     const _MapAttribution(),
+                    // Compass appears only when the map is rotated; tap
+                    // animates it back to north-up. The plugin picks up the
+                    // enclosing FlutterMap's controller via context — no
+                    // controller wiring on our side.
+                    const MapCompass.cupertino(hideIfRotatedNorth: true),
                   ],
                 ),
       floatingActionButton: preEvent
