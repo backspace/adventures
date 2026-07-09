@@ -4,7 +4,7 @@ defmodule Registrations.Landgrab.Capture do
 
   import Ecto.Changeset
 
-  alias Registrations.Landgrab.Puzzlet
+  alias Registrations.Landgrab.{Pole, Puzzlet}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "landgrab"
@@ -14,6 +14,11 @@ defmodule Registrations.Landgrab.Capture do
 
     belongs_to(:puzzlet, Puzzlet, type: :binary_id)
     belongs_to(:team, RegistrationsWeb.Team, type: :binary_id)
+    # Direct link to the scanned pole. In test-play the puzzlet may
+    # be unattached (puzzlets.pole_id IS NULL), so this column
+    # records which pole the user actually scanned. Real captures
+    # can leave this null and fall through to `puzzlets.pole_id`.
+    belongs_to(:pole, Pole, type: :binary_id)
 
     timestamps()
   end
@@ -21,7 +26,7 @@ defmodule Registrations.Landgrab.Capture do
   @doc false
   def changeset(capture, attrs) do
     capture
-    |> cast(attrs, [:puzzlet_id, :team_id, :test_session_id])
+    |> cast(attrs, [:puzzlet_id, :team_id, :test_session_id, :pole_id])
     |> validate_required([:puzzlet_id])
     |> validate_team_or_test_session()
     |> assoc_constraint(:puzzlet)

@@ -457,7 +457,7 @@ defmodule Registrations.Landgrab do
     Capture
     |> Scope.apply(scope)
     |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
-    |> where([_c, p], p.pole_id == ^pole_id)
+    |> where([c, p], c.pole_id == ^pole_id or p.pole_id == ^pole_id)
     |> Repo.exists?()
   end
 
@@ -467,7 +467,11 @@ defmodule Registrations.Landgrab do
     Capture
     |> Scope.apply(scope)
     |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
-    |> where([_c, p], p.pole_id == ^pole_id)
+    # Match either a directly-recorded pole_id on the capture (test-
+    # play, where the puzzlet is often unattached) or the puzzlet's
+    # own pole_id (real gameplay). Covers both worlds without needing
+    # to backfill captures.pole_id for existing rows.
+    |> where([c, p], c.pole_id == ^pole_id or p.pole_id == ^pole_id)
     |> order_by([c, _p], desc: c.inserted_at)
     |> limit(1)
     |> select_owner_id(scope)
@@ -571,10 +575,18 @@ defmodule Registrations.Landgrab do
     * {:error, changeset}
   """
   def record_attempt(puzzlet, team_id, user_id, answer_given),
-    do: record_attempt(puzzlet, team_id, user_id, answer_given, Scope.real())
+    do: record_attempt(puzzlet, team_id, user_id, answer_given, Scope.real(), nil)
 
-  def record_attempt(%Puzzlet{} = puzzlet, team_id, user_id, answer_given, %Scope{} = scope) do
-    pole = puzzlet.pole_id && Repo.get(Pole, puzzlet.pole_id)
+  def record_attempt(puzzlet, team_id, user_id, answer_given, scope),
+    do: record_attempt(puzzlet, team_id, user_id, answer_given, scope, nil)
+
+  # `scanned_pole_id` records which pole the client was looking at
+  # when they submitted. Only meaningful when the puzzlet isn't
+  # attached to a pole (test-play with unattached puzzlets); real
+  # captures pass nil and resolve the pole via `puzzlet.pole_id`.
+  def record_attempt(%Puzzlet{} = puzzlet, team_id, user_id, answer_given, %Scope{} = scope, scanned_pole_id) do
+    effective_pole_id = puzzlet.pole_id || scanned_pole_id
+    pole = effective_pole_id && Repo.get(Pole, effective_pole_id)
     test_mode? = Scope.test?(scope)
 
     cond do
@@ -610,7 +622,7 @@ defmodule Registrations.Landgrab do
               |> Repo.insert!()
 
             if correct? do
-              case insert_capture(puzzlet.id, team_id, scope) do
+              case insert_capture(puzzlet.id, team_id, scope, effective_pole_id) do
                 {:ok, capture} ->
                   %{result: :captured, attempt: attempt, capture: capture}
 
@@ -647,12 +659,13 @@ defmodule Registrations.Landgrab do
     })
   end
 
-  defp insert_capture(puzzlet_id, team_id, scope) do
+  defp insert_capture(puzzlet_id, team_id, scope, pole_id) do
     %Capture{}
     |> Capture.changeset(%{
       puzzlet_id: puzzlet_id,
       team_id: team_id,
-      test_session_id: Scope.write_id(scope)
+      test_session_id: Scope.write_id(scope),
+      pole_id: pole_id
     })
     |> Repo.insert()
     |> case do

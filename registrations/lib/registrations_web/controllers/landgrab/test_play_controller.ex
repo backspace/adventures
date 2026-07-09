@@ -117,7 +117,7 @@ defmodule RegistrationsWeb.Landgrab.TestPlayController do
     end
   end
 
-  def submit_attempt(conn, %{"session_id" => session_id, "puzzlet_id" => puzzlet_id, "answer" => answer}) do
+  def submit_attempt(conn, %{"session_id" => session_id, "puzzlet_id" => puzzlet_id, "answer" => answer} = params) do
     case authorize_session(conn, session_id) do
       {:halt, conn} ->
         conn
@@ -125,7 +125,13 @@ defmodule RegistrationsWeb.Landgrab.TestPlayController do
       {:ok, _session} ->
         user = Pow.Plug.current_user(conn)
         scope = scope_for(user, session_id)
-        do_submit_attempt(conn, user, scope, puzzlet_id, answer)
+        # The scanned pole comes from the client — it's the pole the
+        # user is *looking at* when they submit. Needed because test-
+        # play puzzlets are unattached; without this we'd have no way
+        # to record which pole the capture belongs to. Optional so
+        # tests / older clients still work.
+        scanned_pole_id = params["pole_id"]
+        do_submit_attempt(conn, user, scope, puzzlet_id, answer, scanned_pole_id)
     end
   end
 
@@ -139,7 +145,7 @@ defmodule RegistrationsWeb.Landgrab.TestPlayController do
     end
   end
 
-  defp do_submit_attempt(conn, user, scope, puzzlet_id, answer) do
+  defp do_submit_attempt(conn, user, scope, puzzlet_id, answer, scanned_pole_id) do
     case Landgrab.get_puzzlet(puzzlet_id) do
       nil ->
         not_found(conn)
@@ -152,12 +158,17 @@ defmodule RegistrationsWeb.Landgrab.TestPlayController do
         # `test_session_id` is non-null. See
         # `current_owner_team_id_for_pole` — it returns the session id
         # in test scope so the map has a non-null "captured" signal.
-        case Landgrab.record_attempt(puzzlet, nil, user.id, answer, scope) do
+        case Landgrab.record_attempt(puzzlet, nil, user.id, answer, scope, scanned_pole_id) do
           {:ok, %{result: :captured} = outcome} ->
             # Match the real-game response shape so the Flutter parser can
             # be reused. Use user.id as a stand-in for team_id in solo test
             # play so "you captured it!" messaging still has a non-null value.
-            pole = puzzlet.pole_id && Landgrab.get_pole!(puzzlet.pole_id)
+            # Fall back to the scanned pole when the puzzlet is
+            # unattached — otherwise the immediate response wouldn't
+            # carry pole state and the map couldn't optimistically
+            # colour the pin until the next full refresh.
+            resolved_pole_id = puzzlet.pole_id || scanned_pole_id
+            pole = resolved_pole_id && Landgrab.get_pole!(resolved_pole_id)
 
             json(conn, %{
               correct: true,

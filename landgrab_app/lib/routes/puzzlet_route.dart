@@ -44,7 +44,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
 
     setState(() => _busy = true);
 
-    final outcome = await widget.api.submitAnswer(widget.puzzlet.id, answer);
+    final outcome = await widget.api.submitAnswer(widget.puzzlet.id, answer, poleId: widget.pole.id);
 
     if (!mounted) return;
     setState(() {

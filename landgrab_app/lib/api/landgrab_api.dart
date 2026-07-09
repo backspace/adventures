@@ -203,11 +203,18 @@ class LandgrabApi {
     }
   }
 
-  Future<AttemptOutcome> submitAnswer(String puzzletId, String answer) async {
+  // `poleId` records which pole the user was looking at when they
+  // submitted. Real-game puzzlets are pole-attached and the server
+  // resolves the pole from the puzzlet, so this is mostly meaningful
+  // for the test-play override where puzzlets are unattached.
+  Future<AttemptOutcome> submitAnswer(String puzzletId, String answer, {String? poleId}) async {
     try {
       final response = await dio.post(
         '/landgrab/puzzlets/$puzzletId/attempts',
-        data: {'answer': answer},
+        data: {
+          'answer': answer,
+          if (poleId != null) 'pole_id': poleId,
+        },
       );
       final body = response.data as Map<String, dynamic>;
       if (body['correct'] == true) {
@@ -890,11 +897,14 @@ class TestPlayLandgrabApi extends LandgrabApi {
   }
 
   @override
-  Future<AttemptOutcome> submitAnswer(String puzzletId, String answer) async {
+  Future<AttemptOutcome> submitAnswer(String puzzletId, String answer, {String? poleId}) async {
     try {
       final response = await dio.post(
         '/landgrab/test-play/sessions/$sessionId/puzzlets/$puzzletId/attempts',
-        data: {'answer': answer},
+        data: {
+          'answer': answer,
+          if (poleId != null) 'pole_id': poleId,
+        },
       );
       final body = response.data as Map<String, dynamic>;
       if (body['correct'] == true) {
