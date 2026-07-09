@@ -21,6 +21,7 @@ import 'package:landgrab/routes/validator/validator_route.dart';
 import 'package:landgrab/services/landgrab_socket.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
+import 'package:landgrab/widgets/territory_layer.dart';
 
 class HomeRoute extends StatefulWidget {
   final LandgrabApi api;
@@ -308,6 +309,14 @@ class _HomeRouteState extends State<HomeRoute> {
                       subdomains: const ['a', 'b', 'c', 'd'],
                       retinaMode: RetinaMode.isHighDensity(context),
                       userAgentPackageName: 'ca.chromatin.poles',
+                    ),
+                    // Territory fills sit above the tiles and below
+                    // the marker pins so pole icons remain readable
+                    // over their own coloured cells.
+                    TerritoryLayer(
+                      poles: _poles!,
+                      myOwnerId: _teamId,
+                      inTestPlay: _inTestPlay,
                     ),
                     BathroomLayer(bathrooms: _bathrooms),
                     MarkerLayer(
