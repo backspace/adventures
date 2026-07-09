@@ -26,3 +26,42 @@ body.deploy-env-development {
     transparent 32px
   );
 }
+
+// Team-status table (see templates/user/relationships.html.heex) —
+// on narrow phone viewports the desktop table degrades badly because
+// one column carries a long explanatory sentence and gets squeezed
+// down to one word per line. Below 480px the layout switches to a
+// "stacked card" per row: column headers hide, each <td> stacks
+// vertically with its `data-label` printed as an inline prefix so
+// row context is preserved. Empty <td>s (e.g. the current-user row
+// with no "has you?" answer) collapse via `:empty` so the label
+// doesn't hang with no value.
+.relationships-table {
+  @media (max-width: 480px) {
+    display: block;
+
+    thead { display: none; }
+    tbody { display: block; }
+
+    tr {
+      display: block;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+
+      &:last-child { border-bottom: none; }
+    }
+
+    td {
+      display: block;
+      padding: 0.25rem 0;
+
+      &[data-label]:not(:empty)::before {
+        content: attr(data-label) ": ";
+        font-weight: bold;
+        margin-right: 0.25em;
+      }
+
+      &:empty { display: none; }
+    }
+  }
+}

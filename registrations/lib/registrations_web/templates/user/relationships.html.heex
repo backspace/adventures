@@ -9,7 +9,7 @@
 
   <div class="row card">
     <div class="small-12 columns">
-      <table>
+      <table class="relationships-table">
         <%= if !Enum.empty?(@relationships.mutuals) || assigns[:email] do %>
           <thead>
             <tr>
@@ -24,30 +24,34 @@
           <tbody>
             <%= if assigns[:email] do %>
               <tr data-test-mutuals>
-                <td class="email"><%= @user.email %></td>
-                <td class="symbol"></td>
+                <td class="email" data-label="Email"><%= @user.email %></td>
+                <td class="symbol" data-label="Has you?"></td>
                 <%= if feature_enabled?(:risk_aversion) do %>
-                  <td class="risk-aversion">
+                  <td class="risk-aversion" data-label="Risk aversion">
                     <%= risk_aversion_integer_to_string()[@user.risk_aversion] %>
                   </td>
                 <% end %>
-                <td class="proposed-team-name"><%= @user.proposed_team_name %></td>
+                <td class="proposed-team-name" data-label="Team name"><%= @user.proposed_team_name %></td>
               </tr>
             <% end %>
             <%= for user <- @relationships.mutuals do %>
               <tr data-test-mutuals>
-                <td class="email"><%= user.email %></td>
-                <td class="symbol">✓</td>
+                <td class="email" data-label="Email"><%= user.email %></td>
+                <td class="symbol" data-label="Has you?">✓</td>
                 <%= if feature_enabled?(:risk_aversion) do %>
-                  <td class={"risk-aversion #{class_for_attribute(@user, user, :risk_aversion)}"}>
+                  <td
+                    class={"risk-aversion #{class_for_attribute(@user, user, :risk_aversion)}"}
+                    data-label="Risk aversion"
+                  >
                     <%= symbol_for_attribute(@user, user, :risk_aversion) %> <%= risk_aversion_integer_to_string()[
                       user.risk_aversion
                     ] %>
                   </td>
                 <% end %>
-                <td class={
-                  "proposed-team-name #{class_for_attribute(@user, user, :proposed_team_name)}"
-                }>
+                <td
+                  class={"proposed-team-name #{class_for_attribute(@user, user, :proposed_team_name)}"}
+                  data-label="Team name"
+                >
                   <%= symbol_for_attribute(@user, user, :proposed_team_name) %> <%= user.proposed_team_name %>
                 </td>
               </tr>
@@ -65,8 +69,8 @@
           <tbody>
             <%= for user <- @relationships.proposers do %>
               <tr data-test-proposers>
-                <td class="email"><%= user.email %></td>
-                <td class="symbol">?</td>
+                <td class="email" data-label="Email"><%= user.email %></td>
+                <td class="symbol" data-label="Has you?">?</td>
                 <td class="text" colspan="2">
                   This person has you listed in their team.
                   <a data-action="add-email">Add their address to your team emails list</a>
@@ -90,8 +94,8 @@
           <tbody>
             <%= for user <- @relationships.proposees do %>
               <tr data-test-proposees>
-                <td class="email"><%= user.email %></td>
-                <td class="symbol">✘</td>
+                <td class="email" data-label="Email"><%= user.email %></td>
+                <td class="symbol" data-label="Has you?">✘</td>
                 <td class="text" colspan="2">
                   This person doesn’t have your address listed as a desired team member! Are they registered? Maybe they used a different address? Confer.
                   <%= if !(assigns[:email]) && !user.invited do %>
@@ -110,8 +114,8 @@
           <tbody>
             <%= for invalid <- @relationships.invalids do %>
               <tr data-test-invalids>
-                <td class="email"><%= invalid %></td>
-                <td class="symbol">✘</td>
+                <td class="email" data-label="Email"><%= invalid %></td>
+                <td class="symbol" data-label="Has you?">✘</td>
                 <td class="text" colspan="2">This doesn’t seem like a valid email address!</td>
               </tr>
             <% end %>
