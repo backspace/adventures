@@ -298,7 +298,7 @@ class _EnvBanner extends StatelessWidget {
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const SettingsRoute()),
                 ),
-                icon: const Icon(Icons.swap_horiz),
+                icon: const Icon(Icons.dns_outlined),
                 label: const Text('Switch'),
               ),
           ],

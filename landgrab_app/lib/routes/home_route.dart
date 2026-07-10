@@ -249,11 +249,11 @@ class _HomeRouteState extends State<HomeRoute> {
               valueListenable: EnvSwitchService.visible,
               builder: (context, envVisible, _) => envVisible
                   ? IconButton(
-                      tooltip: 'Settings',
+                      tooltip: 'Switch environment',
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const SettingsRoute()),
                       ),
-                      icon: const Icon(Icons.settings_outlined),
+                      icon: const Icon(Icons.dns_outlined),
                     )
                   : const SizedBox.shrink(),
             ),
