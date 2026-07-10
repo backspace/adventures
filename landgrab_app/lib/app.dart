@@ -6,6 +6,7 @@ import 'package:landgrab/refresh_token_interceptor.dart';
 import 'package:landgrab/routes/login_route.dart';
 import 'package:landgrab/routes/home_route.dart';
 import 'package:landgrab/services/env_service.dart';
+import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -22,6 +23,10 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
+    // Env-switch unlock state is best-effort — if SharedPreferences
+    // takes a moment, `visible` just flips from false → true later.
+    // Not awaited before setting _ready so first paint doesn't wait.
+    EnvSwitchService.load();
     EnvService.instance.initialize().then((_) {
       if (mounted) setState(() => _ready = true);
     });

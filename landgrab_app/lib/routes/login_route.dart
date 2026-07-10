@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/flavors.dart';
+import 'package:landgrab/routes/credits_route.dart';
 import 'package:landgrab/routes/home_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
 import 'package:landgrab/services/env_service.dart';
+import 'package:landgrab/services/env_switch_service.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginRoute extends StatefulWidget {
@@ -153,14 +155,25 @@ class _LoginRouteState extends State<LoginRoute> {
       appBar: AppBar(
         title: const Text('Sign in'),
         actions: [
-          if (F.allowsEnvSwitch)
-            IconButton(
-              tooltip: 'Switch environment',
-              icon: const Icon(Icons.dns_outlined),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsRoute()),
-              ),
+          IconButton(
+            tooltip: 'Credits',
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CreditsRoute()),
             ),
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: EnvSwitchService.visible,
+            builder: (context, envVisible, _) => envVisible
+                ? IconButton(
+                    tooltip: 'Switch environment',
+                    icon: const Icon(Icons.dns_outlined),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsRoute()),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -168,12 +181,19 @@ class _LoginRouteState extends State<LoginRoute> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _EnvBanner(
-              flavorTitle: F.title,
-              apiRoot: apiRoot,
-              showSwitcher: F.allowsEnvSwitch,
+            ValueListenableBuilder<bool>(
+              valueListenable: EnvSwitchService.visible,
+              builder: (context, envVisible, _) => envVisible
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: _EnvBanner(
+                        flavorTitle: F.title,
+                        apiRoot: apiRoot,
+                        showSwitcher: true,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
-            const SizedBox(height: 24),
             AutofillGroup(
               child: Column(
                 children: [

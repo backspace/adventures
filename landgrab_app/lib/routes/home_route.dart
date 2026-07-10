@@ -11,6 +11,7 @@ import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/models/test_session.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/author/author_route.dart';
+import 'package:landgrab/routes/credits_route.dart';
 import 'package:landgrab/routes/details_webview_route.dart';
 import 'package:landgrab/routes/login_route.dart';
 import 'package:landgrab/routes/scan_route.dart';
@@ -18,6 +19,7 @@ import 'package:landgrab/routes/settings_route.dart';
 import 'package:landgrab/routes/supervisor/supervisor_route.dart';
 import 'package:landgrab/routes/test_play/test_play_entry_route.dart';
 import 'package:landgrab/routes/validator/validator_route.dart';
+import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/services/landgrab_socket.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
@@ -172,20 +174,23 @@ class _HomeRouteState extends State<HomeRoute> {
 
     return Scaffold(
       appBar: AppBar(
-        title: F.allowsEnvSwitch
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(titleText),
-                  Text(
-                    '${F.title} · ${widget.api.dio.options.baseUrl}',
-                    style: const TextStyle(fontSize: 10),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              )
-            : Text(titleText),
+        title: ValueListenableBuilder<bool>(
+          valueListenable: EnvSwitchService.visible,
+          builder: (context, envVisible, _) => envVisible
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(titleText),
+                    Text(
+                      '${F.title} · ${widget.api.dio.options.baseUrl}',
+                      style: const TextStyle(fontSize: 10),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                )
+              : Text(titleText),
+        ),
         actions: [
           if (!_inTestPlay && !preEvent && _isAuthor)
             IconButton(
@@ -229,13 +234,26 @@ class _HomeRouteState extends State<HomeRoute> {
               ),
               icon: const Icon(Icons.badge_outlined),
             ),
-          if (!_inTestPlay && F.allowsEnvSwitch)
+          if (!_inTestPlay)
             IconButton(
-              tooltip: 'Settings',
+              tooltip: 'Credits',
               onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SettingsRoute()),
+                MaterialPageRoute(builder: (_) => const CreditsRoute()),
               ),
-              icon: const Icon(Icons.settings_outlined),
+              icon: const Icon(Icons.info_outline),
+            ),
+          if (!_inTestPlay)
+            ValueListenableBuilder<bool>(
+              valueListenable: EnvSwitchService.visible,
+              builder: (context, envVisible, _) => envVisible
+                  ? IconButton(
+                      tooltip: 'Settings',
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const SettingsRoute()),
+                      ),
+                      icon: const Icon(Icons.settings_outlined),
+                    )
+                  : const SizedBox.shrink(),
             ),
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
           if (_inTestPlay)
