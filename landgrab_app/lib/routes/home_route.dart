@@ -25,6 +25,7 @@ import 'package:landgrab/routes/validator/validator_route.dart';
 import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/services/landgrab_socket.dart';
 import 'package:landgrab/services/user_service.dart';
+import 'package:landgrab/widgets/attack_rings_layer.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
 import 'package:landgrab/widgets/capture_rings_layer.dart';
 import 'package:landgrab/widgets/territory_layer.dart';
@@ -52,7 +53,18 @@ class _HomeRouteState extends State<HomeRoute>
 
   LandgrabSocket? _socket;
   StreamSubscription<PoleUpdate>? _updatesSub;
+  StreamSubscription<LandgrabNotification>? _notificationsSub;
   StreamSubscription<void>? _reconnectsSub;
+
+  // Under-attack state. `_attackedPoleIds` drives the pulsing red
+  // ring layer; expiry (10 min after the last attack signal on that
+  // pole) is checked on each animation tick. The pulse phase runs
+  // 0→1→0→… continuously via the same ticker that already exists
+  // for capture animations, so we don't need a second ticker.
+  static const Duration _attackExpiry = Duration(minutes: 10);
+  static const Duration _pulseCycle = Duration(milliseconds: 1600);
+  final Map<String, DateTime> _lastAttackAt = {};
+  double _pulsePhase = 0;
 
   // Coordinated capture animation state. When a pole's owner
   // transitions to a new non-null value, we stamp `DateTime.now()`
@@ -82,8 +94,36 @@ class _HomeRouteState extends State<HomeRoute>
     final socket = LandgrabSocket(apiRoot: widget.api.dio.options.baseUrl);
     _socket = socket;
     _updatesSub = socket.updates.listen(_applyUpdate);
+    _notificationsSub = socket.notifications.listen(_handleNotification);
     _reconnectsSub = socket.reconnects.listen((_) => _load());
     await socket.connect();
+  }
+
+  void _handleNotification(LandgrabNotification n) {
+    // Recipient filter — everyone on landgrab:map sees every
+    // notification, so each client scopes to its own team.
+    if (n.recipientTeamId != _teamId) return;
+    if (n.type == 'attack') {
+      final poleId = n.metadata['pole_id'] as String?;
+      if (poleId == null) return;
+      final isFirstAlert = !_lastAttackAt.containsKey(poleId);
+      _lastAttackAt[poleId] = DateTime.now();
+      _ensureAnimTicker();
+      if (isFirstAlert && mounted) {
+        // Only toast on the FIRST alert per pole per session — the
+        // pulsing ring carries the ongoing state; a re-toast on
+        // every follow-up scan would be nagging.
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(n.body),
+          backgroundColor: Colors.deepOrange.shade700,
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+      if (mounted) setState(() {});
+    }
+    // Future notification types (chat, etc.) get their own branches
+    // here — or, once a notifications-history screen exists, hand
+    // off to a shared inbox stream and drop this ad-hoc dispatch.
   }
 
   void _applyUpdate(PoleUpdate update) {
@@ -104,6 +144,11 @@ class _HomeRouteState extends State<HomeRoute>
     if (!mounted) return;
     setState(() {
       _seedCaptureAnimations([replaced]);
+      // A change of ownership on a pole retires any active attack
+      // ring on it — either the attacker succeeded (defender loses
+      // it anyway) or somebody recaptured, either way "under attack"
+      // is stale.
+      _lastAttackAt.remove(replaced.id);
       _poles = [...list]..[index] = replaced;
     });
   }
@@ -111,6 +156,7 @@ class _HomeRouteState extends State<HomeRoute>
   @override
   void dispose() {
     _updatesSub?.cancel();
+    _notificationsSub?.cancel();
     _reconnectsSub?.cancel();
     _socket?.dispose();
     _animTicker?.dispose();
@@ -141,18 +187,37 @@ class _HomeRouteState extends State<HomeRoute>
     _animTicker!.start();
   }
 
-  void _onAnimTick(Duration _) {
+  void _onAnimTick(Duration elapsed) {
     final now = DateTime.now();
-    final expired = <String>[];
+
+    // Capture-ping expiries.
+    final expiredCaptures = <String>[];
     for (final entry in _captureStartedAt.entries) {
       if (now.difference(entry.value) >= _captureAnimationDuration) {
-        expired.add(entry.key);
+        expiredCaptures.add(entry.key);
       }
     }
-    for (final id in expired) {
+    for (final id in expiredCaptures) {
       _captureStartedAt.remove(id);
     }
-    if (_captureStartedAt.isEmpty) {
+
+    // Attack-ring expiries.
+    final expiredAttacks = <String>[];
+    for (final entry in _lastAttackAt.entries) {
+      if (now.difference(entry.value) >= _attackExpiry) {
+        expiredAttacks.add(entry.key);
+      }
+    }
+    for (final id in expiredAttacks) {
+      _lastAttackAt.remove(id);
+    }
+
+    // Ambient pulse for the attack rings — 0..1 loop.
+    _pulsePhase =
+        (elapsed.inMicroseconds / _pulseCycle.inMicroseconds) % 1.0;
+
+    // Stop the ticker only when nothing on-screen needs animating.
+    if (_captureStartedAt.isEmpty && _lastAttackAt.isEmpty) {
       _animTicker?.dispose();
       _animTicker = null;
     }
@@ -408,6 +473,11 @@ class _HomeRouteState extends State<HomeRoute>
                       duration: _captureAnimationDuration,
                       myOwnerId: _teamId,
                       inTestPlay: _inTestPlay,
+                    ),
+                    AttackRingsLayer(
+                      poles: _poles!,
+                      attackedPoleIds: _lastAttackAt.keys.toSet(),
+                      pulsePhase: _pulsePhase,
                     ),
                     MarkerLayer(
                       markers: _poles!.map((pole) {

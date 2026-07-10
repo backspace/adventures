@@ -22,6 +22,38 @@ class PoleUpdate {
       );
 }
 
+/// A message-to-a-team persisted server-side and broadcast on the
+/// same channel as pole updates. Today's only `type` is "attack" (a
+/// rival team scanned one of your poles); chat will follow with a
+/// `type` of its own.
+class LandgrabNotification {
+  final String id;
+  final String type;
+  final String recipientTeamId;
+  final String? senderTeamId;
+  final String body;
+  final Map<String, dynamic> metadata;
+
+  LandgrabNotification({
+    required this.id,
+    required this.type,
+    required this.recipientTeamId,
+    required this.senderTeamId,
+    required this.body,
+    required this.metadata,
+  });
+
+  factory LandgrabNotification.fromJson(Map<String, dynamic> json) =>
+      LandgrabNotification(
+        id: json['id'] as String,
+        type: json['type'] as String,
+        recipientTeamId: json['recipient_team_id'] as String,
+        senderTeamId: json['sender_team_id'] as String?,
+        body: json['body'] as String,
+        metadata: (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
+      );
+}
+
 /// Subscribes to the `poles:map` channel and emits a [PoleUpdate] for every
 /// `pole_updated` broadcast. Also exposes a [reconnects] stream so callers can
 /// trigger a full resync after a connection blip drops broadcasts.
@@ -35,12 +67,14 @@ class LandgrabSocket {
   StreamSubscription? _socketSub;
 
   final _updates = StreamController<PoleUpdate>.broadcast();
+  final _notifications = StreamController<LandgrabNotification>.broadcast();
   final _reconnects = StreamController<void>.broadcast();
   bool _hadFirstConnect = false;
 
   LandgrabSocket({required this.apiRoot});
 
   Stream<PoleUpdate> get updates => _updates.stream;
+  Stream<LandgrabNotification> get notifications => _notifications.stream;
   Stream<void> get reconnects => _reconnects.stream;
 
   Future<void> connect() async {
@@ -73,13 +107,22 @@ class LandgrabSocket {
   }
 
   void _handleMessage(Message message) {
-    if (message.event.value != 'pole_updated') return;
     final payload = message.payload;
     if (payload is! Map<String, dynamic>) return;
-    try {
-      _updates.add(PoleUpdate.fromJson(payload));
-    } catch (e, st) {
-      _log.w('LandgrabSocket: bad pole_updated payload', error: e, stackTrace: st);
+    switch (message.event.value) {
+      case 'pole_updated':
+        try {
+          _updates.add(PoleUpdate.fromJson(payload));
+        } catch (e, st) {
+          _log.w('LandgrabSocket: bad pole_updated payload', error: e, stackTrace: st);
+        }
+      case 'notification_created':
+        try {
+          _notifications.add(LandgrabNotification.fromJson(payload));
+        } catch (e, st) {
+          _log.w('LandgrabSocket: bad notification_created payload',
+              error: e, stackTrace: st);
+        }
     }
   }
 
@@ -89,6 +132,7 @@ class LandgrabSocket {
     _channel?.leave();
     _socket?.close();
     await _updates.close();
+    await _notifications.close();
     await _reconnects.close();
   }
 }

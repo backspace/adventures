@@ -5,6 +5,7 @@ defmodule Registrations.Landgrab do
   alias Registrations.Landgrab.Attachment
   alias Registrations.Landgrab.Attempt
   alias Registrations.Landgrab.Capture
+  alias Registrations.Landgrab.Notification
   alias Registrations.Landgrab.Pole
   alias Registrations.Landgrab.Puzzlet
   alias Registrations.Landgrab.Scope
@@ -140,6 +141,8 @@ defmodule Registrations.Landgrab do
                        0
                      ), team_wrong_answers(puzzlet, team_id, scope)}
                 end
+
+              maybe_signal_attack(pole, state.current_owner_team_id, team_id, scope)
 
               {:ok,
                Map.merge(state, %{
@@ -658,6 +661,86 @@ defmodule Registrations.Landgrab do
       captured_at: capture.inserted_at
     })
   end
+
+  # Attack signals fire only in the real game (test-play captures /
+  # scans are private to the tester), only when the pole is owned by
+  # someone other than the scanning team, and only when a fresh
+  # signal hasn't been written for the same (defender, attacker,
+  # pole) trio in the last @attack_cooldown. The cooldown keeps the
+  # `notifications` history from filling up with duplicate rows when
+  # an attacker retries a puzzlet many times.
+  @attack_cooldown_minutes 5
+
+  defp maybe_signal_attack(_pole, _owner_id, _team_id, %Scope{test_session_id: id})
+       when not is_nil(id),
+       do: :ok
+
+  defp maybe_signal_attack(_pole, nil, _team_id, _scope), do: :ok
+  defp maybe_signal_attack(_pole, _owner_id, nil, _scope), do: :ok
+  defp maybe_signal_attack(_pole, owner_id, team_id, _scope) when owner_id == team_id, do: :ok
+
+  defp maybe_signal_attack(%Pole{} = pole, owner_id, attacker_id, _scope) do
+    if recent_attack_signal?(owner_id, attacker_id, pole.id) do
+      :ok
+    else
+      write_attack_signal(pole, owner_id, attacker_id)
+    end
+  end
+
+  defp recent_attack_signal?(recipient_id, sender_id, pole_id) do
+    threshold = DateTime.add(DateTime.utc_now(), -@attack_cooldown_minutes * 60, :second)
+
+    Notification
+    |> where([n], n.recipient_team_id == ^recipient_id)
+    |> where([n], n.sender_team_id == ^sender_id)
+    |> where([n], n.type == "attack")
+    |> where([n], fragment("(?->>'pole_id')::uuid = ?", n.metadata, ^pole_id))
+    |> where([n], n.inserted_at >= ^threshold)
+    |> Repo.exists?()
+  end
+
+  defp write_attack_signal(%Pole{} = pole, recipient_id, sender_id) do
+    attacker = Repo.get(RegistrationsWeb.Team, sender_id)
+    attacker_name = attacker && attacker.name
+    body =
+      case attacker_name do
+        nil -> "A rival team scanned #{display_name(pole)}"
+        name -> "#{name} scanned #{display_name(pole)}"
+      end
+
+    result =
+      %Notification{}
+      |> Notification.changeset(%{
+        type: "attack",
+        recipient_team_id: recipient_id,
+        sender_team_id: sender_id,
+        body: body,
+        metadata: %{
+          "pole_id" => pole.id,
+          "pole_label" => pole.label,
+          "pole_barcode" => pole.barcode,
+          "attacker_team_name" => attacker_name
+        }
+      })
+      |> Repo.insert()
+
+    with {:ok, notification} <- result do
+      RegistrationsWeb.Endpoint.broadcast("landgrab:map", "notification_created", %{
+        id: notification.id,
+        type: notification.type,
+        recipient_team_id: notification.recipient_team_id,
+        sender_team_id: notification.sender_team_id,
+        body: notification.body,
+        metadata: notification.metadata,
+        inserted_at: notification.inserted_at
+      })
+    end
+
+    :ok
+  end
+
+  defp display_name(%Pole{label: label}) when is_binary(label) and label != "", do: label
+  defp display_name(%Pole{barcode: barcode}), do: barcode
 
   defp insert_capture(puzzlet_id, team_id, scope, pole_id) do
     %Capture{}
