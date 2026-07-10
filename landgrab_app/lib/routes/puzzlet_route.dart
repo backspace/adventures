@@ -142,7 +142,6 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
-            Text('Difficulty: ${widget.puzzlet.difficulty}'),
             Text('Attempts remaining: ${_attemptsRemaining ?? 0}'),
             if (_previousWrongAnswers.isNotEmpty) ...[
               const SizedBox(height: 16),
