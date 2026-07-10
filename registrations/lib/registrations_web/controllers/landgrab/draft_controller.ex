@@ -178,6 +178,7 @@ defmodule RegistrationsWeb.Landgrab.DraftController do
             "accessibility_tags",
             "accessibility_notes",
             "region_id",
+            "pole_id",
             "warning"
           ])
 

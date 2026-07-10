@@ -386,6 +386,8 @@ class LandgrabApi {
     String? accessibilityNotes,
     String? regionId,
     bool clearRegion = false,
+    String? poleId,
+    bool clearPole = false,
     String? warning,
   }) async {
     final response = await dio.patch('/landgrab/drafts/puzzlets/$id', data: {
@@ -400,6 +402,8 @@ class LandgrabApi {
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
       if (clearRegion) 'region_id': null
       else if (regionId != null) 'region_id': regionId,
+      if (clearPole) 'pole_id': null
+      else if (poleId != null) 'pole_id': poleId,
       if (warning != null) 'warning': warning,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
