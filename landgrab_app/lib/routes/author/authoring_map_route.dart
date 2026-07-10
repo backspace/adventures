@@ -5,6 +5,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
+import 'package:landgrab/routes/author/edit_pole_route.dart';
+import 'package:landgrab/routes/author/edit_puzzlet_route.dart';
 import 'package:landgrab/services/location_service.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -280,8 +282,31 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
         onChanged: (updated) {
           if (mounted) setState(() => _drafts = updated);
         },
+        onEdit: () => _openEditPole(p),
       ),
     );
+  }
+
+  /// Push the pole editor; on save (or delete), pull fresh drafts
+  /// from the server so the map reflects any location / label /
+  /// deletion changes. The sheet closes itself before invoking this
+  /// callback, so the editor is the top route when it opens.
+  Future<void> _openEditPole(DraftPole pole) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => EditPoleRoute(api: widget.api, pole: pole),
+      ),
+    );
+    if (result == true && mounted) await _refreshHere();
+  }
+
+  Future<void> _openEditPuzzlet(DraftPuzzlet puzzlet) async {
+    final result = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => EditPuzzletRoute(api: widget.api, puzzlet: puzzlet),
+      ),
+    );
+    if (result == true && mounted) await _refreshHere();
   }
 
   void _showPuzzletSheet(DraftPuzzlet p) {
@@ -298,6 +323,7 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
         onChanged: (updated) {
           if (mounted) setState(() => _drafts = updated);
         },
+        onEdit: () => _openEditPuzzlet(p),
       ),
     );
   }
@@ -365,12 +391,14 @@ class _PoleSheet extends StatefulWidget {
   final MyDrafts drafts;
   final LandgrabApi api;
   final ValueChanged<MyDrafts> onChanged;
+  final VoidCallback onEdit;
 
   const _PoleSheet({
     required this.pole,
     required this.drafts,
     required this.api,
     required this.onChanged,
+    required this.onEdit,
   });
 
   @override
@@ -467,6 +495,17 @@ class _PoleSheetState extends State<_PoleSheet> {
                     style: theme.textTheme.titleLarge,
                   ),
                 ),
+                IconButton(
+                  tooltip: 'Edit pole',
+                  icon: const Icon(Icons.edit_outlined),
+                  // Close the sheet first so the editor pushes over
+                  // the map, not over the sheet. Parent's onEdit
+                  // handles the navigation + post-save refetch.
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    widget.onEdit();
+                  },
+                ),
               ]),
               const SizedBox(height: 4),
               Text('Barcode: ${widget.pole.barcode}',
@@ -531,12 +570,14 @@ class _PuzzletSheet extends StatefulWidget {
   final MyDrafts drafts;
   final LandgrabApi api;
   final ValueChanged<MyDrafts> onChanged;
+  final VoidCallback onEdit;
 
   const _PuzzletSheet({
     required this.puzzlet,
     required this.drafts,
     required this.api,
     required this.onChanged,
+    required this.onEdit,
   });
 
   @override
@@ -641,6 +682,14 @@ class _PuzzletSheetState extends State<_PuzzletSheet> {
                     'Puzzlet · difficulty ${_puzzlet.difficulty}',
                     style: theme.textTheme.titleLarge,
                   ),
+                ),
+                IconButton(
+                  tooltip: 'Edit puzzlet',
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    widget.onEdit();
+                  },
                 ),
               ]),
               const SizedBox(height: 12),
