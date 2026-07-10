@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_compass/flutter_map_compass.dart';
 import 'package:latlong2/latlong.dart';
@@ -25,6 +26,7 @@ import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/services/landgrab_socket.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
+import 'package:landgrab/widgets/capture_rings_layer.dart';
 import 'package:landgrab/widgets/territory_layer.dart';
 
 class HomeRoute extends StatefulWidget {
@@ -36,7 +38,8 @@ class HomeRoute extends StatefulWidget {
   State<HomeRoute> createState() => _HomeRouteState();
 }
 
-class _HomeRouteState extends State<HomeRoute> {
+class _HomeRouteState extends State<HomeRoute>
+    with TickerProviderStateMixin {
   List<Pole>? _poles;
   List<Bathroom> _bathrooms = const [];
   String? _teamId;
@@ -50,6 +53,19 @@ class _HomeRouteState extends State<HomeRoute> {
   LandgrabSocket? _socket;
   StreamSubscription<PoleUpdate>? _updatesSub;
   StreamSubscription<void>? _reconnectsSub;
+
+  // Coordinated capture animation state. When a pole's owner
+  // transitions to a new non-null value, we stamp `DateTime.now()`
+  // into `_captureStartedAt`; the ticker drives frame-by-frame
+  // rebuilds until every animation has passed [_captureAnimationDuration],
+  // at which point the entry is purged and the ticker stops. Both
+  // the ping ring and the territory disc-clip read this same map,
+  // so they're guaranteed to run in lockstep.
+  static const Duration _captureAnimationDuration =
+      Duration(milliseconds: 800);
+  final Map<String, DateTime> _captureStartedAt = {};
+  final Map<String, String?> _prevOwners = {};
+  Ticker? _animTicker;
 
   bool get _inTestPlay => widget.testSession != null;
 
@@ -87,6 +103,7 @@ class _HomeRouteState extends State<HomeRoute> {
     );
     if (!mounted) return;
     setState(() {
+      _seedCaptureAnimations([replaced]);
       _poles = [...list]..[index] = replaced;
     });
   }
@@ -96,7 +113,50 @@ class _HomeRouteState extends State<HomeRoute> {
     _updatesSub?.cancel();
     _reconnectsSub?.cancel();
     _socket?.dispose();
+    _animTicker?.dispose();
     super.dispose();
+  }
+
+  /// Diff the incoming pole list against the last-seen owners and
+  /// stamp a capture animation for any pole whose owner just became
+  /// (or changed to) a non-null value. First observation of the pole
+  /// set (`_prevOwners` empty) is silent — we don't fireworks over
+  /// the initial load, only actual transitions.
+  void _seedCaptureAnimations(Iterable<Pole> newPoles) {
+    final wasCold = _prevOwners.isEmpty;
+    for (final pole in newPoles) {
+      final prev = _prevOwners[pole.id];
+      final now = pole.currentOwnerTeamId;
+      if (!wasCold && now != null && now != prev) {
+        _captureStartedAt[pole.id] = DateTime.now();
+      }
+      _prevOwners[pole.id] = now;
+    }
+    if (_captureStartedAt.isNotEmpty) _ensureAnimTicker();
+  }
+
+  void _ensureAnimTicker() {
+    if (_animTicker != null) return;
+    _animTicker = createTicker(_onAnimTick);
+    _animTicker!.start();
+  }
+
+  void _onAnimTick(Duration _) {
+    final now = DateTime.now();
+    final expired = <String>[];
+    for (final entry in _captureStartedAt.entries) {
+      if (now.difference(entry.value) >= _captureAnimationDuration) {
+        expired.add(entry.key);
+      }
+    }
+    for (final id in expired) {
+      _captureStartedAt.remove(id);
+    }
+    if (_captureStartedAt.isEmpty) {
+      _animTicker?.dispose();
+      _animTicker = null;
+    }
+    if (mounted) setState(() {});
   }
 
   Future<void> _load() async {
@@ -119,6 +179,7 @@ class _HomeRouteState extends State<HomeRoute> {
       final bathrooms = results[2] as List<Bathroom>;
       if (!mounted) return;
       setState(() {
+        _seedCaptureAnimations(poles);
         _poles = poles;
         _bathrooms = bathrooms;
         _teamId = teamId;
@@ -337,17 +398,26 @@ class _HomeRouteState extends State<HomeRoute> {
                       poles: _poles!,
                       myOwnerId: _teamId,
                       inTestPlay: _inTestPlay,
+                      captureStartedAt: _captureStartedAt,
+                      captureAnimationDuration: _captureAnimationDuration,
                     ),
                     BathroomLayer(bathrooms: _bathrooms),
+                    CaptureRingsLayer(
+                      poles: _poles!,
+                      captureStartedAt: _captureStartedAt,
+                      duration: _captureAnimationDuration,
+                      myOwnerId: _teamId,
+                      inTestPlay: _inTestPlay,
+                    ),
                     MarkerLayer(
                       markers: _poles!.map((pole) {
                         return Marker(
                           point: LatLng(pole.latitude, pole.longitude),
-                          width: 36,
-                          height: 36,
+                          width: 24,
+                          height: 24,
                           child: Tooltip(
                             message: pole.label ?? pole.barcode,
-                            child: Icon(Icons.location_on, color: _pinColor(pole), size: 36),
+                            child: _PoleDot(color: _pinColor(pole)),
                           ),
                         );
                       }).toList(),
@@ -596,6 +666,36 @@ class _ScannerTile extends StatelessWidget {
               ),
         trailing: const Icon(Icons.chevron_right),
         onTap: onPressed,
+      ),
+    );
+  }
+}
+
+/// Matches the site's `.landgrab-pole` visual: a filled circle with a
+/// stroke lightened toward white so dark colours (black especially)
+/// still read against the map. Colour transitions ease over 200 ms to
+/// match the site's `transition: fill 200ms ease-out, stroke 200ms
+/// ease-out` rule, so a capture flip reads as a gradient rather than
+/// a hard cut.
+class _PoleDot extends StatelessWidget {
+  final Color color;
+  const _PoleDot({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    // `color-mix(fill 55%, white 45%)` on the site becomes
+    // Color.lerp(fill, white, 0.45) here — same shape, same lift.
+    final borderColor = Color.lerp(color, Colors.white, 0.45)!;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        border: Border.all(
+          color: borderColor.withValues(alpha: 0.65),
+          width: 1.5,
+        ),
       ),
     );
   }

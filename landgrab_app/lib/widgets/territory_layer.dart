@@ -32,6 +32,8 @@ class TerritoryLayer extends StatelessWidget {
   final String? myOwnerId;
   final bool inTestPlay;
   final double radiusMeters;
+  final Map<String, DateTime> captureStartedAt;
+  final Duration captureAnimationDuration;
 
   const TerritoryLayer({
     super.key,
@@ -39,18 +41,38 @@ class TerritoryLayer extends StatelessWidget {
     this.myOwnerId,
     this.inTestPlay = false,
     this.radiusMeters = 200,
+    this.captureStartedAt = const {},
+    this.captureAnimationDuration = const Duration(milliseconds: 800),
   });
 
   @override
   Widget build(BuildContext context) {
     final cells = _computeCells();
+    final now = DateTime.now();
     final polygons = <Polygon>[];
     for (var i = 0; i < poles.length; i++) {
       final pole = poles[i];
       final owner = pole.currentOwnerTeamId;
       if (owner == null) continue;
-      final cell = cells[i];
+      var cell = cells[i];
       if (cell == null || cell.length < 3) continue;
+
+      // If this pole is currently animating a fresh capture, clip its
+      // cell to a growing disc so the fill visibly flows outward from
+      // the pole's position rather than snapping in. Progress in
+      // [0, 1] maps to disc radius in [0, radiusMeters] — matches the
+      // ping ring's timing, so the two effects read as one gesture.
+      final startedAt = captureStartedAt[pole.id];
+      if (startedAt != null) {
+        final elapsedMs = now.difference(startedAt).inMicroseconds / 1000;
+        final t = (elapsedMs / captureAnimationDuration.inMilliseconds)
+            .clamp(0.0, 1.0);
+        if (t < 1.0) {
+          cell = _clipToExpandingDisc(cell, pole, t);
+          if (cell == null || cell.length < 3) continue;
+        }
+      }
+
       polygons.add(Polygon(
         points: cell,
         color: _colorFor(owner).withValues(alpha: 0.28),
@@ -60,6 +82,89 @@ class TerritoryLayer extends StatelessWidget {
       ));
     }
     return PolygonLayer(polygons: polygons);
+  }
+
+  /// Re-clip the already-computed cell (in LatLng) against a disc
+  /// centred on the pole with radius `progress * radiusMeters`. Runs
+  /// the same metric projection + Sutherland-Hodgman as the cell
+  /// computation itself, so the geometry stays consistent.
+  List<LatLng>? _clipToExpandingDisc(
+    List<LatLng> cell,
+    Pole pole,
+    double progress,
+  ) {
+    if (cell.isEmpty) return cell;
+    const metresPerDegLat = 111000.0;
+    // Local anchor at the pole itself — every projection is relative
+    // to it so the disc math is trivially centred at origin.
+    final cosLat = math.cos(pole.latitude * math.pi / 180);
+    final metresPerDegLon = 111000.0 * cosLat;
+
+    List<_Point> polygonInMetres = [
+      for (final p in cell)
+        (
+          x: (p.longitude - pole.longitude) * metresPerDegLon,
+          y: (p.latitude - pole.latitude) * metresPerDegLat,
+        ),
+    ];
+
+    // Approximate the disc as a 24-gon and clip against each edge.
+    const sides = 24;
+    final r = progress * radiusMeters;
+    for (var k = 0; k < sides; k++) {
+      final theta1 = 2 * math.pi * k / sides;
+      final theta2 = 2 * math.pi * (k + 1) / sides;
+      final ax = r * math.cos(theta1);
+      final ay = r * math.sin(theta1);
+      final bx = r * math.cos(theta2);
+      final by = r * math.sin(theta2);
+      polygonInMetres = _clipToInnerSide(polygonInMetres, ax, ay, bx, by);
+      if (polygonInMetres.isEmpty) return null;
+    }
+
+    return [
+      for (final p in polygonInMetres)
+        LatLng(
+          pole.latitude + p.y / metresPerDegLat,
+          pole.longitude + p.x / metresPerDegLon,
+        )
+    ];
+  }
+
+  /// Clip [polygon] to the half-plane on the "inside" (origin side)
+  /// of the line through (ax, ay)→(bx, by). Used to build a disc
+  /// intersection from consecutive edges of the disc's polygonal
+  /// approximation.
+  List<_Point> _clipToInnerSide(
+      List<_Point> polygon, double ax, double ay, double bx, double by) {
+    // Normal pointing away from origin (outside): rotate edge by 90°.
+    final ex = bx - ax;
+    final ey = by - ay;
+    final nx = ey;
+    final ny = -ex;
+    // Point is inside if (v - a) · n <= 0.
+    double signedDist(_Point v) => (v.x - ax) * nx + (v.y - ay) * ny;
+    _Point intersect(_Point p, _Point q) {
+      final dp = signedDist(p);
+      final dq = signedDist(q);
+      final t = dp / (dp - dq);
+      return (x: p.x + t * (q.x - p.x), y: p.y + t * (q.y - p.y));
+    }
+    if (polygon.isEmpty) return polygon;
+    final out = <_Point>[];
+    for (var i = 0; i < polygon.length; i++) {
+      final current = polygon[i];
+      final previous = polygon[(i - 1 + polygon.length) % polygon.length];
+      final currentIn = signedDist(current) <= 0;
+      final previousIn = signedDist(previous) <= 0;
+      if (currentIn) {
+        if (!previousIn) out.add(intersect(previous, current));
+        out.add(current);
+      } else if (previousIn) {
+        out.add(intersect(previous, current));
+      }
+    }
+    return out;
   }
 
   Color _colorFor(String ownerId) {
