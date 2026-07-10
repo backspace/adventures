@@ -11,9 +11,11 @@ import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/models/test_session.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/author/author_route.dart';
+import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/credits_route.dart';
 import 'package:landgrab/routes/details_webview_route.dart';
 import 'package:landgrab/routes/login_route.dart';
+import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/routes/scan_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
 import 'package:landgrab/routes/supervisor/supervisor_route.dart';
@@ -369,7 +371,7 @@ class _HomeRouteState extends State<HomeRoute> {
   }
 }
 
-class _PreEventBody extends StatelessWidget {
+class _PreEventBody extends StatefulWidget {
   final LandgrabEvent event;
   final bool isAuthor;
   final bool isValidator;
@@ -389,59 +391,167 @@ class _PreEventBody extends StatelessWidget {
   });
 
   @override
+  State<_PreEventBody> createState() => _PreEventBodyState();
+}
+
+class _PreEventBodyState extends State<_PreEventBody> {
+  Timer? _ticker;
+  String? _lastBarcode;
+  String? _lastNfcUid;
+
+  @override
+  void initState() {
+    super.initState();
+    // Only run the countdown ticker when we have a target to count
+    // down TO. If the event has no start time yet, the display shows
+    // "not yet scheduled" and there's nothing to tick.
+    if (widget.event.startTime != null) {
+      _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() {});
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _openBarcodeScanner() async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => const BarcodeScannerRoute(title: 'Barcode toy'),
+      ),
+    );
+    if (!mounted || result == null) return;
+    setState(() => _lastBarcode = result);
+  }
+
+  Future<void> _openNfcScanner() async {
+    final result = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => const NfcScannerRoute(title: 'NFC toy'),
+      ),
+    );
+    if (!mounted || result == null) return;
+    setState(() => _lastNfcUid = result);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final headline = event.startTime == null
-        ? 'Event not yet scheduled'
-        : 'Event begins ${_formatStart(event.startTime!)}';
+    final start = widget.event.startTime;
 
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(headline, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 8),
+            if (start == null)
+              Text('Event not yet scheduled',
+                  style: theme.textTheme.titleLarge)
+            else
+              _Countdown(startTime: start),
+            const SizedBox(height: 12),
             Text(
-              'Gameplay opens at start time. Until then, finish preparing your poles and puzzlets.',
+              'Gameplay opens at start time. Until then, warm up.',
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 24),
-            if (isAuthor)
+            if (widget.isAuthor)
               _BigButton(
                 icon: Icons.edit_note,
                 label: 'Author',
-                onPressed: onAuthor,
+                onPressed: widget.onAuthor,
               ),
-            if (isValidator) ...[
+            if (widget.isValidator) ...[
               const SizedBox(height: 12),
               _BigButton(
                 icon: Icons.fact_check_outlined,
                 label: 'Validate',
-                onPressed: onValidate,
+                onPressed: widget.onValidate,
               ),
             ],
-            if (isSupervisor) ...[
+            if (widget.isSupervisor) ...[
               const SizedBox(height: 12),
               _BigButton(
                 icon: Icons.supervisor_account,
                 label: 'Supervise',
-                onPressed: onSupervise,
+                onPressed: widget.onSupervise,
               ),
             ],
-            if (!isAuthor && !isValidator && !isSupervisor)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text(
-                  'No tasks for your role yet. Check back when the event begins.',
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ),
+            const SizedBox(height: 32),
+            Text('Toys', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            _ScannerTile(
+              icon: Icons.qr_code_scanner,
+              label: 'Barcode scanner',
+              lastResult: _lastBarcode,
+              onPressed: _openBarcodeScanner,
+            ),
+            const SizedBox(height: 8),
+            _ScannerTile(
+              icon: Icons.nfc,
+              label: 'NFC scanner',
+              lastResult: _lastNfcUid,
+              onPressed: _openNfcScanner,
+            ),
           ],
         ),
       ),
     );
+  }
+}
+
+/// Live-updating countdown for the event start. Rebuilds each second
+/// from the parent's ticker; hides its subtitle line once the
+/// remaining duration crosses zero (server flips `started` at that
+/// point and this whole widget is swapped out anyway).
+class _Countdown extends StatelessWidget {
+  final DateTime startTime;
+  const _Countdown({required this.startTime});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final remaining = startTime.difference(DateTime.now());
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Event begins in',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            )),
+        const SizedBox(height: 4),
+        Text(
+          _formatRemaining(remaining),
+          style: theme.textTheme.displaySmall?.copyWith(
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(_formatStart(startTime),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            )),
+      ],
+    );
+  }
+
+  /// "3d 14:22:07" when > 1 day away, "14:22:07" when < 1 day, and
+  /// "starting now" once the remaining crosses zero (a transient
+  /// state until the server flips `started`).
+  static String _formatRemaining(Duration r) {
+    if (r.isNegative || r.inSeconds == 0) return 'starting now';
+    final days = r.inDays;
+    final hours = r.inHours.remainder(24);
+    final minutes = r.inMinutes.remainder(60);
+    final seconds = r.inSeconds.remainder(60);
+    final hhmmss =
+        '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    return days > 0 ? '${days}d $hhmmss' : hhmmss;
   }
 
   static String _formatStart(DateTime utc) {
@@ -452,6 +562,42 @@ class _PreEventBody extends StatelessWidget {
     final hh = local.hour.toString().padLeft(2, '0');
     final mm = local.minute.toString().padLeft(2, '0');
     return '$y-$m-$d $hh:$mm';
+  }
+}
+
+class _ScannerTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String? lastResult;
+  final VoidCallback onPressed;
+
+  const _ScannerTile({
+    required this.icon,
+    required this.label,
+    required this.lastResult,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(label),
+        subtitle: lastResult == null
+            ? Text('No scans yet — tap to try',
+                style: theme.textTheme.bodySmall)
+            : Text(
+                'Last: $lastResult',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+              ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onPressed,
+      ),
+    );
   }
 }
 
