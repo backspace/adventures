@@ -38,7 +38,8 @@ class LiveLocationLayer extends StatefulWidget {
   State<LiveLocationLayer> createState() => _LiveLocationLayerState();
 }
 
-class _LiveLocationLayerState extends State<LiveLocationLayer> {
+class _LiveLocationLayerState extends State<LiveLocationLayer>
+    with WidgetsBindingObserver {
   static const double _movingSpeedThreshold = 0.7; // m/s ≈ slow walk
   static const double _maxAccuracyForCircle = 200;
 
@@ -46,29 +47,54 @@ class _LiveLocationLayerState extends State<LiveLocationLayer> {
   StreamSubscription<CompassEvent>? _compassSub;
   Position? _position;
   double? _compassHeading;
+  // Set when the geolocator stream last errored (typically iOS's
+  // kCLErrorDomain=1 when the screen locks). We resubscribe on the
+  // next foreground resume rather than in the error handler itself,
+  // because restarting mid-lock would just error again.
+  bool _positionStreamNeedsRestart = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _start();
     _startCompass();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _positionStreamNeedsRestart) {
+      _positionStreamNeedsRestart = false;
+      _restartPositionStream();
+    }
+  }
+
+  void _restartPositionStream() {
+    _sub?.cancel();
+    _sub = null;
+    _startPositionStream();
   }
 
   void _startCompass() {
     final stream = FlutterCompass.events;
     if (stream == null) return; // No sensor (e.g. iOS simulator, some tablets).
-    _compassSub = stream.listen((event) {
-      if (!mounted) return;
-      final heading = event.heading;
-      if (heading == null) return;
-      final previous = _compassHeading;
-      // Sensor fires many times per second; only rebuild when the
-      // heading has actually rotated visibly. The cone renders at
-      // integer-degree granularity so sub-degree jitter never
-      // reaches the screen anyway.
-      if (previous != null && (heading - previous).abs() < 1.5) return;
-      setState(() => _compassHeading = heading);
-    });
+    _compassSub = stream.listen(
+      (event) {
+        if (!mounted) return;
+        final heading = event.heading;
+        if (heading == null) return;
+        final previous = _compassHeading;
+        // Sensor fires many times per second; only rebuild when the
+        // heading has actually rotated visibly. The cone renders at
+        // integer-degree granularity so sub-degree jitter never
+        // reaches the screen anyway.
+        if (previous != null && (heading - previous).abs() < 1.5) return;
+        setState(() => _compassHeading = heading);
+      },
+      // Silently ignore sensor errors — the marker still renders
+      // usefully without a heading, and there's no UI recovery step.
+      onError: (_, __) {},
+    );
   }
 
   Future<void> _start() async {
@@ -97,6 +123,10 @@ class _LiveLocationLayerState extends State<LiveLocationLayer> {
       // Non-fatal: the stream below will still deliver fixes.
     }
 
+    _startPositionStream();
+  }
+
+  void _startPositionStream() {
     _sub = Geolocator.getPositionStream(
       locationSettings: LocationSettings(
         accuracy: LocationAccuracy.best,
@@ -104,10 +134,21 @@ class _LiveLocationLayerState extends State<LiveLocationLayer> {
         // fix. Cuts noise while stationary and saves battery.
         distanceFilter: widget.distanceFilterM.round(),
       ),
-    ).listen((p) {
-      if (!mounted) return;
-      _emit(p);
-    });
+    ).listen(
+      (p) {
+        if (!mounted) return;
+        _emit(p);
+      },
+      // iOS surfaces kCLErrorDomain=1 (~"denied") when the screen
+      // locks or the app is backgrounded, even when permission is
+      // fine — the stream just gets torn down. Without an onError
+      // this bubbles as an unhandled exception and crashes the app.
+      // Mark for restart on next foreground resume and swallow.
+      onError: (error, stackTrace) {
+        _positionStreamNeedsRestart = true;
+      },
+      cancelOnError: true,
+    );
   }
 
   void _emit(Position p) {
@@ -117,6 +158,7 @@ class _LiveLocationLayerState extends State<LiveLocationLayer> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _sub?.cancel();
     _compassSub?.cancel();
     super.dispose();
