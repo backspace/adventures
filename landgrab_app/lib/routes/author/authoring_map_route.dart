@@ -8,6 +8,7 @@ import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/routes/author/edit_pole_route.dart';
 import 'package:landgrab/routes/author/edit_puzzlet_route.dart';
 import 'package:landgrab/services/location_service.dart';
+import 'package:landgrab/widgets/live_location_layer.dart';
 import 'package:latlong2/latlong.dart';
 
 /// Full-screen author scouting map.
@@ -97,6 +98,17 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
 
   Future<void> _locateMe() async {
     if (_locating) return;
+    // Prefer the last position the live layer streamed — that's
+    // fresh already and avoids a redundant Geolocator round-trip.
+    // Fall back to a one-shot fetch only when the stream hasn't
+    // produced anything yet (e.g. permission just granted).
+    final cached = _userLocation;
+    if (cached != null) {
+      final zoom = max(_controller.camera.zoom, 15.0);
+      _controller.move(cached, zoom);
+      await _fetch(cached);
+      return;
+    }
     setState(() => _locating = true);
     try {
       final fix = await LocationService.getCurrent();
@@ -193,17 +205,15 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
                   builder: (context, markers) => _ClusterBadge(count: markers.length),
                 ),
               ),
-              if (_userLocation != null)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: _userLocation!,
-                      width: 20,
-                      height: 20,
-                      child: const _UserLocationDot(),
-                    ),
-                  ],
-                ),
+              // Live user position + walking-direction cone. Emits
+              // every fix back through onPosition so `_userLocation`
+              // stays fresh for the "Locate me" FAB to centre on.
+              LiveLocationLayer(
+                onPosition: (p) {
+                  if (!mounted) return;
+                  setState(() => _userLocation = LatLng(p.latitude, p.longitude));
+                },
+              ),
               const Align(
                 alignment: Alignment.bottomRight,
                 child: Padding(
@@ -991,20 +1001,3 @@ class _LoadingChip extends StatelessWidget {
   }
 }
 
-class _UserLocationDot extends StatelessWidget {
-  const _UserLocationDot();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.blue,
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 3),
-        boxShadow: const [
-          BoxShadow(color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 1)),
-        ],
-      ),
-    );
-  }
-}

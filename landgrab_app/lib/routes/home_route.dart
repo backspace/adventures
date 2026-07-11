@@ -28,6 +28,7 @@ import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/attack_rings_layer.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
 import 'package:landgrab/widgets/capture_rings_layer.dart';
+import 'package:landgrab/widgets/live_location_layer.dart';
 import 'package:landgrab/widgets/territory_layer.dart';
 
 class HomeRoute extends StatefulWidget {
@@ -492,6 +493,11 @@ class _HomeRouteState extends State<HomeRoute>
                         );
                       }).toList(),
                     ),
+                    // User's own position + heading cone (only while
+                    // walking). Above the pole markers so a pole
+                    // directly under the user doesn't obscure the
+                    // marker; below attribution/compass.
+                    const LiveLocationLayer(),
                     const _MapAttribution(),
                     // Compass appears only when the map is rotated; tap
                     // animates it back to north-up. The plugin picks up the
