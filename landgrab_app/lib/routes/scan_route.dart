@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/routes/puzzlet_route.dart';
 
@@ -51,8 +52,8 @@ class _ScanRouteState extends State<ScanRoute> {
         case ScanFound(:final result):
           if (result.activePuzzlet == null) {
             _showSnack(result.pole.locked
-                ? 'This pole is fully captured.'
-                : 'No active puzzlet for this pole.');
+                ? ScanStrings.poleFullyCaptured
+                : ScanStrings.noActivePuzzlet);
             Navigator.of(context).pop(barcode);
             return;
           }
@@ -72,7 +73,7 @@ class _ScanRouteState extends State<ScanRoute> {
       }
     } catch (e) {
       if (!mounted) return;
-      _showSnack('Scan failed: $e');
+      _showSnack(ScanStrings.scanFailed(e.toString()));
       setState(() => _processing = false);
       _controller.start();
     }
@@ -87,22 +88,19 @@ class _ScanRouteState extends State<ScanRoute> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Unknown barcode'),
-        content: Text(
-          '“$barcode” doesn\'t match any known pole. '
-          'Make sure you scanned a poles barcode and try again.',
-        ),
+        title: const Text(ScanStrings.unknownBarcodeTitle),
+        content: Text(ScanStrings.unknownBarcodeBody(barcode)),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
               Navigator.of(context).pop();
             },
-            child: const Text('Back to map'),
+            child: const Text(ScanStrings.unknownBarcodeBack),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Try again'),
+            child: const Text(ScanStrings.unknownBarcodeRetry),
           ),
         ],
       ),
@@ -115,14 +113,12 @@ class _ScanRouteState extends State<ScanRoute> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Already yours'),
-        content: Text(
-          'Your team already owns $name. Wait for a rival to capture it before you can claim it again.',
-        ),
+        title: const Text(ScanStrings.alreadyOwnerTitle),
+        content: Text(ScanStrings.alreadyOwnerBody(name)),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('OK'),
+            child: const Text(ScanStrings.ok),
           ),
         ],
       ),
@@ -135,15 +131,12 @@ class _ScanRouteState extends State<ScanRoute> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Out of guesses'),
-        content: Text(
-          'Your team has used all guesses on the current puzzlet for $name. '
-          'Wait for another team to capture it before you can try again.',
-        ),
+        title: const Text(ScanStrings.lockedOutTitle),
+        content: Text(ScanStrings.lockedOutBody(name)),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('OK'),
+            child: const Text(ScanStrings.ok),
           ),
         ],
       ),
@@ -159,7 +152,7 @@ class _ScanRouteState extends State<ScanRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan a pole')),
+      appBar: AppBar(title: const Text(ScanStrings.appBarTitle)),
       body: Stack(
         children: [
           MobileScanner(

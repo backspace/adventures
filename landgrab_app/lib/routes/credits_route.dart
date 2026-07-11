@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:landgrab/flavors.dart';
+import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/services/env_switch_service.dart';
 
 /// Placeholder Credits page. The version line at the bottom hides an
@@ -37,7 +38,7 @@ class _CreditsRouteState extends State<CreditsRoute> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Environment switcher unlocked.'),
+          content: Text(CreditsStrings.envSwitcherUnlocked),
         ),
       );
     }
@@ -47,20 +48,19 @@ class _CreditsRouteState extends State<CreditsRoute> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Credits')),
+      appBar: AppBar(title: const Text(CreditsStrings.appBarTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Acknowledgments',
+              CreditsStrings.acknowledgmentsHeading,
               style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: 12),
             Text(
-              'Content to come — a proper credits list, thanks, and '
-              'library acknowledgments will land here before launch.',
+              CreditsStrings.placeholderCopy,
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 48),

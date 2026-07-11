@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/flavors.dart';
+import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/routes/credits_route.dart';
 import 'package:landgrab/routes/home_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
@@ -46,7 +47,7 @@ class _LoginRouteState extends State<LoginRoute> {
     } else {
       setState(() {
         _busy = false;
-        _error = 'Invalid email or password';
+        _error = LoginStrings.invalidCredentials;
       });
     }
   }
@@ -81,7 +82,7 @@ class _LoginRouteState extends State<LoginRoute> {
         if (!mounted) return;
         setState(() {
           _busy = false;
-          _error = 'Apple sign-in returned no identity token';
+          _error = LoginStrings.appleNoIdentityToken;
         });
         return;
       }
@@ -99,7 +100,7 @@ class _LoginRouteState extends State<LoginRoute> {
       } else {
         setState(() {
           _busy = false;
-          _error = 'Apple sign-in failed';
+          _error = LoginStrings.appleSignInFailed;
         });
       }
     } on SignInWithAppleAuthorizationException catch (e) {
@@ -110,13 +111,13 @@ class _LoginRouteState extends State<LoginRoute> {
         _busy = false;
         _error = e.code == AuthorizationErrorCode.canceled
             ? null
-            : 'Apple sign-in failed: ${e.message}';
+            : LoginStrings.appleSignInFailedWith(e.message);
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = 'Apple sign-in failed: $e';
+        _error = LoginStrings.appleSignInFailedWith(e.toString());
       });
     }
   }
@@ -135,7 +136,7 @@ class _LoginRouteState extends State<LoginRoute> {
     } else {
       setState(() {
         _busy = false;
-        _error = '$label sign-in failed or was cancelled';
+        _error = LoginStrings.oauthCancelled(label);
       });
     }
   }
@@ -153,10 +154,10 @@ class _LoginRouteState extends State<LoginRoute> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign in'),
+        title: const Text(LoginStrings.appBarTitle),
         actions: [
           IconButton(
-            tooltip: 'Credits',
+            tooltip: GameplayStrings.credits,
             icon: const Icon(Icons.info_outline),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const CreditsRoute()),
@@ -166,7 +167,7 @@ class _LoginRouteState extends State<LoginRoute> {
             valueListenable: EnvSwitchService.visible,
             builder: (context, envVisible, _) => envVisible
                 ? IconButton(
-                    tooltip: 'Switch environment',
+                    tooltip: LoginStrings.switchEnvironmentTooltip,
                     icon: const Icon(Icons.dns_outlined),
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const SettingsRoute()),
@@ -203,7 +204,7 @@ class _LoginRouteState extends State<LoginRoute> {
                     autocorrect: false,
                     autofillHints: const [AutofillHints.email, AutofillHints.username],
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Email'),
+                    decoration: const InputDecoration(labelText: LoginStrings.emailLabel),
                   ),
                   const SizedBox(height: 12),
                   TextField(
@@ -212,7 +213,7 @@ class _LoginRouteState extends State<LoginRoute> {
                     autofillHints: const [AutofillHints.password],
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _submit(),
-                    decoration: const InputDecoration(labelText: 'Password'),
+                    decoration: const InputDecoration(labelText: LoginStrings.passwordLabel),
                   ),
                 ],
               ),
@@ -231,14 +232,14 @@ class _LoginRouteState extends State<LoginRoute> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Sign in'),
+                  : const Text(LoginStrings.signInButton),
             ),
             const SizedBox(height: 20),
             Row(children: const [
               Expanded(child: Divider()),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text('or'),
+                child: Text(LoginStrings.orDivider),
               ),
               Expanded(child: Divider()),
             ]),
@@ -246,13 +247,13 @@ class _LoginRouteState extends State<LoginRoute> {
             OutlinedButton.icon(
               onPressed: _busy ? null : _signInWithGoogle,
               icon: const Icon(Icons.g_mobiledata, size: 28),
-              label: const Text('Sign in with Google'),
+              label: const Text(LoginStrings.signInWithGoogle),
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: _busy ? null : _signInWithApple,
               icon: const Icon(Icons.apple, size: 22),
-              label: const Text('Sign in with Apple'),
+              label: const Text(LoginStrings.signInWithApple),
             ),
           ],
         ),
@@ -299,7 +300,7 @@ class _EnvBanner extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const SettingsRoute()),
                 ),
                 icon: const Icon(Icons.dns_outlined),
-                label: const Text('Switch'),
+                label: const Text(LoginStrings.switchButton),
               ),
           ],
         ),

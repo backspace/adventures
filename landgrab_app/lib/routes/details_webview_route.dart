@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/l10n/player_strings.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// Hosts the registrations site's `/details` page inside an in-app
@@ -55,7 +56,7 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
       if (!mounted) return;
       setState(() {
         _loading = false;
-        _error = 'Could not open your details page: $e';
+        _error = DetailsStrings.couldNotOpen(e.toString());
       });
     }
   }
@@ -64,10 +65,10 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Details'),
+        title: const Text(DetailsStrings.appBarTitle),
         actions: [
           IconButton(
-            tooltip: 'Reload',
+            tooltip: DetailsStrings.reloadTooltip,
             onPressed: _load,
             icon: const Icon(Icons.refresh),
           ),
@@ -90,7 +91,7 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
                     FilledButton.icon(
                       onPressed: _load,
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Try again'),
+                      label: const Text(DetailsStrings.tryAgain),
                     ),
                   ],
                 ),

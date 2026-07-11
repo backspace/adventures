@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
@@ -64,12 +65,12 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     final o = _outcome;
     return switch (o) {
       AttemptCorrect() => o.poleLocked
-          ? 'Correct! Pole captured and now fully locked.'
-          : 'Correct! Pole captured.',
-      AttemptIncorrect() => 'Incorrect. ${o.attemptsRemaining} attempt(s) left.',
-      AttemptLockedOut() => 'Locked out — too many wrong answers.',
-      AttemptAlreadyCaptured() => 'Another team captured this puzzlet first.',
-      AttemptAlreadyOwner() => 'Your team already owns this pole. Wait for a rival.',
+          ? PuzzletStrings.correctAndLocked
+          : PuzzletStrings.correctPoleCaptured,
+      AttemptIncorrect() => PuzzletStrings.incorrect(o.attemptsRemaining),
+      AttemptLockedOut() => PuzzletStrings.lockedOut,
+      AttemptAlreadyCaptured() => PuzzletStrings.alreadyCapturedByOther,
+      AttemptAlreadyOwner() => PuzzletStrings.alreadyOwner,
       _ => null,
     };
   }
@@ -87,7 +88,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   Future<void> _scanForBarcodeAnswer() async {
     final scanned = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => const BarcodeScannerRoute(title: 'Scan the barcode'),
+        builder: (_) => const BarcodeScannerRoute(title: PuzzletStrings.scanBarcodeAnswerTitle),
       ),
     );
     if (scanned == null || scanned.isEmpty || !mounted) return;
@@ -98,7 +99,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   Future<void> _scanForNfcAnswer() async {
     final scanned = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => const NfcScannerRoute(title: 'Scan the NFC tag'),
+        builder: (_) => const NfcScannerRoute(title: PuzzletStrings.scanNfcAnswerTitle),
       ),
     );
     if (scanned == null || scanned.isEmpty || !mounted) return;
@@ -142,7 +143,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
-            Text('Attempts remaining: ${_attemptsRemaining ?? 0}'),
+            Text(PuzzletStrings.attemptsRemaining(_attemptsRemaining ?? 0)),
             if (_previousWrongAnswers.isNotEmpty) ...[
               const SizedBox(height: 16),
               _PreviousWrongAnswers(answers: _previousWrongAnswers),
@@ -152,11 +153,11 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
               FilledButton.icon(
                 onPressed: (_busy || disabled) ? null : _scanForBarcodeAnswer,
                 icon: const Icon(Icons.qr_code_scanner),
-                label: const Text('Scan barcode to answer'),
+                label: const Text(PuzzletStrings.scanBarcodeAnswerButton),
               ),
               const SizedBox(height: 12),
               Text(
-                'The answer is a barcode. Tap Scan to read it with the camera.',
+                PuzzletStrings.scanBarcodeAnswerHelp,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
@@ -164,11 +165,11 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
               FilledButton.icon(
                 onPressed: (_busy || disabled) ? null : _scanForNfcAnswer,
                 icon: const Icon(Icons.contactless),
-                label: const Text('Tap NFC tag to answer'),
+                label: const Text(PuzzletStrings.scanNfcAnswerButton),
               ),
               const SizedBox(height: 12),
               Text(
-                'The answer is an NFC tag. Tap the button, then hold your phone near the tag.',
+                PuzzletStrings.scanNfcAnswerHelp,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 16),
@@ -178,8 +179,8 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
               enabled: !disabled,
               decoration: InputDecoration(
                 labelText: widget.puzzlet.answerType == 'strict_text'
-                    ? 'Answer (exact match)'
-                    : 'Answer',
+                    ? PuzzletStrings.answerLabelExact
+                    : PuzzletStrings.answerLabel,
                 border: const OutlineInputBorder(),
               ),
               onSubmitted: (_) => disabled ? null : _submit(),
@@ -193,7 +194,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Text('Submit'),
+                  : const Text(PuzzletStrings.submitButton),
             ),
             if (outcomeText != null) ...[
               const SizedBox(height: 24),
@@ -224,7 +225,7 @@ class _PreviousWrongAnswers extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Already tried by your team:',
+            PuzzletStrings.previouslyTried,
             style: theme.textTheme.labelLarge
                 ?.copyWith(color: theme.colorScheme.onErrorContainer),
           ),

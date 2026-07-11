@@ -11,6 +11,7 @@ import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/models/test_session.dart';
 import 'package:landgrab/models/validator_only_puzzlet.dart';
+import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/author/author_route.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
@@ -279,7 +280,7 @@ class _HomeRouteState extends State<HomeRoute>
       });
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = 'Could not load poles: $e');
+      setState(() => _error = GameplayStrings.couldNotLoadPoles(e.toString()));
     }
   }
 
@@ -454,7 +455,7 @@ class _HomeRouteState extends State<HomeRoute>
             ),
           if (!_inTestPlay && (_isValidator || _isSupervisor))
             IconButton(
-              tooltip: 'Test play',
+              tooltip: GameplayStrings.testPlay,
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => TestPlayEntryRoute(api: widget.api),
@@ -464,7 +465,7 @@ class _HomeRouteState extends State<HomeRoute>
             ),
           if (!_inTestPlay)
             IconButton(
-              tooltip: 'Details',
+              tooltip: GameplayStrings.details,
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => DetailsWebViewRoute(api: widget.api)),
               ),
@@ -472,7 +473,7 @@ class _HomeRouteState extends State<HomeRoute>
             ),
           if (!_inTestPlay)
             IconButton(
-              tooltip: 'Credits',
+              tooltip: GameplayStrings.credits,
               onPressed: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const CreditsRoute()),
               ),
@@ -483,7 +484,7 @@ class _HomeRouteState extends State<HomeRoute>
               valueListenable: EnvSwitchService.visible,
               builder: (context, envVisible, _) => envVisible
                   ? IconButton(
-                      tooltip: 'Switch environment',
+                      tooltip: LoginStrings.switchEnvironmentTooltip,
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const SettingsRoute()),
                       ),
@@ -494,7 +495,7 @@ class _HomeRouteState extends State<HomeRoute>
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
           if (_inTestPlay)
             IconButton(
-              tooltip: 'Exit test play',
+              tooltip: GameplayStrings.exitTestPlay,
               onPressed: () => Navigator.of(context).pop(),
               icon: const Icon(Icons.close),
             )
@@ -516,7 +517,8 @@ class _HomeRouteState extends State<HomeRoute>
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          'Test play · ${widget.testSession!.name ?? widget.testSession!.id}',
+                          GameplayStrings.testPlayBanner(
+                              widget.testSession!.name ?? widget.testSession!.id),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.amber.shade900,
@@ -636,7 +638,7 @@ class _HomeRouteState extends State<HomeRoute>
           : FloatingActionButton.extended(
               onPressed: _openScanner,
               icon: const Icon(Icons.qr_code_scanner),
-              label: const Text('Scan'),
+              label: const Text(GameplayStrings.scanFab),
             ),
     );
   }
@@ -692,7 +694,7 @@ class _PreEventBodyState extends State<_PreEventBody> {
   Future<void> _openBarcodeScanner() async {
     final result = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => const BarcodeScannerRoute(title: 'Barcode toy'),
+        builder: (_) => const BarcodeScannerRoute(title: PreEventStrings.barcodeToyTitle),
       ),
     );
     if (!mounted || result == null) return;
@@ -702,7 +704,7 @@ class _PreEventBodyState extends State<_PreEventBody> {
   Future<void> _openNfcScanner() async {
     final result = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => const NfcScannerRoute(title: 'NFC toy'),
+        builder: (_) => const NfcScannerRoute(title: PreEventStrings.nfcToyTitle),
       ),
     );
     if (!mounted || result == null) return;
@@ -721,27 +723,27 @@ class _PreEventBodyState extends State<_PreEventBody> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (start == null)
-              Text('Event not yet scheduled',
+              Text(PreEventStrings.notYetScheduled,
                   style: theme.textTheme.titleLarge)
             else
               _Countdown(startTime: start),
             const SizedBox(height: 12),
             Text(
-              'Gameplay opens at start time. Until then, warm up.',
+              PreEventStrings.openingCopy,
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 24),
             if (widget.isAuthor)
               _BigButton(
                 icon: Icons.edit_note,
-                label: 'Author',
+                label: GameplayStrings.author,
                 onPressed: widget.onAuthor,
               ),
             if (widget.isValidator) ...[
               const SizedBox(height: 12),
               _BigButton(
                 icon: Icons.fact_check_outlined,
-                label: 'Validate',
+                label: GameplayStrings.validate,
                 onPressed: widget.onValidate,
               ),
             ],
@@ -749,23 +751,23 @@ class _PreEventBodyState extends State<_PreEventBody> {
               const SizedBox(height: 12),
               _BigButton(
                 icon: Icons.supervisor_account,
-                label: 'Supervise',
+                label: GameplayStrings.supervise,
                 onPressed: widget.onSupervise,
               ),
             ],
             const SizedBox(height: 32),
-            Text('Toys', style: theme.textTheme.titleMedium),
+            Text(PreEventStrings.toysHeading, style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             _ScannerTile(
               icon: Icons.qr_code_scanner,
-              label: 'Barcode scanner',
+              label: PreEventStrings.barcodeToyLabel,
               lastResult: _lastBarcode,
               onPressed: _openBarcodeScanner,
             ),
             const SizedBox(height: 8),
             _ScannerTile(
               icon: Icons.nfc,
-              label: 'NFC scanner',
+              label: PreEventStrings.nfcToyLabel,
               lastResult: _lastNfcUid,
               onPressed: _openNfcScanner,
             ),
@@ -791,7 +793,7 @@ class _Countdown extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Event begins in',
+        Text(PreEventStrings.countdownHeading,
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             )),
@@ -815,7 +817,7 @@ class _Countdown extends StatelessWidget {
   /// "starting now" once the remaining crosses zero (a transient
   /// state until the server flips `started`).
   static String _formatRemaining(Duration r) {
-    if (r.isNegative || r.inSeconds == 0) return 'starting now';
+    if (r.isNegative || r.inSeconds == 0) return PreEventStrings.startingNow;
     final days = r.inDays;
     final hours = r.inHours.remainder(24);
     final minutes = r.inMinutes.remainder(60);
@@ -858,10 +860,10 @@ class _ScannerTile extends StatelessWidget {
         leading: Icon(icon),
         title: Text(label),
         subtitle: lastResult == null
-            ? Text('No scans yet — tap to try',
+            ? Text(PreEventStrings.noScansYet,
                 style: theme.textTheme.bodySmall)
             : Text(
-                'Last: $lastResult',
+                PreEventStrings.lastScan(lastResult!),
                 style: theme.textTheme.bodySmall
                     ?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
               ),
