@@ -33,6 +33,10 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
   bool _loading = true;
   String? _error;
   bool _locating = false;
+  // Current camera zoom. Poles resize with this so at low zoom they
+  // shrink to un-clickable dots — enough to see them as landmarks
+  // without dominating the puzzlet cluster below them.
+  double _zoom = 15;
 
   static const _fallbackCenter = LatLng(49.8951, -97.1384);
   // Wider than the capture-pole default: this view is for planning, so
@@ -153,6 +157,12 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
               interactionOptions: const InteractionOptions(
                 flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
               ),
+              onPositionChanged: (position, _) {
+                final z = position.zoom;
+                if (z != null && z != _zoom) {
+                  setState(() => _zoom = z);
+                }
+              },
             ),
             children: [
               TileLayer(
@@ -162,6 +172,13 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
                 retinaMode: RetinaMode.isHighDensity(context),
                 userAgentPackageName: 'ca.chromatin.poles',
               ),
+              // Poles render *below* the puzzlet cluster so a pole
+              // near a cluster gets covered rather than the other way
+              // round — the cluster is what the author is scanning
+              // for. Poles are also drawn as their own MarkerLayer
+              // (outside the cluster) so they don't collapse into
+              // spider-tap flowers alongside puzzlets.
+              MarkerLayer(markers: _buildPoleMarkers()),
               MarkerClusterLayerWidget(
                 options: MarkerClusterLayerOptions(
                   maxClusterRadius: 40,
@@ -172,7 +189,7 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
                   // tappable individually.
                   spiderfyCluster: true,
                   spiderfySpiralDistanceMultiplier: 3,
-                  markers: _buildMarkers(),
+                  markers: _buildPuzzletMarkers(),
                   builder: (context, markers) => _ClusterBadge(count: markers.length),
                 ),
               ),
@@ -236,10 +253,10 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
     );
   }
 
-  List<Marker> _buildMarkers() {
+  List<Marker> _buildPuzzletMarkers() {
     final drafts = _drafts;
     if (drafts == null) return const [];
-    final markers = <Marker>[
+    return [
       for (final puzzlet in drafts.puzzlets)
         if (puzzlet.latitude != null && puzzlet.longitude != null)
           Marker(
@@ -252,15 +269,44 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
               onTap: () => _showPuzzletSheet(puzzlet),
             ),
           ),
+    ];
+  }
+
+  /// Pole markers scale from a full 36 px pin at zoom ≥ 16 down to
+  /// a 6 px dot at zoom ≤ 13. The dot is still tappable — the whole
+  /// marker box is the hit target — but shrinks small enough that a
+  /// pole near a cluster of puzzlets doesn't visually compete with
+  /// them at scouting-scale.
+  static const double _poleFullZoom = 16;
+  static const double _poleTinyZoom = 13;
+  static const double _poleFullSize = 36;
+  static const double _poleTinySize = 6;
+
+  double get _poleSize {
+    if (_zoom >= _poleFullZoom) return _poleFullSize;
+    if (_zoom <= _poleTinyZoom) return _poleTinySize;
+    final t =
+        (_zoom - _poleTinyZoom) / (_poleFullZoom - _poleTinyZoom);
+    return _poleTinySize + (_poleFullSize - _poleTinySize) * t;
+  }
+
+  List<Marker> _buildPoleMarkers() {
+    final drafts = _drafts;
+    if (drafts == null) return const [];
+    final size = _poleSize;
+    final showBadge = size >= 24;
+    return [
       for (final pole in drafts.poles)
         Marker(
           point: LatLng(pole.latitude, pole.longitude),
-          width: 36,
-          height: 36,
-          child: _PolePin(onTap: () => _showPoleSheet(pole)),
+          width: size,
+          height: size,
+          child: _PolePin(
+            onTap: () => _showPoleSheet(pole),
+            miniature: !showBadge,
+          ),
         ),
     ];
-    return markers;
   }
 
   /// Pole sheet is the primary place attachments are managed — it
@@ -861,7 +907,12 @@ class _PuzzletRow extends StatelessWidget {
 
 class _PolePin extends StatelessWidget {
   final VoidCallback? onTap;
-  const _PolePin({this.onTap});
+  /// When true the pin draws as a plain dot without the interior
+  /// icon and with a thinner border. Used when the parent sizes the
+  /// marker very small at low zooms — the icon can't render legibly
+  /// there and the border eats too much of the disc.
+  final bool miniature;
+  const _PolePin({this.onTap, this.miniature = false});
 
   @override
   Widget build(BuildContext context) {
@@ -872,13 +923,18 @@ class _PolePin extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.indigo.shade700,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(
+            color: Colors.white,
+            width: miniature ? 1 : 2,
+          ),
           boxShadow: const [
             BoxShadow(color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 1)),
           ],
         ),
         alignment: Alignment.center,
-        child: const Icon(Icons.location_on, color: Colors.white, size: 20),
+        child: miniature
+            ? null
+            : const Icon(Icons.location_on, color: Colors.white, size: 20),
       ),
     );
   }
