@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,14 +14,12 @@ import 'package:latlong2/latlong.dart';
 ///   * A dashed accuracy circle (via [CircleLayer]) whose radius
 ///     scales with GPS-reported accuracy.
 ///   * A blue dot at the current position.
-///   * A translucent "cone of view" pointing along the movement
-///     heading, but ONLY while moving above [_movingSpeedThreshold]
-///     — below that GPS heading is noise and the cone would spin
-///     randomly. Compass heading (magnetometer) would give a heading
-///     while stationary, but the equivalent flutter_map_location_marker
-///     plugin conflicts with our current geolocator / flutter_map
-///     versions, and the movement-only cone is genuinely useful in a
-///     walking game while adding no dependencies.
+///   * A translucent "cone of view" pointing along the effective
+///     heading. Above [_movingSpeedThreshold] we trust GPS heading
+///     (accurate while walking); below it we fall back to the phone
+///     compass so you still see which way you're facing while
+///     stationary. Falling back only while slow avoids the compass's
+///     tendency to jitter versus GPS's smoothed direction of travel.
 ///
 /// The layer emits each fresh fix through [onPosition] so the parent
 /// can drive its "Locate me" behaviour off the same stream — no need
@@ -44,12 +43,32 @@ class _LiveLocationLayerState extends State<LiveLocationLayer> {
   static const double _maxAccuracyForCircle = 200;
 
   StreamSubscription<Position>? _sub;
+  StreamSubscription<CompassEvent>? _compassSub;
   Position? _position;
+  double? _compassHeading;
 
   @override
   void initState() {
     super.initState();
     _start();
+    _startCompass();
+  }
+
+  void _startCompass() {
+    final stream = FlutterCompass.events;
+    if (stream == null) return; // No sensor (e.g. iOS simulator, some tablets).
+    _compassSub = stream.listen((event) {
+      if (!mounted) return;
+      final heading = event.heading;
+      if (heading == null) return;
+      final previous = _compassHeading;
+      // Sensor fires many times per second; only rebuild when the
+      // heading has actually rotated visibly. The cone renders at
+      // integer-degree granularity so sub-degree jitter never
+      // reaches the screen anyway.
+      if (previous != null && (heading - previous).abs() < 1.5) return;
+      setState(() => _compassHeading = heading);
+    });
   }
 
   Future<void> _start() async {
@@ -99,6 +118,7 @@ class _LiveLocationLayerState extends State<LiveLocationLayer> {
   @override
   void dispose() {
     _sub?.cancel();
+    _compassSub?.cancel();
     super.dispose();
   }
 
@@ -107,7 +127,16 @@ class _LiveLocationLayerState extends State<LiveLocationLayer> {
     final p = _position;
     if (p == null) return const SizedBox.shrink();
     final latLng = LatLng(p.latitude, p.longitude);
-    final showCone = p.speed >= _movingSpeedThreshold && !p.heading.isNaN;
+    // While walking above the threshold, GPS heading is smoothed and
+    // reliable. While stationary or drifting, GPS heading is noise;
+    // fall back to the compass (device orientation) so the cone
+    // still shows which way the user is facing.
+    final double? effectiveHeading;
+    if (p.speed >= _movingSpeedThreshold && !p.heading.isNaN) {
+      effectiveHeading = p.heading;
+    } else {
+      effectiveHeading = _compassHeading;
+    }
     return Stack(children: [
       // Accuracy circle. `useRadiusInMeter: true` makes the circle
       // shrink/grow correctly with zoom — a 30 m accuracy circle
@@ -128,9 +157,7 @@ class _LiveLocationLayerState extends State<LiveLocationLayer> {
           point: latLng,
           width: 48,
           height: 48,
-          child: _LiveLocationMarker(
-            headingDegrees: showCone ? p.heading : null,
-          ),
+          child: _LiveLocationMarker(headingDegrees: effectiveHeading),
         ),
       ]),
     ]);
