@@ -184,6 +184,14 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
                 retinaMode: RetinaMode.isHighDensity(context),
                 userAgentPackageName: 'ca.chromatin.poles',
               ),
+              // Attachment lines: pole ↔ each puzzlet it owns. Sits
+              // above the tiles and below the markers so the pins
+              // stay unambiguously on top. Drawn regardless of the
+              // puzzlet's cluster state so at low zoom a cluster of
+              // puzzlets around one pole reads as a single "web" —
+              // a nice sanity check that authors have wired the
+              // right cluster to the right pole.
+              PolylineLayer(polylines: _buildAttachmentLines()),
               // Poles render *below* the puzzlet cluster so a pole
               // near a cluster gets covered rather than the other way
               // round — the cluster is what the author is scanning
@@ -317,6 +325,34 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
             miniature: !showBadge,
           ),
         ),
+    ];
+  }
+
+  /// A short polyline from every attached puzzlet (with a location)
+  /// to its pole. Skips puzzlets whose attached pole is outside the
+  /// current fetch — with no coordinates for the pole end, we'd
+  /// have to guess, which reads worse than showing no line at all.
+  /// Uses a faint blue-grey that reads against Positron tiles
+  /// without becoming a visual attractor.
+  List<Polyline> _buildAttachmentLines() {
+    final drafts = _drafts;
+    if (drafts == null) return const [];
+    // Index poles once so N puzzlets × M poles doesn't loop N×M.
+    final polesById = {for (final pole in drafts.poles) pole.id: pole};
+    return [
+      for (final puzzlet in drafts.puzzlets)
+        if (puzzlet.poleId != null &&
+            puzzlet.latitude != null &&
+            puzzlet.longitude != null)
+          if (polesById[puzzlet.poleId!] case final pole?)
+            Polyline(
+              points: [
+                LatLng(pole.latitude, pole.longitude),
+                LatLng(puzzlet.latitude!, puzzlet.longitude!),
+              ],
+              strokeWidth: 1.5,
+              color: Colors.indigo.shade400.withValues(alpha: 0.35),
+            ),
     ];
   }
 
