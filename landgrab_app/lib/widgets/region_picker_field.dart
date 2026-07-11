@@ -127,17 +127,35 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
     super.dispose();
   }
 
-  /// Move the most-recently-picked region to position 0 if it's in the
-  /// results. If the user has searched for something that excludes it,
-  /// it's just not in the list and we don't fight that.
-  List<Region> _hoistRecent(List<Region> list) {
-    if (_recentId == null) return list;
-    final idx = list.indexWhere((r) => r.id == _recentId);
-    if (idx <= 0) return list;
-    final copy = [...list];
-    final picked = copy.removeAt(idx);
-    copy.insert(0, picked);
-    return copy;
+  /// Move the currently-assigned region (if any) to position 0, then
+  /// the most-recently-picked region behind it. Current-first so
+  /// opening the picker on an already-set puzzlet immediately shows
+  /// the selection without any scrolling. Both hoists are no-ops
+  /// when the region isn't in the visible results (e.g., the user
+  /// has typed a search that excludes it).
+  List<Region> _hoistPreferred(List<Region> list) {
+    var out = list;
+    final recentId = _recentId;
+    if (recentId != null) {
+      final idx = out.indexWhere((r) => r.id == recentId);
+      if (idx > 0) {
+        out = [...out];
+        final picked = out.removeAt(idx);
+        out.insert(0, picked);
+      }
+    }
+    // Current is applied AFTER recent so it ends up at index 0,
+    // beating recent if the two disagree.
+    final currentId = widget.current?.id;
+    if (currentId != null) {
+      final idx = out.indexWhere((r) => r.id == currentId);
+      if (idx > 0) {
+        out = [...out];
+        final picked = out.removeAt(idx);
+        out.insert(0, picked);
+      }
+    }
+    return out;
   }
 
   Future<void> _search(String q) async {
@@ -149,7 +167,7 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
       final list = await widget.api.searchRegions(query: q);
       if (!mounted) return;
       setState(() {
-        _results = _hoistRecent(list);
+        _results = _hoistPreferred(list);
         _loading = false;
       });
     } catch (e) {
@@ -273,18 +291,40 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
     if (_results.isEmpty) {
       return const Center(child: Text('No regions match. Try creating one.'));
     }
+    final theme = Theme.of(context);
+    final currentId = widget.current?.id;
     return ListView.separated(
       controller: scrollController,
       itemCount: _results.length,
       separatorBuilder: (_, __) => const Divider(height: 1),
       itemBuilder: (_, i) {
         final r = _results[i];
+        final isCurrent = r.id == currentId;
         return ListTile(
-          title: Text(r.name),
+          // The currently-assigned region gets a filled check on the
+          // leading side + a tinted tile background so it reads as
+          // "this is what's already selected." Other rows have no
+          // leading icon to keep the list dense.
+          leading: isCurrent
+              ? Icon(Icons.check_circle,
+                  color: theme.colorScheme.primary)
+              : null,
+          tileColor: isCurrent
+              ? theme.colorScheme.primaryContainer.withValues(alpha: 0.35)
+              : null,
+          title: Text(
+            r.name,
+            style: isCurrent
+                ? TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
+                  )
+                : null,
+          ),
           subtitle: r.ancestors.isEmpty
               ? null
               : Text(r.ancestors.map((a) => a.name).join(' > '),
-                  style: Theme.of(context).textTheme.bodySmall),
+                  style: theme.textTheme.bodySmall),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

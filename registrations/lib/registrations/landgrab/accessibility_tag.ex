@@ -30,6 +30,7 @@ defmodule Registrations.Landgrab.AccessibilityTag do
   @all ~w(
     stairs
     steep
+    heights
     uneven_surface
     narrow_path
     dim_lighting

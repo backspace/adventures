@@ -58,6 +58,12 @@ msgstr "No steep incline"
 msgid "accessibility_tag.steep.help"
 msgstr "Some approaches involve a significant hill or ramp."
 
+msgid "accessibility_tag.heights.label"
+msgstr "No heights"
+
+msgid "accessibility_tag.heights.help"
+msgstr "Some observations take place at height — rooftops, balconies, or other elevated vantages."
+
 msgid "accessibility_tag.uneven_surface.label"
 msgstr "No uneven ground"
 

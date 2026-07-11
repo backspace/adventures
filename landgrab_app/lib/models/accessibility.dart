@@ -3,6 +3,7 @@
 const List<String> kAccessibilityTags = [
   'stairs',
   'steep',
+  'heights',
   'uneven_surface',
   'narrow_path',
   'dim_lighting',
@@ -16,6 +17,7 @@ const List<String> kAccessibilityTags = [
 /// Others appear after the user taps "Show all."
 const Set<String> kPolePrimaryTags = {
   'steep',
+  'heights',
   'uneven_surface',
   'narrow_path',
   'dim_lighting',
@@ -36,6 +38,7 @@ const Set<String> kPuzzletPrimaryTags = {
 const Set<String> kRegionPrimaryTags = {
   'stairs',
   'steep',
+  'heights',
   'narrow_path',
   'dim_lighting',
 };
@@ -44,6 +47,7 @@ const Set<String> kRegionPrimaryTags = {
 String accessibilityTagLabel(String tag) => switch (tag) {
       'stairs' => 'Stairs',
       'steep' => 'Steep incline',
+      'heights' => 'Heights',
       'uneven_surface' => 'Uneven surface',
       'narrow_path' => 'Narrow path',
       'dim_lighting' => 'Dim lighting',
@@ -63,6 +67,8 @@ String accessibilityTagExplanation(String tag) => switch (tag) {
         'Players will need to use stairs at some point. A hard rule for wheelchair and mobility-aid users.',
       'steep' =>
         'Players will encounter a significant incline — a steep hill or steep ramp. Some people can manage stairs but not long inclines, and vice versa.',
+      'heights' =>
+        'The location or route involves being high up — a rooftop, balcony, elevated walkway, or similar. A hard rule for players with acrophobia.',
       'uneven_surface' =>
         'The route crosses gravel, cobblestones, grass, dirt, or broken pavement. Generally unfriendly for wheelchairs, walkers, and strollers.',
       'narrow_path' =>
