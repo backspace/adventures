@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/flavors.dart';
@@ -116,7 +117,14 @@ class _BootState extends State<_Boot> {
       postRenewalDio: postRenewalDio,
     ));
 
-    if (F.appFlavor != Flavor.production) {
+    // Gate on `kDebugMode`, not flavor. In release-mode builds
+    // (TestFlight, `flutter run --release`) `print` routes through
+    // NSLog on iOS, and NSLog serialises big payloads very slowly —
+    // pretty-printing the drafts endpoint's response can block the
+    // event loop for seconds. Debug builds print via the VM service,
+    // which is fast. Keeping the logger in dev / local-alpha is
+    // fine; excluding it from all release builds is what we want.
+    if (kDebugMode) {
       dio.interceptors.add(PrettyDioLogger(
         requestHeader: true,
         requestBody: true,
