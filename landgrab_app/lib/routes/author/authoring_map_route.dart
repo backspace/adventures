@@ -244,31 +244,40 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
               // (outside the cluster) so they don't collapse into
               // spider-tap flowers alongside puzzlets.
               MarkerLayer(markers: _buildPoleMarkers()),
-              MarkerClusterLayerWidget(
-                options: MarkerClusterLayerOptions(
-                  maxClusterRadius: 40,
-                  size: const Size(40, 40),
-                  // Spiderfy: when the user taps a cluster at max zoom
-                  // (or a small cluster we can't zoom into further)
-                  // the plugin fans the pins out radially so each is
-                  // tappable individually.
-                  spiderfyCluster: true,
-                  spiderfySpiralDistanceMultiplier: 3,
-                  markers: _buildPuzzletMarkers(),
-                  builder: (context, markers) {
-                    // Fade the cluster badge only when every marker
-                    // in it is faded — a mixed cluster stays fully
-                    // opaque because it still contains at least one
-                    // puzzlet the author is looking for.
-                    final allFaded = markers.every(
-                        (m) => _puzzletFadedByPoint[m.point] ?? false);
-                    return _ClusterBadge(
-                      count: markers.length,
-                      faded: allFaded,
-                    );
-                  },
-                ),
-              ),
+              // Attachment mode is a scouting view — clustering
+              // helps by collapsing dense areas into a count.
+              // Accessibility / todos are survey views — clustering
+              // would hide the exact thing the author is looking
+              // for. In those modes we render markers one-to-one
+              // and nudge overlapping ones apart instead.
+              if (_mode == _MapMode.attachment)
+                MarkerClusterLayerWidget(
+                  options: MarkerClusterLayerOptions(
+                    maxClusterRadius: 40,
+                    size: const Size(40, 40),
+                    // Spiderfy: when the user taps a cluster at max
+                    // zoom (or a small cluster we can't zoom into
+                    // further) the plugin fans the pins out radially
+                    // so each is tappable individually.
+                    spiderfyCluster: true,
+                    spiderfySpiralDistanceMultiplier: 3,
+                    markers: _buildPuzzletMarkers(),
+                    builder: (context, markers) {
+                      // Fade the cluster badge only when every marker
+                      // in it is faded — a mixed cluster stays fully
+                      // opaque because it still contains at least
+                      // one puzzlet the author is looking for.
+                      final allFaded = markers.every(
+                          (m) => _puzzletFadedByPoint[m.point] ?? false);
+                      return _ClusterBadge(
+                        count: markers.length,
+                        faded: allFaded,
+                      );
+                    },
+                  ),
+                )
+              else
+                MarkerLayer(markers: _buildDistributedPuzzletMarkers()),
               // Live user position + walking-direction cone. Emits
               // every fix back through onPosition so `_userLocation`
               // stays fresh for the "Locate me" FAB to centre on.
@@ -339,6 +348,116 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
       _puzzletFadedByPoint[point] = faded;
       markers.add(Marker(
         point: point,
+        width: 36,
+        height: 36,
+        child: _PuzzletDifficultyPin(
+          difficulty: puzzlet.difficulty,
+          faded: faded,
+          validatorOnly: puzzlet.validatorOnly,
+          onTap: () => _showPuzzletSheet(puzzlet),
+        ),
+      ));
+    }
+    return markers;
+  }
+
+  /// Non-clustering puzzlet layer for survey modes (accessibility /
+  /// todos). Nudges overlapping puzzlets slightly apart so the
+  /// author can see all of them at the current zoom without any
+  /// hiding behind others. Uses a local metric projection anchored
+  /// on the puzzlet centroid + a few iterations of pairwise
+  /// separation. Non-overlapping puzzlets stay exactly where they
+  /// belong.
+  ///
+  /// Pin width is 36 px; the collision threshold uses the current
+  /// zoom's metres-per-pixel so nudging kicks in at the zooms
+  /// where markers would actually overlap on-screen and relaxes
+  /// as the author zooms in.
+  static const double _pinPx = 36;
+  static const int _nudgeIterations = 12;
+
+  List<Marker> _buildDistributedPuzzletMarkers() {
+    _puzzletFadedByPoint.clear();
+    final drafts = _drafts;
+    if (drafts == null) return const [];
+
+    // Collect the puzzlets we're going to render.
+    final visible = <DraftPuzzlet>[];
+    for (final puzzlet in drafts.puzzlets) {
+      if (puzzlet.latitude == null || puzzlet.longitude == null) continue;
+      visible.add(puzzlet);
+    }
+    if (visible.isEmpty) return const [];
+
+    // Metric projection anchored on the centroid so distances read
+    // as isotropic Euclidean metres across the visible set.
+    var sumLat = 0.0;
+    var sumLon = 0.0;
+    for (final p in visible) {
+      sumLat += p.latitude!;
+      sumLon += p.longitude!;
+    }
+    final centroidLat = sumLat / visible.length;
+    final centroidLon = sumLon / visible.length;
+    const metresPerDegLat = 111000.0;
+    final metresPerDegLon = 111000.0 * cos(centroidLat * pi / 180);
+
+    // Metres per pixel at the current zoom (Web Mercator standard
+    // formula, adjusted for latitude). This is what a pin's px
+    // width corresponds to on the ground right now.
+    final metresPerPixel =
+        156543.03392 * cos(centroidLat * pi / 180) / pow(2, _zoom);
+    final minSpacing = _pinPx * metresPerPixel;
+
+    // Initial positions in metric space.
+    final xs = List<double>.filled(visible.length, 0);
+    final ys = List<double>.filled(visible.length, 0);
+    for (var i = 0; i < visible.length; i++) {
+      xs[i] = (visible[i].longitude! - centroidLon) * metresPerDegLon;
+      ys[i] = (visible[i].latitude! - centroidLat) * metresPerDegLat;
+    }
+
+    // Pairwise relaxation. O(N² × iterations); fine for event-
+    // scale N. Stops early if a full sweep produced no motion.
+    for (var iter = 0; iter < _nudgeIterations; iter++) {
+      var moved = false;
+      for (var i = 0; i < visible.length; i++) {
+        for (var j = i + 1; j < visible.length; j++) {
+          final dx = xs[j] - xs[i];
+          final dy = ys[j] - ys[i];
+          final d = sqrt(dx * dx + dy * dy);
+          if (d >= minSpacing) continue;
+          // Perfectly-coincident points get pushed apart along an
+          // arbitrary axis so the algorithm doesn't stall on d==0.
+          final nx = d < 0.001 ? 1.0 : dx / d;
+          final ny = d < 0.001 ? 0.0 : dy / d;
+          final push = (minSpacing - d) / 2;
+          xs[i] -= nx * push;
+          ys[i] -= ny * push;
+          xs[j] += nx * push;
+          ys[j] += ny * push;
+          moved = true;
+        }
+      }
+      if (!moved) break;
+    }
+
+    // Un-project + build markers. Store the ORIGINAL point in the
+    // fade lookup — that's the key the puzzlet sheet + attachment
+    // lines still use — but render at the nudged position.
+    final markers = <Marker>[];
+    for (var i = 0; i < visible.length; i++) {
+      final puzzlet = visible[i];
+      final originalPoint =
+          LatLng(puzzlet.latitude!, puzzlet.longitude!);
+      final displayed = LatLng(
+        centroidLat + ys[i] / metresPerDegLat,
+        centroidLon + xs[i] / metresPerDegLon,
+      );
+      final faded = _isPuzzletFaded(puzzlet);
+      _puzzletFadedByPoint[originalPoint] = faded;
+      markers.add(Marker(
+        point: displayed,
         width: 36,
         height: 36,
         child: _PuzzletDifficultyPin(
