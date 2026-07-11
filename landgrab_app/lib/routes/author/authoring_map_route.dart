@@ -32,11 +32,17 @@ class AuthoringMapRoute extends StatefulWidget {
 /// `accessibility` is a coverage-mapping view — used to check
 /// whether puzzlets with accessibility requirements are well
 /// distributed across the map, not to review individual puzzlets.
-/// It hides poles + lines, keeps puzzlets, and fades any puzzlet
-/// that already carries an accessibility tag (direct OR inherited
-/// from its region) so the bright-vs-faded balance across the
-/// visible area reads as "is this concentration everywhere?"
-enum _MapMode { attachment, accessibility }
+/// `todos` shows only puzzlets whose content contains a follow-up
+/// marker (PLACEHOLDER / FIXME) so the author can find them from
+/// the map when they're out in the field.
+///
+/// Accessibility and todos modes both hide poles + attachment
+/// lines — the focus is on the puzzlets themselves.
+enum _MapMode { attachment, accessibility, todos }
+
+/// Substrings that flag a puzzlet as needing follow-up. Matched
+/// case-insensitively against every free-text field on the puzzlet.
+const _todoMarkers = ['PLACEHOLDER', 'FIXME'];
 
 class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
   final MapController _controller = MapController();
@@ -159,28 +165,27 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
       appBar: AppBar(
         title: const Text('Author map'),
         actions: [
-          // Toggles between attachment and accessibility-coverage
-          // modes. Uses the "universal access" person-in-circle
-          // icon (Icons.accessibility_new) rather than the wheelchair
-          // — the mode is about the full range of accessibility
-          // constraints, not just mobility. When active, we swap to
-          // the filled-tonal IconButton variant so the toggle state
-          // is obvious at a glance (Material 3's standard "selected"
-          // treatment for icon buttons).
-          _mode == _MapMode.accessibility
-              ? IconButton.filledTonal(
-                  tooltip: 'Show attachments',
-                  onPressed: () =>
-                      setState(() => _mode = _MapMode.attachment),
-                  icon: const Icon(Icons.accessibility_new),
-                )
-              : IconButton(
-                  tooltip:
-                      'Accessibility coverage (fade tagged puzzlets, hide poles)',
-                  onPressed: () =>
-                      setState(() => _mode = _MapMode.accessibility),
-                  icon: const Icon(Icons.accessibility_new),
-                ),
+          // Mode toggles: accessibility-coverage + follow-up-todos.
+          // Tapping either activates that mode; tapping again
+          // returns to attachment (default). When active, the
+          // filled-tonal variant makes the selected mode obvious
+          // at a glance (Material 3's standard "selected icon
+          // button" treatment). Only one can be active — tapping
+          // one implicitly deactivates the other.
+          _modeToggle(
+            mode: _MapMode.accessibility,
+            icon: Icons.accessibility_new,
+            activeTooltip: 'Show attachments',
+            inactiveTooltip:
+                'Accessibility coverage (fade tagged puzzlets, hide poles)',
+          ),
+          _modeToggle(
+            mode: _MapMode.todos,
+            icon: Icons.flag_outlined,
+            activeTooltip: 'Show attachments',
+            inactiveTooltip:
+                'Follow-up TODOs (PLACEHOLDER / FIXME, hide poles)',
+          ),
           IconButton(
             tooltip: 'Refresh from this view',
             onPressed: _loading ? null : _refreshHere,
@@ -347,13 +352,40 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
     return markers;
   }
 
+  /// App-bar toggle for a specific display mode. Renders filled-
+  /// tonal (Material 3's "selected") when its `mode` is the active
+  /// one, and standard otherwise. Tap-to-activate; tap-again while
+  /// active returns to the default attachment mode.
+  Widget _modeToggle({
+    required _MapMode mode,
+    required IconData icon,
+    required String activeTooltip,
+    required String inactiveTooltip,
+  }) {
+    final active = _mode == mode;
+    if (active) {
+      return IconButton.filledTonal(
+        tooltip: activeTooltip,
+        onPressed: () => setState(() => _mode = _MapMode.attachment),
+        icon: Icon(icon),
+      );
+    }
+    return IconButton(
+      tooltip: inactiveTooltip,
+      onPressed: () => setState(() => _mode = mode),
+      icon: Icon(icon),
+    );
+  }
+
   /// Decide whether a puzzlet should fade back in the current mode.
   /// Attachment mode fades pole-attached puzzlets (their placement
   /// is settled). Accessibility mode fades any puzzlet carrying an
   /// accessibility tag — direct OR inherited from its region — so
   /// the untagged puzzlets stand out and the author can see at a
   /// glance whether they're clustered in one area vs. distributed
-  /// across the whole event footprint.
+  /// across the whole event footprint. Todos mode fades any
+  /// puzzlet WITHOUT a follow-up marker, so PLACEHOLDER / FIXME
+  /// puzzlets stand out.
   bool _isPuzzletFaded(DraftPuzzlet puzzlet) {
     switch (_mode) {
       case _MapMode.attachment:
@@ -361,7 +393,25 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
       case _MapMode.accessibility:
         return puzzlet.accessibilityTags.isNotEmpty ||
             puzzlet.inheritedTags.isNotEmpty;
+      case _MapMode.todos:
+        return !_hasTodoMarker(puzzlet);
     }
+  }
+
+  /// True if any free-text field on [puzzlet] contains one of the
+  /// `_todoMarkers` (case-insensitive). Fields checked cover the
+  /// player-facing text the author is likely to be drafting; not
+  /// audited: attachment lists, IDs, timestamps.
+  bool _hasTodoMarker(DraftPuzzlet puzzlet) {
+    bool contains(String? s) {
+      if (s == null || s.isEmpty) return false;
+      final upper = s.toUpperCase();
+      return _todoMarkers.any(upper.contains);
+    }
+    return contains(puzzlet.instructions) ||
+        contains(puzzlet.answer) ||
+        contains(puzzlet.accessibilityNotes) ||
+        contains(puzzlet.warning);
   }
 
   /// Pole markers scale from a full 36 px pin at zoom ≥ 16 down to
@@ -385,9 +435,9 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
   List<Marker> _buildPoleMarkers() {
     final drafts = _drafts;
     if (drafts == null) return const [];
-    // Accessibility mode hides poles entirely — they'd be visual
-    // noise for the task of finding untagged puzzlets.
-    if (_mode == _MapMode.accessibility) return const [];
+    // Accessibility and todos modes both hide poles — they'd be
+    // visual noise for the puzzlet-centric task at hand.
+    if (_mode != _MapMode.attachment) return const [];
     final size = _poleSize;
     final showBadge = size >= 24;
     return [
@@ -414,8 +464,8 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
     final drafts = _drafts;
     if (drafts == null) return const [];
     // Without pole markers to anchor them, the lines would go to
-    // nothing — skip them in accessibility mode.
-    if (_mode == _MapMode.accessibility) return const [];
+    // nothing — skip them in any non-attachment mode.
+    if (_mode != _MapMode.attachment) return const [];
     // Index poles once so N puzzlets × M poles doesn't loop N×M.
     final polesById = {for (final pole in drafts.poles) pole.id: pole};
     return [
