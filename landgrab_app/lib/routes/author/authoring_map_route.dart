@@ -76,22 +76,30 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
   }
 
   Future<void> _bootstrap() async {
-    LatLng centre = _fallbackCenter;
+    // Kick off the drafts fetch against the fallback centre
+    // immediately — GPS acquisition on a cold phone can take up to
+    // the 15-second timeout in LocationService, and blocking the
+    // whole boot on it makes "Loading nearby…" sit for what feels
+    // like forever. The LiveLocationLayer will centre + refetch
+    // when it gets its first fix; user can also tap "Locate me".
+    final fetchFuture = _fetch(_fallbackCenter);
     try {
       final fix = await LocationService.getCurrent();
-      centre = LatLng(fix.latitude, fix.longitude);
+      final centre = LatLng(fix.latitude, fix.longitude);
       if (mounted) setState(() => _userLocation = centre);
+      // Once the initial fetch completes, re-fetch around the real
+      // location so the map has data centred on the user.
+      await fetchFuture;
+      if (mounted) await _fetch(centre);
+      try {
+        _controller.move(centre, 15);
+      } catch (_) {
+        // Camera not laid out yet; initialCameraFit handles first frame.
+      }
     } catch (_) {
-      // Falls back to a downtown-Winnipeg centre so authors can still
-      // see the map with no fix; a "Locate me" button retries later.
-    }
-    await _fetch(centre);
-    // Kick the camera to the fetch centre so the initial pin bounds
-    // fit around it rather than the far corner of a stale viewport.
-    try {
-      _controller.move(centre, 15);
-    } catch (_) {
-      // Not laid out yet; the initialCameraFit handles first frame.
+      // No GPS available — the fallback-centre fetch already fired,
+      // so the map is populated. User can hit "Locate me" later.
+      await fetchFuture;
     }
   }
 
