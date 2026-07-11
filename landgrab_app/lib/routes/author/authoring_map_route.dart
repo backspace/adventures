@@ -27,6 +27,17 @@ class AuthoringMapRoute extends StatefulWidget {
   State<AuthoringMapRoute> createState() => _AuthoringMapRouteState();
 }
 
+/// Author-map display modes. `attachment` is the default scouting
+/// view (poles + puzzlets + connecting lines, faded when attached).
+/// `accessibility` is a coverage-mapping view — used to check
+/// whether puzzlets with accessibility requirements are well
+/// distributed across the map, not to review individual puzzlets.
+/// It hides poles + lines, keeps puzzlets, and fades any puzzlet
+/// that already carries an accessibility tag (direct OR inherited
+/// from its region) so the bright-vs-faded balance across the
+/// visible area reads as "is this concentration everywhere?"
+enum _MapMode { attachment, accessibility }
+
 class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
   final MapController _controller = MapController();
   LatLng? _userLocation;
@@ -34,6 +45,13 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
   bool _loading = true;
   String? _error;
   bool _locating = false;
+  _MapMode _mode = _MapMode.attachment;
+  // Recomputed each `_buildPuzzletMarkers()` call; consulted by the
+  // cluster builder to decide whether the collapsed count badge
+  // should render translucent (only when every underlying marker
+  // is faded). Keyed by marker point since Marker itself doesn't
+  // carry an identifier the cluster plugin surfaces.
+  final Map<LatLng, bool> _puzzletFadedByPoint = {};
   // Current camera zoom. Poles resize with this so at low zoom they
   // shrink to un-clickable dots — enough to see them as landmarks
   // without dominating the puzzlet cluster below them.
@@ -141,6 +159,28 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
       appBar: AppBar(
         title: const Text('Author map'),
         actions: [
+          // Toggles between attachment and accessibility-coverage
+          // modes. Uses the "universal access" person-in-circle
+          // icon (Icons.accessibility_new) rather than the wheelchair
+          // — the mode is about the full range of accessibility
+          // constraints, not just mobility. When active, we swap to
+          // the filled-tonal IconButton variant so the toggle state
+          // is obvious at a glance (Material 3's standard "selected"
+          // treatment for icon buttons).
+          _mode == _MapMode.accessibility
+              ? IconButton.filledTonal(
+                  tooltip: 'Show attachments',
+                  onPressed: () =>
+                      setState(() => _mode = _MapMode.attachment),
+                  icon: const Icon(Icons.accessibility_new),
+                )
+              : IconButton(
+                  tooltip:
+                      'Accessibility coverage (fade tagged puzzlets, hide poles)',
+                  onPressed: () =>
+                      setState(() => _mode = _MapMode.accessibility),
+                  icon: const Icon(Icons.accessibility_new),
+                ),
           IconButton(
             tooltip: 'Refresh from this view',
             onPressed: _loading ? null : _refreshHere,
@@ -210,7 +250,18 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
                   spiderfyCluster: true,
                   spiderfySpiralDistanceMultiplier: 3,
                   markers: _buildPuzzletMarkers(),
-                  builder: (context, markers) => _ClusterBadge(count: markers.length),
+                  builder: (context, markers) {
+                    // Fade the cluster badge only when every marker
+                    // in it is faded — a mixed cluster stays fully
+                    // opaque because it still contains at least one
+                    // puzzlet the author is looking for.
+                    final allFaded = markers.every(
+                        (m) => _puzzletFadedByPoint[m.point] ?? false);
+                    return _ClusterBadge(
+                      count: markers.length,
+                      faded: allFaded,
+                    );
+                  },
                 ),
               ),
               // Live user position + walking-direction cone. Emits
@@ -272,23 +323,45 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
   }
 
   List<Marker> _buildPuzzletMarkers() {
+    _puzzletFadedByPoint.clear();
     final drafts = _drafts;
     if (drafts == null) return const [];
-    return [
-      for (final puzzlet in drafts.puzzlets)
-        if (puzzlet.latitude != null && puzzlet.longitude != null)
-          Marker(
-            point: LatLng(puzzlet.latitude!, puzzlet.longitude!),
-            width: 36,
-            height: 36,
-            child: _PuzzletDifficultyPin(
-              difficulty: puzzlet.difficulty,
-              attached: puzzlet.poleId != null,
-              validatorOnly: puzzlet.validatorOnly,
-              onTap: () => _showPuzzletSheet(puzzlet),
-            ),
-          ),
-    ];
+    final markers = <Marker>[];
+    for (final puzzlet in drafts.puzzlets) {
+      if (puzzlet.latitude == null || puzzlet.longitude == null) continue;
+      final point = LatLng(puzzlet.latitude!, puzzlet.longitude!);
+      final faded = _isPuzzletFaded(puzzlet);
+      _puzzletFadedByPoint[point] = faded;
+      markers.add(Marker(
+        point: point,
+        width: 36,
+        height: 36,
+        child: _PuzzletDifficultyPin(
+          difficulty: puzzlet.difficulty,
+          faded: faded,
+          validatorOnly: puzzlet.validatorOnly,
+          onTap: () => _showPuzzletSheet(puzzlet),
+        ),
+      ));
+    }
+    return markers;
+  }
+
+  /// Decide whether a puzzlet should fade back in the current mode.
+  /// Attachment mode fades pole-attached puzzlets (their placement
+  /// is settled). Accessibility mode fades any puzzlet carrying an
+  /// accessibility tag — direct OR inherited from its region — so
+  /// the untagged puzzlets stand out and the author can see at a
+  /// glance whether they're clustered in one area vs. distributed
+  /// across the whole event footprint.
+  bool _isPuzzletFaded(DraftPuzzlet puzzlet) {
+    switch (_mode) {
+      case _MapMode.attachment:
+        return puzzlet.poleId != null;
+      case _MapMode.accessibility:
+        return puzzlet.accessibilityTags.isNotEmpty ||
+            puzzlet.inheritedTags.isNotEmpty;
+    }
   }
 
   /// Pole markers scale from a full 36 px pin at zoom ≥ 16 down to
@@ -312,6 +385,9 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
   List<Marker> _buildPoleMarkers() {
     final drafts = _drafts;
     if (drafts == null) return const [];
+    // Accessibility mode hides poles entirely — they'd be visual
+    // noise for the task of finding untagged puzzlets.
+    if (_mode == _MapMode.accessibility) return const [];
     final size = _poleSize;
     final showBadge = size >= 24;
     return [
@@ -337,6 +413,9 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
   List<Polyline> _buildAttachmentLines() {
     final drafts = _drafts;
     if (drafts == null) return const [];
+    // Without pole markers to anchor them, the lines would go to
+    // nothing — skip them in accessibility mode.
+    if (_mode == _MapMode.accessibility) return const [];
     // Index poles once so N puzzlets × M poles doesn't loop N×M.
     final polesById = {for (final pole in drafts.poles) pole.id: pole};
     return [
@@ -428,12 +507,17 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
 /// so the affordance reads the same across surfaces.
 class _PuzzletDifficultyPin extends StatelessWidget {
   final int difficulty;
-  final bool attached;
+  /// When true the pin renders semi-transparent — used to de-
+  /// emphasise puzzlets the current display mode considers
+  /// "already handled" (attached in attachment mode, tagged in
+  /// accessibility mode). Semantic is deliberately mode-agnostic;
+  /// the caller decides what "handled" means.
+  final bool faded;
   final bool validatorOnly;
   final VoidCallback? onTap;
   const _PuzzletDifficultyPin({
     required this.difficulty,
-    this.attached = false,
+    this.faded = false,
     this.validatorOnly = false,
     this.onTap,
   });
@@ -447,9 +531,11 @@ class _PuzzletDifficultyPin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Attached puzzlets fade back so the author's eye is drawn to
-    // still-unattached ones. Same colour and number so the badge is
-    // legible for reference; just quieter.
+    // "Handled" puzzlets fade back so the author's eye is drawn to
+    // the ones still needing attention. Same colour and number so
+    // the badge is legible for reference; just quieter. What counts
+    // as "handled" is decided by the caller — attachment mode uses
+    // pole-attachment; accessibility mode uses tag-presence.
     final circle = Container(
       decoration: BoxDecoration(
         color: _color,
@@ -494,7 +580,7 @@ class _PuzzletDifficultyPin extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: attached ? Opacity(opacity: 0.35, child: pin) : pin,
+      child: faded ? Opacity(opacity: 0.35, child: pin) : pin,
     );
   }
 }
@@ -1016,11 +1102,12 @@ class _PolePin extends StatelessWidget {
 /// as a bright "high difficulty" puzzlet pin.
 class _ClusterBadge extends StatelessWidget {
   final int count;
-  const _ClusterBadge({required this.count});
+  final bool faded;
+  const _ClusterBadge({required this.count, this.faded = false});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final badge = Container(
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.75),
         shape: BoxShape.circle,
@@ -1036,6 +1123,7 @@ class _ClusterBadge extends StatelessWidget {
         ),
       ),
     );
+    return faded ? Opacity(opacity: 0.35, child: badge) : badge;
   }
 }
 
