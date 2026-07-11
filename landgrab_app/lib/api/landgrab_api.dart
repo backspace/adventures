@@ -7,6 +7,7 @@ import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/models/region.dart';
 import 'package:landgrab/models/test_session.dart';
 import 'package:landgrab/models/validation.dart';
+import 'package:landgrab/models/validator_only_puzzlet.dart';
 import 'package:landgrab/services/user_service.dart';
 
 class LandgrabApi {
@@ -332,6 +333,7 @@ class LandgrabApi {
     String? accessibilityNotes,
     String? regionId,
     String? warning,
+    bool? validatorOnly,
   }) async {
     final response = await dio.post('/landgrab/drafts/puzzlets', data: {
       'instructions': instructions,
@@ -345,6 +347,7 @@ class LandgrabApi {
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
       if (regionId != null) 'region_id': regionId,
       if (warning != null) 'warning': warning,
+      if (validatorOnly != null) 'validator_only': validatorOnly,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }
@@ -389,6 +392,7 @@ class LandgrabApi {
     String? poleId,
     bool clearPole = false,
     String? warning,
+    bool? validatorOnly,
   }) async {
     final response = await dio.patch('/landgrab/drafts/puzzlets/$id', data: {
       if (instructions != null) 'instructions': instructions,
@@ -405,6 +409,7 @@ class LandgrabApi {
       if (clearPole) 'pole_id': null
       else if (poleId != null) 'pole_id': poleId,
       if (warning != null) 'warning': warning,
+      if (validatorOnly != null) 'validator_only': validatorOnly,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }
@@ -469,6 +474,18 @@ class LandgrabApi {
   }
 
   // ─── Bathrooms ──────────────────────────────────────────────
+
+  /// Validator-only puzzlets for display on the gameplay map. Server
+  /// gates this to users with the validator role; a 403 here is a
+  /// meaningful "you're not a validator, don't show the layer".
+  Future<List<ValidatorOnlyPuzzlet>> listValidatorOnlyPuzzlets() async {
+    final response =
+        await dio.get('/landgrab/validation/validator-only-puzzlets');
+    final list = (response.data as Map<String, dynamic>)['puzzlets'] as List;
+    return list
+        .map((p) => ValidatorOnlyPuzzlet.fromJson(p as Map<String, dynamic>))
+        .toList(growable: false);
+  }
 
   Future<List<Bathroom>> listBathrooms() async {
     final response = await dio.get('/landgrab/bathrooms');

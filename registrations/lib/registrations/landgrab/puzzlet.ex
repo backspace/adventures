@@ -33,6 +33,12 @@ defmodule Registrations.Landgrab.Puzzlet do
 
     field(:warning, :string)
 
+    # When true, this puzzlet is hidden from regular player-facing
+    # queries and only surfaces on the author + validator maps.
+    # See `Landgrab.list_puzzlets_for_map` and
+    # `filter_visible_puzzlets` for the read-side filters.
+    field(:validator_only, :boolean, default: false)
+
     belongs_to(:pole, Pole, type: :binary_id)
     belongs_to(:region, Region, type: :binary_id)
     belongs_to(:creator, RegistrationsWeb.User, type: :binary_id, foreign_key: :creator_id)
@@ -60,7 +66,8 @@ defmodule Registrations.Landgrab.Puzzlet do
       :accuracy_m,
       :accessibility_tags,
       :accessibility_notes,
-      :warning
+      :warning,
+      :validator_only
     ])
     |> validate_required([:instructions, :answer, :difficulty])
     |> validate_number(:difficulty, greater_than_or_equal_to: 1)

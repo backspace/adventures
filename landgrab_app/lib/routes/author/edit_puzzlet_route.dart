@@ -33,6 +33,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
   late List<String> _accessibilityTags;
   late int _difficulty;
   late AnswerType _answerType;
+  late bool _validatorOnly;
   Region? _region;
   bool _regionChanged = false;
 
@@ -63,6 +64,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
     _accessibilityTags = [...widget.puzzlet.accessibilityTags];
     _difficulty = widget.puzzlet.difficulty;
     _answerType = widget.puzzlet.answerType;
+    _validatorOnly = widget.puzzlet.validatorOnly;
 
     if (widget.puzzlet.regionId != null) {
       _loadRegion(widget.puzzlet.regionId!);
@@ -147,6 +149,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
         regionId: _regionChanged ? _region?.id : null,
         clearRegion: _regionChanged && _region == null,
         warning: _warningController.text.trim(),
+        validatorOnly: _validatorOnly,
       );
       if (!mounted) return;
       _dirty = false;
@@ -303,6 +306,25 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.warning_amber_outlined),
               ),
+            ),
+            const SizedBox(height: 4),
+            // Validator-only flag. When set, the puzzlet is invisible
+            // to players — it shows only on the author + validator
+            // maps, tagged with a star, and doesn't count toward
+            // pole locking. Ergonomically a SwitchListTile is more
+            // "committed" than a Checkbox for a mode-toggling flag.
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _validatorOnly,
+              onChanged: (v) => setState(() {
+                _validatorOnly = v;
+                _dirty = true;
+              }),
+              title: const Text('For validators only'),
+              subtitle: const Text(
+                'Hide from players. Shown starred on author and validator maps.',
+              ),
+              secondary: const Icon(Icons.star_outline),
             ),
             const SizedBox(height: 12),
             AnswerTypeField(

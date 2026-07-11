@@ -1,12 +1,16 @@
 defmodule RegistrationsWeb.Landgrab.ValidationController do
   use RegistrationsWeb, :controller
 
+  import Ecto.Query
+
   alias Ecto.Association.NotLoaded
+  alias Registrations.Landgrab.Puzzlet
   alias Registrations.Landgrab.Validations
   alias Registrations.Landgrab.Validations.PoleValidation
   alias Registrations.Landgrab.Validations.PoleValidationComment
   alias Registrations.Landgrab.Validations.PuzzletValidation
   alias Registrations.Landgrab.Validations.PuzzletValidationComment
+  alias Registrations.Repo
 
   def mine(conn, _params) do
     user = Pow.Plug.current_user(conn)
@@ -15,6 +19,34 @@ defmodule RegistrationsWeb.Landgrab.ValidationController do
     json(conn, %{
       pole_validations: Enum.map(pv, &render_pole_validation/1),
       puzzlet_validations: Enum.map(zv, &render_puzzlet_validation/1)
+    })
+  end
+
+  # Validator-facing map endpoint: returns every located puzzlet
+  # marked `validator_only` regardless of status, so validators can
+  # see the set-aside content on their gameplay map. Answers are
+  # deliberately omitted — even a validator looking at their own
+  # gameplay map isn't a place to spoil themselves.
+  def list_validator_only_puzzlets(conn, _params) do
+    puzzlets =
+      Puzzlet
+      |> where([p], p.validator_only == true)
+      |> where([p], not is_nil(p.latitude) and not is_nil(p.longitude))
+      |> Repo.all()
+
+    json(conn, %{
+      puzzlets:
+        Enum.map(puzzlets, fn p ->
+          %{
+            id: p.id,
+            instructions: p.instructions,
+            difficulty: p.difficulty,
+            latitude: p.latitude,
+            longitude: p.longitude,
+            warning: p.warning,
+            status: p.status
+          }
+        end)
     })
   end
 

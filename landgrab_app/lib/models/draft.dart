@@ -162,6 +162,9 @@ class DraftPuzzlet {
   final List<String> inheritedTags;
   final List<InheritedStanza> inheritedStanzas;
   final String? warning;
+  /// When true, the puzzlet is hidden from regular players and only
+  /// appears on the author + validator maps, tagged with a star.
+  final bool validatorOnly;
 
   DraftPuzzlet({
     required this.id,
@@ -185,6 +188,7 @@ class DraftPuzzlet {
     this.inheritedTags = const [],
     this.inheritedStanzas = const [],
     this.warning,
+    this.validatorOnly = false,
   });
 
   factory DraftPuzzlet.fromJson(Map<String, dynamic> json) => DraftPuzzlet(
@@ -226,6 +230,7 @@ class DraftPuzzlet {
                 .toList(growable: false) ??
             const [],
         warning: json['warning'] as String?,
+        validatorOnly: json['validator_only'] as bool? ?? false,
       );
 
   DraftPuzzlet copyWith({List<String>? attachmentIds}) => DraftPuzzlet(
@@ -250,6 +255,7 @@ class DraftPuzzlet {
         inheritedTags: inheritedTags,
         inheritedStanzas: inheritedStanzas,
         warning: warning,
+        validatorOnly: validatorOnly,
       );
 }
 

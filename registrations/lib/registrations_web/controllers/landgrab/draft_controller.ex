@@ -137,7 +137,8 @@ defmodule RegistrationsWeb.Landgrab.DraftController do
         "accessibility_tags",
         "accessibility_notes",
         "region_id",
-        "warning"
+        "warning",
+        "validator_only"
       ])
       |> Map.put("creator_id", user.id)
       |> Map.put("status", "draft")
@@ -179,7 +180,8 @@ defmodule RegistrationsWeb.Landgrab.DraftController do
             "accessibility_notes",
             "region_id",
             "pole_id",
-            "warning"
+            "warning",
+            "validator_only"
           ])
 
         case Landgrab.update_puzzlet(puzzlet, attrs) do
@@ -245,7 +247,8 @@ defmodule RegistrationsWeb.Landgrab.DraftController do
         attachment_ids: Landgrab.list_puzzlet_attachment_ids(puzzlet.id),
         accessibility_tags: puzzlet.accessibility_tags || [],
         accessibility_notes: puzzlet.accessibility_notes,
-        warning: puzzlet.warning
+        warning: puzzlet.warning,
+        validator_only: puzzlet.validator_only
       },
       Regions.puzzlet_inheritance_payload(puzzlet)
     )

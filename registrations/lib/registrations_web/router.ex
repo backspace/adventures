@@ -309,6 +309,7 @@ defmodule RegistrationsWeb.Router do
     pipe_through([:landgrab_validator])
 
     get("/mine", ValidationController, :mine)
+    get("/validator-only-puzzlets", ValidationController, :list_validator_only_puzzlets)
     patch("/pole-validations/:id", ValidationController, :update_pole_validation)
     patch("/puzzlet-validations/:id", ValidationController, :update_puzzlet_validation)
 

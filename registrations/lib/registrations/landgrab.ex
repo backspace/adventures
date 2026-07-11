@@ -355,6 +355,7 @@ defmodule Registrations.Landgrab do
       Puzzlet
       |> where([p], p.pole_id == ^pole_id)
       |> where([p], p.status == :validated)
+      |> where([p], not p.validator_only)
       |> where([p], p.id not in subquery(captured_puzzlet_ids))
       |> filter_visible_puzzlets(scope)
       |> order_by([p], asc: p.difficulty, asc: p.inserted_at)
@@ -496,14 +497,28 @@ defmodule Registrations.Landgrab do
   def pole_locked?(pole), do: pole_locked?(pole, Scope.real())
 
   def pole_locked?(%Pole{id: pole_id}, %Scope{} = scope) do
+    # `validator_only` puzzlets don't count — they're set aside and
+    # never assigned to players, so their presence shouldn't keep a
+    # pole eternally unlocked, and their absence in the "captured"
+    # denominator shouldn't force the pole locked prematurely.
     validated_count =
-      Repo.one(from(p in Puzzlet, where: p.pole_id == ^pole_id and p.status == :validated, select: count(p.id)))
+      Repo.one(
+        from(p in Puzzlet,
+          where:
+            p.pole_id == ^pole_id and p.status == :validated and
+              not p.validator_only,
+          select: count(p.id)
+        )
+      )
 
     captured_count =
       Capture
       |> Scope.apply(scope)
       |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
-      |> where([_c, p], p.pole_id == ^pole_id and p.status == :validated)
+      |> where(
+        [_c, p],
+        p.pole_id == ^pole_id and p.status == :validated and not p.validator_only
+      )
       |> select([c, _p], count(c.id))
       |> Repo.one()
 

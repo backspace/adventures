@@ -10,6 +10,7 @@ import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/models/test_session.dart';
+import 'package:landgrab/models/validator_only_puzzlet.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/author/author_route.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
@@ -49,6 +50,15 @@ class _HomeRouteState extends State<HomeRoute>
   String? _error;
   bool _isAuthor = false;
   bool _isValidator = false;
+  List<ValidatorOnlyPuzzlet> _validatorOnlyPuzzlets = const [];
+  // Camera zoom drives validator-only pin sizing — same treatment
+  // poles get on the author map. Below _voTinyZoom they shrink to a
+  // small star; above _voFullZoom they render at full size.
+  double _mapZoom = 14;
+  static const double _voFullZoom = 16;
+  static const double _voTinyZoom = 13;
+  static const double _voFullSize = 32;
+  static const double _voTinySize = 10;
   bool _isSupervisor = false;
   LandgrabEvent? _event;
 
@@ -239,15 +249,27 @@ class _HomeRouteState extends State<HomeRoute>
         // Bathrooms are independent data — players see them all the time,
         // and they're cheap. Fetched in parallel with poles.
         widget.api.listBathrooms(),
+        // Validator-only puzzlets are only meaningful for
+        // validators/supervisors; players see nothing. A 403 here
+        // (server-gated) yields an empty list rather than a hard
+        // failure — the map is usable without this layer.
+        if (isValidator || isSupervisor)
+          widget.api.listValidatorOnlyPuzzlets().catchError(
+                (_) => <ValidatorOnlyPuzzlet>[],
+              )
+        else
+          Future.value(<ValidatorOnlyPuzzlet>[]),
       ]);
       final event = results[0] as LandgrabEvent;
       final poles = results[1] as List<Pole>;
       final bathrooms = results[2] as List<Bathroom>;
+      final validatorOnly = results[3] as List<ValidatorOnlyPuzzlet>;
       if (!mounted) return;
       setState(() {
         _seedCaptureAnimations(poles);
         _poles = poles;
         _bathrooms = bathrooms;
+        _validatorOnlyPuzzlets = validatorOnly;
         _teamId = teamId;
         _teamName = teamName;
         _isAuthor = isAuthor;
@@ -284,6 +306,91 @@ class _HomeRouteState extends State<HomeRoute>
     if (_inTestPlay) return Colors.green;
     if (pole.currentOwnerTeamId == _teamId) return Colors.green;
     return Colors.red;
+  }
+
+  double get _voSize {
+    if (_mapZoom >= _voFullZoom) return _voFullSize;
+    if (_mapZoom <= _voTinyZoom) return _voTinySize;
+    final t =
+        (_mapZoom - _voTinyZoom) / (_voFullZoom - _voTinyZoom);
+    return _voTinySize + (_voFullSize - _voTinySize) * t;
+  }
+
+  List<Marker> _validatorOnlyMarkers() {
+    final size = _voSize;
+    return [
+      for (final p in _validatorOnlyPuzzlets)
+        Marker(
+          point: LatLng(p.latitude, p.longitude),
+          width: size,
+          height: size,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _showValidatorOnlySheet(p),
+            child: Tooltip(
+              message: p.instructions.length > 40
+                  ? '${p.instructions.substring(0, 40)}…'
+                  : p.instructions,
+              child: _ValidatorOnlyStar(size: size),
+            ),
+          ),
+        ),
+    ];
+  }
+
+  void _showValidatorOnlySheet(ValidatorOnlyPuzzlet p) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  const _ValidatorOnlyStar(size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Puzzlet · difficulty ${p.difficulty}',
+                      style: theme.textTheme.titleLarge,
+                    ),
+                  ),
+                ]),
+                const SizedBox(height: 4),
+                Text('Validators only · status: ${p.status}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    )),
+                const SizedBox(height: 16),
+                Text(p.instructions, style: theme.textTheme.bodyLarge),
+                if (p.warning != null && p.warning!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.amber.shade200),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.warning_amber_outlined, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(p.warning!)),
+                    ]),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   LatLng _center() {
@@ -448,6 +555,16 @@ class _HomeRouteState extends State<HomeRoute>
                   options: MapOptions(
                     initialCenter: _center(),
                     initialZoom: 14,
+                    // Track camera zoom for size-scaled overlays
+                    // (validator-only puzzlet pins). Only setState
+                    // when the zoom actually changes so panning
+                    // doesn't force a rebuild every frame.
+                    onPositionChanged: (position, _) {
+                      final z = position.zoom;
+                      if (z != null && z != _mapZoom) {
+                        setState(() => _mapZoom = z);
+                      }
+                    },
                   ),
                   children: [
                     TileLayer(
@@ -493,6 +610,14 @@ class _HomeRouteState extends State<HomeRoute>
                         );
                       }).toList(),
                     ),
+                    // Validator-only puzzlets: rendered outside the
+                    // pole/cluster stack so they never spider with
+                    // other markers, and sized against the current
+                    // zoom so they shrink to a small star far out and
+                    // grow to full pin close in — same treatment
+                    // poles get on the author map.
+                    if (_validatorOnlyPuzzlets.isNotEmpty)
+                      MarkerLayer(markers: _validatorOnlyMarkers()),
                     // User's own position + heading cone (only while
                     // walking). Above the pole markers so a pole
                     // directly under the user doesn't obscure the
@@ -796,6 +921,37 @@ class _BigButton extends StatelessWidget {
         onPressed: onPressed,
         icon: Icon(icon, size: 32),
         label: Text(label, style: const TextStyle(fontSize: 20)),
+      ),
+    );
+  }
+}
+
+/// The starred puzzlet marker for validator-only content. Amber
+/// star on a white disc for legibility against the light basemap.
+/// Scales its inner icon proportionally so at very small sizes the
+/// star still reads as a star rather than a formless dot.
+class _ValidatorOnlyStar extends StatelessWidget {
+  final double size;
+  const _ValidatorOnlyStar({required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.amber.shade700, width: size >= 20 ? 2 : 1),
+        boxShadow: const [
+          BoxShadow(color: Color(0x33000000), blurRadius: 3, offset: Offset(0, 1)),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.star,
+        color: Colors.amber.shade700,
+        size: size * 0.65,
       ),
     );
   }

@@ -276,6 +276,7 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
             child: _PuzzletDifficultyPin(
               difficulty: puzzlet.difficulty,
               attached: puzzlet.poleId != null,
+              validatorOnly: puzzlet.validatorOnly,
               onTap: () => _showPuzzletSheet(puzzlet),
             ),
           ),
@@ -392,10 +393,12 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
 class _PuzzletDifficultyPin extends StatelessWidget {
   final int difficulty;
   final bool attached;
+  final bool validatorOnly;
   final VoidCallback? onTap;
   const _PuzzletDifficultyPin({
     required this.difficulty,
     this.attached = false,
+    this.validatorOnly = false,
     this.onTap,
   });
 
@@ -411,7 +414,7 @@ class _PuzzletDifficultyPin extends StatelessWidget {
     // Attached puzzlets fade back so the author's eye is drawn to
     // still-unattached ones. Same colour and number so the badge is
     // legible for reference; just quieter.
-    final pin = Container(
+    final circle = Container(
       decoration: BoxDecoration(
         color: _color,
         shape: BoxShape.circle,
@@ -430,6 +433,28 @@ class _PuzzletDifficultyPin extends StatelessWidget {
         ),
       ),
     );
+    // Validator-only badge overlaid in the top-right corner. `Stack`
+    // + `Positioned` lets the star hang slightly outside the pin's
+    // bounding box so it doesn't hide the difficulty number.
+    final pin = validatorOnly
+        ? Stack(clipBehavior: Clip.none, children: [
+            circle,
+            const Positioned(
+              right: -2,
+              top: -2,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(1),
+                  child: Icon(Icons.star, size: 14, color: Colors.amber),
+                ),
+              ),
+            ),
+          ])
+        : circle;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
