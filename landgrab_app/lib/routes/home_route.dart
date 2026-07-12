@@ -126,6 +126,17 @@ class _HomeRouteState extends State<HomeRoute>
       }
       if (mounted) setState(() {});
     }
+    if (n.type == 'pole_lost' && mounted) {
+      // Losing a pole is significant and infrequent — always toast.
+      // The map recolours via the pole_updated broadcast that
+      // arrives alongside; this is the "why" for that change.
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(n.body),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 6),
+      ));
+    }
     // Future notification types (chat, etc.) get their own branches
     // here — or, once a notifications-history screen exists, hand
     // off to a shared inbox stream and drop this ad-hoc dispatch.

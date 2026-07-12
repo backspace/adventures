@@ -420,6 +420,10 @@ defmodule Registrations.Landgrab do
       true ->
         correct? = answers_match?(puzzlet.answer_type, puzzlet.answer, answer_given)
 
+        # Captured BEFORE the insert below changes ownership — this is
+        # who to notify that they lost the pole.
+        previous_owner_id = pole && current_owner_team_id_for_pole(pole)
+
         result =
           Repo.transaction(fn ->
             attempt =
@@ -452,6 +456,7 @@ defmodule Registrations.Landgrab do
         with {:ok, %{result: :captured, capture: capture}} <- result,
              %Pole{} = captured_pole <- pole do
           broadcast_pole_update(captured_pole, capture)
+          maybe_signal_pole_lost(captured_pole, previous_owner_id, team_id)
         end
 
         result
@@ -514,18 +519,62 @@ defmodule Registrations.Landgrab do
   end
 
   defp write_attack_signal(%Pole{} = pole, recipient_id, sender_id) do
-    attacker = Repo.get(RegistrationsWeb.Team, sender_id)
-    attacker_name = attacker && attacker.name
+    attacker_name = team_name(sender_id)
+
     body =
       case attacker_name do
         nil -> "A rival team scanned #{display_name(pole)}"
         name -> "#{name} scanned #{display_name(pole)}"
       end
 
+    deliver_team_notification("attack", pole, recipient_id, sender_id, body, attacker_name)
+  end
+
+  # Tell the previous owner they lost the pole. Same rescue rationale
+  # as attack signals: a notification bug must never fail the capture.
+  defp maybe_signal_pole_lost(_pole, nil, _capturing_team_id), do: :ok
+
+  defp maybe_signal_pole_lost(_pole, owner_id, capturing_team_id)
+       when owner_id == capturing_team_id,
+       do: :ok
+
+  defp maybe_signal_pole_lost(%Pole{} = pole, previous_owner_id, capturing_team_id) do
+    captor_name = team_name(capturing_team_id)
+
+    body =
+      case captor_name do
+        nil -> "A rival team captured #{display_name(pole)} from you"
+        name -> "#{name} captured #{display_name(pole)} from you"
+      end
+
+    deliver_team_notification(
+      "pole_lost",
+      pole,
+      previous_owner_id,
+      capturing_team_id,
+      body,
+      captor_name
+    )
+  rescue
+    error ->
+      require Logger
+      Logger.error("pole-lost signal failed: #{Exception.message(error)}")
+      :ok
+  end
+
+  defp team_name(team_id) do
+    team = Repo.get(RegistrationsWeb.Team, team_id)
+    team && team.name
+  end
+
+  # Persist + broadcast a team-directed notification. The persisted
+  # row feeds the future notification-history / chat feed; the
+  # broadcast gives currently-foregrounded apps a live toast.
+  defp deliver_team_notification(type, %Pole{} = pole, recipient_id, sender_id, body, sender_name) do
     result =
       %Notification{}
       |> Notification.changeset(%{
-        type: "attack",
+        type: type,
         recipient_team_id: recipient_id,
         sender_team_id: sender_id,
         body: body,
@@ -533,7 +582,7 @@ defmodule Registrations.Landgrab do
           "pole_id" => pole.id,
           "pole_label" => pole.label,
           "pole_barcode" => pole.barcode,
-          "attacker_team_name" => attacker_name
+          "sender_team_name" => sender_name
         }
       })
       |> Repo.insert()
