@@ -120,6 +120,15 @@ defmodule RegistrationsWeb.SharedHelpers do
     )
   end
 
+  @doc """
+  The event's IANA timezone, from the START_TIMEZONE environment
+  variable (e.g. "America/Winnipeg").
+  """
+  def start_timezone do
+    [_erl_datetime, time_zone_string] = raw_start_time()
+    time_zone_string
+  end
+
   defp raw_start_time do
     Application.get_env(:registrations, :start_time)
   end

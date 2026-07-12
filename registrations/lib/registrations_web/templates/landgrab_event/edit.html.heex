@@ -8,9 +8,9 @@
         <% is_nil(@event.start_time) -> %>
           no (start time not set)
         <% DateTime.compare(DateTime.utc_now(), @event.start_time) == :lt -> %>
-          not yet (begins <%= @event.start_time %> UTC)
+          not yet (begins <%= format_local(@event.start_time) %>)
         <% true -> %>
-          yes (began <%= @event.start_time %> UTC)
+          yes (began <%= format_local(@event.start_time) %>)
       <% end %>
     </p>
 
@@ -27,8 +27,10 @@
 
       <br />
 
-      <%= label(f, :start_time, "Start time (UTC, blank to unset)") %>
-      <%= datetime_local_input(f, :start_time) %>
+      <%= label(f, :start_time, "Start time (#{event_timezone()}, blank to unset)") %>
+      <%= datetime_local_input(f, :start_time,
+        value: local_input_value(Ecto.Changeset.get_field(@changeset, :start_time))
+      ) %>
       <%= error_tag(f, :start_time) %>
 
       <br />
