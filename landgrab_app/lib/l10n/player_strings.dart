@@ -88,6 +88,9 @@ class GameplayStrings {
   static const author = 'Author';
   static const validate = 'Validate';
   static const supervise = 'Supervise';
+  static const refresh = 'Refresh';
+  static const menuTooltip = 'Menu';
+  static const logOut = 'Log out';
   static String couldNotLoadPoles(String error) =>
       'Could not load poles: $error';
 }

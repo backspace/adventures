@@ -32,6 +32,19 @@ import 'package:landgrab/widgets/capture_rings_layer.dart';
 import 'package:landgrab/widgets/live_location_layer.dart';
 import 'package:landgrab/widgets/territory_layer.dart';
 
+/// Entries in the app bar's overflow menu. Role-gated tools and
+/// occasional actions live here so the bar itself never overflows,
+/// however many roles the signed-in user holds.
+enum _HomeMenuItem {
+  author,
+  validate,
+  supervise,
+  details,
+  credits,
+  switchEnvironment,
+  logOut,
+}
+
 class HomeRoute extends StatefulWidget {
   final LandgrabApi api;
   const HomeRoute({super.key, required this.api});
@@ -320,6 +333,52 @@ class _HomeRouteState extends State<HomeRoute>
     );
   }
 
+  PopupMenuItem<_HomeMenuItem> _menuItem(
+      _HomeMenuItem value, IconData icon, String label) {
+    return PopupMenuItem<_HomeMenuItem>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Text(label),
+        ],
+      ),
+    );
+  }
+
+  void _onMenuSelected(_HomeMenuItem item) {
+    switch (item) {
+      case _HomeMenuItem.author:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => AuthorRoute(api: widget.api)),
+        );
+      case _HomeMenuItem.validate:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => ValidatorRoute(api: widget.api)),
+        );
+      case _HomeMenuItem.supervise:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => SupervisorRoute(api: widget.api)),
+        );
+      case _HomeMenuItem.details:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (_) => DetailsWebViewRoute(api: widget.api)),
+        );
+      case _HomeMenuItem.credits:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const CreditsRoute()),
+        );
+      case _HomeMenuItem.switchEnvironment:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const SettingsRoute()),
+        );
+      case _HomeMenuItem.logOut:
+        _logout();
+    }
+  }
+
   Future<void> _openScanner() async {
     final result = await Navigator.of(context).push<ScanRouteResult>(
       MaterialPageRoute(builder: (_) => ScanRoute(api: widget.api)),
@@ -465,60 +524,39 @@ class _HomeRouteState extends State<HomeRoute>
               : Text(titleText),
         ),
         actions: [
-          if (!preEvent && _isAuthor)
-            IconButton(
-              tooltip: 'Author',
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => AuthorRoute(api: widget.api)),
-              ),
-              icon: const Icon(Icons.edit_note),
-            ),
-          if (!preEvent && _isValidator)
-            IconButton(
-              tooltip: 'Validate',
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => ValidatorRoute(api: widget.api)),
-              ),
-              icon: const Icon(Icons.fact_check_outlined),
-            ),
-          if (!preEvent && _isSupervisor)
-            IconButton(
-              tooltip: 'Supervise',
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => SupervisorRoute(api: widget.api)),
-              ),
-              icon: const Icon(Icons.supervisor_account),
-            ),
           IconButton(
-            tooltip: GameplayStrings.details,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => DetailsWebViewRoute(api: widget.api)),
-            ),
-            icon: const Icon(Icons.badge_outlined),
+            tooltip: GameplayStrings.refresh,
+            onPressed: _refreshIdentityAndLoad,
+            icon: const Icon(Icons.refresh),
           ),
-          IconButton(
-            tooltip: GameplayStrings.credits,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const CreditsRoute()),
-            ),
-            icon: const Icon(Icons.info_outline),
+          // Everything else lives in one menu so the bar never
+          // overflows for people holding several roles.
+          PopupMenuButton<_HomeMenuItem>(
+            tooltip: GameplayStrings.menuTooltip,
+            onSelected: _onMenuSelected,
+            itemBuilder: (context) => [
+              if (!preEvent && _isAuthor)
+                _menuItem(_HomeMenuItem.author, Icons.edit_note,
+                    GameplayStrings.author),
+              if (!preEvent && _isValidator)
+                _menuItem(_HomeMenuItem.validate, Icons.fact_check_outlined,
+                    GameplayStrings.validate),
+              if (!preEvent && _isSupervisor)
+                _menuItem(_HomeMenuItem.supervise, Icons.supervisor_account,
+                    GameplayStrings.supervise),
+              _menuItem(_HomeMenuItem.details, Icons.badge_outlined,
+                  GameplayStrings.details),
+              _menuItem(_HomeMenuItem.credits, Icons.info_outline,
+                  GameplayStrings.credits),
+              // Read directly instead of via ValueListenableBuilder:
+              // itemBuilder runs on every open, so it's always fresh.
+              if (EnvSwitchService.visible.value)
+                _menuItem(_HomeMenuItem.switchEnvironment, Icons.dns_outlined,
+                    LoginStrings.switchEnvironmentTooltip),
+              _menuItem(
+                  _HomeMenuItem.logOut, Icons.logout, GameplayStrings.logOut),
+            ],
           ),
-          ValueListenableBuilder<bool>(
-            valueListenable: EnvSwitchService.visible,
-            builder: (context, envVisible, _) => envVisible
-                ? IconButton(
-                    tooltip: LoginStrings.switchEnvironmentTooltip,
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SettingsRoute()),
-                    ),
-                    icon: const Icon(Icons.dns_outlined),
-                  )
-                : const SizedBox.shrink(),
-          ),
-          IconButton(
-              onPressed: _refreshIdentityAndLoad,
-              icon: const Icon(Icons.refresh)),
-          IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
       ),
       body: _error != null
