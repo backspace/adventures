@@ -59,12 +59,13 @@ defmodule Registrations.Application do
   # Without them (dev, test, CI) we start neither Goth nor the FCM
   # dispatcher; `Registrations.Landgrab.Push.enabled?/0` reports this
   # so pushes become no-ops instead of crashes.
+  #
+  # Base64 variant preferred: Coolify writes env vars into a
+  # docker-compose .env file, and raw JSON (quotes, newlines) breaks
+  # its parser. Encode with `base64 -i service-account.json`.
   defp push_children do
-    case System.get_env("FIREBASE_SERVICE_ACCOUNT_JSON") do
+    case firebase_credentials_json() do
       nil ->
-        []
-
-      "" ->
         []
 
       json ->
@@ -74,6 +75,19 @@ defmodule Registrations.Application do
           {Goth, name: Registrations.Goth, source: {:service_account, credentials, []}},
           {Registrations.FCM, adapter: Pigeon.FCM, project_id: credentials["project_id"], auth: Registrations.Goth}
         ]
+    end
+  end
+
+  defp firebase_credentials_json do
+    cond do
+      (encoded = System.get_env("FIREBASE_SERVICE_ACCOUNT_JSON_BASE64")) not in [nil, ""] ->
+        Base.decode64!(encoded, ignore: :whitespace)
+
+      (json = System.get_env("FIREBASE_SERVICE_ACCOUNT_JSON")) not in [nil, ""] ->
+        json
+
+      true ->
+        nil
     end
   end
 
