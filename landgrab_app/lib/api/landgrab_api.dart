@@ -200,6 +200,9 @@ class LandgrabApi {
       if (code == 'team_locked_out' && poleJson != null) {
         return ScanTeamLockedOut(Pole.fromJson(poleJson));
       }
+      if (code == 'own_creation' && poleJson != null) {
+        return ScanOwnCreation(Pole.fromJson(poleJson));
+      }
       rethrow;
     }
   }

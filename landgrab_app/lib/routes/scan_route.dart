@@ -57,6 +57,13 @@ class _ScanRouteState extends State<ScanRoute> {
               .pop((barcode: barcode, capturedPoleId: null));
           return;
 
+        case ScanOwnCreation(:final pole):
+          await _showOwnCreationDialog(pole);
+          if (!mounted) return;
+          Navigator.of(context)
+              .pop((barcode: barcode, capturedPoleId: null));
+          return;
+
         case ScanFound(:final result):
           if (result.activePuzzlet == null) {
             _showSnack(result.pole.locked
@@ -132,6 +139,24 @@ class _ScanRouteState extends State<ScanRoute> {
       builder: (dialogContext) => AlertDialog(
         title: const Text(ScanStrings.alreadyOwnerTitle),
         content: Text(ScanStrings.alreadyOwnerBody(name)),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text(ScanStrings.ok),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showOwnCreationDialog(Pole pole) {
+    final name = pole.label ?? pole.barcode;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(ScanStrings.ownCreationTitle),
+        content: Text(ScanStrings.ownCreationBody(name)),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),

@@ -124,6 +124,12 @@ class ScanStrings {
       'Your team has used all guesses on the current puzzlet for $poleName. '
       'Wait for another team to capture it before you can try again.';
 
+  // Own-creation dialog (authors can't capture their own content)
+  static const ownCreationTitle = 'That one\'s yours';
+  static String ownCreationBody(String poleName) =>
+      'You authored $poleName, so you can\'t capture it — you know '
+      'the answers. Leave it for the other teams.';
+
   // Generic acknowledge button used across the dialogs above.
   static const ok = 'OK';
 }

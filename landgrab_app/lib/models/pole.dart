@@ -138,3 +138,10 @@ class ScanTeamLockedOut extends ScanOutcome {
   final Pole pole;
   const ScanTeamLockedOut(this.pole);
 }
+
+/// The scanner authored this pole (or its puzzlet) — creators can't
+/// capture their own content.
+class ScanOwnCreation extends ScanOutcome {
+  final Pole pole;
+  const ScanOwnCreation(this.pole);
+}
