@@ -45,20 +45,31 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
 
     setState(() => _busy = true);
 
-    final outcome = await widget.api.submitAnswer(widget.puzzlet.id, answer, poleId: widget.pole.id);
+    // submitAnswer maps every failure it understands (and, as of the
+    // AttemptFailed catch-all, every one it doesn't) to an outcome
+    // rather than throwing — but guard with try/finally anyway so no
+    // future exception can strand the screen with _busy stuck true.
+    try {
+      final outcome = await widget.api
+          .submitAnswer(widget.puzzlet.id, answer, poleId: widget.pole.id);
 
-    if (!mounted) return;
-    setState(() {
-      _busy = false;
-      _outcome = outcome;
-      if (outcome is AttemptIncorrect) {
-        _attemptsRemaining = outcome.attemptsRemaining;
-        _previousWrongAnswers = List.of(outcome.previousWrongAnswers);
-        _answerController.clear();
-      } else if (outcome is AttemptLockedOut) {
-        _attemptsRemaining = 0;
-      }
-    });
+      if (!mounted) return;
+      setState(() {
+        _outcome = outcome;
+        if (outcome is AttemptIncorrect) {
+          _attemptsRemaining = outcome.attemptsRemaining;
+          _previousWrongAnswers = List.of(outcome.previousWrongAnswers);
+          _answerController.clear();
+        } else if (outcome is AttemptLockedOut) {
+          _attemptsRemaining = 0;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _outcome = AttemptFailed(e.toString()));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   String? _outcomeText() {
@@ -71,6 +82,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       AttemptLockedOut() => PuzzletStrings.lockedOut,
       AttemptAlreadyCaptured() => PuzzletStrings.alreadyCapturedByOther,
       AttemptAlreadyOwner() => PuzzletStrings.alreadyOwner,
+      AttemptFailed() => o.message,
       _ => null,
     };
   }
@@ -80,7 +92,8 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
         AttemptIncorrect() => Colors.orange.shade700,
         AttemptLockedOut() ||
         AttemptAlreadyCaptured() ||
-        AttemptAlreadyOwner() =>
+        AttemptAlreadyOwner() ||
+        AttemptFailed() =>
           Colors.red.shade700,
         _ => null,
       };

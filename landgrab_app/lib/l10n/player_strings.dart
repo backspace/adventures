@@ -165,6 +165,15 @@ class PuzzletStrings {
       'Another team captured this puzzlet first.';
   static const alreadyOwner =
       'Your team already owns this pole. Wait for a rival.';
+
+  // Fallbacks for submissions that fail in ways the app doesn't
+  // specifically model. When the server supplies an error detail,
+  // that text is shown instead of these (server-side voice edits
+  // happen in the Phoenix controllers).
+  static String submissionFailedHttp(int statusCode) =>
+      'Submission failed (HTTP $statusCode).';
+  static const submissionFailedNetwork =
+      'Submission failed — check your connection and try again.';
 }
 
 /// Details WebView route (`routes/details_webview_route.dart`).

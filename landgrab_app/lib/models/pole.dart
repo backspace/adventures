@@ -106,6 +106,16 @@ class AttemptAlreadyOwner extends AttemptOutcome {
   const AttemptAlreadyOwner();
 }
 
+/// Catch-all for submissions the server rejected in a way the app
+/// doesn't specifically model (e.g. 403 no_team) or that never
+/// reached the server (network failure). Carries a display message
+/// so the puzzlet screen can show it instead of hanging on a
+/// spinner; the user can retry.
+class AttemptFailed extends AttemptOutcome {
+  final String message;
+  const AttemptFailed(this.message);
+}
+
 sealed class ScanOutcome {
   const ScanOutcome();
 }

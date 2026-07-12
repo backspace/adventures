@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/pole.dart';
@@ -242,8 +243,30 @@ class LandgrabApi {
       if (e.response?.statusCode == 409 || code == 'already_captured') {
         return const AttemptAlreadyCaptured();
       }
-      rethrow;
+      // Anything else becomes a displayable failure rather than a
+      // thrown exception — a rethrow here used to escape the puzzlet
+      // screen's submit handler and leave it spinning forever.
+      return AttemptFailed(attemptFailureMessage(e));
     }
+  }
+
+  /// Human-readable message for an unmodelled attempt failure.
+  /// Prefers the server's error detail (e.g. "User is not on a
+  /// team.") and falls back to a generic network message when the
+  /// request never got a response.
+  String attemptFailureMessage(DioException e) {
+    final data = e.response?.data;
+    if (data is Map) {
+      final error = data['error'];
+      if (error is Map && error['detail'] is String) {
+        return error['detail'] as String;
+      }
+    }
+    final statusCode = e.response?.statusCode;
+    if (statusCode != null) {
+      return PuzzletStrings.submissionFailedHttp(statusCode);
+    }
+    return PuzzletStrings.submissionFailedNetwork;
   }
 
   String? _errorCode(DioException e) {
@@ -944,7 +967,9 @@ class TestPlayLandgrabApi extends LandgrabApi {
     } on DioException catch (e) {
       if (e.response?.statusCode == 423) return const AttemptLockedOut();
       if (e.response?.statusCode == 409) return const AttemptAlreadyCaptured();
-      rethrow;
+      // Same policy as the real-game submitAnswer: unmodelled
+      // failures surface as a displayable outcome, never a throw.
+      return AttemptFailed(attemptFailureMessage(e));
     }
   }
 }
