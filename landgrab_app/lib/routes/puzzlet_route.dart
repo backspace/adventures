@@ -1,3 +1,4 @@
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
@@ -22,7 +23,13 @@ class PuzzletRoute extends StatefulWidget {
 }
 
 class _PuzzletRouteState extends State<PuzzletRoute> {
+  // How long the confetti burst plays before we auto-pop back to the
+  // map, where the territory-capture animation takes over.
+  static const _celebrationDuration = Duration(milliseconds: 1600);
+
   final _answerController = TextEditingController();
+  late final ConfettiController _confetti =
+      ConfettiController(duration: _celebrationDuration);
   bool _busy = false;
   int? _attemptsRemaining;
   AttemptOutcome? _outcome;
@@ -33,6 +40,17 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     super.initState();
     _attemptsRemaining = widget.puzzlet.attemptsRemaining;
     _previousWrongAnswers = List.of(widget.puzzlet.previousWrongAnswers);
+  }
+
+  /// Correct answer: no text — celebrate with a confetti burst, then
+  /// pop back (with `true` so the scanner can tell the map which pole
+  /// to animate). maybePop rather than pop so a bare test harness
+  /// with a single route doesn't underflow the navigator.
+  void _celebrateAndPop() {
+    _confetti.play();
+    Future.delayed(_celebrationDuration, () {
+      if (mounted) Navigator.of(context).maybePop(true);
+    });
   }
 
   Future<void> _submit({String? override}) async {
@@ -64,6 +82,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
           _attemptsRemaining = 0;
         }
       });
+      if (outcome is AttemptCorrect) _celebrateAndPop();
     } catch (e) {
       if (!mounted) return;
       setState(() => _outcome = AttemptFailed(e.toString()));
@@ -75,9 +94,10 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   String? _outcomeText() {
     final o = _outcome;
     return switch (o) {
-      AttemptCorrect() => o.poleLocked
-          ? PuzzletStrings.correctAndLocked
-          : PuzzletStrings.correctPoleCaptured,
+      // AttemptCorrect deliberately renders no text — the confetti
+      // burst plus the return-to-map territory animation carry the
+      // success feedback.
+      AttemptCorrect() => null,
       AttemptIncorrect() => PuzzletStrings.incorrect(o.attemptsRemaining),
       AttemptLockedOut() => PuzzletStrings.lockedOut,
       AttemptAlreadyCaptured() => PuzzletStrings.alreadyCapturedByOther,
@@ -88,7 +108,6 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   }
 
   Color? _outcomeColor() => switch (_outcome) {
-        AttemptCorrect() => Colors.green.shade700,
         AttemptIncorrect() => Colors.orange.shade700,
         AttemptLockedOut() ||
         AttemptAlreadyCaptured() ||
@@ -123,6 +142,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   @override
   void dispose() {
     _answerController.dispose();
+    _confetti.dispose();
     super.dispose();
   }
 
@@ -141,7 +161,12 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       appBar: AppBar(
         title: Text(widget.pole.label ?? widget.pole.barcode),
       ),
-      body: SingleChildScrollView(
+      body: Stack(children: [
+        // Confetti overlays the whole screen from the top centre,
+        // firing in every direction on a correct answer. Behind the
+        // scroll view in source order but painted above it because
+        // it's later in the Stack.
+        SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +240,20 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
             ],
           ],
         ),
-      ),
+        ),
+        Align(
+          alignment: Alignment.topCenter,
+          child: ConfettiWidget(
+            confettiController: _confetti,
+            blastDirectionality: BlastDirectionality.explosive,
+            numberOfParticles: 40,
+            maxBlastForce: 25,
+            minBlastForce: 8,
+            gravity: 0.3,
+            shouldLoop: false,
+          ),
+        ),
+      ]),
     );
   }
 }

@@ -286,10 +286,21 @@ class _HomeRouteState extends State<HomeRoute>
   }
 
   Future<void> _openScanner() async {
-    final scanned = await Navigator.of(context).push<String>(
+    final result = await Navigator.of(context).push<ScanRouteResult>(
       MaterialPageRoute(builder: (_) => ScanRoute(api: widget.api)),
     );
-    if (scanned != null && mounted) _load();
+    if (result == null || !mounted) return;
+    await _load();
+    // If the scan flow ended in a capture, replay the territory
+    // animation for that pole now that the map is visible again. The
+    // socket's pole_updated broadcast fired while the player was
+    // still on the puzzlet screen, so its 800 ms animation played
+    // (and expired) unseen behind the navigation stack.
+    final capturedPoleId = result.capturedPoleId;
+    if (capturedPoleId != null && mounted) {
+      setState(() => _captureStartedAt[capturedPoleId] = DateTime.now());
+      _ensureAnimTicker();
+    }
   }
 
   Color _pinColor(Pole pole) {

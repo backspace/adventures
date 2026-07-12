@@ -121,21 +121,50 @@ void main() {
     expect(button.onPressed, isNull);
   });
 
-  testWidgets('shows capture message after a correct answer', (tester) async {
+  testWidgets('celebrates a correct answer and pops back with `true`',
+      (tester) async {
     final api = _FakeApi();
     api.nextOutcome = const AttemptCorrect(captureTeamId: 't1', poleLocked: false);
 
-    await tester.pumpWidget(_wrap(PuzzletRoute(
-      api: api,
-      pole: _pole(),
-      puzzlet: _puzzlet(),
-    )));
+    // Host the route behind a pushed page so we can observe the pop
+    // and its result.
+    bool? popResult;
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(
+        builder: (context) => Scaffold(
+          body: TextButton(
+            onPressed: () async {
+              popResult = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(
+                  builder: (_) => PuzzletRoute(
+                    api: api,
+                    pole: _pole(),
+                    puzzlet: _puzzlet(),
+                  ),
+                ),
+              );
+            },
+            child: const Text('open'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Red');
     await tester.tap(find.text('Submit'));
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('Correct! Pole captured.'), findsOneWidget);
+    // No success text; the submit disables while confetti plays.
+    expect(find.textContaining('Correct'), findsNothing);
+
+    // After the celebration window, the route pops with `true` so the
+    // scan flow can tell the map which pole to animate.
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+    expect(find.byType(PuzzletRoute), findsNothing);
+    expect(popResult, isTrue);
   });
 }

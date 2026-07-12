@@ -5,6 +5,12 @@ import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/routes/puzzlet_route.dart';
 
+/// What the scan flow hands back to the map: the scanned barcode
+/// (signals a refresh is worthwhile) and, when the flow ended in a
+/// successful capture, the captured pole's id so the map can replay
+/// the territory animation.
+typedef ScanRouteResult = ({String barcode, String? capturedPoleId});
+
 class ScanRoute extends StatefulWidget {
   final LandgrabApi api;
   const ScanRoute({super.key, required this.api});
@@ -40,13 +46,15 @@ class _ScanRouteState extends State<ScanRoute> {
         case ScanAlreadyOwner(:final pole):
           await _showAlreadyOwnerDialog(pole);
           if (!mounted) return;
-          Navigator.of(context).pop(barcode);
+          Navigator.of(context)
+              .pop((barcode: barcode, capturedPoleId: null));
           return;
 
         case ScanTeamLockedOut(:final pole):
           await _showTeamLockedOutDialog(pole);
           if (!mounted) return;
-          Navigator.of(context).pop(barcode);
+          Navigator.of(context)
+              .pop((barcode: barcode, capturedPoleId: null));
           return;
 
         case ScanFound(:final result):
@@ -54,11 +62,17 @@ class _ScanRouteState extends State<ScanRoute> {
             _showSnack(result.pole.locked
                 ? ScanStrings.poleFullyCaptured
                 : ScanStrings.noActivePuzzlet);
-            Navigator.of(context).pop(barcode);
+            Navigator.of(context)
+                .pop((barcode: barcode, capturedPoleId: null));
             return;
           }
 
-          await Navigator.of(context).push(
+          // PuzzletRoute pops `true` after a successful capture (and
+          // its confetti). Relay the captured pole's id to the map so
+          // it can replay the territory animation on arrival — the
+          // socket broadcast usually fires while the player is still
+          // on the puzzlet screen, so without this they'd miss it.
+          final captured = await Navigator.of(context).push<bool>(
             MaterialPageRoute(
               builder: (_) => PuzzletRoute(
                 api: widget.api,
@@ -69,7 +83,10 @@ class _ScanRouteState extends State<ScanRoute> {
           );
 
           if (!mounted) return;
-          Navigator.of(context).pop(barcode);
+          Navigator.of(context).pop((
+            barcode: barcode,
+            capturedPoleId: captured == true ? result.pole.id : null,
+          ));
       }
     } catch (e) {
       if (!mounted) return;
