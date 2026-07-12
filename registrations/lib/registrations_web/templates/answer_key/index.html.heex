@@ -1,0 +1,106 @@
+<%# Admin-only answer key. Styles are inlined rather than added to the
+    player-facing SCSS bundle — this page is a utility printout, not
+    part of the site's look. %>
+<style>
+  .answer-key .pole-card {
+    background: white;
+    color: black;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    break-inside: avoid;
+  }
+  .answer-key .pole-card svg { max-width: 100%; }
+  .answer-key .barcode-text {
+    font-family: monospace;
+    font-size: 0.9rem;
+    margin-top: -0.25rem;
+  }
+  .answer-key table { width: 100%; margin-top: 0.75rem; }
+  .answer-key td, .answer-key th { vertical-align: top; }
+  .answer-key .answer { font-family: monospace; white-space: pre-wrap; }
+  .answer-key .meta { font-size: 0.8rem; color: #555; }
+  @media print {
+    nav, .row.title, footer { display: none !important; }
+    .answer-key .pole-card { border: none; border-bottom: 1px solid #999; }
+  }
+</style>
+
+<div class="answer-key">
+  <div class="row card">
+    <div class="small-12 columns">
+      <h2>Answer key</h2>
+      <p class="meta">
+        <%= length(@poles) %> poles ·
+        <%= Enum.sum(for p <- @poles, do: length(p.puzzlets)) %> attached puzzlets ·
+        <%= length(@unattached) %> unattached
+      </p>
+    </div>
+  </div>
+
+  <%= for pole <- @poles do %>
+    <div class="pole-card">
+      <h3><%= pole.label || pole.barcode %></h3>
+      <%= barcode_svg(pole.barcode) %>
+      <p class="barcode-text"><%= pole.barcode %></p>
+
+      <%= if pole.puzzlets == [] do %>
+        <p class="meta">No puzzlets attached.</p>
+      <% else %>
+        <table>
+          <thead>
+            <tr>
+              <th>Question</th>
+              <th>Answer</th>
+              <th>Meta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <%= for puzzlet <- pole.puzzlets do %>
+              <tr>
+                <td><%= puzzlet.instructions %></td>
+                <td class="answer"><%= puzzlet.answer %></td>
+                <td class="meta">
+                  difficulty <%= puzzlet.difficulty %> ·
+                  <%= puzzlet.answer_type %> ·
+                  <%= puzzlet.status %>
+                  <%= if puzzlet.validator_only do %>· ★ validators only<% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= if @unattached != [] do %>
+    <div class="pole-card">
+      <h3>Unattached puzzlets</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>Meta</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= for puzzlet <- @unattached do %>
+            <tr>
+              <td><%= puzzlet.instructions %></td>
+              <td class="answer"><%= puzzlet.answer %></td>
+              <td class="meta">
+                difficulty <%= puzzlet.difficulty %> ·
+                <%= puzzlet.answer_type %> ·
+                <%= puzzlet.status %>
+                <%= if puzzlet.validator_only do %>· ★ validators only<% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

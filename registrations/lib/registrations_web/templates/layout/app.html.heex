@@ -91,6 +91,11 @@
                           class: "event"
                         ) %>
                       </li>
+                      <li>
+                        <%= active_link("Answer key", @conn, Routes.landgrab_answer_key_path(@conn, :index),
+                          class: "answer-key-link"
+                        ) %>
+                      </li>
                     <% end %>
                   <% end %>
                 <% else %>

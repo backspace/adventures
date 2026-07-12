@@ -142,6 +142,8 @@ defmodule RegistrationsWeb.Router do
     get("/landgrab-event", LandgrabEventController, :edit, as: :landgrab_event)
     put("/landgrab-event", LandgrabEventController, :update, as: :landgrab_event)
 
+    get("/landgrab-answer-key", AnswerKeyController, :index, as: :landgrab_answer_key)
+
     get("/user-roles", AdminUserRoleController, :index, as: :admin_user_role)
     post("/user-roles", AdminUserRoleController, :create, as: :admin_user_role)
     delete("/user-roles/:id", AdminUserRoleController, :delete, as: :admin_user_role)

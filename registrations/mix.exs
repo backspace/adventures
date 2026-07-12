@@ -42,6 +42,7 @@ defmodule Registrations.Mixfile do
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:plug_cowboy, "~> 2.1"},
       {:plug, "~> 1.7"},
+      {:barlix, "~> 0.6.4"},
       {:pow, "~> 1.0.28"},
       {:pow_assent, "~> 0.4.15"},
       {:redix, "~> 1.5.1"},
