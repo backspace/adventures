@@ -141,6 +141,18 @@ class LandgrabApi {
     }
   }
 
+  /// Register (or refresh) this device's push token so the server
+  /// can send notifications when the app is backgrounded.
+  Future<void> registerDeviceToken({
+    required String token,
+    required String platform,
+  }) async {
+    await dio.post('/powapi/device-tokens', data: {
+      'token': token,
+      'platform': platform,
+    });
+  }
+
   /// Fire-and-forget boot ping so the server can record that this
   /// user has opened the app. Called from `_Boot` after we've
   /// confirmed the user is signed in. Any error is swallowed —

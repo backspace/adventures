@@ -24,6 +24,7 @@ import 'package:landgrab/routes/supervisor/supervisor_route.dart';
 import 'package:landgrab/routes/validator/validator_route.dart';
 import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/services/landgrab_socket.dart';
+import 'package:landgrab/services/push_service.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/attack_rings_layer.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
@@ -93,6 +94,10 @@ class _HomeRouteState extends State<HomeRoute>
     super.initState();
     _load();
     _connectSocket();
+    // Ask for push permission here — the player has just signed in
+    // and landed on the map, so "get alerts about your poles" has
+    // context. Fire-and-forget; PushService owns retries/rotation.
+    PushService.register(widget.api);
   }
 
   Future<void> _connectSocket() async {

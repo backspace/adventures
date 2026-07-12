@@ -43,6 +43,8 @@ defmodule Registrations.Mixfile do
       {:plug_cowboy, "~> 2.1"},
       {:plug, "~> 1.7"},
       {:barlix, "~> 0.6.4"},
+      {:pigeon, "~> 2.0"},
+      {:goth, "~> 1.4"},
       {:pow, "~> 1.0.28"},
       {:pow_assent, "~> 0.4.15"},
       {:redix, "~> 1.5.1"},

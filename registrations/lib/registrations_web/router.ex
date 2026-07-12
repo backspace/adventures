@@ -8,7 +8,10 @@ defmodule RegistrationsWeb.Router do
     extensions: [PowResetPassword, PowInvitation, PowPersistentSession]
 
   alias Pow.Plug.RequireAuthenticated
+  alias Pow.Plug.Session
+  alias PowPersistentSession.Plug.Cookie
   alias RegistrationsWeb.Plugs.RequireRole
+  alias RegistrationsWeb.Plugs.Settings
 
   pipeline :browser do
     plug(:accepts, ["html"])
@@ -17,10 +20,10 @@ defmodule RegistrationsWeb.Router do
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
 
-    plug(RegistrationsWeb.Plugs.Settings)
+    plug(Settings)
 
-    plug(Pow.Plug.Session, otp_app: :registrations)
-    plug(PowPersistentSession.Plug.Cookie)
+    plug(Session, otp_app: :registrations)
+    plug(Cookie)
 
     plug(PowAssent.Plug.Reauthorization,
       handler: RegistrationsWeb.PowAssent.ReauthorizationPlugHandler
@@ -93,9 +96,9 @@ defmodule RegistrationsWeb.Router do
     # `Pow.Plug.Session` needs to run so the callback controller can
     # find its config in the conn (otherwise
     # `Pow.Phoenix.ViewHelpers.layout/1` raises `ConfigError`).
-    plug RegistrationsWeb.Plugs.Settings
-    plug Pow.Plug.Session, otp_app: :registrations
-    plug PowPersistentSession.Plug.Cookie
+    plug Settings
+    plug Session, otp_app: :registrations
+    plug Cookie
   end
 
   scope "/" do
@@ -242,6 +245,12 @@ defmodule RegistrationsWeb.Router do
     pipe_through([:pow_api, :pow_api_protected])
 
     post("/app_opened", TelemetryController, :app_opened)
+  end
+
+  scope "/powapi", RegistrationsWeb.Api, as: :api do
+    pipe_through([:pow_api, :pow_api_protected])
+
+    post("/device-tokens", DeviceTokenController, :create)
   end
 
   scope "/landgrab", RegistrationsWeb.Landgrab, as: :landgrab do

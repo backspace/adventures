@@ -39,7 +39,7 @@ defmodule Registrations.Application do
         # Start a worker by calling: Registrations.Worker.start_link(arg)
         # {Registrations.Worker, arg}
         {ConCache, [name: :registrations_cache, ttl_check_interval: false]}
-      ] ++ redix_child()
+      ] ++ redix_child() ++ push_children()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -52,6 +52,28 @@ defmodule Registrations.Application do
       nil -> []
       "" -> []
       url -> [{Redix, {url, [name: :redix]}}]
+    end
+  end
+
+  # Push notifications need Firebase service-account credentials.
+  # Without them (dev, test, CI) we start neither Goth nor the FCM
+  # dispatcher; `Registrations.Landgrab.Push.enabled?/0` reports this
+  # so pushes become no-ops instead of crashes.
+  defp push_children do
+    case System.get_env("FIREBASE_SERVICE_ACCOUNT_JSON") do
+      nil ->
+        []
+
+      "" ->
+        []
+
+      json ->
+        credentials = Jason.decode!(json)
+
+        [
+          {Goth, name: Registrations.Goth, source: {:service_account, credentials, []}},
+          {Registrations.FCM, adapter: Pigeon.FCM, project_id: credentials["project_id"], auth: Registrations.Goth}
+        ]
     end
   end
 

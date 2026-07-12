@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "134243646832",
+    "project_id": "landgrab-notifications",
+    "storage_bucket": "landgrab-notifications.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:134243646832:android:27a0f5528c9c39a9eda3b5",
+        "android_client_info": {
+          "package_name": "ca.chromatin.poles"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEksCFF5TIYNJ22gF4jsRYSVFzLfX5HYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

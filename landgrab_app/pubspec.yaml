@@ -43,6 +43,8 @@ dependencies:
   flutter_map_compass: ^1.1.1
   flutter_compass: ^0.8.1
   confetti: ^0.8.0
+  firebase_core: ^4.11.0
+  firebase_messaging: ^16.4.1
 
 dev_dependencies:
   flutter_test:

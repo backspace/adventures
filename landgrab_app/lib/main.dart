@@ -1,6 +1,8 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:landgrab/app.dart';
+import 'package:landgrab/firebase_options.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -22,6 +24,17 @@ Future<void> main() async {
     }
   }
   F.appFlavor = F.fromName(_flavorFromBuild);
+
+  // Firebase powers push notifications (FCM on Android, FCM→APNs
+  // relay on iOS). Init failure is non-fatal — the app works fully
+  // without push; PushService just won't register a token.
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (_) {
+    // e.g. running on a platform flutterfire wasn't configured for.
+  }
 
   final sentryDsn = _sentryDsnFromBuild.isNotEmpty
       ? _sentryDsnFromBuild

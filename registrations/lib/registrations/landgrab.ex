@@ -5,6 +5,7 @@ defmodule Registrations.Landgrab do
   alias Registrations.Landgrab.Attachment
   alias Registrations.Landgrab.Attempt
   alias Registrations.Landgrab.Capture
+  alias Registrations.Landgrab.DeviceToken
   alias Registrations.Landgrab.Notification
   alias Registrations.Landgrab.Pole
   alias Registrations.Landgrab.Puzzlet
@@ -479,6 +480,20 @@ defmodule Registrations.Landgrab do
   # @attack_cooldown. The cooldown keeps the `notifications` history
   # from filling up with duplicate rows when an attacker retries a
   # puzzlet many times.
+  @doc """
+  Register (or move) a push token. Upserts on the token so a device
+  that changes users — new login on the same install — follows the
+  new user instead of pushing to the old one.
+  """
+  def register_device_token(user_id, token, platform) do
+    %DeviceToken{}
+    |> DeviceToken.changeset(%{user_id: user_id, token: token, platform: platform})
+    |> Repo.insert(
+      on_conflict: {:replace, [:user_id, :platform, :updated_at]},
+      conflict_target: :token
+    )
+  end
+
   @attack_cooldown_minutes 5
 
   defp maybe_signal_attack(_pole, nil, _team_id), do: :ok
@@ -496,6 +511,7 @@ defmodule Registrations.Landgrab do
   rescue
     error ->
       require Logger
+
       Logger.error("attack signal failed: #{Exception.message(error)}")
       :ok
   end
@@ -534,9 +550,7 @@ defmodule Registrations.Landgrab do
   # as attack signals: a notification bug must never fail the capture.
   defp maybe_signal_pole_lost(_pole, nil, _capturing_team_id), do: :ok
 
-  defp maybe_signal_pole_lost(_pole, owner_id, capturing_team_id)
-       when owner_id == capturing_team_id,
-       do: :ok
+  defp maybe_signal_pole_lost(_pole, owner_id, capturing_team_id) when owner_id == capturing_team_id, do: :ok
 
   defp maybe_signal_pole_lost(%Pole{} = pole, previous_owner_id, capturing_team_id) do
     captor_name = team_name(capturing_team_id)
@@ -558,6 +572,7 @@ defmodule Registrations.Landgrab do
   rescue
     error ->
       require Logger
+
       Logger.error("pole-lost signal failed: #{Exception.message(error)}")
       :ok
   end
@@ -567,9 +582,10 @@ defmodule Registrations.Landgrab do
     team && team.name
   end
 
-  # Persist + broadcast a team-directed notification. The persisted
-  # row feeds the future notification-history / chat feed; the
-  # broadcast gives currently-foregrounded apps a live toast.
+  # Persist + broadcast + push a team-directed notification. The
+  # persisted row feeds the future notification-history / chat feed;
+  # the broadcast gives currently-foregrounded apps a live toast; the
+  # push reaches backgrounded/locked phones.
   defp deliver_team_notification(type, %Pole{} = pole, recipient_id, sender_id, body, sender_name) do
     result =
       %Notification{}
@@ -597,10 +613,21 @@ defmodule Registrations.Landgrab do
         metadata: notification.metadata,
         inserted_at: notification.inserted_at
       })
+
+      Registrations.Landgrab.Push.push_to_team(
+        recipient_id,
+        push_title(type),
+        body,
+        %{"type" => type, "pole_id" => pole.id}
+      )
     end
 
     :ok
   end
+
+  defp push_title("attack"), do: "Under attack"
+  defp push_title("pole_lost"), do: "Pole lost"
+  defp push_title(_type), do: "LANDGRAB"
 
   defp display_name(%Pole{label: label}) when is_binary(label) and label != "", do: label
   defp display_name(%Pole{barcode: barcode}), do: barcode
