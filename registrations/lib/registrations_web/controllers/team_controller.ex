@@ -61,26 +61,9 @@ defmodule RegistrationsWeb.TeamController do
 
   def build(conn, %{"user_id" => base_user_id}) do
     base_user = Repo.get!(User, base_user_id)
-    users = Repo.all(User)
 
-    relationships = RegistrationsWeb.TeamFinder.relationships(base_user, users)
-
-    team_users = [base_user] ++ relationships.mutuals
-
-    changeset =
-      Team.changeset(%Team{}, %{
-        "name" => base_user.proposed_team_name || "FIXME",
-        "risk_aversion" => base_user.risk_aversion || 1
-      })
-
-    fallbacks = !base_user.proposed_team_name && !base_user.risk_aversion
-
-    case Repo.insert(changeset) do
-      {:ok, team} ->
-        team_user_ids = Enum.map(team_users, fn user -> user.id end)
-
-        Repo.update_all(from(u in User, where: u.id in ^team_user_ids, update: [set: [team_id: ^team.id]]), [])
-
+    case RegistrationsWeb.TeamBuilder.build_for(base_user) do
+      {:ok, _team, fallbacks} ->
         flash_type =
           if fallbacks do
             :error
