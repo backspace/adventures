@@ -21,6 +21,8 @@
   .answer-key td, .answer-key th { vertical-align: top; }
   .answer-key .answer { font-family: monospace; white-space: pre-wrap; }
   .answer-key .meta { font-size: 0.8rem; color: #555; }
+  .answer-key .owner { font-size: 0.9rem; margin: 0.25rem 0; }
+  .answer-key .owner.unclaimed { color: #777; font-style: italic; }
   @media print {
     nav, .row.title, footer { display: none !important; }
     .answer-key .pole-card { border: none; border-bottom: 1px solid #999; }
@@ -42,6 +44,15 @@
   <%= for pole <- @poles do %>
     <div class="pole-card">
       <h3><%= pole.label || pole.barcode %></h3>
+      <%= case @owners[pole.id] do %>
+        <% nil -> %>
+          <p class="owner unclaimed">Unclaimed</p>
+        <% team -> %>
+          <p class="owner">
+            Held by <strong><%= team.name %></strong>
+            (<%= member_usernames(team) %>)
+          </p>
+      <% end %>
       <%= barcode_svg(pole.barcode) %>
       <p class="barcode-text"><%= pole.barcode %></p>
 

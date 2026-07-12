@@ -481,11 +481,18 @@ defmodule Registrations.Landgrab do
   defp maybe_signal_attack(_pole, owner_id, team_id) when owner_id == team_id, do: :ok
 
   defp maybe_signal_attack(%Pole{} = pole, owner_id, attacker_id) do
+    # The signal is a side effect of scanning — a bug here must never
+    # 500 the scanning player mid-game. Log and carry on instead.
     if recent_attack_signal?(owner_id, attacker_id, pole.id) do
       :ok
     else
       write_attack_signal(pole, owner_id, attacker_id)
     end
+  rescue
+    error ->
+      require Logger
+      Logger.error("attack signal failed: #{Exception.message(error)}")
+      :ok
   end
 
   defp recent_attack_signal?(recipient_id, sender_id, pole_id) do
@@ -495,7 +502,13 @@ defmodule Registrations.Landgrab do
     |> where([n], n.recipient_team_id == ^recipient_id)
     |> where([n], n.sender_team_id == ^sender_id)
     |> where([n], n.type == "attack")
-    |> where([n], fragment("(?->>'pole_id')::uuid = ?", n.metadata, ^pole_id))
+    # Text comparison, deliberately no ::uuid cast: a cast makes
+    # Postgres type the parameter as uuid, and Postgrex then expects
+    # the 16-byte dumped form — which raw fragments don't get from
+    # Ecto automatically. Both sides are canonical lowercase UUID
+    # strings (metadata was written from the same Elixir value), so
+    # text equality is exact.
+    |> where([n], fragment("?->>'pole_id' = ?", n.metadata, ^pole_id))
     |> where([n], n.inserted_at >= ^threshold)
     |> Repo.exists?()
   end

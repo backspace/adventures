@@ -18,4 +18,16 @@ defmodule RegistrationsWeb.AnswerKeyView do
     |> String.replace(~r/^<\?xml[^>]*\?>\n?/, "")
     |> raw()
   end
+
+  @doc """
+  The team's members as comma-separated email usernames (the part
+  before the @), sorted — enough to recognise who's who without
+  printing full addresses on the sheet.
+  """
+  def member_usernames(team) do
+    team.users
+    |> Enum.map(fn user -> user.email |> String.split("@") |> hd() end)
+    |> Enum.sort()
+    |> Enum.join(", ")
+  end
 end

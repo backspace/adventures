@@ -8,6 +8,7 @@ defmodule RegistrationsWeb.AnswerKeyController do
   """
   use RegistrationsWeb, :controller
 
+  alias Registrations.Landgrab
   alias Registrations.Landgrab.Pole
   alias Registrations.Landgrab.Puzzlet
 
@@ -32,6 +33,30 @@ defmodule RegistrationsWeb.AnswerKeyController do
         )
       )
 
-    render(conn, "index.html", poles: poles, unattached: unattached)
+    render(conn, "index.html",
+      poles: poles,
+      unattached: unattached,
+      owners: owning_teams_by_pole(poles)
+    )
+  end
+
+  # Map of pole id → owning Team (with users preloaded), or no entry
+  # when unclaimed. One ownership query per pole (fine at event
+  # scale for an admin page) plus a single team+users load.
+  defp owning_teams_by_pole(poles) do
+    owner_ids =
+      poles
+      |> Map.new(fn pole -> {pole.id, Landgrab.current_owner_team_id_for_pole(pole)} end)
+      |> Enum.reject(fn {_pole_id, team_id} -> is_nil(team_id) end)
+      |> Map.new()
+
+    team_ids = owner_ids |> Map.values() |> Enum.uniq()
+
+    teams =
+      from(t in RegistrationsWeb.Team, where: t.id in ^team_ids, preload: :users)
+      |> Repo.all()
+      |> Map.new(&{&1.id, &1})
+
+    Map.new(owner_ids, fn {pole_id, team_id} -> {pole_id, teams[team_id]} end)
   end
 end
