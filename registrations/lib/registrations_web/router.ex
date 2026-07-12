@@ -81,13 +81,6 @@ defmodule RegistrationsWeb.Router do
     plug(RequireRole, role: "validation_supervisor")
   end
 
-  pipeline :landgrab_tester do
-    plug(:accepts, ["json"])
-    plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
-    plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
-    plug(RegistrationsWeb.Plugs.RequireAnyRole, roles: ["validator", "validation_supervisor"])
-  end
-
   pipeline :skip_csrf_protection do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -322,23 +315,6 @@ defmodule RegistrationsWeb.Router do
     patch("/puzzlet-comments/:id", ValidationController, :update_puzzlet_comment)
     delete("/pole-comments/:id", ValidationController, :delete_pole_comment)
     delete("/puzzlet-comments/:id", ValidationController, :delete_puzzlet_comment)
-  end
-
-  scope "/landgrab/test-play", RegistrationsWeb.Landgrab, as: :landgrab_test_play do
-    pipe_through([:landgrab_tester])
-
-    post("/sessions", TestPlayController, :create_session)
-    get("/sessions", TestPlayController, :list_sessions)
-    post("/sessions/:id/end", TestPlayController, :end_session)
-
-    get("/sessions/:session_id/poles", TestPlayController, :list_poles)
-    get("/sessions/:session_id/poles/:barcode", TestPlayController, :scan_pole)
-
-    post(
-      "/sessions/:session_id/puzzlets/:puzzlet_id/attempts",
-      TestPlayController,
-      :submit_attempt
-    )
   end
 
   scope "/landgrab/supervision", RegistrationsWeb.Landgrab, as: :landgrab_supervision do

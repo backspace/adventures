@@ -6,7 +6,6 @@ import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/models/region.dart';
-import 'package:landgrab/models/test_session.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/models/validator_only_puzzlet.dart';
 import 'package:landgrab/services/user_service.dart';
@@ -205,18 +204,11 @@ class LandgrabApi {
     }
   }
 
-  // `poleId` records which pole the user was looking at when they
-  // submitted. Real-game puzzlets are pole-attached and the server
-  // resolves the pole from the puzzlet, so this is mostly meaningful
-  // for the test-play override where puzzlets are unattached.
-  Future<AttemptOutcome> submitAnswer(String puzzletId, String answer, {String? poleId}) async {
+  Future<AttemptOutcome> submitAnswer(String puzzletId, String answer) async {
     try {
       final response = await dio.post(
         '/landgrab/puzzlets/$puzzletId/attempts',
-        data: {
-          'answer': answer,
-          if (poleId != null) 'pole_id': poleId,
-        },
+        data: {'answer': answer},
       );
       final body = response.data as Map<String, dynamic>;
       if (body['correct'] == true) {
@@ -883,93 +875,5 @@ class LandgrabApi {
       // Ignore — we're clearing local state regardless.
     }
     await UserService.clearUserData();
-  }
-
-  // ─── Test play sessions ─────────────────────────────────────────────
-
-  Future<TestSession> createTestSession({String? name}) async {
-    final response = await dio.post(
-      '/landgrab/test-play/sessions',
-      data: {if (name != null) 'name': name},
-    );
-    return TestSession.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  Future<List<TestSession>> listTestSessions() async {
-    final response = await dio.get('/landgrab/test-play/sessions');
-    final list = response.data['sessions'] as List;
-    return list
-        .map((e) => TestSession.fromJson(e as Map<String, dynamic>))
-        .toList(growable: false);
-  }
-
-  Future<TestSession> endTestSession(String id) async {
-    final response = await dio.post('/landgrab/test-play/sessions/$id/end');
-    return TestSession.fromJson(response.data as Map<String, dynamic>);
-  }
-}
-
-/// LandgrabApi subclass that redirects gameplay calls (listPoles, scan,
-/// submitAnswer) to the scoped test-play endpoints. Other methods inherit
-/// from the parent unchanged.
-class TestPlayLandgrabApi extends LandgrabApi {
-  final String sessionId;
-
-  TestPlayLandgrabApi(super.dio, this.sessionId);
-
-  @override
-  Future<List<Pole>> listPoles() async {
-    final response =
-        await dio.get('/landgrab/test-play/sessions/$sessionId/poles');
-    final list = response.data['poles'] as List;
-    return list
-        .map((p) => Pole.fromJson(p as Map<String, dynamic>))
-        .toList(growable: false);
-  }
-
-  @override
-  Future<ScanOutcome> scan(String barcode) async {
-    try {
-      final response = await dio.get(
-        '/landgrab/test-play/sessions/$sessionId/poles/$barcode',
-      );
-      return ScanFound(ScanResult.fromJson(response.data as Map<String, dynamic>));
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 404) return const ScanUnknownBarcode();
-      rethrow;
-    }
-  }
-
-  @override
-  Future<AttemptOutcome> submitAnswer(String puzzletId, String answer, {String? poleId}) async {
-    try {
-      final response = await dio.post(
-        '/landgrab/test-play/sessions/$sessionId/puzzlets/$puzzletId/attempts',
-        data: {
-          'answer': answer,
-          if (poleId != null) 'pole_id': poleId,
-        },
-      );
-      final body = response.data as Map<String, dynamic>;
-      if (body['correct'] == true) {
-        return AttemptCorrect(
-          captureTeamId: body['pole']?['current_owner_team_id'] as String? ?? '',
-          poleLocked: body['pole']?['locked'] as bool? ?? false,
-        );
-      }
-      return AttemptIncorrect(
-        attemptsRemaining: body['attempts_remaining'] as int,
-        previousWrongAnswers: (body['previous_wrong_answers'] as List?)
-                ?.map((e) => e as String)
-                .toList(growable: false) ??
-            const [],
-      );
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 423) return const AttemptLockedOut();
-      if (e.response?.statusCode == 409) return const AttemptAlreadyCaptured();
-      // Same policy as the real-game submitAnswer: unmodelled
-      // failures surface as a displayable outcome, never a throw.
-      return AttemptFailed(attemptFailureMessage(e));
-    }
   }
 }

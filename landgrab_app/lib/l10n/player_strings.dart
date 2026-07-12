@@ -85,13 +85,9 @@ class GameplayStrings {
   static const scanFab = 'Scan';
   static const credits = 'Credits';
   static const details = 'Details';
-  static const testPlay = 'Test play';
-  static const exitTestPlay = 'Exit test play';
   static const author = 'Author';
   static const validate = 'Validate';
   static const supervise = 'Supervise';
-  static String testPlayBanner(String sessionName) =>
-      'Test play · $sessionName';
   static String couldNotLoadPoles(String error) =>
       'Could not load poles: $error';
 }

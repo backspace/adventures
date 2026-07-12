@@ -50,8 +50,8 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     // rather than throwing — but guard with try/finally anyway so no
     // future exception can strand the screen with _busy stuck true.
     try {
-      final outcome = await widget.api
-          .submitAnswer(widget.puzzlet.id, answer, poleId: widget.pole.id);
+      final outcome =
+          await widget.api.submitAnswer(widget.puzzlet.id, answer);
 
       if (!mounted) return;
       setState(() {

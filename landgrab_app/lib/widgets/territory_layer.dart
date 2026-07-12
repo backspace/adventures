@@ -30,7 +30,6 @@ import 'package:landgrab/models/pole.dart';
 class TerritoryLayer extends StatelessWidget {
   final List<Pole> poles;
   final String? myOwnerId;
-  final bool inTestPlay;
   final double radiusMeters;
   final Map<String, DateTime> captureStartedAt;
   final Duration captureAnimationDuration;
@@ -39,7 +38,6 @@ class TerritoryLayer extends StatelessWidget {
     super.key,
     required this.poles,
     this.myOwnerId,
-    this.inTestPlay = false,
     this.radiusMeters = 200,
     this.captureStartedAt = const {},
     this.captureAnimationDuration = const Duration(milliseconds: 800),
@@ -168,10 +166,8 @@ class TerritoryLayer extends StatelessWidget {
   }
 
   Color _colorFor(String ownerId) {
-    // Match `_pinColor` in home_route: in test-play any owner is you,
-    // so the whole territory reads as "yours". In real play, match
-    // vs. rival by team id.
-    if (inTestPlay) return Colors.green;
+    // Match `_pinColor` in home_route: your team's territory is
+    // green, rivals' red.
     if (ownerId == myOwnerId) return Colors.green;
     return Colors.red;
   }

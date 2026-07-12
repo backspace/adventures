@@ -8,11 +8,7 @@ defmodule Registrations.Landgrab do
   alias Registrations.Landgrab.Notification
   alias Registrations.Landgrab.Pole
   alias Registrations.Landgrab.Puzzlet
-  alias Registrations.Landgrab.Scope
-  alias Registrations.Landgrab.TestSession
   alias Registrations.Landgrab.Thumbnail
-  alias Registrations.Landgrab.Validations.PoleValidation
-  alias Registrations.Landgrab.Validations.PuzzletValidation
   alias Registrations.Repo
 
   @max_attempts_per_puzzlet 3
@@ -35,55 +31,17 @@ defmodule Registrations.Landgrab do
   Returns each pole with its current owner team_id and locked state.
   Returns a list of `%{pole: %Pole{}, current_owner_team_id: id|nil, locked?: bool}`.
   """
-  def list_poles_with_state(scope \\ Scope.real()) do
+  def list_poles_with_state do
     Pole
-    |> filter_visible_poles(scope)
     |> Repo.all()
-    |> Enum.map(&pole_with_state(&1, scope))
+    |> Enum.map(&pole_with_state/1)
   end
 
-  # If the scope restricts visibility (a validator in test play), filter
-  # the pole query to poles the user (a) created, (b) is assigned to
-  # validate, or (c) is validating any puzzlet on. Unrestricted scopes pass
-  # the query through unchanged.
-  defp filter_visible_poles(query, %Scope{visibility_user_id: nil}), do: query
-
-  defp filter_visible_poles(query, %Scope{visibility_user_id: user_id}) do
-    pole_validation_ids =
-      from(pv in PoleValidation, where: pv.validator_id == ^user_id, select: pv.pole_id)
-
-    puzzlet_validation_pole_ids =
-      from(puv in PuzzletValidation,
-        join: pz in Puzzlet,
-        on: pz.id == puv.puzzlet_id,
-        where: puv.validator_id == ^user_id,
-        select: pz.pole_id
-      )
-
-    from(p in query,
-      where:
-        p.creator_id == ^user_id or
-          p.id in subquery(pole_validation_ids) or
-          p.id in subquery(puzzlet_validation_pole_ids)
-    )
-  end
-
-  # Whether a specific pole is visible to a user under the scope. Used by
-  # scan_payload to translate invisibility into :not_found.
-  defp pole_visible?(_pole, %Scope{visibility_user_id: nil}), do: true
-
-  defp pole_visible?(%Pole{id: pole_id}, %Scope{visibility_user_id: user_id}) do
-    Pole
-    |> where([p], p.id == ^pole_id)
-    |> filter_visible_poles(%Scope{visibility_user_id: user_id})
-    |> Repo.exists?()
-  end
-
-  def pole_with_state(%Pole{} = pole, scope \\ Scope.real()) do
+  def pole_with_state(%Pole{} = pole) do
     %{
       pole: pole,
-      current_owner_team_id: current_owner_team_id_for_pole(pole, scope),
-      locked?: pole_locked?(pole, scope)
+      current_owner_team_id: current_owner_team_id_for_pole(pole),
+      locked?: pole_locked?(pole)
     }
   end
 
@@ -91,26 +49,19 @@ defmodule Registrations.Landgrab do
   Returns the full payload for a barcode scan by a particular team:
   pole state plus active puzzlet (or nil if locked) and the team's
   remaining attempts on that puzzlet.
-
-  In test scope, the "own creation" check is skipped so authors and
-  validators can rehearse against their own content.
   """
-  def scan_payload(barcode, team_id, user_id \\ nil, scope \\ Scope.real()) do
+  def scan_payload(barcode, team_id, user_id \\ nil) do
     case get_pole_by_barcode(barcode) do
       nil ->
         {:error, :not_found}
 
       pole ->
         cond do
-          # Invisible poles look like "not found" — don't leak existence.
-          not pole_visible?(pole, scope) ->
-            {:error, :not_found}
-
-          not Scope.test?(scope) && user_id && pole.creator_id == user_id ->
+          user_id && pole.creator_id == user_id ->
             {:error, :own_creation, pole}
 
-          pole_locked?(pole, scope) ->
-            state = pole_with_state(pole, scope)
+          pole_locked?(pole) ->
+            state = pole_with_state(pole)
 
             {:ok,
              Map.merge(state, %{
@@ -119,14 +70,14 @@ defmodule Registrations.Landgrab do
                previous_wrong_answers: []
              })}
 
-          pole_owned_by_team?(pole, team_id, scope) ->
+          pole_owned_by_team?(pole, team_id) ->
             {:error, :already_owner, pole}
 
           true ->
-            state = pole_with_state(pole, scope)
-            active = active_puzzlet_for_pole(pole, user_id, scope)
+            state = pole_with_state(pole)
+            active = active_puzzlet_for_pole(pole, user_id)
 
-            if active && team_locked_out?(active, team_id, scope) do
+            if active && team_locked_out?(active, team_id) do
               {:error, :team_locked_out, pole}
             else
               {attempts_remaining, prior_wrong} =
@@ -137,12 +88,12 @@ defmodule Registrations.Landgrab do
                   puzzlet ->
                     {max(
                        @max_attempts_per_puzzlet -
-                         team_wrong_attempts(puzzlet, team_id, scope),
+                         team_wrong_attempts(puzzlet, team_id),
                        0
-                     ), team_wrong_answers(puzzlet, team_id, scope)}
+                     ), team_wrong_answers(puzzlet, team_id)}
                 end
 
-              maybe_signal_attack(pole, state.current_owner_team_id, team_id, scope)
+              maybe_signal_attack(pole, state.current_owner_team_id, team_id)
 
               {:ok,
                Map.merge(state, %{
@@ -335,21 +286,8 @@ defmodule Registrations.Landgrab do
   When `user_id` is provided, puzzlets authored by that user are skipped in
   the rotation — the author silently rotates past their own work.
   """
-  def active_puzzlet_for_pole(pole, user_id \\ nil, scope \\ Scope.real())
-
-  def active_puzzlet_for_pole(%Pole{} = pole, user_id, scope) do
-    if Scope.test?(scope) do
-      test_active_puzzlet(pole, scope)
-    else
-      real_active_puzzlet(pole, user_id, scope)
-    end
-  end
-
-  defp real_active_puzzlet(%Pole{id: pole_id}, user_id, scope) do
-    captured_puzzlet_ids =
-      Capture
-      |> Scope.apply(scope)
-      |> select([c], c.puzzlet_id)
+  def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id \\ nil) do
+    captured_puzzlet_ids = select(Capture, [c], c.puzzlet_id)
 
     query =
       Puzzlet
@@ -357,7 +295,6 @@ defmodule Registrations.Landgrab do
       |> where([p], p.status == :validated)
       |> where([p], not p.validator_only)
       |> where([p], p.id not in subquery(captured_puzzlet_ids))
-      |> filter_visible_puzzlets(scope)
       |> order_by([p], asc: p.difficulty, asc: p.inserted_at)
       |> limit(1)
 
@@ -371,132 +308,23 @@ defmodule Registrations.Landgrab do
     Repo.one(query)
   end
 
-  # In a test session, puzzlets are typically not yet wired to specific
-  # poles. Pick from the five geographically-nearest not-yet-retired
-  # puzzlets (with a location), not yet captured in this session, and
-  # randomize so successive demos visit different ones.
-  #
-  # Unlike the real game (which requires `:validated`), test play also
-  # includes `:draft` and `:in_review` — authors need to be able to
-  # rehearse a puzzlet before validation without a separate flag. The
-  # visibility filter (see `filter_visible_puzzlets/2`) still gates
-  # who sees whose drafts.
-  defp test_active_puzzlet(%Pole{latitude: lat, longitude: lon}, scope) do
-    captured_puzzlet_ids =
-      Capture
-      |> Scope.apply(scope)
-      |> select([c], c.puzzlet_id)
+  def pole_owned_by_team?(_pole, nil), do: false
 
-    candidates =
-      Puzzlet
-      |> where([p], p.status in [:draft, :in_review, :validated])
-      |> where([p], p.id not in subquery(captured_puzzlet_ids))
-      |> where([p], not is_nil(p.latitude) and not is_nil(p.longitude))
-      |> filter_visible_puzzlets(scope)
-      |> order_by(
-        [p],
-        fragment(
-          "((? - ?) * (? - ?) + (? - ?) * (? - ?))",
-          p.latitude,
-          ^lat,
-          p.latitude,
-          ^lat,
-          p.longitude,
-          ^lon,
-          p.longitude,
-          ^lon
-        )
-      )
-      |> limit(5)
-      |> Repo.all()
-
-    case candidates do
-      [] -> nil
-      list -> Enum.random(list)
-    end
+  def pole_owned_by_team?(%Pole{} = pole, team_id) do
+    current_owner_team_id_for_pole(pole) == team_id
   end
 
-  defp filter_visible_puzzlets(query, %Scope{visibility_user_id: nil}), do: query
-
-  defp filter_visible_puzzlets(query, %Scope{visibility_user_id: user_id}) do
-    assigned_puzzlet_ids =
-      from(puv in PuzzletValidation,
-        where: puv.validator_id == ^user_id,
-        select: puv.puzzlet_id
-      )
-
-    # Pole-level validators can see all puzzlets on the poles they're
-    # assigned to — otherwise they couldn't rehearse the pole's gameplay.
-    assigned_pole_ids =
-      from(pv in PoleValidation,
-        where: pv.validator_id == ^user_id,
-        select: pv.pole_id
-      )
-
-    from(p in query,
-      where:
-        p.creator_id == ^user_id or
-          p.id in subquery(assigned_puzzlet_ids) or
-          p.pole_id in subquery(assigned_pole_ids)
-    )
-  end
-
-  def pole_owned_by_team?(_pole, nil, _scope), do: false
-  def pole_owned_by_team?(pole, team_id), do: pole_owned_by_team?(pole, team_id, Scope.real())
-
-  def pole_owned_by_team?(%Pole{} = pole, team_id, %Scope{} = scope) do
-    # In test scope, "ownership" means "captured during this session" —
-    # team identity doesn't matter, just session membership.
-    case scope do
-      %Scope{test_session_id: nil} ->
-        current_owner_team_id_for_pole(pole, scope) == team_id
-
-      _ ->
-        not is_nil(current_owner_team_id_for_pole(pole, scope)) or
-          pole_captured_in_scope?(pole, scope)
-    end
-  end
-
-  defp pole_captured_in_scope?(%Pole{id: pole_id}, scope) do
+  def current_owner_team_id_for_pole(%Pole{id: pole_id}) do
     Capture
-    |> Scope.apply(scope)
     |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
-    |> where([c, p], c.pole_id == ^pole_id or p.pole_id == ^pole_id)
-    |> Repo.exists?()
-  end
-
-  def current_owner_team_id_for_pole(pole), do: current_owner_team_id_for_pole(pole, Scope.real())
-
-  def current_owner_team_id_for_pole(%Pole{id: pole_id}, %Scope{} = scope) do
-    Capture
-    |> Scope.apply(scope)
-    |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
-    # Match either a directly-recorded pole_id on the capture (test-
-    # play, where the puzzlet is often unattached) or the puzzlet's
-    # own pole_id (real gameplay). Covers both worlds without needing
-    # to backfill captures.pole_id for existing rows.
-    |> where([c, p], c.pole_id == ^pole_id or p.pole_id == ^pole_id)
+    |> where([_c, p], p.pole_id == ^pole_id)
     |> order_by([c, _p], desc: c.inserted_at)
     |> limit(1)
-    |> select_owner_id(scope)
+    |> select([c, _p], c.team_id)
     |> Repo.one()
   end
 
-  # In real scope, captures.team_id is the owner. In test scope,
-  # team_id is nil (there's no team in test-play, and the FK would
-  # reject a user id), so surface the test_session_id — non-null,
-  # stable per session, and enough for the map to render "captured".
-  defp select_owner_id(query, %Scope{test_session_id: nil}) do
-    select(query, [c, _p], c.team_id)
-  end
-
-  defp select_owner_id(query, %Scope{}) do
-    select(query, [c, _p], c.test_session_id)
-  end
-
-  def pole_locked?(pole), do: pole_locked?(pole, Scope.real())
-
-  def pole_locked?(%Pole{id: pole_id}, %Scope{} = scope) do
+  def pole_locked?(%Pole{id: pole_id}) do
     # `validator_only` puzzlets don't count — they're set aside and
     # never assigned to players, so their presence shouldn't keep a
     # pole eternally unlocked, and their absence in the "captured"
@@ -513,7 +341,6 @@ defmodule Registrations.Landgrab do
 
     captured_count =
       Capture
-      |> Scope.apply(scope)
       |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
       |> where(
         [_c, p],
@@ -526,58 +353,40 @@ defmodule Registrations.Landgrab do
   end
 
   @doc """
-  How many times this team (or test session) has answered this puzzlet
-  incorrectly. Returns 0 when there's no scope subject (no team in real
-  scope, no session in test scope).
+  How many times this team has answered this puzzlet incorrectly.
+  Returns 0 when the user has no team.
   """
-  def team_wrong_attempts(puzzlet, team_id), do: team_wrong_attempts(puzzlet, team_id, Scope.real())
+  def team_wrong_attempts(_puzzlet, nil), do: 0
 
-  def team_wrong_attempts(_puzzlet, nil, %Scope{test_session_id: nil}), do: 0
-
-  def team_wrong_attempts(%Puzzlet{id: puzzlet_id}, team_id, %Scope{} = scope) do
+  def team_wrong_attempts(%Puzzlet{id: puzzlet_id}, team_id) do
     Attempt
-    |> Scope.apply(scope)
     |> where([a], a.puzzlet_id == ^puzzlet_id and a.correct == false)
-    |> maybe_filter_team(team_id, scope)
+    |> where([a], a.team_id == ^team_id)
     |> select([a], count(a.id))
     |> Repo.one()
   end
 
-  def team_locked_out?(puzzlet, team_id), do: team_locked_out?(puzzlet, team_id, Scope.real())
+  def team_locked_out?(_puzzlet, nil), do: false
 
-  def team_locked_out?(_puzzlet, nil, %Scope{test_session_id: nil}), do: false
-
-  def team_locked_out?(%Puzzlet{} = puzzlet, team_id, %Scope{} = scope) do
-    team_wrong_attempts(puzzlet, team_id, scope) >= @max_attempts_per_puzzlet
+  def team_locked_out?(%Puzzlet{} = puzzlet, team_id) do
+    team_wrong_attempts(puzzlet, team_id) >= @max_attempts_per_puzzlet
   end
 
   @doc """
-  Distinct wrong answers this team (or test session) has submitted for
-  this puzzlet, in chronological order of first occurrence.
+  Distinct wrong answers this team has submitted for this puzzlet,
+  in chronological order of first occurrence.
   """
-  def team_wrong_answers(puzzlet, team_id), do: team_wrong_answers(puzzlet, team_id, Scope.real())
+  def team_wrong_answers(_puzzlet, nil), do: []
 
-  def team_wrong_answers(_puzzlet, nil, %Scope{test_session_id: nil}), do: []
-
-  def team_wrong_answers(%Puzzlet{id: puzzlet_id}, team_id, %Scope{} = scope) do
+  def team_wrong_answers(%Puzzlet{id: puzzlet_id}, team_id) do
     Attempt
-    |> Scope.apply(scope)
     |> where([a], a.puzzlet_id == ^puzzlet_id and a.correct == false)
-    |> maybe_filter_team(team_id, scope)
+    |> where([a], a.team_id == ^team_id)
     |> order_by([a], asc: a.inserted_at)
     |> select([a], a.answer_given)
     |> Repo.all()
     |> Enum.uniq()
   end
-
-  # Real-game queries filter by team_id; test-scope queries are already
-  # narrowed by test_session_id and ignore team_id (no team concept in
-  # solo test play).
-  defp maybe_filter_team(query, _team_id, %Scope{test_session_id: id}) when not is_nil(id), do: query
-
-  defp maybe_filter_team(query, team_id, _scope) when not is_nil(team_id), do: where(query, [a], a.team_id == ^team_id)
-
-  defp maybe_filter_team(query, _team_id, _scope), do: query
 
   @doc """
   Records an attempt by a team/user against a puzzlet. If the answer is
@@ -592,34 +401,20 @@ defmodule Registrations.Landgrab do
     * {:error, :already_captured}  — another team got there first
     * {:error, changeset}
   """
-  def record_attempt(puzzlet, team_id, user_id, answer_given),
-    do: record_attempt(puzzlet, team_id, user_id, answer_given, Scope.real(), nil)
-
-  def record_attempt(puzzlet, team_id, user_id, answer_given, scope),
-    do: record_attempt(puzzlet, team_id, user_id, answer_given, scope, nil)
-
-  # `scanned_pole_id` records which pole the client was looking at
-  # when they submitted. Only meaningful when the puzzlet isn't
-  # attached to a pole (test-play with unattached puzzlets); real
-  # captures pass nil and resolve the pole via `puzzlet.pole_id`.
-  def record_attempt(%Puzzlet{} = puzzlet, team_id, user_id, answer_given, %Scope{} = scope, scanned_pole_id) do
-    effective_pole_id = puzzlet.pole_id || scanned_pole_id
-    pole = effective_pole_id && Repo.get(Pole, effective_pole_id)
-    test_mode? = Scope.test?(scope)
+  def record_attempt(%Puzzlet{} = puzzlet, team_id, user_id, answer_given) do
+    pole = puzzlet.pole_id && Repo.get(Pole, puzzlet.pole_id)
 
     cond do
-      # Own-creation block doesn't apply in test mode — testers walking
-      # through their own content should be able to.
-      not test_mode? && puzzlet.creator_id == user_id ->
+      puzzlet.creator_id == user_id ->
         {:error, :own_creation}
 
-      not test_mode? && pole && pole.creator_id == user_id ->
+      pole && pole.creator_id == user_id ->
         {:error, :own_creation}
 
-      pole && pole_owned_by_team?(pole, team_id, scope) ->
+      pole && pole_owned_by_team?(pole, team_id) ->
         {:error, :already_owner}
 
-      team_locked_out?(puzzlet, team_id, scope) ->
+      team_locked_out?(puzzlet, team_id) ->
         {:error, :locked_out}
 
       true ->
@@ -634,13 +429,12 @@ defmodule Registrations.Landgrab do
                 team_id: team_id,
                 user_id: user_id,
                 answer_given: answer_given,
-                correct: correct?,
-                test_session_id: Scope.write_id(scope)
+                correct: correct?
               })
               |> Repo.insert!()
 
             if correct? do
-              case insert_capture(puzzlet.id, team_id, scope, effective_pole_id) do
+              case insert_capture(puzzlet.id, team_id) do
                 {:ok, capture} ->
                   %{result: :captured, attempt: attempt, capture: capture}
 
@@ -649,17 +443,14 @@ defmodule Registrations.Landgrab do
               end
             else
               remaining =
-                @max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id, scope)
+                @max_attempts_per_puzzlet - team_wrong_attempts(puzzlet, team_id)
 
               %{result: :incorrect, attempt: attempt, attempts_remaining: max(remaining, 0)}
             end
           end)
 
-        # Only broadcast pole updates for real captures — test-play captures
-        # are private to the tester and shouldn't appear on the live map.
         with {:ok, %{result: :captured, capture: capture}} <- result,
-             %Pole{} = captured_pole <- pole,
-             false <- test_mode? do
+             %Pole{} = captured_pole <- pole do
           broadcast_pole_update(captured_pole, capture)
         end
 
@@ -677,24 +468,19 @@ defmodule Registrations.Landgrab do
     })
   end
 
-  # Attack signals fire only in the real game (test-play captures /
-  # scans are private to the tester), only when the pole is owned by
-  # someone other than the scanning team, and only when a fresh
-  # signal hasn't been written for the same (defender, attacker,
-  # pole) trio in the last @attack_cooldown. The cooldown keeps the
-  # `notifications` history from filling up with duplicate rows when
-  # an attacker retries a puzzlet many times.
+  # Attack signals fire only when the pole is owned by someone other
+  # than the scanning team, and only when a fresh signal hasn't been
+  # written for the same (defender, attacker, pole) trio in the last
+  # @attack_cooldown. The cooldown keeps the `notifications` history
+  # from filling up with duplicate rows when an attacker retries a
+  # puzzlet many times.
   @attack_cooldown_minutes 5
 
-  defp maybe_signal_attack(_pole, _owner_id, _team_id, %Scope{test_session_id: id})
-       when not is_nil(id),
-       do: :ok
+  defp maybe_signal_attack(_pole, nil, _team_id), do: :ok
+  defp maybe_signal_attack(_pole, _owner_id, nil), do: :ok
+  defp maybe_signal_attack(_pole, owner_id, team_id) when owner_id == team_id, do: :ok
 
-  defp maybe_signal_attack(_pole, nil, _team_id, _scope), do: :ok
-  defp maybe_signal_attack(_pole, _owner_id, nil, _scope), do: :ok
-  defp maybe_signal_attack(_pole, owner_id, team_id, _scope) when owner_id == team_id, do: :ok
-
-  defp maybe_signal_attack(%Pole{} = pole, owner_id, attacker_id, _scope) do
+  defp maybe_signal_attack(%Pole{} = pole, owner_id, attacker_id) do
     if recent_attack_signal?(owner_id, attacker_id, pole.id) do
       :ok
     else
@@ -757,13 +543,11 @@ defmodule Registrations.Landgrab do
   defp display_name(%Pole{label: label}) when is_binary(label) and label != "", do: label
   defp display_name(%Pole{barcode: barcode}), do: barcode
 
-  defp insert_capture(puzzlet_id, team_id, scope, pole_id) do
+  defp insert_capture(puzzlet_id, team_id) do
     %Capture{}
     |> Capture.changeset(%{
       puzzlet_id: puzzlet_id,
-      team_id: team_id,
-      test_session_id: Scope.write_id(scope),
-      pole_id: pole_id
+      team_id: team_id
     })
     |> Repo.insert()
     |> case do
@@ -788,31 +572,4 @@ defmodule Registrations.Landgrab do
   defp answers_match?(_, _, _), do: false
 
   defp normalize_loose(s), do: s |> String.trim() |> String.downcase()
-
-  # ─── Test sessions ───────────────────────────────────────────────────
-
-  def create_test_session(creator, attrs \\ %{}) do
-    attrs = Map.put(attrs, :creator_id, creator.id)
-
-    %TestSession{}
-    |> TestSession.changeset(attrs)
-    |> Repo.insert()
-  end
-
-  def get_test_session(id), do: Repo.get(TestSession, id)
-
-  def get_test_session!(id), do: Repo.get!(TestSession, id)
-
-  def list_test_sessions_for_user(%{id: user_id}) do
-    TestSession
-    |> where([s], s.creator_id == ^user_id)
-    |> order_by([s], desc: s.inserted_at)
-    |> Repo.all()
-  end
-
-  def end_test_session(%TestSession{} = session) do
-    session
-    |> TestSession.changeset(%{ended_at: DateTime.truncate(DateTime.utc_now(), :second)})
-    |> Repo.update()
-  end
 end

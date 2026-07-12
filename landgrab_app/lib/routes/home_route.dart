@@ -9,7 +9,6 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/landgrab_event.dart';
-import 'package:landgrab/models/test_session.dart';
 import 'package:landgrab/models/validator_only_puzzlet.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/flavors.dart';
@@ -22,7 +21,6 @@ import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/routes/scan_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
 import 'package:landgrab/routes/supervisor/supervisor_route.dart';
-import 'package:landgrab/routes/test_play/test_play_entry_route.dart';
 import 'package:landgrab/routes/validator/validator_route.dart';
 import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/services/landgrab_socket.dart';
@@ -35,8 +33,7 @@ import 'package:landgrab/widgets/territory_layer.dart';
 
 class HomeRoute extends StatefulWidget {
   final LandgrabApi api;
-  final TestSession? testSession;
-  const HomeRoute({super.key, required this.api, this.testSession});
+  const HomeRoute({super.key, required this.api});
 
   @override
   State<HomeRoute> createState() => _HomeRouteState();
@@ -91,15 +88,11 @@ class _HomeRouteState extends State<HomeRoute>
   final Map<String, String?> _prevOwners = {};
   Ticker? _animTicker;
 
-  bool get _inTestPlay => widget.testSession != null;
-
   @override
   void initState() {
     super.initState();
     _load();
-    // Real-time updates only flow for the real game. In a test session
-    // we're isolated and don't need the socket.
-    if (!_inTestPlay) _connectSocket();
+    _connectSocket();
   }
 
   Future<void> _connectSocket() async {
@@ -302,9 +295,6 @@ class _HomeRouteState extends State<HomeRoute>
   Color _pinColor(Pole pole) {
     if (pole.locked) return Colors.grey;
     if (pole.currentOwnerTeamId == null) return Colors.blue;
-    // Test-play is single-tester: any capture in the session was you,
-    // so treat any owned pole as green rather than red (rival).
-    if (_inTestPlay) return Colors.green;
     if (pole.currentOwnerTeamId == _teamId) return Colors.green;
     return Colors.red;
   }
@@ -407,7 +397,7 @@ class _HomeRouteState extends State<HomeRoute>
     final titleText = _teamName == null ? 'LNDGRB' : 'LNDGRB — $_teamName';
     // In test play we intentionally bypass the event-start gate — the
     // whole point of a rehearsal is to play before the event begins.
-    final preEvent = !_inTestPlay && _event != null && !_event!.started;
+    final preEvent = _event != null && !_event!.started;
 
     return Scaffold(
       appBar: AppBar(
@@ -429,7 +419,7 @@ class _HomeRouteState extends State<HomeRoute>
               : Text(titleText),
         ),
         actions: [
-          if (!_inTestPlay && !preEvent && _isAuthor)
+          if (!preEvent && _isAuthor)
             IconButton(
               tooltip: 'Author',
               onPressed: () => Navigator.of(context).push(
@@ -437,7 +427,7 @@ class _HomeRouteState extends State<HomeRoute>
               ),
               icon: const Icon(Icons.edit_note),
             ),
-          if (!_inTestPlay && !preEvent && _isValidator)
+          if (!preEvent && _isValidator)
             IconButton(
               tooltip: 'Validate',
               onPressed: () => Navigator.of(context).push(
@@ -445,7 +435,7 @@ class _HomeRouteState extends State<HomeRoute>
               ),
               icon: const Icon(Icons.fact_check_outlined),
             ),
-          if (!_inTestPlay && !preEvent && _isSupervisor)
+          if (!preEvent && _isSupervisor)
             IconButton(
               tooltip: 'Supervise',
               onPressed: () => Navigator.of(context).push(
@@ -453,85 +443,35 @@ class _HomeRouteState extends State<HomeRoute>
               ),
               icon: const Icon(Icons.supervisor_account),
             ),
-          if (!_inTestPlay && (_isValidator || _isSupervisor))
-            IconButton(
-              tooltip: GameplayStrings.testPlay,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => TestPlayEntryRoute(api: widget.api),
-                ),
-              ),
-              icon: const Icon(Icons.science_outlined),
+          IconButton(
+            tooltip: GameplayStrings.details,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => DetailsWebViewRoute(api: widget.api)),
             ),
-          if (!_inTestPlay)
-            IconButton(
-              tooltip: GameplayStrings.details,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => DetailsWebViewRoute(api: widget.api)),
-              ),
-              icon: const Icon(Icons.badge_outlined),
+            icon: const Icon(Icons.badge_outlined),
+          ),
+          IconButton(
+            tooltip: GameplayStrings.credits,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CreditsRoute()),
             ),
-          if (!_inTestPlay)
-            IconButton(
-              tooltip: GameplayStrings.credits,
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const CreditsRoute()),
-              ),
-              icon: const Icon(Icons.info_outline),
-            ),
-          if (!_inTestPlay)
-            ValueListenableBuilder<bool>(
-              valueListenable: EnvSwitchService.visible,
-              builder: (context, envVisible, _) => envVisible
-                  ? IconButton(
-                      tooltip: LoginStrings.switchEnvironmentTooltip,
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const SettingsRoute()),
-                      ),
-                      icon: const Icon(Icons.dns_outlined),
-                    )
-                  : const SizedBox.shrink(),
-            ),
+            icon: const Icon(Icons.info_outline),
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: EnvSwitchService.visible,
+            builder: (context, envVisible, _) => envVisible
+                ? IconButton(
+                    tooltip: LoginStrings.switchEnvironmentTooltip,
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const SettingsRoute()),
+                    ),
+                    icon: const Icon(Icons.dns_outlined),
+                  )
+                : const SizedBox.shrink(),
+          ),
           IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
-          if (_inTestPlay)
-            IconButton(
-              tooltip: GameplayStrings.exitTestPlay,
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.close),
-            )
-          else
-            IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
+          IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
-        bottom: _inTestPlay
-            ? PreferredSize(
-                preferredSize: const Size.fromHeight(28),
-                child: Container(
-                  width: double.infinity,
-                  color: Colors.amber.shade100,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 4),
-                  child: Row(
-                    children: [
-                      Icon(Icons.science_outlined,
-                          size: 16, color: Colors.amber.shade900),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          GameplayStrings.testPlayBanner(
-                              widget.testSession!.name ?? widget.testSession!.id),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.amber.shade900,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            : null,
       ),
       body: _error != null
           ? Center(child: Text(_error!))
@@ -582,7 +522,6 @@ class _HomeRouteState extends State<HomeRoute>
                     TerritoryLayer(
                       poles: _poles!,
                       myOwnerId: _teamId,
-                      inTestPlay: _inTestPlay,
                       captureStartedAt: _captureStartedAt,
                       captureAnimationDuration: _captureAnimationDuration,
                     ),
@@ -592,7 +531,6 @@ class _HomeRouteState extends State<HomeRoute>
                       captureStartedAt: _captureStartedAt,
                       duration: _captureAnimationDuration,
                       myOwnerId: _teamId,
-                      inTestPlay: _inTestPlay,
                     ),
                     AttackRingsLayer(
                       poles: _poles!,

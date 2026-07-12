@@ -19,7 +19,6 @@ class CaptureRingsLayer extends StatelessWidget {
   final Map<String, DateTime> captureStartedAt;
   final Duration duration;
   final String? myOwnerId;
-  final bool inTestPlay;
 
   const CaptureRingsLayer({
     super.key,
@@ -27,7 +26,6 @@ class CaptureRingsLayer extends StatelessWidget {
     required this.captureStartedAt,
     required this.duration,
     this.myOwnerId,
-    this.inTestPlay = false,
   });
 
   @override
@@ -62,7 +60,6 @@ class CaptureRingsLayer extends StatelessWidget {
 
   Color _baseColor(String? ownerId) {
     if (ownerId == null) return Colors.blueGrey;
-    if (inTestPlay) return Colors.green;
     if (ownerId == myOwnerId) return Colors.green;
     return Colors.red;
   }
