@@ -229,6 +229,22 @@ class _HomeRouteState extends State<HomeRoute>
     if (mounted) setState(() {});
   }
 
+  /// The app-bar refresh button: re-fetch identity (team, roles)
+  /// from the server, then reload the map. Explicit refresh is the
+  /// one place identity re-syncs without a re-login — so if the
+  /// organiser assigns teams mid-session, "tap refresh" is the
+  /// remedy to hand players. Automatic loads (boot, scanner return,
+  /// socket reconnect) stay on cached identity to keep them fast.
+  Future<void> _refreshIdentityAndLoad() async {
+    try {
+      await widget.api.loadAndStoreMe();
+    } catch (_) {
+      // Cached identity is still usable; _load's own fetches will
+      // surface a real connectivity problem.
+    }
+    if (mounted) await _load();
+  }
+
   Future<void> _load() async {
     setState(() => _error = null);
     try {
@@ -480,7 +496,9 @@ class _HomeRouteState extends State<HomeRoute>
                   )
                 : const SizedBox.shrink(),
           ),
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+          IconButton(
+              onPressed: _refreshIdentityAndLoad,
+              icon: const Icon(Icons.refresh)),
           IconButton(onPressed: _logout, icon: const Icon(Icons.logout)),
         ],
       ),
