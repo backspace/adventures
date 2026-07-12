@@ -258,6 +258,9 @@ class _HomeRouteState extends State<HomeRoute>
       // Cached identity is still usable; _load's own fetches will
       // surface a real connectivity problem.
     }
+    // Re-sends the push token if the signed-in user changed, so the
+    // device follows the account (PushService no-ops otherwise).
+    PushService.register(widget.api);
     if (mounted) await _load();
   }
 

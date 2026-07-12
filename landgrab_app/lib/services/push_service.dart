@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/services/user_service.dart';
 import 'package:logger/logger.dart';
 
 /// Registers this device for push notifications and keeps the token
@@ -20,11 +21,18 @@ class PushService {
   PushService._();
 
   static final Logger _log = Logger();
-  static bool _registered = false;
+
+  // Keyed by user, not process: the server upserts tokens by token
+  // value, so when a different account signs in on this device the
+  // token must be re-sent to move it to the new user — otherwise
+  // their team's pushes go nowhere.
+  static String? _registeredUserId;
+  static bool _listening = false;
 
   static Future<void> register(LandgrabApi api) async {
-    if (_registered) return;
-    _registered = true;
+    final userId = await UserService.getUserId();
+    if (userId == null || userId == _registeredUserId) return;
+    _registeredUserId = userId;
 
     try {
       final messaging = FirebaseMessaging.instance;
@@ -40,11 +48,14 @@ class PushService {
         await _send(api, token);
       }
 
-      messaging.onTokenRefresh.listen((fresh) => _send(api, fresh));
+      if (!_listening) {
+        _listening = true;
+        messaging.onTokenRefresh.listen((fresh) => _send(api, fresh));
+      }
     } catch (e) {
       // Push is an enhancement; never let its failure affect the app.
       _log.w('push: registration failed: $e');
-      _registered = false; // allow a retry on next map entry
+      _registeredUserId = null; // allow a retry on next map entry
     }
   }
 
