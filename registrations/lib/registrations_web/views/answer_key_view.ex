@@ -7,16 +7,21 @@ defmodule RegistrationsWeb.AnswerKeyView do
   barcode carried regardless of the original symbology — the scanner
   compares decoded strings, not symbologies.
   """
-  def barcode_svg(value) do
+  def barcode_svg(value, opts \\ []) do
     {:ok, svg} =
       value
       |> Barlix.Code128.encode!()
-      |> Barlix.SVG.print(xdim: 2, height: 60)
+      |> Barlix.SVG.print(xdim: 2, height: Keyword.get(opts, :height, 60))
 
     # Strip the XML prolog — invalid when inlined into an HTML page.
     svg
     |> String.replace(~r/^<\?xml[^>]*\?>\n?/, "")
     |> raw()
+  rescue
+    # Code 128 only encodes ASCII; an unencodable value (e.g. a
+    # barcode-type answer with unicode in it) renders as text alone
+    # rather than failing the whole key.
+    _ -> nil
   end
 
   @doc """

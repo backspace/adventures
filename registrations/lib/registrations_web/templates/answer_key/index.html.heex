@@ -71,7 +71,14 @@
             <%= for puzzlet <- pole.puzzlets do %>
               <tr>
                 <td><%= puzzlet.instructions %></td>
-                <td class="answer"><%= puzzlet.answer %></td>
+                <td class="answer">
+                  <%= if puzzlet.answer_type == :barcode do %>
+                    <%= barcode_svg(puzzlet.answer, height: 40) %>
+                    <p class="barcode-text"><%= puzzlet.answer %></p>
+                  <% else %>
+                    <%= puzzlet.answer %>
+                  <% end %>
+                </td>
                 <td class="meta">
                   difficulty <%= puzzlet.difficulty %> ·
                   <%= puzzlet.answer_type %> ·
@@ -101,7 +108,14 @@
           <%= for puzzlet <- @unattached do %>
             <tr>
               <td><%= puzzlet.instructions %></td>
-              <td class="answer"><%= puzzlet.answer %></td>
+              <td class="answer">
+                <%= if puzzlet.answer_type == :barcode do %>
+                  <%= barcode_svg(puzzlet.answer, height: 40) %>
+                  <p class="barcode-text"><%= puzzlet.answer %></p>
+                <% else %>
+                  <%= puzzlet.answer %>
+                <% end %>
+              </td>
               <td class="meta">
                 difficulty <%= puzzlet.difficulty %> ·
                 <%= puzzlet.answer_type %> ·
