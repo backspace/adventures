@@ -492,6 +492,41 @@ defmodule Registrations.Landgrab do
   # from filling up with duplicate rows when an attacker retries a
   # puzzlet many times.
   @doc """
+  The team's notification history, newest first. Feeds the in-app
+  notifications screen; live delivery happens separately via the
+  socket broadcast and push in `deliver_team_notification/6`.
+  """
+  def list_notifications_for_team(team_id, limit \\ 100) do
+    Notification
+    |> where([n], n.recipient_team_id == ^team_id)
+    |> order_by([n], desc: n.inserted_at)
+    |> limit(^limit)
+    |> Repo.all()
+  end
+
+  def count_unread_notifications(team_id) do
+    Notification
+    |> where([n], n.recipient_team_id == ^team_id and is_nil(n.read_at))
+    |> Repo.aggregate(:count)
+  end
+
+  @doc """
+  Marks every unread notification for the team as read. Team-level on
+  purpose: teams are small and share fate, so one member opening the
+  history clears the badge for both. Returns the number marked.
+  """
+  def mark_notifications_read(team_id) do
+    now = DateTime.truncate(DateTime.utc_now(), :second)
+
+    {count, _} =
+      Notification
+      |> where([n], n.recipient_team_id == ^team_id and is_nil(n.read_at))
+      |> Repo.update_all(set: [read_at: now, updated_at: NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second)])
+
+    count
+  end
+
+  @doc """
   Register (or move) a push token. Upserts on the token so a device
   that changes users — new login on the same install — follows the
   new user instead of pushing to the old one.

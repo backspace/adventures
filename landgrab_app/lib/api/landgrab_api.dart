@@ -5,10 +5,16 @@ import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/landgrab_event.dart';
+import 'package:landgrab/models/notification.dart';
 import 'package:landgrab/models/region.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/models/validator_only_puzzlet.dart';
 import 'package:landgrab/services/user_service.dart';
+
+typedef NotificationsResult = ({
+  List<LandgrabNotification> notifications,
+  int unread,
+});
 
 class LandgrabApi {
   final Dio dio;
@@ -523,6 +529,26 @@ class LandgrabApi {
     return list
         .map((b) => Bathroom.fromJson(b as Map<String, dynamic>))
         .toList(growable: false);
+  }
+
+  /// The team's notification history, newest first, plus how many
+  /// are unread (drives the bell badge).
+  Future<NotificationsResult> listNotifications() async {
+    final response = await dio.get('/landgrab/notifications');
+    final data = response.data as Map<String, dynamic>;
+    final list = data['notifications'] as List;
+    return (
+      notifications: list
+          .map((n) => LandgrabNotification.fromJson(n as Map<String, dynamic>))
+          .toList(growable: false),
+      unread: (data['unread'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  /// Marks the whole team's notifications read (shared badge — one
+  /// member reading clears it for both).
+  Future<void> markNotificationsRead() async {
+    await dio.post('/landgrab/notifications/read');
   }
 
   Future<List<Bathroom>> listMyBathrooms() async {

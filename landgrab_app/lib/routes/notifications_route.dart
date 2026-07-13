@@ -1,0 +1,129 @@
+import 'package:flutter/material.dart';
+import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/l10n/player_strings.dart';
+import 'package:landgrab/models/notification.dart';
+
+/// The team's notification history, newest first. Opening this
+/// screen marks everything read server-side — read state is shared
+/// across the team, so one member catching up clears the badge for
+/// both. Unread entries keep their highlight for the current visit
+/// so the reader can still see what's new.
+class NotificationsRoute extends StatefulWidget {
+  final LandgrabApi api;
+  const NotificationsRoute({super.key, required this.api});
+
+  @override
+  State<NotificationsRoute> createState() => _NotificationsRouteState();
+}
+
+class _NotificationsRouteState extends State<NotificationsRoute> {
+  List<LandgrabNotification>? _notifications;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _error = null);
+    try {
+      final result = await widget.api.listNotifications();
+      if (!mounted) return;
+      setState(() => _notifications = result.notifications);
+      if (result.unread > 0) {
+        // Fire-and-forget; the local list keeps its unread highlights.
+        widget.api.markNotificationsRead().catchError((_) {});
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = NotificationStrings.couldNotLoad(e.toString()));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text(NotificationStrings.title)),
+      body: _error != null
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(_error!, textAlign: TextAlign.center),
+              ),
+            )
+          : _notifications == null
+              ? const Center(child: CircularProgressIndicator())
+              : _notifications!.isEmpty
+                  ? const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text(
+                          NotificationStrings.empty,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: _load,
+                      child: ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: _notifications!.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        itemBuilder: (context, index) =>
+                            _NotificationTile(_notifications![index]),
+                      ),
+                    ),
+    );
+  }
+}
+
+class _NotificationTile extends StatelessWidget {
+  final LandgrabNotification notification;
+  const _NotificationTile(this.notification);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: SizedBox(
+        width: 36,
+        height: 36,
+        child: Icon(_icon, color: _color),
+      ),
+      title: Text(
+        notification.body,
+        style: notification.unread
+            ? const TextStyle(fontWeight: FontWeight.bold)
+            : null,
+      ),
+      subtitle: Text(_relativeTime(notification.insertedAt)),
+      trailing: notification.unread
+          ? Icon(Icons.circle, size: 10, color: Theme.of(context).colorScheme.primary)
+          : null,
+    );
+  }
+
+  IconData get _icon => switch (notification.type) {
+        'attack' => Icons.warning_amber_outlined,
+        'pole_lost' => Icons.flag_outlined,
+        _ => Icons.notifications_none,
+      };
+
+  Color? get _color => switch (notification.type) {
+        'attack' => Colors.orange,
+        'pole_lost' => Colors.red,
+        _ => null,
+      };
+
+  static String _relativeTime(DateTime? when) {
+    if (when == null) return '';
+    final elapsed = DateTime.now().toUtc().difference(when);
+    if (elapsed.inMinutes < 1) return NotificationStrings.justNow;
+    if (elapsed.inHours < 1) {
+      return NotificationStrings.minutesAgo(elapsed.inMinutes);
+    }
+    if (elapsed.inDays < 1) return NotificationStrings.hoursAgo(elapsed.inHours);
+    return NotificationStrings.daysAgo(elapsed.inDays);
+  }
+}

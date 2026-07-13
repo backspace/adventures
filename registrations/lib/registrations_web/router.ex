@@ -268,6 +268,8 @@ defmodule RegistrationsWeb.Router do
     get("/attachments/:id/thumb", AttachmentController, :show_thumb)
     post("/puzzlets/:puzzlet_id/attempts", AttemptController, :create)
     get("/bathrooms", BathroomController, :index)
+    get("/notifications", NotificationController, :index)
+    post("/notifications/read", NotificationController, :mark_read)
   end
 
   scope "/landgrab/drafts", RegistrationsWeb.Landgrab, as: :landgrab_drafts do

@@ -18,6 +18,7 @@ import 'package:landgrab/routes/credits_route.dart';
 import 'package:landgrab/routes/details_webview_route.dart';
 import 'package:landgrab/routes/login_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
+import 'package:landgrab/routes/notifications_route.dart';
 import 'package:landgrab/routes/scan_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
 import 'package:landgrab/routes/supervisor/supervisor_route.dart';
@@ -62,6 +63,7 @@ class _HomeRouteState extends State<HomeRoute>
   String? _error;
   bool _isAuthor = false;
   bool _isValidator = false;
+  int _unreadNotifications = 0;
   List<ValidatorOnlyPuzzlet> _validatorOnlyPuzzlets = const [];
   // Camera zoom drives validator-only pin sizing — same treatment
   // poles get on the author map. Below _voTinyZoom they shrink to a
@@ -126,6 +128,7 @@ class _HomeRouteState extends State<HomeRoute>
     // Recipient filter — everyone on landgrab:map sees every
     // notification, so each client scopes to its own team.
     if (n.recipientTeamId != _teamId) return;
+    if (mounted) setState(() => _unreadNotifications += 1);
     if (n.type == 'attack') {
       final poleId = n.metadata['pole_id'] as String?;
       if (poleId == null) return;
@@ -319,6 +322,7 @@ class _HomeRouteState extends State<HomeRoute>
         _isSupervisor = isSupervisor;
         _event = event;
       });
+      _refreshUnreadCount();
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = GameplayStrings.couldNotLoadPoles(e.toString()));
@@ -331,6 +335,22 @@ class _HomeRouteState extends State<HomeRoute>
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => LoginRoute(api: widget.api)),
     );
+  }
+
+  Future<void> _openNotifications() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => NotificationsRoute(api: widget.api)),
+    );
+    // The route marked everything read server-side on open.
+    if (mounted) setState(() => _unreadNotifications = 0);
+  }
+
+  // Non-blocking: the badge count arriving late shouldn't delay the
+  // map, and a failure just leaves the badge stale until next load.
+  void _refreshUnreadCount() {
+    widget.api.listNotifications().then((result) {
+      if (mounted) setState(() => _unreadNotifications = result.unread);
+    }).catchError((_) {});
   }
 
   PopupMenuItem<_HomeMenuItem> _menuItem(
@@ -524,6 +544,15 @@ class _HomeRouteState extends State<HomeRoute>
               : Text(titleText),
         ),
         actions: [
+          IconButton(
+            tooltip: GameplayStrings.notificationsTooltip,
+            onPressed: _openNotifications,
+            icon: Badge.count(
+              count: _unreadNotifications,
+              isLabelVisible: _unreadNotifications > 0,
+              child: const Icon(Icons.notifications_none),
+            ),
+          ),
           IconButton(
             tooltip: GameplayStrings.refresh,
             onPressed: _refreshIdentityAndLoad,

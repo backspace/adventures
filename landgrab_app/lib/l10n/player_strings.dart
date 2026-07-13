@@ -91,8 +91,27 @@ class GameplayStrings {
   static const refresh = 'Refresh';
   static const menuTooltip = 'Menu';
   static const logOut = 'Log out';
+  static const notificationsTooltip = 'Notifications';
   static String couldNotLoadPoles(String error) =>
       'Could not load poles: $error';
+}
+
+/// Notification history (`routes/notifications_route.dart`).
+class NotificationStrings {
+  NotificationStrings._();
+
+  static const title = 'Notifications';
+  static const empty =
+      'Nothing yet. When a rival team scans or captures one of your '
+      'poles, it shows up here.';
+  static String couldNotLoad(String error) =>
+      'Could not load notifications: $error';
+
+  // Relative timestamps for the list entries.
+  static const justNow = 'just now';
+  static String minutesAgo(int m) => '${m}m ago';
+  static String hoursAgo(int h) => '${h}h ago';
+  static String daysAgo(int d) => '${d}d ago';
 }
 
 /// Scan route (`routes/scan_route.dart`) — the barcode-scan camera

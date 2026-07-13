@@ -2,7 +2,12 @@ import 'dart:async';
 
 import 'package:logger/logger.dart';
 import 'package:phoenix_socket/phoenix_socket.dart';
+import 'package:landgrab/models/notification.dart';
 import 'package:landgrab/services/user_service.dart';
+
+// The model moved to models/notification.dart when the history
+// screen arrived; re-exported so socket consumers keep compiling.
+export 'package:landgrab/models/notification.dart';
 
 class PoleUpdate {
   final String id;
@@ -19,38 +24,6 @@ class PoleUpdate {
         id: json['id'] as String,
         currentOwnerTeamId: json['current_owner_team_id'] as String?,
         locked: json['locked'] as bool? ?? false,
-      );
-}
-
-/// A message-to-a-team persisted server-side and broadcast on the
-/// same channel as pole updates. Today's only `type` is "attack" (a
-/// rival team scanned one of your poles); chat will follow with a
-/// `type` of its own.
-class LandgrabNotification {
-  final String id;
-  final String type;
-  final String recipientTeamId;
-  final String? senderTeamId;
-  final String body;
-  final Map<String, dynamic> metadata;
-
-  LandgrabNotification({
-    required this.id,
-    required this.type,
-    required this.recipientTeamId,
-    required this.senderTeamId,
-    required this.body,
-    required this.metadata,
-  });
-
-  factory LandgrabNotification.fromJson(Map<String, dynamic> json) =>
-      LandgrabNotification(
-        id: json['id'] as String,
-        type: json['type'] as String,
-        recipientTeamId: json['recipient_team_id'] as String,
-        senderTeamId: json['sender_team_id'] as String?,
-        body: json['body'] as String,
-        metadata: (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
       );
 }
 
