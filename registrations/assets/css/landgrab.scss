@@ -8,9 +8,16 @@
 @include foundation-everything;
 @include foundation-flex-grid;
 
+$landgrab-bone:    #ece4d3;
+$landgrab-blood:   #b6231e;
+$landgrab-river:   #2d6a9f;
+$landgrab-grey:    #6a6a6a;
+$landgrab-green:   #5ec96b;
+$landgrab-purple:  #a25fd6;
+
 body {
   background: $black;
-  color: #ece4d3;
+  color: $landgrab-grey;
   // The hero breaks the 480px row cap by going 100vw — make sure that
   // doesn't introduce a horizontal scrollbar.
   overflow-x: hidden;
@@ -35,13 +42,6 @@ body {
 // this stylesheet), and Premailex's Floki-based selector parser
 // crashes when it hits the URL's query-string characters when inlining
 // styles into an outgoing email.
-
-$landgrab-bone:    #ece4d3;
-$landgrab-blood:   #b6231e;
-$landgrab-river:   #2d6a9f;
-$landgrab-grey:    #6a6a6a;
-$landgrab-green:   #5ec96b;
-$landgrab-purple:  #a25fd6;
 
 // The hero deliberately ignores the global $global-width 480px row
 // cap. We pull it back out to the viewport edges via position +
