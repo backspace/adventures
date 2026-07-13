@@ -37,6 +37,17 @@ class PushService {
     try {
       final messaging = FirebaseMessaging.instance;
 
+      // Foreground pushes stay invisible: while the app is open the
+      // socket toast already announces the same event, and a system
+      // banner on top of it reads as a duplicate. (iOS/macOS-only
+      // API; Android never shows tray notifications for messages
+      // received in the foreground.)
+      await messaging.setForegroundNotificationPresentationOptions(
+        alert: false,
+        badge: false,
+        sound: false,
+      );
+
       final settings = await messaging.requestPermission();
       if (settings.authorizationStatus == AuthorizationStatus.denied) {
         _log.i('push: permission denied; not registering a token');
