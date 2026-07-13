@@ -349,7 +349,24 @@ class _HomeRouteState extends State<HomeRoute>
   // map, and a failure just leaves the badge stale until next load.
   void _refreshUnreadCount() {
     widget.api.listNotifications().then((result) {
-      if (mounted) setState(() => _unreadNotifications = result.unread);
+      if (!mounted) return;
+      // Unread grew beyond what live socket handling counted, so the
+      // extras happened while this app wasn't connected (cold boot,
+      // backgrounded, socket blip) — surface them. Live arrivals
+      // increment _unreadNotifications before this fetch runs, so
+      // they never re-toast here.
+      final missed = result.unread - _unreadNotifications;
+      setState(() => _unreadNotifications = result.unread);
+      if (missed > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(NotificationStrings.whileAway(missed)),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: NotificationStrings.viewAction,
+            onPressed: _openNotifications,
+          ),
+        ));
+      }
     }).catchError((_) {});
   }
 

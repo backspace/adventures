@@ -107,6 +107,12 @@ class NotificationStrings {
   static String couldNotLoad(String error) =>
       'Could not load notifications: $error';
 
+  // Catch-up toast on the map when unread arrived while the app
+  // wasn't live (cold boot, backgrounded, socket outage).
+  static String whileAway(int n) =>
+      n == 1 ? '1 notification while you were away' : '$n notifications while you were away';
+  static const viewAction = 'View';
+
   // Relative timestamps for the list entries.
   static const justNow = 'just now';
   static String minutesAgo(int m) => '${m}m ago';
