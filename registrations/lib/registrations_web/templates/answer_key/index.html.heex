@@ -95,37 +95,41 @@
 
   <%= if @unattached != [] do %>
     <div class="pole-card">
-      <h3>Unattached puzzlets</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Question</th>
-            <th>Answer</th>
-            <th>Meta</th>
-          </tr>
-        </thead>
-        <tbody>
-          <%= for puzzlet <- @unattached do %>
+      <details>
+        <summary>
+          <h3>Unattached puzzlets</h3>
+        </summary>
+        <table>
+          <thead>
             <tr>
-              <td><%= puzzlet.instructions %></td>
-              <td class="answer">
-                <%= if puzzlet.answer_type == :barcode do %>
-                  <%= barcode_svg(puzzlet.answer, height: 40) %>
-                  <p class="barcode-text"><%= puzzlet.answer %></p>
-                <% else %>
-                  <%= puzzlet.answer %>
-                <% end %>
-              </td>
-              <td class="meta">
-                difficulty <%= puzzlet.difficulty %> ·
-                <%= puzzlet.answer_type %> ·
-                <%= puzzlet.status %>
-                <%= if puzzlet.validator_only do %>· ★ validators only<% end %>
-              </td>
+              <th>Question</th>
+              <th>Answer</th>
+              <th>Meta</th>
             </tr>
-          <% end %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <%= for puzzlet <- @unattached do %>
+              <tr>
+                <td><%= puzzlet.instructions %></td>
+                <td class="answer">
+                  <%= if puzzlet.answer_type == :barcode do %>
+                    <%= barcode_svg(puzzlet.answer, height: 40) %>
+                    <p class="barcode-text"><%= puzzlet.answer %></p>
+                  <% else %>
+                    <%= puzzlet.answer %>
+                  <% end %>
+                </td>
+                <td class="meta">
+                  difficulty <%= puzzlet.difficulty %> · <%= puzzlet.answer_type %> · <%= puzzlet.status %>
+                  <%= if puzzlet.validator_only do %>
+                    · ★ validators only
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </details>
     </div>
   <% end %>
 </div>
