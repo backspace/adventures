@@ -48,6 +48,7 @@ defmodule RegistrationsWeb.Router do
 
   pipeline :pow_api_protected do
     plug(RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+    plug(RegistrationsWeb.Plugs.ReloadUser)
   end
 
   pipeline :pow_json_api_protected do
@@ -67,6 +68,7 @@ defmodule RegistrationsWeb.Router do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+    plug(RegistrationsWeb.Plugs.ReloadUser)
     plug(RequireRole, role: "author")
   end
 
@@ -74,6 +76,7 @@ defmodule RegistrationsWeb.Router do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+    plug(RegistrationsWeb.Plugs.ReloadUser)
     plug(RequireRole, role: "validator")
   end
 
@@ -81,6 +84,7 @@ defmodule RegistrationsWeb.Router do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+    plug(RegistrationsWeb.Plugs.ReloadUser)
     plug(RequireRole, role: "validation_supervisor")
   end
 

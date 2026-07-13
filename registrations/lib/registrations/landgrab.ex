@@ -436,7 +436,18 @@ defmodule Registrations.Landgrab do
                 answer_given: answer_given,
                 correct: correct?
               })
-              |> Repo.insert!()
+              |> Repo.insert()
+              |> case do
+                {:ok, attempt} ->
+                  attempt
+
+                # e.g. the team was deleted after the controller's
+                # checks (rehearsal team rebuilds) — a client error
+                # (422 via the controller's changeset clause), not a
+                # 500.
+                {:error, changeset} ->
+                  Repo.rollback(changeset)
+              end
 
             if correct? do
               case insert_capture(puzzlet.id, team_id) do
