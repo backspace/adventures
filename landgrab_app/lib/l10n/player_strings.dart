@@ -160,6 +160,7 @@ class ScanStrings {
 class PuzzletStrings {
   PuzzletStrings._();
 
+  static const titlePrefix = 'Pole';
   static String attemptsRemaining(int n) => 'Attempts remaining: $n';
   static const previouslyTried = 'Already tried by your team:';
   static const answerLabel = 'Answer';

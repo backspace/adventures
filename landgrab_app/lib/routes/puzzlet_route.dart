@@ -159,7 +159,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.pole.label ?? widget.pole.barcode),
+        title: Text('${PuzzletStrings.titlePrefix}  ${widget.pole.label ?? widget.pole.barcode}'),
       ),
       body: Stack(children: [
         // Confetti overlays the whole screen from the top centre,
