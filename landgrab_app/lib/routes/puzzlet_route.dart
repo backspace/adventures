@@ -81,8 +81,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     // rather than throwing — but guard with try/finally anyway so no
     // future exception can strand the screen with _busy stuck true.
     try {
-      final outcome =
-          await widget.api.submitAnswer(widget.puzzlet.id, answer);
+      final outcome = await widget.api.submitAnswer(widget.puzzlet.id, answer);
 
       if (!mounted) return;
       setState(() {
@@ -133,7 +132,8 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   Future<void> _scanForBarcodeAnswer() async {
     final scanned = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => const BarcodeScannerRoute(title: PuzzletStrings.scanBarcodeAnswerTitle),
+        builder: (_) => const BarcodeScannerRoute(
+            title: PuzzletStrings.scanBarcodeAnswerTitle),
       ),
     );
     if (scanned == null || scanned.isEmpty || !mounted) return;
@@ -144,7 +144,8 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   Future<void> _scanForNfcAnswer() async {
     final scanned = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => const NfcScannerRoute(title: PuzzletStrings.scanNfcAnswerTitle),
+        builder: (_) =>
+            const NfcScannerRoute(title: PuzzletStrings.scanNfcAnswerTitle),
       ),
     );
     if (scanned == null || scanned.isEmpty || !mounted) return;
@@ -160,110 +161,115 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
 
   @override
   Widget build(BuildContext context) {
-    final disabled =
-        _outcome is AttemptCorrect ||
-            _outcome is AttemptLockedOut ||
-            _outcome is AttemptAlreadyCaptured ||
-            _outcome is AttemptAlreadyOwner ||
-            (_attemptsRemaining ?? 0) <= 0;
+    final disabled = _outcome is AttemptCorrect ||
+        _outcome is AttemptLockedOut ||
+        _outcome is AttemptAlreadyCaptured ||
+        _outcome is AttemptAlreadyOwner ||
+        (_attemptsRemaining ?? 0) <= 0;
 
     final outcomeText = _outcomeText();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('${PuzzletStrings.titlePrefix}  ${widget.pole.label ?? widget.pole.barcode}'),
-      ),
-      body: Stack(children: [
-        SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.puzzlet.warning != null &&
-                widget.puzzlet.warning!.trim().isNotEmpty) ...[
-              _WarningBanner(text: widget.puzzlet.warning!),
-              const SizedBox(height: 16),
-            ],
-            Text(
-              widget.puzzlet.instructions,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-            Text(PuzzletStrings.attemptsRemaining(_attemptsRemaining ?? 0)),
-            if (_previousWrongAnswers.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              _PreviousWrongAnswers(answers: _previousWrongAnswers),
-            ],
-            const SizedBox(height: 24),
-            if (widget.puzzlet.answerType == 'barcode') ...[
-              FilledButton.icon(
-                onPressed: (_busy || disabled) ? null : _scanForBarcodeAnswer,
-                icon: const Icon(Icons.qr_code_scanner),
-                label: const Text(PuzzletStrings.scanBarcodeAnswerButton),
+    // The celebration overlay sits ABOVE the Scaffold (not in its
+    // body) so the flood truly covers the whole screen, app bar
+    // included — inside the body it could only ever reach the body's
+    // bounds, which also tracked the scroll content's height.
+    return Stack(children: [
+      Scaffold(
+        appBar: AppBar(
+          title: Text(
+              '${PuzzletStrings.titlePrefix}  ${widget.pole.label ?? widget.pole.barcode}'),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.puzzlet.warning != null &&
+                  widget.puzzlet.warning!.trim().isNotEmpty) ...[
+                _WarningBanner(text: widget.puzzlet.warning!),
+                const SizedBox(height: 16),
+              ],
+              Text(
+                widget.puzzlet.instructions,
+                style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
-              Text(
-                PuzzletStrings.scanBarcodeAnswerHelp,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 16),
-            ] else if (widget.puzzlet.answerType == 'nfc') ...[
-              FilledButton.icon(
-                onPressed: (_busy || disabled) ? null : _scanForNfcAnswer,
-                icon: const Icon(Icons.contactless),
-                label: const Text(PuzzletStrings.scanNfcAnswerButton),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                PuzzletStrings.scanNfcAnswerHelp,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 16),
-            ],
-            TextField(
-              controller: _answerController,
-              enabled: !disabled,
-              decoration: InputDecoration(
-                labelText: widget.puzzlet.answerType == 'strict_text'
-                    ? PuzzletStrings.answerLabelExact
-                    : PuzzletStrings.answerLabel,
-                border: const OutlineInputBorder(),
-              ),
-              onSubmitted: (_) => disabled ? null : _submit(),
-            ),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: (_busy || disabled) ? null : _submit,
-              child: _busy
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Text(PuzzletStrings.submitButton),
-            ),
-            if (outcomeText != null) ...[
+              Text(PuzzletStrings.attemptsRemaining(_attemptsRemaining ?? 0)),
+              if (_previousWrongAnswers.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                _PreviousWrongAnswers(answers: _previousWrongAnswers),
+              ],
               const SizedBox(height: 24),
-              Text(outcomeText, style: TextStyle(color: _outcomeColor(), fontSize: 16)),
+              if (widget.puzzlet.answerType == 'barcode') ...[
+                FilledButton.icon(
+                  onPressed: (_busy || disabled) ? null : _scanForBarcodeAnswer,
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: const Text(PuzzletStrings.scanBarcodeAnswerButton),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  PuzzletStrings.scanBarcodeAnswerHelp,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 16),
+              ] else if (widget.puzzlet.answerType == 'nfc') ...[
+                FilledButton.icon(
+                  onPressed: (_busy || disabled) ? null : _scanForNfcAnswer,
+                  icon: const Icon(Icons.contactless),
+                  label: const Text(PuzzletStrings.scanNfcAnswerButton),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  PuzzletStrings.scanNfcAnswerHelp,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 16),
+              ],
+              TextField(
+                controller: _answerController,
+                enabled: !disabled,
+                decoration: InputDecoration(
+                  labelText: widget.puzzlet.answerType == 'strict_text'
+                      ? PuzzletStrings.answerLabelExact
+                      : PuzzletStrings.answerLabel,
+                  border: const OutlineInputBorder(),
+                ),
+                onSubmitted: (_) => disabled ? null : _submit(),
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: (_busy || disabled) ? null : _submit,
+                child: _busy
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text(PuzzletStrings.submitButton),
+              ),
+              if (outcomeText != null) ...[
+                const SizedBox(height: 24),
+                Text(outcomeText,
+                    style: TextStyle(color: _outcomeColor(), fontSize: 16)),
+              ],
             ],
-          ],
-        ),
-        ),
-        // Capture celebration: a team-colour flood sweeps out from
-        // the centre (previewing the territory animation the map is
-        // about to replay) and a CLAIMED stamp slams down at a
-        // per-capture angle. Painted above the form because it's
-        // later in the Stack.
-        if (_celebrating)
-          Positioned.fill(
-            child: _CaptureCelebration(
-              // Matches the map's own-team territory colour.
-              floodColor: Colors.green,
-              stampAngle: _stampAngle,
-            ),
           ),
-      ]),
-    );
+        ),
+      ),
+      // Capture celebration: a team-colour flood sweeps out from
+      // the centre (previewing the territory animation the map is
+      // about to replay) and a CLAIMED stamp slams down at a
+      // per-capture angle. Later in the Stack, so painted above the
+      // entire Scaffold.
+      if (_celebrating)
+        Positioned.fill(
+          child: _CaptureCelebration(
+            // Matches the map's own-team territory colour.
+            floodColor: Colors.green,
+            stampAngle: _stampAngle,
+          ),
+        ),
+    ]);
   }
 }
 
@@ -325,55 +331,61 @@ class _CaptureCelebrationState extends State<_CaptureCelebration>
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              // Radial flood from the centre — diagonal half-extent
-              // guarantees full coverage at progress 1.
-              CustomPaint(
-                painter: _FloodPainter(
-                  color: widget.floodColor.withValues(alpha: 0.92),
-                  progress: _flood.value,
+    // The overlay sits outside the Scaffold, so nothing above it
+    // provides a Material — without this, the stamp text gets
+    // Flutter's Material-less fallback style (yellow underline).
+    return Material(
+      type: MaterialType.transparency,
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                // Radial flood from the centre — diagonal half-extent
+                // guarantees full coverage at progress 1.
+                CustomPaint(
+                  painter: _FloodPainter(
+                    color: widget.floodColor.withValues(alpha: 0.92),
+                    progress: _flood.value,
+                  ),
                 ),
-              ),
-              Center(
-                child: Transform.rotate(
-                  angle: widget.stampAngle,
-                  child: Transform.scale(
-                    // Slams from oversized down onto the page.
-                    scale: 2.4 - 1.4 * _stamp.value,
-                    child: Opacity(
-                      opacity: _stamp.value.clamp(0.0, 1.0),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 10),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white, width: 5),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          PuzzletStrings.capturedStamp,
-                          // Anton, matching the site wordmark — it's
-                          // single-weight, so no fontWeight needed.
-                          style: TextStyle(
-                            fontFamily: 'Anton',
-                            color: Colors.white,
-                            fontSize: 44,
-                            letterSpacing: 6,
+                Center(
+                  child: Transform.rotate(
+                    angle: widget.stampAngle,
+                    child: Transform.scale(
+                      // Slams from oversized down onto the page.
+                      scale: 2.4 - 1.4 * _stamp.value,
+                      child: Opacity(
+                        opacity: _stamp.value.clamp(0.0, 1.0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 10),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white, width: 5),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            PuzzletStrings.capturedStamp,
+                            // Anton, matching the site wordmark — it's
+                            // single-weight, so no fontWeight needed.
+                            style: TextStyle(
+                              fontFamily: 'Anton',
+                              color: Colors.white,
+                              fontSize: 44,
+                              letterSpacing: 6,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -388,6 +400,11 @@ class _FloodPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (progress <= 0) return;
+    // The disc's full radius overshoots the screen (it's the
+    // diagonal half-extent), so clip to our own bounds — otherwise
+    // the overdraw beyond the edges becomes visible the moment the
+    // pop transition moves the page.
+    canvas.clipRect(Offset.zero & size);
     final centre = Offset(size.width / 2, size.height / 2);
     final maxRadius =
         math.sqrt(size.width * size.width + size.height * size.height) / 2;
@@ -410,7 +427,8 @@ class _PreviousWrongAnswers extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: theme.colorScheme.errorContainer.withValues(alpha: 0.5),
-        border: Border.all(color: theme.colorScheme.error.withValues(alpha: 0.4)),
+        border:
+            Border.all(color: theme.colorScheme.error.withValues(alpha: 0.4)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
