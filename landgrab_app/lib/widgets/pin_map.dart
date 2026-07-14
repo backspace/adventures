@@ -209,7 +209,7 @@ class _PinMapState extends State<PinMap> {
                       onTap: p.onTap,
                       child: Tooltip(
                         message: p.label,
-                        child: Icon(p.icon, color: p.color, size: p.size),
+                        child: _PinIcon(pin: p),
                       ),
                     ),
                   ))
@@ -278,6 +278,33 @@ class _PinMapState extends State<PinMap> {
       onPointerUp: _onPointerUp,
       onPointerCancel: _onPointerUp,
       child: map,
+    );
+  }
+}
+
+/// Renders a [MapPin] either as a filled circular badge (poles /
+/// puzzlets) or a bare icon (bathrooms / regions), per `pin.filled`.
+class _PinIcon extends StatelessWidget {
+  final MapPin pin;
+  const _PinIcon({required this.pin});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!pin.filled) {
+      return Icon(pin.icon, color: pin.color, size: pin.size);
+    }
+    return Container(
+      width: pin.size,
+      height: pin.size,
+      decoration: BoxDecoration(
+        color: pin.color,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 1.5),
+        boxShadow: const [
+          BoxShadow(color: Color(0x33000000), blurRadius: 2, offset: Offset(0, 1)),
+        ],
+      ),
+      child: Icon(pin.icon, color: Colors.white, size: pin.size * 0.55),
     );
   }
 }

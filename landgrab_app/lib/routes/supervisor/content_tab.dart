@@ -451,18 +451,16 @@ class _ContentTabState extends State<ContentTab> {
 
     final pins = <MapPin>[
       for (final p in _visiblePoles)
-        MapPin(
+        MapPin.pole(
           position: LatLng(p.latitude, p.longitude),
           label: p.label ?? p.barcode,
-          icon: Icons.location_on,
           color: colorFor(p.status, p.activeValidation),
           onTap: _drawArmed ? null : () => _onPolePinTap(p),
         ),
       for (final p in _visiblePuzzlets.where((p) => p.latitude != null))
-        MapPin(
+        MapPin.puzzlet(
           position: LatLng(p.latitude!, p.longitude!),
           label: p.instructions,
-          icon: Icons.edit_note,
           color: colorFor(p.status, p.activeValidation),
           onTap: _drawArmed ? null : () => _onPuzzletPinTap(p),
         ),
@@ -562,7 +560,7 @@ class _ContentRow {
   _ContentRow._(this.icon, this.title, this.subtitle, this.badges, this.open);
 
   factory _ContentRow.pole(DraftPole p) => _ContentRow._(
-        Icons.location_on,
+        Icons.barcode_reader,
         p.label ?? p.barcode,
         'Pole · ${p.barcode}${_assignedTo(p.activeValidation)}',
         _badgesFor(p.status, p.activeValidation, p.attachmentIds.length),
@@ -578,7 +576,7 @@ class _ContentRow {
       );
 
   factory _ContentRow.puzzlet(DraftPuzzlet p) => _ContentRow._(
-        Icons.edit_note,
+        Icons.question_mark,
         p.instructions,
         'Puzzlet · difficulty ${p.difficulty}'
         '${p.region != null ? ' · ${p.region!.breadcrumb}' : ''}'

@@ -234,13 +234,19 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
     }
 
     final pins = located
-        .map((r) => MapPin(
-              position: r.position!,
-              label: r.title,
-              icon: r.icon,
-              color: statusColorFor(r.status.name),
-              onTap: r.open,
-            ))
+        .map((r) => r.isPole
+            ? MapPin.pole(
+                position: r.position!,
+                label: r.title,
+                color: statusColorFor(r.status.name),
+                onTap: r.open,
+              )
+            : MapPin.puzzlet(
+                position: r.position!,
+                label: r.title,
+                color: statusColorFor(r.status.name),
+                onTap: r.open,
+              ))
         .toList();
 
     return Column(
@@ -262,6 +268,7 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
 /// A pole or puzzlet validation flattened into one to-do row.
 class _TodoRow {
   final IconData icon;
+  final bool isPole;
   final String title;
   final String subtitle;
   final ValidationStatus status;
@@ -271,6 +278,7 @@ class _TodoRow {
 
   _TodoRow._({
     required this.icon,
+    required this.isPole,
     required this.title,
     required this.subtitle,
     required this.status,
@@ -283,7 +291,8 @@ class _TodoRow {
       PoleValidationModel v, void Function(PoleValidationModel) open) {
     final pole = v.pole;
     return _TodoRow._(
-      icon: Icons.location_on,
+      icon: Icons.barcode_reader,
+      isPole: true,
       title: pole?.label ?? pole?.barcode ?? v.poleId,
       subtitle: 'Pole'
           '${pole != null ? ' · ${pole.barcode}' : ''}'
@@ -299,7 +308,8 @@ class _TodoRow {
       PuzzletValidationModel v, void Function(PuzzletValidationModel) open) {
     final puzzlet = v.puzzlet;
     return _TodoRow._(
-      icon: Icons.edit_note,
+      icon: Icons.question_mark,
+      isPole: false,
       title: puzzlet?.instructions ?? v.puzzletId,
       subtitle: 'Puzzlet'
           '${puzzlet?.region != null ? ' · ${puzzlet!.region!.breadcrumb}' : ''}'

@@ -79,10 +79,9 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
     final pins = <MapPin>[];
     for (final p in drafts.poles) {
       final editable = p.status == DraftStatus.draft;
-      pins.add(MapPin(
+      pins.add(MapPin.pole(
         position: LatLng(p.latitude, p.longitude),
         label: p.label ?? p.barcode,
-        icon: Icons.location_on,
         color: _statusColor(p.status),
         onTap: editable ? () => _openPole(p) : null,
       ));
@@ -90,10 +89,9 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
     for (final p in drafts.puzzlets) {
       if (p.latitude != null && p.longitude != null) {
         final editable = p.status == DraftStatus.draft;
-        pins.add(MapPin(
+        pins.add(MapPin.puzzlet(
           position: LatLng(p.latitude!, p.longitude!),
           label: p.instructions,
-          icon: Icons.edit_note,
           color: _statusColor(p.status),
           onTap: editable ? () => _openPuzzlet(p) : null,
         ));

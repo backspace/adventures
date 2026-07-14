@@ -12,6 +12,12 @@ class MapPin {
   /// markers) pass a smaller value so they don't compete with poles.
   final double size;
 
+  /// When true the pin renders as a filled circle in [color] with a
+  /// white glyph inside (a compact "badge"), rather than a bare icon.
+  /// Poles and puzzlets use this so they read as small coloured dots
+  /// with a type glyph; bathrooms/regions keep the plain-icon look.
+  final bool filled;
+
   const MapPin({
     required this.position,
     required this.label,
@@ -19,7 +25,46 @@ class MapPin {
     required this.color,
     this.onTap,
     this.size = 36,
+    this.filled = false,
   });
+
+  /// Standard pole marker: a barcode glyph in a filled circle.
+  factory MapPin.pole({
+    required LatLng position,
+    required String label,
+    required Color color,
+    VoidCallback? onTap,
+  }) =>
+      MapPin(
+        position: position,
+        label: label,
+        icon: Icons.barcode_reader,
+        color: color,
+        onTap: onTap,
+        size: _typedPinSize,
+        filled: true,
+      );
+
+  /// Standard puzzlet marker: a question mark in a filled circle.
+  factory MapPin.puzzlet({
+    required LatLng position,
+    required String label,
+    required Color color,
+    VoidCallback? onTap,
+  }) =>
+      MapPin(
+        position: position,
+        label: label,
+        icon: Icons.question_mark,
+        color: color,
+        onTap: onTap,
+        size: _typedPinSize,
+        filled: true,
+      );
+
+  // Poles/puzzlets sit smaller than the old 36 bare pins so a dense
+  // map stays legible.
+  static const double _typedPinSize = 26;
 }
 
 /// Standardised bathroom marker — muted, smaller, distinct icon so it
