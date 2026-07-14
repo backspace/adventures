@@ -227,12 +227,12 @@ class _EndgameTabState extends State<EndgameTab> {
                   interactionOptions: const InteractionOptions(
                     flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                   ),
-                  onPositionChanged: (position, _) {
-                    final centre = position.center;
-                    if (centre != null) {
-                      setState(() => _centre = centre);
-                    }
-                  },
+                  // Deliberate gesture only: panning/zooming to look
+                  // around must never move the boundary. (This
+                  // replaced a centre-of-viewport crosshair that
+                  // changed the centre on every drag.)
+                  onLongPress: (_, latLng) =>
+                      setState(() => _centre = latLng),
                 ),
                 children: [
                   TileLayer(
@@ -273,12 +273,40 @@ class _EndgameTabState extends State<EndgameTab> {
                         borderStrokeWidth: 3,
                       ),
                   ]),
+                  MarkerLayer(markers: [
+                    Marker(
+                      point: _centre,
+                      width: 36,
+                      height: 36,
+                      // Anchor the pin's tip at the point.
+                      alignment: Alignment.topCenter,
+                      child: const Icon(Icons.place,
+                          size: 36, color: Colors.deepPurple),
+                    ),
+                  ]),
                 ],
               ),
-              // Fixed crosshair: pan the map to aim the centre.
-              const IgnorePointer(
-                child: Center(
-                  child: Icon(Icons.add, size: 36, color: Colors.deepPurple),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 8,
+                child: IgnorePointer(
+                  child: Center(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        child: Text(
+                          'Long-press the map to move the centre',
+                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
