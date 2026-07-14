@@ -159,6 +159,17 @@ class _HomeRouteState extends State<HomeRoute>
         duration: const Duration(seconds: 6),
       ));
     }
+    if (n.type == 'message' && mounted) {
+      // Storyline broadcast from the organisers — neutral styling so
+      // it reads as narrative, not alarm. Sender name from metadata
+      // (Sabuk / Sabuk's assistant).
+      final sender = n.metadata['sender_name'] as String?;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(sender == null ? n.body : '$sender: ${n.body}'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 8),
+      ));
+    }
     // Future notification types (chat, etc.) get their own branches
     // here — or, once a notifications-history screen exists, hand
     // off to a shared inbox stream and drop this ad-hoc dispatch.

@@ -6,6 +6,7 @@ import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/models/notification.dart';
+import 'package:landgrab/models/organiser_message.dart';
 import 'package:landgrab/models/region.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/models/validator_only_puzzlet.dart';
@@ -731,6 +732,33 @@ class LandgrabApi {
       dio.delete('/landgrab/validation/puzzlet-comments/$id');
 
   // ────────── Supervisor surface ──────────
+
+  Future<List<OrganiserMessage>> listOrganiserMessages() async {
+    final response = await dio.get('/landgrab/supervision/messages');
+    return (response.data['messages'] as List)
+        .map((m) => OrganiserMessage.fromJson(m as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  /// Creates a message; with [sendNow] it fans out to all teams
+  /// immediately, otherwise it's saved as a draft for later sending.
+  Future<OrganiserMessage> createOrganiserMessage({
+    required String body,
+    required String senderName,
+    bool sendNow = false,
+  }) async {
+    final response = await dio.post('/landgrab/supervision/messages', data: {
+      'body': body,
+      'sender_name': senderName,
+      if (sendNow) 'send': true,
+    });
+    return OrganiserMessage.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<OrganiserMessage> sendOrganiserMessage(String id) async {
+    final response = await dio.post('/landgrab/supervision/messages/$id/send');
+    return OrganiserMessage.fromJson(response.data as Map<String, dynamic>);
+  }
 
   Future<DashboardCounts> supervisorDashboard() async {
     final response = await dio.get('/landgrab/supervision/dashboard');

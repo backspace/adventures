@@ -97,16 +97,25 @@ class _NotificationTile extends StatelessWidget {
             ? const TextStyle(fontWeight: FontWeight.bold)
             : null,
       ),
-      subtitle: Text(_relativeTime(notification.insertedAt)),
+      subtitle: Text(_subtitle),
       trailing: notification.unread
           ? Icon(Icons.circle, size: 10, color: Theme.of(context).colorScheme.primary)
           : null,
     );
   }
 
+  /// Organiser messages carry their storyline sender; gameplay
+  /// notifications' bodies already name the acting team.
+  String get _subtitle {
+    final sender = notification.metadata['sender_name'] as String?;
+    final time = _relativeTime(notification.insertedAt);
+    return sender == null ? time : '$sender · $time';
+  }
+
   IconData get _icon => switch (notification.type) {
         'attack' => Icons.warning_amber_outlined,
         'pole_lost' => Icons.flag_outlined,
+        'message' => Icons.mail_outline,
         _ => Icons.notifications_none,
       };
 

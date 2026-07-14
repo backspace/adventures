@@ -7,6 +7,7 @@ defmodule Registrations.Landgrab do
   alias Registrations.Landgrab.Capture
   alias Registrations.Landgrab.DeviceToken
   alias Registrations.Landgrab.Notification
+  alias Registrations.Landgrab.OrganiserMessage
   alias Registrations.Landgrab.Pole
   alias Registrations.Landgrab.Puzzlet
   alias Registrations.Landgrab.Thumbnail
@@ -527,6 +528,61 @@ defmodule Registrations.Landgrab do
   end
 
   @doc """
+  Organiser messages, newest first — drafts and sent alike, for the
+  supervisor's message screen.
+  """
+  def list_organiser_messages do
+    OrganiserMessage
+    |> order_by([m], desc: m.inserted_at)
+    |> Repo.all()
+  end
+
+  def get_organiser_message(id), do: Repo.get(OrganiserMessage, id)
+
+  def create_organiser_message(attrs) do
+    %OrganiserMessage{}
+    |> OrganiserMessage.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Fan an organiser message out to every team that has members: one
+  "message" notification per team through the shared persist →
+  socket → push funnel. Idempotence guard: a message can only be
+  sent once. Returns `{:ok, message, team_count}`.
+  """
+  def send_organiser_message(%OrganiserMessage{sent_at: sent_at}) when not is_nil(sent_at) do
+    {:error, :already_sent}
+  end
+
+  def send_organiser_message(%OrganiserMessage{} = message) do
+    team_ids =
+      RegistrationsWeb.Team
+      |> join(:inner, [t], u in assoc(t, :users))
+      |> select([t], t.id)
+      |> distinct(true)
+      |> Repo.all()
+
+    Enum.each(team_ids, fn team_id ->
+      persist_and_deliver(
+        "message",
+        team_id,
+        nil,
+        message.body,
+        %{"sender_name" => message.sender_name},
+        message.sender_name
+      )
+    end)
+
+    {:ok, sent} =
+      message
+      |> Ecto.Changeset.change(sent_at: DateTime.truncate(DateTime.utc_now(), :second))
+      |> Repo.update()
+
+    {:ok, sent, length(team_ids)}
+  end
+
+  @doc """
   Register (or move) a push token. Upserts on the token so a device
   that changes users — new login on the same install — follows the
   new user instead of pushing to the old one.
@@ -633,6 +689,25 @@ defmodule Registrations.Landgrab do
   # the broadcast gives currently-foregrounded apps a live toast; the
   # push reaches backgrounded/locked phones.
   defp deliver_team_notification(type, %Pole{} = pole, recipient_id, sender_id, body, sender_name) do
+    persist_and_deliver(
+      type,
+      recipient_id,
+      sender_id,
+      body,
+      %{
+        "pole_id" => pole.id,
+        "pole_label" => pole.label,
+        "pole_barcode" => pole.barcode,
+        "sender_team_name" => sender_name
+      },
+      push_title(type)
+    )
+  end
+
+  # The shared persist → socket broadcast → push funnel every
+  # notification type goes through, whatever its origin (gameplay
+  # side effects, organiser broadcasts, future chat).
+  defp persist_and_deliver(type, recipient_id, sender_id, body, metadata, push_title) do
     result =
       %Notification{}
       |> Notification.changeset(%{
@@ -640,12 +715,7 @@ defmodule Registrations.Landgrab do
         recipient_team_id: recipient_id,
         sender_team_id: sender_id,
         body: body,
-        metadata: %{
-          "pole_id" => pole.id,
-          "pole_label" => pole.label,
-          "pole_barcode" => pole.barcode,
-          "sender_team_name" => sender_name
-        }
+        metadata: metadata
       })
       |> Repo.insert()
 
@@ -662,9 +732,9 @@ defmodule Registrations.Landgrab do
 
       Registrations.Landgrab.Push.push_to_team(
         recipient_id,
-        push_title(type),
+        push_title,
         body,
-        %{"type" => type, "pole_id" => pole.id}
+        Map.take(metadata, ["pole_id"]) |> Map.put("type", type)
       )
     end
 
