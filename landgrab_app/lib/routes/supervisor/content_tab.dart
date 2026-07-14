@@ -387,7 +387,8 @@ class _ContentTabState extends State<ContentTab> {
             color: Colors.purple.withValues(alpha: 0.1),
             padding: const EdgeInsets.all(8),
             child: const Text(
-              'Draw around the items to assign — drag a loop on the map.',
+              'Draw a loop with one finger to select. '
+              'Use two fingers to pan or zoom.',
               textAlign: TextAlign.center,
             ),
           ),

@@ -9,10 +9,17 @@ import 'package:landgrab/widgets/map_pin.dart';
 /// Shared FlutterMap configuration: CartoDB Positron tiles, attribution, and
 /// a marker layer. Used for both mini-thumbnails and full-screen views.
 ///
-/// With [drawMode] on, map gestures are disabled and a drag draws a
-/// freehand polygon instead; the finished shape (3+ points) is handed
-/// to [onPolygonDrawn]. [polygon] renders a committed shape — the
-/// caller owns that state so the drawn area can outlive draw mode.
+/// With [drawMode] on, a one-finger drag draws a freehand polygon
+/// (finished shape, 3+ points, handed to [onPolygonDrawn]) while
+/// two-finger gestures still pan and zoom the map — so the supervisor
+/// can frame the area before/while tracing it. [polygon] renders a
+/// committed shape; the caller owns that state so the drawn area can
+/// outlive draw mode.
+///
+/// Drawing uses a passive [Listener] rather than a pan recognizer:
+/// it doesn't enter the gesture arena, so the map's own two-finger
+/// recognizers keep working alongside it. Single-finger drag is left
+/// disabled on the map so it belongs solely to drawing.
 class PinMap extends StatefulWidget {
   final List<MapPin> pins;
   final bool interactive;
@@ -38,26 +45,52 @@ class _PinMapState extends State<PinMap> {
   LatLng? _userLocation;
   bool _locating = false;
 
-  // In-progress freehand stroke, already unprojected — the camera
-  // can't move mid-stroke (gestures are off in draw mode), so
-  // converting each point as it arrives is safe.
+  // In-progress freehand stroke, already unprojected. A stroke only
+  // counts while exactly one finger is down for its whole duration —
+  // the moment a second finger lands it's a map nav gesture, not a
+  // draw, so we abandon the partial stroke. The camera stays put
+  // during a valid (single-finger) stroke, so converting each point
+  // as it arrives is safe.
   final List<LatLng> _stroke = [];
+  final Set<int> _pointers = {};
+  bool _strokeValid = false;
 
-  void _strokeAdd(Offset local) {
+  void _addStrokePoint(Offset local) {
     try {
-      final latLng =
-          _controller.camera.pointToLatLng(Point(local.dx, local.dy));
-      setState(() => _stroke.add(latLng));
+      _stroke.add(_controller.camera.pointToLatLng(Point(local.dx, local.dy)));
     } catch (_) {
       // Camera not laid out yet; drop the point.
     }
   }
 
-  void _strokeEnd() {
-    if (_stroke.length >= 3) {
+  void _onPointerDown(PointerDownEvent e) {
+    _pointers.add(e.pointer);
+    if (_pointers.length == 1) {
+      _strokeValid = true;
+      setState(() {
+        _stroke.clear();
+        _addStrokePoint(e.localPosition);
+      });
+    } else {
+      // Second finger → two-finger map gesture; this isn't a draw.
+      _strokeValid = false;
+      if (_stroke.isNotEmpty) setState(_stroke.clear);
+    }
+  }
+
+  void _onPointerMove(PointerMoveEvent e) {
+    if (!_strokeValid || _pointers.length != 1) return;
+    setState(() => _addStrokePoint(e.localPosition));
+  }
+
+  void _onPointerUp(PointerEvent e) {
+    _pointers.remove(e.pointer);
+    if (_pointers.isNotEmpty) return;
+    if (_strokeValid && _stroke.length >= 3) {
       widget.onPolygonDrawn?.call(List.of(_stroke));
     }
-    setState(_stroke.clear);
+    _strokeValid = false;
+    if (_stroke.isNotEmpty) setState(_stroke.clear);
   }
 
   @override
@@ -126,16 +159,26 @@ class _PinMapState extends State<PinMap> {
     }
   }
 
+  int _interactiveFlags() {
+    if (!widget.interactive) return InteractiveFlag.none;
+    if (widget.drawMode) {
+      // Single-finger drag stays off (that's for drawing); two-finger
+      // pan/zoom and double-tap zoom remain so the area can be framed.
+      return InteractiveFlag.pinchZoom |
+          InteractiveFlag.pinchMove |
+          InteractiveFlag.doubleTapZoom |
+          InteractiveFlag.flingAnimation;
+    }
+    return InteractiveFlag.all & ~InteractiveFlag.rotate;
+  }
+
   @override
   Widget build(BuildContext context) {
     final map = FlutterMap(
       mapController: _controller,
       options: MapOptions(
         initialCameraFit: _fit(),
-        interactionOptions: widget.interactive && !widget.drawMode
-            ? const InteractionOptions(
-                flags: InteractiveFlag.all & ~InteractiveFlag.rotate)
-            : const InteractionOptions(flags: InteractiveFlag.none),
+        interactionOptions: InteractionOptions(flags: _interactiveFlags()),
       ),
       children: [
         TileLayer(
@@ -226,13 +269,14 @@ class _PinMapState extends State<PinMap> {
 
     if (!widget.drawMode) return map;
 
-    // Draw mode: the map is gesture-dead, so this detector owns the
-    // drag and records the stroke in map coordinates.
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onPanStart: (d) => _strokeAdd(d.localPosition),
-      onPanUpdate: (d) => _strokeAdd(d.localPosition),
-      onPanEnd: (_) => _strokeEnd(),
+    // Draw mode: a passive Listener records single-finger strokes
+    // without claiming the arena, so the map's two-finger pinch/zoom
+    // still works underneath.
+    return Listener(
+      onPointerDown: _onPointerDown,
+      onPointerMove: _onPointerMove,
+      onPointerUp: _onPointerUp,
+      onPointerCancel: _onPointerUp,
       child: map,
     );
   }
