@@ -568,6 +568,45 @@ defmodule Registrations.Landgrab.Validations do
   end
 
   @doc """
+  Bulk-assign the listed poles and puzzlets to one validator — the
+  supervisor's draw-an-area flow. Items that can't take the
+  assignment (already carrying an active validation, authored by the
+  validator, vanished mid-flight) are skipped rather than fatal.
+  Returns `%{assigned: n, skipped: n}`.
+  """
+  def bulk_assign(pole_ids, puzzlet_ids, validator_id, assigner_id) do
+    active_poles = pole_ids |> active_validations_by_pole() |> Map.keys() |> MapSet.new()
+    active_puzzlets = puzzlet_ids |> active_validations_by_puzzlet() |> Map.keys() |> MapSet.new()
+
+    results =
+      Enum.map(pole_ids, fn id ->
+        if MapSet.member?(active_poles, id),
+          do: :skipped,
+          else: attempt_assign(fn -> assign_pole_validation(id, validator_id, assigner_id) end)
+      end) ++
+        Enum.map(puzzlet_ids, fn id ->
+          if MapSet.member?(active_puzzlets, id),
+            do: :skipped,
+            else: attempt_assign(fn -> assign_puzzlet_validation(id, validator_id, assigner_id) end)
+        end)
+
+    %{
+      assigned: Enum.count(results, &(&1 == :assigned)),
+      skipped: Enum.count(results, &(&1 == :skipped))
+    }
+  end
+
+  defp attempt_assign(fun) do
+    case fun.() do
+      {:ok, _} -> :assigned
+      {:error, _} -> :skipped
+    end
+  rescue
+    # e.g. the pole/puzzlet was deleted between selection and submit.
+    _ -> :skipped
+  end
+
+  @doc """
   For a list of pole ids, returns a map of pole_id => latest active
   (non-terminal) PoleValidation, with comments preloaded. Poles without an
   active validation are absent from the map.

@@ -178,7 +178,8 @@ class LandgrabApi {
     final response = await dio.get('/landgrab/me');
     final user = response.data['user'] as Map<String, dynamic>;
     final team = response.data['team'] as Map<String, dynamic>?;
-    final roles = (user['roles'] as List?)?.map((r) => r as String).toList() ?? const [];
+    final roles =
+        (user['roles'] as List?)?.map((r) => r as String).toList() ?? const [];
     await UserService.setUserData(
       user['id'] as String,
       user['email'] as String,
@@ -210,7 +211,8 @@ class LandgrabApi {
   Future<ScanOutcome> scan(String barcode) async {
     try {
       final response = await dio.get('/landgrab/poles/$barcode');
-      return ScanFound(ScanResult.fromJson(response.data as Map<String, dynamic>));
+      return ScanFound(
+          ScanResult.fromJson(response.data as Map<String, dynamic>));
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) return const ScanUnknownBarcode();
       final code = _errorCode(e);
@@ -446,10 +448,11 @@ class LandgrabApi {
       if (accuracyM != null) 'accuracy_m': accuracyM,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
-      if (clearRegion) 'region_id': null
-      else if (regionId != null) 'region_id': regionId,
-      if (clearPole) 'pole_id': null
-      else if (poleId != null) 'pole_id': poleId,
+      if (clearRegion)
+        'region_id': null
+      else if (regionId != null)
+        'region_id': regionId,
+      if (clearPole) 'pole_id': null else if (poleId != null) 'pole_id': poleId,
       if (warning != null) 'warning': warning,
       if (validatorOnly != null) 'validator_only': validatorOnly,
     });
@@ -506,8 +509,10 @@ class LandgrabApi {
   }) async {
     final response = await dio.patch('/landgrab/regions/$id', data: {
       if (name != null) 'name': name,
-      if (clearParent) 'parent_region_id': null
-      else if (parentRegionId != null) 'parent_region_id': parentRegionId,
+      if (clearParent)
+        'parent_region_id': null
+      else if (parentRegionId != null)
+        'parent_region_id': parentRegionId,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
       if (entryInstructions != null) 'entry_instructions': entryInstructions,
@@ -612,8 +617,10 @@ class LandgrabApi {
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
       if (entryInstructions != null) 'entry_instructions': entryInstructions,
-      if (clearRegion) 'region_id': null
-      else if (regionId != null) 'region_id': regionId,
+      if (clearRegion)
+        'region_id': null
+      else if (regionId != null)
+        'region_id': regionId,
     });
     return Bathroom.fromJson(response.data as Map<String, dynamic>);
   }
@@ -804,6 +811,26 @@ class LandgrabApi {
     return DashboardCounts.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Bulk-assign every listed pole and puzzlet to one validator (the
+  /// draw-an-area flow). Items that can't take the assignment are
+  /// skipped server-side and counted.
+  Future<({int assigned, int skipped})> bulkAssignValidations({
+    required String validatorId,
+    required List<String> poleIds,
+    required List<String> puzzletIds,
+  }) async {
+    final response = await dio.post('/landgrab/supervision/assignments', data: {
+      'validator_id': validatorId,
+      'pole_ids': poleIds,
+      'puzzlet_ids': puzzletIds,
+    });
+    final data = response.data as Map<String, dynamic>;
+    return (
+      assigned: (data['assigned'] as num).toInt(),
+      skipped: (data['skipped'] as num).toInt(),
+    );
+  }
+
   Future<List<ValidatorUser>> listValidators({String? excludeUserId}) async {
     final response = await dio.get('/landgrab/supervision/validators',
         queryParameters: {
@@ -832,14 +859,17 @@ class LandgrabApi {
   }
 
   Future<List<PoleValidationModel>> listPoleValidations(String poleId) async {
-    final response = await dio.get('/landgrab/supervision/poles/$poleId/validations');
+    final response =
+        await dio.get('/landgrab/supervision/poles/$poleId/validations');
     return ((response.data['validations'] as List?) ?? const [])
         .map((e) => PoleValidationModel.fromJson(e as Map<String, dynamic>))
         .toList(growable: false);
   }
 
-  Future<List<PuzzletValidationModel>> listPuzzletValidations(String puzzletId) async {
-    final response = await dio.get('/landgrab/supervision/puzzlets/$puzzletId/validations');
+  Future<List<PuzzletValidationModel>> listPuzzletValidations(
+      String puzzletId) async {
+    final response =
+        await dio.get('/landgrab/supervision/puzzlets/$puzzletId/validations');
     return ((response.data['validations'] as List?) ?? const [])
         .map((e) => PuzzletValidationModel.fromJson(e as Map<String, dynamic>))
         .toList(growable: false);
@@ -964,7 +994,8 @@ class LandgrabApi {
     String? accessibilityNotes,
     String? warning,
   }) async {
-    final response = await dio.patch('/landgrab/supervision/puzzlets/$id', data: {
+    final response =
+        await dio.patch('/landgrab/supervision/puzzlets/$id', data: {
       if (instructions != null) 'instructions': instructions,
       if (answer != null) 'answer': answer,
       if (answerType != null) 'answer_type': answerTypeToString(answerType),

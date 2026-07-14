@@ -8,11 +8,26 @@ import 'package:landgrab/widgets/map_pin.dart';
 
 /// Shared FlutterMap configuration: CartoDB Positron tiles, attribution, and
 /// a marker layer. Used for both mini-thumbnails and full-screen views.
+///
+/// With [drawMode] on, map gestures are disabled and a drag draws a
+/// freehand polygon instead; the finished shape (3+ points) is handed
+/// to [onPolygonDrawn]. [polygon] renders a committed shape — the
+/// caller owns that state so the drawn area can outlive draw mode.
 class PinMap extends StatefulWidget {
   final List<MapPin> pins;
   final bool interactive;
+  final bool drawMode;
+  final void Function(List<LatLng> polygon)? onPolygonDrawn;
+  final List<LatLng>? polygon;
 
-  const PinMap({super.key, required this.pins, this.interactive = true});
+  const PinMap({
+    super.key,
+    required this.pins,
+    this.interactive = true,
+    this.drawMode = false,
+    this.onPolygonDrawn,
+    this.polygon,
+  });
 
   @override
   State<PinMap> createState() => _PinMapState();
@@ -22,6 +37,28 @@ class _PinMapState extends State<PinMap> {
   final MapController _controller = MapController();
   LatLng? _userLocation;
   bool _locating = false;
+
+  // In-progress freehand stroke, already unprojected — the camera
+  // can't move mid-stroke (gestures are off in draw mode), so
+  // converting each point as it arrives is safe.
+  final List<LatLng> _stroke = [];
+
+  void _strokeAdd(Offset local) {
+    try {
+      final latLng =
+          _controller.camera.pointToLatLng(Point(local.dx, local.dy));
+      setState(() => _stroke.add(latLng));
+    } catch (_) {
+      // Camera not laid out yet; drop the point.
+    }
+  }
+
+  void _strokeEnd() {
+    if (_stroke.length >= 3) {
+      widget.onPolygonDrawn?.call(List.of(_stroke));
+    }
+    setState(_stroke.clear);
+  }
 
   @override
   void didUpdateWidget(PinMap oldWidget) {
@@ -91,12 +128,13 @@ class _PinMapState extends State<PinMap> {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterMap(
+    final map = FlutterMap(
       mapController: _controller,
       options: MapOptions(
         initialCameraFit: _fit(),
-        interactionOptions: widget.interactive
-            ? const InteractionOptions(flags: InteractiveFlag.all & ~InteractiveFlag.rotate)
+        interactionOptions: widget.interactive && !widget.drawMode
+            ? const InteractionOptions(
+                flags: InteractiveFlag.all & ~InteractiveFlag.rotate)
             : const InteractionOptions(flags: InteractiveFlag.none),
       ),
       children: [
@@ -107,6 +145,16 @@ class _PinMapState extends State<PinMap> {
           retinaMode: RetinaMode.isHighDensity(context),
           userAgentPackageName: 'ca.chromatin.poles',
         ),
+        if (widget.polygon != null || _stroke.isNotEmpty)
+          PolygonLayer(polygons: [
+            Polygon(
+              points: _stroke.isNotEmpty ? _stroke : widget.polygon!,
+              color: Colors.purple.withValues(alpha: 0.15),
+              borderColor: Colors.purple,
+              borderStrokeWidth: 2,
+              isFilled: true,
+            ),
+          ]),
         MarkerLayer(
           markers: widget.pins
               .map((p) => Marker(
@@ -154,7 +202,7 @@ class _PinMapState extends State<PinMap> {
             ),
           ),
         ),
-        if (widget.interactive)
+        if (widget.interactive && !widget.drawMode)
           Align(
             alignment: Alignment.bottomLeft,
             child: Padding(
@@ -175,6 +223,18 @@ class _PinMapState extends State<PinMap> {
           ),
       ],
     );
+
+    if (!widget.drawMode) return map;
+
+    // Draw mode: the map is gesture-dead, so this detector owns the
+    // drag and records the stroke in map coordinates.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onPanStart: (d) => _strokeAdd(d.localPosition),
+      onPanUpdate: (d) => _strokeAdd(d.localPosition),
+      onPanEnd: (_) => _strokeEnd(),
+      child: map,
+    );
   }
 }
 
@@ -189,7 +249,8 @@ class _UserLocationDot extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: 3),
         boxShadow: const [
-          BoxShadow(color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 1)),
+          BoxShadow(
+              color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 1)),
         ],
       ),
     );

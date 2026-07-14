@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/routes/author/edit_bathroom_route.dart';
 import 'package:landgrab/widgets/map_pin.dart';
@@ -13,10 +14,16 @@ class MapWithBathrooms extends StatefulWidget {
   final LandgrabApi api;
   final List<MapPin> pins;
   final bool interactive;
+
   /// When true, tapping a bathroom pin opens the bathroom edit route.
   /// The route itself enforces creator-or-supervisor permission server-
   /// side, so it's fine to pass `true` from any author/supervisor view.
   final bool editableBathrooms;
+
+  // Freehand-draw passthrough (see PinMap).
+  final bool drawMode;
+  final void Function(List<LatLng> polygon)? onPolygonDrawn;
+  final List<LatLng>? polygon;
 
   const MapWithBathrooms({
     super.key,
@@ -24,6 +31,9 @@ class MapWithBathrooms extends StatefulWidget {
     required this.pins,
     this.interactive = true,
     this.editableBathrooms = false,
+    this.drawMode = false,
+    this.onPolygonDrawn,
+    this.polygon,
   });
 
   @override
@@ -67,6 +77,9 @@ class _MapWithBathroomsState extends State<MapWithBathrooms> {
     return PinMap(
       pins: [...widget.pins, ...bathroomPins],
       interactive: widget.interactive,
+      drawMode: widget.drawMode,
+      onPolygonDrawn: widget.onPolygonDrawn,
+      polygon: widget.polygon,
     );
   }
 }

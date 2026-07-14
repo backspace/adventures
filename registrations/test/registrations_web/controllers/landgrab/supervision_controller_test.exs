@@ -359,4 +359,54 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
       assert Validations.get_pole_validation(validation.id)
     end
   end
+
+  describe "bulk assignment" do
+    setup ctx do
+      supervisor = insert(:user, email: unique_email("super"))
+      Accounts.assign_role(supervisor.id, "validation_supervisor")
+      validator = insert(:user, email: unique_email("val"))
+      Accounts.assign_role(validator.id, "validator")
+      author = insert(:user, email: unique_email("author"))
+      %{conn: authed_conn(ctx, supervisor), validator: validator, author: author}
+    end
+
+    test "assigns a mixed batch and skips unassignable items", %{
+      conn: conn,
+      validator: validator,
+      author: author
+    } do
+      pole = insert(:pole, creator: author, status: :draft)
+      puzzlet = insert(:puzzlet, creator: author, status: :draft)
+      # Already has an active validation → skipped, not duplicated.
+      busy_pole = insert(:pole, creator: author, status: :draft)
+      other_validator = insert(:user, email: unique_email("other"))
+      Accounts.assign_role(other_validator.id, "validator")
+      {:ok, _} = Validations.assign_pole_validation(busy_pole.id, other_validator.id, author.id)
+      # Authored by the target validator → self-validation, skipped.
+      own_puzzlet = insert(:puzzlet, creator: validator, status: :draft)
+
+      body =
+        conn
+        |> post("/landgrab/supervision/assignments", %{
+          "validator_id" => validator.id,
+          "pole_ids" => [pole.id, busy_pole.id],
+          "puzzlet_ids" => [puzzlet.id, own_puzzlet.id]
+        })
+        |> json_response(200)
+
+      assert body == %{"assigned" => 2, "skipped" => 2}
+
+      assert Validations.active_validations_by_pole([pole.id])[pole.id].validator_id == validator.id
+      assert Validations.active_validations_by_puzzlet([puzzlet.id])[puzzlet.id].validator_id == validator.id
+      # The busy pole keeps its original validator.
+      assert Validations.active_validations_by_pole([busy_pole.id])[busy_pole.id].validator_id ==
+               other_validator.id
+    end
+
+    test "requires validator_id", %{conn: conn} do
+      conn
+      |> post("/landgrab/supervision/assignments", %{"pole_ids" => []})
+      |> json_response(400)
+    end
+  end
 end

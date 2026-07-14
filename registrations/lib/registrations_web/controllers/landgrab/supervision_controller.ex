@@ -84,6 +84,23 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
 
   # ──────── Assign ─────────────────────────────────────────────────
 
+  # Bulk assignment for the draw-an-area flow: every listed pole and
+  # puzzlet goes to one validator; unassignable items are skipped and
+  # counted rather than failing the batch.
+  def bulk_assign(conn, %{"validator_id" => validator_id} = params) when is_binary(validator_id) do
+    user = Pow.Plug.current_user(conn)
+    pole_ids = List.wrap(params["pole_ids"])
+    puzzlet_ids = List.wrap(params["puzzlet_ids"])
+
+    json(conn, Validations.bulk_assign(pole_ids, puzzlet_ids, validator_id, user.id))
+  end
+
+  def bulk_assign(conn, _params) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{error: %{code: "bad_request", detail: "validator_id is required"}})
+  end
+
   def assign_pole(conn, %{"id" => pole_id, "validator_id" => validator_id}) do
     user = Pow.Plug.current_user(conn)
 

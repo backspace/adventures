@@ -1,0 +1,600 @@
+import 'package:flutter/material.dart';
+import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/models/draft.dart';
+import 'package:landgrab/models/validation.dart';
+import 'package:landgrab/routes/supervisor/pin_action_sheet.dart';
+import 'package:landgrab/routes/supervisor/pole_supervision_detail_route.dart';
+import 'package:landgrab/routes/supervisor/puzzlet_supervision_detail_route.dart';
+import 'package:landgrab/services/ui_preferences.dart';
+import 'package:landgrab/widgets/attachments_badge.dart';
+import 'package:landgrab/widgets/map_pin.dart';
+import 'package:landgrab/widgets/map_with_bathrooms.dart';
+import 'package:landgrab/widgets/status_badge.dart';
+import 'package:latlong2/latlong.dart';
+
+enum _ListOrMap { list, map }
+
+enum _Kind { all, poles, puzzlets }
+
+const _allStatuses = ['draft', 'in_review', 'validated', 'retired'];
+
+/// One view over poles AND puzzlets — the supervisor mostly cares
+/// about "the content", not which table a row lives in. List and map
+/// modes with kind + status filters, plus the draw-to-assign flow:
+/// trace an area on the map and everything assignable inside it goes
+/// to a chosen validator in one batch.
+class ContentTab extends StatefulWidget {
+  final LandgrabApi api;
+  final DashboardCounts? counts;
+  final Future<void> Function() onChanged;
+
+  const ContentTab({
+    super.key,
+    required this.api,
+    required this.counts,
+    required this.onChanged,
+  });
+
+  @override
+  State<ContentTab> createState() => _ContentTabState();
+}
+
+class _ContentTabState extends State<ContentTab> {
+  static const _prefKey = 'supervisor_content';
+
+  _ListOrMap _view = _ListOrMap.list;
+  _Kind _kind = _Kind.all;
+  String? _status; // null = all statuses
+
+  List<DraftPole>? _poles;
+  List<DraftPuzzlet>? _puzzlets;
+  String? _error;
+
+  // Draw-to-assign state. The polygon persists after the stroke so
+  // the supervisor can see what they selected while picking a
+  // validator; both clear on assign or cancel.
+  bool _drawArmed = false;
+  List<LatLng>? _polygon;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPref();
+    _load();
+  }
+
+  Future<void> _loadPref() async {
+    final isMap = await UiPreferences.getMapPreferred(_prefKey);
+    if (!mounted) return;
+    setState(() => _view = isMap ? _ListOrMap.map : _ListOrMap.list);
+  }
+
+  void _setView(_ListOrMap v) {
+    setState(() {
+      _view = v;
+      if (v == _ListOrMap.list) _exitDraw();
+    });
+    UiPreferences.setMapPreferred(_prefKey, v == _ListOrMap.map);
+  }
+
+  Future<void> _load() async {
+    setState(() => _error = null);
+    try {
+      // Everything, one fetch each; kind/status filtering is local so
+      // switching chips is instant.
+      final results = await Future.wait([
+        widget.api.supervisionListPoles(),
+        widget.api.supervisionListPuzzlets(),
+      ]);
+      if (!mounted) return;
+      setState(() {
+        _poles = results[0] as List<DraftPole>;
+        _puzzlets = results[1] as List<DraftPuzzlet>;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = '$e');
+    }
+  }
+
+  static const _statusByKey = {
+    'draft': DraftStatus.draft,
+    'in_review': DraftStatus.inReview,
+    'validated': DraftStatus.validated,
+    'retired': DraftStatus.retired,
+  };
+
+  bool _statusMatches(DraftStatus status) =>
+      _status == null || _statusByKey[_status] == status;
+
+  List<DraftPole> get _visiblePoles => _kind == _Kind.puzzlets
+      ? const []
+      : (_poles ?? const []).where((p) => _statusMatches(p.status)).toList();
+
+  List<DraftPuzzlet> get _visiblePuzzlets => _kind == _Kind.poles
+      ? const []
+      : (_puzzlets ?? const []).where((p) => _statusMatches(p.status)).toList();
+
+  Future<void> _reloadAll() async {
+    await _load();
+    await widget.onChanged();
+  }
+
+  // ── Draw-to-assign ─────────────────────────────────────────────
+
+  void _exitDraw() {
+    _drawArmed = false;
+    _polygon = null;
+  }
+
+  /// Ray-cast point-in-polygon on raw lat/lng — fine at city scale.
+  static bool _inPolygon(double lat, double lng, List<LatLng> poly) {
+    var inside = false;
+    for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      final a = poly[i];
+      final b = poly[j];
+      if ((a.latitude > lat) != (b.latitude > lat) &&
+          lng <
+              (b.longitude - a.longitude) *
+                      (lat - a.latitude) /
+                      (b.latitude - a.latitude) +
+                  a.longitude) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  }
+
+  static bool _assignable(DraftStatus status, ActiveValidationSummary? v) =>
+      v == null &&
+      (status == DraftStatus.draft || status == DraftStatus.inReview);
+
+  Future<void> _onPolygonDrawn(List<LatLng> polygon) async {
+    final poles = _visiblePoles
+        .where((p) =>
+            _assignable(p.status, p.activeValidation) &&
+            _inPolygon(p.latitude, p.longitude, polygon))
+        .toList();
+    final puzzlets = _visiblePuzzlets
+        .where((p) =>
+            p.latitude != null &&
+            _assignable(p.status, p.activeValidation) &&
+            _inPolygon(p.latitude!, p.longitude!, polygon))
+        .toList();
+
+    setState(() => _polygon = polygon);
+
+    if (poles.isEmpty && puzzlets.isEmpty) {
+      setState(() => _polygon = null);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('No assignable items in that area '
+              '(already assigned or validated ones don\'t count).'),
+        ));
+      }
+      return;
+    }
+
+    final validator = await _pickValidator(poles.length, puzzlets.length);
+    if (validator == null) {
+      if (mounted) setState(() => _polygon = null);
+      return;
+    }
+
+    try {
+      final result = await widget.api.bulkAssignValidations(
+        validatorId: validator.id,
+        poleIds: poles.map((p) => p.id).toList(),
+        puzzletIds: puzzlets.map((p) => p.id).toList(),
+      );
+      if (!mounted) return;
+      setState(_exitDraw);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          'Assigned ${result.assigned} to ${validator.name ?? validator.email}'
+          '${result.skipped > 0 ? ' (${result.skipped} skipped)' : ''}',
+        ),
+      ));
+      await _reloadAll();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _polygon = null);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Assignment failed: $e')));
+    }
+  }
+
+  Future<ValidatorUser?> _pickValidator(int poleCount, int puzzletCount) {
+    return showModalBottomSheet<ValidatorUser>(
+      context: context,
+      builder: (sheetContext) => _ValidatorPickerSheet(
+        api: widget.api,
+        poleCount: poleCount,
+        puzzletCount: puzzletCount,
+      ),
+    );
+  }
+
+  // ── Build ──────────────────────────────────────────────────────
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: SegmentedButton<_ListOrMap>(
+            segments: const [
+              ButtonSegment(
+                  value: _ListOrMap.list,
+                  label: Text('List'),
+                  icon: Icon(Icons.list)),
+              ButtonSegment(
+                  value: _ListOrMap.map,
+                  label: Text('Map'),
+                  icon: Icon(Icons.map)),
+            ],
+            selected: {_view},
+            onSelectionChanged: (set) => _setView(set.first),
+          ),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.all(8),
+          child: Row(children: [
+            for (final kind in _Kind.values)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: ChoiceChip(
+                  label: Text(switch (kind) {
+                    _Kind.all => 'All',
+                    _Kind.poles => 'Poles',
+                    _Kind.puzzlets => 'Puzzlets',
+                  }),
+                  selected: _kind == kind,
+                  onSelected: (_) => setState(() => _kind = kind),
+                ),
+              ),
+            const SizedBox(height: 24, child: VerticalDivider(width: 16)),
+            for (final s in _allStatuses)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: ChoiceChip(
+                  label: Text(prettifyStatus(s)),
+                  selected: _status == s,
+                  // Tapping the active chip clears it back to "all".
+                  onSelected: (_) =>
+                      setState(() => _status = _status == s ? null : s),
+                ),
+              ),
+          ]),
+        ),
+        Expanded(
+          child: _error != null
+              ? Center(child: Text(_error!))
+              : (_poles == null || _puzzlets == null)
+                  ? const Center(child: CircularProgressIndicator())
+                  : _view == _ListOrMap.list
+                      ? _buildList()
+                      : _buildMap(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildList() {
+    final rows = <_ContentRow>[
+      for (final p in _visiblePoles) _ContentRow.pole(p),
+      for (final p in _visiblePuzzlets) _ContentRow.puzzlet(p),
+    ]..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+
+    if (rows.isEmpty) return const Center(child: Text('Nothing here.'));
+
+    return ListView.builder(
+      itemCount: rows.length,
+      itemBuilder: (_, i) {
+        final row = rows[i];
+        return ListTile(
+          leading: SizedBox(
+            width: 36,
+            height: 36,
+            child: Icon(row.icon,
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
+          ),
+          title: Row(children: [
+            Expanded(
+                child: Text(row.title,
+                    maxLines: 1, overflow: TextOverflow.ellipsis)),
+            ...row.badges,
+          ]),
+          subtitle:
+              Text(row.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => row.open(context, widget.api, _reloadAll),
+        );
+      },
+    );
+  }
+
+  Widget _buildMap() {
+    final pins = <MapPin>[
+      for (final p in _visiblePoles)
+        MapPin(
+          position: LatLng(p.latitude, p.longitude),
+          label: p.label ?? p.barcode,
+          icon: Icons.location_on,
+          color: statusColorFor(draftStatusLabel(p.status)),
+          onTap: _drawArmed ? null : () => _onPolePinTap(p),
+        ),
+      for (final p in _visiblePuzzlets.where((p) => p.latitude != null))
+        MapPin(
+          position: LatLng(p.latitude!, p.longitude!),
+          label: p.instructions,
+          icon: Icons.edit_note,
+          color: statusColorFor(draftStatusLabel(p.status)),
+          onTap: _drawArmed ? null : () => _onPuzzletPinTap(p),
+        ),
+    ];
+
+    final orphanCount =
+        _visiblePuzzlets.where((p) => p.latitude == null).length;
+
+    return Stack(children: [
+      Column(children: [
+        if (_drawArmed)
+          Container(
+            width: double.infinity,
+            color: Colors.purple.withValues(alpha: 0.1),
+            padding: const EdgeInsets.all(8),
+            child: const Text(
+              'Draw around the items to assign — drag a loop on the map.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        Expanded(
+          child: MapWithBathrooms(
+            api: widget.api,
+            pins: pins,
+            editableBathrooms: !_drawArmed,
+            drawMode: _drawArmed,
+            onPolygonDrawn: _onPolygonDrawn,
+            polygon: _polygon,
+          ),
+        ),
+        if (orphanCount > 0)
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(
+              '$orphanCount puzzlet${orphanCount == 1 ? '' : 's'} without a location — see the list view',
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+          ),
+      ]),
+      Positioned(
+        right: 12,
+        bottom: orphanCount > 0 ? 56 : 12,
+        child: FloatingActionButton.extended(
+          heroTag: null,
+          onPressed: () => setState(() {
+            if (_drawArmed) {
+              _exitDraw();
+            } else {
+              _drawArmed = true;
+            }
+          }),
+          icon: Icon(_drawArmed ? Icons.close : Icons.gesture),
+          label: Text(_drawArmed ? 'Cancel' : 'Assign area'),
+        ),
+      ),
+    ]);
+  }
+
+  Future<void> _onPolePinTap(DraftPole pole) async {
+    final result = await showPolePinSheet(
+      context,
+      api: widget.api,
+      pole: pole,
+      onUndone: _reloadAll,
+    );
+    if (result == PinActionResult.changed) await _reloadAll();
+  }
+
+  Future<void> _onPuzzletPinTap(DraftPuzzlet puzzlet) async {
+    final result = await showPuzzletPinSheet(
+      context,
+      api: widget.api,
+      puzzlet: puzzlet,
+      onUndone: _reloadAll,
+    );
+    if (result == PinActionResult.changed) await _reloadAll();
+  }
+}
+
+/// A pole or puzzlet flattened into one list row.
+class _ContentRow {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final List<Widget> badges;
+  final Future<void> Function(
+      BuildContext, LandgrabApi, Future<void> Function()) open;
+
+  _ContentRow._(this.icon, this.title, this.subtitle, this.badges, this.open);
+
+  factory _ContentRow.pole(DraftPole p) => _ContentRow._(
+        Icons.location_on,
+        p.label ?? p.barcode,
+        'Pole · ${p.barcode}',
+        _badgesFor(p.status, p.activeValidation, p.attachmentIds.length),
+        (context, api, reload) async {
+          final changed = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => PoleSupervisionDetailRoute(
+                  api: api, pole: p, onChanged: reload),
+            ),
+          );
+          if (changed == true) await reload();
+        },
+      );
+
+  factory _ContentRow.puzzlet(DraftPuzzlet p) => _ContentRow._(
+        Icons.edit_note,
+        p.instructions,
+        'Puzzlet · difficulty ${p.difficulty}'
+        '${p.region != null ? ' · ${p.region!.breadcrumb}' : ''}',
+        _badgesFor(p.status, p.activeValidation, p.attachmentIds.length),
+        (context, api, reload) async {
+          final changed = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => PuzzletSupervisionDetailRoute(
+                  api: api, puzzlet: p, onChanged: reload),
+            ),
+          );
+          if (changed == true) await reload();
+        },
+      );
+
+  static List<Widget> _badgesFor(
+      DraftStatus status, ActiveValidationSummary? v, int attachmentCount) {
+    final tail = <Widget>[
+      if (attachmentCount > 0) ...[
+        const SizedBox(width: 4),
+        AttachmentsBadge(count: attachmentCount),
+      ],
+    ];
+    if (v == null) {
+      return [
+        StatusBadge(
+          label: draftStatusLabel(status),
+          color: statusColorFor(draftStatusLabel(status)),
+        ),
+        ...tail,
+      ];
+    }
+    return [
+      StatusBadge(
+          label: prettifyStatus(v.status), color: statusColorFor(v.status)),
+      if (v.commentCount > 0) ...[
+        const SizedBox(width: 4),
+        _CommentChip(v.commentCount),
+      ],
+      ...tail,
+    ];
+  }
+}
+
+class _CommentChip extends StatelessWidget {
+  final int count;
+  const _CommentChip(this.count);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.purple.withValues(alpha: 0.15),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.mode_comment_outlined,
+              size: 12, color: Colors.purple),
+          const SizedBox(width: 2),
+          Text('$count',
+              style: const TextStyle(fontSize: 12, color: Colors.purple)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ValidatorPickerSheet extends StatefulWidget {
+  final LandgrabApi api;
+  final int poleCount;
+  final int puzzletCount;
+
+  const _ValidatorPickerSheet({
+    required this.api,
+    required this.poleCount,
+    required this.puzzletCount,
+  });
+
+  @override
+  State<_ValidatorPickerSheet> createState() => _ValidatorPickerSheetState();
+}
+
+class _ValidatorPickerSheetState extends State<_ValidatorPickerSheet> {
+  List<ValidatorUser>? _validators;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final list = await widget.api.listValidators();
+      if (mounted) setState(() => _validators = list);
+    } catch (e) {
+      if (mounted) setState(() => _error = 'Could not load validators: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final summary = [
+      if (widget.poleCount > 0)
+        '${widget.poleCount} pole${widget.poleCount == 1 ? '' : 's'}',
+      if (widget.puzzletCount > 0)
+        '${widget.puzzletCount} puzzlet${widget.puzzletCount == 1 ? '' : 's'}',
+    ].join(' and ');
+
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              'Assign $summary to…',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          if (_error != null)
+            Padding(padding: const EdgeInsets.all(16), child: Text(_error!))
+          else if (_validators == null)
+            const Padding(
+              padding: EdgeInsets.all(24),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_validators!.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('No validators exist yet.'),
+            )
+          else
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final v in _validators!)
+                    ListTile(
+                      leading: const Icon(Icons.person_outline),
+                      title: Text(v.name ?? v.email),
+                      subtitle: v.name == null ? null : Text(v.email),
+                      onTap: () => Navigator.of(context).pop(v),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
