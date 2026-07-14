@@ -82,7 +82,7 @@ class _ScanRouteState extends State<ScanRoute> {
           }
 
           // PuzzletRoute pops `true` after a successful capture (and
-          // its confetti). Relay the captured pole's id to the map so
+          // its celebration). Relay the captured pole's id to the map so
           // it can replay the territory animation on arrival — the
           // socket broadcast usually fires while the player is still
           // on the puzzlet screen, so without this they'd miss it.

@@ -157,8 +157,10 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    // No success text; the submit disables while confetti plays.
+    // No success text; the CLAIMED stamp carries the feedback while
+    // the celebration plays.
     expect(find.textContaining('Correct'), findsNothing);
+    expect(find.text('CLAIMED'), findsOneWidget);
 
     // After the celebration window, the route pops with `true` so the
     // scan flow can tell the map which pole to animate.

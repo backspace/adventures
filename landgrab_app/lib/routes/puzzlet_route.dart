@@ -1,5 +1,7 @@
-import 'package:confetti/confetti.dart';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/pole.dart';
@@ -23,13 +25,13 @@ class PuzzletRoute extends StatefulWidget {
 }
 
 class _PuzzletRouteState extends State<PuzzletRoute> {
-  // How long the confetti burst plays before we auto-pop back to the
-  // map, where the territory-capture animation takes over.
+  // How long the capture celebration plays before we auto-pop back to
+  // the map, where the territory-capture animation takes over.
   static const _celebrationDuration = Duration(milliseconds: 1600);
 
   final _answerController = TextEditingController();
-  late final ConfettiController _confetti =
-      ConfettiController(duration: _celebrationDuration);
+  bool _celebrating = false;
+  double _stampAngle = 0;
   bool _busy = false;
   int? _attemptsRemaining;
   AttemptOutcome? _outcome;
@@ -42,12 +44,23 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     _previousWrongAnswers = List.of(widget.puzzlet.previousWrongAnswers);
   }
 
-  /// Correct answer: no text — celebrate with a confetti burst, then
-  /// pop back (with `true` so the scanner can tell the map which pole
-  /// to animate). maybePop rather than pop so a bare test harness
-  /// with a single route doesn't underflow the navigator.
+  /// Correct answer: no text — celebrate with the team-colour flood +
+  /// CLAIMED stamp, then pop back (with `true` so the scanner can
+  /// tell the map which pole to animate). maybePop rather than pop so
+  /// a bare test harness with a single route doesn't underflow the
+  /// navigator.
   void _celebrateAndPop() {
-    _confetti.play();
+    final random = math.Random();
+    setState(() {
+      // A varying tilt so each capture's stamp lands a little
+      // differently — always at least slightly askew, like a real
+      // hand-stamp. ±(5°–13°).
+      _stampAngle = (random.nextBool() ? 1 : -1) *
+          (5 + random.nextDouble() * 8) *
+          math.pi /
+          180;
+      _celebrating = true;
+    });
     Future.delayed(_celebrationDuration, () {
       if (mounted) Navigator.of(context).maybePop(true);
     });
@@ -94,8 +107,8 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   String? _outcomeText() {
     final o = _outcome;
     return switch (o) {
-      // AttemptCorrect deliberately renders no text — the confetti
-      // burst plus the return-to-map territory animation carry the
+      // AttemptCorrect deliberately renders no text — the CLAIMED
+      // stamp plus the return-to-map territory animation carry the
       // success feedback.
       AttemptCorrect() => null,
       AttemptIncorrect() => PuzzletStrings.incorrect(o.attemptsRemaining),
@@ -142,7 +155,6 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   @override
   void dispose() {
     _answerController.dispose();
-    _confetti.dispose();
     super.dispose();
   }
 
@@ -162,10 +174,6 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
         title: Text('${PuzzletStrings.titlePrefix}  ${widget.pole.label ?? widget.pole.barcode}'),
       ),
       body: Stack(children: [
-        // Confetti overlays the whole screen from the top centre,
-        // firing in every direction on a correct answer. Behind the
-        // scroll view in source order but painted above it because
-        // it's later in the Stack.
         SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -241,21 +249,152 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
           ],
         ),
         ),
-        Align(
-          alignment: Alignment.topCenter,
-          child: ConfettiWidget(
-            confettiController: _confetti,
-            blastDirectionality: BlastDirectionality.explosive,
-            numberOfParticles: 40,
-            maxBlastForce: 25,
-            minBlastForce: 8,
-            gravity: 0.3,
-            shouldLoop: false,
+        // Capture celebration: a team-colour flood sweeps out from
+        // the centre (previewing the territory animation the map is
+        // about to replay) and a CLAIMED stamp slams down at a
+        // per-capture angle. Painted above the form because it's
+        // later in the Stack.
+        if (_celebrating)
+          Positioned.fill(
+            child: _CaptureCelebration(
+              // Matches the map's own-team territory colour.
+              floodColor: Colors.green,
+              stampAngle: _stampAngle,
+            ),
           ),
-        ),
       ]),
     );
   }
+}
+
+/// Flood + stamp + haptic, timed within the puzzlet route's
+/// celebration window: flood grows over the first ~450 ms, the stamp
+/// slams in just behind it with a heavy haptic as it lands.
+class _CaptureCelebration extends StatefulWidget {
+  final Color floodColor;
+  final double stampAngle;
+
+  const _CaptureCelebration({
+    required this.floodColor,
+    required this.stampAngle,
+  });
+
+  @override
+  State<_CaptureCelebration> createState() => _CaptureCelebrationState();
+}
+
+class _CaptureCelebrationState extends State<_CaptureCelebration>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 700),
+  );
+
+  late final Animation<double> _flood = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.0, 0.65, curve: Curves.easeOutCubic),
+  );
+
+  // easeOutBack overshoots slightly — the stamp lands with a thud
+  // rather than settling gently.
+  late final Animation<double> _stamp = CurvedAnimation(
+    parent: _controller,
+    curve: const Interval(0.35, 0.8, curve: Curves.easeOutBack),
+  );
+
+  bool _thudded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.forward();
+    _controller.addListener(() {
+      // One heavy haptic at the moment the stamp visually lands.
+      if (!_thudded && _controller.value >= 0.7) {
+        _thudded = true;
+        HapticFeedback.heavyImpact();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              // Radial flood from the centre — diagonal half-extent
+              // guarantees full coverage at progress 1.
+              CustomPaint(
+                painter: _FloodPainter(
+                  color: widget.floodColor.withValues(alpha: 0.92),
+                  progress: _flood.value,
+                ),
+              ),
+              Center(
+                child: Transform.rotate(
+                  angle: widget.stampAngle,
+                  child: Transform.scale(
+                    // Slams from oversized down onto the page.
+                    scale: 2.4 - 1.4 * _stamp.value,
+                    child: Opacity(
+                      opacity: _stamp.value.clamp(0.0, 1.0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white, width: 5),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          PuzzletStrings.capturedStamp,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 44,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 6,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _FloodPainter extends CustomPainter {
+  final Color color;
+  final double progress;
+
+  _FloodPainter({required this.color, required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0) return;
+    final centre = Offset(size.width / 2, size.height / 2);
+    final maxRadius =
+        math.sqrt(size.width * size.width + size.height * size.height) / 2;
+    canvas.drawCircle(centre, maxRadius * progress, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_FloodPainter old) =>
+      old.progress != progress || old.color != color;
 }
 
 class _PreviousWrongAnswers extends StatelessWidget {

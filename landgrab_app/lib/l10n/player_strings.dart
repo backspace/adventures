@@ -194,6 +194,10 @@ class PuzzletStrings {
       'The answer is an NFC tag. Tap the button, then hold your phone '
       'near the tag.';
 
+  // Capture-celebration stamp (slams over the screen on a correct
+  // answer; deliberately terse, like a bureaucratic seal).
+  static const capturedStamp = 'CLAIMED';
+
   // Outcome text
   static const correctAndLocked = 'Correct! Pole captured and now fully locked.';
   static const correctPoleCaptured = 'Correct! Pole captured.';
