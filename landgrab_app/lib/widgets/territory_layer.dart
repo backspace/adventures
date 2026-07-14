@@ -32,6 +32,11 @@ class TerritoryLayer extends StatelessWidget {
   final String? myOwnerId;
   final double radiusMeters;
   final Map<String, DateTime> captureStartedAt;
+
+  /// Team that held each pole before its current capture animation —
+  /// painted under the expanding disc so a takeover sweeps the new
+  /// colour over the old instead of wiping to empty first.
+  final Map<String, String?> captureFromOwner;
   final Duration captureAnimationDuration;
 
   const TerritoryLayer({
@@ -40,6 +45,7 @@ class TerritoryLayer extends StatelessWidget {
     this.myOwnerId,
     this.radiusMeters = 200,
     this.captureStartedAt = const {},
+    this.captureFromOwner = const {},
     this.captureAnimationDuration = const Duration(milliseconds: 800),
   });
 
@@ -66,20 +72,32 @@ class TerritoryLayer extends StatelessWidget {
         final t = (elapsedMs / captureAnimationDuration.inMilliseconds)
             .clamp(0.0, 1.0);
         if (t < 1.0) {
+          // Takeover: the deposed team's fill stays put underneath
+          // while the disc sweeps the new colour over it. Without
+          // this the old fill vanished at frame one and the cell
+          // refilled from empty.
+          final previousOwner = captureFromOwner[pole.id];
+          if (previousOwner != null) {
+            polygons.add(_territoryPolygon(cell, previousOwner));
+          }
           cell = _clipToExpandingDisc(cell, pole, t);
           if (cell == null || cell.length < 3) continue;
         }
       }
 
-      polygons.add(Polygon(
-        points: cell,
-        color: _colorFor(owner).withValues(alpha: 0.28),
-        borderColor: _colorFor(owner).withValues(alpha: 0.7),
-        borderStrokeWidth: 1.5,
-        isFilled: true,
-      ));
+      polygons.add(_territoryPolygon(cell, owner));
     }
     return PolygonLayer(polygons: polygons);
+  }
+
+  Polygon _territoryPolygon(List<LatLng> points, String ownerId) {
+    return Polygon(
+      points: points,
+      color: _colorFor(ownerId).withValues(alpha: 0.28),
+      borderColor: _colorFor(ownerId).withValues(alpha: 0.7),
+      borderStrokeWidth: 1.5,
+      isFilled: true,
+    );
   }
 
   /// Re-clip the already-computed cell (in LatLng) against a disc

@@ -102,6 +102,7 @@ class _HomeRouteState extends State<HomeRoute>
       Duration(milliseconds: 800);
   final Map<String, DateTime> _captureStartedAt = {};
   final Map<String, String?> _prevOwners = {};
+  final Map<String, String?> _captureFromOwner = {};
   Ticker? _animTicker;
 
   @override
@@ -212,6 +213,10 @@ class _HomeRouteState extends State<HomeRoute>
       final now = pole.currentOwnerTeamId;
       if (!wasCold && now != null && now != prev) {
         _captureStartedAt[pole.id] = DateTime.now();
+        // Remembered past the animation's expiry (only overwritten by
+        // the next transition) so the scanner-return replay can still
+        // paint the deposed team's fill under the expanding disc.
+        _captureFromOwner[pole.id] = prev;
       }
       _prevOwners[pole.id] = now;
     }
@@ -655,6 +660,7 @@ class _HomeRouteState extends State<HomeRoute>
                       poles: _poles!,
                       myOwnerId: _teamId,
                       captureStartedAt: _captureStartedAt,
+                      captureFromOwner: _captureFromOwner,
                       captureAnimationDuration: _captureAnimationDuration,
                     ),
                     BathroomLayer(bathrooms: _bathrooms),
