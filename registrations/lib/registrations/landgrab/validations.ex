@@ -612,23 +612,27 @@ defmodule Registrations.Landgrab.Validations do
   active validation are absent from the map.
   """
   def active_validations_by_pole(pole_ids) when is_list(pole_ids) do
+    user_query = from(u in RegistrationsWeb.User, prefix: "public")
+
     PoleValidation
     |> where([v], v.pole_id in ^pole_ids)
     |> where([v], v.status not in ^["accepted", "rejected"])
     |> order_by([v], desc: v.inserted_at)
     |> Repo.all()
-    |> Repo.preload(:comments)
+    |> Repo.preload([:comments, validator: user_query])
     |> Enum.group_by(& &1.pole_id)
     |> Map.new(fn {pole_id, vs} -> {pole_id, hd(vs)} end)
   end
 
   def active_validations_by_puzzlet(puzzlet_ids) when is_list(puzzlet_ids) do
+    user_query = from(u in RegistrationsWeb.User, prefix: "public")
+
     PuzzletValidation
     |> where([v], v.puzzlet_id in ^puzzlet_ids)
     |> where([v], v.status not in ^["accepted", "rejected"])
     |> order_by([v], desc: v.inserted_at)
     |> Repo.all()
-    |> Repo.preload(:comments)
+    |> Repo.preload([:comments, validator: user_query])
     |> Enum.group_by(& &1.puzzlet_id)
     |> Map.new(fn {puzzlet_id, vs} -> {puzzlet_id, hd(vs)} end)
   end

@@ -48,11 +48,15 @@ class ActiveValidationSummary {
   final String id;
   final String status;
   final int commentCount;
+  final String? validatorId;
+  final String? validatorName;
 
   ActiveValidationSummary({
     required this.id,
     required this.status,
     required this.commentCount,
+    this.validatorId,
+    this.validatorName,
   });
 
   factory ActiveValidationSummary.fromJson(Map<String, dynamic> json) =>
@@ -60,6 +64,8 @@ class ActiveValidationSummary {
         id: json['id'] as String,
         status: json['status'] as String,
         commentCount: json['comment_count'] as int? ?? 0,
+        validatorId: json['validator_id'] as String?,
+        validatorName: json['validator_name'] as String?,
       );
 }
 
@@ -162,6 +168,7 @@ class DraftPuzzlet {
   final List<String> inheritedTags;
   final List<InheritedStanza> inheritedStanzas;
   final String? warning;
+
   /// When true, the puzzlet is hidden from regular players and only
   /// appears on the author + validator maps, tagged with a star.
   final bool validatorOnly;
@@ -226,7 +233,8 @@ class DraftPuzzlet {
                 .toList(growable: false) ??
             const [],
         inheritedStanzas: (json['inherited_stanzas'] as List?)
-                ?.map((e) => InheritedStanza.fromJson(e as Map<String, dynamic>))
+                ?.map(
+                    (e) => InheritedStanza.fromJson(e as Map<String, dynamic>))
                 .toList(growable: false) ??
             const [],
         warning: json['warning'] as String?,

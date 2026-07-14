@@ -68,9 +68,17 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
     %{
       id: validation.id,
       status: validation.status,
-      comment_count: length(validation.comments || [])
+      comment_count: length(validation.comments || []),
+      validator_id: validation.validator_id,
+      validator_name: validator_display(validation.validator)
     }
   end
+
+  # Short label for the map legend: the validator's name, or the
+  # local part of their email if unnamed.
+  defp validator_display(%RegistrationsWeb.User{name: name}) when is_binary(name) and name != "", do: name
+  defp validator_display(%RegistrationsWeb.User{email: email}) when is_binary(email), do: hd(String.split(email, "@"))
+  defp validator_display(_), do: nil
 
   def list_pole_validations(conn, %{"id" => pole_id}) do
     validations = Validations.list_validations_for_pole(pole_id)

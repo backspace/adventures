@@ -48,6 +48,27 @@ class ContentTab extends StatefulWidget {
 class _ContentTabState extends State<ContentTab> {
   static const _prefKey = 'supervisor_content';
 
+  // Pin colours. Orange = not yet assigned (needs attention); each
+  // active validator gets a distinct palette colour so the map reads
+  // as "who's covering what"; validated/retired are muted since
+  // they're done. Orange is kept out of the palette so "unassigned"
+  // never collides with a validator.
+  static const _unassignedColor = Colors.orange;
+  static const _validatedColor = Colors.green;
+  static const _retiredColor = Colors.blueGrey;
+  static const _validatorPalette = <Color>[
+    Colors.blue,
+    Colors.purple,
+    Colors.teal,
+    Colors.pink,
+    Colors.indigo,
+    Colors.brown,
+    Colors.cyan,
+    Colors.deepPurple,
+    Color(0xFF827717), // olive
+    Colors.redAccent,
+  ];
+
   _ListOrMap _view = _ListOrMap.list;
   _Kind _kind = _Kind.all;
   String? _status; // null = all statuses
@@ -356,14 +377,85 @@ class _ContentTabState extends State<ContentTab> {
     );
   }
 
+  // Builds the validator→colour assignment plus the legend rows for
+  // whatever's currently visible. Validators are colour-mapped in a
+  // stable order (by display name) so a given validator keeps their
+  // colour across rebuilds; only buckets actually present appear in
+  // the legend, keeping it small.
+  ({Map<String, Color> colorForValidator, List<_LegendEntry> entries})
+      _buildLegend() {
+    // Distinct validators present, name kept for the label.
+    final names = <String, String>{};
+    var hasUnassigned = false;
+    var hasValidated = false;
+    var hasRetired = false;
+
+    void note(DraftStatus status, ActiveValidationSummary? v) {
+      final id = v?.validatorId;
+      if (id != null) {
+        names[id] = v!.validatorName ?? '(unnamed)';
+        return;
+      }
+      switch (status) {
+        case DraftStatus.validated:
+          hasValidated = true;
+        case DraftStatus.retired:
+          hasRetired = true;
+        default:
+          hasUnassigned = true;
+      }
+    }
+
+    for (final p in _visiblePoles) {
+      note(p.status, p.activeValidation);
+    }
+    for (final p in _visiblePuzzlets) {
+      note(p.status, p.activeValidation);
+    }
+
+    final ids = names.keys.toList()
+      ..sort(
+          (a, b) => names[a]!.toLowerCase().compareTo(names[b]!.toLowerCase()));
+    final colorForValidator = <String, Color>{};
+    final entries = <_LegendEntry>[];
+    for (var i = 0; i < ids.length; i++) {
+      final color = _validatorPalette[i % _validatorPalette.length];
+      colorForValidator[ids[i]] = color;
+      entries.add(_LegendEntry(color, names[ids[i]]!));
+    }
+    if (hasUnassigned) {
+      entries.insert(0, const _LegendEntry(_unassignedColor, 'Unassigned'));
+    }
+    if (hasValidated) {
+      entries.add(const _LegendEntry(_validatedColor, 'Validated'));
+    }
+    if (hasRetired) {
+      entries.add(const _LegendEntry(_retiredColor, 'Retired'));
+    }
+
+    return (colorForValidator: colorForValidator, entries: entries);
+  }
+
   Widget _buildMap() {
+    final legend = _buildLegend();
+
+    Color colorFor(DraftStatus status, ActiveValidationSummary? v) {
+      final id = v?.validatorId;
+      if (id != null) return legend.colorForValidator[id] ?? _unassignedColor;
+      return switch (status) {
+        DraftStatus.validated => _validatedColor,
+        DraftStatus.retired => _retiredColor,
+        _ => _unassignedColor,
+      };
+    }
+
     final pins = <MapPin>[
       for (final p in _visiblePoles)
         MapPin(
           position: LatLng(p.latitude, p.longitude),
           label: p.label ?? p.barcode,
           icon: Icons.location_on,
-          color: statusColorFor(draftStatusLabel(p.status)),
+          color: colorFor(p.status, p.activeValidation),
           onTap: _drawArmed ? null : () => _onPolePinTap(p),
         ),
       for (final p in _visiblePuzzlets.where((p) => p.latitude != null))
@@ -371,7 +463,7 @@ class _ContentTabState extends State<ContentTab> {
           position: LatLng(p.latitude!, p.longitude!),
           label: p.instructions,
           icon: Icons.edit_note,
-          color: statusColorFor(draftStatusLabel(p.status)),
+          color: colorFor(p.status, p.activeValidation),
           onTap: _drawArmed ? null : () => _onPuzzletPinTap(p),
         ),
     ];
@@ -412,6 +504,12 @@ class _ContentTabState extends State<ContentTab> {
             ),
           ),
       ]),
+      if (legend.entries.isNotEmpty)
+        Positioned(
+          top: _drawArmed ? 44 : 8,
+          left: 8,
+          child: _MapLegend(entries: legend.entries),
+        ),
       Positioned(
         right: 12,
         bottom: orphanCount > 0 ? 56 : 12,
@@ -466,7 +564,7 @@ class _ContentRow {
   factory _ContentRow.pole(DraftPole p) => _ContentRow._(
         Icons.location_on,
         p.label ?? p.barcode,
-        'Pole · ${p.barcode}',
+        'Pole · ${p.barcode}${_assignedTo(p.activeValidation)}',
         _badgesFor(p.status, p.activeValidation, p.attachmentIds.length),
         (context, api, reload) async {
           final changed = await Navigator.of(context).push<bool>(
@@ -483,7 +581,8 @@ class _ContentRow {
         Icons.edit_note,
         p.instructions,
         'Puzzlet · difficulty ${p.difficulty}'
-        '${p.region != null ? ' · ${p.region!.breadcrumb}' : ''}',
+        '${p.region != null ? ' · ${p.region!.breadcrumb}' : ''}'
+        '${_assignedTo(p.activeValidation)}',
         _badgesFor(p.status, p.activeValidation, p.attachmentIds.length),
         (context, api, reload) async {
           final changed = await Navigator.of(context).push<bool>(
@@ -495,6 +594,11 @@ class _ContentRow {
           if (changed == true) await reload();
         },
       );
+
+  static String _assignedTo(ActiveValidationSummary? v) {
+    final name = v?.validatorName;
+    return name == null ? '' : ' · $name';
+  }
 
   static List<Widget> _badgesFor(
       DraftStatus status, ActiveValidationSummary? v, int attachmentCount) {
@@ -547,6 +651,60 @@ class _CommentChip extends StatelessWidget {
           Text('$count',
               style: const TextStyle(fontSize: 12, color: Colors.purple)),
         ],
+      ),
+    );
+  }
+}
+
+class _LegendEntry {
+  final Color color;
+  final String label;
+  const _LegendEntry(this.color, this.label);
+}
+
+/// Compact translucent legend overlaid on the content map, mapping
+/// pin colours to validators (and the unassigned / done buckets).
+/// Height-capped so a large validator roster scrolls rather than
+/// swallowing the map.
+class _MapLegend extends StatelessWidget {
+  final List<_LegendEntry> entries;
+  const _MapLegend({required this.entries});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 180, maxHeight: 180),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final e in entries)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.circle, size: 12, color: e.color),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          e.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
