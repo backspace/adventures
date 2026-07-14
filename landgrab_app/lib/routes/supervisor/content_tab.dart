@@ -28,11 +28,17 @@ class ContentTab extends StatefulWidget {
   final DashboardCounts? counts;
   final Future<void> Function() onChanged;
 
+  /// Fired when draw mode turns on/off so the host can freeze the
+  /// enclosing TabBarView's horizontal swipe — otherwise the tab
+  /// pager steals the loop-drawing drag.
+  final void Function(bool drawing)? onDrawingChanged;
+
   const ContentTab({
     super.key,
     required this.api,
     required this.counts,
     required this.onChanged,
+    this.onDrawingChanged,
   });
 
   @override
@@ -56,6 +62,12 @@ class _ContentTabState extends State<ContentTab> {
   bool _drawArmed = false;
   List<LatLng>? _polygon;
 
+  void _armDraw() {
+    if (_drawArmed) return;
+    setState(() => _drawArmed = true);
+    widget.onDrawingChanged?.call(true);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -70,10 +82,8 @@ class _ContentTabState extends State<ContentTab> {
   }
 
   void _setView(_ListOrMap v) {
-    setState(() {
-      _view = v;
-      if (v == _ListOrMap.list) _exitDraw();
-    });
+    setState(() => _view = v);
+    if (v == _ListOrMap.list) _exitDraw();
     UiPreferences.setMapPreferred(_prefKey, v == _ListOrMap.map);
   }
 
@@ -123,8 +133,12 @@ class _ContentTabState extends State<ContentTab> {
   // ── Draw-to-assign ─────────────────────────────────────────────
 
   void _exitDraw() {
-    _drawArmed = false;
-    _polygon = null;
+    final wasArmed = _drawArmed;
+    setState(() {
+      _drawArmed = false;
+      _polygon = null;
+    });
+    if (wasArmed) widget.onDrawingChanged?.call(false);
   }
 
   /// Ray-cast point-in-polygon on raw lat/lng — fine at city scale.
@@ -188,7 +202,7 @@ class _ContentTabState extends State<ContentTab> {
         puzzletIds: puzzlets.map((p) => p.id).toList(),
       );
       if (!mounted) return;
-      setState(_exitDraw);
+      _exitDraw();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
           'Assigned ${result.assigned} to ${validator.name ?? validator.email}'
@@ -376,13 +390,13 @@ class _ContentTabState extends State<ContentTab> {
         bottom: orphanCount > 0 ? 56 : 12,
         child: FloatingActionButton.extended(
           heroTag: null,
-          onPressed: () => setState(() {
+          onPressed: () {
             if (_drawArmed) {
               _exitDraw();
             } else {
-              _drawArmed = true;
+              _armDraw();
             }
-          }),
+          },
           icon: Icon(_drawArmed ? Icons.close : Icons.gesture),
           label: Text(_drawArmed ? 'Cancel' : 'Assign area'),
         ),

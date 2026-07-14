@@ -18,6 +18,9 @@ class SupervisorRoute extends StatefulWidget {
 class _SupervisorRouteState extends State<SupervisorRoute> {
   DashboardCounts? _counts;
   String? _error;
+  // While the Content tab is in draw-to-assign mode, freeze tab
+  // swiping so the loop-drawing drag isn't stolen by the pager.
+  bool _contentDrawing = false;
 
   @override
   void initState() {
@@ -57,12 +60,23 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
             IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
           ],
         ),
-        body: TabBarView(children: [
-          _Overview(counts: _counts, error: _error),
-          ContentTab(api: widget.api, counts: _counts, onChanged: _load),
-          OrganiserMessagesTab(api: widget.api),
-          EndgameTab(api: widget.api),
-        ]),
+        body: TabBarView(
+          physics: _contentDrawing
+              ? const NeverScrollableScrollPhysics()
+              : null,
+          children: [
+            _Overview(counts: _counts, error: _error),
+            ContentTab(
+              api: widget.api,
+              counts: _counts,
+              onChanged: _load,
+              onDrawingChanged: (drawing) =>
+                  setState(() => _contentDrawing = drawing),
+            ),
+            OrganiserMessagesTab(api: widget.api),
+            EndgameTab(api: widget.api),
+          ],
+        ),
       ),
     );
   }
