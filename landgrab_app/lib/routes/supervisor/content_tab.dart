@@ -189,32 +189,58 @@ class _ContentTabState extends State<ContentTab> {
       return;
     }
 
-    final validator = await _pickValidator(poles.length, puzzlets.length);
-    if (validator == null) {
-      if (mounted) setState(() => _polygon = null);
-      return;
-    }
+    // Loop so that picking someone who authored everything selected
+    // just re-opens the picker (with an explanation) instead of a
+    // confusing "all skipped". Nobody validates their own work, so a
+    // validator can only take items they didn't create.
+    while (mounted) {
+      final validator = await _pickValidator(poles.length, puzzlets.length);
+      if (validator == null) {
+        if (mounted) setState(() => _polygon = null);
+        return;
+      }
 
-    try {
-      final result = await widget.api.bulkAssignValidations(
-        validatorId: validator.id,
-        poleIds: poles.map((p) => p.id).toList(),
-        puzzletIds: puzzlets.map((p) => p.id).toList(),
-      );
-      if (!mounted) return;
-      _exitDraw();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-          'Assigned ${result.assigned} to ${validator.name ?? validator.email}'
-          '${result.skipped > 0 ? ' (${result.skipped} skipped)' : ''}',
-        ),
-      ));
-      await _reloadAll();
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _polygon = null);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Assignment failed: $e')));
+      final assignablePoles =
+          poles.where((p) => p.creatorId != validator.id).toList();
+      final assignablePuzzlets =
+          puzzlets.where((p) => p.creatorId != validator.id).toList();
+
+      if (assignablePoles.isEmpty && assignablePuzzlets.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+            '${validator.name ?? validator.email} authored everything in '
+            'that area — nobody validates their own work. Pick someone else.',
+          ),
+        ));
+        continue; // re-open the picker, polygon still shown
+      }
+
+      try {
+        final result = await widget.api.bulkAssignValidations(
+          validatorId: validator.id,
+          poleIds: assignablePoles.map((p) => p.id).toList(),
+          puzzletIds: assignablePuzzlets.map((p) => p.id).toList(),
+        );
+        if (!mounted) return;
+        _exitDraw();
+        final authored = (poles.length + puzzlets.length) -
+            (assignablePoles.length + assignablePuzzlets.length);
+        final skipped = result.skipped + authored;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+            'Assigned ${result.assigned} to ${validator.name ?? validator.email}'
+            '${skipped > 0 ? ' ($skipped skipped)' : ''}',
+          ),
+        ));
+        await _reloadAll();
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _polygon = null);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Assignment failed: $e')));
+      }
+      return;
     }
   }
 
