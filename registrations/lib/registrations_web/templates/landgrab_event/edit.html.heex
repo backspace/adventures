@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row card">
   <div class="small-12 columns">
     <h2>Landgrab event</h2>
 
@@ -63,7 +63,11 @@
       ) %>
       <%= error_tag(f, :endgame_ends_at) %>
 
-      <%= label(f, :endgame_initial_radius_m, "Initial radius (metres — cover the whole play area)") %>
+      <%= label(
+        f,
+        :endgame_initial_radius_m,
+        "Initial radius (metres — cover the whole play area)"
+      ) %>
       <%= number_input(f, :endgame_initial_radius_m, step: "any") %>
       <%= error_tag(f, :endgame_initial_radius_m) %>
 

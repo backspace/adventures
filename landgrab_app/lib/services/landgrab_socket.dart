@@ -96,6 +96,11 @@ class LandgrabSocket {
           _log.w('LandgrabSocket: bad notification_created payload',
               error: e, stackTrace: st);
         }
+      case 'event_updated':
+        // Event config changed mid-game (e.g. the endgame boundary
+        // moved). Piggyback on the reconnect stream — listeners
+        // respond to both with the same full resync.
+        _reconnects.add(null);
     }
   }
 

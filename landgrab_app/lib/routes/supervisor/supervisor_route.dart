@@ -3,6 +3,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/validation.dart';
+import 'package:landgrab/routes/supervisor/endgame_tab.dart';
 import 'package:landgrab/routes/supervisor/organiser_messages_tab.dart';
 import 'package:landgrab/routes/supervisor/pin_action_sheet.dart';
 import 'package:landgrab/routes/supervisor/pole_supervision_detail_route.dart';
@@ -129,16 +130,20 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Supervision'),
-          bottom: const TabBar(tabs: [
-            Tab(text: 'Overview'),
-            Tab(text: 'Puzzlets'),
-            Tab(text: 'Poles'),
-            Tab(text: 'Messages'),
-          ]),
+          bottom: const TabBar(
+            isScrollable: true,
+            tabs: [
+              Tab(text: 'Overview'),
+              Tab(text: 'Puzzlets'),
+              Tab(text: 'Poles'),
+              Tab(text: 'Messages'),
+              Tab(text: 'Endgame'),
+            ],
+          ),
           actions: [
             IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
           ],
@@ -148,6 +153,7 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
           _PuzzletsTab(api: widget.api, counts: _counts, onChanged: _load),
           _PolesTab(api: widget.api, counts: _counts, onChanged: _load),
           OrganiserMessagesTab(api: widget.api),
+          EndgameTab(api: widget.api),
         ]),
       ),
     );

@@ -17,6 +17,8 @@ typedef NotificationsResult = ({
   int unread,
 });
 
+typedef EndgameConfig = ({EndgameZone? endgame, DateTime? announcedAt});
+
 class LandgrabApi {
   final Dio dio;
 
@@ -735,6 +737,40 @@ class LandgrabApi {
       dio.delete('/landgrab/validation/puzzlet-comments/$id');
 
   // ────────── Supervisor surface ──────────
+
+  Future<EndgameConfig> getEndgameConfig() async {
+    final response = await dio.get('/landgrab/supervision/endgame');
+    final data = response.data as Map<String, dynamic>;
+    return (
+      endgame: EndgameZone.fromJson(data['endgame'] as Map<String, dynamic>?),
+      announcedAt: data['announced_at'] == null
+          ? null
+          : DateTime.tryParse('${data['announced_at']}Z'),
+    );
+  }
+
+  /// Full-replace: pass a zone to (re)configure the boundary, or
+  /// null to clear it. The server broadcasts `event_updated` so all
+  /// player maps re-sync immediately.
+  Future<EndgameConfig> updateEndgameConfig(EndgameZone? zone) async {
+    final response = await dio.put('/landgrab/supervision/endgame', data: {
+      if (zone != null) ...{
+        'latitude': zone.latitude,
+        'longitude': zone.longitude,
+        'starts_at': zone.startsAt.toUtc().toIso8601String(),
+        'ends_at': zone.endsAt.toUtc().toIso8601String(),
+        'initial_radius_m': zone.initialRadiusM,
+        'final_radius_m': zone.finalRadiusM,
+      },
+    });
+    final data = response.data as Map<String, dynamic>;
+    return (
+      endgame: EndgameZone.fromJson(data['endgame'] as Map<String, dynamic>?),
+      announcedAt: data['announced_at'] == null
+          ? null
+          : DateTime.tryParse('${data['announced_at']}Z'),
+    );
+  }
 
   Future<List<OrganiserMessage>> listOrganiserMessages() async {
     final response = await dio.get('/landgrab/supervision/messages');
