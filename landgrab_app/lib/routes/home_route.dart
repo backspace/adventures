@@ -634,6 +634,16 @@ class _HomeRouteState extends State<HomeRoute>
                   options: MapOptions(
                     initialCenter: _center(),
                     initialZoom: 14,
+                    // Make rotation deliberate: the gesture race
+                    // commits a two-finger gesture to whichever
+                    // intent (zoom/move/rotate) crosses its threshold
+                    // first, and the raised rotation threshold means
+                    // a casual twist mid-pinch stays a zoom. North
+                    // is always restorable via the compass button.
+                    interactionOptions: const InteractionOptions(
+                      enableMultiFingerGestureRace: true,
+                      rotationThreshold: 25,
+                    ),
                     // Track camera zoom for size-scaled overlays
                     // (validator-only puzzlet pins). Only setState
                     // when the zoom actually changes so panning
