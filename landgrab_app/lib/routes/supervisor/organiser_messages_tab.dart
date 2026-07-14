@@ -15,7 +15,11 @@ class OrganiserMessagesTab extends StatefulWidget {
 }
 
 class _OrganiserMessagesTabState extends State<OrganiserMessagesTab> {
-  static const senderPresets = ["Sabuk's assistant", 'Sabuk'];
+  // SYSTEM is for out-of-character/mechanical announcements; a
+  // future version may auto-send SYSTEM messages on a schedule
+  // (event milestones etc.) — the server already accepts any
+  // sender string, so that needs no schema change.
+  static const senderPresets = ["Sabuk's assistant", 'Sabuk', 'SYSTEM'];
 
   List<OrganiserMessage>? _messages;
   String? _error;
@@ -179,26 +183,35 @@ class _ComposeSheet extends StatefulWidget {
 }
 
 class _ComposeSheetState extends State<_ComposeSheet> {
+  static const _other = 'Other…';
+
   final _controller = TextEditingController();
+  final _customSenderController = TextEditingController();
   late String _sender = widget.presets.first;
-  bool _hasText = false;
 
   @override
   void initState() {
     super.initState();
-    _controller
-        .addListener(() => setState(() => _hasText = _controller.text.trim().isNotEmpty));
+    _controller.addListener(() => setState(() {}));
+    _customSenderController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _customSenderController.dispose();
     super.dispose();
   }
 
+  String get _effectiveSender =>
+      _sender == _other ? _customSenderController.text.trim() : _sender;
+
+  bool get _valid =>
+      _controller.text.trim().isNotEmpty && _effectiveSender.isNotEmpty;
+
   void _pop(bool sendNow) {
     Navigator.of(context)
-        .pop(_ComposeResult(_controller.text.trim(), _sender, sendNow));
+        .pop(_ComposeResult(_controller.text.trim(), _effectiveSender, sendNow));
   }
 
   @override
@@ -222,9 +235,20 @@ class _ComposeSheetState extends State<_ComposeSheet> {
             items: [
               for (final preset in widget.presets)
                 DropdownMenuItem(value: preset, child: Text(preset)),
+              const DropdownMenuItem(value: _other, child: Text(_other)),
             ],
             onChanged: (value) => setState(() => _sender = value ?? _sender),
           ),
+          if (_sender == _other) ...[
+            const SizedBox(height: 12),
+            TextField(
+              controller: _customSenderController,
+              decoration: const InputDecoration(
+                labelText: 'Sender name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           TextField(
             controller: _controller,
@@ -241,12 +265,12 @@ class _ComposeSheetState extends State<_ComposeSheet> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
-                onPressed: _hasText ? () => _pop(false) : null,
+                onPressed: _valid ? () => _pop(false) : null,
                 child: const Text('Save draft'),
               ),
               const SizedBox(width: 8),
               FilledButton(
-                onPressed: _hasText ? () => _pop(true) : null,
+                onPressed: _valid ? () => _pop(true) : null,
                 child: const Text('Send now'),
               ),
             ],
