@@ -38,6 +38,17 @@ class _AppState extends State<App> {
     final theme = ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
       useMaterial3: true,
+      // Anton is the site wordmark's display face; app bar titles
+      // carry the branding in-app. Display-only — body text stays on
+      // the default face for legibility.
+      appBarTheme: const AppBarTheme(
+        titleTextStyle: TextStyle(
+          fontFamily: 'Anton',
+          fontSize: 22,
+          letterSpacing: 1.5,
+          color: Colors.black87,
+        ),
+      ),
     );
 
     if (!_ready) {

@@ -68,3 +68,10 @@ flutter:
   assets:
     - .env
     - .env.local
+  # Anton: the site wordmark's display face, bundled (not fetched)
+  # so branding renders offline. Single weight; OFL licence sits
+  # alongside the file.
+  fonts:
+    - family: Anton
+      fonts:
+        - asset: assets/fonts/Anton-Regular.ttf

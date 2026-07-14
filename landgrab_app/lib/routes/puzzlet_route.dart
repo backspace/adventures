@@ -357,10 +357,12 @@ class _CaptureCelebrationState extends State<_CaptureCelebration>
                         ),
                         child: const Text(
                           PuzzletStrings.capturedStamp,
+                          // Anton, matching the site wordmark — it's
+                          // single-weight, so no fontWeight needed.
                           style: TextStyle(
+                            fontFamily: 'Anton',
                             color: Colors.white,
                             fontSize: 44,
-                            fontWeight: FontWeight.w900,
                             letterSpacing: 6,
                           ),
                         ),
