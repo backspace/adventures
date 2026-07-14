@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:landgrab/api/landgrab_api.dart';
@@ -35,10 +37,25 @@ class _EndgameTabState extends State<EndgameTab> {
   DateTime? _endsAt;
   DateTime? _announcedAt;
 
+  // What the server is enforcing right now (as opposed to the form
+  // state above, which may hold unsaved edits). Drives the live
+  // current-radius readout and circle.
+  EndgameZone? _saved;
+  Timer? _radiusTimer;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _radiusTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (mounted && _saved != null) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _radiusTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -49,6 +66,7 @@ class _EndgameTabState extends State<EndgameTab> {
       setState(() {
         _loaded = true;
         _announcedAt = config.announcedAt;
+        _saved = config.endgame;
         final zone = config.endgame;
         if (zone != null) {
           _configured = true;
@@ -62,7 +80,13 @@ class _EndgameTabState extends State<EndgameTab> {
         }
       });
       if (config.endgame != null) {
-        _mapController.move(_centre, _mapController.camera.zoom);
+        try {
+          _mapController.move(_centre, _mapController.camera.zoom);
+        } catch (_) {
+          // The map hasn't attached yet (this tab builds lazily).
+          // Fine: it takes the already-updated _centre as its
+          // initialCenter when it does build.
+        }
       }
     } catch (e) {
       if (mounted) setState(() => _error = 'Could not load endgame: $e');
@@ -115,6 +139,7 @@ class _EndgameTabState extends State<EndgameTab> {
       setState(() {
         _configured = config.endgame != null;
         _announcedAt = config.announcedAt;
+        _saved = config.endgame;
         if (config.endgame == null) {
           _startsAt = null;
           _endsAt = null;
@@ -155,6 +180,26 @@ class _EndgameTabState extends State<EndgameTab> {
         _endsAt = combined;
       }
     });
+  }
+
+  /// Radius the server is enforcing right now, or null when the
+  /// saved boundary hasn't begun shrinking (or isn't configured).
+  double? _currentRadius() {
+    final saved = _saved;
+    if (saved == null) return null;
+    final now = DateTime.now().toUtc();
+    if (!saved.activeAt(now)) return null;
+    return saved.radiusAt(now);
+  }
+
+  String? _currentRadiusLabel() {
+    final radius = _currentRadius();
+    if (radius == null) return null;
+    final done =
+        !DateTime.now().toUtc().isBefore(_saved!.endsAt);
+    return done
+        ? 'Current radius: ${radius.round()} m (final — shrink complete)'
+        : 'Current radius: ${radius.round()} m (shrinking, shown in red)';
   }
 
   String _format(DateTime? value) {
@@ -214,6 +259,19 @@ class _EndgameTabState extends State<EndgameTab> {
                       borderColor: Colors.deepPurple,
                       borderStrokeWidth: 2,
                     ),
+                    // The boundary players are living with right now
+                    // — from the SAVED config, at its saved centre,
+                    // so it stays truthful while the form is edited.
+                    if (_currentRadius() case final radius?)
+                      CircleMarker(
+                        point:
+                            LatLng(_saved!.latitude, _saved!.longitude),
+                        radius: radius,
+                        useRadiusInMeter: true,
+                        color: Colors.transparent,
+                        borderColor: Colors.red.withValues(alpha: 0.8),
+                        borderStrokeWidth: 3,
+                      ),
                   ]),
                 ],
               ),
@@ -231,6 +289,14 @@ class _EndgameTabState extends State<EndgameTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (_currentRadiusLabel() case final label?)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    label,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
               if (_announcedAt != null)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 4),
