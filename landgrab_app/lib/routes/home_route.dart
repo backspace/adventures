@@ -727,6 +727,12 @@ class _HomeRouteState extends State<HomeRoute>
                       // squeeze without seeing a circle.
                       markers: _polesInPlay().map((pole) {
                         return Marker(
+                          // Keyed by pole so zoom-time culling can't
+                          // hand this element a different pole —
+                          // unkeyed, the _PoleDot's AnimatedContainer
+                          // tweened between neighbouring poles'
+                          // colours on every reshuffle.
+                          key: ValueKey(pole.id),
                           point: LatLng(pole.latitude, pole.longitude),
                           width: 24,
                           height: 24,
