@@ -32,6 +32,21 @@ class EndgameZone {
     return initialRadiusM + (finalRadiusM - initialRadiusM) * progress;
   }
 
+  /// Whether a point is inside the boundary at [now] — everything is
+  /// "inside" before the shrink begins. Flat-earth metres with the
+  /// longitude scale taken at the zone centre, matching the server's
+  /// enforcement exactly.
+  bool containsAt(double lat, double lng, DateTime now) {
+    if (!activeAt(now)) return true;
+    final r = radiusAt(now);
+    const metresPerDegLat = 111000.0;
+    final metresPerDegLng =
+        metresPerDegLat * math.cos(latitude * math.pi / 180);
+    final dx = (lng - longitude) * metresPerDegLng;
+    final dy = (lat - latitude) * metresPerDegLat;
+    return dx * dx + dy * dy <= r * r;
+  }
+
   static EndgameZone? fromJson(Map<String, dynamic>? json) {
     if (json == null) return null;
     return EndgameZone(

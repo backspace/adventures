@@ -104,9 +104,9 @@ class _HomeRouteState extends State<HomeRoute>
   final Map<String, String?> _prevOwners = {};
   final Map<String, String?> _captureFromOwner = {};
 
-  // Redraws the shrinking endgame boundary. 10 s granularity is
-  // plenty: the shrink runs over tens of minutes, so each step moves
-  // the circle by a metre or two.
+  // Re-filters pole pins as the (invisible) endgame boundary
+  // shrinks past them. 10 s granularity is plenty: the shrink runs
+  // over tens of minutes.
   Timer? _zoneTimer;
   Ticker? _animTicker;
 
@@ -364,19 +364,16 @@ class _HomeRouteState extends State<HomeRoute>
     );
   }
 
-  CircleMarker? _endgameCircle() {
+  /// Poles the endgame boundary hasn't passed. Everything when no
+  /// boundary is configured or it hasn't begun shrinking.
+  List<Pole> _polesInPlay() {
     final zone = _event?.endgame;
-    if (zone == null) return null;
+    if (zone == null) return _poles!;
     final now = DateTime.now().toUtc();
-    if (!zone.activeAt(now)) return null;
-    return CircleMarker(
-      point: LatLng(zone.latitude, zone.longitude),
-      radius: zone.radiusAt(now),
-      useRadiusInMeter: true,
-      color: Colors.deepPurple.withValues(alpha: 0.04),
-      borderColor: Colors.deepPurple.withValues(alpha: 0.8),
-      borderStrokeWidth: 3,
-    );
+    if (!zone.activeAt(now)) return _poles!;
+    return _poles!
+        .where((pole) => zone.containsAt(pole.latitude, pole.longitude, now))
+        .toList(growable: false);
   }
 
   Future<void> _openNotifications() async {
@@ -700,12 +697,6 @@ class _HomeRouteState extends State<HomeRoute>
                       retinaMode: RetinaMode.isHighDensity(context),
                       userAgentPackageName: 'ca.chromatin.poles',
                     ),
-                    // The endgame boundary, once its shrink has
-                    // begun: everything outside the circle is out of
-                    // play. Radius derives from the clock with the
-                    // same interpolation the server enforces.
-                    if (_endgameCircle() case final circle?)
-                      CircleLayer(circles: [circle]),
                     // Territory fills sit above the tiles and below
                     // the marker pins so pole icons remain readable
                     // over their own coloured cells.
@@ -729,7 +720,12 @@ class _HomeRouteState extends State<HomeRoute>
                       pulsePhase: _pulsePhase,
                     ),
                     MarkerLayer(
-                      markers: _poles!.map((pole) {
+                      // The endgame boundary is invisible by design:
+                      // poles it has passed just disappear (their
+                      // territory stays — TerritoryLayer gets the
+                      // unfiltered list), so players sense the
+                      // squeeze without seeing a circle.
+                      markers: _polesInPlay().map((pole) {
                         return Marker(
                           point: LatLng(pole.latitude, pole.longitude),
                           width: 24,

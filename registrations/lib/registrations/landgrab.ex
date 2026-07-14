@@ -576,8 +576,9 @@ defmodule Registrations.Landgrab do
       {:ok, message} =
         create_organiser_message(%{
           body:
-            "Simulation boundary active. The claimable area is shrinking. " <>
-              "Territory outside the boundary can no longer be claimed. Proceed inward.",
+            "Simulation contraction initiated. Peripheral poles are being " <>
+              "withdrawn from the study; withdrawn poles disappear from your map. " <>
+              "Claims are only accepted on poles still shown.",
           sender_name: "SYSTEM"
         })
 

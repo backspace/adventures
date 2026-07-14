@@ -98,7 +98,7 @@ defmodule Registrations.Landgrab.EndgameTest do
       assert notification.type == "message"
       assert notification.recipient_team_id == team.id
       assert notification.metadata["sender_name"] == "SYSTEM"
-      assert notification.body =~ "boundary"
+      assert notification.body =~ "contraction"
 
       # The stamp survives; polling again never re-sends.
       assert Landgrab.maybe_announce_endgame(~U[2026-07-25 22:01:30Z]) == :noop
