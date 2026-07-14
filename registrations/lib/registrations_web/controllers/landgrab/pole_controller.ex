@@ -56,7 +56,7 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
         |> json(%{
           error: %{
             code: "outside_zone",
-            detail: "The simulation boundary has passed this pole. It can no longer be claimed."
+            detail: Registrations.Landgrab.PlayerStrings.outside_zone_detail()
           },
           pole: render_pole_state(Landgrab.pole_with_state(pole))
         })

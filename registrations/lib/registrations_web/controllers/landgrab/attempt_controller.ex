@@ -2,6 +2,7 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
   use RegistrationsWeb, :controller
 
   alias Registrations.Landgrab
+  alias Registrations.Landgrab.PlayerStrings
 
   def create(conn, %{"puzzlet_id" => puzzlet_id} = params) do
     user = Pow.Plug.current_user(conn)
@@ -10,7 +11,7 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
     if is_nil(user.team_id) do
       conn
       |> put_status(:forbidden)
-      |> json(%{error: %{code: "no_team", detail: "User is not on a team."}})
+      |> json(%{error: %{code: "no_team", detail: PlayerStrings.no_team_detail()}})
     else
       case Landgrab.get_puzzlet(puzzlet_id) do
         nil ->
@@ -60,7 +61,7 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
         |> json(%{
           error: %{
             code: "outside_zone",
-            detail: "The simulation boundary has passed this pole. It can no longer be claimed."
+            detail: PlayerStrings.outside_zone_detail()
           }
         })
 

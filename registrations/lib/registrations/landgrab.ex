@@ -10,6 +10,7 @@ defmodule Registrations.Landgrab do
   alias Registrations.Landgrab.Events
   alias Registrations.Landgrab.Notification
   alias Registrations.Landgrab.OrganiserMessage
+  alias Registrations.Landgrab.PlayerStrings
   alias Registrations.Landgrab.Pole
   alias Registrations.Landgrab.Puzzlet
   alias Registrations.Landgrab.Thumbnail
@@ -575,10 +576,7 @@ defmodule Registrations.Landgrab do
     if is_nil(event.endgame_announced_at) and Event.endgame_zone(event, now) do
       {:ok, message} =
         create_organiser_message(%{
-          body:
-            "Simulation contraction initiated. Peripheral poles are being " <>
-              "withdrawn from the study; withdrawn poles disappear from your map. " <>
-              "Claims are only accepted on poles still shown.",
+          body: PlayerStrings.endgame_announcement(),
           sender_name: "SYSTEM"
         })
 
@@ -707,11 +705,7 @@ defmodule Registrations.Landgrab do
   defp write_attack_signal(%Pole{} = pole, recipient_id, sender_id) do
     attacker_name = team_name(sender_id)
 
-    body =
-      case attacker_name do
-        nil -> "A rival team scanned #{display_name(pole)}"
-        name -> "#{name} scanned #{display_name(pole)}"
-      end
+    body = PlayerStrings.attack_body(attacker_name, display_name(pole))
 
     deliver_team_notification("attack", pole, recipient_id, sender_id, body, attacker_name)
   end
@@ -725,11 +719,7 @@ defmodule Registrations.Landgrab do
   defp maybe_signal_pole_lost(%Pole{} = pole, previous_owner_id, capturing_team_id) do
     captor_name = team_name(capturing_team_id)
 
-    body =
-      case captor_name do
-        nil -> "A rival team captured #{display_name(pole)} from you"
-        name -> "#{name} captured #{display_name(pole)} from you"
-      end
+    body = PlayerStrings.pole_lost_body(captor_name, display_name(pole))
 
     deliver_team_notification(
       "pole_lost",
@@ -809,9 +799,7 @@ defmodule Registrations.Landgrab do
     :ok
   end
 
-  defp push_title("attack"), do: "Under attack"
-  defp push_title("pole_lost"), do: "Pole lost"
-  defp push_title(_type), do: "LANDGRAB"
+  defp push_title(type), do: PlayerStrings.push_title(type)
 
   defp display_name(%Pole{label: label}) when is_binary(label) and label != "", do: label
   defp display_name(%Pole{barcode: barcode}), do: barcode
