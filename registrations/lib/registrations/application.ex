@@ -39,7 +39,7 @@ defmodule Registrations.Application do
         # Start a worker by calling: Registrations.Worker.start_link(arg)
         # {Registrations.Worker, arg}
         {ConCache, [name: :registrations_cache, ttl_check_interval: false]}
-      ] ++ redix_child() ++ push_children()
+      ] ++ redix_child() ++ push_children() ++ endgame_announcer_child()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -52,6 +52,17 @@ defmodule Registrations.Application do
       nil -> []
       "" -> []
       url -> [{Redix, {url, [name: :redix]}}]
+    end
+  end
+
+  # Disabled in tests (config/test.exs): a polling GenServer touching
+  # the DB would fight the Ecto sandbox. `maybe_announce_endgame` is
+  # tested directly instead.
+  defp endgame_announcer_child do
+    if Application.get_env(:registrations, :start_endgame_announcer, true) do
+      [Registrations.Landgrab.EndgameAnnouncer]
+    else
+      []
     end
   end
 

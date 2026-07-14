@@ -50,6 +50,17 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
           pole: render_pole_state(Landgrab.pole_with_state(pole))
         })
 
+      {:error, :outside_zone, pole} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{
+          error: %{
+            code: "outside_zone",
+            detail: "The simulation boundary has passed this pole. It can no longer be claimed."
+          },
+          pole: render_pole_state(Landgrab.pole_with_state(pole))
+        })
+
       {:error, :team_locked_out, pole} ->
         conn
         |> put_status(:locked)

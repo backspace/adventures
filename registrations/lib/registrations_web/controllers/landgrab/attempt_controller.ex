@@ -54,6 +54,16 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
         |> put_status(:conflict)
         |> json(%{error: %{code: "already_owner", detail: "Your team already owns this pole."}})
 
+      {:error, :outside_zone} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{
+          error: %{
+            code: "outside_zone",
+            detail: "The simulation boundary has passed this pole. It can no longer be claimed."
+          }
+        })
+
       {:error, :locked_out} ->
         conn
         |> put_status(:locked)

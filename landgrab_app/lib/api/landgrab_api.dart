@@ -222,6 +222,9 @@ class LandgrabApi {
       if (code == 'own_creation' && poleJson != null) {
         return ScanOwnCreation(Pole.fromJson(poleJson));
       }
+      if (code == 'outside_zone' && poleJson != null) {
+        return ScanOutsideZone(Pole.fromJson(poleJson));
+      }
       rethrow;
     }
   }

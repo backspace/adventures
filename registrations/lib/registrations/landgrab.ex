@@ -6,6 +6,8 @@ defmodule Registrations.Landgrab do
   alias Registrations.Landgrab.Attempt
   alias Registrations.Landgrab.Capture
   alias Registrations.Landgrab.DeviceToken
+  alias Registrations.Landgrab.Event
+  alias Registrations.Landgrab.Events
   alias Registrations.Landgrab.Notification
   alias Registrations.Landgrab.OrganiserMessage
   alias Registrations.Landgrab.Pole
@@ -74,6 +76,11 @@ defmodule Registrations.Landgrab do
 
           pole_owned_by_team?(pole, team_id) ->
             {:error, :already_owner, pole}
+
+          # Checked before serving a puzzlet (and before the attack
+          # signal) — a pole the boundary has passed is out of play.
+          pole_outside_endgame_zone?(pole) ->
+            {:error, :outside_zone, pole}
 
           true ->
             state = pole_with_state(pole)
@@ -416,6 +423,9 @@ defmodule Registrations.Landgrab do
       pole && pole_owned_by_team?(pole, team_id) ->
         {:error, :already_owner}
 
+      pole && pole_outside_endgame_zone?(pole) ->
+        {:error, :outside_zone}
+
       team_locked_out?(puzzlet, team_id) ->
         {:error, :locked_out}
 
@@ -525,6 +535,63 @@ defmodule Registrations.Landgrab do
       |> Repo.update_all(set: [read_at: now, updated_at: NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second)])
 
     count
+  end
+
+  @doc """
+  True when the endgame boundary has begun shrinking and `pole` lies
+  outside its current radius. Locationless poles are never excluded.
+  """
+  def pole_outside_endgame_zone?(pole, now \\ DateTime.utc_now())
+
+  def pole_outside_endgame_zone?(%Pole{latitude: lat, longitude: lng}, now)
+      when is_number(lat) and is_number(lng) do
+    case Event.endgame_zone(Events.current(), now) do
+      nil -> false
+      zone -> distance_m(lat, lng, zone.latitude, zone.longitude) > zone.radius_m
+    end
+  end
+
+  def pole_outside_endgame_zone?(_pole, _now), do: false
+
+  # Flat-earth metres at city scale — consistent with the bounding
+  # boxes in list_nearby_authoring and the client's territory math.
+  defp distance_m(lat1, lng1, lat2, lng2) do
+    metres_per_deg_lat = 111_000.0
+    metres_per_deg_lng = 111_000.0 * :math.cos(lat2 * :math.pi() / 180.0)
+    dx = (lng1 - lng2) * metres_per_deg_lng
+    dy = (lat1 - lat2) * metres_per_deg_lat
+    :math.sqrt(dx * dx + dy * dy)
+  end
+
+  @doc """
+  One-shot SYSTEM broadcast the moment the endgame boundary
+  activates. Polled by `EndgameAnnouncer`; no-ops until the zone has
+  begun, and `endgame_announced_at` guards against repeats across
+  restarts. Returns `{:announced, team_count}` or `:noop`.
+  """
+  def maybe_announce_endgame(now \\ DateTime.utc_now()) do
+    event = Events.current()
+
+    if is_nil(event.endgame_announced_at) and Event.endgame_zone(event, now) do
+      {:ok, message} =
+        create_organiser_message(%{
+          body:
+            "Simulation boundary active. The claimable area is shrinking. " <>
+              "Territory outside the boundary can no longer be claimed. Proceed inward.",
+          sender_name: "SYSTEM"
+        })
+
+      {:ok, _sent, team_count} = send_organiser_message(message)
+
+      {:ok, _event} =
+        event
+        |> Ecto.Changeset.change(endgame_announced_at: DateTime.truncate(now, :second))
+        |> Repo.update()
+
+      {:announced, team_count}
+    else
+      :noop
+    end
   end
 
   @doc """

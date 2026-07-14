@@ -103,6 +103,11 @@ class _HomeRouteState extends State<HomeRoute>
   final Map<String, DateTime> _captureStartedAt = {};
   final Map<String, String?> _prevOwners = {};
   final Map<String, String?> _captureFromOwner = {};
+
+  // Redraws the shrinking endgame boundary. 10 s granularity is
+  // plenty: the shrink runs over tens of minutes, so each step moves
+  // the circle by a metre or two.
+  Timer? _zoneTimer;
   Ticker? _animTicker;
 
   @override
@@ -209,6 +214,7 @@ class _HomeRouteState extends State<HomeRoute>
     _reconnectsSub?.cancel();
     _socket?.dispose();
     _animTicker?.dispose();
+    _zoneTimer?.cancel();
     super.dispose();
   }
 
@@ -339,6 +345,11 @@ class _HomeRouteState extends State<HomeRoute>
         _event = event;
       });
       _refreshUnreadCount();
+      if (event.endgame != null && _zoneTimer == null) {
+        _zoneTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+          if (mounted) setState(() {});
+        });
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _error = GameplayStrings.couldNotLoadPoles(e.toString()));
@@ -350,6 +361,21 @@ class _HomeRouteState extends State<HomeRoute>
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => LoginRoute(api: widget.api)),
+    );
+  }
+
+  CircleMarker? _endgameCircle() {
+    final zone = _event?.endgame;
+    if (zone == null) return null;
+    final now = DateTime.now().toUtc();
+    if (!zone.activeAt(now)) return null;
+    return CircleMarker(
+      point: LatLng(zone.latitude, zone.longitude),
+      radius: zone.radiusAt(now),
+      useRadiusInMeter: true,
+      color: Colors.deepPurple.withValues(alpha: 0.04),
+      borderColor: Colors.deepPurple.withValues(alpha: 0.8),
+      borderStrokeWidth: 3,
     );
   }
 
@@ -674,6 +700,12 @@ class _HomeRouteState extends State<HomeRoute>
                       retinaMode: RetinaMode.isHighDensity(context),
                       userAgentPackageName: 'ca.chromatin.poles',
                     ),
+                    // The endgame boundary, once its shrink has
+                    // begun: everything outside the circle is out of
+                    // play. Radius derives from the clock with the
+                    // same interpolation the server enforces.
+                    if (_endgameCircle() case final circle?)
+                      CircleLayer(circles: [circle]),
                     // Territory fills sit above the tiles and below
                     // the marker pins so pole icons remain readable
                     // over their own coloured cells.

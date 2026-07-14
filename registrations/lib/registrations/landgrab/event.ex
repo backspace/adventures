@@ -4,6 +4,15 @@ defmodule Registrations.Landgrab.Event do
   the most recently inserted one. `start_time` is the moment gameplay begins —
   before that, the app shows pre-event authoring/validation UI; after that, the
   app shows gameplay.
+
+  The endgame fields describe a capture boundary that shrinks toward
+  the wrap-party location: from `endgame_initial_radius_m` at
+  `endgame_starts_at` down (linearly) to `endgame_final_radius_m` at
+  `endgame_ends_at`, centred on `endgame_latitude`/`endgame_longitude`.
+  Poles outside the current radius can't be captured, which herds
+  everyone toward the party. The radius is a pure function of the
+  clock — `endgame_zone/2` — so server enforcement and the client's
+  map circle can never disagree.
   """
   use Ecto.Schema
 
@@ -17,18 +26,90 @@ defmodule Registrations.Landgrab.Event do
     field(:name, :string)
     field(:start_time, :utc_datetime)
 
+    field(:endgame_latitude, :float)
+    field(:endgame_longitude, :float)
+    field(:endgame_starts_at, :utc_datetime)
+    field(:endgame_ends_at, :utc_datetime)
+    field(:endgame_initial_radius_m, :float)
+    field(:endgame_final_radius_m, :float)
+    field(:endgame_announced_at, :utc_datetime)
+
     timestamps()
   end
 
+  @endgame_fields ~w(endgame_latitude endgame_longitude endgame_starts_at endgame_ends_at endgame_initial_radius_m endgame_final_radius_m)a
+
   def changeset(event, attrs) do
     event
-    |> cast(attrs, [:name, :start_time])
+    |> cast(attrs, [:name, :start_time | @endgame_fields])
     |> validate_required([:name])
+    |> validate_number(:endgame_initial_radius_m, greater_than: 0)
+    |> validate_number(:endgame_final_radius_m, greater_than: 0)
+    |> validate_endgame_complete()
+    |> validate_endgame_window()
   end
 
   def started?(%__MODULE__{start_time: nil}, _now), do: false
 
   def started?(%__MODULE__{start_time: start_time}, now) do
     DateTime.compare(now, start_time) != :lt
+  end
+
+  @doc """
+  The endgame zone as of `now`, or nil when not configured or not yet
+  begun. Returns `%{latitude, longitude, radius_m}` with the radius
+  interpolated linearly between the initial and final values across
+  the shrink window (clamped to the final radius afterwards).
+  """
+  def endgame_zone(%__MODULE__{} = event, now) do
+    if endgame_configured?(event) and DateTime.compare(now, event.endgame_starts_at) != :lt do
+      %{
+        latitude: event.endgame_latitude,
+        longitude: event.endgame_longitude,
+        radius_m: interpolated_radius(event, now)
+      }
+    end
+  end
+
+  def endgame_configured?(%__MODULE__{} = event) do
+    Enum.all?(@endgame_fields, fn field -> Map.get(event, field) != nil end)
+  end
+
+  defp interpolated_radius(event, now) do
+    total = DateTime.diff(event.endgame_ends_at, event.endgame_starts_at)
+    elapsed = DateTime.diff(now, event.endgame_starts_at)
+
+    progress =
+      cond do
+        total <= 0 -> 1.0
+        elapsed >= total -> 1.0
+        true -> elapsed / total
+      end
+
+    event.endgame_initial_radius_m +
+      (event.endgame_final_radius_m - event.endgame_initial_radius_m) * progress
+  end
+
+  # All-or-nothing: a partially-configured endgame is a config
+  # mistake, not a smaller feature.
+  defp validate_endgame_complete(changeset) do
+    values = Enum.map(@endgame_fields, &get_field(changeset, &1))
+
+    if Enum.any?(values, &is_nil/1) and not Enum.all?(values, &is_nil/1) do
+      add_error(changeset, :endgame_latitude, "endgame needs all six fields (or none)")
+    else
+      changeset
+    end
+  end
+
+  defp validate_endgame_window(changeset) do
+    starts = get_field(changeset, :endgame_starts_at)
+    ends = get_field(changeset, :endgame_ends_at)
+
+    if starts && ends && DateTime.compare(ends, starts) != :gt do
+      add_error(changeset, :endgame_ends_at, "must be after the endgame start")
+    else
+      changeset
+    end
   end
 end

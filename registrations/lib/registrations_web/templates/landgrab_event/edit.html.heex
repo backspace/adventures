@@ -35,6 +35,44 @@
 
       <br />
 
+      <h3>Endgame boundary</h3>
+      <p class="meta">
+        A capture boundary that shrinks toward the wrap-party spot,
+        herding everyone there. Set all six fields or none. When the
+        shrink begins, a SYSTEM message goes to every team
+        automatically (within a minute).
+      </p>
+
+      <%= label(f, :endgame_latitude, "Centre latitude (wrap party)") %>
+      <%= number_input(f, :endgame_latitude, step: "any") %>
+      <%= error_tag(f, :endgame_latitude) %>
+
+      <%= label(f, :endgame_longitude, "Centre longitude") %>
+      <%= number_input(f, :endgame_longitude, step: "any") %>
+      <%= error_tag(f, :endgame_longitude) %>
+
+      <%= label(f, :endgame_starts_at, "Shrink starts (#{event_timezone()})") %>
+      <%= datetime_local_input(f, :endgame_starts_at,
+        value: local_input_value(Ecto.Changeset.get_field(@changeset, :endgame_starts_at))
+      ) %>
+      <%= error_tag(f, :endgame_starts_at) %>
+
+      <%= label(f, :endgame_ends_at, "Shrink ends (#{event_timezone()})") %>
+      <%= datetime_local_input(f, :endgame_ends_at,
+        value: local_input_value(Ecto.Changeset.get_field(@changeset, :endgame_ends_at))
+      ) %>
+      <%= error_tag(f, :endgame_ends_at) %>
+
+      <%= label(f, :endgame_initial_radius_m, "Initial radius (metres — cover the whole play area)") %>
+      <%= number_input(f, :endgame_initial_radius_m, step: "any") %>
+      <%= error_tag(f, :endgame_initial_radius_m) %>
+
+      <%= label(f, :endgame_final_radius_m, "Final radius (metres)") %>
+      <%= number_input(f, :endgame_final_radius_m, step: "any") %>
+      <%= error_tag(f, :endgame_final_radius_m) %>
+
+      <br />
+
       <div>
         <%= submit("Save", class: "button") %>
       </div>

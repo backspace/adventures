@@ -145,3 +145,10 @@ class ScanOwnCreation extends ScanOutcome {
   final Pole pole;
   const ScanOwnCreation(this.pole);
 }
+
+/// The endgame boundary has shrunk past this pole — it's out of play
+/// for the rest of the event.
+class ScanOutsideZone extends ScanOutcome {
+  final Pole pole;
+  const ScanOutsideZone(this.pole);
+}

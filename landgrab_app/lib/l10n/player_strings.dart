@@ -158,6 +158,12 @@ class ScanStrings {
       'You authored $poleName, so you can\'t capture it — you know '
       'the answers. Leave it for the other teams.';
 
+  // Outside-the-endgame-boundary dialog
+  static const outsideZoneTitle = 'Outside the boundary';
+  static String outsideZoneBody(String poleName) =>
+      'The simulation boundary has passed $poleName — it can no '
+      'longer be claimed. Head inside the boundary shown on the map.';
+
   // Generic acknowledge button used across the dialogs above.
   static const ok = 'OK';
 }
