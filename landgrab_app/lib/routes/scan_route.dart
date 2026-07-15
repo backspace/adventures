@@ -93,6 +93,7 @@ class _ScanRouteState extends State<ScanRoute> {
                 api: widget.api,
                 pole: result.pole,
                 puzzlet: result.activePuzzlet!,
+                contendingTeams: result.contendingTeams,
               ),
             ),
           );

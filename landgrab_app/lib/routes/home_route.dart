@@ -206,6 +206,18 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
             : null,
       ));
     }
+    if (n.type == 'pole_contested' && mounted) {
+      // A rival just started working a pole we're on. Informational,
+      // blue styling — a race is on, but nothing's lost yet. Refetch
+      // so the in-progress card's "others here" count updates.
+      _refreshActivePuzzlets();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(n.body),
+        backgroundColor: Colors.blue.shade700,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 5),
+      ));
+    }
     // Future notification types (chat, etc.) get their own branches
     // here — or, once a notifications-history screen exists, hand
     // off to a shared inbox stream and drop this ad-hoc dispatch.
@@ -525,6 +537,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           api: widget.api,
           pole: entry.pole,
           puzzlet: puzzlet,
+          contendingTeams: entry.contendingTeams,
         ),
       ),
     );
@@ -1181,6 +1194,14 @@ class _InProgressCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    if (entry.contendingTeams > 0)
+                      Text(
+                        GameplayStrings.othersHere(entry.contendingTeams),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue.shade700,
+                        ),
                       ),
                   ],
                 ),

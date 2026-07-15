@@ -124,6 +124,12 @@ msgstr "%{captor} solved the puzzlet you were working on."
 msgid "app_puzzlet_taken_body_unknown"
 msgstr "Another team solved the puzzlet you were working on."
 
+msgid "app_pole_contested_body"
+msgstr "%{team} is now working on %{pole} too — it's a race."
+
+msgid "app_pole_contested_body_unknown"
+msgstr "Another team is now working on %{pole} too — it's a race."
+
 msgid "app_endgame_announcement"
 msgstr "ANOMALY DETECTED. Poles at the periphery are being withdrawn from the simulation. Withdrawn poles disappear from your map. Claims are only accepted on poles still shown."
 
@@ -135,6 +141,9 @@ msgstr "Pole lost"
 
 msgid "app_push_title_puzzlet_taken"
 msgstr "Puzzlet taken"
+
+msgid "app_push_title_pole_contested"
+msgstr "Pole contested"
 
 msgid "app_push_title_default"
 msgstr "LANDGRAB"

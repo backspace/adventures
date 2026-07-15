@@ -13,11 +13,16 @@ class PuzzletRoute extends StatefulWidget {
   final Pole pole;
   final Puzzlet puzzlet;
 
+  /// Other teams currently racing this same pole (from the scan
+  /// payload). Shown as a heads-up so the solver knows it's contested.
+  final int contendingTeams;
+
   const PuzzletRoute({
     super.key,
     required this.api,
     required this.pole,
     required this.puzzlet,
+    this.contendingTeams = 0,
   });
 
   @override
@@ -187,6 +192,10 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
               if (widget.puzzlet.warning != null &&
                   widget.puzzlet.warning!.trim().isNotEmpty) ...[
                 _WarningBanner(text: widget.puzzlet.warning!),
+                const SizedBox(height: 16),
+              ],
+              if (widget.contendingTeams > 0) ...[
+                _ContendedBanner(count: widget.contendingTeams),
                 const SizedBox(height: 16),
               ],
               Text(
@@ -496,6 +505,32 @@ class _WarningBanner extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Heads-up that other teams are racing this pole. Neutral (not
+/// alarm) styling — it's information, not a warning.
+class _ContendedBanner extends StatelessWidget {
+  final int count;
+  const _ContendedBanner({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        border: Border.all(color: Colors.blue.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.groups_outlined, color: Colors.blue.shade700, size: 24),
+          const SizedBox(width: 12),
+          Expanded(child: Text(PuzzletStrings.contendingTeams(count))),
         ],
       ),
     );

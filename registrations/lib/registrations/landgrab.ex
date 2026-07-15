@@ -128,7 +128,8 @@ defmodule Registrations.Landgrab do
                    Map.merge(state, %{
                      active_puzzlet: active,
                      attempts_remaining: attempts_remaining,
-                     previous_wrong_answers: prior_wrong
+                     previous_wrong_answers: prior_wrong,
+                     contending_teams: contending_active_teams(pole.id, team_id)
                    })}
               end
             end
@@ -709,7 +710,8 @@ defmodule Registrations.Landgrab do
     |> Map.merge(%{
       active_puzzlet: tp.puzzlet,
       attempts_remaining: max(@max_attempts_per_puzzlet - team_wrong_attempts(tp.puzzlet, team_id), 0),
-      previous_wrong_answers: team_wrong_answers(tp.puzzlet, team_id)
+      previous_wrong_answers: team_wrong_answers(tp.puzzlet, team_id),
+      contending_teams: contending_active_teams(tp.pole_id, team_id)
     })
   end
 
@@ -738,8 +740,53 @@ defmodule Registrations.Landgrab do
         |> Repo.insert(on_conflict: :nothing, conflict_target: [:team_id, :puzzlet_id])
 
         broadcast_team_puzzlets_changed(team_id)
+        # Tell teams already working this pole that a rival just
+        # joined the race. Only on a fresh assignment (a resume
+        # returns :already_active above, so re-scans stay quiet).
+        signal_pole_contested(pole, team_id)
         {:ok, puzzlet}
     end
+  end
+
+  # Distinct count of *other* teams with an active puzzlet on this
+  # pole — surfaced on scan so a team knows it's contested. nil
+  # excluded-team (teamless scanner) counts everyone.
+  defp contending_active_teams(pole_id, exclude_team_id) do
+    base = from(tp in TeamPuzzlet, where: tp.pole_id == ^pole_id, select: tp.team_id, distinct: true)
+    query = if exclude_team_id, do: from(tp in base, where: tp.team_id != ^exclude_team_id), else: base
+    query |> Repo.all() |> length()
+  end
+
+  defp signal_pole_contested(%Pole{} = pole, new_team_id) do
+    others =
+      Repo.all(
+        from(tp in TeamPuzzlet,
+          where: tp.pole_id == ^pole.id and tp.team_id != ^new_team_id,
+          select: tp.team_id,
+          distinct: true
+        )
+      )
+
+    name = team_name(new_team_id)
+
+    Enum.each(others, fn team_id ->
+      persist_and_deliver(
+        "pole_contested",
+        team_id,
+        new_team_id,
+        PlayerStrings.pole_contested_body(name, display_name(pole)),
+        %{"pole_id" => pole.id, "pole_label" => display_name(pole)},
+        PlayerStrings.push_title("pole_contested")
+      )
+    end)
+
+    :ok
+  rescue
+    error ->
+      require Logger
+
+      Logger.error("pole-contested signal failed: #{Exception.message(error)}")
+      :ok
   end
 
   @doc """

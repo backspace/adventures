@@ -40,7 +40,10 @@ defmodule RegistrationsWeb.Landgrab.Render do
           state.active_puzzlet,
           state.attempts_remaining,
           state.previous_wrong_answers
-        )
+        ),
+      # How many *other* teams currently hold an active puzzlet on
+      # this pole — lets the app tell the player it's contested.
+      contending_teams: Map.get(state, :contending_teams, 0)
     }
   end
 end

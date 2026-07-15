@@ -65,13 +65,22 @@ class ScanResult {
   final Pole pole;
   final Puzzlet? activePuzzlet;
 
-  ScanResult({required this.pole, required this.activePuzzlet});
+  /// How many *other* teams currently hold an active puzzlet on this
+  /// pole — so the UI can warn that it's contested.
+  final int contendingTeams;
+
+  ScanResult({
+    required this.pole,
+    required this.activePuzzlet,
+    this.contendingTeams = 0,
+  });
 
   factory ScanResult.fromJson(Map<String, dynamic> json) => ScanResult(
         pole: Pole.fromJson(json['pole'] as Map<String, dynamic>),
         activePuzzlet: json['active_puzzlet'] == null
             ? null
             : Puzzlet.fromJson(json['active_puzzlet'] as Map<String, dynamic>),
+        contendingTeams: (json['contending_teams'] as num?)?.toInt() ?? 0,
       );
 }
 

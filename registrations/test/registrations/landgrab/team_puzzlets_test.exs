@@ -67,6 +67,49 @@ defmodule Registrations.Landgrab.TeamPuzzletsTest do
     end
   end
 
+  describe "pole contention awareness" do
+    test "a second team scanning the pole notifies the first, and the count shows" do
+      p = pole()
+      validated_puzzlet(p, difficulty: 1)
+
+      first = insert(:team)
+      first_user = insert(:user, team_id: first.id)
+      second = insert(:team)
+      second_user = insert(:user, team_id: second.id)
+
+      # First team picks it up — no contenders yet.
+      assert {:ok, payload1} = Landgrab.scan_payload(p.barcode, first.id, first_user.id)
+      assert payload1.contending_teams == 0
+
+      # Second team joins — sees 1 contender, and the first is told.
+      assert {:ok, payload2} = Landgrab.scan_payload(p.barcode, second.id, second_user.id)
+      assert payload2.contending_teams == 1
+
+      contested = Repo.all(from(n in Notification, where: n.type == "pole_contested"))
+      assert [notification] = contested
+      assert notification.recipient_team_id == first.id
+      assert notification.sender_team_id == second.id
+      assert notification.metadata["pole_id"] == p.id
+    end
+
+    test "re-scanning does not re-notify (resume stays quiet)" do
+      p = pole()
+      validated_puzzlet(p, difficulty: 1)
+
+      a = insert(:team)
+      a_user = insert(:user, team_id: a.id)
+      b = insert(:team)
+      b_user = insert(:user, team_id: b.id)
+
+      Landgrab.scan_payload(p.barcode, a.id, a_user.id)
+      Landgrab.scan_payload(p.barcode, b.id, b_user.id)
+      # B re-scans (resume) — must not generate another contested notice.
+      Landgrab.scan_payload(p.barcode, b.id, b_user.id)
+
+      assert Repo.aggregate(from(n in Notification, where: n.type == "pole_contested"), :count) == 1
+    end
+  end
+
   describe "resolution on capture (contention)" do
     test "capturing clears the captor's row, notifies rivals, and flags has_next" do
       p = pole()

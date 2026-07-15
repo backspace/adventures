@@ -114,6 +114,10 @@ class GameplayStrings {
 
   // A rival captured the puzzlet your team was working on.
   static const puzzletTakenTryNext = 'Try the next one';
+
+  // How many other teams are also on this pole (shown on the
+  // in-progress card).
+  static String othersHere(int n) => '$n other${n == 1 ? '' : 's'} here';
   static String couldNotLoadPoles(String error) =>
       'Could not load poles: $error';
 }
@@ -199,6 +203,9 @@ class PuzzletStrings {
 
   static const titlePrefix = 'Pole';
   static String attemptsRemaining(int n) => 'Attempts remaining: $n';
+  static String contendingTeams(int n) => n == 1
+      ? 'Another team is also working on this pole — first to solve it wins.'
+      : '$n other teams are also working on this pole — first to solve it wins.';
   static const previouslyTried = 'Already tried by your team:';
   static const answerLabel = 'Answer';
   static const answerLabelExact = 'Answer (exact match)';
