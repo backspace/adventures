@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/landgrab_event.dart';
+import 'package:landgrab/models/pole.dart';
 import 'package:latlong2/latlong.dart';
 
 /// Map-first editor for the endgame boundary. The centre is picked
@@ -43,13 +45,42 @@ class _EndgameTabState extends State<EndgameTab> {
   EndgameZone? _saved;
   Timer? _radiusTimer;
 
+  // Tiny reference dots for poles and puzzlets so the supervisor can
+  // size the initial radius against where content actually is. Purely
+  // decorative — a fetch failure just leaves them empty.
+  List<LatLng> _poleDots = const [];
+  List<LatLng> _puzzletDots = const [];
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadContentDots();
     _radiusTimer = Timer.periodic(const Duration(seconds: 10), (_) {
       if (mounted && _saved != null) setState(() {});
     });
+  }
+
+  Future<void> _loadContentDots() async {
+    try {
+      final results = await Future.wait([
+        widget.api.listPoles(),
+        widget.api.supervisionListPuzzlets(),
+      ]);
+      final poles = results[0] as List<Pole>;
+      final puzzlets = results[1] as List<DraftPuzzlet>;
+      if (!mounted) return;
+      setState(() {
+        _poleDots =
+            poles.map((p) => LatLng(p.latitude, p.longitude)).toList();
+        _puzzletDots = puzzlets
+            .where((p) => p.latitude != null && p.longitude != null)
+            .map((p) => LatLng(p.latitude!, p.longitude!))
+            .toList();
+      });
+    } catch (_) {
+      // Dots are a convenience; skip silently on failure.
+    }
   }
 
   @override
@@ -273,6 +304,24 @@ class _EndgameTabState extends State<EndgameTab> {
                         borderStrokeWidth: 3,
                       ),
                   ]),
+                  // Tiny content dots on top of the rings so you can
+                  // see how much of the poles/puzzlets a radius covers.
+                  // Pixel radii (not metres) so they stay dot-sized at
+                  // any zoom.
+                  CircleLayer(circles: [
+                    for (final p in _poleDots)
+                      CircleMarker(
+                        point: p,
+                        radius: 3,
+                        color: Colors.black.withValues(alpha: 0.55),
+                      ),
+                    for (final p in _puzzletDots)
+                      CircleMarker(
+                        point: p,
+                        radius: 2.5,
+                        color: Colors.teal.withValues(alpha: 0.7),
+                      ),
+                  ]),
                   MarkerLayer(markers: [
                     Marker(
                       point: _centre,
@@ -317,6 +366,21 @@ class _EndgameTabState extends State<EndgameTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (_poleDots.isNotEmpty || _puzzletDots.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(children: [
+                    const Icon(Icons.circle,
+                        size: 10, color: Color(0x8C000000)),
+                    const SizedBox(width: 4),
+                    Text('Poles', style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(width: 12),
+                    Icon(Icons.circle, size: 10, color: Colors.teal.shade400),
+                    const SizedBox(width: 4),
+                    Text('Puzzlets',
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ]),
+                ),
               if (_currentRadiusLabel() case final label?)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
