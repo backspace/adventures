@@ -575,6 +575,20 @@ defmodule Registrations.Landgrab do
   end
 
   @doc """
+  Set one notification's read state (per-notification swipe toggle).
+  Scoped to `team_id` so a caller can only touch their team's rows.
+  """
+  def set_notification_read(team_id, id, read?) do
+    read_at = if read?, do: DateTime.truncate(DateTime.utc_now(), :second)
+
+    Notification
+    |> where([n], n.id == ^id and n.recipient_team_id == ^team_id)
+    |> Repo.update_all(set: [read_at: read_at, updated_at: NaiveDateTime.truncate(NaiveDateTime.utc_now(), :second)])
+
+    :ok
+  end
+
+  @doc """
   True when the endgame boundary has begun shrinking and `pole` lies
   outside its current radius. Locationless poles are never excluded.
   """

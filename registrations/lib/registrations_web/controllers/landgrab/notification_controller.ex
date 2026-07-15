@@ -27,6 +27,24 @@ defmodule RegistrationsWeb.Landgrab.NotificationController do
     end
   end
 
+  # Per-notification read/unread toggle (swipe in the app). Scoped to
+  # the caller's team so you can only touch your own team's rows.
+  def set_read(conn, %{"id" => id}) do
+    toggle(conn, id, true)
+  end
+
+  def set_unread(conn, %{"id" => id}) do
+    toggle(conn, id, false)
+  end
+
+  defp toggle(conn, id, read?) do
+    if team_id = team_id(conn) do
+      Landgrab.set_notification_read(team_id, id, read?)
+    end
+
+    json(conn, %{ok: true})
+  end
+
   defp team_id(conn) do
     Pow.Plug.current_user(conn).team_id
   end

@@ -133,6 +133,11 @@ class NotificationStrings {
   static String couldNotLoad(String error) =>
       'Could not load notifications: $error';
 
+  // Swipe-to-toggle read state.
+  static const markRead = 'Mark read';
+  static const markUnread = 'Mark unread';
+  static const toggleFailed = 'Could not update — check your connection.';
+
   // Catch-up toast on the map when unread arrived while the app
   // wasn't live (cold boot, backgrounded, socket outage).
   static String whileAway(int n) => n == 1

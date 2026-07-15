@@ -271,6 +271,8 @@ defmodule RegistrationsWeb.Router do
     get("/bathrooms", BathroomController, :index)
     get("/notifications", NotificationController, :index)
     post("/notifications/read", NotificationController, :mark_read)
+    post("/notifications/:id/read", NotificationController, :set_read)
+    post("/notifications/:id/unread", NotificationController, :set_unread)
     get("/active-puzzlets", ActivePuzzletController, :index)
     post("/active-puzzlets", ActivePuzzletController, :create)
     delete("/active-puzzlets/:puzzlet_id", ActivePuzzletController, :delete)

@@ -31,12 +31,26 @@ class LandgrabNotification {
         recipientTeamId: json['recipient_team_id'] as String,
         senderTeamId: json['sender_team_id'] as String?,
         body: json['body'] as String,
-        metadata: (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
+        metadata:
+            (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
         insertedAt: _parseUtc(json['inserted_at']),
         readAt: _parseUtc(json['read_at']),
       );
 
   bool get unread => readAt == null;
+
+  /// Copy with a new read state — `read: true` stamps [readAt] now,
+  /// `false` clears it. Used for optimistic swipe-to-toggle.
+  LandgrabNotification withRead(bool read) => LandgrabNotification(
+        id: id,
+        type: type,
+        recipientTeamId: recipientTeamId,
+        senderTeamId: senderTeamId,
+        body: body,
+        metadata: metadata,
+        insertedAt: insertedAt,
+        readAt: read ? (readAt ?? DateTime.now().toUtc()) : null,
+      );
 
   /// Server datetimes are UTC but serialize without a zone suffix
   /// (Elixir NaiveDateTime); treat suffixless values as UTC.

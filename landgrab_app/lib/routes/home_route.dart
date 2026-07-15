@@ -432,8 +432,15 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => NotificationsRoute(api: widget.api)),
     );
-    // The route marked everything read server-side on open.
-    if (mounted) setState(() => _unreadNotifications = 0);
+    if (!mounted) return;
+    // Opening marks everything read, but the player may have swiped
+    // some back to unread — so reflect the real count rather than
+    // assuming zero. Quiet fetch (no "while away" toast).
+    widget.api.listNotifications().then((result) {
+      if (mounted) setState(() => _unreadNotifications = result.unread);
+    }).catchError((_) {
+      if (mounted) setState(() => _unreadNotifications = 0);
+    });
   }
 
   // Non-blocking: the badge count arriving late shouldn't delay the

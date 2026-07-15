@@ -72,6 +72,30 @@ defmodule RegistrationsWeb.Landgrab.NotificationsTest do
       assert length(body["notifications"]) == 2
       assert Enum.all?(body["notifications"], & &1["read_at"])
     end
+
+    test "a single notification can be toggled unread and back to read", %{conn: conn, team: team} do
+      n = insert_notification(team.id)
+      conn |> post("/landgrab/notifications/read") |> json_response(200)
+
+      # Swipe → unread: it reappears in the count.
+      conn |> post("/landgrab/notifications/#{n.id}/unread") |> json_response(200)
+      assert conn |> get("/landgrab/notifications") |> json_response(200) |> Map.get("unread") == 1
+
+      # Swipe again → read: back to zero.
+      conn |> post("/landgrab/notifications/#{n.id}/read") |> json_response(200)
+      assert conn |> get("/landgrab/notifications") |> json_response(200) |> Map.get("unread") == 0
+    end
+
+    test "cannot toggle another team's notification", %{conn: conn, other_team: other_team} do
+      n = insert_notification(other_team.id)
+      conn |> post("/landgrab/notifications/#{n.id}/unread") |> json_response(200)
+
+      # Unchanged — it belongs to another team.
+      assert Repo.get!(Notification, n.id).read_at == nil
+      # And it never shows in our own list.
+      body = conn |> get("/landgrab/notifications") |> json_response(200)
+      refute Enum.any?(body["notifications"], &(&1["id"] == n.id))
+    end
   end
 
   test "a teamless user gets an empty history", %{conn: conn} = ctx do

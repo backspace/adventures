@@ -71,20 +71,89 @@ class _NotificationsRouteState extends State<NotificationsRoute> {
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: _notifications!.length,
                         separatorBuilder: (_, __) => const Divider(height: 1),
-                        itemBuilder: (context, index) =>
-                            _NotificationTile(_notifications![index]),
+                        itemBuilder: (context, index) {
+                          final n = _notifications![index];
+                          return _NotificationTile(
+                            key: ValueKey(n.id),
+                            notification: n,
+                            onToggleRead: () => _toggleRead(n),
+                          );
+                        },
                       ),
                     ),
     );
+  }
+
+  /// Swipe toggles read/unread. Optimistic — flip locally, then tell
+  /// the server; revert on failure. Team-scoped read state, so this
+  /// also changes what teammates see on their next refresh.
+  Future<void> _toggleRead(LandgrabNotification n) async {
+    final wantRead = n.unread; // swiping an unread one marks it read
+    final i = _notifications!.indexWhere((x) => x.id == n.id);
+    if (i < 0) return;
+    setState(() => _notifications![i] = n.withRead(wantRead));
+    try {
+      await widget.api.setNotificationRead(n.id, wantRead);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _notifications![i] = n); // revert
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(NotificationStrings.toggleFailed)),
+      );
+    }
   }
 }
 
 class _NotificationTile extends StatelessWidget {
   final LandgrabNotification notification;
-  const _NotificationTile(this.notification);
+  final VoidCallback onToggleRead;
+  const _NotificationTile({
+    super.key,
+    required this.notification,
+    required this.onToggleRead,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Dismissible gives the familiar iOS-Mail swipe-right gesture;
+    // confirmDismiss returns false so the row snaps back instead of
+    // being removed — the swipe just toggles read/unread.
+    final markingRead = notification.unread;
+    return Dismissible(
+      key: ValueKey('dismiss-${notification.id}'),
+      direction: DismissDirection.startToEnd,
+      confirmDismiss: (_) async {
+        onToggleRead();
+        return false;
+      },
+      background: Container(
+        color: Theme.of(context).colorScheme.primary,
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              markingRead
+                  ? Icons.mark_email_read_outlined
+                  : Icons.mark_email_unread_outlined,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              markingRead
+                  ? NotificationStrings.markRead
+                  : NotificationStrings.markUnread,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+      child: _tile(context),
+    );
+  }
+
+  Widget _tile(BuildContext context) {
     return ListTile(
       leading: SizedBox(
         width: 36,
@@ -99,7 +168,8 @@ class _NotificationTile extends StatelessWidget {
       ),
       subtitle: Text(_subtitle),
       trailing: notification.unread
-          ? Icon(Icons.circle, size: 10, color: Theme.of(context).colorScheme.primary)
+          ? Icon(Icons.circle,
+              size: 10, color: Theme.of(context).colorScheme.primary)
           : null,
     );
   }
@@ -132,7 +202,9 @@ class _NotificationTile extends StatelessWidget {
     if (elapsed.inHours < 1) {
       return NotificationStrings.minutesAgo(elapsed.inMinutes);
     }
-    if (elapsed.inDays < 1) return NotificationStrings.hoursAgo(elapsed.inHours);
+    if (elapsed.inDays < 1) {
+      return NotificationStrings.hoursAgo(elapsed.inHours);
+    }
     return NotificationStrings.daysAgo(elapsed.inDays);
   }
 }

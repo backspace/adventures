@@ -11,6 +11,7 @@ class _FakeApi extends LandgrabApi {
 
   NotificationsResult result = (notifications: [], unread: 0);
   int markReadCalls = 0;
+  final List<({String id, bool read})> toggles = [];
 
   @override
   Future<NotificationsResult> listNotifications() async => result;
@@ -18,6 +19,11 @@ class _FakeApi extends LandgrabApi {
   @override
   Future<void> markNotificationsRead() async {
     markReadCalls += 1;
+  }
+
+  @override
+  Future<void> setNotificationRead(String id, bool read) async {
+    toggles.add((id: id, read: read));
   }
 }
 
@@ -53,8 +59,7 @@ void main() {
     expect(api.markReadCalls, 0);
   });
 
-  testWidgets('lists notifications and marks unread ones read',
-      (tester) async {
+  testWidgets('lists notifications and marks unread ones read', (tester) async {
     final api = _FakeApi()
       ..result = (
         notifications: [
@@ -86,5 +91,22 @@ void main() {
     await _pump(tester, api);
 
     expect(api.markReadCalls, 0);
+  });
+
+  testWidgets('swiping a read notification marks it unread', (tester) async {
+    final api = _FakeApi()
+      ..result = (
+        notifications: [_notification(readAt: DateTime.now().toUtc())],
+        unread: 0,
+      );
+    await _pump(tester, api);
+
+    await tester.drag(
+        find.text('qfabrv scanned 2066297'), const Offset(400, 0));
+    await tester.pumpAndSettle();
+
+    expect(api.toggles, hasLength(1));
+    expect(api.toggles.first.id, 'n1');
+    expect(api.toggles.first.read, isFalse);
   });
 }

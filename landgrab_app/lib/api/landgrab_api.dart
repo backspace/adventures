@@ -591,6 +591,11 @@ class LandgrabApi {
     await dio.post('/landgrab/notifications/read');
   }
 
+  /// Toggle one notification's read state (swipe in the history).
+  Future<void> setNotificationRead(String id, bool read) async {
+    await dio.post('/landgrab/notifications/$id/${read ? 'read' : 'unread'}');
+  }
+
   Future<List<Bathroom>> listMyBathrooms() async {
     final response = await dio.get('/landgrab/bathrooms/mine');
     final list = (response.data as Map<String, dynamic>)['bathrooms'] as List;
