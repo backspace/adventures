@@ -429,6 +429,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   }
 
   Future<void> _openNotifications() async {
+    // Dismiss the "N while you were away" catch-up toast — they're
+    // acting on it by opening the list, so it shouldn't linger behind
+    // the screen and reappear on return. (Tapping its own "View"
+    // action clears it automatically; opening via the bell doesn't.)
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     await Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => NotificationsRoute(api: widget.api)),
     );
