@@ -19,12 +19,16 @@ typedef NotificationsResult = ({
 
 typedef EndgameConfig = ({EndgameZone? endgame, DateTime? announcedAt});
 
+/// Result of an email/password login attempt, kept distinct so the
+/// UI can tell "wrong password" apart from "couldn't reach the server".
+enum LoginOutcome { success, invalidCredentials, unreachable, failed }
+
 class LandgrabApi {
   final Dio dio;
 
   LandgrabApi(this.dio);
 
-  Future<bool> login(String email, String password) async {
+  Future<LoginOutcome> login(String email, String password) async {
     try {
       final response = await dio.post(
         '/powapi/session',
@@ -41,9 +45,16 @@ class LandgrabApi {
         data['renewal_token'] as String,
       );
       await loadAndStoreMe();
-      return true;
-    } on DioException {
-      return false;
+      return LoginOutcome.success;
+    } on DioException catch (e) {
+      // 401 is the only "wrong email/password" case (see the server's
+      // ApiSessionController). No response at all means we never
+      // reached the server — a connectivity problem (VPN down, wrong
+      // host, offline), NOT bad credentials. Any other response is a
+      // genuine server-side failure.
+      if (e.response?.statusCode == 401) return LoginOutcome.invalidCredentials;
+      if (e.response == null) return LoginOutcome.unreachable;
+      return LoginOutcome.failed;
     }
   }
 

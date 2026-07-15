@@ -35,6 +35,55 @@ void main() {
         'previous_wrong_answers': wrong,
       };
 
+  group('login', () {
+    // The success path stores tokens via platform channels
+    // (secure storage / prefs) that aren't available in a plain unit
+    // test; it's exercised on-device. These cover the failure split,
+    // which is the behaviour that was previously conflated.
+    test('401 is invalidCredentials', () async {
+      adapter.onPost(
+        '/powapi/session',
+        (server) => server.reply(401, {
+          'error': {'status': 401, 'message': 'Invalid email or password'}
+        }),
+        data: {
+          'user': {'email': 'e@x.com', 'password': 'bad'}
+        },
+      );
+      expect(
+          await api.login('e@x.com', 'bad'), LoginOutcome.invalidCredentials);
+    });
+
+    test('no response (unreachable server) is unreachable, not bad credentials',
+        () async {
+      adapter.onPost(
+        '/powapi/session',
+        (server) => server.throws(
+          0,
+          DioException.connectionError(
+            requestOptions: RequestOptions(path: '/powapi/session'),
+            reason: 'Tailscale down',
+          ),
+        ),
+        data: {
+          'user': {'email': 'e@x.com', 'password': 'pw'}
+        },
+      );
+      expect(await api.login('e@x.com', 'pw'), LoginOutcome.unreachable);
+    });
+
+    test('other server error is a generic failure', () async {
+      adapter.onPost(
+        '/powapi/session',
+        (server) => server.reply(500, {'error': 'boom'}),
+        data: {
+          'user': {'email': 'e@x.com', 'password': 'pw'}
+        },
+      );
+      expect(await api.login('e@x.com', 'pw'), LoginOutcome.failed);
+    });
+  });
+
   group('scan', () {
     test('returns ScanFound on 200', () async {
       adapter.onGet(

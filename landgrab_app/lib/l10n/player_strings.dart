@@ -52,6 +52,10 @@ class LoginStrings {
   static const switchButton = 'Switch';
 
   static const invalidCredentials = 'Invalid email or password';
+  static const serverUnreachable =
+      'Can\'t reach the server. Check your connection (and VPN, if you '
+      'use one) and try again.';
+  static const loginFailed = 'Sign-in failed. Please try again.';
   static const appleNoIdentityToken =
       'Apple sign-in returned no identity token';
   static const appleSignInFailed = 'Apple sign-in failed';

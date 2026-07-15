@@ -32,14 +32,14 @@ class _LoginRouteState extends State<LoginRoute> {
       _error = null;
     });
 
-    final ok = await widget.api.login(
+    final outcome = await widget.api.login(
       _emailController.text.trim(),
       _passwordController.text,
     );
 
     if (!mounted) return;
 
-    if (ok) {
+    if (outcome == LoginOutcome.success) {
       TextInput.finishAutofillContext();
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => HomeRoute(api: widget.api)),
@@ -47,7 +47,11 @@ class _LoginRouteState extends State<LoginRoute> {
     } else {
       setState(() {
         _busy = false;
-        _error = LoginStrings.invalidCredentials;
+        _error = switch (outcome) {
+          LoginOutcome.invalidCredentials => LoginStrings.invalidCredentials,
+          LoginOutcome.unreachable => LoginStrings.serverUnreachable,
+          _ => LoginStrings.loginFailed,
+        };
       });
     }
   }
@@ -202,9 +206,13 @@ class _LoginRouteState extends State<LoginRoute> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     autocorrect: false,
-                    autofillHints: const [AutofillHints.email, AutofillHints.username],
+                    autofillHints: const [
+                      AutofillHints.email,
+                      AutofillHints.username
+                    ],
                     textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: LoginStrings.emailLabel),
+                    decoration: const InputDecoration(
+                        labelText: LoginStrings.emailLabel),
                   ),
                   const SizedBox(height: 12),
                   TextField(
@@ -213,7 +221,8 @@ class _LoginRouteState extends State<LoginRoute> {
                     autofillHints: const [AutofillHints.password],
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _submit(),
-                    decoration: const InputDecoration(labelText: LoginStrings.passwordLabel),
+                    decoration: const InputDecoration(
+                        labelText: LoginStrings.passwordLabel),
                   ),
                 ],
               ),
@@ -285,8 +294,7 @@ class _EnvBanner extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(flavorTitle,
-                      style: theme.textTheme.titleMedium),
+                  Text(flavorTitle, style: theme.textTheme.titleMedium),
                   Text(
                     apiRoot,
                     style: theme.textTheme.bodySmall,
