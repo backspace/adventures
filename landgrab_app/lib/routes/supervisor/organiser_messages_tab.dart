@@ -19,7 +19,7 @@ class _OrganiserMessagesTabState extends State<OrganiserMessagesTab> {
   // future version may auto-send SYSTEM messages on a schedule
   // (event milestones etc.) — the server already accepts any
   // sender string, so that needs no schema change.
-  static const senderPresets = ["Sabuk's assistant", 'Bedak', 'Sabuk', 'SYSTEM'];
+  static const senderPresets = ["Sabuk's assistant", 'Bedab', 'Sabuk', 'SYSTEM'];
 
   List<OrganiserMessage>? _messages;
   String? _error;
