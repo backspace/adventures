@@ -270,14 +270,7 @@ class DetailsStrings {
       'Could not open your details page: $detail';
 }
 
-/// Credits page (`routes/credits_route.dart`).
-class CreditsStrings {
-  CreditsStrings._();
-
-  static const appBarTitle = 'Credits';
-  static const acknowledgmentsHeading = 'Acknowledgments';
-  static const placeholderCopy =
-      'Content to come — a proper credits list, thanks, and '
-      'library acknowledgments will land here before launch.';
-  static const envSwitcherUnlocked = 'Environment switcher unlocked.';
-}
+// Credits copy lives in routes/credits_route.dart, not here — it's
+// real-world chrome (thanks, music, libraries), never in-storyline,
+// so it doesn't need the voice-tweaking treatment the rest of this
+// file gets.

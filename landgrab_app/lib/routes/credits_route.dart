@@ -1,8 +1,33 @@
 import 'package:flutter/material.dart';
 
 import 'package:landgrab/flavors.dart';
-import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/services/env_switch_service.dart';
+
+// Credits copy is plain real-world chrome (not in-storyline), so it
+// lives here rather than in player_strings.dart. Sections are mostly
+// short unbulleted lines — put one entry per line; the blank-line gap
+// between groups is just a `\n\n`. Replace the examples below.
+const _appBarTitle = 'Credits';
+
+const _acknowledgementsHeading = 'Acknowledgements';
+const _acknowledgementsBody = '''
+CC Slaughters
+XYZ
+''';
+
+const _soundtrackHeading = 'Soundtrack';
+const _soundtrackBody = '''
+ABC
+''';
+
+const _softwareHeading = 'Software';
+const _softwareBody = '''
+Flutter, Phoenix
+Coolify, Hetzner, Tailscale
+''';
+const _softwareLicensesButton = 'Open-source licenses';
+
+const _envSwitcherUnlocked = 'Environment switcher unlocked.';
 
 /// Placeholder Credits page. The version line at the bottom hides an
 /// easter egg — tap it 7 times inside 3 seconds to unlock the in-app
@@ -38,7 +63,7 @@ class _CreditsRouteState extends State<CreditsRoute> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(CreditsStrings.envSwitcherUnlocked),
+          content: Text(_envSwitcherUnlocked),
         ),
       );
     }
@@ -48,22 +73,38 @@ class _CreditsRouteState extends State<CreditsRoute> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text(CreditsStrings.appBarTitle)),
+      appBar: AppBar(title: const Text(_appBarTitle)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              CreditsStrings.acknowledgmentsHeading,
-              style: theme.textTheme.titleLarge,
+            _Section(
+              heading: _acknowledgementsHeading,
+              body: _acknowledgementsBody,
             ),
-            const SizedBox(height: 12),
-            Text(
-              CreditsStrings.placeholderCopy,
-              style: theme.textTheme.bodyMedium,
+            _Section(
+              heading: _soundtrackHeading,
+              body: _soundtrackBody,
             ),
-            const SizedBox(height: 48),
+            _Section(
+              heading: _softwareHeading,
+              body: _softwareBody,
+              // Flutter auto-collects every bundled package's license,
+              // so this stays correct without a hand-maintained list.
+              trailing: Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.description_outlined, size: 18),
+                  label: const Text(_softwareLicensesButton),
+                  onPressed: () => showLicensePage(
+                    context: context,
+                    applicationName: F.title,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
             Center(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
@@ -81,6 +122,36 @@ class _CreditsRouteState extends State<CreditsRoute> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A headed credits section: title, body copy, and an optional
+/// trailing widget (e.g. the licenses button).
+class _Section extends StatelessWidget {
+  final String heading;
+  final String body;
+  final Widget? trailing;
+
+  const _Section({required this.heading, required this.body, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(heading, style: theme.textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Text(body, style: theme.textTheme.bodyMedium),
+          if (trailing != null) ...[
+            const SizedBox(height: 12),
+            trailing!,
+          ],
+        ],
       ),
     );
   }
