@@ -65,6 +65,30 @@ platform :android do
     )
   end
 
+  desc "Build with production flavor (production API) and upload to Play Internal Testing."
+  desc "This is the ATTENDEE build for the event: it hits the real server but rides the"
+  desc "internal track, which has no review — so fixes go live in minutes, even day-of."
+  desc "Note: the internal track holds ONE build at a time, so running this replaces the"
+  desc "staging build that `alpha` puts there. Run `alpha` for staging dogfooding, `beta`"
+  desc "when you want the real-server build in front of testers/attendees."
+  lane :beta do
+    build_number = next_build_number("internal")
+    flutter_build_aab(
+      flavor: "production",
+      api_root: PRODUCTION_API_ROOT,
+      sentry_dsn: ENV.fetch("SENTRY_DSN", ""),
+      build_number: build_number
+    )
+    upload_to_play_store(
+      aab: find_aab,
+      track: "internal",
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
   desc "Push Play Store listing metadata (title, short/full description, video) without uploading a build."
   desc "Reads from fastlane/metadata/android/<locale>/<field>.txt — only files present get pushed; everything else stays as-is in Play Console."
   lane :metadata do
