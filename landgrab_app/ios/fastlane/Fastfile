@@ -59,6 +59,39 @@ def flutter_build_ipa(flavor:, api_root:, sentry_dsn:)
   end
 end
 
+# Upload the freshly-built IPA to TestFlight and assign it to the
+# groups in TESTFLIGHT_GROUPS.
+#
+# external: true is what puts a build in front of the public-link
+# "Event attendees" group. It requires a `changelog` ("what to test")
+# and submits the build for Beta App Review — the first external
+# build waits ~24-48h; later ones usually auto-clear. external: false
+# is the internal path (staging dogfood): no review, available in
+# minutes, but only to internal testers on the App Store Connect team.
+def deliver_to_testflight(external:)
+  # Internal and external groups are separate channels and can't be
+  # mixed on one build, so each lane reads its own var. Names must
+  # match App Store Connect → TestFlight exactly (Internal Testing vs
+  # External Testing group names).
+  var = external ? "TESTFLIGHT_EXTERNAL_GROUPS" : "TESTFLIGHT_INTERNAL_GROUPS"
+  groups = ENV.fetch(var, "").split(",").map(&:strip).reject(&:empty?)
+
+  upload_to_testflight(
+    api_key: asc_api_key,
+    ipa: find_ipa,
+    groups: groups,
+    distribute_external: external,
+    # Required by App Store Connect for external distribution; harmless
+    # for internal. Override per-build via TESTFLIGHT_CHANGELOG.
+    changelog: ENV.fetch("TESTFLIGHT_CHANGELOG", "Bug fixes and improvements."),
+    skip_waiting_for_build_processing: false
+  )
+rescue Spaceship::UnexpectedResponse => e
+  raise unless e.message.include?("Cannot add internal group to a build")
+  UI.important("TestFlight returned a known false-positive on internal group assignment.")
+  UI.important("The build was uploaded and the group is assigned — verify in App Store Connect.")
+end
+
 platform :ios do
   # Fastlane's default failure banner scrolls off the top of the
   # terminal during long IPA builds — make it impossible to miss by
@@ -84,25 +117,14 @@ platform :ios do
     )
   end
 
-  desc "Build with alpha flavor (staging API) and upload to TestFlight"
+  desc "Build with alpha flavor (staging API) and upload to TestFlight internal testers (staging dogfood, no review)."
   lane :alpha do
     flutter_build_ipa(
       flavor: "alpha",
       api_root: ALPHA_API_ROOT,
       sentry_dsn: ENV.fetch("SENTRY_DSN", "")
     )
-    begin
-      upload_to_testflight(
-        api_key: asc_api_key,
-        ipa: find_ipa,
-        groups: ENV.fetch("TESTFLIGHT_GROUPS", "").split(",").map(&:strip).reject(&:empty?),
-        skip_waiting_for_build_processing: false
-      )
-    rescue Spaceship::UnexpectedResponse => e
-      raise unless e.message.include?("Cannot add internal group to a build")
-      UI.important("TestFlight returned a known false-positive on internal group assignment.")
-      UI.important("The build was uploaded and the group is assigned — verify in App Store Connect.")
-    end
+    deliver_to_testflight(external: false)
   end
 
   desc "Push App Store Connect listing metadata (name, subtitle, description, etc.) without uploading a build."
@@ -120,24 +142,19 @@ platform :ios do
     )
   end
 
-  desc "Build with production flavor (production API) and upload to TestFlight"
-  lane :production do
+  # The ATTENDEE build. Named `beta` to match Android and to be
+  # honest: this goes to external *testers* via TestFlight, not the
+  # public App Store. (The build still uses the "production" Flutter
+  # flavor — real server, env switcher hidden.) There's deliberately
+  # no `production`/store-release lane: we're not releasing publicly.
+  desc "Build with production flavor (production API) and upload to TestFlight external testers — the attendee build."
+  desc "Distributes to the external (public-link) group and submits for Beta App Review; first build waits, later ones usually auto-clear."
+  lane :beta do
     flutter_build_ipa(
       flavor: "production",
       api_root: PRODUCTION_API_ROOT,
       sentry_dsn: ENV.fetch("SENTRY_DSN", "")
     )
-    begin
-      upload_to_testflight(
-        api_key: asc_api_key,
-        ipa: find_ipa,
-        groups: ENV.fetch("TESTFLIGHT_GROUPS", "").split(",").map(&:strip).reject(&:empty?),
-        skip_waiting_for_build_processing: false
-      )
-    rescue Spaceship::UnexpectedResponse => e
-      raise unless e.message.include?("Cannot add internal group to a build")
-      UI.important("TestFlight returned a known false-positive on internal group assignment.")
-      UI.important("The build was uploaded and the group is assigned — verify in App Store Connect.")
-    end
+    deliver_to_testflight(external: true)
   end
 end
