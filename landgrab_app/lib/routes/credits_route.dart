@@ -6,9 +6,9 @@ import 'package:landgrab/services/env_switch_service.dart';
 
 /// Placeholder Credits page. The version line at the bottom hides an
 /// easter egg — tap it 7 times inside 3 seconds to unlock the in-app
-/// environment switcher on dev/alpha builds. In production the tap
-/// counter still runs but `EnvSwitchService.unlock()` no-ops, so the
-/// switcher never appears no matter how many times you tap.
+/// environment switcher. Works on every flavor (production included),
+/// but it's off by default and only this deliberate gesture reveals
+/// it, so an attendee never sees it without hunting for it.
 class CreditsRoute extends StatefulWidget {
   const CreditsRoute({super.key});
 

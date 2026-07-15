@@ -5,13 +5,16 @@ import 'package:landgrab/flavors.dart';
 
 /// Gate for the in-app environment switcher. Combines two things:
 ///
-///   * A compile-time upper bound — `F.couldAllowEnvSwitch`. Production
-///     builds never show the switcher regardless of unlock state, so
-///     shipping a Play/App Store build can't accidentally reveal it.
+///   * A compile-time upper bound — `F.couldAllowEnvSwitch`, currently
+///     true for every flavor. (Kept as a hook in case a future build
+///     wants to lock the switcher out entirely.)
 ///   * A runtime unlock — persisted in SharedPreferences and toggled
 ///     on by an easter egg in the Credits screen (7 taps on the
-///     version line). Off by default even on dev/alpha, so a build
-///     handed to a demo tester doesn't start with the gear exposed.
+///     version line). Off by default on every flavor, so a shipped
+///     build — production included — never exposes the gear unless
+///     someone deliberately performs the gesture. This is what keeps
+///     it away from attendees while still letting us flip the real
+///     production artifact to staging for testing.
 ///
 /// UI listens to [visible] with `ValueListenableBuilder<bool>` and
 /// renders the settings gear / env banner only when it reads true.
