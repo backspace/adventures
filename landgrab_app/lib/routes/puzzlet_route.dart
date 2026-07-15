@@ -237,6 +237,13 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
               TextField(
                 controller: _answerController,
                 enabled: !disabled,
+                // Puzzlet answers are often oddly-spelled clues, codes,
+                // or single words — OS autocorrect / suggestions /
+                // autofill would fight the player and can silently
+                // mangle a correct answer. Turn them all off.
+                autocorrect: false,
+                enableSuggestions: false,
+                autofillHints: const [],
                 decoration: InputDecoration(
                   labelText: widget.puzzlet.answerType == 'strict_text'
                       ? PuzzletStrings.answerLabelExact
