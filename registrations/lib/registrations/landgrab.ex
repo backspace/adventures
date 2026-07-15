@@ -13,12 +13,20 @@ defmodule Registrations.Landgrab do
   alias Registrations.Landgrab.PlayerStrings
   alias Registrations.Landgrab.Pole
   alias Registrations.Landgrab.Puzzlet
+  alias Registrations.Landgrab.TeamPuzzlet
   alias Registrations.Landgrab.Thumbnail
   alias Registrations.Repo
 
   @max_attempts_per_puzzlet 3
 
   def max_attempts_per_puzzlet, do: @max_attempts_per_puzzlet
+
+  # How many puzzlets a team may have active at once. 1 today
+  # (deliberately, to keep teams focused on one puzzlet and discourage
+  # splitting up); coded as a constant so it can be raised later.
+  @active_puzzlet_capacity 1
+
+  def active_puzzlet_capacity, do: @active_puzzlet_capacity
 
   def list_poles do
     Repo.all(Pole)
@@ -90,27 +98,39 @@ defmodule Registrations.Landgrab do
             if active && team_locked_out?(active, team_id) do
               {:error, :team_locked_out, pole}
             else
-              {attempts_remaining, prior_wrong} =
-                case active do
-                  nil ->
-                    {nil, []}
+              # Capacity gate: assigning refuses a new puzzlet while
+              # the team is already at its limit (re-scanning the one
+              # they hold just resumes). Skipped when there's no
+              # puzzlet or the scanner has no team (teamless users can
+              # still see a puzzlet, they just can't hold or submit
+              # one) — both short-circuit to the ok payload.
+              case active && team_id && assign_active_puzzlet(team_id, user_id, pole, active) do
+                {:error, :at_capacity} ->
+                  {:error, :at_capacity, list_active_puzzlets_for_team(team_id), pole}
 
-                  puzzlet ->
-                    {max(
-                       @max_attempts_per_puzzlet -
-                         team_wrong_attempts(puzzlet, team_id),
-                       0
-                     ), team_wrong_answers(puzzlet, team_id)}
-                end
+                _ ->
+                  {attempts_remaining, prior_wrong} =
+                    case active do
+                      nil ->
+                        {nil, []}
 
-              maybe_signal_attack(pole, state.current_owner_team_id, team_id)
+                      puzzlet ->
+                        {max(
+                           @max_attempts_per_puzzlet -
+                             team_wrong_attempts(puzzlet, team_id),
+                           0
+                         ), team_wrong_answers(puzzlet, team_id)}
+                    end
 
-              {:ok,
-               Map.merge(state, %{
-                 active_puzzlet: active,
-                 attempts_remaining: attempts_remaining,
-                 previous_wrong_answers: prior_wrong
-               })}
+                  maybe_signal_attack(pole, state.current_owner_team_id, team_id)
+
+                  {:ok,
+                   Map.merge(state, %{
+                     active_puzzlet: active,
+                     attempts_remaining: attempts_remaining,
+                     previous_wrong_answers: prior_wrong
+                   })}
+              end
             end
         end
     end
@@ -483,6 +503,21 @@ defmodule Registrations.Landgrab do
           maybe_signal_pole_lost(captured_pole, previous_owner_id, team_id)
         end
 
+        # Resolve active-puzzlet state: a capture clears the puzzlet
+        # for everyone (and notifies the rivals who were on it); an
+        # incorrect answer that exhausts the team's guesses frees
+        # their slot since they can no longer attempt this puzzlet.
+        case result do
+          {:ok, %{result: :captured}} ->
+            resolve_captured_puzzlet(puzzlet, team_id)
+
+          {:ok, %{result: :incorrect, attempts_remaining: 0}} ->
+            abandon_active_puzzlet(team_id, puzzlet.id)
+
+          _ ->
+            :ok
+        end
+
         result
     end
   end
@@ -544,8 +579,7 @@ defmodule Registrations.Landgrab do
   """
   def pole_outside_endgame_zone?(pole, now \\ DateTime.utc_now())
 
-  def pole_outside_endgame_zone?(%Pole{latitude: lat, longitude: lng}, now)
-      when is_number(lat) and is_number(lng) do
+  def pole_outside_endgame_zone?(%Pole{latitude: lat, longitude: lng}, now) when is_number(lat) and is_number(lng) do
     case Event.endgame_zone(Events.current(), now) do
       nil -> false
       zone -> distance_m(lat, lng, zone.latitude, zone.longitude) > zone.radius_m
@@ -646,6 +680,163 @@ defmodule Registrations.Landgrab do
       |> Repo.update()
 
     {:ok, sent, length(team_ids)}
+  end
+
+  # ─── Team active puzzlets ─────────────────────────────────────────
+
+  @doc """
+  The team's active puzzlets (rich payloads: pole state, the puzzlet,
+  attempts remaining, and prior wrong answers) — what the app shows
+  as "in progress" and resumes into without a rescan.
+  """
+  def list_active_puzzlets_for_team(team_id) do
+    TeamPuzzlet
+    |> where([tp], tp.team_id == ^team_id)
+    |> order_by([tp], asc: tp.inserted_at)
+    |> Repo.all()
+    |> Repo.preload([:puzzlet, :pole])
+    |> Enum.map(&active_puzzlet_payload(&1, team_id))
+  end
+
+  @doc """
+  Payload for one active puzzlet, matching the flat shape a scan
+  returns (pole state merged with puzzlet/attempts) so the client
+  renders/resumes it identically.
+  """
+  def active_puzzlet_payload(%TeamPuzzlet{} = tp, team_id) do
+    tp.pole
+    |> pole_with_state()
+    |> Map.merge(%{
+      active_puzzlet: tp.puzzlet,
+      attempts_remaining: max(@max_attempts_per_puzzlet - team_wrong_attempts(tp.puzzlet, team_id), 0),
+      previous_wrong_answers: team_wrong_answers(tp.puzzlet, team_id)
+    })
+  end
+
+  @doc """
+  Give this team `puzzlet` as an active puzzlet. Returns
+  `{:ok, puzzlet}` on assignment, `{:already_active, puzzlet}` if they
+  already held it (a resume), or `{:error, :at_capacity}` if they're
+  at the active-puzzlet limit with something else.
+  """
+  def assign_active_puzzlet(team_id, user_id, %Pole{} = pole, %Puzzlet{} = puzzlet) do
+    cond do
+      team_holds_puzzlet?(team_id, puzzlet.id) ->
+        {:already_active, puzzlet}
+
+      active_puzzlet_count(team_id) >= @active_puzzlet_capacity ->
+        {:error, :at_capacity}
+
+      true ->
+        %TeamPuzzlet{}
+        |> TeamPuzzlet.changeset(%{
+          team_id: team_id,
+          puzzlet_id: puzzlet.id,
+          pole_id: pole.id,
+          started_by_user_id: user_id
+        })
+        |> Repo.insert(on_conflict: :nothing, conflict_target: [:team_id, :puzzlet_id])
+
+        broadcast_team_puzzlets_changed(team_id)
+        {:ok, puzzlet}
+    end
+  end
+
+  @doc """
+  Assign the current active puzzlet for `pole_id` to the team without
+  a barcode rescan — powers the "try the next one" offer after a
+  rival captures the puzzlet you were on. Same capacity/lockout rules
+  as a scan.
+  """
+  def assign_active_puzzlet_for_pole(team_id, user_id, pole_id) do
+    pole = Repo.get(Pole, pole_id)
+    active = pole && active_puzzlet_for_pole(pole, user_id)
+
+    cond do
+      is_nil(pole) -> {:error, :not_found}
+      is_nil(active) -> {:error, :no_puzzlet}
+      team_locked_out?(active, team_id) -> {:error, :team_locked_out}
+      true -> assign_active_puzzlet(team_id, user_id, pole, active)
+    end
+  end
+
+  @doc "Give up an active puzzlet, freeing the team's slot."
+  def abandon_active_puzzlet(team_id, puzzlet_id) do
+    {count, _} =
+      TeamPuzzlet
+      |> where([tp], tp.team_id == ^team_id and tp.puzzlet_id == ^puzzlet_id)
+      |> Repo.delete_all()
+
+    if count > 0, do: broadcast_team_puzzlets_changed(team_id)
+    :ok
+  end
+
+  defp team_holds_puzzlet?(team_id, puzzlet_id) do
+    TeamPuzzlet
+    |> where([tp], tp.team_id == ^team_id and tp.puzzlet_id == ^puzzlet_id)
+    |> Repo.exists?()
+  end
+
+  defp active_puzzlet_count(team_id) do
+    TeamPuzzlet
+    |> where([tp], tp.team_id == ^team_id)
+    |> Repo.aggregate(:count)
+  end
+
+  # Live team sync: teammates' apps refetch their active puzzlets when
+  # this fires. Guarded so a broadcast hiccup never breaks a scan.
+  defp broadcast_team_puzzlets_changed(team_id) do
+    RegistrationsWeb.Endpoint.broadcast("landgrab:map", "team_puzzlets_changed", %{team_id: team_id})
+    :ok
+  rescue
+    _ -> :ok
+  end
+
+  # Captured: clear every team's active row for this puzzlet, and tell
+  # the rival teams that were working it that it's gone (with whether
+  # the pole has a harder puzzlet left, for the "try the next" offer).
+  # A side effect of capture — must never fail the capture itself.
+  defp resolve_captured_puzzlet(%Puzzlet{} = puzzlet, capturing_team_id) do
+    others =
+      TeamPuzzlet
+      |> where([tp], tp.puzzlet_id == ^puzzlet.id and tp.team_id != ^capturing_team_id)
+      |> Repo.all()
+
+    pole = puzzlet.pole_id && Repo.get(Pole, puzzlet.pole_id)
+    Enum.each(others, fn tp -> signal_puzzlet_taken(tp.team_id, capturing_team_id, puzzlet, pole) end)
+
+    Repo.delete_all(where(TeamPuzzlet, [tp], tp.puzzlet_id == ^puzzlet.id))
+
+    [capturing_team_id | Enum.map(others, & &1.team_id)]
+    |> Enum.uniq()
+    |> Enum.each(&broadcast_team_puzzlets_changed/1)
+
+    :ok
+  rescue
+    error ->
+      require Logger
+
+      Logger.error("resolve_captured_puzzlet failed: #{Exception.message(error)}")
+      :ok
+  end
+
+  defp signal_puzzlet_taken(recipient_team_id, capturing_team_id, %Puzzlet{} = puzzlet, pole) do
+    captor_name = team_name(capturing_team_id)
+    has_next = pole && active_puzzlet_for_pole(pole, nil) != nil
+
+    persist_and_deliver(
+      "puzzlet_taken",
+      recipient_team_id,
+      capturing_team_id,
+      PlayerStrings.puzzlet_taken_body(captor_name),
+      %{
+        "pole_id" => pole && pole.id,
+        "pole_label" => pole && display_name(pole),
+        "puzzlet_id" => puzzlet.id,
+        "has_next" => !!has_next
+      },
+      PlayerStrings.push_title("puzzlet_taken")
+    )
   end
 
   @doc """
@@ -792,7 +983,7 @@ defmodule Registrations.Landgrab do
         recipient_id,
         push_title,
         body,
-        Map.take(metadata, ["pole_id"]) |> Map.put("type", type)
+        metadata |> Map.take(["pole_id"]) |> Map.put("type", type)
       )
     end
 

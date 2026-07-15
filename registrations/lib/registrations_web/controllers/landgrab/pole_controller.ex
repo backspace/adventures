@@ -2,10 +2,11 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
   use RegistrationsWeb, :controller
 
   alias Registrations.Landgrab
+  alias RegistrationsWeb.Landgrab.Render
 
   def index(conn, _params) do
     states = Landgrab.list_poles_with_state()
-    json(conn, %{poles: Enum.map(states, &render_pole_state/1)})
+    json(conn, %{poles: Enum.map(states, &Render.pole_state/1)})
   end
 
   def show(conn, %{"barcode" => barcode}) do
@@ -13,14 +14,20 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
 
     case Landgrab.scan_payload(barcode, user.team_id, user.id) do
       {:ok, state} ->
-        json(conn, %{
-          pole: render_pole_state(state),
-          active_puzzlet:
-            render_puzzlet(
-              state.active_puzzlet,
-              state.attempts_remaining,
-              state.previous_wrong_answers
-            )
+        json(conn, Render.scan_payload(state))
+
+      {:error, :at_capacity, active, pole} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{
+          error: %{
+            code: "at_capacity",
+            detail:
+              "Your team is already working on a puzzlet. Finish it or give it up before " <>
+                "starting another."
+          },
+          pole: Render.pole_state(Landgrab.pole_with_state(pole)),
+          active_puzzlets: Enum.map(active, &Render.scan_payload/1)
         })
 
       {:error, :not_found} ->
@@ -36,7 +43,7 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
             code: "already_owner",
             detail: "Your team already owns this pole. Wait for a rival to capture it."
           },
-          pole: render_pole_state(Landgrab.pole_with_state(pole))
+          pole: Render.pole_state(Landgrab.pole_with_state(pole))
         })
 
       {:error, :own_creation, pole} ->
@@ -47,7 +54,7 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
             code: "own_creation",
             detail: "You created this pole — you can't capture it."
           },
-          pole: render_pole_state(Landgrab.pole_with_state(pole))
+          pole: Render.pole_state(Landgrab.pole_with_state(pole))
         })
 
       {:error, :outside_zone, pole} ->
@@ -58,7 +65,7 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
             code: "outside_zone",
             detail: Registrations.Landgrab.PlayerStrings.outside_zone_detail()
           },
-          pole: render_pole_state(Landgrab.pole_with_state(pole))
+          pole: Render.pole_state(Landgrab.pole_with_state(pole))
         })
 
       {:error, :team_locked_out, pole} ->
@@ -71,34 +78,8 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
               "Your team has used all guesses on the current puzzlet for this pole. " <>
                 "Wait for another team to capture it before you can try again."
           },
-          pole: render_pole_state(Landgrab.pole_with_state(pole))
+          pole: Render.pole_state(Landgrab.pole_with_state(pole))
         })
     end
-  end
-
-  defp render_pole_state(%{pole: pole, current_owner_team_id: owner, locked?: locked}) do
-    %{
-      id: pole.id,
-      barcode: pole.barcode,
-      label: pole.label,
-      latitude: pole.latitude,
-      longitude: pole.longitude,
-      current_owner_team_id: owner,
-      locked: locked
-    }
-  end
-
-  defp render_puzzlet(nil, _, _), do: nil
-
-  defp render_puzzlet(puzzlet, attempts_remaining, previous_wrong_answers) do
-    %{
-      id: puzzlet.id,
-      instructions: puzzlet.instructions,
-      difficulty: puzzlet.difficulty,
-      answer_type: puzzlet.answer_type,
-      warning: puzzlet.warning,
-      attempts_remaining: attempts_remaining,
-      previous_wrong_answers: previous_wrong_answers
-    }
   end
 end

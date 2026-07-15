@@ -29,6 +29,9 @@ defmodule Registrations.Landgrab.PlayerStrings do
   def pole_lost_body(nil, pole_name), do: phrase("app_pole_lost_body_unknown", pole: pole_name)
   def pole_lost_body(captor, pole_name), do: phrase("app_pole_lost_body", captor: captor, pole: pole_name)
 
+  def puzzlet_taken_body(nil), do: phrase("app_puzzlet_taken_body_unknown")
+  def puzzlet_taken_body(captor), do: phrase("app_puzzlet_taken_body", captor: captor)
+
   @doc "SYSTEM broadcast when the endgame withdrawal begins."
   def endgame_announcement, do: phrase("app_endgame_announcement")
 
@@ -36,6 +39,7 @@ defmodule Registrations.Landgrab.PlayerStrings do
 
   def push_title("attack"), do: phrase("app_push_title_attack")
   def push_title("pole_lost"), do: phrase("app_push_title_pole_lost")
+  def push_title("puzzlet_taken"), do: phrase("app_push_title_puzzlet_taken")
   def push_title(_type), do: phrase("app_push_title_default")
 
   # ── Error details the app displays verbatim ──────────────────────

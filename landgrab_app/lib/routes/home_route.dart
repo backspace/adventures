@@ -19,6 +19,7 @@ import 'package:landgrab/routes/details_webview_route.dart';
 import 'package:landgrab/routes/login_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/routes/notifications_route.dart';
+import 'package:landgrab/routes/puzzlet_route.dart';
 import 'package:landgrab/routes/scan_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
 import 'package:landgrab/routes/supervisor/supervisor_route.dart';
@@ -54,8 +55,7 @@ class HomeRoute extends StatefulWidget {
   State<HomeRoute> createState() => _HomeRouteState();
 }
 
-class _HomeRouteState extends State<HomeRoute>
-    with TickerProviderStateMixin {
+class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   List<Pole>? _poles;
   List<Bathroom> _bathrooms = const [];
   String? _teamId;
@@ -64,6 +64,10 @@ class _HomeRouteState extends State<HomeRoute>
   bool _isAuthor = false;
   bool _isValidator = false;
   int _unreadNotifications = 0;
+  // The team's active puzzlet(s) — "in progress", resumable without a
+  // rescan, shared across teammates. Refetched on load / refresh /
+  // reconnect and when the team_puzzlets_changed socket event fires.
+  List<ScanResult> _activePuzzlets = const [];
   List<ValidatorOnlyPuzzlet> _validatorOnlyPuzzlets = const [];
   // Camera zoom drives validator-only pin sizing — same treatment
   // poles get on the author map. Below _voTinyZoom they shrink to a
@@ -80,6 +84,7 @@ class _HomeRouteState extends State<HomeRoute>
   StreamSubscription<PoleUpdate>? _updatesSub;
   StreamSubscription<LandgrabNotification>? _notificationsSub;
   StreamSubscription<void>? _reconnectsSub;
+  StreamSubscription<String>? _teamPuzzletsSub;
 
   // Under-attack state. `_attackedPoleIds` drives the pulsing red
   // ring layer; expiry (10 min after the last attack signal on that
@@ -98,8 +103,7 @@ class _HomeRouteState extends State<HomeRoute>
   // at which point the entry is purged and the ticker stops. Both
   // the ping ring and the territory disc-clip read this same map,
   // so they're guaranteed to run in lockstep.
-  static const Duration _captureAnimationDuration =
-      Duration(milliseconds: 800);
+  static const Duration _captureAnimationDuration = Duration(milliseconds: 800);
   final Map<String, DateTime> _captureStartedAt = {};
   final Map<String, String?> _prevOwners = {};
   final Map<String, String?> _captureFromOwner = {};
@@ -127,6 +131,11 @@ class _HomeRouteState extends State<HomeRoute>
     _updatesSub = socket.updates.listen(_applyUpdate);
     _notificationsSub = socket.notifications.listen(_handleNotification);
     _reconnectsSub = socket.reconnects.listen((_) => _load());
+    // A teammate scanned/gave up, or a puzzlet resolved — refetch our
+    // in-progress list so every member's screen stays in sync.
+    _teamPuzzletsSub = socket.teamPuzzletsChanged.listen((teamId) {
+      if (teamId == _teamId) _refreshActivePuzzlets();
+    });
     await socket.connect();
   }
 
@@ -175,6 +184,28 @@ class _HomeRouteState extends State<HomeRoute>
         duration: const Duration(seconds: 8),
       ));
     }
+    if (n.type == 'puzzlet_taken' && mounted) {
+      // A rival solved the puzzlet we were on. Our active-puzzlet
+      // state clears via the team_puzzlets_changed broadcast; here we
+      // just tell them, and offer the pole's next puzzlet (no rescan)
+      // when one remains.
+      _refreshActivePuzzlets();
+      final poleId = n.metadata['pole_id'] as String?;
+      final hasNext = n.metadata['has_next'] == true;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(n.body),
+        backgroundColor: Colors.deepOrange.shade700,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 6),
+        action: (hasNext && poleId != null)
+            ? SnackBarAction(
+                label: GameplayStrings.puzzletTakenTryNext,
+                textColor: Colors.white,
+                onPressed: () => _tryNextPuzzlet(poleId),
+              )
+            : null,
+      ));
+    }
     // Future notification types (chat, etc.) get their own branches
     // here — or, once a notifications-history screen exists, hand
     // off to a shared inbox stream and drop this ad-hoc dispatch.
@@ -212,6 +243,7 @@ class _HomeRouteState extends State<HomeRoute>
     _updatesSub?.cancel();
     _notificationsSub?.cancel();
     _reconnectsSub?.cancel();
+    _teamPuzzletsSub?.cancel();
     _socket?.dispose();
     _animTicker?.dispose();
     _zoneTimer?.cancel();
@@ -272,8 +304,7 @@ class _HomeRouteState extends State<HomeRoute>
     }
 
     // Ambient pulse for the attack rings — 0..1 loop.
-    _pulsePhase =
-        (elapsed.inMicroseconds / _pulseCycle.inMicroseconds) % 1.0;
+    _pulsePhase = (elapsed.inMicroseconds / _pulseCycle.inMicroseconds) % 1.0;
 
     // Stop the ticker only when nothing on-screen needs animating.
     if (_captureStartedAt.isEmpty && _lastAttackAt.isEmpty) {
@@ -345,6 +376,7 @@ class _HomeRouteState extends State<HomeRoute>
         _event = event;
       });
       _refreshUnreadCount();
+      _refreshActivePuzzlets();
       if (event.endgame != null && _zoneTimer == null) {
         _zoneTimer = Timer.periodic(const Duration(seconds: 10), (_) {
           if (mounted) setState(() {});
@@ -354,6 +386,14 @@ class _HomeRouteState extends State<HomeRoute>
       if (!mounted) return;
       setState(() => _error = GameplayStrings.couldNotLoadPoles(e.toString()));
     }
+  }
+
+  // Non-blocking: the in-progress list arriving late shouldn't hold up
+  // the map; a failure just leaves it stale until the next refresh.
+  void _refreshActivePuzzlets() {
+    widget.api.listActivePuzzlets().then((active) {
+      if (mounted) setState(() => _activePuzzlets = active);
+    }).catchError((_) {});
   }
 
   Future<void> _logout() async {
@@ -473,6 +513,74 @@ class _HomeRouteState extends State<HomeRoute>
     }
   }
 
+  /// Resume an active puzzlet from the "in progress" card — no rescan.
+  /// Opens the puzzlet directly; on capture, replays the territory
+  /// animation like the scan flow does.
+  Future<void> _openActivePuzzlet(ScanResult entry) async {
+    final puzzlet = entry.activePuzzlet;
+    if (puzzlet == null) return;
+    final captured = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => PuzzletRoute(
+          api: widget.api,
+          pole: entry.pole,
+          puzzlet: puzzlet,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await _load();
+    if (captured == true && mounted) {
+      setState(() => _captureStartedAt[entry.pole.id] = DateTime.now());
+      _ensureAnimTicker();
+    }
+  }
+
+  /// "Try the next one" after a rival captured your puzzlet: assign
+  /// the pole's next puzzlet without a rescan and open it.
+  Future<void> _tryNextPuzzlet(String poleId) async {
+    try {
+      final entry = await widget.api.assignActivePuzzlet(poleId);
+      if (!mounted) return;
+      _refreshActivePuzzlets();
+      await _openActivePuzzlet(entry);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(PuzzletStrings.submissionFailedNetwork)));
+    }
+  }
+
+  Future<void> _giveUpActivePuzzlet(ScanResult entry) async {
+    final puzzlet = entry.activePuzzlet;
+    if (puzzlet == null) return;
+    final name = entry.pole.label ?? entry.pole.barcode;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(GameplayStrings.giveUpTitle),
+        content: Text(GameplayStrings.giveUpBody(name)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(GameplayStrings.giveUpCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(GameplayStrings.giveUpConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await widget.api.abandonActivePuzzlet(puzzlet.id);
+    } catch (_) {
+      // The socket broadcast + next refresh will reconcile anyway.
+    }
+    _refreshActivePuzzlets();
+  }
+
   Color _pinColor(Pole pole) {
     if (pole.locked) return Colors.grey;
     if (pole.currentOwnerTeamId == null) return Colors.blue;
@@ -483,8 +591,7 @@ class _HomeRouteState extends State<HomeRoute>
   double get _voSize {
     if (_mapZoom >= _voFullZoom) return _voFullSize;
     if (_mapZoom <= _voTinyZoom) return _voTinySize;
-    final t =
-        (_mapZoom - _voTinyZoom) / (_voFullZoom - _voTinyZoom);
+    final t = (_mapZoom - _voTinyZoom) / (_voFullZoom - _voTinyZoom);
     return _voTinySize + (_voFullSize - _voTinySize) * t;
   }
 
@@ -567,9 +674,13 @@ class _HomeRouteState extends State<HomeRoute>
 
   LatLng _center() {
     final list = _poles ?? const <Pole>[];
-    if (list.isEmpty) return const LatLng(49.8951, -97.1384); // Portage and Main
-    final lat = list.map((p) => p.latitude).reduce((a, b) => a + b) / list.length;
-    final lng = list.map((p) => p.longitude).reduce((a, b) => a + b) / list.length;
+    if (list.isEmpty) {
+      return const LatLng(49.8951, -97.1384); // Portage and Main
+    }
+    final lat =
+        list.map((p) => p.latitude).reduce((a, b) => a + b) / list.length;
+    final lng =
+        list.map((p) => p.longitude).reduce((a, b) => a + b) / list.length;
     return LatLng(lat, lng);
   }
 
@@ -655,115 +766,133 @@ class _HomeRouteState extends State<HomeRoute>
                       isValidator: _isValidator,
                       isSupervisor: _isSupervisor,
                       onAuthor: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => AuthorRoute(api: widget.api)),
+                        MaterialPageRoute(
+                            builder: (_) => AuthorRoute(api: widget.api)),
                       ),
                       onValidate: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => ValidatorRoute(api: widget.api)),
+                        MaterialPageRoute(
+                            builder: (_) => ValidatorRoute(api: widget.api)),
                       ),
                       onSupervise: () => Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => SupervisorRoute(api: widget.api)),
+                        MaterialPageRoute(
+                            builder: (_) => SupervisorRoute(api: widget.api)),
                       ),
                     )
-                  : FlutterMap(
-                  options: MapOptions(
-                    initialCenter: _center(),
-                    initialZoom: 14,
-                    // Make rotation deliberate: the gesture race
-                    // commits a two-finger gesture to whichever
-                    // intent (zoom/move/rotate) crosses its threshold
-                    // first, and the raised rotation threshold means
-                    // a casual twist mid-pinch stays a zoom. North
-                    // is always restorable via the compass button.
-                    interactionOptions: const InteractionOptions(
-                      enableMultiFingerGestureRace: true,
-                      rotationThreshold: 25,
-                    ),
-                    // Track camera zoom for size-scaled overlays
-                    // (validator-only puzzlet pins). Only setState
-                    // when the zoom actually changes so panning
-                    // doesn't force a rebuild every frame.
-                    onPositionChanged: (position, _) {
-                      final z = position.zoom;
-                      if (z != null && z != _mapZoom) {
-                        setState(() => _mapZoom = z);
-                      }
-                    },
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                      subdomains: const ['a', 'b', 'c', 'd'],
-                      retinaMode: RetinaMode.isHighDensity(context),
-                      userAgentPackageName: 'ca.chromatin.poles',
-                    ),
-                    // Territory fills sit above the tiles and below
-                    // the marker pins so pole icons remain readable
-                    // over their own coloured cells.
-                    TerritoryLayer(
-                      poles: _poles!,
-                      myOwnerId: _teamId,
-                      captureStartedAt: _captureStartedAt,
-                      captureFromOwner: _captureFromOwner,
-                      captureAnimationDuration: _captureAnimationDuration,
-                    ),
-                    BathroomLayer(bathrooms: _bathrooms),
-                    CaptureRingsLayer(
-                      poles: _poles!,
-                      captureStartedAt: _captureStartedAt,
-                      duration: _captureAnimationDuration,
-                      myOwnerId: _teamId,
-                    ),
-                    AttackRingsLayer(
-                      poles: _poles!,
-                      attackedPoleIds: _lastAttackAt.keys.toSet(),
-                      pulsePhase: _pulsePhase,
-                    ),
-                    MarkerLayer(
-                      // The endgame boundary is invisible by design:
-                      // poles it has passed just disappear (their
-                      // territory stays — TerritoryLayer gets the
-                      // unfiltered list), so players sense the
-                      // squeeze without seeing a circle.
-                      markers: _polesInPlay().map((pole) {
-                        return Marker(
-                          // Keyed by pole so zoom-time culling can't
-                          // hand this element a different pole —
-                          // unkeyed, the _PoleDot's AnimatedContainer
-                          // tweened between neighbouring poles'
-                          // colours on every reshuffle.
-                          key: ValueKey(pole.id),
-                          point: LatLng(pole.latitude, pole.longitude),
-                          width: 24,
-                          height: 24,
-                          child: Tooltip(
-                            message: pole.label ?? pole.barcode,
-                            child: _PoleDot(color: _pinColor(pole)),
+                  : Stack(children: [
+                      FlutterMap(
+                        options: MapOptions(
+                          initialCenter: _center(),
+                          initialZoom: 14,
+                          // Make rotation deliberate: the gesture race
+                          // commits a two-finger gesture to whichever
+                          // intent (zoom/move/rotate) crosses its threshold
+                          // first, and the raised rotation threshold means
+                          // a casual twist mid-pinch stays a zoom. North
+                          // is always restorable via the compass button.
+                          interactionOptions: const InteractionOptions(
+                            enableMultiFingerGestureRace: true,
+                            rotationThreshold: 25,
                           ),
-                        );
-                      }).toList(),
-                    ),
-                    // Validator-only puzzlets: rendered outside the
-                    // pole/cluster stack so they never spider with
-                    // other markers, and sized against the current
-                    // zoom so they shrink to a small star far out and
-                    // grow to full pin close in — same treatment
-                    // poles get on the author map.
-                    if (_validatorOnlyPuzzlets.isNotEmpty)
-                      MarkerLayer(markers: _validatorOnlyMarkers()),
-                    // User's own position + heading cone (only while
-                    // walking). Above the pole markers so a pole
-                    // directly under the user doesn't obscure the
-                    // marker; below attribution/compass.
-                    const LiveLocationLayer(),
-                    const _MapAttribution(),
-                    // Compass appears only when the map is rotated; tap
-                    // animates it back to north-up. The plugin picks up the
-                    // enclosing FlutterMap's controller via context — no
-                    // controller wiring on our side.
-                    const MapCompass.cupertino(hideIfRotatedNorth: true),
-                  ],
-                ),
+                          // Track camera zoom for size-scaled overlays
+                          // (validator-only puzzlet pins). Only setState
+                          // when the zoom actually changes so panning
+                          // doesn't force a rebuild every frame.
+                          onPositionChanged: (position, _) {
+                            final z = position.zoom;
+                            if (z != null && z != _mapZoom) {
+                              setState(() => _mapZoom = z);
+                            }
+                          },
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                                'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                            subdomains: const ['a', 'b', 'c', 'd'],
+                            retinaMode: RetinaMode.isHighDensity(context),
+                            userAgentPackageName: 'ca.chromatin.poles',
+                          ),
+                          // Territory fills sit above the tiles and below
+                          // the marker pins so pole icons remain readable
+                          // over their own coloured cells.
+                          TerritoryLayer(
+                            poles: _poles!,
+                            myOwnerId: _teamId,
+                            captureStartedAt: _captureStartedAt,
+                            captureFromOwner: _captureFromOwner,
+                            captureAnimationDuration: _captureAnimationDuration,
+                          ),
+                          BathroomLayer(bathrooms: _bathrooms),
+                          CaptureRingsLayer(
+                            poles: _poles!,
+                            captureStartedAt: _captureStartedAt,
+                            duration: _captureAnimationDuration,
+                            myOwnerId: _teamId,
+                          ),
+                          AttackRingsLayer(
+                            poles: _poles!,
+                            attackedPoleIds: _lastAttackAt.keys.toSet(),
+                            pulsePhase: _pulsePhase,
+                          ),
+                          MarkerLayer(
+                            // The endgame boundary is invisible by design:
+                            // poles it has passed just disappear (their
+                            // territory stays — TerritoryLayer gets the
+                            // unfiltered list), so players sense the
+                            // squeeze without seeing a circle.
+                            markers: _polesInPlay().map((pole) {
+                              return Marker(
+                                // Keyed by pole so zoom-time culling can't
+                                // hand this element a different pole —
+                                // unkeyed, the _PoleDot's AnimatedContainer
+                                // tweened between neighbouring poles'
+                                // colours on every reshuffle.
+                                key: ValueKey(pole.id),
+                                point: LatLng(pole.latitude, pole.longitude),
+                                width: 24,
+                                height: 24,
+                                child: Tooltip(
+                                  message: pole.label ?? pole.barcode,
+                                  child: _PoleDot(color: _pinColor(pole)),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                          // Validator-only puzzlets: rendered outside the
+                          // pole/cluster stack so they never spider with
+                          // other markers, and sized against the current
+                          // zoom so they shrink to a small star far out and
+                          // grow to full pin close in — same treatment
+                          // poles get on the author map.
+                          if (_validatorOnlyPuzzlets.isNotEmpty)
+                            MarkerLayer(markers: _validatorOnlyMarkers()),
+                          // User's own position + heading cone (only while
+                          // walking). Above the pole markers so a pole
+                          // directly under the user doesn't obscure the
+                          // marker; below attribution/compass.
+                          const LiveLocationLayer(),
+                          const _MapAttribution(),
+                          // Compass appears only when the map is rotated; tap
+                          // animates it back to north-up. The plugin picks up the
+                          // enclosing FlutterMap's controller via context — no
+                          // controller wiring on our side.
+                          const MapCompass.cupertino(hideIfRotatedNorth: true),
+                        ],
+                      ),
+                      if (_activePuzzlets.isNotEmpty)
+                        Positioned(
+                          top: 8,
+                          left: 8,
+                          right: 8,
+                          child: _InProgressCard(
+                            entry: _activePuzzlets.first,
+                            onOpen: () =>
+                                _openActivePuzzlet(_activePuzzlets.first),
+                            onGiveUp: () =>
+                                _giveUpActivePuzzlet(_activePuzzlets.first),
+                          ),
+                        ),
+                    ]),
       floatingActionButton: preEvent
           ? null
           : FloatingActionButton.extended(
@@ -825,7 +954,8 @@ class _PreEventBodyState extends State<_PreEventBody> {
   Future<void> _openBarcodeScanner() async {
     final result = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => const BarcodeScannerRoute(title: PreEventStrings.barcodeToyTitle),
+        builder: (_) =>
+            const BarcodeScannerRoute(title: PreEventStrings.barcodeToyTitle),
       ),
     );
     if (!mounted || result == null) return;
@@ -835,7 +965,8 @@ class _PreEventBodyState extends State<_PreEventBody> {
   Future<void> _openNfcScanner() async {
     final result = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) => const NfcScannerRoute(title: PreEventStrings.nfcToyTitle),
+        builder: (_) =>
+            const NfcScannerRoute(title: PreEventStrings.nfcToyTitle),
       ),
     );
     if (!mounted || result == null) return;
@@ -887,7 +1018,8 @@ class _PreEventBodyState extends State<_PreEventBody> {
               ),
             ],
             const SizedBox(height: 32),
-            Text(PreEventStrings.toysHeading, style: theme.textTheme.titleMedium),
+            Text(PreEventStrings.toysHeading,
+                style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             _ScannerTile(
               icon: Icons.qr_code_scanner,
@@ -991,15 +1123,78 @@ class _ScannerTile extends StatelessWidget {
         leading: Icon(icon),
         title: Text(label),
         subtitle: lastResult == null
-            ? Text(PreEventStrings.noScansYet,
-                style: theme.textTheme.bodySmall)
+            ? Text(PreEventStrings.noScansYet, style: theme.textTheme.bodySmall)
             : Text(
                 PreEventStrings.lastScan(lastResult!),
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(fontFeatures: const [FontFeature.tabularFigures()]),
+                style: theme.textTheme.bodySmall?.copyWith(
+                    fontFeatures: const [FontFeature.tabularFigures()]),
               ),
         trailing: const Icon(Icons.chevron_right),
         onTap: onPressed,
+      ),
+    );
+  }
+}
+
+/// The team's active ("in progress") puzzlet, pinned over the map so
+/// any member can resume it without rescanning. Tap to open; the
+/// overflow gives it up.
+class _InProgressCard extends StatelessWidget {
+  final ScanResult entry;
+  final VoidCallback onOpen;
+  final VoidCallback onGiveUp;
+
+  const _InProgressCard({
+    required this.entry,
+    required this.onOpen,
+    required this.onGiveUp,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final name = entry.pole.label ?? entry.pole.barcode;
+    final instructions = entry.activePuzzlet?.instructions ?? '';
+    return Card(
+      elevation: 3,
+      child: InkWell(
+        onTap: onOpen,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+          child: Row(
+            children: [
+              const Icon(Icons.hourglass_top, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${GameplayStrings.inProgressHeading}: $name',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (instructions.isNotEmpty)
+                      Text(
+                        instructions,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                  ],
+                ),
+              ),
+              TextButton(
+                  onPressed: onOpen, child: const Text(GameplayStrings.resume)),
+              IconButton(
+                tooltip: GameplayStrings.giveUp,
+                icon: const Icon(Icons.close),
+                onPressed: onGiveUp,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1075,9 +1270,11 @@ class _ValidatorOnlyStar extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.amber.shade700, width: size >= 20 ? 2 : 1),
+        border:
+            Border.all(color: Colors.amber.shade700, width: size >= 20 ? 2 : 1),
         boxShadow: const [
-          BoxShadow(color: Color(0x33000000), blurRadius: 3, offset: Offset(0, 1)),
+          BoxShadow(
+              color: Color(0x33000000), blurRadius: 3, offset: Offset(0, 1)),
         ],
       ),
       alignment: Alignment.center,

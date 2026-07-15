@@ -10,6 +10,7 @@ defmodule RegistrationsWeb.Router do
   alias Pow.Plug.RequireAuthenticated
   alias Pow.Plug.Session
   alias PowPersistentSession.Plug.Cookie
+  alias RegistrationsWeb.Plugs.ReloadUser
   alias RegistrationsWeb.Plugs.RequireRole
   alias RegistrationsWeb.Plugs.Settings
 
@@ -48,7 +49,7 @@ defmodule RegistrationsWeb.Router do
 
   pipeline :pow_api_protected do
     plug(RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
-    plug(RegistrationsWeb.Plugs.ReloadUser)
+    plug(ReloadUser)
   end
 
   pipeline :pow_json_api_protected do
@@ -68,7 +69,7 @@ defmodule RegistrationsWeb.Router do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
-    plug(RegistrationsWeb.Plugs.ReloadUser)
+    plug(ReloadUser)
     plug(RequireRole, role: "author")
   end
 
@@ -76,7 +77,7 @@ defmodule RegistrationsWeb.Router do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
-    plug(RegistrationsWeb.Plugs.ReloadUser)
+    plug(ReloadUser)
     plug(RequireRole, role: "validator")
   end
 
@@ -84,7 +85,7 @@ defmodule RegistrationsWeb.Router do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
     plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
-    plug(RegistrationsWeb.Plugs.ReloadUser)
+    plug(ReloadUser)
     plug(RequireRole, role: "validation_supervisor")
   end
 
@@ -270,6 +271,9 @@ defmodule RegistrationsWeb.Router do
     get("/bathrooms", BathroomController, :index)
     get("/notifications", NotificationController, :index)
     post("/notifications/read", NotificationController, :mark_read)
+    get("/active-puzzlets", ActivePuzzletController, :index)
+    post("/active-puzzlets", ActivePuzzletController, :create)
+    delete("/active-puzzlets/:puzzlet_id", ActivePuzzletController, :delete)
   end
 
   scope "/landgrab/drafts", RegistrationsWeb.Landgrab, as: :landgrab_drafts do

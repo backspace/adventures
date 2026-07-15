@@ -52,7 +52,8 @@ class LoginStrings {
   static const switchButton = 'Switch';
 
   static const invalidCredentials = 'Invalid email or password';
-  static const appleNoIdentityToken = 'Apple sign-in returned no identity token';
+  static const appleNoIdentityToken =
+      'Apple sign-in returned no identity token';
   static const appleSignInFailed = 'Apple sign-in failed';
   static String appleSignInFailedWith(String detail) =>
       'Apple sign-in failed: $detail';
@@ -65,7 +66,8 @@ class PreEventStrings {
   PreEventStrings._();
 
   static const notYetScheduled = 'Event not yet scheduled';
-  static const openingCopy = 'Gameplay opens at start time. Until then, warm up.';
+  static const openingCopy =
+      'Gameplay opens at start time. Until then, warm up.';
   static const countdownHeading = 'Event begins in';
   static const startingNow = 'starting now';
 
@@ -92,6 +94,26 @@ class GameplayStrings {
   static const menuTooltip = 'Menu';
   static const logOut = 'Log out';
   static const notificationsTooltip = 'Notifications';
+
+  // Active-puzzlet ("in progress") card + give-up flow.
+  static const inProgressHeading = 'Your team is working on';
+  static const resume = 'Open';
+  static const giveUp = 'Give up';
+  static const giveUpTitle = 'Give up this puzzlet?';
+  static String giveUpBody(String poleName) =>
+      'Your team will stop working on $poleName and can pick up a '
+      'different pole. You can come back to this one later.';
+  static const giveUpCancel = 'Keep working';
+  static const giveUpConfirm = 'Give up';
+
+  // Scan refused because the team already holds a puzzlet.
+  static const atCapacityTitle = 'Already on a puzzlet';
+  static String atCapacityBody(String current) =>
+      'Your team is already working on $current. Finish it or give it '
+      'up before starting another.';
+
+  // A rival captured the puzzlet your team was working on.
+  static const puzzletTakenTryNext = 'Try the next one';
   static String couldNotLoadPoles(String error) =>
       'Could not load poles: $error';
 }
@@ -109,8 +131,9 @@ class NotificationStrings {
 
   // Catch-up toast on the map when unread arrived while the app
   // wasn't live (cold boot, backgrounded, socket outage).
-  static String whileAway(int n) =>
-      n == 1 ? '1 notification while you were away' : '$n notifications while you were away';
+  static String whileAway(int n) => n == 1
+      ? '1 notification while you were away'
+      : '$n notifications while you were away';
   static const viewAction = 'View';
 
   // Relative timestamps for the list entries.
@@ -199,7 +222,8 @@ class PuzzletStrings {
   static const capturedStamp = 'CLAIMED';
 
   // Outcome text
-  static const correctAndLocked = 'Correct! Pole captured and now fully locked.';
+  static const correctAndLocked =
+      'Correct! Pole captured and now fully locked.';
   static const correctPoleCaptured = 'Correct! Pole captured.';
   static String incorrect(int remaining) =>
       'Incorrect. $remaining attempt(s) left.';

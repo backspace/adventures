@@ -152,3 +152,11 @@ class ScanOutsideZone extends ScanOutcome {
   final Pole pole;
   const ScanOutsideZone(this.pole);
 }
+
+/// The team is already at its active-puzzlet limit; they must finish
+/// or give up what they're on before picking up this one. Carries the
+/// puzzlet(s) they currently hold so the dialog can name them.
+class ScanAtCapacity extends ScanOutcome {
+  final List<ScanResult> active;
+  const ScanAtCapacity(this.active);
+}

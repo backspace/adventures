@@ -229,8 +229,37 @@ class LandgrabApi {
       if (code == 'outside_zone' && poleJson != null) {
         return ScanOutsideZone(Pole.fromJson(poleJson));
       }
+      if (code == 'at_capacity') {
+        final active = (e.response?.data['active_puzzlets'] as List?)
+                ?.map((p) => ScanResult.fromJson(p as Map<String, dynamic>))
+                .toList(growable: false) ??
+            const [];
+        return ScanAtCapacity(active);
+      }
       rethrow;
     }
+  }
+
+  /// The team's active puzzlets — what's shown as "in progress" and
+  /// resumed into without a rescan.
+  Future<List<ScanResult>> listActivePuzzlets() async {
+    final response = await dio.get('/landgrab/active-puzzlets');
+    return (response.data['active_puzzlets'] as List)
+        .map((p) => ScanResult.fromJson(p as Map<String, dynamic>))
+        .toList(growable: false);
+  }
+
+  /// Assign the pole's next puzzlet without a rescan ("try the next
+  /// one" after a rival captures yours). Returns the resumed payload,
+  /// or throws on at_capacity / locked-out / no-puzzlet.
+  Future<ScanResult> assignActivePuzzlet(String poleId) async {
+    final response =
+        await dio.post('/landgrab/active-puzzlets', data: {'pole_id': poleId});
+    return ScanResult.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<void> abandonActivePuzzlet(String puzzletId) async {
+    await dio.delete('/landgrab/active-puzzlets/$puzzletId');
   }
 
   Future<AttemptOutcome> submitAnswer(String puzzletId, String answer) async {

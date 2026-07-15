@@ -46,29 +46,31 @@ class _ScanRouteState extends State<ScanRoute> {
         case ScanAlreadyOwner(:final pole):
           await _showAlreadyOwnerDialog(pole);
           if (!mounted) return;
-          Navigator.of(context)
-              .pop((barcode: barcode, capturedPoleId: null));
+          Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
           return;
 
         case ScanTeamLockedOut(:final pole):
           await _showTeamLockedOutDialog(pole);
           if (!mounted) return;
-          Navigator.of(context)
-              .pop((barcode: barcode, capturedPoleId: null));
+          Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
           return;
 
         case ScanOwnCreation(:final pole):
           await _showOwnCreationDialog(pole);
           if (!mounted) return;
-          Navigator.of(context)
-              .pop((barcode: barcode, capturedPoleId: null));
+          Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
           return;
 
         case ScanOutsideZone(:final pole):
           await _showOutsideZoneDialog(pole);
           if (!mounted) return;
-          Navigator.of(context)
-              .pop((barcode: barcode, capturedPoleId: null));
+          Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
+          return;
+
+        case ScanAtCapacity(:final active):
+          await _showAtCapacityDialog(active);
+          if (!mounted) return;
+          Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
           return;
 
         case ScanFound(:final result):
@@ -76,8 +78,7 @@ class _ScanRouteState extends State<ScanRoute> {
             _showSnack(result.pole.locked
                 ? ScanStrings.poleFullyCaptured
                 : ScanStrings.noActivePuzzlet);
-            Navigator.of(context)
-                .pop((barcode: barcode, capturedPoleId: null));
+            Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
             return;
           }
 
@@ -111,7 +112,8 @@ class _ScanRouteState extends State<ScanRoute> {
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _showUnknownBarcodeDialog(String barcode) {
@@ -164,6 +166,26 @@ class _ScanRouteState extends State<ScanRoute> {
       builder: (dialogContext) => AlertDialog(
         title: const Text(ScanStrings.ownCreationTitle),
         content: Text(ScanStrings.ownCreationBody(name)),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text(ScanStrings.ok),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showAtCapacityDialog(List<ScanResult> active) {
+    final current = active.isEmpty
+        ? 'another puzzlet'
+        : (active.first.pole.label ?? active.first.pole.barcode);
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(GameplayStrings.atCapacityTitle),
+        content: Text(GameplayStrings.atCapacityBody(current)),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),

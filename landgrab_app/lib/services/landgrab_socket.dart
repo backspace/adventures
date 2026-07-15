@@ -42,6 +42,10 @@ class LandgrabSocket {
   final _updates = StreamController<PoleUpdate>.broadcast();
   final _notifications = StreamController<LandgrabNotification>.broadcast();
   final _reconnects = StreamController<void>.broadcast();
+  // Emits the affected team_id when that team's active puzzlets
+  // change (a member scanned/gave up, or a puzzlet resolved), so
+  // teammates' apps refetch and stay in sync.
+  final _teamPuzzletsChanged = StreamController<String>.broadcast();
   bool _hadFirstConnect = false;
 
   LandgrabSocket({required this.apiRoot});
@@ -49,6 +53,7 @@ class LandgrabSocket {
   Stream<PoleUpdate> get updates => _updates.stream;
   Stream<LandgrabNotification> get notifications => _notifications.stream;
   Stream<void> get reconnects => _reconnects.stream;
+  Stream<String> get teamPuzzletsChanged => _teamPuzzletsChanged.stream;
 
   Future<void> connect() async {
     final token = await UserService.getAccessToken();
@@ -87,7 +92,8 @@ class LandgrabSocket {
         try {
           _updates.add(PoleUpdate.fromJson(payload));
         } catch (e, st) {
-          _log.w('LandgrabSocket: bad pole_updated payload', error: e, stackTrace: st);
+          _log.w('LandgrabSocket: bad pole_updated payload',
+              error: e, stackTrace: st);
         }
       case 'notification_created':
         try {
@@ -101,6 +107,9 @@ class LandgrabSocket {
         // moved). Piggyback on the reconnect stream — listeners
         // respond to both with the same full resync.
         _reconnects.add(null);
+      case 'team_puzzlets_changed':
+        final teamId = payload['team_id'];
+        if (teamId is String) _teamPuzzletsChanged.add(teamId);
     }
   }
 
@@ -112,5 +121,6 @@ class LandgrabSocket {
     await _updates.close();
     await _notifications.close();
     await _reconnects.close();
+    await _teamPuzzletsChanged.close();
   }
 }

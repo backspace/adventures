@@ -25,7 +25,9 @@ void main() {
         'locked': locked,
       };
 
-  Map<String, dynamic> puzzletPayload({int remaining = 3, List<String> wrong = const []}) => {
+  Map<String, dynamic> puzzletPayload(
+          {int remaining = 3, List<String> wrong = const []}) =>
+      {
         'id': 'pz1',
         'instructions': 'Which river?',
         'difficulty': 1,
@@ -54,7 +56,10 @@ void main() {
       adapter.onGet(
         '/landgrab/poles/NOPE',
         (server) => server.reply(404, {
-          'error': {'code': 'pole_not_found', 'detail': 'No pole with that barcode.'}
+          'error': {
+            'code': 'pole_not_found',
+            'detail': 'No pole with that barcode.'
+          }
         }),
       );
 
@@ -96,6 +101,65 @@ void main() {
       );
 
       expect(() => api.scan('POLE-004'), throwsA(isA<DioException>()));
+    });
+
+    test('returns ScanAtCapacity on 409 at_capacity', () async {
+      adapter.onGet(
+        '/landgrab/poles/POLE-004',
+        (server) => server.reply(409, {
+          'error': {'code': 'at_capacity', 'detail': '...'},
+          'pole': polePayload(),
+          'active_puzzlets': [
+            {'pole': polePayload(), 'active_puzzlet': puzzletPayload()},
+          ],
+        }),
+      );
+
+      final outcome = await api.scan('POLE-004');
+      expect(outcome, isA<ScanAtCapacity>());
+      expect((outcome as ScanAtCapacity).active, hasLength(1));
+      expect(outcome.active.first.activePuzzlet?.id, 'pz1');
+    });
+  });
+
+  group('active puzzlets', () {
+    test('listActivePuzzlets parses the team\'s in-progress entries', () async {
+      adapter.onGet(
+        '/landgrab/active-puzzlets',
+        (server) => server.reply(200, {
+          'active_puzzlets': [
+            {'pole': polePayload(), 'active_puzzlet': puzzletPayload()},
+          ],
+        }),
+      );
+
+      final list = await api.listActivePuzzlets();
+      expect(list, hasLength(1));
+      expect(list.first.pole.barcode, 'POLE-004');
+      expect(list.first.activePuzzlet?.id, 'pz1');
+    });
+
+    test('assignActivePuzzlet posts the pole and parses the payload', () async {
+      adapter.onPost(
+        '/landgrab/active-puzzlets',
+        (server) => server.reply(201, {
+          'pole': polePayload(),
+          'active_puzzlet': puzzletPayload(),
+        }),
+        data: {'pole_id': 'p1'},
+      );
+
+      final result = await api.assignActivePuzzlet('p1');
+      expect(result.activePuzzlet?.id, 'pz1');
+    });
+
+    test('abandonActivePuzzlet deletes by puzzlet id', () async {
+      adapter.onDelete(
+        '/landgrab/active-puzzlets/pz1',
+        (server) => server.reply(200, {'ok': true}),
+      );
+
+      await api.abandonActivePuzzlet('pz1');
     });
   });
 
@@ -273,7 +337,8 @@ void main() {
         data: {'label': 'edited', 'notes': 'updated note'},
       );
 
-      final pole = await api.updateDraftPole('p1', label: 'edited', notes: 'updated note');
+      final pole = await api.updateDraftPole('p1',
+          label: 'edited', notes: 'updated note');
       expect(pole.label, 'edited');
       expect(pole.notes, 'updated note');
     });
@@ -297,7 +362,8 @@ void main() {
         data: {'answer': 'cat', 'difficulty': 7},
       );
 
-      final p = await api.updateDraftPuzzlet('pz1', answer: 'cat', difficulty: 7);
+      final p =
+          await api.updateDraftPuzzlet('pz1', answer: 'cat', difficulty: 7);
       expect(p.answer, 'cat');
       expect(p.difficulty, 7);
     });
