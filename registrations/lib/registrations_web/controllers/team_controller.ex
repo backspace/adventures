@@ -104,7 +104,7 @@ defmodule RegistrationsWeb.TeamController do
   end
 
   def show(conn, %{"id" => id}) do
-    team = Repo.get!(Team, id)
+    team = Team |> Repo.get!(id) |> Repo.preload(:users)
     render(conn, "show.html", team: team)
   end
 
