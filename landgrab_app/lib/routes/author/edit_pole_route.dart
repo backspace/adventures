@@ -9,6 +9,7 @@ import 'package:landgrab/widgets/accessibility_tags_field.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
 import 'package:landgrab/widgets/attachments_section.dart';
 import 'package:landgrab/widgets/location_card.dart';
+import 'package:landgrab/widgets/record_timestamps.dart';
 
 class EditPoleRoute extends StatefulWidget {
   final LandgrabApi api;
@@ -201,6 +202,10 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
           children: [
             Text('Barcode: ${original.barcode}',
                 style: Theme.of(context).textTheme.titleMedium),
+            RecordTimestamps(
+              createdAt: original.insertedAt,
+              updatedAt: original.updatedAt,
+            ),
             const SizedBox(height: 16),
             LocationCard(
               fix: fixForCard,

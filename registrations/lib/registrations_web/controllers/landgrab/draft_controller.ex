@@ -223,6 +223,7 @@ defmodule RegistrationsWeb.Landgrab.DraftController do
       status: pole.status,
       creator_id: pole.creator_id,
       inserted_at: pole.inserted_at,
+      updated_at: pole.updated_at,
       attachment_ids: Landgrab.list_pole_attachment_ids(pole.id),
       accessibility_tags: pole.accessibility_tags || [],
       accessibility_notes: pole.accessibility_notes
@@ -244,6 +245,7 @@ defmodule RegistrationsWeb.Landgrab.DraftController do
         longitude: puzzlet.longitude,
         accuracy_m: puzzlet.accuracy_m,
         inserted_at: puzzlet.inserted_at,
+        updated_at: puzzlet.updated_at,
         attachment_ids: Landgrab.list_puzzlet_attachment_ids(puzzlet.id),
         accessibility_tags: puzzlet.accessibility_tags || [],
         accessibility_notes: puzzlet.accessibility_notes,

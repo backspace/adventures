@@ -14,6 +14,7 @@ import 'package:landgrab/widgets/answer_type_field.dart';
 import 'package:landgrab/widgets/attachments_section.dart';
 import 'package:landgrab/widgets/location_card.dart';
 import 'package:landgrab/widgets/region_picker_field.dart';
+import 'package:landgrab/widgets/record_timestamps.dart';
 
 class EditPuzzletRoute extends StatefulWidget {
   final LandgrabApi api;
@@ -270,6 +271,10 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            RecordTimestamps(
+              createdAt: original.insertedAt,
+              updatedAt: original.updatedAt,
+            ),
             LocationCard(
               fix: fixForCard,
               error: _locationError,

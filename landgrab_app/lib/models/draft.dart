@@ -44,6 +44,17 @@ String draftStatusLabel(DraftStatus s) => switch (s) {
 /// payload like `"in_review"` renders as `"in review"`.
 String prettifyStatus(String raw) => raw.replaceAll('_', ' ');
 
+/// Server timestamps are UTC but serialize without a zone suffix
+/// (Ecto NaiveDateTime), so a bare `DateTime.parse` would wrongly
+/// read them as local. Append `Z` when there's no zone so they parse
+/// as UTC; callers `.toLocal()` for display.
+DateTime? _parseServerTime(dynamic value) {
+  if (value is! String || value.isEmpty) return null;
+  final withZone =
+      value.endsWith('Z') || value.contains('+') ? value : '${value}Z';
+  return DateTime.tryParse(withZone);
+}
+
 class ActiveValidationSummary {
   final String id;
   final String status;
@@ -80,6 +91,7 @@ class DraftPole {
   final DraftStatus status;
   final String? creatorId;
   final DateTime? insertedAt;
+  final DateTime? updatedAt;
   final ActiveValidationSummary? activeValidation;
   final List<String> attachmentIds;
   final List<String> accessibilityTags;
@@ -96,6 +108,7 @@ class DraftPole {
     required this.status,
     required this.creatorId,
     required this.insertedAt,
+    this.updatedAt,
     this.activeValidation,
     this.attachmentIds = const [],
     this.accessibilityTags = const [],
@@ -112,7 +125,8 @@ class DraftPole {
         accuracyM: (json['accuracy_m'] as num?)?.toDouble(),
         status: _statusFromString(json['status'] as String?),
         creatorId: json['creator_id'] as String?,
-        insertedAt: DateTime.tryParse(json['inserted_at'] as String? ?? ''),
+        insertedAt: _parseServerTime(json['inserted_at']),
+        updatedAt: _parseServerTime(json['updated_at']),
         activeValidation: json['active_validation'] == null
             ? null
             : ActiveValidationSummary.fromJson(
@@ -139,6 +153,7 @@ class DraftPole {
         status: status,
         creatorId: creatorId,
         insertedAt: insertedAt,
+        updatedAt: updatedAt,
         activeValidation: activeValidation,
         attachmentIds: attachmentIds ?? this.attachmentIds,
         accessibilityTags: accessibilityTags,
@@ -161,6 +176,7 @@ class DraftPuzzlet {
   final double? longitude;
   final double? accuracyM;
   final DateTime? insertedAt;
+  final DateTime? updatedAt;
   final ActiveValidationSummary? activeValidation;
   final List<String> attachmentIds;
   final List<String> accessibilityTags;
@@ -188,6 +204,7 @@ class DraftPuzzlet {
     required this.longitude,
     required this.accuracyM,
     required this.insertedAt,
+    this.updatedAt,
     this.activeValidation,
     this.attachmentIds = const [],
     this.accessibilityTags = const [],
@@ -214,7 +231,8 @@ class DraftPuzzlet {
         latitude: (json['latitude'] as num?)?.toDouble(),
         longitude: (json['longitude'] as num?)?.toDouble(),
         accuracyM: (json['accuracy_m'] as num?)?.toDouble(),
-        insertedAt: DateTime.tryParse(json['inserted_at'] as String? ?? ''),
+        insertedAt: _parseServerTime(json['inserted_at']),
+        updatedAt: _parseServerTime(json['updated_at']),
         activeValidation: json['active_validation'] == null
             ? null
             : ActiveValidationSummary.fromJson(
@@ -256,6 +274,7 @@ class DraftPuzzlet {
         longitude: longitude,
         accuracyM: accuracyM,
         insertedAt: insertedAt,
+        updatedAt: updatedAt,
         activeValidation: activeValidation,
         attachmentIds: attachmentIds ?? this.attachmentIds,
         accessibilityTags: accessibilityTags,
