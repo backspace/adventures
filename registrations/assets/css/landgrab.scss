@@ -23,10 +23,28 @@ body {
   overflow-x: hidden;
 }
 
+// The email title bar. Mirrors the placeholder hero's LANDGRAB
+// wordmark — Anton on bone over near-black — rather than Foundation's
+// default header on a grey bar. Anton reaches the email via a <link>
+// in the email layout head (see the note below on why it's kept out
+// of the @import path). No `.font-anton-loaded` visibility gate here:
+// email has no JS, so the Helvetica Neue fallback must render.
 .row.title {
-  background-color: $secondary-color;
+  background-color: #0a0a0a;
   text-align: center;
   margin-bottom: 1rem;
+  padding: 1rem 0;
+
+  h1 {
+    font-family: 'Anton', 'Helvetica Neue', sans-serif;
+    font-weight: 400;
+    font-size: 3rem;
+    letter-spacing: 0.02em;
+    line-height: 0.95;
+    text-transform: uppercase;
+    color: $landgrab-bone;
+    margin-bottom: 0;
+  }
 }
 
 .alert-info.success, .alert-danger.alert {

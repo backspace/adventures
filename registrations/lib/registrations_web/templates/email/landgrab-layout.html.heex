@@ -8,6 +8,16 @@
     <meta name="author" content="" />
 
     <title>LANDGRAB</title>
+    <%# Anton drives the LANDGRAB wordmark. Loaded via <link>, not the
+        shared SCSS @import, so it stays out of the compiled sheet —
+        Premailex's Floki-based inliner crashes parsing the font URL's
+        query string. Email clients that block webfonts fall back to
+        Helvetica Neue, the same graceful degradation the site hero uses. %>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Anton&display=swap"
+    />
     <link
       rel="stylesheet"
       href={
