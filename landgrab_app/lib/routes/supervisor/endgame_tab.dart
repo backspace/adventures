@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/landgrab_event.dart';
@@ -266,13 +267,7 @@ class _EndgameTabState extends State<EndgameTab> {
                       setState(() => _centre = latLng),
                 ),
                 children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                    subdomains: const ['a', 'b', 'c', 'd'],
-                    retinaMode: RetinaMode.isHighDensity(context),
-                    userAgentPackageName: 'ca.chromatin.poles',
-                  ),
+                  landgrabTileLayer(context),
                   CircleLayer(circles: [
                     CircleMarker(
                       point: _centre,

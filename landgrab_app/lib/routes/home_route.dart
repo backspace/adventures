@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 import 'package:flutter_map_compass/flutter_map_compass.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
@@ -830,13 +831,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                           },
                         ),
                         children: [
-                          TileLayer(
-                            urlTemplate:
-                                'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                            subdomains: const ['a', 'b', 'c', 'd'],
-                            retinaMode: RetinaMode.isHighDensity(context),
-                            userAgentPackageName: 'ca.chromatin.poles',
-                          ),
+                          landgrabTileLayer(context),
                           // Territory fills sit above the tiles and below
                           // the marker pins so pole icons remain readable
                           // over their own coloured cells.

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/services/location_service.dart';
+import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 
 /// What the caller gets back from [AdjustPositionRoute]: the chosen pin
 /// [position] plus the GPS [fix] that was in play (possibly reacquired
@@ -215,13 +216,7 @@ class _AdjustPositionRouteState extends State<AdjustPositionRoute> {
                     ),
                   ),
                   children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                      subdomains: const ['a', 'b', 'c', 'd'],
-                      retinaMode: RetinaMode.isHighDensity(context),
-                      userAgentPackageName: 'ca.chromatin.poles',
-                    ),
+                    landgrabTileLayer(context),
                     if (moved)
                       PolylineLayer(polylines: [
                         Polyline(

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
@@ -230,13 +231,7 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
               },
             ),
             children: [
-              TileLayer(
-                urlTemplate:
-                    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                subdomains: const ['a', 'b', 'c', 'd'],
-                retinaMode: RetinaMode.isHighDensity(context),
-                userAgentPackageName: 'ca.chromatin.poles',
-              ),
+              landgrabTileLayer(context),
               // Attachment lines: pole ↔ each puzzlet it owns. Sits
               // above the tiles and below the markers so the pins
               // stay unambiguously on top. Drawn regardless of the
