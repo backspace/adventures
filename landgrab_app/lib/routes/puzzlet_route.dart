@@ -198,6 +198,10 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
                 _ContendedBanner(count: widget.contendingTeams),
                 const SizedBox(height: 16),
               ],
+              if (widget.puzzlet.region != null) ...[
+                _RegionCard(region: widget.puzzlet.region!),
+                const SizedBox(height: 16),
+              ],
               Text(
                 widget.puzzlet.instructions,
                 style: Theme.of(context).textTheme.titleMedium,
@@ -512,6 +516,87 @@ class _WarningBanner extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Where this pole sits: the region path, plus each level's
+/// description ("getting in") and accessibility notes, gathered up the
+/// hierarchy (root → self). Neutral, informational styling.
+class _RegionCard extends StatelessWidget {
+  final PuzzletRegion region;
+  const _RegionCard({required this.region});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.place_outlined, size: 18, color: theme.hintColor),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  region.breadcrumb,
+                  style: theme.textTheme.titleSmall,
+                ),
+              ),
+            ],
+          ),
+          for (final s in region.stanzas) ...[
+            const SizedBox(height: 10),
+            // Only worth naming the level when the path has more than
+            // one; otherwise the breadcrumb above already says it.
+            if (region.stanzas.length > 1)
+              Text(s.source, style: theme.textTheme.labelMedium),
+            if (s.entryInstructions != null &&
+                s.entryInstructions!.trim().isNotEmpty)
+              _RegionDetail(
+                label: PuzzletStrings.regionEntryLabel,
+                text: s.entryInstructions!,
+              ),
+            if (s.notes != null && s.notes!.trim().isNotEmpty)
+              _RegionDetail(
+                label: PuzzletStrings.regionAccessibilityLabel,
+                text: s.notes!,
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// A labelled line inside the region card (e.g. "Getting in" / notes).
+class _RegionDetail extends StatelessWidget {
+  final String label;
+  final String text;
+  const _RegionDetail({required this.label, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(color: theme.hintColor),
+          ),
+          Text(text, style: theme.textTheme.bodyMedium),
         ],
       ),
     );

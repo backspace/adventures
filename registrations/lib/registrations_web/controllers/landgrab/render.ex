@@ -5,6 +5,8 @@ defmodule RegistrationsWeb.Landgrab.Render do
   resumed puzzlet renders identically to a freshly-scanned one.
   """
 
+  alias Registrations.Landgrab.Regions
+
   def pole_state(%{pole: pole, current_owner_team_id: owner, locked?: locked}) do
     %{
       id: pole.id,
@@ -27,8 +29,23 @@ defmodule RegistrationsWeb.Landgrab.Render do
       answer_type: puzzlet.answer_type,
       warning: puzzlet.warning,
       attempts_remaining: attempts_remaining,
-      previous_wrong_answers: previous_wrong_answers
+      previous_wrong_answers: previous_wrong_answers,
+      # Region the puzzlet sits in (if any), plus every ancestor's
+      # description/accessibility notes up the hierarchy, so the player
+      # sees how to reach the spot and what to expect. `stanzas` is
+      # ordered root → self with empty rows already dropped.
+      region: region(puzzlet)
     }
+  end
+
+  defp region(puzzlet) do
+    case Regions.puzzlet_inheritance_payload(puzzlet) do
+      %{region: nil} ->
+        nil
+
+      %{region: summary, inherited_stanzas: stanzas} ->
+        %{name: summary.name, breadcrumb: summary.breadcrumb, stanzas: stanzas}
+    end
   end
 
   @doc "Full scan/active-puzzlet payload from a `Landgrab` state map."

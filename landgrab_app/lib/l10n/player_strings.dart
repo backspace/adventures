@@ -216,6 +216,13 @@ class PuzzletStrings {
       ? 'Another team is also working on this pole — first to solve it wins.'
       : '$n other teams are also working on this pole — first to solve it wins.';
   static const previouslyTried = 'Already tried by your team:';
+
+  // Region context — the place the pole sits in, plus how to reach it
+  // and what to expect, gathered up the region hierarchy.
+  static const regionHeading = 'Where this is';
+  static const regionEntryLabel = 'Getting in';
+  static const regionAccessibilityLabel = 'Accessibility';
+
   static const answerLabel = 'Answer';
   static const answerLabelExact = 'Answer (exact match)';
   static const submitButton = 'Submit';

@@ -68,6 +68,46 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       assert body["active_puzzlet"]["attempts_remaining"] == Landgrab.max_attempts_per_puzzlet()
     end
 
+    test "active_puzzlet region carries the description/notes up the hierarchy",
+         %{conn: conn} do
+      parent =
+        insert(:poles_region,
+          name: "777 Main St",
+          entry_instructions: "Buzz suite 100 at the front door"
+        )
+
+      child =
+        insert(:poles_region,
+          name: "4th floor",
+          parent_region: parent,
+          accessibility_notes: "Elevator is at the east end"
+        )
+
+      pole = insert(:pole)
+      insert(:puzzlet, pole: pole, answer: "a", difficulty: 1, region: child)
+
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(200)
+      region = body["active_puzzlet"]["region"]
+
+      assert region["name"] == "4th floor"
+      assert region["breadcrumb"] == "777 Main St > 4th floor"
+      # Ordered root -> self; empty rows (none here) dropped.
+      assert [top, leaf] = region["stanzas"]
+      assert top["source"] == "777 Main St"
+      assert top["entry_instructions"] == "Buzz suite 100 at the front door"
+      assert leaf["source"] == "4th floor"
+      assert leaf["notes"] == "Elevator is at the east end"
+    end
+
+    test "active_puzzlet region is null when the puzzlet has no region",
+         %{conn: conn} do
+      pole = insert(:pole)
+      insert(:puzzlet, pole: pole, answer: "a", difficulty: 1)
+
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(200)
+      assert body["active_puzzlet"]["region"] == nil
+    end
+
     test "returns nil active_puzzlet when pole is locked", %{conn: conn, team: team} do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, answer: "a")

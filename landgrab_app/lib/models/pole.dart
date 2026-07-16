@@ -1,3 +1,5 @@
+import 'package:landgrab/models/region.dart';
+
 class Pole {
   final String id;
   final String barcode;
@@ -37,6 +39,11 @@ class Puzzlet {
   final String answerType;
   final String? warning;
 
+  /// The region this puzzlet sits in (with its ancestor chain), or null
+  /// if it isn't part of one. Carries the description / accessibility
+  /// notes the player should see on arrival.
+  final PuzzletRegion? region;
+
   Puzzlet({
     required this.id,
     required this.instructions,
@@ -45,6 +52,7 @@ class Puzzlet {
     required this.previousWrongAnswers,
     this.answerType = 'loose_text',
     this.warning,
+    this.region,
   });
 
   factory Puzzlet.fromJson(Map<String, dynamic> json) => Puzzlet(
@@ -58,6 +66,34 @@ class Puzzlet {
             const [],
         answerType: json['answer_type'] as String? ?? 'loose_text',
         warning: json['warning'] as String?,
+        region: json['region'] == null
+            ? null
+            : PuzzletRegion.fromJson(json['region'] as Map<String, dynamic>),
+      );
+}
+
+/// The region a scanned puzzlet belongs to, as shown to the player.
+/// [breadcrumb] is the full "root > … > self" path; [stanzas] carries
+/// each level's description / accessibility notes, ordered root → self
+/// with empty rows already dropped by the server.
+class PuzzletRegion {
+  final String name;
+  final String breadcrumb;
+  final List<InheritedStanza> stanzas;
+
+  PuzzletRegion({
+    required this.name,
+    required this.breadcrumb,
+    this.stanzas = const [],
+  });
+
+  factory PuzzletRegion.fromJson(Map<String, dynamic> json) => PuzzletRegion(
+        name: json['name'] as String,
+        breadcrumb: json['breadcrumb'] as String? ?? json['name'] as String,
+        stanzas: (json['stanzas'] as List?)
+                ?.map((e) => InheritedStanza.fromJson(e as Map<String, dynamic>))
+                .toList(growable: false) ??
+            const [],
       );
 }
 
