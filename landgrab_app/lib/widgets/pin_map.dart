@@ -173,6 +173,26 @@ class _PinMapState extends State<PinMap> {
     return InteractiveFlag.all & ~InteractiveFlag.rotate;
   }
 
+  // Beyond this the reading is "too imprecise" (see LocationFix.isAccurate)
+  // and the circle would just be a huge distracting blob, so we skip it.
+  static const double _maxAccuracyForCircle = 100;
+
+  List<CircleMarker> get _accuracyCircles => widget.pins
+      .where((p) =>
+          p.accuracyM != null &&
+          p.accuracyM! > 0 &&
+          p.accuracyM! <= _maxAccuracyForCircle)
+      .map((p) => CircleMarker(
+            point: p.position,
+            radius: p.accuracyM!,
+            // Metres on the ground, so it scales with zoom.
+            useRadiusInMeter: true,
+            color: Colors.black.withValues(alpha: 0.06),
+            borderColor: Colors.black.withValues(alpha: 0.25),
+            borderStrokeWidth: 1,
+          ))
+      .toList();
+
   @override
   Widget build(BuildContext context) {
     final map = FlutterMap(
@@ -183,6 +203,11 @@ class _PinMapState extends State<PinMap> {
       ),
       children: [
         landgrabTileLayer(context),
+        // Faint GPS-uncertainty circles under the pins (poles only, and
+        // only when accuracy is good enough to be meaningful). Neutral
+        // grey so it doesn't fight the status-coloured pins.
+        if (_accuracyCircles.isNotEmpty)
+          CircleLayer(circles: _accuracyCircles),
         if (widget.polygon != null || _stroke.isNotEmpty)
           PolygonLayer(polygons: [
             Polygon(

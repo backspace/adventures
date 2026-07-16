@@ -18,6 +18,12 @@ class MapPin {
   /// with a type glyph; bathrooms/regions keep the plain-icon look.
   final bool filled;
 
+  /// GPS uncertainty (metres) to draw as a faint circle around the pin,
+  /// so authors/validators/supervisors can see how confident the
+  /// recorded position is. Null (the default) draws no circle; only
+  /// pole pins set it.
+  final double? accuracyM;
+
   const MapPin({
     required this.position,
     required this.label,
@@ -26,6 +32,7 @@ class MapPin {
     this.onTap,
     this.size = 36,
     this.filled = false,
+    this.accuracyM,
   });
 
   /// Standard pole marker: a barcode glyph in a filled circle.
@@ -34,6 +41,7 @@ class MapPin {
     required String label,
     required Color color,
     VoidCallback? onTap,
+    double? accuracyM,
   }) =>
       MapPin(
         position: position,
@@ -43,6 +51,7 @@ class MapPin {
         onTap: onTap,
         size: _typedPinSize,
         filled: true,
+        accuracyM: accuracyM,
       );
 
   /// Standard puzzlet marker: a question mark in a filled circle.

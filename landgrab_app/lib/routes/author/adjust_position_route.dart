@@ -217,6 +217,19 @@ class _AdjustPositionRouteState extends State<AdjustPositionRoute> {
                   ),
                   children: [
                     landgrabTileLayer(context),
+                    // GPS uncertainty of the reading the pin was dragged
+                    // from — a faint circle around the GPS dot.
+                    if (_fix.accuracyM > 0 && _fix.accuracyM <= 150)
+                      CircleLayer(circles: [
+                        CircleMarker(
+                          point: _gpsPoint,
+                          radius: _fix.accuracyM,
+                          useRadiusInMeter: true,
+                          color: Colors.black.withValues(alpha: 0.06),
+                          borderColor: Colors.black.withValues(alpha: 0.25),
+                          borderStrokeWidth: 1,
+                        ),
+                      ]),
                     if (moved)
                       PolylineLayer(polylines: [
                         Polyline(

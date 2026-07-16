@@ -51,7 +51,7 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
 
     test "GET /poles/validation/mine lists assignments",
          %{conn: conn, validator: validator, author: author, supervisor: supervisor} do
-      pole = insert(:pole, creator: author, status: :draft)
+      pole = insert(:pole, creator: author, status: :draft, accuracy_m: 12.5)
 
       {:ok, _} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
 
@@ -59,6 +59,8 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
       assert length(body["pole_validations"]) == 1
       assert hd(body["pole_validations"])["status"] == "assigned"
       assert hd(body["pole_validations"])["pole"]["id"] == pole.id
+      # Accuracy is exposed so the validator map can draw the uncertainty circle.
+      assert hd(body["pole_validations"])["pole"]["accuracy_m"] == 12.5
     end
 
     test "validator can transition assigned → in_progress → submitted",

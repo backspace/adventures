@@ -240,6 +240,7 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
                 label: r.title,
                 color: statusColorFor(r.status.name),
                 onTap: r.open,
+                accuracyM: r.accuracyM,
               )
             : MapPin.puzzlet(
                 position: r.position!,
@@ -274,6 +275,7 @@ class _TodoRow {
   final ValidationStatus status;
   final int attachmentCount;
   final LatLng? position;
+  final double? accuracyM;
   final VoidCallback open;
 
   _TodoRow._({
@@ -284,6 +286,7 @@ class _TodoRow {
     required this.status,
     required this.attachmentCount,
     required this.position,
+    this.accuracyM,
     required this.open,
   });
 
@@ -300,6 +303,7 @@ class _TodoRow {
       status: v.status,
       attachmentCount: pole?.attachmentIds.length ?? 0,
       position: pole == null ? null : LatLng(pole.latitude, pole.longitude),
+      accuracyM: pole?.accuracyM,
       open: () => open(v),
     );
   }

@@ -84,6 +84,7 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
         label: p.label ?? p.barcode,
         color: _statusColor(p.status),
         onTap: editable ? () => _openPole(p) : null,
+        accuracyM: p.accuracyM,
       ));
     }
     for (final p in drafts.puzzlets) {

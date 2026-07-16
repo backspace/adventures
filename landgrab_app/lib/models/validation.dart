@@ -59,6 +59,7 @@ class ValidationPoleSummary {
   final String? label;
   final double latitude;
   final double longitude;
+  final double? accuracyM;
   final String? notes;
   final String status;
   final List<String> attachmentIds;
@@ -69,6 +70,7 @@ class ValidationPoleSummary {
     required this.label,
     required this.latitude,
     required this.longitude,
+    this.accuracyM,
     required this.notes,
     required this.status,
     this.attachmentIds = const [],
@@ -81,6 +83,7 @@ class ValidationPoleSummary {
         label: json['label'] as String?,
         latitude: (json['latitude'] as num).toDouble(),
         longitude: (json['longitude'] as num).toDouble(),
+        accuracyM: (json['accuracy_m'] as num?)?.toDouble(),
         notes: json['notes'] as String?,
         status: json['status'] as String? ?? 'draft',
         attachmentIds: _attachmentIdsFromJson(json['attachment_ids']),

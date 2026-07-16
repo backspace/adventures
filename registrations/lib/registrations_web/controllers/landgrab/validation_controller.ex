@@ -301,6 +301,7 @@ defmodule RegistrationsWeb.Landgrab.ValidationController do
       label: pole.label,
       latitude: pole.latitude,
       longitude: pole.longitude,
+      accuracy_m: pole.accuracy_m,
       notes: pole.notes,
       status: pole.status,
       attachment_ids: Registrations.Landgrab.list_pole_attachment_ids(pole.id),

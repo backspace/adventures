@@ -456,6 +456,7 @@ class _ContentTabState extends State<ContentTab> {
           label: p.label ?? p.barcode,
           color: colorFor(p.status, p.activeValidation),
           onTap: _drawArmed ? null : () => _onPolePinTap(p),
+          accuracyM: p.accuracyM,
         ),
       for (final p in _visiblePuzzlets.where((p) => p.latitude != null))
         MapPin.puzzlet(
