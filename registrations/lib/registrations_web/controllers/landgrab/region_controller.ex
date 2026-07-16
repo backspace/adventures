@@ -11,7 +11,10 @@ defmodule RegistrationsWeb.Landgrab.RegionController do
         q -> Regions.search_regions(q)
       end
 
-    json(conn, %{regions: Enum.map(regions, &render_region/1)})
+    # Include ancestors so the picker can show each region's parent
+    # breadcrumb and the edit dialog can seed its parent field — both
+    # read `ancestors`, which would otherwise be empty for list rows.
+    json(conn, %{regions: Enum.map(regions, &render_region(&1, with_ancestors: true))})
   end
 
   def show(conn, %{"id" => id}) do
