@@ -389,6 +389,7 @@ class LandgrabApi {
     String? label,
     String? notes,
     double? accuracyM,
+    double? manualOffsetM,
     List<String>? accessibilityTags,
     String? accessibilityNotes,
   }) async {
@@ -399,6 +400,7 @@ class LandgrabApi {
       if (label != null) 'label': label,
       if (notes != null) 'notes': notes,
       if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (manualOffsetM != null) 'manual_offset_m': manualOffsetM,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
     });
@@ -444,6 +446,7 @@ class LandgrabApi {
     double? latitude,
     double? longitude,
     double? accuracyM,
+    double? manualOffsetM,
     List<String>? accessibilityTags,
     String? accessibilityNotes,
   }) async {
@@ -454,6 +457,7 @@ class LandgrabApi {
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
       if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (manualOffsetM != null) 'manual_offset_m': manualOffsetM,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
     });

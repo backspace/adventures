@@ -144,7 +144,7 @@ class _PolePinSheetState extends State<_PolePinSheet> {
             const SizedBox(height: 8),
             Text(
               '${p.latitude.toStringAsFixed(5)}, ${p.longitude.toStringAsFixed(5)}'
-              '${p.accuracyM != null ? ' · ±${p.accuracyM!.toStringAsFixed(0)} m' : ''}',
+              '${p.positionMeta}',
             ),
             if (p.notes != null) ...[
               const SizedBox(height: 8),

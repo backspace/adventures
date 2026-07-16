@@ -455,7 +455,7 @@ class _PoleTile extends StatelessWidget {
       subtitle: Text(
         '${pole.barcode}\n'
         '${pole.latitude.toStringAsFixed(5)}, ${pole.longitude.toStringAsFixed(5)}'
-        '${pole.accuracyM != null ? ' · ±${pole.accuracyM!.toStringAsFixed(0)} m' : ''}',
+        '${pole.positionMeta}',
       ),
       isThreeLine: true,
       trailing: editable ? const Icon(Icons.chevron_right) : null,

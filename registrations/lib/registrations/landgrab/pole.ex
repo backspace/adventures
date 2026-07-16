@@ -17,6 +17,8 @@ defmodule Registrations.Landgrab.Pole do
     field(:longitude, :float)
     field(:notes, :string)
     field(:accuracy_m, :float)
+    # Metres the marker was manually dragged from the GPS reading (nil if untouched).
+    field(:manual_offset_m, :float)
     field(:status, Ecto.Enum, values: [:draft, :in_review, :validated, :retired], default: :draft)
     field(:accessibility_tags, {:array, :string}, default: [])
     field(:accessibility_notes, :string)
@@ -38,6 +40,7 @@ defmodule Registrations.Landgrab.Pole do
       :longitude,
       :notes,
       :accuracy_m,
+      :manual_offset_m,
       :status,
       :creator_id,
       :accessibility_tags,
@@ -47,6 +50,7 @@ defmodule Registrations.Landgrab.Pole do
     |> validate_number(:latitude, greater_than_or_equal_to: -90, less_than_or_equal_to: 90)
     |> validate_number(:longitude, greater_than_or_equal_to: -180, less_than_or_equal_to: 180)
     |> validate_number(:accuracy_m, greater_than_or_equal_to: 0)
+    |> validate_number(:manual_offset_m, greater_than_or_equal_to: 0)
     |> validate_subset(:accessibility_tags, AccessibilityTag.all())
     |> unique_constraint(:barcode)
     |> assoc_constraint(:creator)

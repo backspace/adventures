@@ -299,7 +299,7 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
                   if (_pole.label != null) Text('Label: ${_pole.label}'),
                   Text(
                     '${_pole.latitude.toStringAsFixed(5)}, ${_pole.longitude.toStringAsFixed(5)}'
-                    '${_pole.accuracyM != null ? ' · ±${_pole.accuracyM!.toStringAsFixed(0)} m' : ''}',
+                    '${_pole.positionMeta}',
                   ),
                   if (_pole.notes != null) ...[
                     const SizedBox(height: 8),

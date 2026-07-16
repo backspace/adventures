@@ -58,6 +58,7 @@ defmodule RegistrationsWeb.Landgrab.DraftController do
         "longitude",
         "notes",
         "accuracy_m",
+        "manual_offset_m",
         "accessibility_tags",
         "accessibility_notes"
       ])
@@ -92,6 +93,7 @@ defmodule RegistrationsWeb.Landgrab.DraftController do
             "longitude",
             "notes",
             "accuracy_m",
+            "manual_offset_m",
             "barcode",
             "accessibility_tags",
             "accessibility_notes"
@@ -220,6 +222,7 @@ defmodule RegistrationsWeb.Landgrab.DraftController do
       longitude: pole.longitude,
       notes: pole.notes,
       accuracy_m: pole.accuracy_m,
+      manual_offset_m: pole.manual_offset_m,
       status: pole.status,
       creator_id: pole.creator_id,
       inserted_at: pole.inserted_at,

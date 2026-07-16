@@ -2,9 +2,11 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/accessibility.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
+import 'package:landgrab/routes/author/adjust_position_route.dart';
 import 'package:landgrab/routes/author/edit_pole_route.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/services/discard_changes.dart';
@@ -27,6 +29,10 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
 
   String? _barcode;
   LocationFix? _fix;
+  // Manually-dragged marker position, when the author overrode GPS.
+  // Null means "use the raw GPS point".
+  LatLng? _adjustedPosition;
+  final _distance = const Distance();
   String? _locationError;
   bool _gettingFix = false;
   bool _submitting = false;
@@ -93,6 +99,8 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
       if (!mounted) return;
       setState(() {
         _fix = fix;
+        // A fresh reading is a fresh baseline — drop any manual override.
+        _adjustedPosition = null;
         _gettingFix = false;
       });
     } catch (e) {
@@ -104,18 +112,52 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
     }
   }
 
+  /// Distance the marker has been dragged from the current GPS fix, or
+  /// null when it's within a metre (drag jitter) or not overridden.
+  double? get _manualOffsetM {
+    final fix = _fix;
+    final adj = _adjustedPosition;
+    if (fix == null || adj == null) return null;
+    final m = _distance.as(
+        LengthUnit.Meter, LatLng(fix.latitude, fix.longitude), adj);
+    return m >= 1 ? m : null;
+  }
+
+  Future<void> _adjustOnMap() async {
+    final fix = _fix;
+    if (fix == null) return;
+    final start = _adjustedPosition ?? LatLng(fix.latitude, fix.longitude);
+    final result = await Navigator.of(context).push<AdjustPositionResult>(
+      MaterialPageRoute(
+        builder: (_) =>
+            AdjustPositionRoute(initialPosition: start, gpsFix: fix),
+      ),
+    );
+    if (result == null || !mounted) return;
+    setState(() {
+      // The editor may have reacquired GPS; adopt its fix as the new
+      // baseline and keep the override only if it's a real move.
+      _fix = result.fix;
+      final gps = LatLng(result.fix.latitude, result.fix.longitude);
+      final m = _distance.as(LengthUnit.Meter, gps, result.position);
+      _adjustedPosition = m >= 1 ? result.position : null;
+    });
+  }
+
   Future<void> _submit() async {
     final fix = _fix;
     final barcode = _barcode;
     if (fix == null || barcode == null) return;
 
     setState(() => _submitting = true);
+    final position = _adjustedPosition ?? LatLng(fix.latitude, fix.longitude);
     try {
       final created = await widget.api.createDraftPole(
         barcode: barcode,
-        latitude: fix.latitude,
-        longitude: fix.longitude,
+        latitude: position.latitude,
+        longitude: position.longitude,
         accuracyM: fix.accuracyM,
+        manualOffsetM: _manualOffsetM,
         label: _labelController.text.trim().isEmpty ? null : _labelController.text.trim(),
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
         accessibilityTags: _accessibilityTags,
@@ -231,6 +273,9 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
             error: _locationError,
             busy: _gettingFix,
             onRetry: _captureLocation,
+            adjustedPosition: _adjustedPosition,
+            manualOffsetM: _manualOffsetM,
+            onAdjust: _fix == null ? null : _adjustOnMap,
           ),
           const SizedBox(height: 16),
           TextField(

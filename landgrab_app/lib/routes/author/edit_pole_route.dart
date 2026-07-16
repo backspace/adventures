@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/accessibility.dart';
 import 'package:landgrab/models/draft.dart';
+import 'package:landgrab/routes/author/adjust_position_route.dart';
 import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/widgets/accessibility_tags_field.dart';
@@ -28,10 +30,68 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
   late List<String> _accessibilityTags;
 
   LocationFix? _newFix;
+  // Manually-dragged marker position (overrides GPS) for this session.
+  LatLng? _adjustedPosition;
+  final _distance = const Distance();
   String? _locationError;
   bool _gettingFix = false;
   bool _busy = false;
   bool _dirty = false;
+
+  /// The GPS point the offset is measured from: a fresh reacquire if
+  /// there is one, otherwise the pole's stored position (we didn't keep
+  /// the original raw reading, so an un-reacquired edit measures the
+  /// drag from where the pole currently sits).
+  LocationFix _baselineFix() =>
+      _newFix ??
+      LocationFix(
+        latitude: widget.pole.latitude,
+        longitude: widget.pole.longitude,
+        accuracyM: widget.pole.accuracyM ?? 0,
+        timestamp: DateTime.now(),
+      );
+
+  bool get _positionChanged => _newFix != null || _adjustedPosition != null;
+
+  LatLng get _effectivePosition {
+    if (_adjustedPosition != null) return _adjustedPosition!;
+    final f = _newFix;
+    if (f != null) return LatLng(f.latitude, f.longitude);
+    return LatLng(widget.pole.latitude, widget.pole.longitude);
+  }
+
+  double _recomputedOffsetM() {
+    final base = _baselineFix();
+    return _distance.as(
+        LengthUnit.Meter, LatLng(base.latitude, base.longitude), _effectivePosition);
+  }
+
+  /// Offset to show on the card: the freshly-computed value once the
+  /// position has been touched, otherwise whatever was stored.
+  double? get _displayOffsetM =>
+      _positionChanged ? _recomputedOffsetM() : widget.pole.manualOffsetM;
+
+  Future<void> _adjustOnMap() async {
+    final base = _baselineFix();
+    final result = await Navigator.of(context).push<AdjustPositionResult>(
+      MaterialPageRoute(
+        builder: (_) => AdjustPositionRoute(
+          initialPosition: _effectivePosition,
+          gpsFix: base,
+        ),
+      ),
+    );
+    if (result == null || !mounted) return;
+    setState(() {
+      _dirty = true;
+      // Adopt a reacquire done inside the editor; keep the drag only if real.
+      if (result.fix.timestamp != base.timestamp) _newFix = result.fix;
+      final refFix = _newFix ?? base;
+      final m = _distance.as(LengthUnit.Meter,
+          LatLng(refFix.latitude, refFix.longitude), result.position);
+      _adjustedPosition = m >= 1 ? result.position : null;
+    });
+  }
 
   void _markDirty() {
     if (!_dirty) setState(() => _dirty = true);
@@ -60,6 +120,8 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
       if (!mounted) return;
       setState(() {
         _newFix = fix;
+        // Fresh reading = fresh baseline; drop any manual drag.
+        _adjustedPosition = null;
         _gettingFix = false;
         _dirty = true;
       });
@@ -75,13 +137,15 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
   Future<void> _save() async {
     setState(() => _busy = true);
     try {
+      final changed = _positionChanged;
       final updated = await widget.api.updateDraftPole(
         widget.pole.id,
         label: _labelController.text.trim(),
         notes: _notesController.text.trim(),
-        latitude: _newFix?.latitude,
-        longitude: _newFix?.longitude,
-        accuracyM: _newFix?.accuracyM,
+        latitude: changed ? _effectivePosition.latitude : null,
+        longitude: changed ? _effectivePosition.longitude : null,
+        accuracyM: changed ? _baselineFix().accuracyM : null,
+        manualOffsetM: changed ? _recomputedOffsetM() : null,
         accessibilityTags: _accessibilityTags,
         accessibilityNotes: _accessibilityNotesController.text.trim(),
       );
@@ -212,6 +276,9 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
               error: _locationError,
               busy: _gettingFix,
               onRetry: _reacquireLocation,
+              adjustedPosition: _adjustedPosition,
+              manualOffsetM: _displayOffsetM,
+              onAdjust: _adjustOnMap,
             ),
             const SizedBox(height: 16),
             TextField(

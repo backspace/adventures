@@ -88,6 +88,11 @@ class DraftPole {
   final double longitude;
   final String? notes;
   final double? accuracyM;
+
+  /// Metres the marker was manually dragged away from the GPS reading
+  /// when the pole was staked (null if it was never moved). Recorded
+  /// alongside [accuracyM] so reviewers can see GPS was overridden.
+  final double? manualOffsetM;
   final DraftStatus status;
   final String? creatorId;
   final DateTime? insertedAt;
@@ -105,6 +110,7 @@ class DraftPole {
     required this.longitude,
     required this.notes,
     required this.accuracyM,
+    this.manualOffsetM,
     required this.status,
     required this.creatorId,
     required this.insertedAt,
@@ -123,6 +129,7 @@ class DraftPole {
         longitude: (json['longitude'] as num).toDouble(),
         notes: json['notes'] as String?,
         accuracyM: (json['accuracy_m'] as num?)?.toDouble(),
+        manualOffsetM: (json['manual_offset_m'] as num?)?.toDouble(),
         status: _statusFromString(json['status'] as String?),
         creatorId: json['creator_id'] as String?,
         insertedAt: _parseServerTime(json['inserted_at']),
@@ -150,6 +157,7 @@ class DraftPole {
         longitude: longitude,
         notes: notes,
         accuracyM: accuracyM,
+        manualOffsetM: manualOffsetM,
         status: status,
         creatorId: creatorId,
         insertedAt: insertedAt,
@@ -159,6 +167,24 @@ class DraftPole {
         accessibilityTags: accessibilityTags,
         accessibilityNotes: accessibilityNotes,
       );
+
+  /// Trailing " · ±N m · moved M m" suffix for a coordinate line, shown
+  /// to authors/validators/supervisors. Empty when neither is known.
+  /// "moved" is dropped below 1 m — sub-metre offsets are just drag
+  /// jitter, not a deliberate override.
+  String get positionMeta => formatPositionMeta(accuracyM, manualOffsetM);
+}
+
+/// Shared formatter for the accuracy/offset annotation on a pole's
+/// coordinate line. Returns "" when there's nothing to show, otherwise
+/// a leading " · " so it appends cleanly after "lat, lng".
+String formatPositionMeta(double? accuracyM, double? manualOffsetM) {
+  final parts = <String>[];
+  if (accuracyM != null) parts.add('±${accuracyM.toStringAsFixed(0)} m');
+  if (manualOffsetM != null && manualOffsetM >= 1) {
+    parts.add('moved ${manualOffsetM.toStringAsFixed(0)} m');
+  }
+  return parts.isEmpty ? '' : ' · ${parts.join(' · ')}';
 }
 
 class DraftPuzzlet {

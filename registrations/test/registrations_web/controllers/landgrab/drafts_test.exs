@@ -54,13 +54,34 @@ defmodule RegistrationsWeb.Landgrab.DraftsTest do
           "longitude" => -97.13,
           "label" => "Test pole",
           "notes" => "by the bus stop",
-          "accuracy_m" => 7.4
+          "accuracy_m" => 7.4,
+          "manual_offset_m" => 42.0
         })
         |> json_response(201)
 
       assert body["status"] == "draft"
       assert body["creator_id"] == user.id
       assert body["accuracy_m"] == 7.4
+      assert body["manual_offset_m"] == 42.0
+    end
+
+    test "records the manual offset when the marker was dragged", %{conn: conn, user: user} do
+      {:ok, pole} =
+        Landgrab.create_pole(%{
+          barcode: "OFFSET-#{System.unique_integer([:positive])}",
+          latitude: 49.89,
+          longitude: -97.13,
+          accuracy_m: 9.0,
+          creator_id: user.id,
+          status: "draft"
+        })
+
+      body =
+        conn
+        |> patch("/landgrab/drafts/poles/#{pole.id}", %{"manual_offset_m" => 63.5})
+        |> json_response(200)
+
+      assert body["manual_offset_m"] == 63.5
     end
 
     test "creates an unassigned draft puzzlet with location", %{conn: conn, user: user} do

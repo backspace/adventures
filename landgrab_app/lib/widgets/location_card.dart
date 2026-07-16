@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/widgets/mini_location_map.dart';
 
@@ -8,12 +9,27 @@ class LocationCard extends StatelessWidget {
   final bool busy;
   final VoidCallback onRetry;
 
+  /// When the marker has been manually dragged, the chosen position
+  /// (shown on the mini-map and coordinate line instead of the raw GPS
+  /// point) and how far it sits from GPS. Both null in the default,
+  /// GPS-only flow (puzzlets, bathrooms).
+  final LatLng? adjustedPosition;
+  final double? manualOffsetM;
+
+  /// When non-null, an "Adjust on map" button appears that opens the
+  /// full-screen draggable-pin editor. Callers wire this to push
+  /// [AdjustPositionRoute] and fold the result back into their state.
+  final VoidCallback? onAdjust;
+
   const LocationCard({
     super.key,
     required this.fix,
     required this.error,
     required this.busy,
     required this.onRetry,
+    this.adjustedPosition,
+    this.manualOffsetM,
+    this.onAdjust,
   });
 
   @override
@@ -55,18 +71,41 @@ class LocationCard extends StatelessWidget {
     final accuracy = f.accuracyM.toStringAsFixed(1);
     final ageMinutes = DateTime.now().difference(f.timestamp).inMinutes;
     final statusText = _statusText(f, accuracy, ageMinutes);
+    // Where the marker actually sits — the dragged position if there is
+    // one, otherwise the raw GPS point.
+    final lat = adjustedPosition?.latitude ?? f.latitude;
+    final lng = adjustedPosition?.longitude ?? f.longitude;
+    final moved = manualOffsetM != null && manualOffsetM! >= 1;
     return _frame(theme,
         color: usable ? null : theme.colorScheme.errorContainer,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${f.latitude.toStringAsFixed(5)}, ${f.longitude.toStringAsFixed(5)}'),
+            Text('${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}'),
             const SizedBox(height: 4),
             Text(statusText),
+            if (moved)
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  'Marker moved ${manualOffsetM!.toStringAsFixed(0)} m from GPS',
+                  style: theme.textTheme.bodySmall,
+                ),
+              ),
             const SizedBox(height: 8),
-            MiniLocationMap(latitude: f.latitude, longitude: f.longitude),
+            MiniLocationMap(latitude: lat, longitude: lng),
             const SizedBox(height: 4),
-            TextButton(onPressed: onRetry, child: const Text('Re-acquire')),
+            Row(
+              children: [
+                TextButton(onPressed: onRetry, child: const Text('Re-acquire')),
+                if (onAdjust != null)
+                  TextButton.icon(
+                    onPressed: onAdjust,
+                    icon: const Icon(Icons.edit_location_alt, size: 18),
+                    label: const Text('Adjust on map'),
+                  ),
+              ],
+            ),
           ],
         ));
   }
