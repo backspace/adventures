@@ -35,9 +35,31 @@ class _PuzzletValidationFormRouteState
 
   ValidationPuzzletSummary get _p => widget.validation.puzzlet!;
 
+  // Editable until the supervisor decides — a validator can revise or
+  // withdraw a submission right up to accept/reject.
   bool get _editable =>
-      widget.validation.status == ValidationStatus.assigned ||
-      widget.validation.status == ValidationStatus.inProgress;
+      widget.validation.status != ValidationStatus.accepted &&
+      widget.validation.status != ValidationStatus.rejected;
+
+  /// Field → suggested value from any already-submitted suggestions, so
+  /// re-opening shows the pending edits rather than a blank slate.
+  late final Map<String, String> _pending = {
+    for (final c in widget.validation.comments)
+      if (c.suggestedValue != null) c.field: c.suggestedValue!,
+  };
+
+  int get _initialDifficulty =>
+      int.tryParse(_pending['difficulty'] ?? '') ?? _p.difficulty;
+
+  List<String> get _initialTags {
+    final raw = _pending['accessibility_tags'];
+    if (raw == null) return _p.accessibilityTags;
+    try {
+      return (jsonDecode(raw) as List).cast<String>();
+    } catch (_) {
+      return _p.accessibilityTags;
+    }
+  }
 
   @override
   void initState() {
@@ -158,13 +180,14 @@ class _PuzzletValidationFormRouteState
               opacity: _editable ? 1 : 0.6,
               child: PuzzletFormFields(
                 key: _fields,
-                initialInstructions: _p.instructions,
-                initialAnswer: _p.answer,
+                initialInstructions: _pending['instructions'] ?? _p.instructions,
+                initialAnswer: _pending['answer'] ?? _p.answer,
                 initialAnswerType: answerTypeFromString(_p.answerType),
-                initialDifficulty: _p.difficulty,
-                initialWarning: _p.warning,
-                initialAccessibilityTags: _p.accessibilityTags,
-                initialAccessibilityNotes: _p.accessibilityNotes,
+                initialDifficulty: _initialDifficulty,
+                initialWarning: _pending['warning'] ?? _p.warning,
+                initialAccessibilityTags: _initialTags,
+                initialAccessibilityNotes:
+                    _pending['accessibility_notes'] ?? _p.accessibilityNotes,
                 answerTypeEditable: false,
               ),
             ),

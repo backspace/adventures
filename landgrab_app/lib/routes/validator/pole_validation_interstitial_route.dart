@@ -152,10 +152,10 @@ class _PoleValidationInterstitialRouteState
   @override
   Widget build(BuildContext context) {
     final pole = _v.pole;
+    // Only a supervisor decision locks it; a submitted/unfindable
+    // validation can still be re-scanned, re-reviewed, or re-flagged.
     final decided = _v.status == ValidationStatus.accepted ||
-        _v.status == ValidationStatus.rejected ||
-        _v.status == ValidationStatus.submitted ||
-        _v.status == ValidationStatus.unfindable;
+        _v.status == ValidationStatus.rejected;
 
     return Scaffold(
       appBar: AppBar(

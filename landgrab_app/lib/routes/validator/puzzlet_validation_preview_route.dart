@@ -40,9 +40,11 @@ class _PuzzletValidationPreviewRouteState
 
   ValidationPuzzletSummary get _p => widget.validation.puzzlet!;
 
+  // Editable until the supervisor decides — a validator can revise or
+  // withdraw a submission right up to accept/reject.
   bool get _editable =>
-      widget.validation.status == ValidationStatus.assigned ||
-      widget.validation.status == ValidationStatus.inProgress;
+      widget.validation.status != ValidationStatus.accepted &&
+      widget.validation.status != ValidationStatus.rejected;
 
   bool get _isStrict =>
       _p.answerType == 'strict_text' ||

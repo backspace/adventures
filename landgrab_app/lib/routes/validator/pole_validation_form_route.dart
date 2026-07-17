@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/widgets/pole_form_fields.dart';
@@ -45,15 +46,48 @@ class _PoleValidationFormRouteState extends State<PoleValidationFormRoute> {
 
   ValidationPoleSummary get _pole => widget.validation.pole!;
 
+  /// Field → suggested value from any already-submitted suggestions on
+  /// this validation, so re-opening shows the pending edits (not a blank
+  /// slate that would silently withdraw them on the next submit).
+  late final Map<String, String> _pending = {
+    for (final c in widget.validation.comments)
+      if (c.suggestedValue != null) c.field: c.suggestedValue!,
+  };
+
+  List<String> get _initialTags {
+    final raw = _pending['accessibility_tags'];
+    if (raw == null) return _pole.accessibilityTags;
+    try {
+      return (jsonDecode(raw) as List).cast<String>();
+    } catch (_) {
+      return _pole.accessibilityTags;
+    }
+  }
+
+  LatLng? get _initialAdjustedPosition {
+    final raw = _pending['location'];
+    if (raw == null) return null;
+    try {
+      final m = jsonDecode(raw) as Map<String, dynamic>;
+      final lat = (m['latitude'] as num?)?.toDouble();
+      final lng = (m['longitude'] as num?)?.toDouble();
+      return (lat == null || lng == null) ? null : LatLng(lat, lng);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Editable until the supervisor decides — a validator can revise or
+  // withdraw a submission right up to accept/reject.
   bool get _editable =>
-      widget.validation.status == ValidationStatus.assigned ||
-      widget.validation.status == ValidationStatus.inProgress;
+      widget.validation.status != ValidationStatus.accepted &&
+      widget.validation.status != ValidationStatus.rejected;
 
   @override
   void initState() {
     super.initState();
-    _barcode =
-        TextEditingController(text: widget.scannedBarcode ?? _pole.barcode);
+    _barcode = TextEditingController(
+        text: widget.scannedBarcode ?? _pending['barcode'] ?? _pole.barcode);
     _supervisorNote =
         TextEditingController(text: widget.validation.overallNotes ?? '');
   }
@@ -199,10 +233,12 @@ class _PoleValidationFormRouteState extends State<PoleValidationFormRoute> {
                 initialLongitude: _pole.longitude,
                 initialAccuracyM: _pole.accuracyM,
                 initialManualOffsetM: _pole.manualOffsetM,
-                initialLabel: _pole.label,
-                initialNotes: _pole.notes,
-                initialAccessibilityTags: _pole.accessibilityTags,
-                initialAccessibilityNotes: _pole.accessibilityNotes,
+                initialLabel: _pending['label'] ?? _pole.label,
+                initialNotes: _pending['notes'] ?? _pole.notes,
+                initialAccessibilityTags: _initialTags,
+                initialAccessibilityNotes:
+                    _pending['accessibility_notes'] ?? _pole.accessibilityNotes,
+                initialAdjustedPosition: _initialAdjustedPosition,
               ),
             ),
           ),

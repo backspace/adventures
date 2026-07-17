@@ -292,7 +292,9 @@ defmodule Registrations.Landgrab.Validations do
   def submit_pole_validation(%PoleValidation{} = v, validator_id, attrs) do
     cond do
       v.validator_id != validator_id -> {:error, :not_assignee}
-      v.status not in ["assigned", "in_progress"] -> {:error, :not_editable}
+      # Editable until the supervisor decides — re-submits replace the
+      # previous suggestions.
+      v.status in ["accepted", "rejected"] -> {:error, :not_editable}
       true -> do_submit_pole_validation(v, attrs)
     end
   end
@@ -346,7 +348,7 @@ defmodule Registrations.Landgrab.Validations do
   def submit_puzzlet_validation(%PuzzletValidation{} = v, validator_id, attrs) do
     cond do
       v.validator_id != validator_id -> {:error, :not_assignee}
-      v.status not in ["assigned", "in_progress"] -> {:error, :not_editable}
+      v.status in ["accepted", "rejected"] -> {:error, :not_editable}
       true -> do_submit_puzzlet_validation(v, attrs)
     end
   end
@@ -402,18 +404,32 @@ defmodule Registrations.Landgrab.Validations do
       v.validator_id != validator_id ->
         {:error, :not_assignee}
 
-      v.status not in ["assigned", "in_progress"] ->
+      v.status in ["accepted", "rejected"] ->
         {:error, :not_editable}
 
       true ->
-        changeset =
-          v
-          |> PoleValidation.changeset(%{"overall_notes" => note, "status" => "unfindable"})
-          |> Lifecycle.validate_status_transition(v.status, :validator)
+        result =
+          Repo.transaction(fn ->
+            # A pole you couldn't find has no field suggestions — drop any
+            # left over from an earlier submission this validation.
+            Repo.delete_all(
+              from(c in PoleValidationComment, where: c.pole_validation_id == ^v.id)
+            )
 
-        case Repo.update(changeset) do
+            changeset =
+              v
+              |> PoleValidation.changeset(%{"overall_notes" => note, "status" => "unfindable"})
+              |> Lifecycle.validate_status_transition(v.status, :validator)
+
+            case Repo.update(changeset) do
+              {:ok, updated} -> updated
+              {:error, changeset} -> Repo.rollback(changeset)
+            end
+          end)
+
+        case result do
           {:ok, _} -> {:ok, get_pole_validation(v.id)}
-          err -> err
+          {:error, _} = err -> err
         end
     end
   end

@@ -57,6 +57,12 @@ class PoleFormFields extends StatefulWidget {
   final List<String> initialAccessibilityTags;
   final String? initialAccessibilityNotes;
 
+  /// A position override to start with — used when re-opening a
+  /// validation whose pending suggestion already moved the marker, so
+  /// the suggestion is preserved (and re-emitted) rather than silently
+  /// dropped. Treated exactly like an in-session drag.
+  final LatLng? initialAdjustedPosition;
+
   /// Fired on any edit, so a wrapper that tracks dirty state (the author
   /// form's discard-changes guard) can mark itself dirty.
   final VoidCallback? onChanged;
@@ -71,6 +77,7 @@ class PoleFormFields extends StatefulWidget {
     this.initialNotes,
     this.initialAccessibilityTags = const [],
     this.initialAccessibilityNotes,
+    this.initialAdjustedPosition,
     this.onChanged,
   });
 
@@ -101,6 +108,7 @@ class PoleFormFieldsState extends State<PoleFormFields> {
         TextEditingController(text: widget.initialAccessibilityNotes ?? '')
           ..addListener(_notify);
     _tags = [...widget.initialAccessibilityTags];
+    _adjustedPosition = widget.initialAdjustedPosition;
   }
 
   @override

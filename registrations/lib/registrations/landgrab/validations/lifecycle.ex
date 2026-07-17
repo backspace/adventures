@@ -22,9 +22,15 @@ defmodule Registrations.Landgrab.Validations.Lifecycle do
 
   @valid_statuses ~w(assigned in_progress submitted accepted rejected unfindable)
 
+  # A validator can keep changing their mind — re-submit, switch to/from
+  # unfindable — right up until the supervisor decides. Only `accepted`
+  # and `rejected` are terminal (and absent here, so unreachable by a
+  # validator).
   @validator_transitions %{
     "assigned" => ["in_progress", "submitted", "unfindable"],
-    "in_progress" => ["submitted", "unfindable"]
+    "in_progress" => ["submitted", "unfindable"],
+    "submitted" => ["in_progress", "submitted", "unfindable"],
+    "unfindable" => ["in_progress", "submitted", "unfindable"]
   }
 
   @supervisor_transitions %{

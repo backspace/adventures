@@ -125,6 +125,43 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
       assert fields == ["label", "location"]
     end
 
+    test "a submitted validation stays editable — re-submit replaces suggestions",
+         %{conn: conn, validator: validator, author: author, supervisor: supervisor} do
+      pole = insert(:pole, creator: author, status: :draft, label: "Old")
+      {:ok, v} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+
+      path = "/landgrab/validation/pole-validations/#{v.id}/submit"
+
+      conn
+      |> post(path, %{"suggestions" => [%{"field" => "label", "suggested_value" => "First"}]})
+      |> json_response(200)
+
+      body =
+        conn
+        |> post(path, %{"suggestions" => [%{"field" => "label", "suggested_value" => "Second"}]})
+        |> json_response(200)
+
+      assert body["status"] == "submitted"
+      assert [comment] = body["comments"]
+      assert comment["suggested_value"] == "Second"
+    end
+
+    test "once the supervisor decides, the validator can no longer edit",
+         %{conn: conn, validator: validator, author: author, supervisor: supervisor} do
+      pole = insert(:pole, creator: author, status: :draft)
+      {:ok, v} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+      {:ok, submitted} =
+        Validations.submit_pole_validation(v, validator.id, %{"suggestions" => []})
+      {:ok, _} = Validations.accept_pole_validation(submitted)
+
+      body =
+        conn
+        |> post("/landgrab/validation/pole-validations/#{v.id}/submit", %{"suggestions" => []})
+        |> json_response(409)
+
+      assert body["error"]["code"] == "not_editable"
+    end
+
     test "supervisor accepting a location suggestion moves the pole",
          %{validator: validator, author: author, supervisor: supervisor} do
       pole = insert(:pole, creator: author, status: :draft, latitude: 49.0, longitude: -97.0)
