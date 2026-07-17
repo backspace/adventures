@@ -3,14 +3,15 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
-import 'package:landgrab/models/accessibility.dart';
+import 'package:landgrab/models/draft.dart' show answerTypeFromString;
 import 'package:landgrab/models/validation.dart';
-import 'package:landgrab/widgets/accessibility_tags_field.dart';
+import 'package:landgrab/widgets/puzzlet_form_fields.dart';
 
-/// The validator's puzzlet review form, in "suggest" mode — the puzzlet
-/// analogue of [PoleValidationFormRoute]. Editing a field and submitting
-/// sends it to the supervisor as a suggestion; submitting unchanged
-/// endorses the puzzlet. Never mutates the puzzlet directly.
+/// The validator's puzzlet review form, in "suggest" mode — the same
+/// content fields the author edits (via the shared [PuzzletFormFields]),
+/// pre-filled. Editing a field and submitting sends it to the supervisor
+/// as a suggestion; submitting unchanged endorses the puzzlet. Never
+/// mutates the puzzlet directly.
 class PuzzletValidationFormRoute extends StatefulWidget {
   final LandgrabApi api;
   final PuzzletValidationModel validation;
@@ -28,13 +29,8 @@ class PuzzletValidationFormRoute extends StatefulWidget {
 
 class _PuzzletValidationFormRouteState
     extends State<PuzzletValidationFormRoute> {
-  late final TextEditingController _instructions;
-  late final TextEditingController _answer;
-  late final TextEditingController _warning;
-  late final TextEditingController _accessNotes;
+  final _fields = GlobalKey<PuzzletFormFieldsState>();
   late final TextEditingController _supervisorNote;
-  late int _difficulty;
-  late List<String> _tags;
   bool _busy = false;
 
   ValidationPuzzletSummary get _p => widget.validation.puzzlet!;
@@ -46,28 +42,19 @@ class _PuzzletValidationFormRouteState
   @override
   void initState() {
     super.initState();
-    _instructions = TextEditingController(text: _p.instructions);
-    _answer = TextEditingController(text: _p.answer);
-    _warning = TextEditingController(text: _p.warning ?? '');
-    _accessNotes = TextEditingController(text: _p.accessibilityNotes ?? '');
     _supervisorNote =
         TextEditingController(text: widget.validation.overallNotes ?? '');
-    _difficulty = _p.difficulty;
-    _tags = [..._p.accessibilityTags];
   }
 
   @override
   void dispose() {
-    _instructions.dispose();
-    _answer.dispose();
-    _warning.dispose();
-    _accessNotes.dispose();
     _supervisorNote.dispose();
     super.dispose();
   }
 
   List<Map<String, dynamic>> _buildSuggestions() {
     final out = <Map<String, dynamic>>[];
+    final data = _fields.currentState!.data;
 
     void text(String field, String current, String? original) {
       final c = current.trim();
@@ -76,26 +63,28 @@ class _PuzzletValidationFormRouteState
       }
     }
 
-    // Instructions and answer shouldn't be blanked to empty via a suggestion.
-    final instructions = _instructions.text.trim();
-    if (instructions.isNotEmpty && instructions != _p.instructions.trim()) {
-      out.add({'field': 'instructions', 'suggested_value': instructions});
+    // Instructions and answer shouldn't be blanked via a suggestion.
+    if (data.instructions.isNotEmpty && data.instructions != _p.instructions.trim()) {
+      out.add({'field': 'instructions', 'suggested_value': data.instructions});
     }
-    final answer = _answer.text.trim();
-    if (answer.isNotEmpty && answer != _p.answer.trim()) {
-      out.add({'field': 'answer', 'suggested_value': answer});
+    if (data.answer.isNotEmpty && data.answer != _p.answer.trim()) {
+      out.add({'field': 'answer', 'suggested_value': data.answer});
     }
-    if (_difficulty != _p.difficulty) {
-      out.add({'field': 'difficulty', 'suggested_value': '$_difficulty'});
+    if (data.difficulty != _p.difficulty) {
+      out.add({'field': 'difficulty', 'suggested_value': '${data.difficulty}'});
     }
-    text('warning', _warning.text, _p.warning);
-    text('accessibility_notes', _accessNotes.text, _p.accessibilityNotes);
+    text('warning', data.warning, _p.warning);
+    text('accessibility_notes', data.accessibilityNotes, _p.accessibilityNotes);
 
-    final tagsChanged =
-        _tags.toSet().difference(_p.accessibilityTags.toSet()).isNotEmpty ||
-            _p.accessibilityTags.toSet().difference(_tags.toSet()).isNotEmpty;
+    final tagsChanged = data.accessibilityTags.toSet().difference(
+                _p.accessibilityTags.toSet()).isNotEmpty ||
+        _p.accessibilityTags.toSet().difference(
+                data.accessibilityTags.toSet()).isNotEmpty;
     if (tagsChanged) {
-      out.add({'field': 'accessibility_tags', 'suggested_value': jsonEncode(_tags)});
+      out.add({
+        'field': 'accessibility_tags',
+        'suggested_value': jsonEncode(data.accessibilityTags),
+      });
     }
     return out;
   }
@@ -133,7 +122,6 @@ class _PuzzletValidationFormRouteState
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Suggest edits')),
       body: ListView(
@@ -153,8 +141,7 @@ class _PuzzletValidationFormRouteState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(_editable ? Icons.rate_review : Icons.lock_outline,
-                    size: 20,
-                    color: _editable ? Colors.blue : Colors.blueGrey),
+                    size: 20, color: _editable ? Colors.blue : Colors.blueGrey),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(_editable
@@ -165,61 +152,21 @@ class _PuzzletValidationFormRouteState
             ),
           ),
           const SizedBox(height: 16),
-          TextField(
-            controller: _instructions,
-            enabled: _editable,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              labelText: 'Instructions',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _answer,
-            enabled: _editable,
-            decoration: const InputDecoration(
-              labelText: 'Answer',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('Difficulty: $_difficulty / 10', style: theme.textTheme.bodyMedium),
-          Slider(
-            value: _difficulty.toDouble(),
-            min: 1,
-            max: 10,
-            divisions: 9,
-            label: '$_difficulty',
-            onChanged:
-                _editable ? (v) => setState(() => _difficulty = v.round()) : null,
-          ),
-          const SizedBox(height: 8),
-          AccessibilityTagsField(
-            selected: _tags,
-            primary: kPuzzletPrimaryTags,
-            onChanged:
-                _editable ? (next) => setState(() => _tags = next) : (_) {},
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _accessNotes,
-            enabled: _editable,
-            maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Accessibility notes (optional)',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _warning,
-            enabled: _editable,
-            maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Warning (optional)',
-              hintText: 'Safety or content heads-up shown before the puzzle',
-              border: OutlineInputBorder(),
+          IgnorePointer(
+            ignoring: !_editable,
+            child: Opacity(
+              opacity: _editable ? 1 : 0.6,
+              child: PuzzletFormFields(
+                key: _fields,
+                initialInstructions: _p.instructions,
+                initialAnswer: _p.answer,
+                initialAnswerType: answerTypeFromString(_p.answerType),
+                initialDifficulty: _p.difficulty,
+                initialWarning: _p.warning,
+                initialAccessibilityTags: _p.accessibilityTags,
+                initialAccessibilityNotes: _p.accessibilityNotes,
+                answerTypeEditable: false,
+              ),
             ),
           ),
           const SizedBox(height: 24),

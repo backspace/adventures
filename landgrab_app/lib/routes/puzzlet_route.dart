@@ -7,6 +7,8 @@ import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
+import 'package:landgrab/widgets/region_context_card.dart';
+import 'package:landgrab/widgets/warning_banner.dart';
 
 class PuzzletRoute extends StatefulWidget {
   final LandgrabApi api;
@@ -191,7 +193,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
             children: [
               if (widget.puzzlet.warning != null &&
                   widget.puzzlet.warning!.trim().isNotEmpty) ...[
-                _WarningBanner(text: widget.puzzlet.warning!),
+                WarningBanner(text: widget.puzzlet.warning!),
                 const SizedBox(height: 16),
               ],
               if (widget.contendingTeams > 0) ...[
@@ -199,7 +201,10 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
                 const SizedBox(height: 16),
               ],
               if (widget.puzzlet.region != null) ...[
-                _RegionCard(region: widget.puzzlet.region!),
+                RegionContextCard(
+                  breadcrumb: widget.puzzlet.region!.breadcrumb,
+                  stanzas: widget.puzzlet.region!.stanzas,
+                ),
                 const SizedBox(height: 16),
               ],
               Text(
@@ -485,123 +490,6 @@ class _PreviousWrongAnswers extends StatelessWidget {
   }
 }
 
-class _WarningBanner extends StatelessWidget {
-  final String text;
-  const _WarningBanner({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.amber.shade100,
-        border: Border.all(color: Colors.amber.shade700, width: 1.5),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.warning_amber_rounded,
-              color: Colors.amber.shade900, size: 28),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: scheme.onSurface,
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
-                height: 1.3,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Where this pole sits: the region path, plus each level's
-/// description ("getting in") and accessibility notes, gathered up the
-/// hierarchy (root → self). Neutral, informational styling.
-class _RegionCard extends StatelessWidget {
-  final PuzzletRegion region;
-  const _RegionCard({required this.region});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.place_outlined, size: 18, color: theme.hintColor),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  region.breadcrumb,
-                  style: theme.textTheme.titleSmall,
-                ),
-              ),
-            ],
-          ),
-          for (final s in region.stanzas) ...[
-            const SizedBox(height: 10),
-            // Only worth naming the level when the path has more than
-            // one; otherwise the breadcrumb above already says it.
-            if (region.stanzas.length > 1)
-              Text(s.source, style: theme.textTheme.labelMedium),
-            if (s.entryInstructions != null &&
-                s.entryInstructions!.trim().isNotEmpty)
-              _RegionDetail(
-                label: PuzzletStrings.regionEntryLabel,
-                text: s.entryInstructions!,
-              ),
-            if (s.notes != null && s.notes!.trim().isNotEmpty)
-              _RegionDetail(
-                label: PuzzletStrings.regionAccessibilityLabel,
-                text: s.notes!,
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// A labelled line inside the region card (e.g. "Getting in" / notes).
-class _RegionDetail extends StatelessWidget {
-  final String label;
-  final String text;
-  const _RegionDetail({required this.label, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: theme.textTheme.labelSmall?.copyWith(color: theme.hintColor),
-          ),
-          Text(text, style: theme.textTheme.bodyMedium),
-        ],
-      ),
-    );
-  }
-}
 
 /// Heads-up that other teams are racing this pole. Neutral (not
 /// alarm) styling — it's information, not a warning.

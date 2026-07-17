@@ -3,6 +3,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/validator/puzzlet_validation_form_route.dart';
 import 'package:landgrab/routes/validator/puzzlet_validation_preview_route.dart';
+import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
 /// First stop after tapping a puzzlet. Unlike poles there's nothing to
@@ -50,8 +51,11 @@ class PuzzletValidationInterstitialRoute extends StatelessWidget {
         children: [
           if (p != null) ...[
             if (p.region != null) ...[
-              Text(p.region!.breadcrumb, style: theme.textTheme.labelMedium),
-              const SizedBox(height: 4),
+              RegionContextCard(
+                breadcrumb: p.region!.breadcrumb,
+                stanzas: p.inheritedStanzas,
+              ),
+              const SizedBox(height: 16),
             ],
             Text(p.instructions,
                 style: theme.textTheme.titleMedium,

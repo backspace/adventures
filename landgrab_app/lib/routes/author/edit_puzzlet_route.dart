@@ -1,18 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
-import 'package:landgrab/models/accessibility.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/region.dart';
-import 'package:landgrab/routes/barcode_scanner_route.dart';
-import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/services/location_service.dart';
-import 'package:landgrab/widgets/accessibility_tags_field.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
-import 'package:landgrab/widgets/answer_type_field.dart';
 import 'package:landgrab/widgets/attachments_section.dart';
 import 'package:landgrab/widgets/location_card.dart';
+import 'package:landgrab/widgets/puzzlet_form_fields.dart';
 import 'package:landgrab/widgets/region_picker_field.dart';
 import 'package:landgrab/widgets/record_timestamps.dart';
 
@@ -27,13 +23,7 @@ class EditPuzzletRoute extends StatefulWidget {
 }
 
 class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
-  late final TextEditingController _instructionsController;
-  late final TextEditingController _answerController;
-  late final TextEditingController _accessibilityNotesController;
-  late final TextEditingController _warningController;
-  late List<String> _accessibilityTags;
-  late int _difficulty;
-  late AnswerType _answerType;
+  final _fields = GlobalKey<PuzzletFormFieldsState>();
   late bool _validatorOnly;
   Region? _region;
   bool _regionChanged = false;
@@ -51,20 +41,6 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
   @override
   void initState() {
     super.initState();
-    _instructionsController =
-        TextEditingController(text: widget.puzzlet.instructions)
-          ..addListener(_markDirty);
-    _answerController = TextEditingController(text: widget.puzzlet.answer)
-      ..addListener(_markDirty);
-    _accessibilityNotesController =
-        TextEditingController(text: widget.puzzlet.accessibilityNotes ?? '')
-          ..addListener(_markDirty);
-    _warningController =
-        TextEditingController(text: widget.puzzlet.warning ?? '')
-          ..addListener(_markDirty);
-    _accessibilityTags = [...widget.puzzlet.accessibilityTags];
-    _difficulty = widget.puzzlet.difficulty;
-    _answerType = widget.puzzlet.answerType;
     _validatorOnly = widget.puzzlet.validatorOnly;
 
     if (widget.puzzlet.regionId != null) {
@@ -104,52 +80,24 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
     }
   }
 
-  Future<void> _scanAnswer() async {
-    final scanned = await Navigator.of(context).push<String>(
-      MaterialPageRoute(
-        builder: (_) =>
-            const BarcodeScannerRoute(title: 'Scan answer barcode'),
-      ),
-    );
-    if (scanned == null || scanned.isEmpty) return;
-    setState(() {
-      _answerController.text = scanned;
-      _answerType = AnswerType.barcode;
-      _dirty = true;
-    });
-  }
-
-  Future<void> _scanNfcAnswer() async {
-    final scanned = await Navigator.of(context).push<String>(
-      MaterialPageRoute(
-        builder: (_) => const NfcScannerRoute(title: 'Scan answer NFC tag'),
-      ),
-    );
-    if (scanned == null || scanned.isEmpty) return;
-    setState(() {
-      _answerController.text = scanned;
-      _answerType = AnswerType.nfc;
-      _dirty = true;
-    });
-  }
-
   Future<void> _save() async {
     setState(() => _busy = true);
     try {
+      final data = _fields.currentState!.data;
       final updated = await widget.api.updateDraftPuzzlet(
         widget.puzzlet.id,
-        instructions: _instructionsController.text.trim(),
-        answer: _answerController.text.trim(),
-        answerType: _answerType,
-        difficulty: _difficulty,
+        instructions: data.instructions,
+        answer: data.answer,
+        answerType: data.answerType,
+        difficulty: data.difficulty,
         latitude: _newFix?.latitude,
         longitude: _newFix?.longitude,
         accuracyM: _newFix?.accuracyM,
-        accessibilityTags: _accessibilityTags,
-        accessibilityNotes: _accessibilityNotesController.text.trim(),
+        accessibilityTags: data.accessibilityTags,
+        accessibilityNotes: data.accessibilityNotes,
         regionId: _regionChanged ? _region?.id : null,
         clearRegion: _regionChanged && _region == null,
-        warning: _warningController.text.trim(),
+        warning: data.warning,
         validatorOnly: _validatorOnly,
       );
       if (!mounted) return;
@@ -224,14 +172,6 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
         .showSnackBar(SnackBar(content: Text('Save failed: $detail')));
   }
 
-  @override
-  void dispose() {
-    _instructionsController.dispose();
-    _answerController.dispose();
-    _accessibilityNotesController.dispose();
-    _warningController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -291,28 +231,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
                 _dirty = true;
               }),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _instructionsController,
-              minLines: 3,
-              maxLines: 6,
-              decoration: const InputDecoration(
-                labelText: 'Instructions',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _warningController,
-              maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Warning (optional)',
-                hintText: 'Shown prominently to players. Use for safety / practical alerts.',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.warning_amber_outlined),
-              ),
-            ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             // Validator-only flag. When set, the puzzlet is invisible
             // to players — it shows only on the author + validator
             // maps, tagged with a star, and doesn't count toward
@@ -332,75 +251,24 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
               secondary: const Icon(Icons.star_outline),
             ),
             const SizedBox(height: 12),
-            AnswerTypeField(
-              value: _answerType,
-              onChanged: (t) => setState(() {
-                _answerType = t;
-                _dirty = true;
-              }),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _answerController,
-              decoration: InputDecoration(
-                labelText: 'Answer',
-                border: const OutlineInputBorder(),
-                suffixIcon: switch (_answerType) {
-                  AnswerType.barcode => IconButton(
-                      tooltip: 'Scan barcode as answer',
-                      icon: const Icon(Icons.qr_code_scanner),
-                      onPressed: _scanAnswer,
-                    ),
-                  AnswerType.nfc => IconButton(
-                      tooltip: 'Scan NFC tag as answer',
-                      icon: const Icon(Icons.contactless),
-                      onPressed: _scanNfcAnswer,
-                    ),
-                  _ => null,
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text('Difficulty: $_difficulty / 10'),
-            Slider(
-              value: _difficulty.toDouble(),
-              min: 1,
-              max: 10,
-              divisions: 9,
-              label: '$_difficulty',
-              onChanged: (v) => setState(() {
-                _difficulty = v.round();
-                _dirty = true;
-              }),
-            ),
-            if (widget.puzzlet.inheritedStanzas.isNotEmpty ||
-                widget.puzzlet.inheritedTags.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              _InheritedAccessibilitySection(
-                tags: widget.puzzlet.inheritedTags,
-                stanzas: widget.puzzlet.inheritedStanzas,
-              ),
-            ],
-            const SizedBox(height: 16),
-            AccessibilityTagsField(
-              selected: _accessibilityTags,
-              primary: kPuzzletPrimaryTags,
-              onChanged: (next) {
-                setState(() {
-                  _accessibilityTags = next;
-                  _dirty = true;
-                });
-              },
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _accessibilityNotesController,
-              maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Accessibility notes (optional)',
-                hintText: 'Anything tags don\'t cover',
-                border: OutlineInputBorder(),
-              ),
+            PuzzletFormFields(
+              key: _fields,
+              initialInstructions: original.instructions,
+              initialAnswer: original.answer,
+              initialAnswerType: original.answerType,
+              initialDifficulty: original.difficulty,
+              initialWarning: original.warning,
+              initialAccessibilityTags: original.accessibilityTags,
+              initialAccessibilityNotes: original.accessibilityNotes,
+              onChanged: _markDirty,
+              accessibilityInheritedSection:
+                  (original.inheritedStanzas.isNotEmpty ||
+                          original.inheritedTags.isNotEmpty)
+                      ? _InheritedAccessibilitySection(
+                          tags: original.inheritedTags,
+                          stanzas: original.inheritedStanzas,
+                        )
+                      : null,
             ),
             const SizedBox(height: 16),
             AttachmentsSection(

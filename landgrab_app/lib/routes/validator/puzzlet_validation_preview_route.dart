@@ -2,11 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
-import 'package:landgrab/models/region.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/routes/validator/puzzlet_validation_form_route.dart';
+import 'package:landgrab/widgets/region_context_card.dart';
+import 'package:landgrab/widgets/warning_banner.dart';
 
 /// Lets the validator work a puzzlet the way a player would after
 /// scanning a pole — warning, region context, instructions, and an
@@ -138,15 +139,11 @@ class _PuzzletValidationPreviewRouteState
         padding: const EdgeInsets.all(20),
         children: [
           if (_p.warning != null && _p.warning!.trim().isNotEmpty) ...[
-            _Banner(
-              color: Colors.amber.shade800,
-              icon: Icons.warning_amber_rounded,
-              text: _p.warning!,
-            ),
+            WarningBanner(text: _p.warning!),
             const SizedBox(height: 16),
           ],
           if (_p.region != null) ...[
-            _RegionCard(
+            RegionContextCard(
               breadcrumb: _p.region!.breadcrumb,
               stanzas: _p.inheritedStanzas,
             ),
@@ -276,52 +273,6 @@ class _PuzzletValidationPreviewRouteState
               'This validation is ${validationStatusLabel(widget.validation.status)}.',
               style: theme.textTheme.bodySmall,
             ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// Region context, matching what a player sees.
-class _RegionCard extends StatelessWidget {
-  final String breadcrumb;
-  final List<InheritedStanza> stanzas;
-
-  const _RegionCard({required this.breadcrumb, required this.stanzas});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.place_outlined, size: 18, color: theme.hintColor),
-              const SizedBox(width: 6),
-              Expanded(
-                  child: Text(breadcrumb, style: theme.textTheme.titleSmall)),
-            ],
-          ),
-          for (final s in stanzas) ...[
-            const SizedBox(height: 8),
-            if (stanzas.length > 1)
-              Text(s.source, style: theme.textTheme.labelMedium),
-            if (s.entryInstructions != null &&
-                s.entryInstructions!.trim().isNotEmpty)
-              Text('Getting in: ${s.entryInstructions}',
-                  style: theme.textTheme.bodyMedium),
-            if (s.notes != null && s.notes!.trim().isNotEmpty)
-              Text('Accessibility: ${s.notes}',
-                  style: theme.textTheme.bodyMedium),
           ],
         ],
       ),

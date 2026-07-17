@@ -2,27 +2,20 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
-import 'package:landgrab/models/accessibility.dart';
 import 'package:landgrab/models/validation.dart';
-import 'package:landgrab/routes/author/adjust_position_route.dart';
-import 'package:landgrab/services/location_service.dart';
-import 'package:landgrab/widgets/accessibility_tags_field.dart';
-import 'package:landgrab/widgets/location_card.dart';
-import 'package:landgrab/widgets/mini_location_map.dart';
+import 'package:landgrab/widgets/pole_form_fields.dart';
 
-/// The validator's pole review form: the author's fields, pre-filled, in
-/// "suggest" mode. Editing a field and submitting sends that change to
-/// the supervisor as a suggestion; submitting unchanged endorses the
-/// pole as-is. It never mutates the pole directly.
+/// The validator's pole review form: the same fields the author edits
+/// (via the shared [PoleFormFields]), pre-filled, in "suggest" mode.
+/// Editing a field and submitting sends that change to the supervisor as
+/// a suggestion; submitting unchanged endorses the pole. Never mutates
+/// the pole directly.
 ///
-/// Reached from the interstitial. Flags tune the header:
-///  * [verified] — the validator scanned this pole and it matched.
-///  * [differentPole] — they scanned a *different* assigned pole than the
-///    one they tapped; warn them.
-///  * [scannedBarcode] — an unknown scan; pre-fill it as a barcode
-///    correction so the diff proposes it.
+/// Flags tune the header:
+///  * [verified] — scanned this pole and it matched.
+///  * [differentPole] — scanned a *different* assigned pole than tapped.
+///  * [scannedBarcode] — an unknown scan; pre-fill it as a barcode fix.
 class PoleValidationFormRoute extends StatefulWidget {
   final LandgrabApi api;
   final PoleValidationModel validation;
@@ -45,19 +38,9 @@ class PoleValidationFormRoute extends StatefulWidget {
 }
 
 class _PoleValidationFormRouteState extends State<PoleValidationFormRoute> {
+  final _poleFields = GlobalKey<PoleFormFieldsState>();
   late final TextEditingController _barcode;
-  late final TextEditingController _label;
-  late final TextEditingController _notes;
-  late final TextEditingController _accessNotes;
   late final TextEditingController _supervisorNote;
-  late List<String> _tags;
-
-  // Position editing (mirrors the author edit form): a reacquired fix
-  // and/or a manually-dragged position override the stored point.
-  LocationFix? _newFix;
-  LatLng? _adjustedPosition;
-  final _distance = const Distance();
-
   bool _busy = false;
 
   ValidationPoleSummary get _pole => widget.validation.pole!;
@@ -71,93 +54,20 @@ class _PoleValidationFormRouteState extends State<PoleValidationFormRoute> {
     super.initState();
     _barcode =
         TextEditingController(text: widget.scannedBarcode ?? _pole.barcode);
-    _label = TextEditingController(text: _pole.label ?? '');
-    _notes = TextEditingController(text: _pole.notes ?? '');
-    _accessNotes = TextEditingController(text: _pole.accessibilityNotes ?? '');
     _supervisorNote =
         TextEditingController(text: widget.validation.overallNotes ?? '');
-    _tags = [..._pole.accessibilityTags];
   }
 
   @override
   void dispose() {
     _barcode.dispose();
-    _label.dispose();
-    _notes.dispose();
-    _accessNotes.dispose();
     _supervisorNote.dispose();
     super.dispose();
   }
 
-  // ── Position helpers (baseline = stored pole point unless reacquired) ─
-
-  LocationFix _baselineFix() =>
-      _newFix ??
-      LocationFix(
-        latitude: _pole.latitude,
-        longitude: _pole.longitude,
-        accuracyM: _pole.accuracyM ?? 0,
-        timestamp: DateTime.now(),
-      );
-
-  bool get _positionChanged => _newFix != null || _adjustedPosition != null;
-
-  LatLng get _effectivePosition {
-    if (_adjustedPosition != null) return _adjustedPosition!;
-    final f = _newFix;
-    if (f != null) return LatLng(f.latitude, f.longitude);
-    return LatLng(_pole.latitude, _pole.longitude);
-  }
-
-  double _recomputedOffsetM() {
-    final base = _baselineFix();
-    return _distance.as(LengthUnit.Meter,
-        LatLng(base.latitude, base.longitude), _effectivePosition);
-  }
-
-  double? get _displayOffsetM =>
-      _positionChanged ? _recomputedOffsetM() : _pole.manualOffsetM;
-
-  Future<void> _reacquire() async {
-    setState(() => _busy = true);
-    try {
-      final fix = await LocationService.getCurrent();
-      if (!mounted) return;
-      setState(() {
-        _newFix = fix;
-        _adjustedPosition = null;
-        _busy = false;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _busy = false);
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
-    }
-  }
-
-  Future<void> _adjustOnMap() async {
-    final base = _baselineFix();
-    final result = await Navigator.of(context).push<AdjustPositionResult>(
-      MaterialPageRoute(
-        builder: (_) =>
-            AdjustPositionRoute(initialPosition: _effectivePosition, gpsFix: base),
-      ),
-    );
-    if (result == null || !mounted) return;
-    setState(() {
-      if (result.fix.timestamp != base.timestamp) _newFix = result.fix;
-      final ref = _newFix ?? base;
-      final m = _distance.as(LengthUnit.Meter,
-          LatLng(ref.latitude, ref.longitude), result.position);
-      _adjustedPosition = m >= 1 ? result.position : null;
-    });
-  }
-
-  // ── Submit ────────────────────────────────────────────────────────
-
   List<Map<String, dynamic>> _buildSuggestions() {
     final out = <Map<String, dynamic>>[];
+    final data = _poleFields.currentState!.data;
 
     void text(String field, String current, String? original) {
       final c = current.trim();
@@ -166,36 +76,37 @@ class _PoleValidationFormRouteState extends State<PoleValidationFormRoute> {
       }
     }
 
-    // A validator shouldn't clear the barcode to empty; only suggest a
-    // non-empty change.
+    // A validator shouldn't clear the barcode; only suggest a non-empty change.
     final barcode = _barcode.text.trim();
     if (barcode.isNotEmpty && barcode != _pole.barcode) {
       out.add({'field': 'barcode', 'suggested_value': barcode});
     }
-    text('label', _label.text, _pole.label);
-    text('notes', _notes.text, _pole.notes);
-    text('accessibility_notes', _accessNotes.text, _pole.accessibilityNotes);
+    text('label', data.label, _pole.label);
+    text('notes', data.notes, _pole.notes);
+    text('accessibility_notes', data.accessibilityNotes, _pole.accessibilityNotes);
 
-    final tagsChanged =
-        _tags.toSet().difference(_pole.accessibilityTags.toSet()).isNotEmpty ||
-            _pole.accessibilityTags.toSet().difference(_tags.toSet()).isNotEmpty;
+    final tagsChanged = data.accessibilityTags.toSet().difference(
+                _pole.accessibilityTags.toSet()).isNotEmpty ||
+        _pole.accessibilityTags.toSet().difference(
+                data.accessibilityTags.toSet()).isNotEmpty;
     if (tagsChanged) {
-      out.add({'field': 'accessibility_tags', 'suggested_value': jsonEncode(_tags)});
-    }
-
-    if (_positionChanged) {
-      final p = _effectivePosition;
       out.add({
-        'field': 'location',
-        'suggested_value': jsonEncode({
-          'latitude': p.latitude,
-          'longitude': p.longitude,
-          'accuracy_m': _baselineFix().accuracyM,
-          'manual_offset_m': _recomputedOffsetM(),
-        }),
+        'field': 'accessibility_tags',
+        'suggested_value': jsonEncode(data.accessibilityTags),
       });
     }
 
+    if (data.positionChanged) {
+      out.add({
+        'field': 'location',
+        'suggested_value': jsonEncode({
+          'latitude': data.position.latitude,
+          'longitude': data.position.longitude,
+          'accuracy_m': data.accuracyM,
+          'manual_offset_m': data.manualOffsetM,
+        }),
+      });
+    }
     return out;
   }
 
@@ -233,28 +144,20 @@ class _PoleValidationFormRouteState extends State<PoleValidationFormRoute> {
 
   @override
   Widget build(BuildContext context) {
-    final fixForCard = _newFix ??
-        LocationFix(
-          latitude: _pole.latitude,
-          longitude: _pole.longitude,
-          accuracyM: _pole.accuracyM ?? 0,
-          timestamp: DateTime.now(),
-        );
-
     return Scaffold(
       appBar: AppBar(title: Text(_pole.label ?? _pole.barcode)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           if (widget.differentPole)
-            _Banner(
+            const _Banner(
               color: Colors.orange,
               icon: Icons.swap_horiz,
               text:
                   "Heads up: this isn't the pole you tapped. You scanned a different one assigned to you.",
             ),
           if (widget.scannedBarcode != null)
-            _Banner(
+            const _Banner(
               color: Colors.orange,
               icon: Icons.qr_code_scanner,
               text:
@@ -284,59 +187,23 @@ class _PoleValidationFormRouteState extends State<PoleValidationFormRoute> {
               border: OutlineInputBorder(),
             ),
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _label,
-            enabled: _editable,
-            decoration: const InputDecoration(
-              labelText: 'Label (optional)',
-              border: OutlineInputBorder(),
-            ),
-          ),
           const SizedBox(height: 16),
-          Text('Location', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          if (_editable)
-            LocationCard(
-              fix: fixForCard,
-              error: null,
-              busy: _busy,
-              onRetry: _reacquire,
-              adjustedPosition: _adjustedPosition,
-              manualOffsetM: _displayOffsetM,
-              onAdjust: _adjustOnMap,
-            )
-          else
-            MiniLocationMap(
-              latitude: _pole.latitude,
-              longitude: _pole.longitude,
-            ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _notes,
-            enabled: _editable,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Notes',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 16),
-          AccessibilityTagsField(
-            selected: _tags,
-            primary: kPolePrimaryTags,
-            onChanged: _editable
-                ? (next) => setState(() => _tags = next)
-                : (_) {},
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _accessNotes,
-            enabled: _editable,
-            maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: 'Accessibility notes (optional)',
-              border: OutlineInputBorder(),
+          // Ignore edits when the validation is read-only.
+          IgnorePointer(
+            ignoring: !_editable,
+            child: Opacity(
+              opacity: _editable ? 1 : 0.6,
+              child: PoleFormFields(
+                key: _poleFields,
+                initialLatitude: _pole.latitude,
+                initialLongitude: _pole.longitude,
+                initialAccuracyM: _pole.accuracyM,
+                initialManualOffsetM: _pole.manualOffsetM,
+                initialLabel: _pole.label,
+                initialNotes: _pole.notes,
+                initialAccessibilityTags: _pole.accessibilityTags,
+                initialAccessibilityNotes: _pole.accessibilityNotes,
+              ),
             ),
           ),
           const SizedBox(height: 24),
