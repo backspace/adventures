@@ -25,11 +25,15 @@ Color statusColorFor(String status) => switch (status) {
       'in review' || 'in_review' => Colors.blue.shade700,
       'validated' => Colors.green.shade700,
       'retired' => Colors.grey.shade700,
-      'assigned' => Colors.blueGrey.shade700,
+      // Not-yet-reviewed: a distinct teal so it doesn't read as grey and
+      // get confused with the grey "unfindable".
+      'assigned' => Colors.teal.shade600,
       'in progress' || 'in_progress' => Colors.amber.shade800,
       'submitted' => Colors.purple.shade700,
       'accepted' => Colors.green.shade700,
       'rejected' => Colors.red.shade700,
+      // A validator couldn't locate the pole — its own grey.
+      'unfindable' => Colors.grey.shade500,
       'pending' => Colors.orange.shade700,
       _ => Colors.grey.shade700,
     };

@@ -254,9 +254,34 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
               ))
         .toList();
 
+    // Only surface statuses/kinds actually on the map, so the legend
+    // stays short and honest.
+    final statuses = located.map((r) => r.status).toSet().toList()
+      ..sort((a, b) {
+        final rank = _actionRank(a).compareTo(_actionRank(b));
+        return rank != 0 ? rank : a.name.compareTo(b.name);
+      });
+
     return Column(
       children: [
-        Expanded(child: MapWithBathrooms(api: widget.api, pins: pins)),
+        Expanded(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: MapWithBathrooms(api: widget.api, pins: pins),
+              ),
+              Positioned(
+                top: 8,
+                left: 8,
+                child: _MapLegend(
+                  statuses: statuses,
+                  hasPoles: located.any((r) => r.isPole),
+                  hasPuzzlets: located.any((r) => !r.isPole),
+                ),
+              ),
+            ],
+          ),
+        ),
         if (orphanCount > 0)
           Padding(
             padding: const EdgeInsets.all(12),
@@ -331,4 +356,88 @@ class _TodoRow {
       open: () => open(v),
     );
   }
+}
+
+/// Compact key for the validator map: the review-status colours in play,
+/// plus the pole/puzzlet icon shapes. Sits over the map's top-left.
+class _MapLegend extends StatelessWidget {
+  final List<ValidationStatus> statuses;
+  final bool hasPoles;
+  final bool hasPuzzlets;
+
+  const _MapLegend({
+    required this.statuses,
+    required this.hasPoles,
+    required this.hasPuzzlets,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final labelStyle = theme.textTheme.bodySmall;
+    return Card(
+      margin: EdgeInsets.zero,
+      color: theme.colorScheme.surface.withValues(alpha: 0.92),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Status',
+                style: theme.textTheme.labelSmall
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            for (final s in statuses)
+              _row(
+                _dot(statusColorFor(s.name)),
+                validationStatusLabel(s),
+                labelStyle,
+              ),
+            if (hasPoles || hasPuzzlets) ...[
+              const Divider(height: 12),
+              if (hasPoles)
+                _row(_glyph(Icons.barcode_reader), 'Pole', labelStyle),
+              if (hasPuzzlets)
+                _row(_glyph(Icons.question_mark), 'Puzzlet', labelStyle),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _row(Widget marker, String label, TextStyle? style) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            marker,
+            const SizedBox(width: 6),
+            Text(label, style: style),
+          ],
+        ),
+      );
+
+  Widget _dot(Color color) => Container(
+        width: 14,
+        height: 14,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 1.5),
+        ),
+      );
+
+  // Mirrors the filled-badge pins so the shapes read the same.
+  Widget _glyph(IconData icon) => Container(
+        width: 16,
+        height: 16,
+        decoration: BoxDecoration(
+          color: Colors.blueGrey.shade400,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 1.5),
+        ),
+        child: Icon(icon, size: 9, color: Colors.white),
+      );
 }
