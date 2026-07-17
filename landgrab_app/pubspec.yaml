@@ -52,6 +52,27 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   http_mock_adapter: ^0.6.1
   flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.4
+
+# Cold-start splash. Dark so there's no white flash before the (dark-themed)
+# app renders its first frame. The background matches the banner's own
+# #0A0A0A so the centred image has no visible edge. Source is a cropped
+# landgrab/meta.png — top/bottom trimmed to dot-free rows so nothing clips.
+# Regenerate after editing: dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#0A0A0A"
+  image: assets/splash/splash.png
+  # Scale the banner to the screen instead of centring it at native size, so
+  # it reaches the left/right edges (letterboxed top/bottom in the same black,
+  # so no visible frame). iOS-only: Android's launch bitmap has no aspect-fit
+  # gravity (fill_* distorts), and Android 12+ shows the launcher icon via the
+  # system splash regardless — so Android keeps the centred default.
+  ios_content_mode: scaleAspectFit
+  # Android 12+ uses the system splash: the launcher icon centred on the
+  # window background. Set just the colour and let it show the LANDGRAB
+  # adaptive icon rather than squeezing the wide banner into the icon slot.
+  android_12:
+    color: "#0A0A0A"
 
 flutter_launcher_icons:
   image_path: "assets/icon/icon.png"
