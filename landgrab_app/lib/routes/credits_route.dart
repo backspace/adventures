@@ -21,7 +21,7 @@ const _acknowledgementsAsset = 'assets/credits/acknowledgements.txt';
 const _soundtrackHeading = 'Soundtrack';
 const _soundtrackAsset = 'assets/credits/soundtrack.txt';
 
-const _softwareHeading = 'Software';
+const _softwareHeading = 'Computering';
 const _softwareAsset = 'assets/credits/software.txt';
 const _softwareLicensesButton = 'Open-source licenses';
 
