@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
@@ -8,9 +9,10 @@ import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/attachments_badge.dart';
 import 'package:landgrab/widgets/map_pin.dart';
 import 'package:landgrab/widgets/map_with_bathrooms.dart';
+import 'package:landgrab/widgets/markdown_view.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
-enum _ListOrMap { list, map }
+enum _ValidatorView { list, map, criteria }
 
 enum _Kind { all, poles, puzzlets }
 
@@ -33,8 +35,11 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
 
   MyValidations? _validations;
   String? _error;
-  _ListOrMap _view = _ListOrMap.list;
+  _ValidatorView _view = _ValidatorView.list;
   _Kind _kind = _Kind.all;
+
+  // Cached so the FutureBuilder doesn't reload the asset on every rebuild.
+  Future<String>? _criteria;
 
   @override
   void initState() {
@@ -46,12 +51,28 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
   Future<void> _loadPref() async {
     final isMap = await UiPreferences.getMapPreferred(_prefKey);
     if (!mounted) return;
-    setState(() => _view = isMap ? _ListOrMap.map : _ListOrMap.list);
+    setState(() => _view = isMap ? _ValidatorView.map : _ValidatorView.list);
   }
 
-  void _setView(_ListOrMap v) {
+  void _setView(_ValidatorView v) {
     setState(() => _view = v);
-    UiPreferences.setMapPreferred(_prefKey, v == _ListOrMap.map);
+    // Criteria is a transient reference view — don't make it the default
+    // the validator lands on next time; only list/map are remembered.
+    if (v != _ValidatorView.criteria) {
+      UiPreferences.setMapPreferred(_prefKey, v == _ValidatorView.map);
+    }
+  }
+
+  Future<String> _loadCriteria() async {
+    const fallback =
+        '# Validation criteria\n\nAsk your supervisor what to look for.';
+    try {
+      final s =
+          (await rootBundle.loadString('assets/validation/criteria.md')).trim();
+      return s.isEmpty ? fallback : s;
+    } catch (_) {
+      return fallback;
+    }
   }
 
   Future<void> _load() async {
@@ -140,43 +161,70 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: SegmentedButton<_ListOrMap>(
+          child: SegmentedButton<_ValidatorView>(
+            showSelectedIcon: false,
             segments: const [
               ButtonSegment(
-                  value: _ListOrMap.list,
+                  value: _ValidatorView.list,
                   label: Text('List'),
                   icon: Icon(Icons.list)),
               ButtonSegment(
-                  value: _ListOrMap.map,
+                  value: _ValidatorView.map,
                   label: Text('Map'),
                   icon: Icon(Icons.map)),
+              ButtonSegment(
+                  value: _ValidatorView.criteria,
+                  label: Text('Criteria'),
+                  icon: Icon(Icons.fact_check_outlined)),
             ],
             selected: {_view},
             onSelectionChanged: (set) => _setView(set.first),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(children: [
-            for (final kind in _Kind.values)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: ChoiceChip(
-                  label: Text(switch (kind) {
-                    _Kind.all => 'All',
-                    _Kind.poles => 'Poles',
-                    _Kind.puzzlets => 'Puzzlets',
-                  }),
-                  selected: _kind == kind,
-                  onSelected: (_) => setState(() => _kind = kind),
+        // The kind filter only applies to the assignment views.
+        if (_view != _ValidatorView.criteria)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(children: [
+              for (final kind in _Kind.values)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: ChoiceChip(
+                    label: Text(switch (kind) {
+                      _Kind.all => 'All',
+                      _Kind.poles => 'Poles',
+                      _Kind.puzzlets => 'Puzzlets',
+                    }),
+                    selected: _kind == kind,
+                    onSelected: (_) => setState(() => _kind = kind),
+                  ),
                 ),
-              ),
-          ]),
-        ),
+            ]),
+          ),
         Expanded(
-          child: _view == _ListOrMap.list ? _buildList() : _buildMap(),
+          child: switch (_view) {
+            _ValidatorView.list => _buildList(),
+            _ValidatorView.map => _buildMap(),
+            _ValidatorView.criteria => _buildCriteria(),
+          },
         ),
       ],
+    );
+  }
+
+  Widget _buildCriteria() {
+    _criteria ??= _loadCriteria();
+    return FutureBuilder<String>(
+      future: _criteria,
+      builder: (context, snap) {
+        if (!snap.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: MarkdownView(snap.data!),
+        );
+      },
     );
   }
 
