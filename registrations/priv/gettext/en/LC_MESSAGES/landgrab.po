@@ -52,6 +52,12 @@ msgstr "No stairs"
 msgid "accessibility_tag.stairs.help"
 msgstr "Some locations are reached via stairs."
 
+msgid "accessibility_tag.strenuous.label"
+msgstr "Nothing too strenuous"
+
+msgid "accessibility_tag.strenuous.help"
+msgstr "Some locations take sustained effort to reach — several flights of stairs, for instance — even where each step is manageable."
+
 msgid "accessibility_tag.steep.label"
 msgstr "No steep incline"
 

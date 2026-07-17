@@ -29,6 +29,7 @@ defmodule Registrations.Landgrab.AccessibilityTag do
 
   @all ~w(
     stairs
+    strenuous
     steep
     heights
     uneven_surface

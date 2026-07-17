@@ -2,6 +2,7 @@
 /// `Registrations.Landgrab.AccessibilityTag.all/0` on the backend.
 const List<String> kAccessibilityTags = [
   'stairs',
+  'strenuous',
   'steep',
   'heights',
   'uneven_surface',
@@ -16,6 +17,7 @@ const List<String> kAccessibilityTags = [
 /// Tags shown first in the chip selector for a pole (location-related).
 /// Others appear after the user taps "Show all."
 const Set<String> kPolePrimaryTags = {
+  'strenuous',
   'steep',
   'heights',
   'uneven_surface',
@@ -27,6 +29,7 @@ const Set<String> kPolePrimaryTags = {
 /// route to find a puzzlet often involves them).
 const Set<String> kPuzzletPrimaryTags = {
   'stairs',
+  'strenuous',
   'crouch_required',
   'reach_required',
   'requires_hearing',
@@ -37,6 +40,7 @@ const Set<String> kPuzzletPrimaryTags = {
 /// location-related tags lead.
 const Set<String> kRegionPrimaryTags = {
   'stairs',
+  'strenuous',
   'steep',
   'heights',
   'narrow_path',
@@ -46,6 +50,7 @@ const Set<String> kRegionPrimaryTags = {
 /// Human-readable label for a tag value.
 String accessibilityTagLabel(String tag) => switch (tag) {
       'stairs' => 'Stairs',
+      'strenuous' => 'Physically strenuous',
       'steep' => 'Steep incline',
       'heights' => 'Heights',
       'uneven_surface' => 'Uneven surface',
@@ -65,6 +70,8 @@ String accessibilityTagLabel(String tag) => switch (tag) {
 String accessibilityTagExplanation(String tag) => switch (tag) {
       'stairs' =>
         'Players will need to use stairs at some point. A hard rule for wheelchair and mobility-aid users.',
+      'strenuous' =>
+        'Reaching the spot takes sustained physical effort — several flights of stairs, a long climb, or an extended walk. Tiring for players with limited stamina, chronic pain, or heart or lung conditions, even where each individual step is manageable.',
       'steep' =>
         'Players will encounter a significant incline — a steep hill or steep ramp. Some people can manage stairs but not long inclines, and vice versa.',
       'heights' =>
