@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/services/location_service.dart';
@@ -47,6 +48,11 @@ class PinMap extends StatefulWidget {
   /// keep the default fit-to-pins behaviour.
   final String? cameraMemoryKey;
 
+  /// When true, pins that overlap at the current zoom collapse into a
+  /// count badge (so you can tell there's more than one thing there);
+  /// tapping the badge fans them apart (spiderfy) so each is tappable.
+  final bool cluster;
+
   const PinMap({
     super.key,
     required this.pins,
@@ -55,6 +61,7 @@ class PinMap extends StatefulWidget {
     this.onPolygonDrawn,
     this.polygon,
     this.cameraMemoryKey,
+    this.cluster = false,
   });
 
   @override
@@ -70,6 +77,18 @@ class _PinMapState extends State<PinMap> {
   // fires every frame of a pan/zoom, so we only write once it settles.
   Timer? _persistTimer;
 
+  // Last zoom we reacted to, so declutter only recomputes when the zoom
+  // actually changes (see _onPositionChanged).
+  double? _lastZoom;
+
+  // Debounces the declutter recompute so pins don't reshuffle every frame
+  // of a pinch — they ride the zoom smoothly and re-settle once it stops.
+  Timer? _declutterTimer;
+
+  // Below this zoom (far out) overlapping pins collapse into count
+  // badges; above it they repulse (displace) so each stays visible.
+  static const double _clusterBelowZoom = 15.5;
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +97,12 @@ class _PinMapState extends State<PinMap> {
     // opens hit the in-memory cache synchronously (via _remembered).
     if (key != null && !_cameraMemory.containsKey(key)) {
       _hydrateCamera(key);
+    }
+    // Declutter needs the laid-out camera; nudge a rebuild once it's ready.
+    if (widget.cluster) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      });
     }
   }
 
@@ -99,6 +124,7 @@ class _PinMapState extends State<PinMap> {
   @override
   void dispose() {
     _persistTimer?.cancel();
+    _declutterTimer?.cancel();
     // Flush a pending camera write so a quick pan-then-leave still saves.
     final key = widget.cameraMemoryKey;
     final snap = key == null ? null : _cameraMemory[key];
@@ -163,20 +189,35 @@ class _PinMapState extends State<PinMap> {
   }
 
   void _onPositionChanged(MapPosition pos, bool hasGesture) {
-    // Only remember deliberate pans/zooms, not programmatic moves or the
-    // initial fit.
-    final key = widget.cameraMemoryKey;
-    if (key == null || !hasGesture) return;
-    final center = pos.center;
     final zoom = pos.zoom;
-    if (center == null || zoom == null) return;
-    _cameraMemory[key] = _CameraSnapshot(center, zoom);
-    // Persist once the gesture settles (fires every frame otherwise).
-    _persistTimer?.cancel();
-    _persistTimer = Timer(const Duration(milliseconds: 500), () {
-      UiPreferences.setMapCamera(key,
-          lat: center.latitude, lng: center.longitude, zoom: zoom);
-    });
+
+    // Camera memory — only deliberate pans/zooms, not the initial fit.
+    final key = widget.cameraMemoryKey;
+    if (key != null && hasGesture) {
+      final center = pos.center;
+      if (center != null && zoom != null) {
+        _cameraMemory[key] = _CameraSnapshot(center, zoom);
+        // Persist once the gesture settles (fires every frame otherwise).
+        _persistTimer?.cancel();
+        _persistTimer = Timer(const Duration(milliseconds: 500), () {
+          UiPreferences.setMapCamera(key,
+              lat: center.latitude, lng: center.longitude, zoom: zoom);
+        });
+      }
+    }
+
+    // Declutter is zoom-dependent (pixel overlap), so recompute on zoom
+    // change — but debounced, so a pinch doesn't reshuffle pins every
+    // frame. During the gesture the markers are real coordinates, so
+    // they scale smoothly with the map; they re-settle once it stops.
+    // (Pans need nothing.)
+    if (widget.cluster && zoom != null && zoom != _lastZoom) {
+      _lastZoom = zoom;
+      _declutterTimer?.cancel();
+      _declutterTimer = Timer(const Duration(milliseconds: 200), () {
+        if (mounted) setState(() {});
+      });
+    }
   }
 
   @override
@@ -281,6 +322,127 @@ class _PinMapState extends State<PinMap> {
           ))
       .toList();
 
+  Marker _markerAt(LatLng point, MapPin p) => Marker(
+        point: point,
+        width: p.size,
+        height: p.size,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: p.onTap,
+          child: Tooltip(message: p.label, child: _PinIcon(pin: p)),
+        ),
+      );
+
+  List<Marker> _pinMarkers() =>
+      widget.pins.map((p) => _markerAt(p.position, p)).toList();
+
+  /// The pin layer(s) for the current view:
+  ///  * plain markers when clustering is off (or too few pins);
+  ///  * count badges when zoomed far out;
+  ///  * repulsed (displaced) markers otherwise, so overlapping pins each
+  ///    stay individually visible with their status colour.
+  List<Widget> _pinLayers() {
+    if (!widget.cluster || widget.pins.length < 2) {
+      return [MarkerLayer(markers: _pinMarkers())];
+    }
+    final MapCamera cam;
+    final double zoom;
+    try {
+      cam = _controller.camera;
+      zoom = cam.zoom;
+    } catch (_) {
+      // Camera not laid out yet — the post-frame callback rebuilds.
+      return [MarkerLayer(markers: _pinMarkers())];
+    }
+
+    if (zoom < _clusterBelowZoom) {
+      return [
+        MarkerClusterLayerWidget(
+          options: MarkerClusterLayerOptions(
+            maxClusterRadius: 45,
+            size: const Size(36, 36),
+            spiderfyCluster: true,
+            spiderfySpiralDistanceMultiplier: 3,
+            padding: const EdgeInsets.all(50),
+            markers: _pinMarkers(),
+            builder: (context, markers) => _ClusterBadge(count: markers.length),
+          ),
+        ),
+      ];
+    }
+
+    final d = _declutter(cam);
+    return [
+      if (d.connectors.isNotEmpty) PolylineLayer(polylines: d.connectors),
+      MarkerLayer(markers: d.markers),
+    ];
+  }
+
+  /// Repulses overlapping pins apart in screen space (at the current
+  /// zoom), then projects back to coordinates. Returns the displaced
+  /// markers plus thin connectors from each moved pin to its true spot.
+  ({List<Marker> markers, List<Polyline> connectors}) _declutter(
+      MapCamera cam) {
+    final pins = widget.pins;
+    final origin = <Offset>[];
+    for (final p in pins) {
+      final pt = cam.latLngToScreenPoint(p.position);
+      origin.add(Offset(pt.x, pt.y));
+    }
+    final sizes = pins.map((p) => p.size).toList();
+    final placed = _relax(origin, sizes);
+
+    final markers = <Marker>[];
+    final connectors = <Polyline>[];
+    for (var i = 0; i < pins.length; i++) {
+      final p = pins[i];
+      final here = cam.pointToLatLng(Point(placed[i].dx, placed[i].dy));
+      if ((placed[i] - origin[i]).distance > 10) {
+        connectors.add(Polyline(
+          points: [p.position, here],
+          color: Colors.black.withValues(alpha: 0.25),
+          strokeWidth: 1,
+        ));
+      }
+      markers.add(_markerAt(here, p));
+    }
+    return (markers: markers, connectors: connectors);
+  }
+
+  // Iterative pairwise separation: pins closer than half their combined
+  // sizes (plus a gap) push apart until they clear or we hit the cap.
+  List<Offset> _relax(List<Offset> points, List<double> sizes) {
+    final out = List<Offset>.from(points);
+    const gap = 4.0;
+    const iterations = 16;
+    for (var it = 0; it < iterations; it++) {
+      var moved = false;
+      for (var i = 0; i < out.length; i++) {
+        for (var j = i + 1; j < out.length; j++) {
+          final delta = out[j] - out[i];
+          var dist = delta.distance;
+          final minDist = (sizes[i] + sizes[j]) / 2 + gap;
+          if (dist >= minDist) continue;
+          moved = true;
+          // Exact overlap → deterministic angle from the index so the
+          // split is stable across rebuilds (no random jitter).
+          final Offset dir;
+          if (dist < 0.01) {
+            dir = Offset(cos(i * 2.399963), sin(i * 2.399963));
+            dist = 0.01;
+          } else {
+            dir = delta / dist;
+          }
+          final push = (minDist - dist) / 2;
+          out[i] = out[i] - dir * push;
+          out[j] = out[j] + dir * push;
+        }
+      }
+      if (!moved) break;
+    }
+    return out;
+  }
+
   @override
   Widget build(BuildContext context) {
     final remembered = _remembered;
@@ -312,23 +474,7 @@ class _PinMapState extends State<PinMap> {
               isFilled: true,
             ),
           ]),
-        MarkerLayer(
-          markers: widget.pins
-              .map((p) => Marker(
-                    point: p.position,
-                    width: p.size,
-                    height: p.size,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: p.onTap,
-                      child: Tooltip(
-                        message: p.label,
-                        child: _PinIcon(pin: p),
-                      ),
-                    ),
-                  ))
-              .toList(),
-        ),
+        ..._pinLayers(),
         if (_userLocation != null)
           MarkerLayer(
             markers: [
@@ -419,6 +565,34 @@ class _PinIcon extends StatelessWidget {
         ],
       ),
       child: Icon(pin.icon, color: Colors.white, size: pin.size * 0.55),
+    );
+  }
+}
+
+/// Count badge shown when overlapping pins collapse into a cluster.
+/// Neutral dark circle so it reads as "N things here", distinct from the
+/// status-coloured pins.
+class _ClusterBadge extends StatelessWidget {
+  final int count;
+  const _ClusterBadge({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.75),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        '$count',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 14,
+        ),
+      ),
     );
   }
 }

@@ -382,6 +382,7 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
                   api: widget.api,
                   pins: pins,
                   cameraMemoryKey: 'validator_map',
+                  cluster: true,
                 ),
               ),
               Positioned(
