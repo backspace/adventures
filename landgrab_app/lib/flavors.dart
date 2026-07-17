@@ -8,13 +8,13 @@ class F {
   static String get title {
     switch (appFlavor) {
       case Flavor.dev:
-        return 'LNDGRB (dev)';
+        return 'LANDGRAB (dev)';
       case Flavor.alpha:
-        return 'LNDGRB (alpha)';
+        return 'LANDGRAB (alpha)';
       case Flavor.production:
-        return 'LNDGRB';
+        return 'LANDGRAB';
       default:
-        return 'LNDGRB';
+        return 'LANDGRAB';
     }
   }
 
