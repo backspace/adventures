@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
@@ -26,7 +28,6 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.transparent)
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (_) {},
@@ -41,6 +42,13 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
           },
         ),
       );
+    // A transparent background is a load-time nicety, but on macOS
+    // `setBackgroundColor` is unimplemented — the WKWebView backend
+    // throws "opaque is not implemented on macOS" — so only set it
+    // where it's supported.
+    if (!Platform.isMacOS) {
+      _controller.setBackgroundColor(Colors.transparent);
+    }
     _load();
   }
 
