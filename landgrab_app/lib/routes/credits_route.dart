@@ -1,33 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/services/env_switch_service.dart';
 
 // Credits copy is plain real-world chrome (not in-storyline), so it
-// lives here rather than in player_strings.dart. Sections are mostly
-// short unbulleted lines — put one entry per line; the blank-line gap
-// between groups is just a `\n\n`. Replace the examples below.
+// lives here rather than in player_strings.dart.
+//
+// The bodies name the real-world venue, soundtrack, and stack, which we
+// don't want published to a public repo — so each section's text is
+// loaded at runtime from a plain-text asset rather than hard-coded here.
+// The .txt files are gitignored (see assets/credits/README.md); write
+// them as normal multi-line text, one entry per line. A missing, empty,
+// or unreadable file just hides that section.
 const _appBarTitle = 'Credits';
 
 const _acknowledgementsHeading = 'Acknowledgements';
-const _acknowledgementsBody = '''
-CC Slaughters
-XYZ
-''';
+const _acknowledgementsAsset = 'assets/credits/acknowledgements.txt';
 
 const _soundtrackHeading = 'Soundtrack';
-const _soundtrackBody = '''
-ABC
-''';
+const _soundtrackAsset = 'assets/credits/soundtrack.txt';
 
 const _softwareHeading = 'Software';
-const _softwareBody = '''
-Flutter, Phoenix
-Coolify, Hetzner, Tailscale
-''';
+const _softwareAsset = 'assets/credits/software.txt';
 const _softwareLicensesButton = 'Open-source licenses';
 
 const _envSwitcherUnlocked = 'Environment switcher unlocked.';
+
+/// Reads a credits section body from a bundled asset, returning null
+/// when the file is absent (e.g. a fresh clone), unreadable, or blank —
+/// so the caller can drop the section entirely.
+Future<String?> _loadCredit(String asset) async {
+  try {
+    final value = (await rootBundle.loadString(asset)).trim();
+    return value.isEmpty ? null : value;
+  } catch (_) {
+    return null;
+  }
+}
 
 /// Placeholder Credits page. The version line at the bottom hides an
 /// easter egg — tap it 7 times inside 3 seconds to unlock the in-app
@@ -47,6 +57,30 @@ class _CreditsRouteState extends State<CreditsRoute> {
 
   int _tapCount = 0;
   DateTime? _firstTapAt;
+
+  String? _acknowledgements;
+  String? _soundtrack;
+  String? _software;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCredits();
+  }
+
+  Future<void> _loadCredits() async {
+    final bodies = await Future.wait([
+      _loadCredit(_acknowledgementsAsset),
+      _loadCredit(_soundtrackAsset),
+      _loadCredit(_softwareAsset),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _acknowledgements = bodies[0];
+      _soundtrack = bodies[1];
+      _software = bodies[2];
+    });
+  }
 
   void _onVersionTap() async {
     final now = DateTime.now();
@@ -79,17 +113,21 @@ class _CreditsRouteState extends State<CreditsRoute> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Section(
-              heading: _acknowledgementsHeading,
-              body: _acknowledgementsBody,
-            ),
-            _Section(
-              heading: _soundtrackHeading,
-              body: _soundtrackBody,
-            ),
+            if (_acknowledgements != null)
+              _Section(
+                heading: _acknowledgementsHeading,
+                body: _acknowledgements,
+              ),
+            if (_soundtrack != null)
+              _Section(
+                heading: _soundtrackHeading,
+                body: _soundtrack,
+              ),
+            // Software always shows: even without a software.txt the
+            // open-source-licenses button below stays available.
             _Section(
               heading: _softwareHeading,
-              body: _softwareBody,
+              body: _software,
               // Flutter auto-collects every bundled package's license,
               // so this stays correct without a hand-maintained list.
               trailing: Align(
@@ -127,14 +165,14 @@ class _CreditsRouteState extends State<CreditsRoute> {
   }
 }
 
-/// A headed credits section: title, body copy, and an optional
+/// A headed credits section: title, optional body copy, and an optional
 /// trailing widget (e.g. the licenses button).
 class _Section extends StatelessWidget {
   final String heading;
-  final String body;
+  final String? body;
   final Widget? trailing;
 
-  const _Section({required this.heading, required this.body, this.trailing});
+  const _Section({required this.heading, this.body, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -145,8 +183,10 @@ class _Section extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(heading, style: theme.textTheme.titleLarge),
-          const SizedBox(height: 8),
-          Text(body, style: theme.textTheme.bodyMedium),
+          if (body != null) ...[
+            const SizedBox(height: 8),
+            Text(body!, style: theme.textTheme.bodyMedium),
+          ],
           if (trailing != null) ...[
             const SizedBox(height: 12),
             trailing!,

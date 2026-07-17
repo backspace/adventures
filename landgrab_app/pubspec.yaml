@@ -69,6 +69,9 @@ flutter:
   assets:
     - .env
     - .env.local
+    # Credits page copy. Directory form bundles whatever files are
+    # present; the .txt bodies are gitignored (see assets/credits/README.md).
+    - assets/credits/
   # Anton: the site wordmark's display face, bundled (not fetched)
   # so branding renders offline. Single weight; OFL licence sits
   # alongside the file.
