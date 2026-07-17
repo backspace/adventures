@@ -12,22 +12,62 @@ class MiniLocationMap extends StatelessWidget {
   final String label;
   final double height;
 
+  /// Pre-built pin to render. Null means the default plain
+  /// [Icons.location_on] pin in the theme's primary colour; the
+  /// [MiniLocationMap.pole] constructor supplies a typed pole pin instead.
+  final MapPin? _pin;
+
   const MiniLocationMap({
     super.key,
     required this.latitude,
     required this.longitude,
     this.label = 'Captured location',
     this.height = 160,
-  });
+  }) : _pin = null;
+
+  /// Renders the same barcode-in-a-filled-circle marker (with GPS-accuracy
+  /// ring) that the supervisor/validator/author maps use via [MapPin.pole],
+  /// so a pole's embedded map reads consistently with the full maps.
+  MiniLocationMap.pole({
+    Key? key,
+    required double latitude,
+    required double longitude,
+    required String label,
+    required Color color,
+    double? accuracyM,
+    double height = 160,
+  }) : this._withPin(
+          key: key,
+          latitude: latitude,
+          longitude: longitude,
+          label: label,
+          height: height,
+          pin: MapPin.pole(
+            position: LatLng(latitude, longitude),
+            label: label,
+            color: color,
+            accuracyM: accuracyM,
+          ),
+        );
+
+  const MiniLocationMap._withPin({
+    super.key,
+    required this.latitude,
+    required this.longitude,
+    required this.label,
+    required this.height,
+    required MapPin pin,
+  }) : _pin = pin;
 
   @override
   Widget build(BuildContext context) {
-    final pin = MapPin(
-      position: LatLng(latitude, longitude),
-      label: label,
-      icon: Icons.location_on,
-      color: Theme.of(context).colorScheme.primary,
-    );
+    final pin = _pin ??
+        MapPin(
+          position: LatLng(latitude, longitude),
+          label: label,
+          icon: Icons.location_on,
+          color: Theme.of(context).colorScheme.primary,
+        );
 
     return SizedBox(
       height: height,

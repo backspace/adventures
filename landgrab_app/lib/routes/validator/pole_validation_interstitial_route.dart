@@ -181,10 +181,12 @@ class _PoleValidationInterstitialRouteState
             Text('${pole.latitude.toStringAsFixed(5)}, '
                 '${pole.longitude.toStringAsFixed(5)}'),
             const SizedBox(height: 8),
-            MiniLocationMap(
+            MiniLocationMap.pole(
               latitude: pole.latitude,
               longitude: pole.longitude,
               label: pole.label ?? pole.barcode,
+              color: statusColorFor(_v.status.name),
+              accuracyM: pole.accuracyM,
             ),
             if (pole.accessibilityTags.isNotEmpty ||
                 (pole.accessibilityNotes?.trim().isNotEmpty ?? false)) ...[
