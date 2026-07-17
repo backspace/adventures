@@ -67,10 +67,10 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
-            manifestPlaceholders["appLabel"] = "LNDGRB LOCAL"
+            manifestPlaceholders["appLabel"] = "Landgrab Local"
         }
         release {
-            manifestPlaceholders["appLabel"] = "LNDGRB"
+            manifestPlaceholders["appLabel"] = "Landgrab"
             signingConfig = if (keystorePropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
