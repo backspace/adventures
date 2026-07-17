@@ -111,9 +111,32 @@ platform :android do
   desc "Push Play Store listing metadata (title, short/full description, video) without uploading a build."
   desc "Reads from fastlane/metadata/android/<locale>/<field>.txt — only files present get pushed; everything else stays as-is in Play Console."
   lane :metadata do
+    key = File.expand_path(ENV.fetch("PLAY_JSON_KEY_PATH"))
+
+    # supply won't push listing metadata unless it can pin the edit to an
+    # existing release: with no build in this lane it falls back to an empty
+    # version_code and errors ("Could not find release for version code ''").
+    # The store listing is app-global, so any track with a release works —
+    # find the first that has one (internal first: the alpha lane feeds it).
+    track, version_code =
+      %w[internal alpha beta production].filter_map do |t|
+        code = google_play_track_version_codes(
+          package_name: "ca.chromatin.poles",
+          track: t,
+          json_key: key
+        ).max
+        [t, code] if code
+      rescue StandardError
+        nil
+      end.first
+
+    UI.user_error!("No release found on any track — can't anchor a metadata-only upload. Push a build first (fastlane alpha).") if version_code.nil?
+
     upload_to_play_store(
       package_name: "ca.chromatin.poles",
-      json_key: File.expand_path(ENV.fetch("PLAY_JSON_KEY_PATH")),
+      json_key: key,
+      track: track,
+      version_code: version_code,
       skip_upload_apk: true,
       skip_upload_aab: true,
       skip_upload_changelogs: true,
