@@ -4,6 +4,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/validator/pole_validation_form_route.dart';
+import 'package:landgrab/widgets/accessibility_tags_view.dart';
 import 'package:landgrab/widgets/mini_location_map.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
@@ -185,6 +186,15 @@ class _PoleValidationInterstitialRouteState
               longitude: pole.longitude,
               label: pole.label ?? pole.barcode,
             ),
+            if (pole.accessibilityTags.isNotEmpty ||
+                (pole.accessibilityNotes?.trim().isNotEmpty ?? false)) ...[
+              const SizedBox(height: 16),
+              AccessibilityTagsView(
+                tags: pole.accessibilityTags,
+                notes: pole.accessibilityNotes,
+                title: 'Accessibility',
+              ),
+            ],
             const SizedBox(height: 24),
           ],
           FilledButton.icon(

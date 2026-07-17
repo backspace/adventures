@@ -3,6 +3,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/validator/puzzlet_validation_form_route.dart';
 import 'package:landgrab/routes/validator/puzzlet_validation_preview_route.dart';
+import 'package:landgrab/widgets/accessibility_tags_view.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
@@ -64,6 +65,15 @@ class PuzzletValidationInterstitialRoute extends StatelessWidget {
             const SizedBox(height: 4),
             Text('Difficulty ${p.difficulty} / 10',
                 style: theme.textTheme.bodySmall),
+            if (p.accessibilityTags.isNotEmpty ||
+                (p.accessibilityNotes?.trim().isNotEmpty ?? false)) ...[
+              const SizedBox(height: 16),
+              AccessibilityTagsView(
+                tags: p.accessibilityTags,
+                notes: p.accessibilityNotes,
+                title: 'Accessibility',
+              ),
+            ],
             const SizedBox(height: 24),
           ],
           FilledButton.icon(
