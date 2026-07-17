@@ -7,6 +7,7 @@ import 'package:landgrab/flavors.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/routes/credits_route.dart';
 import 'package:landgrab/routes/home_route.dart';
+import 'package:landgrab/routes/register_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
 import 'package:landgrab/services/env_service.dart';
 import 'package:landgrab/services/env_switch_service.dart';
@@ -263,6 +264,23 @@ class _LoginRouteState extends State<LoginRoute> {
               onPressed: _busy ? null : _signInWithApple,
               icon: const Icon(Icons.apple, size: 22),
               label: const Text(LoginStrings.signInWithApple),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(LoginStrings.noAccountPrompt),
+                TextButton(
+                  onPressed: _busy
+                      ? null
+                      : () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => RegisterRoute(api: widget.api),
+                            ),
+                          ),
+                  child: const Text(LoginStrings.createAccountLink),
+                ),
+              ],
             ),
           ],
         ),

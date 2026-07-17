@@ -23,6 +23,16 @@ typedef EndgameConfig = ({EndgameZone? endgame, DateTime? announcedAt});
 /// UI can tell "wrong password" apart from "couldn't reach the server".
 enum LoginOutcome { success, invalidCredentials, unreachable, failed }
 
+/// Outcome of an email/password account-creation attempt.
+///
+/// [invalid] carries the server's per-field validation messages
+/// (e.g. email already taken, password too short) in [RegisterOutcome.message]
+/// so the sign-up form can show exactly what went wrong; [unreachable]
+/// and [failed] mirror [LoginOutcome].
+enum RegisterStatus { success, invalid, unreachable, failed }
+
+typedef RegisterOutcome = ({RegisterStatus status, String? message});
+
 class LandgrabApi {
   final Dio dio;
 
@@ -56,6 +66,87 @@ class LandgrabApi {
       if (e.response == null) return LoginOutcome.unreachable;
       return LoginOutcome.failed;
     }
+  }
+
+  /// Create a new email/password account via the same Pow-backed API the
+  /// web registration form uses (`POST /powapi/registration`). On success
+  /// the server returns tokens exactly like [login] and we store them, so
+  /// the caller is signed in immediately (no separate login step). The
+  /// account starts bare — email/password only — and the profile (team,
+  /// accessibility, attending, …) is filled in afterwards via the
+  /// `/details` WebView.
+  Future<RegisterOutcome> register(String email, String password) async {
+    try {
+      final response = await dio.post(
+        '/powapi/registration',
+        // The web form posts `password_confirmation`; the app has a
+        // single password field, so we mirror it here to satisfy Pow's
+        // confirmation check regardless of how it's configured.
+        data: {
+          'user': {
+            'email': email,
+            'password': password,
+            'password_confirmation': password,
+          }
+        },
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      final data = response.data['data'] as Map<String, dynamic>;
+      await UserService.setTokens(
+        data['access_token'] as String,
+        data['renewal_token'] as String,
+      );
+      await loadAndStoreMe();
+      return (status: RegisterStatus.success, message: null);
+    } on DioException catch (e) {
+      // No response at all means we never reached the server (see the
+      // note in [login]). Otherwise the server returns a body with
+      // per-field validation errors (email taken, password too short);
+      // surface those so the user can fix the form.
+      if (e.response == null) {
+        return (status: RegisterStatus.unreachable, message: null);
+      }
+      final message = _registrationErrorMessage(e.response?.data);
+      if (message != null) {
+        return (status: RegisterStatus.invalid, message: message);
+      }
+      return (status: RegisterStatus.failed, message: null);
+    }
+  }
+
+  /// Flatten the server's registration error body
+  /// (`{error: {message, errors: {field: [msgs]}}}`) into a readable,
+  /// multi-line string like "Email has already been taken". Returns null
+  /// if the body has no recognisable error detail.
+  String? _registrationErrorMessage(dynamic body) {
+    if (body is! Map) return null;
+    final error = body['error'];
+    if (error is! Map) return null;
+
+    final errors = error['errors'];
+    if (errors is Map && errors.isNotEmpty) {
+      final lines = <String>[];
+      errors.forEach((field, messages) {
+        final label = _humaniseField(field.toString());
+        if (messages is List) {
+          for (final m in messages) {
+            lines.add('$label $m');
+          }
+        } else if (messages is String) {
+          lines.add('$label $messages');
+        }
+      });
+      if (lines.isNotEmpty) return lines.join('\n');
+    }
+
+    final message = error['message'];
+    return message is String ? message : null;
+  }
+
+  String _humaniseField(String field) {
+    if (field.isEmpty) return field;
+    final spaced = field.replaceAll('_', ' ');
+    return '${spaced[0].toUpperCase()}${spaced.substring(1)}';
   }
 
   // Custom URI scheme the app registered on iOS (CFBundleURLTypes) and
@@ -797,6 +888,27 @@ class LandgrabApi {
     final response = await dio.patch(
       '/landgrab/validation/puzzlet-validations/$id',
       data: {'status': status},
+    );
+    return PuzzletValidationModel.fromJson(
+        response.data as Map<String, dynamic>);
+  }
+
+  /// Submit the validator's puzzlet review in one call: [suggestions]
+  /// (each `{'field': ..., 'suggested_value': ...}`) plus an optional
+  /// note. An empty list endorses the puzzlet as-is (submitted, no
+  /// suggestions) — what "previewed it and it's fine" sends.
+  Future<PuzzletValidationModel> submitPuzzletValidation(
+    String id, {
+    String? overallNotes,
+    List<Map<String, dynamic>> suggestions = const [],
+  }) async {
+    final response = await dio.post(
+      '/landgrab/validation/puzzlet-validations/$id/submit',
+      data: {
+        if (overallNotes != null && overallNotes.isNotEmpty)
+          'overall_notes': overallNotes,
+        'suggestions': suggestions,
+      },
     );
     return PuzzletValidationModel.fromJson(
         response.data as Map<String, dynamic>);

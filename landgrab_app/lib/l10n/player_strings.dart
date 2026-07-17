@@ -63,6 +63,29 @@ class LoginStrings {
       'Apple sign-in failed: $detail';
   static String oauthCancelled(String provider) =>
       '$provider sign-in failed or was cancelled';
+
+  static const noAccountPrompt = 'New here?';
+  static const createAccountLink = 'Create an account';
+}
+
+/// Sign-up screen (`routes/register_route.dart`), for people arriving
+/// without having registered ahead of time.
+class RegisterStrings {
+  RegisterStrings._();
+
+  static const appBarTitle = 'Create account';
+  static const intro =
+      'Create an account with your email, then we\'ll get your details.';
+  static const emailLabel = 'Email';
+  static const passwordLabel = 'Password';
+  static const createAccountButton = 'Create account';
+  static const haveAccountPrompt = 'Already have an account?';
+  static const signInLink = 'Sign in';
+
+  static const serverUnreachable =
+      'Can\'t reach the server. Check your connection (and VPN, if you '
+      'use one) and try again.';
+  static const failed = 'Couldn\'t create your account. Please try again.';
 }
 
 /// Pre-event home body (`_PreEventBody` in `routes/home_route.dart`).

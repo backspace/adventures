@@ -84,6 +84,66 @@ void main() {
     });
   });
 
+  group('register', () {
+    // As with login, the success path stores tokens via platform
+    // channels unavailable in a plain unit test; these cover the
+    // failure split and the per-field error surfacing.
+    Map<String, dynamic> registerData(String email, String password) => {
+          'user': {
+            'email': email,
+            'password': password,
+            'password_confirmation': password,
+          }
+        };
+
+    test('validation errors surface a per-field message', () async {
+      adapter.onPost(
+        '/powapi/registration',
+        (server) => server.reply(500, {
+          'error': {
+            'status': 500,
+            'message': "Couldn't create user",
+            'errors': {
+              'email': ['has already been taken']
+            }
+          }
+        }),
+        data: registerData('taken@x.com', 'password'),
+      );
+      final outcome = await api.register('taken@x.com', 'password');
+      expect(outcome.status, RegisterStatus.invalid);
+      expect(outcome.message, 'Email has already been taken');
+    });
+
+    test('no response (unreachable server) is unreachable', () async {
+      adapter.onPost(
+        '/powapi/registration',
+        (server) => server.throws(
+          0,
+          DioException.connectionError(
+            requestOptions: RequestOptions(path: '/powapi/registration'),
+            reason: 'Tailscale down',
+          ),
+        ),
+        data: registerData('e@x.com', 'password'),
+      );
+      expect(
+          (await api.register('e@x.com', 'password')).status,
+          RegisterStatus.unreachable);
+    });
+
+    test('error body with no recognisable detail is a generic failure',
+        () async {
+      adapter.onPost(
+        '/powapi/registration',
+        (server) => server.reply(500, {'error': 'boom'}),
+        data: registerData('e@x.com', 'password'),
+      );
+      expect((await api.register('e@x.com', 'password')).status,
+          RegisterStatus.failed);
+    });
+  });
+
   group('scan', () {
     test('returns ScanFound on 200', () async {
       adapter.onGet(
