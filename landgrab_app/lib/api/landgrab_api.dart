@@ -290,6 +290,9 @@ class LandgrabApi {
       teamName: team?['name'] as String?,
       roles: roles,
     );
+    // Auto-remember this account for the dev account-switcher (no-op in
+    // normal use; the switcher UI is behind the env-switch unlock).
+    await UserService.rememberCurrentAccount();
     // Piggy-back the boot-telemetry ping on the "user data loaded"
     // moment, since every login path ends here. The `_Boot` path
     // (already-logged-in restart) pings directly — this covers the

@@ -62,6 +62,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   String? _teamId;
   String? _teamName;
   String? _error;
+  // Only surfaced under "Log out" when the env switcher is unlocked, so
+  // the account you're acting as is obvious while hopping between them.
+  String? _accountEmail;
   bool _isAuthor = false;
   bool _isValidator = false;
   int _unreadNotifications = 0;
@@ -354,6 +357,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       final isAuthor = await UserService.hasRole('author');
       final isValidator = await UserService.hasRole('validator');
       final isSupervisor = await UserService.hasRole('validation_supervisor');
+      final accountEmail = await UserService.getUserEmail();
       final results = await Future.wait([
         widget.api.getEvent(),
         widget.api.listPoles(),
@@ -386,6 +390,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         _isAuthor = isAuthor;
         _isValidator = isValidator;
         _isSupervisor = isSupervisor;
+        _accountEmail = accountEmail;
         _event = event;
       });
       _refreshUnreadCount();
@@ -475,14 +480,30 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   }
 
   PopupMenuItem<_HomeMenuItem> _menuItem(
-      _HomeMenuItem value, IconData icon, String label) {
+      _HomeMenuItem value, IconData icon, String label,
+      {String? subtitle}) {
     return PopupMenuItem<_HomeMenuItem>(
       value: value,
       child: Row(
         children: [
           Icon(icon, size: 20),
           const SizedBox(width: 12),
-          Text(label),
+          if (subtitle == null)
+            Text(label)
+          else
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(label),
+                  Text(subtitle,
+                      style: Theme.of(context).textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                ],
+              ),
+            ),
         ],
       ),
     );
@@ -776,7 +797,13 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                 _menuItem(_HomeMenuItem.switchEnvironment, Icons.dns_outlined,
                     LoginStrings.switchEnvironmentTooltip),
               _menuItem(
-                  _HomeMenuItem.logOut, Icons.logout, GameplayStrings.logOut),
+                _HomeMenuItem.logOut,
+                Icons.logout,
+                GameplayStrings.logOut,
+                // Show which account you're acting as, but only for the
+                // dev switcher audience.
+                subtitle: EnvSwitchService.visible.value ? _accountEmail : null,
+              ),
             ],
           ),
         ],

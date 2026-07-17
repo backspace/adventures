@@ -25,6 +25,9 @@ class _SettingsRouteState extends State<SettingsRoute> {
   bool _useCustom = false;
   bool _dirty = false;
 
+  List<SavedAccount> _accounts = const [];
+  String? _currentUserId;
+
   void _markDirty() {
     if (!_dirty) setState(() => _dirty = true);
   }
@@ -56,6 +59,29 @@ class _SettingsRouteState extends State<SettingsRoute> {
     // Attach dirty listener after initial state is set so loading doesn't
     // mark the form dirty.
     _customController.addListener(_markDirty);
+    _loadAccounts();
+  }
+
+  Future<void> _loadAccounts() async {
+    final accounts = await UserService.getSavedAccounts();
+    final currentId = await UserService.getUserId();
+    if (!mounted) return;
+    setState(() {
+      _accounts = accounts;
+      _currentUserId = currentId;
+    });
+  }
+
+  Future<void> _switchAccount(SavedAccount a) async {
+    await UserService.switchToAccount(a.id);
+    // Reboot the app subtree onto the newly-active session. This route is
+    // torn down with the old MaterialApp, so no explicit pop is needed.
+    EnvService.instance.restartSession();
+  }
+
+  Future<void> _removeAccount(SavedAccount a) async {
+    await UserService.removeSavedAccount(a.id);
+    await _loadAccounts();
   }
 
   Future<void> _save() async {
@@ -189,8 +215,71 @@ class _SettingsRouteState extends State<SettingsRoute> {
                 ),
               ],
             ),
+            const SizedBox(height: 32),
+            _accountsSection(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _accountsSection(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Accounts on this environment',
+            style: theme.textTheme.titleMedium),
+        const SizedBox(height: 4),
+        Text(
+          'Auto-remembered as you sign in. Tap one to switch instantly.',
+          style: theme.textTheme.bodySmall,
+        ),
+        const SizedBox(height: 8),
+        if (_accounts.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Text('No saved accounts yet on this environment.'),
+          )
+        else
+          for (final a in _accounts) _accountTile(context, a),
+      ],
+    );
+  }
+
+  Widget _accountTile(BuildContext context, SavedAccount a) {
+    final theme = Theme.of(context);
+    final isCurrent = a.id == _currentUserId;
+    final detail = [
+      if (a.roles.isNotEmpty) a.roles.join(', '),
+      if (a.teamName != null) 'team: ${a.teamName}',
+    ].join(' · ');
+
+    return Card(
+      color: isCurrent
+          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.4)
+          : null,
+      child: ListTile(
+        leading: Icon(isCurrent ? Icons.person : Icons.person_outline,
+            color: isCurrent ? theme.colorScheme.primary : null),
+        title: Text(a.email,
+            style: isCurrent
+                ? TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary)
+                : null),
+        subtitle: detail.isEmpty ? null : Text(detail),
+        trailing: isCurrent
+            ? const Chip(
+                label: Text('current'),
+                visualDensity: VisualDensity.compact,
+              )
+            : IconButton(
+                tooltip: 'Forget this account',
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () => _removeAccount(a),
+              ),
+        onTap: isCurrent ? null : () => _switchAccount(a),
       ),
     );
   }

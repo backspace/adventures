@@ -16,6 +16,13 @@ class EnvService {
 
   final ValueNotifier<String?> currentApiRoot = ValueNotifier(null);
 
+  /// Bumped to force App to rebuild its subtree without changing the env
+  /// — used by the account switcher, which swaps the active session in
+  /// place (same api root, different user).
+  final ValueNotifier<int> sessionEpoch = ValueNotifier(0);
+
+  void restartSession() => sessionEpoch.value++;
+
   /// Resolve and apply the active API root, taking the user's saved override
   /// into account first.
   Future<String> initialize() async {

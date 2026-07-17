@@ -1,4 +1,25 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+/// Display-facing summary of a saved account (dev account-switcher).
+/// Tokens stay inside [UserService]; this only carries what the picker
+/// shows.
+class SavedAccount {
+  final String id;
+  final String email;
+  final String? name;
+  final List<String> roles;
+  final String? teamName;
+
+  SavedAccount({
+    required this.id,
+    required this.email,
+    this.name,
+    this.roles = const [],
+    this.teamName,
+  });
+}
 
 /// Persisted user/auth state, namespaced per API root so that switching
 /// environments doesn't drop the session you had in another env.
@@ -21,6 +42,9 @@ class UserService {
   static const String _rolesKey = 'roles';
   static const String _accessTokenKey = 'access_token';
   static const String _renewalTokenKey = 'renewal_token';
+  // A JSON list of full session bundles for this env — the saved
+  // accounts the dev switcher lists.
+  static const String _savedAccountsKey = 'saved_accounts';
 
   static String? _currentApiRoot;
 
@@ -110,5 +134,104 @@ class UserService {
     await _storage.delete(key: _key(_rolesKey));
     await _storage.delete(key: _key(_accessTokenKey));
     await _storage.delete(key: _key(_renewalTokenKey));
+  }
+
+  // ──────── Saved accounts (dev account-switcher) ────────────────────
+  //
+  // A me-only affordance behind the env-switch unlock. Accounts are
+  // stored per env (the key is namespaced by apiRoot like everything
+  // else), so each env has its own list.
+
+  static Future<void> _writeField(String suffix, String? value) async {
+    if (value == null) {
+      await _storage.delete(key: _key(suffix));
+    } else {
+      await _storage.write(key: _key(suffix), value: value);
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> _readAccounts() async {
+    final raw = await _storage.read(key: _key(_savedAccountsKey));
+    if (raw == null || raw.isEmpty) return [];
+    try {
+      return (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  static Future<void> _writeAccounts(List<Map<String, dynamic>> list) =>
+      _storage.write(key: _key(_savedAccountsKey), value: jsonEncode(list));
+
+  /// Snapshot the currently-active session into this env's saved-accounts
+  /// list (deduped by user id). Called after each login so accounts are
+  /// auto-remembered, and before switching away so refreshed tokens are
+  /// captured. No-op if there's no complete session.
+  static Future<void> rememberCurrentAccount() async {
+    final id = await getUserId();
+    final email = await getUserEmail();
+    final access = await getAccessToken();
+    if (id == null || email == null || access == null) return;
+
+    final entry = {
+      'id': id,
+      'email': email,
+      'name': await getUserName(),
+      'teamId': await getTeamId(),
+      'teamName': await getTeamName(),
+      'roles': await getRoles(),
+      'accessToken': access,
+      'renewalToken': await getRenewalToken(),
+    };
+    final list = await _readAccounts();
+    list.removeWhere((a) => a['id'] == id);
+    list.add(entry);
+    await _writeAccounts(list);
+  }
+
+  static Future<List<SavedAccount>> getSavedAccounts() async {
+    final list = await _readAccounts();
+    return list
+        .map((a) => SavedAccount(
+              id: a['id'] as String,
+              email: a['email'] as String,
+              name: a['name'] as String?,
+              roles: ((a['roles'] as List?) ?? const []).cast<String>(),
+              teamName: a['teamName'] as String?,
+            ))
+        .toList();
+  }
+
+  /// Make the saved account with [id] the active session for this env.
+  /// The outgoing account is re-remembered first so its (possibly
+  /// refreshed) tokens aren't lost. The caller reboots afterwards.
+  static Future<void> switchToAccount(String id) async {
+    await rememberCurrentAccount();
+
+    final list = await _readAccounts();
+    Map<String, dynamic>? target;
+    for (final a in list) {
+      if (a['id'] == id) {
+        target = a;
+        break;
+      }
+    }
+    if (target == null) return;
+
+    final roles = ((target['roles'] as List?) ?? const []).cast<String>();
+    await _writeField(_userIdKey, target['id'] as String?);
+    await _writeField(_userEmailKey, target['email'] as String?);
+    await _writeField(_userNameKey, target['name'] as String?);
+    await _writeField(_teamIdKey, target['teamId'] as String?);
+    await _writeField(_teamNameKey, target['teamName'] as String?);
+    await _writeField(_rolesKey, roles.isEmpty ? null : roles.join(','));
+    await _writeField(_accessTokenKey, target['accessToken'] as String?);
+    await _writeField(_renewalTokenKey, target['renewalToken'] as String?);
+  }
+
+  static Future<void> removeSavedAccount(String id) async {
+    final list = await _readAccounts();
+    list.removeWhere((a) => a['id'] == id);
+    await _writeAccounts(list);
   }
 }

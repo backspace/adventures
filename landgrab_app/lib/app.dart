@@ -59,12 +59,20 @@ class _AppState extends State<App> {
       );
     }
 
-    return ValueListenableBuilder<String?>(
-      valueListenable: EnvService.instance.currentApiRoot,
-      builder: (context, root, _) {
-        final apiRoot = root ?? 'http://localhost:4000';
+    return ListenableBuilder(
+      // Env change (new api root) or an in-place account swap (bumped
+      // sessionEpoch) both re-key the MaterialApp, forcing a fresh _Boot
+      // that re-reads the active session.
+      listenable: Listenable.merge([
+        EnvService.instance.currentApiRoot,
+        EnvService.instance.sessionEpoch,
+      ]),
+      builder: (context, _) {
+        final apiRoot =
+            EnvService.instance.currentApiRoot.value ?? 'http://localhost:4000';
+        final epoch = EnvService.instance.sessionEpoch.value;
         return MaterialApp(
-          key: ValueKey(apiRoot),
+          key: ValueKey('$apiRoot#$epoch'),
           title: F.title,
           theme: theme,
           home: _Boot(apiRoot: apiRoot),

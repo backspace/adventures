@@ -94,6 +94,10 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
       final newAccessToken = authResponse.data['data']['access_token'] as String;
       final newRenewalToken = authResponse.data['data']['renewal_token'] as String;
       await UserService.setTokens(newAccessToken, newRenewalToken);
+      // Pow rotates the renewal token on each renew, so keep this
+      // account's saved bundle in sync — otherwise switching back to it
+      // later would restore an already-spent renewal token and 401.
+      await UserService.rememberCurrentAccount();
       return newAccessToken;
     } catch (_) {
       await UserService.clearUserData();
