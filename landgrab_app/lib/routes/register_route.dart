@@ -4,6 +4,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/routes/details_webview_route.dart';
 import 'package:landgrab/routes/home_route.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 
 /// Email/password sign-up for attendees who show up without having
 /// registered ahead of time. On success the account is created and
@@ -77,7 +78,7 @@ class _RegisterRouteState extends State<RegisterRoute> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text(RegisterStrings.appBarTitle)),
+      appBar: LandgrabAppBar(title: RegisterStrings.appBarTitle),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(

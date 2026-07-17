@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:nfc_manager/nfc_manager.dart';
 
 /// Full-screen scanner that starts an NFC session and pops with the first
@@ -154,7 +155,7 @@ class _NfcScannerRouteState extends State<NfcScannerRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: LandgrabAppBar(title: widget.title),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(

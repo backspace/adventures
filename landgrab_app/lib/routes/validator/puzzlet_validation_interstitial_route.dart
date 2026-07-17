@@ -4,6 +4,7 @@ import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/validator/puzzlet_validation_form_route.dart';
 import 'package:landgrab/routes/validator/puzzlet_validation_preview_route.dart';
 import 'package:landgrab/widgets/accessibility_tags_view.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
@@ -33,8 +34,8 @@ class PuzzletValidationInterstitialRoute extends StatelessWidget {
     final theme = Theme.of(context);
     final p = validation.puzzlet;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Puzzlet'),
+      appBar: LandgrabAppBar(
+        title: 'Puzzlet',
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),

@@ -7,6 +7,7 @@ import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
 import 'package:landgrab/widgets/attachments_section.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/location_card.dart';
 import 'package:landgrab/widgets/puzzlet_form_fields.dart';
 import 'package:landgrab/widgets/region_picker_field.dart';
@@ -196,8 +197,8 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Edit puzzlet'),
+        appBar: LandgrabAppBar(
+          title: 'Edit puzzlet',
         actions: [
           IconButton(
             tooltip: 'Delete draft',

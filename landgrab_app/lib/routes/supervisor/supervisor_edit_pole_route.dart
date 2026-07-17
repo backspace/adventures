@@ -5,6 +5,7 @@ import 'package:landgrab/models/accessibility.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/widgets/accessibility_tags_field.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 
 class SupervisorEditPoleRoute extends StatefulWidget {
   final LandgrabApi api;
@@ -117,7 +118,7 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Edit pole')),
+        appBar: LandgrabAppBar(title: 'Edit pole'),
         body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

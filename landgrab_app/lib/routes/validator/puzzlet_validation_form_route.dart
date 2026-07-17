@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart' show answerTypeFromString;
 import 'package:landgrab/models/validation.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/puzzlet_form_fields.dart';
 
 /// The validator's puzzlet review form, in "suggest" mode — the same
@@ -145,7 +146,7 @@ class _PuzzletValidationFormRouteState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Suggest edits')),
+      appBar: LandgrabAppBar(title: 'Suggest edits'),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

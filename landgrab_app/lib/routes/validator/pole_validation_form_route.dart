@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/pole_form_fields.dart';
 
 /// The validator's pole review form: the same fields the author edits
@@ -179,7 +180,7 @@ class _PoleValidationFormRouteState extends State<PoleValidationFormRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_pole.label ?? _pole.barcode)),
+      appBar: LandgrabAppBar(title: _pole.label ?? _pole.barcode),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

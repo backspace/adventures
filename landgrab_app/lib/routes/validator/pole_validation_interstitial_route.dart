@@ -5,6 +5,7 @@ import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/validator/pole_validation_form_route.dart';
 import 'package:landgrab/widgets/accessibility_tags_view.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/mini_location_map.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
@@ -158,8 +159,8 @@ class _PoleValidationInterstitialRouteState
         _v.status == ValidationStatus.rejected;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(pole?.label ?? pole?.barcode ?? 'Pole'),
+      appBar: LandgrabAppBar(
+        title: pole?.label ?? pole?.barcode ?? 'Pole',
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),

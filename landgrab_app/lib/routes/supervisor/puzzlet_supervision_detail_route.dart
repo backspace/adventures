@@ -6,6 +6,7 @@ import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/supervisor/supervisor_edit_puzzlet_route.dart';
 import 'package:landgrab/routes/supervisor/validator_picker.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
 class PuzzletSupervisionDetailRoute extends StatefulWidget {
@@ -279,8 +280,8 @@ class _PuzzletSupervisionDetailRouteState
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Puzzlet'),
+      appBar: LandgrabAppBar(
+        title: 'Puzzlet',
         actions: [
           IconButton(
             tooltip: 'Edit fields',

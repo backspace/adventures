@@ -9,6 +9,7 @@ import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/routes/author/edit_pole_route.dart';
 import 'package:landgrab/routes/author/edit_puzzlet_route.dart';
 import 'package:landgrab/services/location_service.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/live_location_layer.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -171,8 +172,8 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Author map'),
+      appBar: LandgrabAppBar(
+        title: 'Author map',
         actions: [
           // Mode toggles: accessibility-coverage + follow-up-todos.
           // Tapping either activates that mode; tapping again

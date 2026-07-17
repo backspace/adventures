@@ -12,6 +12,7 @@ import 'package:landgrab/routes/register_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
 import 'package:landgrab/services/env_service.dart';
 import 'package:landgrab/services/env_switch_service.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class LoginRoute extends StatefulWidget {
@@ -159,8 +160,8 @@ class _LoginRouteState extends State<LoginRoute> {
     final apiRoot = EnvService.instance.currentApiRoot.value ?? '';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(LoginStrings.appBarTitle),
+      appBar: LandgrabAppBar(
+        title: LoginStrings.appBarTitle,
         actions: [
           IconButton(
             tooltip: GameplayStrings.credits,

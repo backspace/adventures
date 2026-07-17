@@ -6,6 +6,7 @@ import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/routes/validator/puzzlet_validation_form_route.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/warning_banner.dart';
 
@@ -136,7 +137,7 @@ class _PuzzletValidationPreviewRouteState
     final theme = Theme.of(context);
     final revealed = _attempted || !_editable;
     return Scaffold(
-      appBar: AppBar(title: const Text('Preview')),
+      appBar: LandgrabAppBar(title: 'Preview'),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

@@ -7,6 +7,7 @@ import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/warning_banner.dart';
 
@@ -182,9 +183,9 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     // bounds, which also tracked the scroll content's height.
     return Stack(children: [
       Scaffold(
-        appBar: AppBar(
-          title: Text(
-              '${PuzzletStrings.titlePrefix}  ${widget.pole.label ?? widget.pole.barcode}'),
+        appBar: LandgrabAppBar(
+          title:
+              '${PuzzletStrings.titlePrefix}  ${widget.pole.label ?? widget.pole.barcode}',
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),

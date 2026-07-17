@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/notification.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 
 /// The team's notification history, newest first. Opening this
 /// screen marks everything read server-side — read state is shared
@@ -45,7 +46,7 @@ class _NotificationsRouteState extends State<NotificationsRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(NotificationStrings.title)),
+      appBar: LandgrabAppBar(title: NotificationStrings.title),
       body: _error != null
           ? Center(
               child: Padding(

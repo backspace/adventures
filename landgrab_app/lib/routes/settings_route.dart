@@ -4,6 +4,7 @@ import 'package:landgrab/flavors.dart';
 import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/services/env_service.dart';
 import 'package:landgrab/services/user_service.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 
 Map<String, String> _knownEnvs() => {
       'Production': 'https://landgrab.chromatin.ca',
@@ -132,7 +133,7 @@ class _SettingsRouteState extends State<SettingsRoute> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Settings')),
+        appBar: LandgrabAppBar(title: 'Settings'),
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [

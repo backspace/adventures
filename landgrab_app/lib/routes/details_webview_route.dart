@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/routes/login_route.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// Hosts the registrations site's `/details` page inside an in-app
@@ -151,8 +152,8 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(DetailsStrings.appBarTitle),
+      appBar: LandgrabAppBar(
+        title: DetailsStrings.appBarTitle,
         actions: [
           IconButton(
             tooltip: DetailsStrings.reloadTooltip,

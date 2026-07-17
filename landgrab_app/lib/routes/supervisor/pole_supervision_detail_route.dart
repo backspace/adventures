@@ -6,6 +6,7 @@ import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/supervisor/supervisor_edit_pole_route.dart';
 import 'package:landgrab/routes/supervisor/validator_picker.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
 class PoleSupervisionDetailRoute extends StatefulWidget {
@@ -264,8 +265,8 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_pole.label ?? _pole.barcode),
+      appBar: LandgrabAppBar(
+        title: _pole.label ?? _pole.barcode,
         actions: [
           IconButton(
             tooltip: 'Edit fields',

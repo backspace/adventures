@@ -8,6 +8,7 @@ import 'package:landgrab/routes/validator/puzzlet_validation_interstitial_route.
 import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/attachments_badge.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/map_pin.dart';
 import 'package:landgrab/widgets/map_with_bathrooms.dart';
 import 'package:landgrab/widgets/markdown_view.dart';
@@ -190,8 +191,8 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('To validate'),
+      appBar: LandgrabAppBar(
+        title: 'To validate',
         actions: [
           IconButton(
             onPressed: () {

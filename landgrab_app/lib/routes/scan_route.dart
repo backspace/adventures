@@ -4,6 +4,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/routes/puzzlet_route.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 
 /// What the scan flow hands back to the map: the scanned barcode
 /// (signals a refresh is worthwhile) and, when the flow ended in a
@@ -242,7 +243,7 @@ class _ScanRouteState extends State<ScanRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(ScanStrings.appBarTitle)),
+      appBar: LandgrabAppBar(title: ScanStrings.appBarTitle),
       body: Stack(
         children: [
           MobileScanner(

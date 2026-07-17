@@ -8,6 +8,7 @@ import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/widgets/accessibility_tags_field.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/location_card.dart';
 import 'package:landgrab/widgets/region_picker_field.dart';
 
@@ -203,8 +204,8 @@ class _EditBathroomRouteState extends State<EditBathroomRoute> {
         if (discard && context.mounted) Navigator.of(context).pop();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Edit bathroom'),
+        appBar: LandgrabAppBar(
+          title: 'Edit bathroom',
           actions: [
             IconButton(
               tooltip: 'Delete',

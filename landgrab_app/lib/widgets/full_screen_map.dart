@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/map_pin.dart';
 import 'package:landgrab/widgets/pin_map.dart';
 
@@ -11,7 +12,7 @@ class FullScreenMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: LandgrabAppBar(title: title),
       body: PinMap(pins: pins),
     );
   }

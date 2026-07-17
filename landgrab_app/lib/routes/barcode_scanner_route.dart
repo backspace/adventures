@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Full-screen scanner that pops with the first scanned barcode string,
@@ -34,7 +35,7 @@ class _BarcodeScannerRouteState extends State<BarcodeScannerRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: LandgrabAppBar(title: widget.title),
       body: MobileScanner(controller: _controller, onDetect: _onDetect),
     );
   }

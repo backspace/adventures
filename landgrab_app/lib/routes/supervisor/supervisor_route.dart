@@ -5,6 +5,7 @@ import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/supervisor/content_tab.dart';
 import 'package:landgrab/routes/supervisor/endgame_tab.dart';
 import 'package:landgrab/routes/supervisor/organiser_messages_tab.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
 class SupervisorRoute extends StatefulWidget {
@@ -70,7 +71,7 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
     // Overview first. It's a quick fetch.
     if (_eventStarted == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Supervision')),
+        appBar: LandgrabAppBar(title: 'Supervision'),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -79,8 +80,8 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
       length: 4,
       initialIndex: _eventStarted! ? _messagesTab : _overviewTab,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Supervision'),
+        appBar: LandgrabAppBar(
+          title: 'Supervision',
           bottom: const TabBar(
             isScrollable: true,
             tabs: [

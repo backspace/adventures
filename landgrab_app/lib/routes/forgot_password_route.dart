@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/services/env_service.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 /// Hosts the registrations site's public `/reset-password/new` page in
@@ -79,8 +80,8 @@ class _ForgotPasswordRouteState extends State<ForgotPasswordRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(ForgotPasswordStrings.appBarTitle),
+      appBar: LandgrabAppBar(
+        title: ForgotPasswordStrings.appBarTitle,
         actions: [
           IconButton(
             tooltip: ForgotPasswordStrings.reloadTooltip,

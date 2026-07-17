@@ -3,6 +3,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/services/env_switch_service.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 
 // Credits copy is plain real-world chrome (not in-storyline), so it
 // lives here rather than in player_strings.dart.
@@ -107,7 +108,7 @@ class _CreditsRouteState extends State<CreditsRoute> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text(_appBarTitle)),
+      appBar: LandgrabAppBar(title: _appBarTitle),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(

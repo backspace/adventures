@@ -12,6 +12,7 @@ import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/widgets/accessibility_tags_field.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/location_card.dart';
 import 'package:landgrab/widgets/pending_photos_section.dart';
 
@@ -243,7 +244,7 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Capture a pole')),
+        appBar: LandgrabAppBar(title: 'Capture a pole'),
         body: _barcode == null
             ? const Center(child: CircularProgressIndicator())
             : _form(canSubmit),

@@ -9,6 +9,7 @@ import 'package:landgrab/routes/author/edit_puzzlet_route.dart';
 import 'package:landgrab/routes/author/promote_to_region_dialog.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/attachments_badge.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/map_pin.dart';
 import 'package:landgrab/widgets/pin_map.dart';
 
@@ -184,14 +185,14 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
   PreferredSizeWidget _appBar() {
     if (_selectionMode) {
       final canPromote = _selectedPuzzletIds.isNotEmpty;
-      return AppBar(
+      return LandgrabAppBar(
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: _exitSelectionMode,
         ),
-        title: Text(_selectedPuzzletIds.isEmpty
+        title: _selectedPuzzletIds.isEmpty
             ? 'Select puzzlets'
-            : '${_selectedPuzzletIds.length} selected'),
+            : '${_selectedPuzzletIds.length} selected',
         actions: [
           TextButton.icon(
             onPressed: canPromote ? _promote : null,
@@ -201,8 +202,8 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
         ],
       );
     }
-    return AppBar(
-      title: const Text('My drafts'),
+    return LandgrabAppBar(
+      title: 'My drafts',
       actions: [
         IconButton(
           tooltip: 'Select puzzlets to group into a region',

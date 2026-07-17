@@ -5,6 +5,7 @@ import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
 import 'package:landgrab/widgets/attachments_section.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/pole_form_fields.dart';
 import 'package:landgrab/widgets/record_timestamps.dart';
 
@@ -128,8 +129,8 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Edit pole'),
+        appBar: LandgrabAppBar(
+          title: 'Edit pole',
         actions: [
           IconButton(
             tooltip: 'Delete draft',

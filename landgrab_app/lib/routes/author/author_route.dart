@@ -5,6 +5,7 @@ import 'package:landgrab/routes/author/capture_bathroom_route.dart';
 import 'package:landgrab/routes/author/capture_pole_route.dart';
 import 'package:landgrab/routes/author/capture_puzzlet_route.dart';
 import 'package:landgrab/routes/author/my_drafts_route.dart';
+import 'package:landgrab/widgets/landgrab_app_bar.dart';
 
 class AuthorRoute extends StatelessWidget {
   final LandgrabApi api;
@@ -13,7 +14,7 @@ class AuthorRoute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Author')),
+      appBar: LandgrabAppBar(title: 'Author'),
       body: ListView(
         children: [
           _Tile(
