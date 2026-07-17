@@ -105,10 +105,10 @@ class RegisterStrings {
 class PreEventStrings {
   PreEventStrings._();
 
-  static const notYetScheduled = 'Event not yet scheduled';
+  static const notYetScheduled = 'Simulation not yet scheduled';
   static const openingCopy =
-      'Gameplay opens at start time. Until then, warm up.';
-  static const countdownHeading = 'Event begins in';
+      'Simulation begins at start time. Until then, practice.';
+  static const countdownHeading = 'Simulation begins in';
   static const startingNow = 'starting now';
 
   static const practiceHeading = 'Practice';
@@ -139,15 +139,15 @@ class GameplayStrings {
   static const inProgressHeading = 'Your team is working on';
   static const resume = 'Open';
   static const giveUp = 'Give up';
-  static const giveUpTitle = 'Give up this puzzlet?';
+  static const giveUpTitle = 'Give up on this relic?';
   static String giveUpBody(String poleName) =>
       'Your team will stop working on $poleName and can pick up a '
-      'different pole. You can come back to this one later.';
+      'different zone. You can come back to this one later.';
   static const giveUpCancel = 'Keep working';
   static const giveUpConfirm = 'Give up';
 
   // Scan refused because the team already holds a puzzlet.
-  static const atCapacityTitle = 'Already on a puzzlet';
+  static const atCapacityTitle = 'Already on a relic';
   static String atCapacityBody(String current) =>
       'Your team is already working on $current. Finish it or give it '
       'up before starting another.';
@@ -159,7 +159,7 @@ class GameplayStrings {
   // in-progress card).
   static String othersHere(int n) => '$n other${n == 1 ? '' : 's'} here';
   static String couldNotLoadPoles(String error) =>
-      'Could not load poles: $error';
+      'Could not load zones: $error';
 }
 
 /// Notification history (`routes/notifications_route.dart`).
@@ -168,8 +168,8 @@ class NotificationStrings {
 
   static const title = 'Notifications';
   static const empty =
-      'Nothing yet. When a rival team scans or captures one of your '
-      'poles, it shows up here.';
+      'Nothing yet. When a rival team scans your stake or captures one of your '
+      'zones, it shows up here.';
   static String couldNotLoad(String error) =>
       'Could not load notifications: $error';
 
@@ -197,38 +197,37 @@ class NotificationStrings {
 class ScanStrings {
   ScanStrings._();
 
-  static const appBarTitle = 'Scan a pole';
+  static const appBarTitle = 'Scan a zone barcode';
 
   // Outcome snackbars
-  static const poleFullyCaptured = 'This pole is fully captured.';
-  static const noActivePuzzlet = 'No active puzzlet for this pole.';
+  static const poleFullyCaptured = 'This zone is fully captured.';
+  static const noActivePuzzlet = 'No active relics for this zone.';
   static String scanFailed(String detail) => 'Scan failed: $detail';
 
   // Unknown-barcode dialog
   static const unknownBarcodeTitle = 'Unknown barcode';
   static String unknownBarcodeBody(String barcode) =>
-      '“$barcode” doesn\'t match any known pole. '
-      'Make sure you scanned a pole\'s barcode and try again.';
+      '“$barcode” doesn\'t match any known zone. '
+      'Make sure you scanned a zone\'s barcode and try again.';
   static const unknownBarcodeBack = 'Back to map';
   static const unknownBarcodeRetry = 'Try again';
 
   // Already-owner dialog
   static const alreadyOwnerTitle = 'Already yours';
   static String alreadyOwnerBody(String poleName) =>
-      'Your team already owns $poleName. '
+      'Your team already claims $poleName. '
       'Wait for a rival to capture it before you can claim it again.';
 
   // Locked-out dialog
   static const lockedOutTitle = 'Out of guesses';
   static String lockedOutBody(String poleName) =>
-      'Your team has used all guesses on the current puzzlet for $poleName. '
+      'Your team has used all attempts on the current relic for $poleName. '
       'Wait for another team to capture it before you can try again.';
 
   // Own-creation dialog (authors can't capture their own content)
   static const ownCreationTitle = 'That one\'s yours';
   static String ownCreationBody(String poleName) =>
-      'You authored $poleName, so you can\'t capture it — you know '
-      'the answers. Leave it for the other teams.';
+      'You authored $poleName, so you can\'t capture it. Leave it for the other teams.';
 
   // Outside-the-endgame-boundary dialog. The boundary itself is
   // deliberately invisible — poles it has passed vanish from the
@@ -236,7 +235,7 @@ class ScanStrings {
   static const outsideZoneTitle = 'Out of range';
   static String outsideZoneBody(String poleName) =>
       'The simulation has withdrawn $poleName — it can no longer be '
-      'claimed. Only poles still on your map remain in play.';
+      'claimed. Only zone stakes still on your map remain in play.';
 
   // Generic acknowledge button used across the dialogs above.
   static const ok = 'OK';
@@ -249,8 +248,8 @@ class PuzzletStrings {
   static const titlePrefix = 'Pole';
   static String attemptsRemaining(int n) => 'Attempts remaining: $n';
   static String contendingTeams(int n) => n == 1
-      ? 'Another team is also working on this pole — first to solve it wins.'
-      : '$n other teams are also working on this pole — first to solve it wins.';
+      ? 'Another team is also working on this zone — first to solve it wins.'
+      : '$n other teams are also working on this zone — first to solve it wins.';
   static const previouslyTried = 'Already tried by your team:';
 
   // Region context — the place the pole sits in, plus how to reach it
@@ -282,15 +281,15 @@ class PuzzletStrings {
 
   // Outcome text
   static const correctAndLocked =
-      'Correct! Pole captured and now fully locked.';
-  static const correctPoleCaptured = 'Correct! Pole captured.';
+      'Correct! Zone captured and now fully locked.';
+  static const correctPoleCaptured = 'Correct! Zone captured.';
   static String incorrect(int remaining) =>
       'Incorrect. $remaining attempt(s) left.';
   static const lockedOut = 'Locked out — too many wrong answers.';
   static const alreadyCapturedByOther =
-      'Another team captured this puzzlet first.';
+      'Another team captured this relic first.';
   static const alreadyOwner =
-      'Your team already owns this pole. Wait for a rival.';
+      'Your team already owns this zone. Wait for a rival.';
 
   // Fallbacks for submissions that fail in ways the app doesn't
   // specifically model. When the server supplies an error detail,
