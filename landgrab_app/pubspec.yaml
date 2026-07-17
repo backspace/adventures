@@ -58,7 +58,7 @@ flutter_launcher_icons:
   ios: true
   remove_alpha_ios: true
   android: "ic_launcher"
-  adaptive_icon_background: "#3949AB"
+  adaptive_icon_background: "#0A0A0A"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
   macos:
     generate: true

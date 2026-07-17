@@ -140,7 +140,13 @@ platform :android do
       skip_upload_apk: true,
       skip_upload_aab: true,
       skip_upload_changelogs: true,
-      skip_upload_images: true,
+      # Push the store icon (metadata/android/<locale>/images/icon.png,
+      # 512x512 opaque — regenerate from assets/icon/icon.png). This is the
+      # Play *listing* icon, a separate asset from the in-build launcher icon
+      # that flutter_launcher_icons produces. Only image files actually
+      # present are uploaded, so this pushes just the icon; screenshots and
+      # the feature graphic stay skipped until we add those files.
+      skip_upload_images: false,
       skip_upload_screenshots: true
     )
   end
