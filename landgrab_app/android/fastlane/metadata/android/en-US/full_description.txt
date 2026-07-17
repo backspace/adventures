@@ -1,0 +1,5 @@
+LANDGRAB is the handheld terminal app issued to subjects enrolled in a territorial-acquisition simulation conducted by visiting scholar Sabuk.
+
+During a scheduled study session, subjects use it to survey the study area and capture territorial markers. The terminal relays instructions from the principal investigator, reports your standing, and logs your participation for the duration of the study.
+
+This application is distributed to enrolled participants of a private event and is not intended for general use. If you have not been invited to a study session, it will have little to offer you.
