@@ -464,6 +464,7 @@ class _ContentTabState extends State<ContentTab> {
           label: p.instructions,
           color: colorFor(p.status, p.activeValidation),
           onTap: _drawArmed ? null : () => _onPuzzletPinTap(p),
+          regionId: p.regionId,
         ),
     ];
 
@@ -491,6 +492,12 @@ class _ContentTabState extends State<ContentTab> {
             drawMode: _drawArmed,
             onPolygonDrawn: _onPolygonDrawn,
             polygon: _polygon,
+            cameraMemoryKey: 'supervisor_content_map',
+            // Draw-to-assign selects by true position, so plot pins
+            // verbatim while lassoing — otherwise the loop wouldn't match
+            // what's on screen.
+            cluster: !_drawArmed,
+            groupByRegion: !_drawArmed,
           ),
         ),
         if (orphanCount > 0)

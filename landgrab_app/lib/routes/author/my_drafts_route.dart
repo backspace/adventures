@@ -95,6 +95,7 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
           label: p.instructions,
           color: _statusColor(p.status),
           onTap: editable ? () => _openPuzzlet(p) : null,
+          regionId: p.regionId,
         ));
       }
     }
@@ -367,7 +368,7 @@ class _MapView extends StatelessWidget {
         Expanded(
           child: pins.isEmpty
               ? const Center(child: Text('No drafts have a captured location yet.'))
-              : PinMap(pins: pins),
+              : PinMap(pins: pins, cameraMemoryKey: 'author_drafts_map'),
         ),
         if (orphanCount > 0)
           Padding(

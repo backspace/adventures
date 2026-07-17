@@ -361,6 +361,7 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
                 label: r.title,
                 color: statusColorFor(r.status.name),
                 onTap: r.open,
+                regionId: r.regionId,
               ))
         .toList();
 
@@ -382,7 +383,6 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
                   api: widget.api,
                   pins: pins,
                   cameraMemoryKey: 'validator_map',
-                  cluster: true,
                 ),
               ),
               Positioned(
@@ -420,6 +420,11 @@ class _TodoRow {
   final int attachmentCount;
   final LatLng? position;
   final double? accuracyM;
+
+  /// The region this row belongs to (puzzlets only). Puzzlets sharing a
+  /// region are plotted around the region centroid, since their
+  /// individual in-building GPS is unreliable.
+  final String? regionId;
   final VoidCallback open;
 
   _TodoRow._({
@@ -431,6 +436,7 @@ class _TodoRow {
     required this.attachmentCount,
     required this.position,
     this.accuracyM,
+    this.regionId,
     required this.open,
   });
 
@@ -468,6 +474,7 @@ class _TodoRow {
       position: (puzzlet?.latitude != null && puzzlet?.longitude != null)
           ? LatLng(puzzlet!.latitude!, puzzlet.longitude!)
           : null,
+      regionId: puzzlet?.region?.id,
       open: () => open(v),
     );
   }

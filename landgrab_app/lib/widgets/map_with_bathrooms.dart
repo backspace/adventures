@@ -29,9 +29,10 @@ class MapWithBathrooms extends StatefulWidget {
   /// manual pan/zoom for the session.
   final String? cameraMemoryKey;
 
-  /// Passthrough to [PinMap.cluster] — collapse overlapping pins into a
-  /// tappable count badge.
+  /// Passthrough to [PinMap.cluster] / [PinMap.groupByRegion]. On by
+  /// default so all the survey maps declutter and region-group alike.
   final bool cluster;
+  final bool groupByRegion;
 
   const MapWithBathrooms({
     super.key,
@@ -43,7 +44,8 @@ class MapWithBathrooms extends StatefulWidget {
     this.onPolygonDrawn,
     this.polygon,
     this.cameraMemoryKey,
-    this.cluster = false,
+    this.cluster = true,
+    this.groupByRegion = true,
   });
 
   @override
@@ -92,6 +94,7 @@ class _MapWithBathroomsState extends State<MapWithBathrooms> {
       polygon: widget.polygon,
       cameraMemoryKey: widget.cameraMemoryKey,
       cluster: widget.cluster,
+      groupByRegion: widget.groupByRegion,
     );
   }
 }

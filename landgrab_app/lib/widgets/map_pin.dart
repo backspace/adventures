@@ -24,6 +24,11 @@ class MapPin {
   /// pole pins set it.
   final double? accuracyM;
 
+  /// Pins sharing a [regionId] are plotted around the region's centroid
+  /// (see [PinMap]) rather than their individual — often noisy, GPS-in-a-
+  /// building — positions. Only region-assigned puzzlets set it.
+  final String? regionId;
+
   const MapPin({
     required this.position,
     required this.label,
@@ -33,6 +38,7 @@ class MapPin {
     this.size = 36,
     this.filled = false,
     this.accuracyM,
+    this.regionId,
   });
 
   /// Standard pole marker: a barcode glyph in a filled circle.
@@ -60,6 +66,7 @@ class MapPin {
     required String label,
     required Color color,
     VoidCallback? onTap,
+    String? regionId,
   }) =>
       MapPin(
         position: position,
@@ -69,6 +76,7 @@ class MapPin {
         onTap: onTap,
         size: _typedPinSize,
         filled: true,
+        regionId: regionId,
       );
 
   // Poles/puzzlets sit smaller than the old 36 bare pins so a dense

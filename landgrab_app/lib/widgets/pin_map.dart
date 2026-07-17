@@ -48,10 +48,16 @@ class PinMap extends StatefulWidget {
   /// keep the default fit-to-pins behaviour.
   final String? cameraMemoryKey;
 
-  /// When true, pins that overlap at the current zoom collapse into a
-  /// count badge (so you can tell there's more than one thing there);
-  /// tapping the badge fans them apart (spiderfy) so each is tappable.
+  /// Declutter behaviour (on by default so all the survey maps act
+  /// alike). Above a zoom threshold, overlapping pins repulse apart so
+  /// each stays visible; below it they collapse into a tappable count
+  /// badge. Set false for maps that should plot pins verbatim.
   final bool cluster;
+
+  /// Plot pins that share a [MapPin.regionId] around the region's
+  /// centroid (averaging out noisy in-building GPS). On by default;
+  /// requires the caller to tag puzzlet pins with their region.
+  final bool groupByRegion;
 
   const PinMap({
     super.key,
@@ -61,7 +67,8 @@ class PinMap extends StatefulWidget {
     this.onPolygonDrawn,
     this.polygon,
     this.cameraMemoryKey,
-    this.cluster = false,
+    this.cluster = true,
+    this.groupByRegion = true,
   });
 
   @override
@@ -249,21 +256,23 @@ class _PinMapState extends State<PinMap> {
     if (widget.pins.isEmpty) return false;
     try {
       final bounds = _controller.camera.visibleBounds;
-      return widget.pins.any((p) => !bounds.contains(p.position));
+      final c = _centroids;
+      return widget.pins.any((p) => !bounds.contains(_effectivePos(p, c)));
     } catch (_) {
       return false;
     }
   }
 
   CameraFit _fit() {
-    if (widget.pins.length <= 1) {
-      final position = widget.pins.isEmpty
-          ? const LatLng(49.8951, -97.1384)
-          : widget.pins.single.position;
+    final c = _centroids;
+    final coords = widget.pins.map((p) => _effectivePos(p, c)).toList();
+    if (coords.length <= 1) {
+      final position =
+          coords.isEmpty ? const LatLng(49.8951, -97.1384) : coords.single;
       return CameraFit.coordinates(coordinates: [position], maxZoom: 17);
     }
     return CameraFit.coordinates(
-      coordinates: widget.pins.map((p) => p.position).toList(),
+      coordinates: coords,
       padding: const EdgeInsets.all(40),
       maxZoom: 17,
     );
@@ -322,6 +331,29 @@ class _PinMapState extends State<PinMap> {
           ))
       .toList();
 
+  // Mean position per region, so a region's puzzlets group at one
+  // believable spot rather than scattering with their noisy GPS.
+  Map<String, LatLng> get _centroids {
+    if (!widget.groupByRegion) return const {};
+    final byRegion = <String, List<LatLng>>{};
+    for (final p in widget.pins) {
+      final rid = p.regionId;
+      if (rid != null) (byRegion[rid] ??= []).add(p.position);
+    }
+    return {
+      for (final e in byRegion.entries)
+        e.key: LatLng(
+          e.value.map((p) => p.latitude).reduce((a, b) => a + b) / e.value.length,
+          e.value.map((p) => p.longitude).reduce((a, b) => a + b) / e.value.length,
+        ),
+    };
+  }
+
+  LatLng _effectivePos(MapPin p, Map<String, LatLng> centroids) {
+    final rid = p.regionId;
+    return rid == null ? p.position : (centroids[rid] ?? p.position);
+  }
+
   Marker _markerAt(LatLng point, MapPin p) => Marker(
         point: point,
         width: p.size,
@@ -333,8 +365,10 @@ class _PinMapState extends State<PinMap> {
         ),
       );
 
-  List<Marker> _pinMarkers() =>
-      widget.pins.map((p) => _markerAt(p.position, p)).toList();
+  List<Marker> _pinMarkers() {
+    final c = _centroids;
+    return widget.pins.map((p) => _markerAt(_effectivePos(p, c), p)).toList();
+  }
 
   /// The pin layer(s) for the current view:
   ///  * plain markers when clustering is off (or too few pins);
@@ -384,9 +418,11 @@ class _PinMapState extends State<PinMap> {
   ({List<Marker> markers, List<Polyline> connectors}) _declutter(
       MapCamera cam) {
     final pins = widget.pins;
+    final centroids = _centroids;
+    final base = pins.map((p) => _effectivePos(p, centroids)).toList();
     final origin = <Offset>[];
-    for (final p in pins) {
-      final pt = cam.latLngToScreenPoint(p.position);
+    for (final b in base) {
+      final pt = cam.latLngToScreenPoint(b);
       origin.add(Offset(pt.x, pt.y));
     }
     final sizes = pins.map((p) => p.size).toList();
@@ -395,16 +431,15 @@ class _PinMapState extends State<PinMap> {
     final markers = <Marker>[];
     final connectors = <Polyline>[];
     for (var i = 0; i < pins.length; i++) {
-      final p = pins[i];
       final here = cam.pointToLatLng(Point(placed[i].dx, placed[i].dy));
       if ((placed[i] - origin[i]).distance > 10) {
         connectors.add(Polyline(
-          points: [p.position, here],
+          points: [base[i], here],
           color: Colors.black.withValues(alpha: 0.25),
           strokeWidth: 1,
         ));
       }
-      markers.add(_markerAt(here, p));
+      markers.add(_markerAt(here, pins[i]));
     }
     return (markers: markers, connectors: connectors);
   }
