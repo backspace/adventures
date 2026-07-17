@@ -5,6 +5,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/validator/pole_validation_interstitial_route.dart';
 import 'package:landgrab/routes/validator/puzzlet_validation_interstitial_route.dart';
+import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/attachments_badge.dart';
 import 'package:landgrab/widgets/map_pin.dart';
@@ -41,11 +42,53 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
   // Cached so the FutureBuilder doesn't reload the asset on every rebuild.
   Future<String>? _criteria;
 
+  // The validator's own location, for the secondary distance sort.
+  // Best-effort: null until acquired, and may be stale — the list falls
+  // back to alphabetical when it's missing.
+  LatLng? _here;
+  final _distance = const Distance();
+
   @override
   void initState() {
     super.initState();
     _loadPref();
     _load();
+    _locate();
+  }
+
+  Future<void> _locate() async {
+    try {
+      final fix = await LocationService.getCurrent();
+      if (!mounted) return;
+      setState(() => _here = LatLng(fix.latitude, fix.longitude));
+    } catch (_) {
+      // No fix (permission/GPS/off) — distance sort simply doesn't apply.
+    }
+  }
+
+  /// Orders two rows by distance from [_here]: nearer first, located
+  /// rows ahead of unlocated ones. Returns 0 (no preference) when we
+  /// have no location or can't compare, letting the title tiebreak.
+  int _compareDistance(_TodoRow a, _TodoRow b) {
+    final here = _here;
+    if (here == null) return 0;
+    final da = a.position == null
+        ? null
+        : _distance.as(LengthUnit.Meter, here, a.position!);
+    final db = b.position == null
+        ? null
+        : _distance.as(LengthUnit.Meter, here, b.position!);
+    if (da == null && db == null) return 0;
+    if (da == null) return 1;
+    if (db == null) return -1;
+    return da.compareTo(db);
+  }
+
+  String? _distanceLabel(LatLng? pos) {
+    final here = _here;
+    if (here == null || pos == null) return null;
+    final m = _distance.as(LengthUnit.Meter, here, pos);
+    return m < 1000 ? '~${m.round()} m' : '~${(m / 1000).toStringAsFixed(1)} km';
   }
 
   Future<void> _loadPref() async {
@@ -134,8 +177,11 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
           _TodoRow.puzzlet(zv, _openPuzzlet),
     ];
     rows.sort((a, b) {
+      // Needs-action first, then nearest first, then alphabetical.
       final rank = _actionRank(a.status).compareTo(_actionRank(b.status));
       if (rank != 0) return rank;
+      final byDist = _compareDistance(a, b);
+      if (byDist != 0) return byDist;
       return a.title.toLowerCase().compareTo(b.title.toLowerCase());
     });
     return rows;
@@ -147,7 +193,13 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
       appBar: AppBar(
         title: const Text('To validate'),
         actions: [
-          IconButton(onPressed: _load, icon: const Icon(Icons.refresh)),
+          IconButton(
+            onPressed: () {
+              _load();
+              _locate();
+            },
+            icon: const Icon(Icons.refresh),
+          ),
         ],
       ),
       body: _error != null
@@ -261,7 +313,15 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
           ]),
           subtitle:
               Text(row.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_distanceLabel(row.position) != null)
+                Text(_distanceLabel(row.position)!,
+                    style: Theme.of(context).textTheme.bodySmall),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
           onTap: row.open,
         );
       },
