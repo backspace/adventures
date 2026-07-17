@@ -4,6 +4,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/validator/pole_validation_form_route.dart';
+import 'package:landgrab/widgets/mini_location_map.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
 /// The validator's first stop after tapping a pole — kept close to the
@@ -178,6 +179,12 @@ class _PoleValidationInterstitialRouteState
             const SizedBox(height: 4),
             Text('${pole.latitude.toStringAsFixed(5)}, '
                 '${pole.longitude.toStringAsFixed(5)}'),
+            const SizedBox(height: 8),
+            MiniLocationMap(
+              latitude: pole.latitude,
+              longitude: pole.longitude,
+              label: pole.label ?? pole.barcode,
+            ),
             const SizedBox(height: 24),
           ],
           FilledButton.icon(
