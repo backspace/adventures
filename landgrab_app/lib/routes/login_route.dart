@@ -6,6 +6,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/routes/credits_route.dart';
+import 'package:landgrab/routes/forgot_password_route.dart';
 import 'package:landgrab/routes/home_route.dart';
 import 'package:landgrab/routes/register_route.dart';
 import 'package:landgrab/routes/settings_route.dart';
@@ -244,7 +245,20 @@ class _LoginRouteState extends State<LoginRoute> {
                     )
                   : const Text(LoginStrings.signInButton),
             ),
-            const SizedBox(height: 20),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _busy
+                    ? null
+                    : () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const ForgotPasswordRoute(),
+                          ),
+                        ),
+                child: const Text(LoginStrings.forgotPassword),
+              ),
+            ),
+            const SizedBox(height: 8),
             Row(children: const [
               Expanded(child: Divider()),
               Padding(

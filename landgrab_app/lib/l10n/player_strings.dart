@@ -66,6 +66,19 @@ class LoginStrings {
 
   static const noAccountPrompt = 'New here?';
   static const createAccountLink = 'Create an account';
+  static const forgotPassword = 'Forgot password?';
+}
+
+/// Password-reset WebView (`routes/forgot_password_route.dart`), which
+/// hosts the registrations site's public `/reset-password/new` page.
+class ForgotPasswordStrings {
+  ForgotPasswordStrings._();
+
+  static const appBarTitle = 'Reset password';
+  static const reloadTooltip = 'Reload';
+  static const tryAgain = 'Try again';
+  static String couldNotOpen(String detail) =>
+      'Could not open the password-reset page: $detail';
 }
 
 /// Sign-up screen (`routes/register_route.dart`), for people arriving
@@ -298,6 +311,17 @@ class DetailsStrings {
   static const tryAgain = 'Try again';
   static String couldNotOpen(String detail) =>
       'Could not open your details page: $detail';
+
+  // Native buttons for the JavaScript dialogs the /details page raises
+  // (e.g. the "delete your account" confirmation). webview_flutter
+  // shows no dialog for window.confirm/alert unless we handle it, so
+  // these back the handlers registered in the route.
+  static const dialogOk = 'OK';
+  static const dialogCancel = 'Cancel';
+
+  // Shown after the account is deleted from the /details page and the
+  // app logs itself out.
+  static const accountDeleted = 'Your account has been deleted.';
 }
 
 // Credits copy lives in routes/credits_route.dart, not here — it's
