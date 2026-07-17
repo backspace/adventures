@@ -170,6 +170,46 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
       assert Registrations.Repo.get!(Pole, pole.id).status == :retired
     end
 
+    test "submitting a puzzlet form endorses / records suggestions",
+         %{conn: conn, validator: validator, author: author, supervisor: supervisor} do
+      puzzlet = insert(:puzzlet, creator: author, status: :draft, difficulty: 3)
+      {:ok, v} = Validations.assign_puzzlet_validation(puzzlet.id, validator.id, supervisor.id)
+
+      # Clean endorse.
+      endorsed =
+        conn
+        |> post("/landgrab/validation/puzzlet-validations/#{v.id}/submit",
+          %{"suggestions" => []})
+        |> json_response(200)
+
+      assert endorsed["status"] == "submitted"
+      assert endorsed["comments"] == []
+
+      # A fresh assignment can carry suggestions.
+      puzzlet2 = insert(:puzzlet, creator: author, status: :draft, difficulty: 3)
+      {:ok, v2} = Validations.assign_puzzlet_validation(puzzlet2.id, validator.id, supervisor.id)
+
+      body =
+        conn
+        |> post("/landgrab/validation/puzzlet-validations/#{v2.id}/submit", %{
+          "suggestions" => [
+            %{"field" => "difficulty", "suggested_value" => "5"},
+            %{"field" => "accessibility_tags", "suggested_value" => ~s(["stairs"])}
+          ]
+        })
+        |> json_response(200)
+
+      assert body["status"] == "submitted"
+      fields = Enum.map(body["comments"], & &1["field"]) |> Enum.sort()
+      assert fields == ["accessibility_tags", "difficulty"]
+
+      # Supervisor accepting the difficulty suggestion applies it.
+      diff = Enum.find(body["comments"], &(&1["field"] == "difficulty"))
+      comment = Validations.get_puzzlet_comment(diff["id"])
+      {:ok, _} = Validations.accept_puzzlet_comment(comment)
+      assert Registrations.Repo.get!(Registrations.Landgrab.Puzzlet, puzzlet2.id).difficulty == 5
+    end
+
     test "scan resolves matched / other / unknown for the validator",
          %{conn: conn, validator: validator, author: author, supervisor: supervisor} do
       tapped = insert(:pole, creator: author, status: :draft, barcode: "TAP-#{System.unique_integer([:positive])}")

@@ -127,6 +127,23 @@ defmodule RegistrationsWeb.Landgrab.ValidationController do
     end
   end
 
+  def submit_puzzlet_validation(conn, %{"id" => id} = params) do
+    user = Pow.Plug.current_user(conn)
+
+    case Validations.get_puzzlet_validation(id) do
+      nil ->
+        not_found(conn)
+
+      validation ->
+        attrs = Map.take(params, ["suggestions", "overall_notes"])
+
+        case Validations.submit_puzzlet_validation(validation, user.id, attrs) do
+          {:ok, updated} -> json(conn, render_puzzlet_validation(updated))
+          {:error, error} -> handle_error(conn, error)
+        end
+    end
+  end
+
   def mark_pole_unfindable(conn, %{"id" => id} = params) do
     user = Pow.Plug.current_user(conn)
 

@@ -334,6 +334,60 @@ defmodule Registrations.Landgrab.Validations do
   end
 
   @doc """
+  Submit the validator's puzzlet form in one atomic action — the
+  puzzlet analogue of `submit_pole_validation`. Previewing the puzzlet
+  as a player and endorsing it is just an empty `suggestions` list.
+  """
+  def submit_puzzlet_validation(%PuzzletValidation{} = v, validator_id, attrs) do
+    cond do
+      v.validator_id != validator_id -> {:error, :not_assignee}
+      v.status not in ["assigned", "in_progress"] -> {:error, :not_editable}
+      true -> do_submit_puzzlet_validation(v, attrs)
+    end
+  end
+
+  defp do_submit_puzzlet_validation(v, attrs) do
+    result =
+      Repo.transaction(fn ->
+        Repo.delete_all(
+          from(c in PuzzletValidationComment, where: c.puzzlet_validation_id == ^v.id)
+        )
+
+        Enum.each(Map.get(attrs, "suggestions", []), fn s ->
+          case %PuzzletValidationComment{}
+               |> PuzzletValidationComment.changeset(%{
+                 "puzzlet_validation_id" => v.id,
+                 "field" => s["field"],
+                 "comment" => s["comment"],
+                 "suggested_value" => s["suggested_value"]
+               })
+               |> Repo.insert() do
+            {:ok, _} -> :ok
+            {:error, changeset} -> Repo.rollback(changeset)
+          end
+        end)
+
+        changeset =
+          v
+          |> PuzzletValidation.changeset(%{
+            "overall_notes" => Map.get(attrs, "overall_notes"),
+            "status" => "submitted"
+          })
+          |> Lifecycle.validate_status_transition(v.status, :validator)
+
+        case Repo.update(changeset) do
+          {:ok, updated} -> updated
+          {:error, changeset} -> Repo.rollback(changeset)
+        end
+      end)
+
+    case result do
+      {:ok, _} -> {:ok, get_puzzlet_validation(v.id)}
+      {:error, _} = err -> err
+    end
+  end
+
+  @doc """
   Record that the validator couldn't find the pole. Sets the note (if
   given) and moves the validation to `unfindable` for the supervisor to
   resolve.

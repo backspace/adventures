@@ -332,6 +332,7 @@ defmodule RegistrationsWeb.Router do
 
     post("/pole-validations/:id/submit", ValidationController, :submit_pole_validation)
     post("/pole-validations/:id/unfindable", ValidationController, :mark_pole_unfindable)
+    post("/puzzlet-validations/:id/submit", ValidationController, :submit_puzzlet_validation)
 
     post("/pole-validations/:validation_id/comments", ValidationController, :create_pole_comment)
     post("/puzzlet-validations/:validation_id/comments", ValidationController, :create_puzzlet_comment)

@@ -153,23 +153,36 @@ class ValidationPuzzletSummary {
   final String id;
   final String instructions;
   final String answer;
+  final String answerType;
   final int difficulty;
   final String status;
+  final String? warning;
   final double? latitude;
   final double? longitude;
   final List<String> attachmentIds;
+  final List<String> accessibilityTags;
+  final String? accessibilityNotes;
   final RegionSummary? region;
+
+  /// Region description/accessibility gathered up the hierarchy — same
+  /// content a player sees, for the validator's "preview as player".
+  final List<InheritedStanza> inheritedStanzas;
 
   ValidationPuzzletSummary({
     required this.id,
     required this.instructions,
     required this.answer,
+    this.answerType = 'loose_text',
     required this.difficulty,
     required this.status,
+    this.warning,
     required this.latitude,
     required this.longitude,
     this.attachmentIds = const [],
+    this.accessibilityTags = const [],
+    this.accessibilityNotes,
     this.region,
+    this.inheritedStanzas = const [],
   });
 
   factory ValidationPuzzletSummary.fromJson(Map<String, dynamic> json) =>
@@ -177,14 +190,25 @@ class ValidationPuzzletSummary {
         id: json['id'] as String,
         instructions: json['instructions'] as String,
         answer: json['answer'] as String,
+        answerType: json['answer_type'] as String? ?? 'loose_text',
         difficulty: json['difficulty'] as int,
         status: json['status'] as String? ?? 'draft',
+        warning: json['warning'] as String?,
         latitude: (json['latitude'] as num?)?.toDouble(),
         longitude: (json['longitude'] as num?)?.toDouble(),
         attachmentIds: _attachmentIdsFromJson(json['attachment_ids']),
+        accessibilityTags: (json['accessibility_tags'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
+        accessibilityNotes: json['accessibility_notes'] as String?,
         region: json['region'] == null
             ? null
             : RegionSummary.fromJson(json['region'] as Map<String, dynamic>),
+        inheritedStanzas: (json['inherited_stanzas'] as List?)
+                ?.map((e) => InheritedStanza.fromJson(e as Map<String, dynamic>))
+                .toList(growable: false) ??
+            const [],
       );
 }
 

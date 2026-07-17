@@ -4,7 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/validator/pole_validation_interstitial_route.dart';
-import 'package:landgrab/routes/validator/puzzlet_validation_detail_route.dart';
+import 'package:landgrab/routes/validator/puzzlet_validation_interstitial_route.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/attachments_badge.dart';
 import 'package:landgrab/widgets/map_pin.dart';
@@ -103,8 +103,10 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
   Future<void> _openPuzzlet(PuzzletValidationModel v) async {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) =>
-            PuzzletValidationDetailRoute(api: widget.api, validation: v),
+        builder: (_) => PuzzletValidationInterstitialRoute(
+          api: widget.api,
+          validation: v,
+        ),
       ),
     );
     if (changed == true) await _load();

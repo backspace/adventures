@@ -9,7 +9,8 @@ defmodule Registrations.Landgrab.Validations.PuzzletValidationComment do
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "landgrab"
 
-  @valid_fields ~w(instructions answer difficulty)
+  # `accessibility_tags` is a JSON array in `suggested_value`.
+  @valid_fields ~w(instructions answer difficulty warning accessibility_notes accessibility_tags)
   @valid_statuses ~w(pending accepted rejected)
 
   schema "puzzlet_validation_comments" do
