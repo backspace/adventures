@@ -17,7 +17,6 @@ const List<String> kAccessibilityTags = [
 /// Tags shown first in the chip selector for a pole (location-related).
 /// Others appear after the user taps "Show all."
 const Set<String> kPolePrimaryTags = {
-  'strenuous',
   'steep',
   'heights',
   'uneven_surface',
@@ -29,7 +28,6 @@ const Set<String> kPolePrimaryTags = {
 /// route to find a puzzlet often involves them).
 const Set<String> kPuzzletPrimaryTags = {
   'stairs',
-  'strenuous',
   'crouch_required',
   'reach_required',
   'requires_hearing',
@@ -40,7 +38,6 @@ const Set<String> kPuzzletPrimaryTags = {
 /// location-related tags lead.
 const Set<String> kRegionPrimaryTags = {
   'stairs',
-  'strenuous',
   'steep',
   'heights',
   'narrow_path',
