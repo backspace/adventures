@@ -268,7 +268,11 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
           child: Stack(
             children: [
               Positioned.fill(
-                child: MapWithBathrooms(api: widget.api, pins: pins),
+                child: MapWithBathrooms(
+                  api: widget.api,
+                  pins: pins,
+                  cameraMemoryKey: 'validator_map',
+                ),
               ),
               Positioned(
                 top: 8,

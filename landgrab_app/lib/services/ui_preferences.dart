@@ -34,4 +34,31 @@ class UiPreferences {
     final p = await _prefs();
     await p.setString('region_picker:last_id', id);
   }
+
+  /// A map's last manually-set camera (centre + zoom), so a pan/zoom
+  /// survives leaving the screen and app restarts. Stored per-device as
+  /// a "lat,lng,zoom" string. Null when never set (or malformed).
+  static Future<({double lat, double lng, double zoom})?> getMapCamera(
+      String mapKey) async {
+    final p = await _prefs();
+    final raw = p.getString('map_camera:$mapKey');
+    if (raw == null) return null;
+    final parts = raw.split(',');
+    if (parts.length != 3) return null;
+    final lat = double.tryParse(parts[0]);
+    final lng = double.tryParse(parts[1]);
+    final zoom = double.tryParse(parts[2]);
+    if (lat == null || lng == null || zoom == null) return null;
+    return (lat: lat, lng: lng, zoom: zoom);
+  }
+
+  static Future<void> setMapCamera(
+    String mapKey, {
+    required double lat,
+    required double lng,
+    required double zoom,
+  }) async {
+    final p = await _prefs();
+    await p.setString('map_camera:$mapKey', '$lat,$lng,$zoom');
+  }
 }

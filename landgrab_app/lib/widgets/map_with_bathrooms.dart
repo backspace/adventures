@@ -25,6 +25,10 @@ class MapWithBathrooms extends StatefulWidget {
   final void Function(List<LatLng> polygon)? onPolygonDrawn;
   final List<LatLng>? polygon;
 
+  /// Passthrough to [PinMap.cameraMemoryKey] — remember this map's
+  /// manual pan/zoom for the session.
+  final String? cameraMemoryKey;
+
   const MapWithBathrooms({
     super.key,
     required this.api,
@@ -34,6 +38,7 @@ class MapWithBathrooms extends StatefulWidget {
     this.drawMode = false,
     this.onPolygonDrawn,
     this.polygon,
+    this.cameraMemoryKey,
   });
 
   @override
@@ -80,6 +85,7 @@ class _MapWithBathroomsState extends State<MapWithBathrooms> {
       drawMode: widget.drawMode,
       onPolygonDrawn: widget.onPolygonDrawn,
       polygon: widget.polygon,
+      cameraMemoryKey: widget.cameraMemoryKey,
     );
   }
 }

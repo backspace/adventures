@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/services/location_service.dart';
+import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/map_pin.dart';
 
 /// Shared FlutterMap configuration: CartoDB Positron tiles, attribution, and
@@ -21,12 +23,29 @@ import 'package:landgrab/widgets/map_pin.dart';
 /// it doesn't enter the gesture arena, so the map's own two-finger
 /// recognizers keep working alongside it. Single-finger drag is left
 /// disabled on the map so it belongs solely to drawing.
+/// Remembers each opted-in map's last manually-set camera (by key) for
+/// the session, so a pan/zoom survives leaving and returning to the
+/// screen. In-memory only — resets on app restart.
+final Map<String, _CameraSnapshot> _cameraMemory = {};
+
+class _CameraSnapshot {
+  final LatLng center;
+  final double zoom;
+  const _CameraSnapshot(this.center, this.zoom);
+}
+
 class PinMap extends StatefulWidget {
   final List<MapPin> pins;
   final bool interactive;
   final bool drawMode;
   final void Function(List<LatLng> polygon)? onPolygonDrawn;
   final List<LatLng>? polygon;
+
+  /// When set, this map remembers its camera under this key: a manual
+  /// pan/zoom is restored on the next build instead of re-fitting to the
+  /// pins, so returning to the screen keeps the same view. Leave null to
+  /// keep the default fit-to-pins behaviour.
+  final String? cameraMemoryKey;
 
   const PinMap({
     super.key,
@@ -35,6 +54,7 @@ class PinMap extends StatefulWidget {
     this.drawMode = false,
     this.onPolygonDrawn,
     this.polygon,
+    this.cameraMemoryKey,
   });
 
   @override
@@ -45,6 +65,49 @@ class _PinMapState extends State<PinMap> {
   final MapController _controller = MapController();
   LatLng? _userLocation;
   bool _locating = false;
+
+  // Debounces persisting the camera to UiPreferences — onPositionChanged
+  // fires every frame of a pan/zoom, so we only write once it settles.
+  Timer? _persistTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    final key = widget.cameraMemoryKey;
+    // First open this session: pull the saved camera from disk. Later
+    // opens hit the in-memory cache synchronously (via _remembered).
+    if (key != null && !_cameraMemory.containsKey(key)) {
+      _hydrateCamera(key);
+    }
+  }
+
+  Future<void> _hydrateCamera(String key) async {
+    final saved = await UiPreferences.getMapCamera(key);
+    if (saved == null || !mounted) return;
+    // If the user already panned this session, their gesture wins.
+    if (_cameraMemory.containsKey(key)) return;
+    final center = LatLng(saved.lat, saved.lng);
+    _cameraMemory[key] = _CameraSnapshot(center, saved.zoom);
+    // The first frame already fit to the pins; move to the saved view.
+    try {
+      _controller.move(center, saved.zoom);
+    } catch (_) {
+      // Camera not laid out yet; the next build uses _remembered anyway.
+    }
+  }
+
+  @override
+  void dispose() {
+    _persistTimer?.cancel();
+    // Flush a pending camera write so a quick pan-then-leave still saves.
+    final key = widget.cameraMemoryKey;
+    final snap = key == null ? null : _cameraMemory[key];
+    if (key != null && snap != null) {
+      UiPreferences.setMapCamera(key,
+          lat: snap.center.latitude, lng: snap.center.longitude, zoom: snap.zoom);
+    }
+    super.dispose();
+  }
 
   // In-progress freehand stroke, already unprojected. A stroke only
   // counts while exactly one finger is down for its whole duration —
@@ -94,9 +157,34 @@ class _PinMapState extends State<PinMap> {
     if (_stroke.isNotEmpty) setState(_stroke.clear);
   }
 
+  _CameraSnapshot? get _remembered {
+    final key = widget.cameraMemoryKey;
+    return key == null ? null : _cameraMemory[key];
+  }
+
+  void _onPositionChanged(MapPosition pos, bool hasGesture) {
+    // Only remember deliberate pans/zooms, not programmatic moves or the
+    // initial fit.
+    final key = widget.cameraMemoryKey;
+    if (key == null || !hasGesture) return;
+    final center = pos.center;
+    final zoom = pos.zoom;
+    if (center == null || zoom == null) return;
+    _cameraMemory[key] = _CameraSnapshot(center, zoom);
+    // Persist once the gesture settles (fires every frame otherwise).
+    _persistTimer?.cancel();
+    _persistTimer = Timer(const Duration(milliseconds: 500), () {
+      UiPreferences.setMapCamera(key,
+          lat: center.latitude, lng: center.longitude, zoom: zoom);
+    });
+  }
+
   @override
   void didUpdateWidget(PinMap oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // A memory-keyed map owns its camera once shown — data reloads must
+    // not yank it back to a fit.
+    if (widget.cameraMemoryKey != null) return;
     if (_pinsMoved(oldWidget.pins, widget.pins) && _anyPinOutsideView()) {
       // Only refit when the new pin set is no longer visible — leaves
       // the user's manual pan/zoom alone when the move is still in view.
@@ -195,10 +283,16 @@ class _PinMapState extends State<PinMap> {
 
   @override
   Widget build(BuildContext context) {
+    final remembered = _remembered;
     final map = FlutterMap(
       mapController: _controller,
       options: MapOptions(
-        initialCameraFit: _fit(),
+        // A remembered camera wins; otherwise fit to the pins. (When
+        // initialCameraFit is non-null it overrides initialCenter/Zoom.)
+        initialCenter: remembered?.center ?? const LatLng(49.8951, -97.1384),
+        initialZoom: remembered?.zoom ?? 15,
+        initialCameraFit: remembered == null ? _fit() : null,
+        onPositionChanged: _onPositionChanged,
         interactionOptions: InteractionOptions(flags: _interactiveFlags()),
       ),
       children: [
