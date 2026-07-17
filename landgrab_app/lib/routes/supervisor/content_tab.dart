@@ -193,6 +193,9 @@ class _ContentTabState extends State<ContentTab> {
     final puzzlets = _visiblePuzzlets
         .where((p) =>
             p.latitude != null &&
+            // Validator-only puzzlets are set-aside content, not
+            // validation work — never selectable for assignment.
+            !p.validatorOnly &&
             _assignable(p.status, p.activeValidation) &&
             _inPolygon(p.latitude!, p.longitude!, polygon))
         .toList();
@@ -465,6 +468,7 @@ class _ContentTabState extends State<ContentTab> {
           color: colorFor(p.status, p.activeValidation),
           onTap: _drawArmed ? null : () => _onPuzzletPinTap(p),
           regionId: p.regionId,
+          starred: p.validatorOnly,
         ),
     ];
 

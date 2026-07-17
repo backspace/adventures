@@ -235,6 +235,15 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
       assert Enum.all?(body["poles"], &(&1["status"] == "draft"))
     end
 
+    test "list_puzzlets exposes validator_only (drives the map star)", %{conn: conn} do
+      author = insert(:user, email: unique_email("a"))
+      vo = insert(:puzzlet, creator: author, status: :draft, validator_only: true)
+
+      body = conn |> get("/landgrab/supervision/puzzlets") |> json_response(200)
+      entry = Enum.find(body["puzzlets"], &(&1["id"] == vo.id))
+      assert entry["validator_only"] == true
+    end
+
     test "GET /poles/:id/validations returns validations with comments",
          %{conn: conn, supervisor: supervisor} do
       validator = insert(:user, email: unique_email("v"))
@@ -407,6 +416,45 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
       conn
       |> post("/landgrab/supervision/assignments", %{"pole_ids" => []})
       |> json_response(400)
+    end
+
+    test "ignores validator-only puzzlets (not assigned, not counted)", %{
+      conn: conn,
+      validator: validator,
+      author: author
+    } do
+      normal = insert(:puzzlet, creator: author, status: :draft)
+      vo = insert(:puzzlet, creator: author, status: :draft, validator_only: true)
+
+      body =
+        conn
+        |> post("/landgrab/supervision/assignments", %{
+          "validator_id" => validator.id,
+          "pole_ids" => [],
+          "puzzlet_ids" => [normal.id, vo.id]
+        })
+        |> json_response(200)
+
+      assert body == %{"assigned" => 1, "skipped" => 0}
+      assert Validations.active_validations_by_puzzlet([vo.id])[vo.id] == nil
+    end
+
+    test "a validator-only puzzlet can't be assigned individually", %{
+      conn: conn,
+      validator: validator,
+      author: author
+    } do
+      vo = insert(:puzzlet, creator: author, status: :draft, validator_only: true)
+
+      body =
+        conn
+        |> post("/landgrab/supervision/puzzlets/#{vo.id}/validations", %{
+          "validator_id" => validator.id
+        })
+        |> json_response(422)
+
+      assert body["error"]["code"] == "validator_only"
+      assert Validations.active_validations_by_puzzlet([vo.id])[vo.id] == nil
     end
   end
 end

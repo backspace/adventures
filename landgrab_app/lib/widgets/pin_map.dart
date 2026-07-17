@@ -585,21 +585,43 @@ class _PinIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!pin.filled) {
-      return Icon(pin.icon, color: pin.color, size: pin.size);
-    }
-    return Container(
-      width: pin.size,
-      height: pin.size,
-      decoration: BoxDecoration(
-        color: pin.color,
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 1.5),
-        boxShadow: const [
-          BoxShadow(color: Color(0x33000000), blurRadius: 2, offset: Offset(0, 1)),
-        ],
-      ),
-      child: Icon(pin.icon, color: Colors.white, size: pin.size * 0.55),
+    final Widget base = !pin.filled
+        ? Icon(pin.icon, color: pin.color, size: pin.size)
+        : Container(
+            width: pin.size,
+            height: pin.size,
+            decoration: BoxDecoration(
+              color: pin.color,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1.5),
+              boxShadow: const [
+                BoxShadow(
+                    color: Color(0x33000000), blurRadius: 2, offset: Offset(0, 1)),
+              ],
+            ),
+            child: Icon(pin.icon, color: Colors.white, size: pin.size * 0.55),
+          );
+
+    if (!pin.starred) return base;
+
+    // Validator-only badge, hung just outside the top-right so it
+    // doesn't cover the pin's glyph. Matches the author scouting map.
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        base,
+        const Positioned(
+          right: -2,
+          top: -2,
+          child: DecoratedBox(
+            decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+            child: Padding(
+              padding: EdgeInsets.all(1),
+              child: Icon(Icons.star, size: 12, color: Colors.amber),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -128,6 +128,16 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
       {:ok, validation} ->
         conn |> put_status(:created) |> json(render_puzzlet_validation(validation))
 
+      {:error, :validator_only} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{
+          error: %{
+            code: "validator_only",
+            detail: "Validator-only puzzlets aren't validation work and can't be assigned."
+          }
+        })
+
       {:error, %Ecto.Changeset{} = changeset} ->
         unprocessable(conn, changeset)
     end
@@ -435,7 +445,8 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
         attachment_ids: Registrations.Landgrab.list_puzzlet_attachment_ids(puzzlet.id),
         accessibility_tags: puzzlet.accessibility_tags || [],
         accessibility_notes: puzzlet.accessibility_notes,
-        warning: puzzlet.warning
+        warning: puzzlet.warning,
+        validator_only: puzzlet.validator_only
       },
       Registrations.Landgrab.Regions.puzzlet_inheritance_payload(puzzlet)
     )

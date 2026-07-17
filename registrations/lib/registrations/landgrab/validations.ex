@@ -39,6 +39,12 @@ defmodule Registrations.Landgrab.Validations do
 
   def assign_puzzlet_validation(puzzlet_id, validator_id, assigner_id) do
     Repo.transaction(fn ->
+      puzzlet = Repo.get!(Puzzlet, puzzlet_id)
+
+      # Validator-only puzzlets are set-aside content, never validation
+      # work — they can't be assigned to a validator.
+      if puzzlet.validator_only, do: Repo.rollback(:validator_only)
+
       changeset =
         PuzzletValidation.changeset(%PuzzletValidation{}, %{
           puzzlet_id: puzzlet_id,
@@ -48,7 +54,6 @@ defmodule Registrations.Landgrab.Validations do
         })
 
       with {:ok, validation} <- Repo.insert(changeset),
-           puzzlet = Repo.get!(Puzzlet, puzzlet_id),
            {:ok, _} <- maybe_flip_puzzlet(puzzlet, :in_review) do
         preload_validator(validation)
       else
@@ -773,6 +778,11 @@ defmodule Registrations.Landgrab.Validations do
   Returns `%{assigned: n, skipped: n}`.
   """
   def bulk_assign(pole_ids, puzzlet_ids, validator_id, assigner_id) do
+    # Validator-only puzzlets aren't validation work, so the lasso
+    # ignores them outright — dropped here so they're not even counted
+    # as "skipped".
+    puzzlet_ids = reject_validator_only(puzzlet_ids)
+
     active_poles = pole_ids |> active_validations_by_pole() |> Map.keys() |> MapSet.new()
     active_puzzlets = puzzlet_ids |> active_validations_by_puzzlet() |> Map.keys() |> MapSet.new()
 
@@ -792,6 +802,19 @@ defmodule Registrations.Landgrab.Validations do
       assigned: Enum.count(results, &(&1 == :assigned)),
       skipped: Enum.count(results, &(&1 == :skipped))
     }
+  end
+
+  defp reject_validator_only([]), do: []
+
+  defp reject_validator_only(ids) do
+    excluded =
+      Puzzlet
+      |> where([p], p.id in ^ids and p.validator_only)
+      |> select([p], p.id)
+      |> Repo.all()
+      |> MapSet.new()
+
+    Enum.reject(ids, &MapSet.member?(excluded, &1))
   end
 
   defp attempt_assign(fun) do

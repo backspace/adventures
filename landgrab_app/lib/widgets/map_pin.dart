@@ -29,6 +29,10 @@ class MapPin {
   /// building — positions. Only region-assigned puzzlets set it.
   final String? regionId;
 
+  /// Overlays a small amber star badge — marks validator-only puzzlets,
+  /// which are hidden from players and set aside from validation work.
+  final bool starred;
+
   const MapPin({
     required this.position,
     required this.label,
@@ -39,6 +43,7 @@ class MapPin {
     this.filled = false,
     this.accuracyM,
     this.regionId,
+    this.starred = false,
   });
 
   /// Standard pole marker: a barcode glyph in a filled circle.
@@ -67,6 +72,7 @@ class MapPin {
     required Color color,
     VoidCallback? onTap,
     String? regionId,
+    bool starred = false,
   }) =>
       MapPin(
         position: position,
@@ -77,6 +83,7 @@ class MapPin {
         size: _typedPinSize,
         filled: true,
         regionId: regionId,
+        starred: starred,
       );
 
   // Poles/puzzlets sit smaller than the old 36 bare pins so a dense

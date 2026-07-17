@@ -96,6 +96,7 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
           color: _statusColor(p.status),
           onTap: editable ? () => _openPuzzlet(p) : null,
           regionId: p.regionId,
+          starred: p.validatorOnly,
         ));
       }
     }
