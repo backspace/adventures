@@ -14,6 +14,8 @@ defmodule Registrations.Landgrab.Validations.PoleValidation do
   schema "pole_validations" do
     field(:status, :string, default: "assigned")
     field(:overall_notes, :string)
+    # Set when the validator scanned the pole on-site and it matched.
+    field(:physically_verified, :boolean, default: false)
 
     belongs_to(:pole, Pole, type: :binary_id)
     belongs_to(:validator, RegistrationsWeb.User, type: :binary_id, foreign_key: :validator_id)
@@ -31,7 +33,7 @@ defmodule Registrations.Landgrab.Validations.PoleValidation do
   @doc false
   def changeset(validation, attrs) do
     validation
-    |> cast(attrs, [:pole_id, :validator_id, :assigned_by_id, :status, :overall_notes])
+    |> cast(attrs, [:pole_id, :validator_id, :assigned_by_id, :status, :overall_notes, :physically_verified])
     |> validate_required([:pole_id, :validator_id, :assigned_by_id])
     |> validate_inclusion(:status, Lifecycle.valid_statuses())
     |> assoc_constraint(:pole)

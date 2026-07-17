@@ -83,6 +83,125 @@ defmodule RegistrationsWeb.Landgrab.ValidationControllerTest do
       assert body["status"] == "submitted"
     end
 
+    test "submitting the form with no changes is a clean endorsement",
+         %{conn: conn, validator: validator, author: author, supervisor: supervisor} do
+      pole = insert(:pole, creator: author, status: :draft)
+      {:ok, v} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+
+      body =
+        conn
+        |> post("/landgrab/validation/pole-validations/#{v.id}/submit", %{
+          "physically_verified" => true,
+          "suggestions" => []
+        })
+        |> json_response(200)
+
+      assert body["status"] == "submitted"
+      assert body["physically_verified"] == true
+      assert body["comments"] == []
+    end
+
+    test "submitting with edits records them as suggestions",
+         %{conn: conn, validator: validator, author: author, supervisor: supervisor} do
+      pole = insert(:pole, creator: author, status: :draft, label: "Old")
+      {:ok, v} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+
+      body =
+        conn
+        |> post("/landgrab/validation/pole-validations/#{v.id}/submit", %{
+          "physically_verified" => true,
+          "suggestions" => [
+            %{"field" => "label", "suggested_value" => "The Forks"},
+            %{
+              "field" => "location",
+              "suggested_value" => ~s({"latitude":49.9,"longitude":-97.1,"accuracy_m":6.0})
+            }
+          ]
+        })
+        |> json_response(200)
+
+      assert body["status"] == "submitted"
+      fields = Enum.map(body["comments"], & &1["field"]) |> Enum.sort()
+      assert fields == ["label", "location"]
+    end
+
+    test "supervisor accepting a location suggestion moves the pole",
+         %{validator: validator, author: author, supervisor: supervisor} do
+      pole = insert(:pole, creator: author, status: :draft, latitude: 49.0, longitude: -97.0)
+      {:ok, v} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+
+      {:ok, submitted} =
+        Validations.submit_pole_validation(v, validator.id, %{
+          "physically_verified" => true,
+          "suggestions" => [
+            %{
+              "field" => "location",
+              "suggested_value" => ~s({"latitude":49.5,"longitude":-97.5,"accuracy_m":5.0})
+            }
+          ]
+        })
+
+      comment = hd(submitted.comments)
+      {:ok, _} = Validations.accept_pole_comment(comment)
+
+      moved = Registrations.Repo.get!(Pole, pole.id)
+      assert moved.latitude == 49.5
+      assert moved.longitude == -97.5
+      assert moved.accuracy_m == 5.0
+    end
+
+    test "marking a pole unfindable, then supervisor accepting, retires it",
+         %{conn: conn, validator: validator, author: author, supervisor: supervisor} do
+      pole = insert(:pole, creator: author, status: :draft)
+      {:ok, v} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+
+      body =
+        conn
+        |> post("/landgrab/validation/pole-validations/#{v.id}/unfindable", %{
+          "overall_notes" => "no pole at these coordinates"
+        })
+        |> json_response(200)
+
+      assert body["status"] == "unfindable"
+      assert body["overall_notes"] == "no pole at these coordinates"
+
+      reloaded = Validations.get_pole_validation(v.id)
+      {:ok, _} = Validations.accept_pole_validation(reloaded)
+      assert Registrations.Repo.get!(Pole, pole.id).status == :retired
+    end
+
+    test "scan resolves matched / other / unknown for the validator",
+         %{conn: conn, validator: validator, author: author, supervisor: supervisor} do
+      tapped = insert(:pole, creator: author, status: :draft, barcode: "TAP-#{System.unique_integer([:positive])}")
+      other = insert(:pole, creator: author, status: :draft, barcode: "OTH-#{System.unique_integer([:positive])}")
+      {:ok, tv} = Validations.assign_pole_validation(tapped.id, validator.id, supervisor.id)
+      {:ok, ov} = Validations.assign_pole_validation(other.id, validator.id, supervisor.id)
+
+      matched =
+        conn
+        |> get("/landgrab/validation/scan?barcode=#{tapped.barcode}&validation_id=#{tv.id}")
+        |> json_response(200)
+
+      assert matched["outcome"] == "matched"
+      assert matched["validation_id"] == tv.id
+
+      routed =
+        conn
+        |> get("/landgrab/validation/scan?barcode=#{other.barcode}&validation_id=#{tv.id}")
+        |> json_response(200)
+
+      assert routed["outcome"] == "other"
+      assert routed["validation_id"] == ov.id
+
+      unknown =
+        conn
+        |> get("/landgrab/validation/scan?barcode=NOSUCH&validation_id=#{tv.id}")
+        |> json_response(200)
+
+      assert unknown["outcome"] == "unknown"
+      assert unknown["validation_id"] == nil
+    end
+
     test "validator cannot accept (supervisor-only transition)",
          %{conn: conn, validator: validator, author: author, supervisor: supervisor} do
       pole = insert(:pole, creator: author, status: :draft)

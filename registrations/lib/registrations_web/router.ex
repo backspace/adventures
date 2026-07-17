@@ -326,8 +326,12 @@ defmodule RegistrationsWeb.Router do
 
     get("/mine", ValidationController, :mine)
     get("/validator-only-puzzlets", ValidationController, :list_validator_only_puzzlets)
+    get("/scan", ValidationController, :resolve_scan)
     patch("/pole-validations/:id", ValidationController, :update_pole_validation)
     patch("/puzzlet-validations/:id", ValidationController, :update_puzzlet_validation)
+
+    post("/pole-validations/:id/submit", ValidationController, :submit_pole_validation)
+    post("/pole-validations/:id/unfindable", ValidationController, :mark_pole_unfindable)
 
     post("/pole-validations/:validation_id/comments", ValidationController, :create_pole_comment)
     post("/puzzlet-validations/:validation_id/comments", ValidationController, :create_puzzlet_comment)

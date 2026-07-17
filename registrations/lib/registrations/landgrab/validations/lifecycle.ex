@@ -5,23 +5,31 @@ defmodule Registrations.Landgrab.Validations.Lifecycle do
   Lifecycle:
 
       assigned ──validator──► in_progress ──validator──► submitted
-                                                              │
-                                              supervisor ─────┤
-                                                              ├──► accepted
-                                                              └──► rejected
+         │                         │                        │
+         │       ┌─────────────────┘         supervisor ────┤
+         └───────┴──validator──► unfindable                 ├──► accepted
+                                     │                       └──► rejected
+                        supervisor ──┴──► accepted | rejected
+
+  `submitted` is reachable directly from `assigned` too: the new
+  validator form is a single submit, so it needn't step through
+  `in_progress` first. `unfindable` is a validator outcome for a pole
+  they couldn't locate; the supervisor resolves it (accept ⇒ retire the
+  pole, reject ⇒ send back to draft).
   """
 
   import Ecto.Changeset
 
-  @valid_statuses ~w(assigned in_progress submitted accepted rejected)
+  @valid_statuses ~w(assigned in_progress submitted accepted rejected unfindable)
 
   @validator_transitions %{
-    "assigned" => ["in_progress"],
-    "in_progress" => ["submitted"]
+    "assigned" => ["in_progress", "submitted", "unfindable"],
+    "in_progress" => ["submitted", "unfindable"]
   }
 
   @supervisor_transitions %{
-    "submitted" => ["accepted", "rejected"]
+    "submitted" => ["accepted", "rejected"],
+    "unfindable" => ["accepted", "rejected"]
   }
 
   def valid_statuses, do: @valid_statuses

@@ -273,6 +273,116 @@ defmodule Registrations.Landgrab.Validations do
     end
   end
 
+  # ──────── Validator: single-action form submit ────────────────────
+
+  @doc """
+  Submit the validator's pole form in one atomic action: replace the
+  suggestion comments with the diff, record the overall note and the
+  physically-verified flag, and move the validation to `submitted`.
+
+  `attrs["suggestions"]` is a list of maps with string keys
+  `"field"`, `"suggested_value"`, and/or `"comment"`. An empty list is a
+  clean endorsement — submitted with no suggestions.
+  """
+  def submit_pole_validation(%PoleValidation{} = v, validator_id, attrs) do
+    cond do
+      v.validator_id != validator_id -> {:error, :not_assignee}
+      v.status not in ["assigned", "in_progress"] -> {:error, :not_editable}
+      true -> do_submit_pole_validation(v, attrs)
+    end
+  end
+
+  defp do_submit_pole_validation(v, attrs) do
+    result =
+      Repo.transaction(fn ->
+        # Re-submits replace prior suggestions rather than pile on.
+        Repo.delete_all(from(c in PoleValidationComment, where: c.pole_validation_id == ^v.id))
+
+        Enum.each(Map.get(attrs, "suggestions", []), fn s ->
+          case %PoleValidationComment{}
+               |> PoleValidationComment.changeset(%{
+                 "pole_validation_id" => v.id,
+                 "field" => s["field"],
+                 "comment" => s["comment"],
+                 "suggested_value" => s["suggested_value"]
+               })
+               |> Repo.insert() do
+            {:ok, _} -> :ok
+            {:error, changeset} -> Repo.rollback(changeset)
+          end
+        end)
+
+        changeset =
+          v
+          |> PoleValidation.changeset(%{
+            "overall_notes" => Map.get(attrs, "overall_notes"),
+            "physically_verified" => Map.get(attrs, "physically_verified", false),
+            "status" => "submitted"
+          })
+          |> Lifecycle.validate_status_transition(v.status, :validator)
+
+        case Repo.update(changeset) do
+          {:ok, updated} -> updated
+          {:error, changeset} -> Repo.rollback(changeset)
+        end
+      end)
+
+    case result do
+      {:ok, _} -> {:ok, get_pole_validation(v.id)}
+      {:error, _} = err -> err
+    end
+  end
+
+  @doc """
+  Record that the validator couldn't find the pole. Sets the note (if
+  given) and moves the validation to `unfindable` for the supervisor to
+  resolve.
+  """
+  def mark_pole_unfindable(%PoleValidation{} = v, validator_id, note) do
+    cond do
+      v.validator_id != validator_id ->
+        {:error, :not_assignee}
+
+      v.status not in ["assigned", "in_progress"] ->
+        {:error, :not_editable}
+
+      true ->
+        changeset =
+          v
+          |> PoleValidation.changeset(%{"overall_notes" => note, "status" => "unfindable"})
+          |> Lifecycle.validate_status_transition(v.status, :validator)
+
+        case Repo.update(changeset) do
+          {:ok, _} -> {:ok, get_pole_validation(v.id)}
+          err -> err
+        end
+    end
+  end
+
+  @doc """
+  Resolve a scanned barcode for a validator. Returns `{:assigned, id}`
+  when the barcode belongs to a pole this validator has an active
+  validation for (the id of that validation), or `:unknown` when it
+  matches no pole they can act on.
+  """
+  def resolve_pole_scan(validator_id, barcode) do
+    case Repo.get_by(Pole, barcode: barcode) do
+      nil ->
+        :unknown
+
+      pole ->
+        validation =
+          PoleValidation
+          |> where([v], v.pole_id == ^pole.id and v.validator_id == ^validator_id)
+          |> where([v], v.status not in ^["accepted", "rejected"])
+          |> order_by([v], desc: v.inserted_at)
+          |> limit(1)
+          |> Repo.one()
+
+        if validation, do: {:assigned, validation.id}, else: :unknown
+    end
+  end
+
   # ──────── Comment CRUD (validator only, pre-submission) ────────────
 
   def add_pole_comment(%PoleValidation{} = v, validator_id, attrs) do
@@ -401,6 +511,13 @@ defmodule Registrations.Landgrab.Validations do
   end
 
   defp decide_pole_validation(validation, new_status, target_status) do
+    # Accepting an "unfindable" report means the pole is genuinely gone —
+    # retire it rather than mark it validated.
+    target_status =
+      if validation.status == "unfindable" and new_status == "accepted",
+        do: :retired,
+        else: target_status
+
     Repo.transaction(fn ->
       changeset =
         validation
@@ -489,6 +606,23 @@ defmodule Registrations.Landgrab.Validations do
 
   defp apply_pole_suggestion(_comment, nil), do: :ok
 
+  # A `location` suggestion carries a JSON bundle so one accept moves the
+  # pole's whole position (lat/lng + accuracy + offset) at once.
+  defp apply_pole_suggestion(%PoleValidationComment{field: "location"} = c, suggested)
+       when is_binary(suggested) do
+    parent = Repo.get!(PoleValidation, c.pole_validation_id)
+    pole = Repo.get!(Pole, parent.pole_id)
+
+    with {:ok, decoded} when is_map(decoded) <- Jason.decode(suggested),
+         attrs = Map.take(decoded, ["latitude", "longitude", "accuracy_m", "manual_offset_m"]),
+         {:ok, _} <- pole |> Pole.changeset(attrs) |> Repo.update() do
+      :ok
+    else
+      {:error, %Ecto.Changeset{} = cs} -> {:error, cs}
+      _ -> {:error, :bad_location}
+    end
+  end
+
   defp apply_pole_suggestion(%PoleValidationComment{} = c, suggested) do
     parent = Repo.get!(PoleValidation, c.pole_validation_id)
     pole = Repo.get!(Pole, parent.pole_id)
@@ -513,7 +647,17 @@ defmodule Registrations.Landgrab.Validations do
 
   defp coerce_value("latitude", v), do: parse_float(v)
   defp coerce_value("longitude", v), do: parse_float(v)
+  defp coerce_value("accuracy_m", v), do: parse_float(v)
+  defp coerce_value("manual_offset_m", v), do: parse_float(v)
   defp coerce_value("difficulty", v), do: parse_int(v)
+
+  defp coerce_value("accessibility_tags", v) when is_binary(v) do
+    case Jason.decode(v) do
+      {:ok, list} when is_list(list) -> {:ok, list}
+      _ -> {:error, :bad_tags}
+    end
+  end
+
   defp coerce_value(_, v), do: {:ok, v}
 
   defp parse_float(v) when is_binary(v) do

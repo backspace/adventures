@@ -108,6 +108,57 @@ defmodule RegistrationsWeb.Landgrab.ValidationController do
     end
   end
 
+  # Single-action submit of the validator's pole form: the diff (as
+  # suggestions), the overall note, and whether they scan-verified it.
+  def submit_pole_validation(conn, %{"id" => id} = params) do
+    user = Pow.Plug.current_user(conn)
+
+    case Validations.get_pole_validation(id) do
+      nil ->
+        not_found(conn)
+
+      validation ->
+        attrs = Map.take(params, ["suggestions", "overall_notes", "physically_verified"])
+
+        case Validations.submit_pole_validation(validation, user.id, attrs) do
+          {:ok, updated} -> json(conn, render_pole_validation(updated))
+          {:error, error} -> handle_error(conn, error)
+        end
+    end
+  end
+
+  def mark_pole_unfindable(conn, %{"id" => id} = params) do
+    user = Pow.Plug.current_user(conn)
+
+    case Validations.get_pole_validation(id) do
+      nil ->
+        not_found(conn)
+
+      validation ->
+        case Validations.mark_pole_unfindable(validation, user.id, params["overall_notes"]) do
+          {:ok, updated} -> json(conn, render_pole_validation(updated))
+          {:error, error} -> handle_error(conn, error)
+        end
+    end
+  end
+
+  # Identify which pole (if any) a scanned barcode belongs to for this
+  # validator, relative to the pole they tapped. See the app's scan
+  # routing: matched / other / unknown.
+  def resolve_scan(conn, %{"barcode" => barcode} = params) do
+    user = Pow.Plug.current_user(conn)
+    tapped = params["validation_id"]
+
+    case Validations.resolve_pole_scan(user.id, barcode) do
+      {:assigned, vid} ->
+        outcome = if vid == tapped, do: "matched", else: "other"
+        json(conn, %{outcome: outcome, validation_id: vid, scanned_barcode: barcode})
+
+      :unknown ->
+        json(conn, %{outcome: "unknown", validation_id: nil, scanned_barcode: barcode})
+    end
+  end
+
   def create_pole_comment(conn, %{"validation_id" => vid} = params) do
     user = Pow.Plug.current_user(conn)
 
@@ -266,6 +317,7 @@ defmodule RegistrationsWeb.Landgrab.ValidationController do
       id: v.id,
       status: v.status,
       overall_notes: v.overall_notes,
+      physically_verified: v.physically_verified,
       pole_id: v.pole_id,
       validator_id: v.validator_id,
       assigned_by_id: v.assigned_by_id,
@@ -302,6 +354,7 @@ defmodule RegistrationsWeb.Landgrab.ValidationController do
       latitude: pole.latitude,
       longitude: pole.longitude,
       accuracy_m: pole.accuracy_m,
+      manual_offset_m: pole.manual_offset_m,
       notes: pole.notes,
       status: pole.status,
       attachment_ids: Registrations.Landgrab.list_pole_attachment_ids(pole.id),

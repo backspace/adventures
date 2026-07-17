@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
-import 'package:landgrab/routes/validator/pole_validation_detail_route.dart';
+import 'package:landgrab/routes/validator/pole_validation_interstitial_route.dart';
 import 'package:landgrab/routes/validator/puzzlet_validation_detail_route.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/attachments_badge.dart';
@@ -69,8 +69,11 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
   Future<void> _openPole(PoleValidationModel v) async {
     final changed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) =>
-            PoleValidationDetailRoute(api: widget.api, validation: v),
+        builder: (_) => PoleValidationInterstitialRoute(
+          api: widget.api,
+          validation: v,
+          assignments: _validations?.poleValidations ?? const [],
+        ),
       ),
     );
     if (changed == true) await _load();
@@ -92,6 +95,7 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
         ValidationStatus.assigned => 0,
         ValidationStatus.inProgress => 0,
         ValidationStatus.submitted => 1,
+        ValidationStatus.unfindable => 1,
         ValidationStatus.accepted => 2,
         ValidationStatus.rejected => 2,
       };

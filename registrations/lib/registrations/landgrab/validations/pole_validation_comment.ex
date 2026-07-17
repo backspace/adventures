@@ -9,7 +9,11 @@ defmodule Registrations.Landgrab.Validations.PoleValidationComment do
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "landgrab"
 
-  @valid_fields ~w(barcode label latitude longitude notes)
+  # `location` bundles latitude/longitude/accuracy/offset as a JSON
+  # `suggested_value` so a position correction is one accept, not three.
+  # `accessibility_tags` is a JSON array. latitude/longitude stay valid
+  # for backward compatibility.
+  @valid_fields ~w(barcode label latitude longitude notes accessibility_notes accessibility_tags location)
   @valid_statuses ~w(pending accepted rejected)
 
   schema "pole_validation_comments" do

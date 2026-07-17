@@ -742,6 +742,56 @@ class LandgrabApi {
     return PoleValidationModel.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Submit the validator's pole form in one call: the diffed fields as
+  /// [suggestions] (each `{'field': ..., 'suggested_value': ...}`), an
+  /// optional note to the supervisor, and whether the pole was scan-
+  /// verified on-site. An empty [suggestions] list is a clean endorsement.
+  Future<PoleValidationModel> submitPoleValidation(
+    String id, {
+    required bool physicallyVerified,
+    String? overallNotes,
+    List<Map<String, dynamic>> suggestions = const [],
+  }) async {
+    final response = await dio.post(
+      '/landgrab/validation/pole-validations/$id/submit',
+      data: {
+        'physically_verified': physicallyVerified,
+        if (overallNotes != null && overallNotes.isNotEmpty)
+          'overall_notes': overallNotes,
+        'suggestions': suggestions,
+      },
+    );
+    return PoleValidationModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Report that the pole couldn't be found on-site.
+  Future<PoleValidationModel> markPoleUnfindable(
+    String id, {
+    String? overallNotes,
+  }) async {
+    final response = await dio.post(
+      '/landgrab/validation/pole-validations/$id/unfindable',
+      data: {
+        if (overallNotes != null && overallNotes.isNotEmpty)
+          'overall_notes': overallNotes,
+      },
+    );
+    return PoleValidationModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Resolve a scanned barcode against the validator's assignments,
+  /// relative to the pole they tapped ([tappedValidationId]).
+  Future<ScanResolution> resolvePoleScan({
+    required String barcode,
+    required String tappedValidationId,
+  }) async {
+    final response = await dio.get(
+      '/landgrab/validation/scan',
+      queryParameters: {'barcode': barcode, 'validation_id': tappedValidationId},
+    );
+    return ScanResolution.fromJson(response.data as Map<String, dynamic>);
+  }
+
   Future<PuzzletValidationModel> transitionPuzzletValidation(
       String id, String status) async {
     final response = await dio.patch(
