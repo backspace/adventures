@@ -1002,7 +1002,7 @@ class _PreEventBodyState extends State<_PreEventBody> {
     final result = await Navigator.of(context).push<String>(
       MaterialPageRoute(
         builder: (_) =>
-            const BarcodeScannerRoute(title: PreEventStrings.barcodeToyTitle),
+            const BarcodeScannerRoute(title: PreEventStrings.barcodePracticeTitle),
       ),
     );
     if (!mounted || result == null) return;
@@ -1013,7 +1013,7 @@ class _PreEventBodyState extends State<_PreEventBody> {
     final result = await Navigator.of(context).push<String>(
       MaterialPageRoute(
         builder: (_) =>
-            const NfcScannerRoute(title: PreEventStrings.nfcToyTitle),
+            const NfcScannerRoute(title: PreEventStrings.nfcPracticeTitle),
       ),
     );
     if (!mounted || result == null) return;
@@ -1065,19 +1065,19 @@ class _PreEventBodyState extends State<_PreEventBody> {
               ),
             ],
             const SizedBox(height: 32),
-            Text(PreEventStrings.toysHeading,
+            Text(PreEventStrings.practiceHeading,
                 style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             _ScannerTile(
               icon: Icons.qr_code_scanner,
-              label: PreEventStrings.barcodeToyLabel,
+              label: PreEventStrings.barcodePracticeLabel,
               lastResult: _lastBarcode,
               onPressed: _openBarcodeScanner,
             ),
             const SizedBox(height: 8),
             _ScannerTile(
               icon: Icons.nfc,
-              label: PreEventStrings.nfcToyLabel,
+              label: PreEventStrings.nfcPracticeLabel,
               lastResult: _lastNfcUid,
               onPressed: _openNfcScanner,
             ),

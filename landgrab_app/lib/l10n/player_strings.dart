@@ -111,11 +111,11 @@ class PreEventStrings {
   static const countdownHeading = 'Event begins in';
   static const startingNow = 'starting now';
 
-  static const toysHeading = 'Toys';
-  static const barcodeToyLabel = 'Barcode scanner';
-  static const barcodeToyTitle = 'Barcode toy';
-  static const nfcToyLabel = 'NFC scanner';
-  static const nfcToyTitle = 'NFC toy';
+  static const practiceHeading = 'Practice';
+  static const barcodePracticeLabel = 'Barcode scanner';
+  static const barcodePracticeTitle = 'Barcode practice';
+  static const nfcPracticeLabel = 'NFC scanner';
+  static const nfcPracticeTitle = 'NFC practice';
   static const noScansYet = 'No scans yet — tap to try';
   static String lastScan(String value) => 'Last: $value';
 }
