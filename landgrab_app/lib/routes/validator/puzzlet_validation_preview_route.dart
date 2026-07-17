@@ -150,9 +150,10 @@ class _PuzzletValidationPreviewRouteState
             const SizedBox(height: 16),
           ],
           Text(_p.instructions, style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          Text('Difficulty ${_p.difficulty} / 10',
-              style: theme.textTheme.bodySmall),
+          // Difficulty is deliberately not shown here: this screen is the
+          // "preview as a player" view and players don't see a difficulty
+          // rating (it may return later as a graphic). Validators still see
+          // it on the interstitial before they enter this preview.
           const SizedBox(height: 20),
 
           // Answer entry — mirrors the player's puzzlet screen. Only
