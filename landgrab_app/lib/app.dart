@@ -35,18 +35,25 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
+    // Dark theme to match the (dark) registrations site. The map layers
+    // deliberately stay on the light Positron basemap — dark basemaps
+    // wash out in sunlight, and an outdoor game needs a legible map — so
+    // only the app chrome is dark, not the map itself.
     final theme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+      colorScheme: ColorScheme.fromSeed(
+        // landgrab-river from the registrations site palette.
+        seedColor: const Color(0xFF2D6A9F),
+        brightness: Brightness.dark,
+      ),
       useMaterial3: true,
       // Anton is the site wordmark's display face; app bar titles
       // carry the branding in-app. Display-only — body text stays on
-      // the default face for legibility.
+      // the default face for legibility. Bone echoes the site wordmark.
       appBarTheme: const AppBarTheme(
         titleTextStyle: TextStyle(
           fontFamily: 'Anton',
           fontSize: 22,
-          letterSpacing: 1.5,
-          color: Colors.black87,
+          color: Color(0xFFECE4D3),
         ),
       ),
     );
