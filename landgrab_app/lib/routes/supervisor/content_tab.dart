@@ -16,7 +16,17 @@ enum _ListOrMap { list, map }
 
 enum _Kind { all, poles, puzzlets }
 
-const _allStatuses = ['draft', 'in_review', 'validated', 'retired'];
+// 'assigned' and 'submitted' are the two review stages that the server
+// rolls up into a single `in_review` draft status; we split them here so
+// a supervisor can filter "out with a validator" separately from
+// "submitted, awaiting my decision".
+const _allStatuses = [
+  'draft',
+  'assigned',
+  'submitted',
+  'validated',
+  'retired'
+];
 
 /// One view over poles AND puzzlets — the supervisor mostly cares
 /// about "the content", not which table a row lives in. List and map
@@ -130,21 +140,32 @@ class _ContentTabState extends State<ContentTab> {
 
   static const _statusByKey = {
     'draft': DraftStatus.draft,
-    'in_review': DraftStatus.inReview,
     'validated': DraftStatus.validated,
     'retired': DraftStatus.retired,
   };
 
-  bool _statusMatches(DraftStatus status) =>
-      _status == null || _statusByKey[_status] == status;
+  // 'assigned'/'submitted' both sit under DraftStatus.inReview on the
+  // draft itself; they're told apart by the active validation's own
+  // status, so those two chips filter the review stages separately.
+  bool _statusMatches(DraftStatus status, ActiveValidationSummary? validation) {
+    if (_status == null) return true;
+    if (_status == 'assigned' || _status == 'submitted') {
+      return status == DraftStatus.inReview && validation?.status == _status;
+    }
+    return _statusByKey[_status] == status;
+  }
 
   List<DraftPole> get _visiblePoles => _kind == _Kind.puzzlets
       ? const []
-      : (_poles ?? const []).where((p) => _statusMatches(p.status)).toList();
+      : (_poles ?? const [])
+          .where((p) => _statusMatches(p.status, p.activeValidation))
+          .toList();
 
   List<DraftPuzzlet> get _visiblePuzzlets => _kind == _Kind.poles
       ? const []
-      : (_puzzlets ?? const []).where((p) => _statusMatches(p.status)).toList();
+      : (_puzzlets ?? const [])
+          .where((p) => _statusMatches(p.status, p.activeValidation))
+          .toList();
 
   Future<void> _reloadAll() async {
     await _load();
