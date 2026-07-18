@@ -75,10 +75,19 @@ class ForgotPasswordStrings {
   ForgotPasswordStrings._();
 
   static const appBarTitle = 'Reset password';
-  static const reloadTooltip = 'Reload';
-  static const tryAgain = 'Try again';
-  static String couldNotOpen(String detail) =>
-      'Could not open the password-reset page: $detail';
+  static const intro =
+      'Enter your email and we\'ll send you a link to choose a new '
+      'password.';
+  static const emailLabel = 'Email';
+  static const emailRequired = 'Enter your email address.';
+  static const submitButton = 'Send reset link';
+  static const sent =
+      'If an account exists for that email, a reset link is on its way. '
+      'Open it on this device to choose a new password.';
+  static const backToSignIn = 'Back to sign in';
+  static const serverUnreachable =
+      'Can\'t reach the server. Check your connection (and VPN, if you '
+      'use one) and try again.';
 }
 
 /// Sign-up screen (`routes/register_route.dart`), for people arriving

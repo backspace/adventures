@@ -114,6 +114,32 @@ class LandgrabApi {
     }
   }
 
+  /// Request a password-reset email via the API
+  /// (`POST /powapi/reset-password`), mirroring the web PowResetPassword
+  /// flow. The server always responds 200 whether or not the email is
+  /// registered (no account enumeration), so this returns true unless the
+  /// request never reached the server. The actual "choose a new password"
+  /// step happens through the emailed link, which opens in the system
+  /// browser.
+  Future<bool> requestPasswordReset(String email) async {
+    try {
+      await dio.post(
+        '/powapi/reset-password',
+        data: {
+          'user': {'email': email}
+        },
+        options: Options(headers: {'Content-Type': 'application/json'}),
+      );
+      return true;
+    } on DioException catch (e) {
+      // Only a genuine connectivity failure (no response at all) is worth
+      // surfacing — see the note in [login]. Any server response means the
+      // request was handled (and, for enumeration safety, looks identical
+      // whether or not the email exists).
+      return e.response != null;
+    }
+  }
+
   /// Flatten the server's registration error body
   /// (`{error: {message, errors: {field: [msgs]}}}`) into a readable,
   /// multi-line string like "Email has already been taken". Returns null

@@ -253,7 +253,7 @@ class _LoginRouteState extends State<LoginRoute> {
                     ? null
                     : () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => const ForgotPasswordRoute(),
+                            builder: (_) => ForgotPasswordRoute(api: widget.api),
                           ),
                         ),
                 child: const Text(LoginStrings.forgotPassword),

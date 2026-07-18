@@ -178,6 +178,11 @@ defmodule RegistrationsWeb.Router do
     resources("/session", ApiSessionController, singleton: true, only: [:create, :delete])
     post("/session/renew", ApiSessionController, :renew)
 
+    # Native "forgot password" — triggers the PowResetPassword email so the
+    # app doesn't have to host the site's reset page (and its "Sign in with
+    # Google" button, which Google blocks inside a WebView) in a WebView.
+    post("/reset-password", ApiResetPasswordController, :create)
+
     get("/auth/:provider/new", ApiAuthorizationController, :new)
     post("/auth/:provider/callback", ApiAuthorizationController, :callback)
 
