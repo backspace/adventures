@@ -65,3 +65,13 @@ body.deploy-env-development {
     }
   }
 }
+
+// Wraps a wide table (e.g. the admin users list) so it scrolls
+// horizontally on its own instead of overflowing the page. Needed
+// because the body sets `overflow-x: hidden` (for the landgrab hero),
+// which otherwise just clips the off-screen columns with no way to
+// reach them.
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

@@ -1,59 +1,61 @@
-<table>
-  <thead>
-    <tr>
-      <th></th>
-      <th>ID</th>
-      <th>Email</th>
-      <th></th>
-      <th>A?</th>
-      <th>Risk</th>
-      <th>Accessibility</th>
-      <th>Proposed team name</th>
-      <th>Team emails</th>
-      <th>Source</th>
-      <th>Comments</th>
-      <th>Teamed</th>
-      <th>App opened</th>
-    </tr>
-  </thead>
-  <tbody>
-    <%= for {user, i} <- Enum.with_index(@users) do %>
-      <tr id={"user-#{user.id}"}>
-        <td><%= i %></td>
-        <td><%= user.id %></td>
-        <td class="email"><%= user.email %></td>
-        <td><%= user.voicepass %></td>
-        <td class="attending"><%= symbol_for_boolean(user.attending) %></td>
-        <td class="risk-aversion"><%= user.risk_aversion %></td>
-        <td class="accessibility"><%= user.accessibility %></td>
-        <td class="proposed-team-name" title={user.proposed_team_name}>
-          <%= truncate(user.proposed_team_name) %>
-        </td>
-        <td class="team-emails"><%= user.team_emails %></td>
-        <td class="source"><%= user.source %></td>
-        <td class="comments"><%= user.comments %></td>
-        <td class="teamed">
-          <%= if user.team do %>
-            ✓
-          <% else %>
-            ✘
-          <% end %>
-        </td>
-        <td class="app-opened" title={user.last_app_open_at && to_string(user.last_app_open_at)}>
-          <%= if user.last_app_open_at do %>
-            <%= Calendar.strftime(user.last_app_open_at, "%b %-d %H:%M") %>
-          <% else %>
-            —
-          <% end %>
-        </td>
-        <td>
-          <%= link("Build",
-            to: Routes.team_path(@conn, :build, user_id: user.id),
-            method: :post,
-            class: "build"
-          ) %>
-        </td>
+<div class="table-scroll">
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>ID</th>
+        <th>Email</th>
+        <th></th>
+        <th>A?</th>
+        <th>Risk</th>
+        <th>Accessibility</th>
+        <th>Proposed team name</th>
+        <th>Team emails</th>
+        <th>Source</th>
+        <th>Comments</th>
+        <th>Teamed</th>
+        <th>App opened</th>
       </tr>
-    <% end %>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <%= for {user, i} <- Enum.with_index(@users) do %>
+        <tr id={"user-#{user.id}"}>
+          <td><%= i %></td>
+          <td><%= user.id %></td>
+          <td class="email"><%= user.email %></td>
+          <td><%= user.voicepass %></td>
+          <td class="attending"><%= symbol_for_boolean(user.attending) %></td>
+          <td class="risk-aversion"><%= user.risk_aversion %></td>
+          <td class="accessibility"><%= user.accessibility %></td>
+          <td class="proposed-team-name" title={user.proposed_team_name}>
+            <%= truncate(user.proposed_team_name) %>
+          </td>
+          <td class="team-emails"><%= user.team_emails %></td>
+          <td class="source"><%= user.source %></td>
+          <td class="comments"><%= user.comments %></td>
+          <td class="teamed">
+            <%= if user.team do %>
+              ✓
+            <% else %>
+              ✘
+            <% end %>
+          </td>
+          <td class="app-opened" title={user.last_app_open_at && to_string(user.last_app_open_at)}>
+            <%= if user.last_app_open_at do %>
+              <%= Calendar.strftime(user.last_app_open_at, "%b %-d %H:%M") %>
+            <% else %>
+              —
+            <% end %>
+          </td>
+          <td>
+            <%= link("Build",
+              to: Routes.team_path(@conn, :build, user_id: user.id),
+              method: :post,
+              class: "build"
+            ) %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
