@@ -14,8 +14,9 @@ class MapPin {
 
   /// When true the pin renders as a filled circle in [color] with a
   /// white glyph inside (a compact "badge"), rather than a bare icon.
-  /// Poles and puzzlets use this so they read as small coloured dots
-  /// with a type glyph; bathrooms/regions keep the plain-icon look.
+  /// Poles, puzzlets, and bathrooms use this so they read as one family
+  /// of small coloured dots with a type glyph; regions keep the
+  /// plain-icon look.
   final bool filled;
 
   /// GPS uncertainty (metres) to draw as a faint circle around the pin,
@@ -91,16 +92,17 @@ class MapPin {
   static const double _typedPinSize = 26;
 }
 
-/// Standardised bathroom marker — muted, smaller, distinct icon so it
-/// doesn't compete with poles/puzzlets/regions for the player's
-/// attention.
+/// Standardised bathroom marker — a filled circular badge like poles and
+/// puzzlets (so all markers read as one family), but in a muted blue-grey
+/// with a distinct glyph so it doesn't compete for the player's attention.
 MapPin bathroomPin(Bathroom b, {VoidCallback? onTap}) {
   return MapPin(
     position: LatLng(b.latitude, b.longitude),
     label: b.displayName(),
     icon: Icons.wash,
-    color: Colors.blueGrey.shade400,
-    size: 24,
+    color: Colors.blueGrey.shade600,
+    size: MapPin._typedPinSize,
+    filled: true,
     onTap: onTap,
   );
 }
