@@ -978,6 +978,7 @@ class _PreEventBody extends StatefulWidget {
 class _PreEventBodyState extends State<_PreEventBody> {
   Timer? _ticker;
   String? _lastBarcode;
+  String? _lastBarcodeFormat;
   String? _lastNfcUid;
 
   @override
@@ -1000,14 +1001,20 @@ class _PreEventBodyState extends State<_PreEventBody> {
   }
 
   Future<void> _openBarcodeScanner() async {
+    String? format;
     final result = await Navigator.of(context).push<String>(
       MaterialPageRoute(
-        builder: (_) =>
-            const BarcodeScannerRoute(title: PreEventStrings.barcodePracticeTitle),
+        builder: (_) => BarcodeScannerRoute(
+          title: PreEventStrings.barcodePracticeTitle,
+          onFormat: (f) => format = f,
+        ),
       ),
     );
     if (!mounted || result == null) return;
-    setState(() => _lastBarcode = result);
+    setState(() {
+      _lastBarcode = result;
+      _lastBarcodeFormat = format;
+    });
   }
 
   Future<void> _openNfcScanner() async {
@@ -1073,6 +1080,7 @@ class _PreEventBodyState extends State<_PreEventBody> {
               icon: Icons.qr_code_scanner,
               label: PreEventStrings.barcodePracticeLabel,
               lastResult: _lastBarcode,
+              resultDetail: _lastBarcodeFormat,
               onPressed: _openBarcodeScanner,
             ),
             const SizedBox(height: 8),
@@ -1153,12 +1161,16 @@ class _ScannerTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final String? lastResult;
+  // Extra detail shown alongside the value — the barcode symbology for the
+  // barcode tile (e.g. "Code 128"); null for tiles that have no type (NFC).
+  final String? resultDetail;
   final VoidCallback onPressed;
 
   const _ScannerTile({
     required this.icon,
     required this.label,
     required this.lastResult,
+    this.resultDetail,
     required this.onPressed,
   });
 
@@ -1173,7 +1185,9 @@ class _ScannerTile extends StatelessWidget {
         subtitle: lastResult == null
             ? Text(PreEventStrings.noScansYet, style: theme.textTheme.bodySmall)
             : Text(
-                PreEventStrings.lastScan(lastResult!),
+                resultDetail == null
+                    ? PreEventStrings.lastScan(lastResult!)
+                    : PreEventStrings.lastScanWithType(lastResult!, resultDetail!),
                 style: theme.textTheme.bodySmall?.copyWith(
                     fontFeatures: const [FontFeature.tabularFigures()]),
               ),

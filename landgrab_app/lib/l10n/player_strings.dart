@@ -127,6 +127,8 @@ class PreEventStrings {
   static const nfcPracticeTitle = 'NFC practice';
   static const noScansYet = 'No scans yet — tap to try';
   static String lastScan(String value) => 'Last: $value';
+  static String lastScanWithType(String value, String type) =>
+      'Last: $value · $type';
 }
 
 /// Gameplay home body — the map view (`routes/home_route.dart`).
