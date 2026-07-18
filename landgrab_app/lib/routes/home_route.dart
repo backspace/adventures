@@ -62,8 +62,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   String? _teamId;
   String? _teamName;
   String? _error;
-  // Only surfaced under "Log out" when the env switcher is unlocked, so
-  // the account you're acting as is obvious while hopping between them.
+  // Surfaced under "Log out" so the account you're signed in as is always
+  // visible — not just for the dev account-switcher audience.
   String? _accountEmail;
   bool _isAuthor = false;
   bool _isValidator = false;
@@ -801,9 +801,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                 _HomeMenuItem.logOut,
                 Icons.logout,
                 GameplayStrings.logOut,
-                // Show which account you're acting as, but only for the
-                // dev switcher audience.
-                subtitle: EnvSwitchService.visible.value ? _accountEmail : null,
+                // Always show which account you're signed in as, so it's
+                // never a mystery who you're logged in with.
+                subtitle: _accountEmail,
               ),
             ],
           ),
