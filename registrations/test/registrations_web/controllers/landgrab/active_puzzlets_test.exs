@@ -58,6 +58,9 @@ defmodule RegistrationsWeb.Landgrab.ActivePuzzletsTest do
       other_user = insert(:user, email: unique_email("rival"))
       other_user |> Ecto.Changeset.change(team_id: other.id) |> Registrations.Repo.update!()
 
+      # Rival scans then captures the easy one — answering requires an
+      # active row now.
+      Landgrab.scan_payload(p.barcode, other.id, other_user.id)
       Landgrab.record_attempt(
         Registrations.Repo.get(Registrations.Landgrab.Puzzlet, easy.id),
         other.id,

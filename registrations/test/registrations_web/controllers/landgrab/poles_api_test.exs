@@ -139,6 +139,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
          %{conn: conn, user: user, team: team} do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, answer: "right", difficulty: 1)
+      insert(:team_puzzlet, team: team, puzzlet: puzzlet, pole: pole)
 
       Enum.each(1..3, fn _ ->
         Landgrab.record_attempt(puzzlet, team.id, user.id, "wrong")
@@ -151,9 +152,10 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
   end
 
   describe "POST /poles/puzzlets/:puzzlet_id/attempts" do
-    test "wrong answer returns attempts_remaining", %{conn: conn} do
+    test "wrong answer returns attempts_remaining", %{conn: conn, team: team} do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, answer: "right")
+      insert(:team_puzzlet, team: team, puzzlet: puzzlet, pole: pole)
 
       body =
         conn
@@ -165,9 +167,11 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       assert body["previous_wrong_answers"] == ["wrong"]
     end
 
-    test "previous_wrong_answers accumulates across attempts", %{conn: conn} do
+    test "previous_wrong_answers accumulates across attempts",
+         %{conn: conn, team: team} do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, answer: "right")
+      insert(:team_puzzlet, team: team, puzzlet: puzzlet, pole: pole)
 
       post(conn, "/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "first"})
       post(conn, "/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "first"})
@@ -183,6 +187,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
     test "correct answer captures the pole", %{conn: conn, team: team} do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, answer: " Right ")
+      insert(:team_puzzlet, team: team, puzzlet: puzzlet, pole: pole)
 
       body =
         conn
@@ -198,6 +203,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
     test "fourth attempt returns 423 locked_out", %{conn: conn, user: user, team: team} do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, answer: "right")
+      insert(:team_puzzlet, team: team, puzzlet: puzzlet, pole: pole)
 
       Enum.each(1..3, fn _ ->
         Landgrab.record_attempt(puzzlet, team.id, user.id, "wrong")
@@ -225,9 +231,11 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       assert body["error"]["code"] == "already_owner"
     end
 
-    test "second team gets 409 if puzzlet already captured", %{conn: conn} do
+    test "second team gets 409 if puzzlet already captured",
+         %{conn: conn, team: team} do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, answer: "right")
+      insert(:team_puzzlet, team: team, puzzlet: puzzlet, pole: pole)
       other_team = insert(:team)
       insert(:capture, puzzlet: puzzlet, team: other_team)
 
@@ -237,6 +245,22 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
         |> json_response(409)
 
       assert body["error"]["code"] == "already_captured"
+    end
+
+    test "rejects 409 not_active when the team never started the puzzlet",
+         %{conn: conn} do
+      pole = insert(:pole)
+      puzzlet = insert(:puzzlet, pole: pole, answer: "right")
+      # No team_puzzlet row: the team never scanned to claim this puzzlet.
+
+      body =
+        conn
+        |> post("/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "right"})
+        |> json_response(409)
+
+      assert body["error"]["code"] == "not_active"
+      # And it didn't sneak through a capture.
+      assert Registrations.Repo.aggregate(Registrations.Landgrab.Capture, :count) == 0
     end
   end
 

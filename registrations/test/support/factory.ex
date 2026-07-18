@@ -118,4 +118,11 @@ defmodule Registrations.Factory do
       name: sequence(:region_name, &"Region #{&1}")
     }
   end
+
+  # The "active puzzlet" a team is working on. record_attempt now
+  # requires one, so answer-submitting tests insert this (or scan first,
+  # which creates it for real).
+  def team_puzzlet_factory do
+    %Registrations.Landgrab.TeamPuzzlet{}
+  end
 end

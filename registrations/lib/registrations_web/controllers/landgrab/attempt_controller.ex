@@ -70,6 +70,16 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
         |> put_status(:locked)
         |> json(%{error: %{code: "locked_out", detail: "Too many wrong attempts on this puzzlet."}})
 
+      {:error, :not_active} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{
+          error: %{
+            code: "not_active",
+            detail: "Scan the pole to start this puzzlet before answering."
+          }
+        })
+
       {:error, :already_captured} ->
         conn
         |> put_status(:conflict)

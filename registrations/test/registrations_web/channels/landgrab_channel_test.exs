@@ -23,6 +23,7 @@ defmodule RegistrationsWeb.LandgrabChannelTest do
     actor = insert(:user, team: team)
     pole = insert(:pole)
     puzzlet = insert(:puzzlet, pole: pole, answer: "right")
+    insert(:team_puzzlet, team: team, puzzlet: puzzlet, pole: pole)
 
     {:ok, %{result: :captured}} =
       Landgrab.record_attempt(puzzlet, team.id, actor.id, "right")
@@ -43,6 +44,7 @@ defmodule RegistrationsWeb.LandgrabChannelTest do
     actor = insert(:user, team: team)
     pole = insert(:pole)
     puzzlet = insert(:puzzlet, pole: pole, answer: "right")
+    insert(:team_puzzlet, team: team, puzzlet: puzzlet, pole: pole)
 
     {:ok, %{result: :incorrect}} =
       Landgrab.record_attempt(puzzlet, team.id, actor.id, "wrong")

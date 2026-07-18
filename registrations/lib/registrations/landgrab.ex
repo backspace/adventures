@@ -451,6 +451,15 @@ defmodule Registrations.Landgrab do
       team_locked_out?(puzzlet, team_id) ->
         {:error, :locked_out}
 
+      # You can only answer a puzzlet your team has actively claimed by
+      # scanning its pole. No row = you never started it (or a rival's
+      # capture already cleared it) — reject rather than let a direct
+      # call bypass the one-at-a-time rule. Checked after `locked_out`
+      # so a team that exhausted its guesses (row since abandoned) still
+      # sees the locked-out message.
+      not team_puzzlet_active?(team_id, puzzlet.id) ->
+        {:error, :not_active}
+
       true ->
         correct? = answers_match?(puzzlet.answer_type, puzzlet.answer, answer_given)
 
@@ -842,6 +851,14 @@ defmodule Registrations.Landgrab do
     TeamPuzzlet
     |> where([tp], tp.team_id == ^team_id)
     |> Repo.aggregate(:count)
+  end
+
+  # Whether this team is actively working on this puzzlet — i.e. they
+  # scanned its pole and claimed the slot. Answering requires it.
+  defp team_puzzlet_active?(team_id, puzzlet_id) do
+    TeamPuzzlet
+    |> where([tp], tp.team_id == ^team_id and tp.puzzlet_id == ^puzzlet_id)
+    |> Repo.exists?()
   end
 
   # Live team sync: teammates' apps refetch their active puzzlets when

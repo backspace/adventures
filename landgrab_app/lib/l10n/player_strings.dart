@@ -290,6 +290,8 @@ class PuzzletStrings {
       'Another team captured this relic first.';
   static const alreadyOwner =
       'Your team already owns this zone. Wait for a rival.';
+  static const notActive = 'Scan this pole to begin before answering.';
+  static const ownCreation = "You made this one — you can't capture it.";
 
   // Fallbacks for submissions that fail in ways the app doesn't
   // specifically model. When the server supplies an error detail,

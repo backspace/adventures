@@ -149,6 +149,8 @@ defmodule Registrations.Landgrab.TeamPuzzletsTest do
       rival_user = insert(:user, team_id: rival.id)
 
       Landgrab.scan_payload(p.barcode, rival.id, rival_user.id)
+      # The captor scans too — answering now requires an active row.
+      Landgrab.scan_payload(p.barcode, captor.id, captor_user.id)
 
       Landgrab.record_attempt(Repo.get(Puzzlet, only.id), captor.id, captor_user.id, "Foo")
 
@@ -187,7 +189,8 @@ defmodule Registrations.Landgrab.TeamPuzzletsTest do
       other = insert(:team)
       other_user = insert(:user, team_id: other.id)
 
-      # Rival captures the easy one; our team had nothing yet.
+      # Rival scans then captures the easy one; our team had nothing yet.
+      Landgrab.scan_payload(p.barcode, other.id, other_user.id)
       Landgrab.record_attempt(Repo.get(Puzzlet, easy.id), other.id, other_user.id, "Foo")
 
       assert {:ok, puzzlet} = Landgrab.assign_active_puzzlet_for_pole(team.id, user.id, p.id)

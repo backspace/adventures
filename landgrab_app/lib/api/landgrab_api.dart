@@ -395,6 +395,12 @@ class LandgrabApi {
       if (code == 'already_owner') {
         return const AttemptAlreadyOwner();
       }
+      if (code == 'not_active') {
+        return const AttemptFailed(PuzzletStrings.notActive);
+      }
+      if (code == 'own_creation') {
+        return const AttemptFailed(PuzzletStrings.ownCreation);
+      }
       if (e.response?.statusCode == 409 || code == 'already_captured') {
         return const AttemptAlreadyCaptured();
       }
