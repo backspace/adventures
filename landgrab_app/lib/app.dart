@@ -62,6 +62,7 @@ class _AppState extends State<App> {
       return MaterialApp(
         title: F.title,
         theme: theme,
+        builder: _flavorBanner,
         home: const Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
@@ -82,11 +83,28 @@ class _AppState extends State<App> {
           key: ValueKey('$apiRoot#$epoch'),
           title: F.title,
           theme: theme,
+          builder: _flavorBanner,
           home: _Boot(apiRoot: apiRoot),
         );
       },
     );
   }
+}
+
+/// Wraps every screen in a corner ribbon on any non-production build, so a
+/// staging/dev build — e.g. the `alpha` (staging) build if it's ever handed
+/// to external testers instead of the `beta` production build — is obvious at
+/// a glance and can't masquerade as the real attendee app. The production
+/// flavor (the attendee build) shows nothing.
+Widget _flavorBanner(BuildContext context, Widget? child) {
+  final content = child ?? const SizedBox.shrink();
+  if (F.appFlavor == Flavor.production) return content;
+  return Banner(
+    message: F.name.toUpperCase(),
+    location: BannerLocation.topEnd,
+    color: const Color(0xFFB00020),
+    child: content,
+  );
 }
 
 class _Boot extends StatefulWidget {
