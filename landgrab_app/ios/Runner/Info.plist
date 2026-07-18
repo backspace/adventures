@@ -47,6 +47,8 @@
 	<string>Landgrab uses the camera to scan barcodes on poles and to attach photos to drafts.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Landgrab uses on-device location to show you on the map and find nearby stakes.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Landgrab uses on-device location to show you on the map and find nearby stakes.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Landgrab lets you attach photos from your library to drafts.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
