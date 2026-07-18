@@ -8,6 +8,7 @@
         <th></th>
         <th>A?</th>
         <th>Risk</th>
+        <th>Tags</th>
         <th>Accessibility</th>
         <th>Proposed team name</th>
         <th>Team emails</th>
@@ -26,6 +27,11 @@
           <td><%= user.voicepass %></td>
           <td class="attending"><%= symbol_for_boolean(user.attending) %></td>
           <td class="risk-aversion"><%= user.risk_aversion %></td>
+          <td class="accessibility-tags">
+            <%= for tag <- user.accessibility_tags do %>
+              <div><%= phrase("accessibility_tag.#{tag}.label") %></div>
+            <% end %>
+          </td>
           <td class="accessibility"><%= user.accessibility %></td>
           <td class="proposed-team-name" title={user.proposed_team_name}>
             <%= truncate(user.proposed_team_name) %>
