@@ -819,8 +819,12 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
               if (!preEvent && _isSupervisor)
                 _menuItem(_HomeMenuItem.supervise, Icons.supervisor_account,
                     GameplayStrings.supervise),
-              _menuItem(_HomeMenuItem.joinTeam, Icons.group_add_outlined,
-                  JoinTeamStrings.appBarTitle),
+              // Only while unteamed — once on a team "Join a team" reads
+              // wrong, and hiding it avoids accidental mid-game switching.
+              // (People without a team also get the banner on the map.)
+              if (_teamName == null)
+                _menuItem(_HomeMenuItem.joinTeam, Icons.group_add_outlined,
+                    JoinTeamStrings.appBarTitle),
               _menuItem(_HomeMenuItem.details, Icons.badge_outlined,
                   GameplayStrings.details),
               _menuItem(_HomeMenuItem.credits, Icons.info_outline,
