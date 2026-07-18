@@ -156,7 +156,27 @@ class _BathroomMarker extends StatelessWidget {
           clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
-            Icon(Icons.wash, color: Colors.blueGrey.shade700, size: 24),
+            // Filled circular badge, matching the pole/puzzlet pins
+            // (see `_PinIcon` in pin_map.dart): a coloured dot with a
+            // white glyph and border so bathrooms read as the same
+            // family of markers on the gameplay map.
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: Colors.blueGrey.shade600,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.5),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x33000000),
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.wash, color: Colors.white, size: 14),
+            ),
             if (group.length > 1)
               Positioned(
                 right: -2,
