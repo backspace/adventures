@@ -33,6 +33,11 @@ enum RegisterStatus { success, invalid, unreachable, failed }
 
 typedef RegisterOutcome = ({RegisterStatus status, String? message});
 
+/// Result of joining a team by its code. [notFound] is the "wrong/expired
+/// code" case (server 404), kept distinct so the UI can prompt a re-check
+/// rather than showing a generic failure.
+enum JoinTeamOutcome { success, notFound, failed }
+
 class LandgrabApi {
   final Dio dio;
 
@@ -324,6 +329,20 @@ class LandgrabApi {
     // (already-logged-in restart) pings directly — this covers the
     // fresh-login case without instrumenting each login callsite.
     pingAppOpened();
+  }
+
+  /// Join a team by its code (scanned from a team card's QR, or typed).
+  /// On success the server sets our team, and we refresh `/me` so the
+  /// stored team id/name reflect it immediately.
+  Future<JoinTeamOutcome> joinTeam(String code) async {
+    try {
+      await dio.post('/landgrab/team/join', data: {'code': code.trim()});
+      await loadAndStoreMe();
+      return JoinTeamOutcome.success;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return JoinTeamOutcome.notFound;
+      return JoinTeamOutcome.failed;
+    }
   }
 
   Future<LandgrabEvent> getEvent() async {

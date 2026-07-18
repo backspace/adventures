@@ -88,6 +88,24 @@ class LoginStrings {
   static const forgotPassword = 'Forgot password?';
 }
 
+/// Join-a-team screen (`routes/join_team_route.dart`).
+class JoinTeamStrings {
+  JoinTeamStrings._();
+
+  static const appBarTitle = 'Join a team';
+  static const noTeamPrompt = 'You haven\'t joined a team yet.';
+  static const intro =
+      'Scan your team\'s QR code, or type the join code from your team card.';
+  static const scanButton = 'Scan team QR';
+  static const orDivider = 'or';
+  static const codeLabel = 'Join code';
+  static const joinButton = 'Join';
+  static const success = 'You\'ve joined your team.';
+  static const notFound =
+      'No team found for that code. Double-check it and try again.';
+  static const failed = 'Couldn\'t join that team. Please try again.';
+}
+
 /// Password-reset WebView (`routes/forgot_password_route.dart`), which
 /// hosts the registrations site's public `/reset-password/new` page.
 class ForgotPasswordStrings {

@@ -127,6 +127,7 @@ defmodule RegistrationsWeb.Router do
     pipe_through(:browser)
 
     post("/teams/build", TeamController, :build)
+    get("/teams/cards", TeamController, :cards)
     resources("/teams", TeamController)
 
     resources("/users", UserController, only: [:index])
@@ -267,6 +268,7 @@ defmodule RegistrationsWeb.Router do
     pipe_through([:pow_api, :pow_api_protected])
 
     get("/me", MeController, :show)
+    post("/team/join", TeamController, :join)
     get("/event", EventController, :show)
     get("/poles", PoleController, :index)
     get("/poles/:barcode", PoleController, :show)

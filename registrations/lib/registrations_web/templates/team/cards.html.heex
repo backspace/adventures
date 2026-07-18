@@ -1,0 +1,71 @@
+<style>
+  .team-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 1rem;
+  }
+
+  .team-card {
+    width: 240px;
+    box-sizing: border-box;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    /* Keep a card intact across a page break when printing. */
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .team-card-name {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 8px;
+    word-break: break-word;
+  }
+
+  .team-card-qr svg {
+    width: 180px;
+    height: 180px;
+  }
+
+  .team-card-code {
+    margin-top: 8px;
+    font-family: monospace;
+    font-size: 1.5rem;
+    letter-spacing: 0.15em;
+  }
+
+  /* Print just the cards — drop the site chrome and the intro. */
+  @media print {
+    .row.nav,
+    .row.flash,
+    .team-cards-intro {
+      display: none !important;
+    }
+
+    .team-card {
+      border-color: #000;
+    }
+  }
+</style>
+
+<div class="team-cards-intro">
+  <h2>Team cards</h2>
+  <p>
+    Print and cut these out. On the day, a group joins by opening
+    <strong>Join a team</strong> in the app and scanning the QR — or
+    typing the code below it.
+  </p>
+</div>
+
+<div class="team-cards">
+  <%= for team <- @teams do %>
+    <div class="team-card">
+      <div class="team-card-name"><%= team.name %></div>
+      <div class="team-card-qr"><%= raw(join_code_qr(team.join_code)) %></div>
+      <div class="team-card-code"><%= team.join_code %></div>
+    </div>
+  <% end %>
+</div>

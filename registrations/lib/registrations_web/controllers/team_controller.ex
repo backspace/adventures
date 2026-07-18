@@ -13,6 +13,13 @@ defmodule RegistrationsWeb.TeamController do
     render(conn, "index.html", teams: teams)
   end
 
+  # Printable sheet of team cards (name + join code + QR) for handing out
+  # to walk-up groups on the day.
+  def cards(conn, _params) do
+    teams = Team |> Repo.all() |> Enum.sort_by(&(&1.name || ""))
+    render(conn, "cards.html", teams: teams)
+  end
+
   # FIXME surely there’s a better way
   def index_json(conn, _params) do
     teams = Team |> Repo.all() |> Repo.preload(:users)

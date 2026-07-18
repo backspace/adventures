@@ -17,6 +17,7 @@ import 'package:landgrab/routes/author/author_route.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/credits_route.dart';
 import 'package:landgrab/routes/details_webview_route.dart';
+import 'package:landgrab/routes/join_team_route.dart';
 import 'package:landgrab/routes/login_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/routes/notifications_route.dart';
@@ -42,6 +43,7 @@ enum _HomeMenuItem {
   author,
   validate,
   supervise,
+  joinTeam,
   details,
   credits,
   switchEnvironment,
@@ -422,6 +424,30 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     );
   }
 
+  Future<void> _openJoinTeam() async {
+    final joined = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => JoinTeamRoute(api: widget.api)),
+    );
+    // Refresh so the new team name shows in the title (and anything
+    // team-gated re-evaluates).
+    if (joined == true && mounted) await _load();
+  }
+
+  // Prompt shown above the map/pre-event body when a signed-in player
+  // isn't on a team yet — the common case for day-of walk-ups.
+  Widget _noTeamBanner() {
+    return MaterialBanner(
+      content: const Text(JoinTeamStrings.noTeamPrompt),
+      leading: const Icon(Icons.group_add_outlined),
+      actions: [
+        TextButton(
+          onPressed: _openJoinTeam,
+          child: const Text(JoinTeamStrings.appBarTitle),
+        ),
+      ],
+    );
+  }
+
   /// Poles the endgame boundary hasn't passed. Everything when no
   /// boundary is configured or it hasn't begun shrinking.
   List<Pole> _polesInPlay() {
@@ -523,6 +549,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => SupervisorRoute(api: widget.api)),
         );
+      case _HomeMenuItem.joinTeam:
+        _openJoinTeam();
       case _HomeMenuItem.details:
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -736,8 +764,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final titleText =
-        (_teamName == null ? 'LANDGRAB' : 'LANDGRAB — $_teamName').toUpperCase();
+    final titleText = (_teamName == null ? 'LANDGRAB' : 'LANDGRAB — $_teamName')
+        .toUpperCase();
     // In test play we intentionally bypass the event-start gate — the
     // whole point of a rehearsal is to play before the event begins.
     final preEvent = _event != null && !_event!.started;
@@ -791,6 +819,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
               if (!preEvent && _isSupervisor)
                 _menuItem(_HomeMenuItem.supervise, Icons.supervisor_account,
                     GameplayStrings.supervise),
+              _menuItem(_HomeMenuItem.joinTeam, Icons.group_add_outlined,
+                  JoinTeamStrings.appBarTitle),
               _menuItem(_HomeMenuItem.details, Icons.badge_outlined,
                   GameplayStrings.details),
               _menuItem(_HomeMenuItem.credits, Icons.info_outline,
@@ -812,138 +842,154 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           ),
         ],
       ),
-      body: _error != null
-          ? Center(child: Text(_error!))
-          : _poles == null || _event == null
-              ? const Center(child: CircularProgressIndicator())
-              : preEvent
-                  ? _PreEventBody(
-                      event: _event!,
-                      isAuthor: _isAuthor,
-                      isValidator: _isValidator,
-                      isSupervisor: _isSupervisor,
-                      onAuthor: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                            builder: (_) => AuthorRoute(api: widget.api)),
-                      ),
-                      onValidate: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                            builder: (_) => ValidatorRoute(api: widget.api)),
-                      ),
-                      onSupervise: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                            builder: (_) => SupervisorRoute(api: widget.api)),
-                      ),
-                    )
-                  : Stack(children: [
-                      FlutterMap(
-                        options: MapOptions(
-                          initialCenter: _center(),
-                          initialZoom: 14,
-                          // Make rotation deliberate: the gesture race
-                          // commits a two-finger gesture to whichever
-                          // intent (zoom/move/rotate) crosses its threshold
-                          // first, and the raised rotation threshold means
-                          // a casual twist mid-pinch stays a zoom. North
-                          // is always restorable via the compass button.
-                          interactionOptions: const InteractionOptions(
-                            enableMultiFingerGestureRace: true,
-                            rotationThreshold: 25,
-                          ),
-                          // Track camera zoom for size-scaled overlays
-                          // (validator-only puzzlet pins). Only setState
-                          // when the zoom actually changes so panning
-                          // doesn't force a rebuild every frame.
-                          onPositionChanged: (position, _) {
-                            final z = position.zoom;
-                            if (z != null && z != _mapZoom) {
-                              setState(() => _mapZoom = z);
-                            }
-                          },
-                        ),
-                        children: [
-                          landgrabTileLayer(context),
-                          // Territory fills sit above the tiles and below
-                          // the marker pins so pole icons remain readable
-                          // over their own coloured cells.
-                          TerritoryLayer(
-                            poles: _poles!,
-                            myOwnerId: _teamId,
-                            captureStartedAt: _captureStartedAt,
-                            captureFromOwner: _captureFromOwner,
-                            captureAnimationDuration: _captureAnimationDuration,
-                          ),
-                          BathroomLayer(bathrooms: _bathrooms),
-                          CaptureRingsLayer(
-                            poles: _poles!,
-                            captureStartedAt: _captureStartedAt,
-                            duration: _captureAnimationDuration,
-                            myOwnerId: _teamId,
-                          ),
-                          AttackRingsLayer(
-                            poles: _poles!,
-                            attackedPoleIds: _lastAttackAt.keys.toSet(),
-                            pulsePhase: _pulsePhase,
-                          ),
-                          MarkerLayer(
-                            // The endgame boundary is invisible by design:
-                            // poles it has passed just disappear (their
-                            // territory stays — TerritoryLayer gets the
-                            // unfiltered list), so players sense the
-                            // squeeze without seeing a circle.
-                            markers: _polesInPlay().map((pole) {
-                              return Marker(
-                                // Keyed by pole so zoom-time culling can't
-                                // hand this element a different pole —
-                                // unkeyed, the _PoleDot's AnimatedContainer
-                                // tweened between neighbouring poles'
-                                // colours on every reshuffle.
-                                key: ValueKey(pole.id),
-                                point: LatLng(pole.latitude, pole.longitude),
-                                width: 24,
-                                height: 24,
-                                child: Tooltip(
-                                  message: pole.label ?? pole.barcode,
-                                  child: _PoleDot(color: _pinColor(pole)),
+      body: Column(
+        children: [
+          if (_error == null &&
+              _poles != null &&
+              _event != null &&
+              _teamName == null)
+            _noTeamBanner(),
+          Expanded(
+            child: _error != null
+                ? Center(child: Text(_error!))
+                : _poles == null || _event == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : preEvent
+                        ? _PreEventBody(
+                            event: _event!,
+                            isAuthor: _isAuthor,
+                            isValidator: _isValidator,
+                            isSupervisor: _isSupervisor,
+                            onAuthor: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) => AuthorRoute(api: widget.api)),
+                            ),
+                            onValidate: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      ValidatorRoute(api: widget.api)),
+                            ),
+                            onSupervise: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      SupervisorRoute(api: widget.api)),
+                            ),
+                          )
+                        : Stack(children: [
+                            FlutterMap(
+                              options: MapOptions(
+                                initialCenter: _center(),
+                                initialZoom: 14,
+                                // Make rotation deliberate: the gesture race
+                                // commits a two-finger gesture to whichever
+                                // intent (zoom/move/rotate) crosses its threshold
+                                // first, and the raised rotation threshold means
+                                // a casual twist mid-pinch stays a zoom. North
+                                // is always restorable via the compass button.
+                                interactionOptions: const InteractionOptions(
+                                  enableMultiFingerGestureRace: true,
+                                  rotationThreshold: 25,
                                 ),
-                              );
-                            }).toList(),
-                          ),
-                          // Validator-only puzzlets: rendered outside the
-                          // pole/cluster stack so they never spider with
-                          // other markers, and sized against the current
-                          // zoom so they shrink to a small star far out and
-                          // grow to full pin close in — same treatment
-                          // poles get on the author map.
-                          if (_validatorOnlyPuzzlets.isNotEmpty)
-                            MarkerLayer(markers: _validatorOnlyMarkers()),
-                          // User's own position + heading cone (only while
-                          // walking). Above the pole markers so a pole
-                          // directly under the user doesn't obscure the
-                          // marker; below attribution/compass.
-                          const LiveLocationLayer(),
-                          const _MapAttribution(),
-                          // Compass appears only when the map is rotated; tap
-                          // animates it back to north-up. The plugin picks up the
-                          // enclosing FlutterMap's controller via context — no
-                          // controller wiring on our side.
-                          const MapCompass.cupertino(hideIfRotatedNorth: true),
-                        ],
-                      ),
-                      if (_activePuzzlets.isNotEmpty)
-                        Positioned(
-                          top: 8,
-                          left: 8,
-                          right: 8,
-                          child: _InProgressCard(
-                            entry: _activePuzzlets.first,
-                            onOpen: () =>
-                                _openActivePuzzlet(_activePuzzlets.first),
-                            onGiveUp: () =>
-                                _giveUpActivePuzzlet(_activePuzzlets.first),
-                          ),
-                        ),
-                    ]),
+                                // Track camera zoom for size-scaled overlays
+                                // (validator-only puzzlet pins). Only setState
+                                // when the zoom actually changes so panning
+                                // doesn't force a rebuild every frame.
+                                onPositionChanged: (position, _) {
+                                  final z = position.zoom;
+                                  if (z != null && z != _mapZoom) {
+                                    setState(() => _mapZoom = z);
+                                  }
+                                },
+                              ),
+                              children: [
+                                landgrabTileLayer(context),
+                                // Territory fills sit above the tiles and below
+                                // the marker pins so pole icons remain readable
+                                // over their own coloured cells.
+                                TerritoryLayer(
+                                  poles: _poles!,
+                                  myOwnerId: _teamId,
+                                  captureStartedAt: _captureStartedAt,
+                                  captureFromOwner: _captureFromOwner,
+                                  captureAnimationDuration:
+                                      _captureAnimationDuration,
+                                ),
+                                BathroomLayer(bathrooms: _bathrooms),
+                                CaptureRingsLayer(
+                                  poles: _poles!,
+                                  captureStartedAt: _captureStartedAt,
+                                  duration: _captureAnimationDuration,
+                                  myOwnerId: _teamId,
+                                ),
+                                AttackRingsLayer(
+                                  poles: _poles!,
+                                  attackedPoleIds: _lastAttackAt.keys.toSet(),
+                                  pulsePhase: _pulsePhase,
+                                ),
+                                MarkerLayer(
+                                  // The endgame boundary is invisible by design:
+                                  // poles it has passed just disappear (their
+                                  // territory stays — TerritoryLayer gets the
+                                  // unfiltered list), so players sense the
+                                  // squeeze without seeing a circle.
+                                  markers: _polesInPlay().map((pole) {
+                                    return Marker(
+                                      // Keyed by pole so zoom-time culling can't
+                                      // hand this element a different pole —
+                                      // unkeyed, the _PoleDot's AnimatedContainer
+                                      // tweened between neighbouring poles'
+                                      // colours on every reshuffle.
+                                      key: ValueKey(pole.id),
+                                      point:
+                                          LatLng(pole.latitude, pole.longitude),
+                                      width: 24,
+                                      height: 24,
+                                      child: Tooltip(
+                                        message: pole.label ?? pole.barcode,
+                                        child: _PoleDot(color: _pinColor(pole)),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                                // Validator-only puzzlets: rendered outside the
+                                // pole/cluster stack so they never spider with
+                                // other markers, and sized against the current
+                                // zoom so they shrink to a small star far out and
+                                // grow to full pin close in — same treatment
+                                // poles get on the author map.
+                                if (_validatorOnlyPuzzlets.isNotEmpty)
+                                  MarkerLayer(markers: _validatorOnlyMarkers()),
+                                // User's own position + heading cone (only while
+                                // walking). Above the pole markers so a pole
+                                // directly under the user doesn't obscure the
+                                // marker; below attribution/compass.
+                                const LiveLocationLayer(),
+                                const _MapAttribution(),
+                                // Compass appears only when the map is rotated; tap
+                                // animates it back to north-up. The plugin picks up the
+                                // enclosing FlutterMap's controller via context — no
+                                // controller wiring on our side.
+                                const MapCompass.cupertino(
+                                    hideIfRotatedNorth: true),
+                              ],
+                            ),
+                            if (_activePuzzlets.isNotEmpty)
+                              Positioned(
+                                top: 8,
+                                left: 8,
+                                right: 8,
+                                child: _InProgressCard(
+                                  entry: _activePuzzlets.first,
+                                  onOpen: () =>
+                                      _openActivePuzzlet(_activePuzzlets.first),
+                                  onGiveUp: () => _giveUpActivePuzzlet(
+                                      _activePuzzlets.first),
+                                ),
+                              ),
+                          ]),
+          ),
+        ],
+      ),
       floatingActionButton: preEvent
           ? null
           : FloatingActionButton.extended(
@@ -1190,7 +1236,8 @@ class _ScannerTile extends StatelessWidget {
             : Text(
                 resultDetail == null
                     ? PreEventStrings.lastScan(lastResult!)
-                    : PreEventStrings.lastScanWithType(lastResult!, resultDetail!),
+                    : PreEventStrings.lastScanWithType(
+                        lastResult!, resultDetail!),
                 style: theme.textTheme.bodySmall?.copyWith(
                     fontFeatures: const [FontFeature.tabularFigures()]),
               ),

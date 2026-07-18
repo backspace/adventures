@@ -39,6 +39,7 @@ defmodule Registrations.Mixfile do
       {:phoenix_html, "~> 3.0"},
       {:phoenix_live_view, "~> 0.17.11"},
       {:gettext, "~> 0.9"},
+      {:eqrcode, "~> 0.1.10"},
       {:phoenix_live_reload, "~> 1.0", only: :dev},
       {:plug_cowboy, "~> 2.1"},
       {:plug, "~> 1.7"},
