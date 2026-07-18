@@ -28,6 +28,13 @@ const _softwareLicensesButton = 'Open-source licenses';
 
 const _envSwitcherUnlocked = 'Environment switcher unlocked.';
 
+// Shown on the Credits page until the simulation begins, in place of the
+// real credits (which name the venue, soundtrack, and stack). Edit this to
+// whatever pre-event copy you want; once the event starts, the file-backed
+// sections replace it.
+const _placeholderBody =
+    'Full credits will appear here once the simulation has begun.';
+
 /// Reads a credits section body from a bundled asset, returning null
 /// when the file is absent (e.g. a fresh clone), unreadable, or blank —
 /// so the caller can drop the section entirely.
@@ -46,7 +53,14 @@ Future<String?> _loadCredit(String asset) async {
 /// but it's off by default and only this deliberate gesture reveals
 /// it, so an attendee never sees it without hunting for it.
 class CreditsRoute extends StatefulWidget {
-  const CreditsRoute({super.key});
+  /// Whether the simulation has begun. Until it has, the page shows a
+  /// placeholder in place of the real credits. Callers pass the server's
+  /// [LandgrabEvent.started] flag; the login screen has no event loaded,
+  /// so it defaults to false — the placeholder — which is also the safe
+  /// default for an unauthenticated screen.
+  final bool eventStarted;
+
+  const CreditsRoute({super.key, this.eventStarted = false});
 
   @override
   State<CreditsRoute> createState() => _CreditsRouteState();
@@ -114,21 +128,34 @@ class _CreditsRouteState extends State<CreditsRoute> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (_acknowledgements != null)
-              _Section(
-                heading: _acknowledgementsHeading,
-                body: _acknowledgements,
-              ),
-            if (_soundtrack != null)
-              _Section(
-                heading: _soundtrackHeading,
-                body: _soundtrack,
-              ),
-            // Software always shows: even without a software.txt the
-            // open-source-licenses button below stays available.
+            if (!widget.eventStarted)
+              // Before the simulation begins, hold the real credits (venue,
+              // soundtrack, stack) back behind a placeholder.
+              Padding(
+                padding: const EdgeInsets.only(bottom: 28),
+                child: Text(
+                  _placeholderBody,
+                  style: theme.textTheme.bodyMedium,
+                ),
+              )
+            else ...[
+              if (_acknowledgements != null)
+                _Section(
+                  heading: _acknowledgementsHeading,
+                  body: _acknowledgements,
+                ),
+              if (_soundtrack != null)
+                _Section(
+                  heading: _soundtrackHeading,
+                  body: _soundtrack,
+                ),
+            ],
+            // Software section: the open-source-licenses button is generic
+            // and stays available always; the software.txt body (our stack)
+            // shows only once the simulation has begun.
             _Section(
               heading: _softwareHeading,
-              body: _software,
+              body: widget.eventStarted ? _software : null,
               // Flutter auto-collects every bundled package's license,
               // so this stays correct without a hand-maintained list.
               trailing: Align(

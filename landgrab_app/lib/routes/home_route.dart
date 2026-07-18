@@ -530,7 +530,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         );
       case _HomeMenuItem.credits:
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const CreditsRoute()),
+          MaterialPageRoute(
+            builder: (_) =>
+                CreditsRoute(eventStarted: _event?.started ?? false),
+          ),
         );
       case _HomeMenuItem.switchEnvironment:
         Navigator.of(context).push(
