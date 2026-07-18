@@ -28,6 +28,7 @@ import 'package:landgrab/routes/supervisor/supervisor_route.dart';
 import 'package:landgrab/routes/validator/validator_route.dart';
 import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/services/landgrab_socket.dart';
+import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/services/push_service.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/attack_rings_layer.dart';
@@ -79,6 +80,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // poles get on the author map. Below _voTinyZoom they shrink to a
   // small star; above _voFullZoom they render at full size.
   double _mapZoom = 14;
+  final MapController _mapController = MapController();
+  // "Locate me" in flight — disables the button and shows a spinner.
+  bool _locating = false;
   static const double _voFullZoom = 16;
   static const double _voTinyZoom = 13;
   static const double _voFullSize = 32;
@@ -265,6 +269,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     _socket?.dispose();
     _animTicker?.dispose();
     _zoneTimer?.cancel();
+    _mapController.dispose();
     super.dispose();
   }
 
@@ -590,6 +595,37 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     }
   }
 
+  /// Centre the map on the player's current location. Explicit tap, so it
+  /// may re-ask for permission; a permanent denial offers a jump to
+  /// Settings (same flow as the pin map's locate button).
+  Future<void> _locateMe() async {
+    if (_locating) return;
+    setState(() => _locating = true);
+    try {
+      final fix = await LocationService.getCurrent(context: context);
+      if (!mounted) return;
+      _mapController.move(
+        LatLng(fix.latitude, fix.longitude),
+        _mapZoom < 16 ? 16 : _mapZoom,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          action: e is LocationPermissionDeniedException
+              ? SnackBarAction(
+                  label: LocationStrings.openSettings,
+                  onPressed: LocationService.openAppSettings,
+                )
+              : null,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
   /// Resume an active puzzlet from the "in progress" card — no rescan.
   /// Opens the puzzlet directly; on capture, replays the territory
   /// animation like the scan flow does.
@@ -881,6 +917,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                           )
                         : Stack(children: [
                             FlutterMap(
+                              mapController: _mapController,
                               options: MapOptions(
                                 initialCenter: _center(),
                                 initialZoom: 14,
@@ -990,6 +1027,28 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                       _activePuzzlets.first),
                                 ),
                               ),
+                            // Locate-me lives bottom-left, matching the pin
+                            // map — the Scan FAB owns the bottom-right.
+                            Align(
+                              alignment: Alignment.bottomLeft,
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 8, bottom: 8),
+                                child: FloatingActionButton.small(
+                                  heroTag: null,
+                                  tooltip: GameplayStrings.locateMe,
+                                  onPressed: _locating ? null : _locateMe,
+                                  child: _locating
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
+                                        )
+                                      : const Icon(Icons.my_location),
+                                ),
+                              ),
+                            ),
                           ]),
           ),
         ],

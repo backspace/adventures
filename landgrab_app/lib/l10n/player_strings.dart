@@ -173,6 +173,7 @@ class GameplayStrings {
   GameplayStrings._();
 
   static const scanFab = 'Scan';
+  static const locateMe = 'Locate me';
   static const credits = 'Credits';
   static const details = 'Details';
   static const author = 'Author';
