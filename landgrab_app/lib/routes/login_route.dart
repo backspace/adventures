@@ -6,6 +6,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/routes/credits_route.dart';
+import 'package:landgrab/widgets/password_field.dart';
 import 'package:landgrab/routes/forgot_password_route.dart';
 import 'package:landgrab/routes/home_route.dart';
 import 'package:landgrab/routes/register_route.dart';
@@ -218,14 +219,11 @@ class _LoginRouteState extends State<LoginRoute> {
                         labelText: LoginStrings.emailLabel),
                   ),
                   const SizedBox(height: 12),
-                  TextField(
+                  PasswordField(
                     controller: _passwordController,
-                    obscureText: true,
+                    labelText: LoginStrings.passwordLabel,
                     autofillHints: const [AutofillHints.password],
-                    textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _submit(),
-                    decoration: const InputDecoration(
-                        labelText: LoginStrings.passwordLabel),
                   ),
                 ],
               ),
