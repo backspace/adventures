@@ -1,0 +1,86 @@
+<%# Anton (the LANDGRAB display face) for the captions. Loaded inline so
+    this page works regardless of which adventure's <head> is active. %>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&display=swap" />
+
+<style>
+  .install-poster {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 90vh;
+    box-sizing: border-box;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .install-qr {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* viewBox SVG (no fixed size) — scale it to fill most of the page. */
+  .install-qr svg {
+    width: min(85vw, 70vh);
+    height: auto;
+  }
+
+  .install-missing {
+    font-family: monospace;
+    font-size: 1.1rem;
+    color: #b6231e;
+    max-width: 30ch;
+  }
+
+  .install-caption {
+    margin-top: 24px;
+    font-family: "Anton", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.05;
+    font-size: clamp(2rem, 6vw, 4rem);
+  }
+
+  @media print {
+    /* Print only the posters — one per page. */
+    .row.nav,
+    .row.flash,
+    .install-intro {
+      display: none !important;
+    }
+
+    .install-poster {
+      min-height: 100vh;
+      page-break-after: always;
+    }
+
+    .install-poster:last-child {
+      page-break-after: auto;
+    }
+  }
+</style>
+
+<div class="install-intro">
+  <h2>Onboarding QR codes</h2>
+  <p>
+    Print this page — each QR lands on its own page. Put them up in
+    order so walk-ups install the delivery channel first, then the app.
+    Links are set per deploy via the <code>ONBOARDING_*</code> env vars.
+  </p>
+</div>
+
+<%= for poster <- @posters do %>
+  <section class="install-poster">
+    <div class="install-qr">
+      <%= if poster.url == "" do %>
+        <div class="install-missing">Not configured — set <%= poster.env %></div>
+      <% else %>
+        <%= raw(qr(poster.url)) %>
+      <% end %>
+    </div>
+    <div class="install-caption"><%= poster.caption %></div>
+  </section>
+<% end %>

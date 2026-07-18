@@ -126,6 +126,8 @@ defmodule RegistrationsWeb.Router do
     # Use the default browser stack
     pipe_through(:browser)
 
+    get("/install", InstallController, :index)
+
     post("/teams/build", TeamController, :build)
     get("/teams/cards", TeamController, :cards)
     resources("/teams", TeamController)

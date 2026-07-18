@@ -1,5 +1,16 @@
 import Config
 
+# Onboarding install links, rendered as printable full-page QR posters
+# at /install (see RegistrationsWeb.InstallController). Set per deploy;
+# a blank/unset link shows a "not configured" placeholder on that page
+# instead of a QR. Kept out of committed config so event-specific links
+# (TestFlight, testing-group, store/APK URLs) aren't published.
+config :registrations, :onboarding_links,
+  ios_testflight: System.get_env("ONBOARDING_IOS_TESTFLIGHT"),
+  ios_install: System.get_env("ONBOARDING_IOS_INSTALL"),
+  android_group: System.get_env("ONBOARDING_ANDROID_GROUP"),
+  android_install: System.get_env("ONBOARDING_ANDROID_INSTALL")
+
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
 # system starts, so it is typically used to load production configuration
