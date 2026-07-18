@@ -259,7 +259,7 @@ class LandgrabApi {
         url: authUrl,
         callbackUrlScheme: _oauthCallbackScheme,
       );
-      diag('browser returned to app');
+      diag('browser returned to app; callbackUrl=$callbackUrl');
 
       // 3) Extract the code (and state) from the intercepted URL and
       //    hand them back to the server for the token exchange.

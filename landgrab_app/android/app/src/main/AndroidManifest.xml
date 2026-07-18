@@ -34,19 +34,15 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Android App Links. autoVerify makes Android fetch
-                 https://<host>/.well-known/assetlinks.json at install
-                 time and, if the sha256 fingerprint matches, mark this
-                 filter as verified so links open the app without a
-                 chooser. If verification fails, links still work but
-                 the user gets an "open with" prompt. -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="landgrab.chromatin.ca" />
-                <data android:scheme="https" android:host="poles-staging.chromatin.ca" />
-            </intent-filter>
+            <!-- Deliberately NO https App Links intent-filter here. The app
+                 has no deep-link handling, and an autoVerify filter for
+                 https://landgrab.chromatin.ca/* captured the OAuth redirect
+                 (…/powapi/auth/google/mobile_bounce): Android opened the app
+                 instead of letting the browser load the mobile_bounce page
+                 that fires the ca.chromatin.poles:// callback, so "Sign in
+                 with Google" never completed. If App Links are ever wanted,
+                 scope them with android:pathPrefix so /powapi/auth is never
+                 matched. -->
         </activity>
         <!-- flutter_web_auth_2 callback intercept. Custom-tabs return
              here when the server 302s to `ca.chromatin.poles://…`; the
