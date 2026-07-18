@@ -78,7 +78,11 @@ defmodule RegistrationsWeb.UserController do
         # by `PowPlug.prepend_with_namespace/2`.
         |> Plug.Conn.delete_resp_cookie("registrations_reauthorization_provider")
         |> put_flash(:info, "Your account has been deleted. Sorry to see you go!")
-        |> redirect(to: "/")
+        # The `account_deleted` marker lets the app's details WebView tell a
+        # real deletion apart from an ordinary "Home" navigation (both land
+        # on the site root, which the WebView would otherwise misread as a
+        # deletion). Harmless on the web — still lands on home with the flash.
+        |> redirect(to: "/?account_deleted=1")
 
       {:error, conn} ->
         redirect(conn, to: "/delete")

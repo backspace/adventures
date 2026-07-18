@@ -66,18 +66,31 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
     _load();
   }
 
-  /// The details form always redirects back to `/details`; only account
-  /// deletion leaves for the site root (Pow's `after_user_deleted_path`
-  /// is "/"). So a navigation to the root means the account is gone —
-  /// tear down the app session and return to login rather than loading
-  /// the public landing page inside the WebView.
+  /// Account deletion redirects to the site root with `?account_deleted=1`
+  /// (see `UserController.delete` / `Pow.Routes.after_user_deleted_path`).
+  /// That marker — and only it — means the account is really gone, so we
+  /// tear down the app session and return to login.
+  ///
+  /// A bare navigation to the root is the layout's "Home" link, NOT a
+  /// deletion. It used to be misread as deletion (falsely telling the user
+  /// their account was gone); instead, just close the details WebView and
+  /// return to the app, still signed in, rather than loading the public
+  /// landing page inside the WebView.
   NavigationDecision _onNavigationRequest(NavigationRequest request) {
-    final path = Uri.parse(request.url).path;
-    if ((path.isEmpty || path == '/') && !_handledDeletion) {
+    final uri = Uri.parse(request.url);
+
+    if (uri.queryParameters['account_deleted'] == '1' && !_handledDeletion) {
       _handledDeletion = true;
       _onAccountDeleted();
       return NavigationDecision.prevent;
     }
+
+    final path = uri.path;
+    if (path.isEmpty || path == '/') {
+      if (mounted) Navigator.of(context).pop();
+      return NavigationDecision.prevent;
+    }
+
     return NavigationDecision.navigate;
   }
 

@@ -12,6 +12,9 @@ defmodule RegistrationsWeb.Pow.Routes do
   # PowAssent's Reauthorization plug watches for /session/new, sees
   # the still-present provider cookie, and redirects to Google — which
   # creates a fresh account via the OAuth callback.
+  #
+  # The `account_deleted` marker lets the app's details WebView tell a real
+  # deletion apart from an ordinary "Home" navigation (both hit the root).
   @impl true
-  def after_user_deleted_path(_conn), do: "/"
+  def after_user_deleted_path(_conn), do: "/?account_deleted=1"
 end
