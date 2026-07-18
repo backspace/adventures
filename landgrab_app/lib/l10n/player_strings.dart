@@ -204,7 +204,7 @@ class LocationStrings {
   static const rationaleBody =
       'Landgrab uses your location to show which ${Terms.stakes} are near you on the '
       'map and to place your position on it. This stays on-device and is only '
-      'used by the app to show your location. You can still participate in the'
+      'used by the app to show your location. You can still participate in the '
       'simulation without this if you’re comfortable orienting yourself.';
   static const rationaleContinue = 'Continue';
   static const rationaleNotNow = 'Not now';
