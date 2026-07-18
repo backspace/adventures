@@ -171,6 +171,28 @@ class GameplayStrings {
       'Could not load zones: $error';
 }
 
+/// Location-permission pre-prompt rationale, shown just before the OS
+/// dialog (`widgets/location_rationale.dart`). The OS dialog's own text is
+/// native (iOS: Info.plist `NSLocationWhenInUseUsageDescription`; Android's
+/// system dialog text isn't customisable) — this is the in-app explanation
+/// shown first so the system ask isn't a cold prompt.
+class LocationStrings {
+  LocationStrings._();
+
+  static const rationaleTitle = 'Find nearby stakes';
+  static const rationaleBody =
+      'Landgrab uses your location to show which stakes are near you on the '
+      'map and to place your position on it. This stays on-device and is only '
+      'used by the app to show your location. You can still participate in the'
+      'simulation without this if you’re comfortable orienting yourself.';
+  static const rationaleContinue = 'Continue';
+  static const rationaleNotNow = 'Not now';
+
+  /// Snackbar action shown when location is permanently denied — jumps to
+  /// the OS settings page so the user can re-enable it.
+  static const openSettings = 'Open Settings';
+}
+
 /// Notification history (`routes/notifications_route.dart`).
 class NotificationStrings {
   NotificationStrings._();

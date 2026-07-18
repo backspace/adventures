@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:landgrab/services/ui_preferences.dart';
+import 'package:landgrab/widgets/location_rationale.dart';
 import 'package:latlong2/latlong.dart';
 
 /// Live user-location layer. Subscribes to [Geolocator.getPositionStream]
@@ -101,6 +103,15 @@ class _LiveLocationLayerState extends State<LiveLocationLayer>
     if (!await Geolocator.isLocationServiceEnabled()) return;
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
+      // Passive trigger: ask at most once ever. If we've already asked
+      // (whatever the outcome), stay quiet rather than nagging on every map
+      // load — a user-initiated "locate me" / capture tap can still re-ask.
+      if (await UiPreferences.getLocationAutoAsked()) return;
+      await UiPreferences.setLocationAutoAsked(true);
+      // Explain why before the OS prompt; if the player declines the
+      // pre-prompt, don't trigger the system dialog at all.
+      if (!mounted) return;
+      if (!await LocationRationale.show(context)) return;
       permission = await Geolocator.requestPermission();
     }
     if (permission == LocationPermission.denied ||

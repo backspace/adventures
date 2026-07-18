@@ -86,7 +86,7 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
     // when it gets its first fix; user can also tap "Locate me".
     final fetchFuture = _fetch(_fallbackCenter);
     try {
-      final fix = await LocationService.getCurrent();
+      final fix = await LocationService.getCurrent(context: context);
       final centre = LatLng(fix.latitude, fix.longitude);
       if (mounted) setState(() => _userLocation = centre);
       // Once the initial fetch completes, re-fetch around the real
@@ -145,7 +145,7 @@ class _AuthoringMapRouteState extends State<AuthoringMapRoute> {
     }
     setState(() => _locating = true);
     try {
-      final fix = await LocationService.getCurrent();
+      final fix = await LocationService.getCurrent(context: context);
       final me = LatLng(fix.latitude, fix.longitude);
       final zoom = max(_controller.camera.zoom, 15.0);
       _controller.move(me, zoom);

@@ -35,6 +35,20 @@ class UiPreferences {
     await p.setString('region_picker:last_id', id);
   }
 
+  /// Whether we've already auto-prompted for location once — via the map's
+  /// passive live-location layer. Passive triggers ask at most once: if the
+  /// player declines, we stay quiet rather than nagging on every map load.
+  /// A user-initiated "locate me" / capture-location tap can still re-ask.
+  static Future<bool> getLocationAutoAsked() async {
+    final p = await _prefs();
+    return p.getBool('location:auto_asked') ?? false;
+  }
+
+  static Future<void> setLocationAutoAsked(bool asked) async {
+    final p = await _prefs();
+    await p.setBool('location:auto_asked', asked);
+  }
+
   /// A map's last manually-set camera (centre + zoom), so a pan/zoom
   /// survives leaving the screen and app restarts. Stored per-device as
   /// a "lat,lng,zoom" string. Null when never set (or malformed).

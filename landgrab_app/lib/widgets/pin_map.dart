@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/map_pin.dart';
@@ -282,7 +283,7 @@ class _PinMapState extends State<PinMap> {
     if (_locating) return;
     setState(() => _locating = true);
     try {
-      final fix = await LocationService.getCurrent();
+      final fix = await LocationService.getCurrent(context: context);
       final me = LatLng(fix.latitude, fix.longitude);
       final zoom = max(_controller.camera.zoom, 15.0);
       _controller.move(me, zoom);
@@ -291,7 +292,17 @@ class _PinMapState extends State<PinMap> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(
+          content: Text(e.toString()),
+          // When location is permanently denied the OS won't re-prompt, so
+          // offer a one-tap jump to Settings instead of a dead-end message.
+          action: e is LocationPermissionDeniedException
+              ? SnackBarAction(
+                  label: LocationStrings.openSettings,
+                  onPressed: LocationService.openAppSettings,
+                )
+              : null,
+        ),
       );
     } finally {
       if (mounted) setState(() => _locating = false);

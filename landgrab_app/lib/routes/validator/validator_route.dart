@@ -59,7 +59,7 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
 
   Future<void> _locate() async {
     try {
-      final fix = await LocationService.getCurrent();
+      final fix = await LocationService.getCurrent(context: context);
       if (!mounted) return;
       setState(() => _here = LatLng(fix.latitude, fix.longitude));
     } catch (_) {

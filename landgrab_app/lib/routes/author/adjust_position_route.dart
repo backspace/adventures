@@ -123,7 +123,7 @@ class _AdjustPositionRouteState extends State<AdjustPositionRoute> {
   Future<void> _reacquire() async {
     setState(() => _busy = true);
     try {
-      final fix = await LocationService.getCurrent();
+      final fix = await LocationService.getCurrent(context: context);
       if (!mounted) return;
       final me = LatLng(fix.latitude, fix.longitude);
       setState(() {

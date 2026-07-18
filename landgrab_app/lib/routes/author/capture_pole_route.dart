@@ -96,7 +96,7 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
       _locationError = null;
     });
     try {
-      final fix = await LocationService.getCurrent();
+      final fix = await LocationService.getCurrent(context: context);
       if (!mounted) return;
       setState(() {
         _fix = fix;
