@@ -37,6 +37,25 @@
 ///   3. Reference it from the widget as `LoginStrings.signInButton`.
 library;
 
+/// In-game vocabulary. Change a term here to rename it everywhere it
+/// appears in player-facing copy.
+///
+///   * [stake] — a pole and the barcode on it (the thing you scan).
+///   * [zone]  — the captured area around a stake.
+///   * [relic] — the puzzlet (the challenge you solve at a stake).
+class Terms {
+  Terms._();
+
+  static const stake = 'stake';
+  static const stakes = 'stakes';
+  static const stakeCap = 'Stake';
+  static const zone = 'zone';
+  static const zones = 'zones';
+  static const zoneCap = 'Zone';
+  static const relic = 'relic';
+  static const relics = 'relics';
+}
+
 /// Login route (`routes/login_route.dart`).
 class LoginStrings {
   LoginStrings._();
@@ -150,15 +169,15 @@ class GameplayStrings {
   static const inProgressHeading = 'Your team is working on';
   static const resume = 'Open';
   static const giveUp = 'Give up';
-  static const giveUpTitle = 'Give up on this relic?';
+  static const giveUpTitle = 'Give up on this ${Terms.relic}?';
   static String giveUpBody(String poleName) =>
       'Your team will stop working on $poleName and can pick up a '
-      'different zone. You can come back to this one later.';
+      'different ${Terms.stake}. You can come back to this one later.';
   static const giveUpCancel = 'Keep working';
   static const giveUpConfirm = 'Give up';
 
   // Scan refused because the team already holds a puzzlet.
-  static const atCapacityTitle = 'Already on a relic';
+  static const atCapacityTitle = 'Already on a ${Terms.relic}';
   static String atCapacityBody(String current) =>
       'Your team is already working on $current. Finish it or give it '
       'up before starting another.';
@@ -170,7 +189,7 @@ class GameplayStrings {
   // in-progress card).
   static String othersHere(int n) => '$n other${n == 1 ? '' : 's'} here';
   static String couldNotLoadPoles(String error) =>
-      'Could not load zones: $error';
+      'Could not load ${Terms.stakes}: $error';
 }
 
 /// Location-permission pre-prompt rationale, shown just before the OS
@@ -181,9 +200,9 @@ class GameplayStrings {
 class LocationStrings {
   LocationStrings._();
 
-  static const rationaleTitle = 'Find nearby stakes';
+  static const rationaleTitle = 'Find nearby ${Terms.stakes}';
   static const rationaleBody =
-      'Landgrab uses your location to show which stakes are near you on the '
+      'Landgrab uses your location to show which ${Terms.stakes} are near you on the '
       'map and to place your position on it. This stays on-device and is only '
       'used by the app to show your location. You can still participate in the'
       'simulation without this if you’re comfortable orienting yourself.';
@@ -201,8 +220,8 @@ class NotificationStrings {
 
   static const title = 'Notifications';
   static const empty =
-      'Nothing yet. When a rival team scans your stake or captures one of your '
-      'zones, it shows up here.';
+      'Nothing yet. When a rival team scans your ${Terms.stake} or captures one of your '
+      '${Terms.zones}, it shows up here.';
   static String couldNotLoad(String error) =>
       'Could not load notifications: $error';
 
@@ -230,18 +249,18 @@ class NotificationStrings {
 class ScanStrings {
   ScanStrings._();
 
-  static const appBarTitle = 'Scan a zone barcode';
+  static const appBarTitle = 'Scan a ${Terms.stake} barcode';
 
   // Outcome snackbars
-  static const poleFullyCaptured = 'This zone is fully captured.';
-  static const noActivePuzzlet = 'No active relics for this zone.';
+  static const poleFullyCaptured = 'This ${Terms.zone} is fully captured.';
+  static const noActivePuzzlet = 'No active ${Terms.relics} for this ${Terms.stake}.';
   static String scanFailed(String detail) => 'Scan failed: $detail';
 
   // Unknown-barcode dialog
   static const unknownBarcodeTitle = 'Unknown barcode';
   static String unknownBarcodeBody(String barcode) =>
-      '“$barcode” doesn\'t match any known zone. '
-      'Make sure you scanned a zone\'s barcode and try again.';
+      '“$barcode” doesn\'t match any known ${Terms.stake}. '
+      'Make sure you scanned a ${Terms.stake}\'s barcode and try again.';
   static const unknownBarcodeBack = 'Back to map';
   static const unknownBarcodeRetry = 'Try again';
 
@@ -254,7 +273,7 @@ class ScanStrings {
   // Locked-out dialog
   static const lockedOutTitle = 'Out of guesses';
   static String lockedOutBody(String poleName) =>
-      'Your team has used all attempts on the current relic for $poleName. '
+      'Your team has used all attempts on the current ${Terms.relic} for $poleName. '
       'Wait for another team to capture it before you can try again.';
 
   // Own-creation dialog (authors can't capture their own content)
@@ -268,7 +287,7 @@ class ScanStrings {
   static const outsideZoneTitle = 'Out of range';
   static String outsideZoneBody(String poleName) =>
       'The simulation has withdrawn $poleName — it can no longer be '
-      'claimed. Only zone stakes still on your map remain in play.';
+      'claimed. Only ${Terms.stakes} still on your map remain in play.';
 
   // Generic acknowledge button used across the dialogs above.
   static const ok = 'OK';
@@ -278,11 +297,11 @@ class ScanStrings {
 class PuzzletStrings {
   PuzzletStrings._();
 
-  static const titlePrefix = 'Pole';
+  static const titlePrefix = Terms.stakeCap;
   static String attemptsRemaining(int n) => 'Attempts remaining: $n';
   static String contendingTeams(int n) => n == 1
-      ? 'Another team is also working on this zone — first to solve it wins.'
-      : '$n other teams are also working on this zone — first to solve it wins.';
+      ? 'Another team is also working on this ${Terms.stake} — first to solve it wins.'
+      : '$n other teams are also working on this ${Terms.stake} — first to solve it wins.';
   static const previouslyTried = 'Already tried by your team:';
 
   // Region context — the place the pole sits in, plus how to reach it
@@ -314,16 +333,16 @@ class PuzzletStrings {
 
   // Outcome text
   static const correctAndLocked =
-      'Correct! Zone captured and now fully locked.';
-  static const correctPoleCaptured = 'Correct! Zone captured.';
+      'Correct! ${Terms.zoneCap} captured and now fully locked.';
+  static const correctPoleCaptured = 'Correct! ${Terms.zoneCap} captured.';
   static String incorrect(int remaining) =>
       'Incorrect. $remaining attempt(s) left.';
   static const lockedOut = 'Locked out — too many wrong answers.';
   static const alreadyCapturedByOther =
-      'Another team captured this relic first.';
+      'Another team found this ${Terms.relic} first.';
   static const alreadyOwner =
-      'Your team already owns this zone. Wait for a rival.';
-  static const notActive = 'Scan this pole to begin before answering.';
+      'Your team already owns this ${Terms.zone}. Wait for a rival to capture it.';
+  static const notActive = 'Scan this ${Terms.stake} to begin before answering.';
   static const ownCreation = "You made this one — you can't capture it.";
 
   // Fallbacks for submissions that fail in ways the app doesn't
