@@ -1095,11 +1095,33 @@ defmodule Registrations.Landgrab do
     normalize_loose(expected) == normalize_loose(given)
   end
 
-  defp answers_match?(type, expected, given) when type in [:strict_text, :barcode, :nfc] do
+  defp answers_match?(type, expected, given) when type in [:strict_text, :nfc] do
     expected == given
+  end
+
+  defp answers_match?(:barcode, expected, given) do
+    expected == given or barcodes_equivalent?(expected, given)
   end
 
   defp answers_match?(_, _, _), do: false
 
   defp normalize_loose(s), do: s |> String.trim() |> String.downcase()
+
+  # UPC-A (12 digits) and EAN-13 (13 digits) encode the same code differing
+  # only by a leading zero, and scanners disagree on which they report: iOS
+  # (AVFoundation) surfaces a UPC-A barcode as EAN-13 with a leading "0",
+  # while Android (ML Kit) returns bare UPC-A without it. So the same physical
+  # barcode won't string-equal across platforms. Treat two all-digit codes as
+  # equal when they match once zero-padded to a common width — this also
+  # covers any plain numeric code whose leading zero a scanner dropped.
+  defp barcodes_equivalent?(expected, given) do
+    numeric?(expected) and numeric?(given) and zero_padded_equal?(expected, given)
+  end
+
+  defp zero_padded_equal?(a, b) do
+    width = max(String.length(a), String.length(b))
+    String.pad_leading(a, width, "0") == String.pad_leading(b, width, "0")
+  end
+
+  defp numeric?(s), do: s != "" and String.match?(s, ~r/^[0-9]+$/)
 end

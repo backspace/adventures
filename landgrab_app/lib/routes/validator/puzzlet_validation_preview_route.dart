@@ -74,8 +74,23 @@ class _PuzzletValidationPreviewRouteState
   // everything else exact). It's only to give the validator a "does this
   // work?" signal, not an authoritative capture.
   bool _matches(String input) {
+    if (_p.answerType == 'barcode') {
+      return _barcodeMatches(input.trim(), _p.answer.trim());
+    }
     if (_isStrict) return input == _p.answer;
     return input.trim().toLowerCase() == _p.answer.trim().toLowerCase();
+  }
+
+  /// Mirrors the server's barcode tolerance: a UPC-A code (Android/ML Kit
+  /// returns it with no leading zero) and its EAN-13 form (iOS prepends a
+  /// zero) are the same physical barcode, so two all-digit codes match once
+  /// zero-padded to a common width.
+  static final _digits = RegExp(r'^[0-9]+$');
+  bool _barcodeMatches(String a, String b) {
+    if (a == b) return true;
+    if (!_digits.hasMatch(a) || !_digits.hasMatch(b)) return false;
+    final width = a.length > b.length ? a.length : b.length;
+    return a.padLeft(width, '0') == b.padLeft(width, '0');
   }
 
   void _submitAnswer({String? override}) {
