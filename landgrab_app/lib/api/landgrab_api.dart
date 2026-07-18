@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/bathroom.dart';
@@ -230,16 +229,7 @@ class LandgrabApi {
   /// the token exchange — are swallowed to false so the caller can
   /// surface a single "sign-in failed" message.
   Future<bool> loginWithOAuth(String provider) async {
-    // TEMPORARY diagnostics for the Play Store "Google sign-in failed or
-    // was cancelled" issue. `debugPrint` (unlike the `logger` package's
-    // default filter) still emits in release builds, so these surface via
-    // `adb logcat | grep [oauth]` on a shipped artifact. Each step is
-    // tagged so the four failure modes — /new request, browser redirect,
-    // /callback POST, token storage — no longer collapse to one message.
-    // Remove once the production OAuth flow is confirmed working.
-    void diag(String msg) => debugPrint('[oauth] $msg');
     try {
-      diag('start provider=$provider apiRoot=${dio.options.baseUrl}');
       // 1) Ask the server for the Google auth URL and the session
       //    params it wants back on the callback POST. `client=mobile`
       //    makes the server select the `mobile_bounce` redirect URI so
@@ -251,30 +241,20 @@ class LandgrabApi {
       final data = newResp.data['data'] as Map<String, dynamic>;
       final authUrl = data['url'] as String;
       final sessionParams = data['session_params'];
-      diag('got auth url; redirect_uri='
-          '${Uri.parse(authUrl).queryParameters['redirect_uri']}');
 
       // 2) Open the system browser, wait for a redirect to our scheme.
       final callbackUrl = await FlutterWebAuth2.authenticate(
         url: authUrl,
         callbackUrlScheme: _oauthCallbackScheme,
       );
-      diag('browser returned to app; callbackUrl=$callbackUrl');
 
       // 3) Extract the code (and state) from the intercepted URL and
       //    hand them back to the server for the token exchange.
       final callbackUri = Uri.parse(callbackUrl);
-      if (callbackUri.queryParameters['error'] != null) {
-        diag('provider redirected with error='
-            '${callbackUri.queryParameters['error']}');
-        return false;
-      }
+      if (callbackUri.queryParameters['error'] != null) return false;
       final code = callbackUri.queryParameters['code'];
       final state = callbackUri.queryParameters['state'];
-      if (code == null) {
-        diag('no code in callback url: $callbackUrl');
-        return false;
-      }
+      if (code == null) return false;
 
       final callbackResp = await dio.post(
         '/powapi/auth/$provider/callback',
@@ -285,7 +265,6 @@ class LandgrabApi {
           'session_params': sessionParams,
         },
       );
-      diag('callback POST ok status=${callbackResp.statusCode}');
 
       final tokens = callbackResp.data['data'] as Map<String, dynamic>;
       await UserService.setTokens(
@@ -293,20 +272,8 @@ class LandgrabApi {
         tokens['renewal_token'] as String,
       );
       await loadAndStoreMe();
-      diag('success');
       return true;
-    } on DioException catch (e) {
-      // Server-reachable failures: which request, the HTTP status, and the
-      // server's error body (the /callback path returns a 500 with a bare
-      // message on token-exchange failure).
-      diag('dio error at ${e.requestOptions.method} ${e.requestOptions.path}: '
-          'status=${e.response?.statusCode} type=${e.type} '
-          'body=${e.response?.data} message=${e.message}');
-      return false;
-    } catch (e, st) {
-      // Everything else — notably FlutterWebAuth2 throwing on a cancelled
-      // or failed tab (PlatformException code CANCELED / MISSING_ACTIVITY).
-      diag('error: $e\n$st');
+    } catch (_) {
       return false;
     }
   }
