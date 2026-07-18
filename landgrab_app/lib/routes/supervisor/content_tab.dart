@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
@@ -87,6 +88,10 @@ class _ContentTabState extends State<ContentTab> {
   List<DraftPuzzlet>? _puzzlets;
   String? _error;
 
+  // Guards the list's quick-accept buttons so a double-tap (or tapping
+  // two rows at once) can't fire overlapping transitions.
+  bool _accepting = false;
+
   // Draw-to-assign state. The polygon persists after the stroke so
   // the supervisor can see what they selected while picking a
   // validator; both clear on assign or cancel.
@@ -170,6 +175,27 @@ class _ContentTabState extends State<ContentTab> {
   Future<void> _reloadAll() async {
     await _load();
     await widget.onChanged();
+  }
+
+  Future<void> _quickAccept(_ContentRow row) async {
+    if (row.accept == null) return;
+    setState(() => _accepting = true);
+    try {
+      await row.accept!(widget.api);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Accepted ${row.title}')),
+      );
+      await _reloadAll();
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final detail = e.response?.data?['error']?['detail'] ?? e.message;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not accept: $detail')),
+      );
+    } finally {
+      if (mounted) setState(() => _accepting = false);
+    }
   }
 
   // ── Draw-to-assign ─────────────────────────────────────────────
@@ -394,7 +420,22 @@ class _ContentTabState extends State<ContentTab> {
           ]),
           subtitle:
               Text(row.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-          trailing: const Icon(Icons.chevron_right),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // One-tap accept for clean, submitted validations — saves
+              // opening the detail screen just to hit Accept when there's
+              // nothing to review.
+              if (row.canQuickAccept)
+                IconButton(
+                  icon: const Icon(Icons.check_circle_outline),
+                  color: Colors.green,
+                  tooltip: 'Accept',
+                  onPressed: _accepting ? null : () => _quickAccept(row),
+                ),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
           onTap: () => row.open(context, widget.api, _reloadAll),
         );
       },
@@ -590,41 +631,75 @@ class _ContentRow {
   final Future<void> Function(
       BuildContext, LandgrabApi, Future<void> Function()) open;
 
-  _ContentRow._(this.icon, this.title, this.subtitle, this.badges, this.open);
+  /// Whether the list can offer a one-tap accept: the validation has
+  /// been submitted (so it's the supervisor's to decide) and carries no
+  /// comments/suggestions to review first. Null-safe: unassigned items
+  /// (no active validation) never qualify.
+  final bool canQuickAccept;
 
-  factory _ContentRow.pole(DraftPole p) => _ContentRow._(
-        Icons.barcode_reader,
-        p.label ?? p.barcode,
-        'Pole · ${p.barcode}${_assignedTo(p.activeValidation)}',
-        _badgesFor(p.status, p.activeValidation, p.attachmentIds.length),
-        (context, api, reload) async {
-          final changed = await Navigator.of(context).push<bool>(
-            MaterialPageRoute(
-              builder: (_) => PoleSupervisionDetailRoute(
-                  api: api, pole: p, onChanged: reload),
-            ),
-          );
-          if (changed == true) await reload();
-        },
-      );
+  /// Accepts the row's active validation via the right transition
+  /// endpoint. Only set when [canQuickAccept] is true.
+  final Future<void> Function(LandgrabApi)? accept;
 
-  factory _ContentRow.puzzlet(DraftPuzzlet p) => _ContentRow._(
-        Icons.question_mark,
-        p.instructions,
-        'Puzzlet · difficulty ${p.difficulty}'
-        '${p.region != null ? ' · ${p.region!.breadcrumb}' : ''}'
-        '${_assignedTo(p.activeValidation)}',
-        _badgesFor(p.status, p.activeValidation, p.attachmentIds.length),
-        (context, api, reload) async {
-          final changed = await Navigator.of(context).push<bool>(
-            MaterialPageRoute(
-              builder: (_) => PuzzletSupervisionDetailRoute(
-                  api: api, puzzlet: p, onChanged: reload),
-            ),
-          );
-          if (changed == true) await reload();
-        },
-      );
+  _ContentRow._(this.icon, this.title, this.subtitle, this.badges, this.open,
+      {this.canQuickAccept = false, this.accept});
+
+  static bool _cleanSubmitted(ActiveValidationSummary? v) =>
+      v != null && v.status == 'submitted' && v.commentCount == 0;
+
+  factory _ContentRow.pole(DraftPole p) {
+    final v = p.activeValidation;
+    final canQuickAccept = _cleanSubmitted(v);
+    return _ContentRow._(
+      Icons.barcode_reader,
+      p.label ?? p.barcode,
+      'Pole · ${p.barcode}${_assignedTo(v)}',
+      _badgesFor(p.status, v, p.attachmentIds.length),
+      (context, api, reload) async {
+        final changed = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) =>
+                PoleSupervisionDetailRoute(api: api, pole: p, onChanged: reload),
+          ),
+        );
+        if (changed == true) await reload();
+      },
+      canQuickAccept: canQuickAccept,
+      accept: canQuickAccept
+          ? (api) async {
+              await api.supervisorTransitionPoleValidation(v!.id, 'accepted');
+            }
+          : null,
+    );
+  }
+
+  factory _ContentRow.puzzlet(DraftPuzzlet p) {
+    final v = p.activeValidation;
+    final canQuickAccept = _cleanSubmitted(v);
+    return _ContentRow._(
+      Icons.question_mark,
+      p.instructions,
+      'Puzzlet · difficulty ${p.difficulty}'
+      '${p.region != null ? ' · ${p.region!.breadcrumb}' : ''}'
+      '${_assignedTo(v)}',
+      _badgesFor(p.status, v, p.attachmentIds.length),
+      (context, api, reload) async {
+        final changed = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => PuzzletSupervisionDetailRoute(
+                api: api, puzzlet: p, onChanged: reload),
+          ),
+        );
+        if (changed == true) await reload();
+      },
+      canQuickAccept: canQuickAccept,
+      accept: canQuickAccept
+          ? (api) async {
+              await api.supervisorTransitionPuzzletValidation(v!.id, 'accepted');
+            }
+          : null,
+    );
+  }
 
   static String _assignedTo(ActiveValidationSummary? v) {
     final name = v?.validatorName;
