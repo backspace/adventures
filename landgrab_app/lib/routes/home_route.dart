@@ -897,8 +897,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final titleText = (_teamName == null ? 'LANDGRAB' : 'LANDGRAB — $_teamName')
-        .toUpperCase();
+    // Once you're on a team the app bar is just the team name — the
+    // "LANDGRAB" prefix is redundant here and only eats width that long
+    // team names need in portrait.
+    final titleText = (_teamName ?? 'LANDGRAB').toUpperCase();
     // In test play we intentionally bypass the event-start gate — the
     // whole point of a rehearsal is to play before the event begins.
     final preEvent = _event != null && !_event!.started;
