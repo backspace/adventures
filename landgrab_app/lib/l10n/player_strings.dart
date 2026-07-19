@@ -355,8 +355,8 @@ class PuzzletStrings {
   static const titlePrefix = Terms.stakeCap;
   static String attemptsRemaining(int n) => 'Attempts remaining: $n';
   static String contendingTeams(int n) => n == 1
-      ? 'Another team is also working on this ${Terms.stake} — first to solve it wins.'
-      : '$n other teams are also working on this ${Terms.stake} — first to solve it wins.';
+      ? 'Another team is also working on this ${Terms.stake} — first to find the ${Terms.relic} claims the zone.'
+      : '$n other teams are also working on this ${Terms.stake} — first to find the ${Terms.relic} claims the zone.';
   static const previouslyTried = 'Already tried by your team:';
 
   // Region context — the place the pole sits in, plus how to reach it
