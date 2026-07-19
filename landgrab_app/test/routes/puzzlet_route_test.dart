@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/routes/puzzlet_route.dart';
 
@@ -118,6 +119,41 @@ void main() {
 
     final button = tester.widget<FilledButton>(find.byType(FilledButton));
     expect(button.onPressed, isNull);
+  });
+
+  testWidgets(
+      'opens in the game-over state when the game has already ended',
+      (tester) async {
+    final api = _FakeApi();
+    await tester.pumpWidget(_wrap(PuzzletRoute(
+      api: api,
+      pole: _pole(),
+      puzzlet: _puzzlet(),
+      gameEndsAt: DateTime.now().subtract(const Duration(minutes: 1)),
+    )));
+
+    // Message shown proactively, and the Submit button + answer field are
+    // disabled without any submit attempt.
+    expect(find.text(PuzzletStrings.gameOver), findsOneWidget);
+    final button = tester.widget<FilledButton>(find.byType(FilledButton));
+    expect(button.onPressed, isNull);
+    final textField = tester.widget<TextField>(find.byType(TextField));
+    expect(textField.enabled, isFalse);
+  });
+
+  testWidgets('stays interactive when the game end is still in the future',
+      (tester) async {
+    final api = _FakeApi();
+    await tester.pumpWidget(_wrap(PuzzletRoute(
+      api: api,
+      pole: _pole(),
+      puzzlet: _puzzlet(),
+      gameEndsAt: DateTime.now().add(const Duration(hours: 1)),
+    )));
+
+    expect(find.text(PuzzletStrings.gameOver), findsNothing);
+    final button = tester.widget<FilledButton>(find.byType(FilledButton));
+    expect(button.onPressed, isNotNull);
   });
 
   testWidgets('celebrates a correct answer and pops back with `true`',

@@ -692,6 +692,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           api: widget.api,
           teamPuzzletsChanged: _socket?.teamPuzzletsChanged,
           teamId: _teamId,
+          gameEndsAt: _event?.endgame?.endsAt,
         ),
       ),
     );
@@ -755,6 +756,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           contendingTeams: entry.contendingTeams,
           teamPuzzletsChanged: _socket?.teamPuzzletsChanged,
           teamId: _teamId,
+          gameEndsAt: _event?.endgame?.endsAt,
         ),
       ),
     );

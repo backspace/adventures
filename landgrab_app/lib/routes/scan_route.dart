@@ -18,11 +18,15 @@ class ScanRoute extends StatefulWidget {
   // map if the puzzlet is resolved out from under the solver.
   final Stream<String>? teamPuzzletsChanged;
   final String? teamId;
+  // Forwarded to the PuzzletRoute this scan opens, so a relic viewed after
+  // the game has ended opens with its answer entry already disabled.
+  final DateTime? gameEndsAt;
   const ScanRoute({
     super.key,
     required this.api,
     this.teamPuzzletsChanged,
     this.teamId,
+    this.gameEndsAt,
   });
 
   @override
@@ -121,6 +125,7 @@ class _ScanRouteState extends State<ScanRoute> {
                 contendingTeams: result.contendingTeams,
                 teamPuzzletsChanged: widget.teamPuzzletsChanged,
                 teamId: widget.teamId,
+                gameEndsAt: widget.gameEndsAt,
               ),
             ),
           );

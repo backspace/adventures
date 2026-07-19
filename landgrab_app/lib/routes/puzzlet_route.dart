@@ -32,6 +32,13 @@ class PuzzletRoute extends StatefulWidget {
   final Stream<String>? teamPuzzletsChanged;
   final String? teamId;
 
+  /// When the game ends (the endgame window's close). Once it passes,
+  /// relics can be viewed but no longer captured — the screen opens
+  /// with the answer entry disabled and the game-over message shown,
+  /// rather than waiting for a submit to bounce off the server. Null
+  /// when no endgame is configured (the game never ends).
+  final DateTime? gameEndsAt;
+
   const PuzzletRoute({
     super.key,
     required this.api,
@@ -40,6 +47,7 @@ class PuzzletRoute extends StatefulWidget {
     this.contendingTeams = 0,
     this.teamPuzzletsChanged,
     this.teamId,
+    this.gameEndsAt,
   });
 
   @override
@@ -73,6 +81,13 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     _attemptsRemaining = widget.puzzlet.attemptsRemaining;
     _previousWrongAnswers = List.of(widget.puzzlet.previousWrongAnswers);
     _resolutionSub = widget.teamPuzzletsChanged?.listen(_onTeamPuzzletsChanged);
+    // If the game is already over, open in the terminal game-over state
+    // (answer entry disabled, message shown) instead of letting a doomed
+    // submit reach the server first.
+    final endsAt = widget.gameEndsAt;
+    if (endsAt != null && !DateTime.now().isBefore(endsAt)) {
+      _outcome = const AttemptGameOver();
+    }
   }
 
   /// Live reaction to the team's active puzzlets changing on the server. If
