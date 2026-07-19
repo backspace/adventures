@@ -758,8 +758,18 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       }
     }
     if (nearest == null || best > 200) return; // matches TerritoryLayer radius
-    final pole = nearest;
+    // An unclaimed pole paints no territory, so a tap this far from it landed
+    // on blank space — popping something up there just reads as confusing.
+    // Unclaimed stakes are revealed only by a direct tap on their marker
+    // (wired on the marker itself); a claimed zone still responds anywhere.
+    if (nearest.currentOwnerTeamId == null) return;
+    _showPoleOwner(nearest);
+  }
 
+  /// Brief snackbar naming a stake and its current owner, with the owning
+  /// team's colour glyph. Reached by tapping a claimed zone, or by tapping any
+  /// stake's marker directly (the only way to reveal an unclaimed stake).
+  void _showPoleOwner(Pole pole) {
     final idx = pole.currentOwnerColorIndex;
     final owned = pole.currentOwnerTeamId != null && idx != null;
     final style = owned ? TeamStyle.forIndex(idx) : null;
@@ -1120,12 +1130,20 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                           LatLng(pole.latitude, pole.longitude),
                                       width: 24,
                                       height: 24,
-                                      child: Tooltip(
-                                        message: pole.name,
-                                        child: _PoleDot(
-                                          style: _styleForPole(pole),
-                                          isMine: pole.currentOwnerTeamId ==
-                                              _teamId,
+                                      // A direct tap on the marker always
+                                      // names the stake — the only way to
+                                      // reveal an unclaimed one, since its
+                                      // blank surroundings don't respond.
+                                      child: GestureDetector(
+                                        behavior: HitTestBehavior.opaque,
+                                        onTap: () => _showPoleOwner(pole),
+                                        child: Tooltip(
+                                          message: pole.name,
+                                          child: _PoleDot(
+                                            style: _styleForPole(pole),
+                                            isMine: pole.currentOwnerTeamId ==
+                                                _teamId,
+                                          ),
                                         ),
                                       ),
                                     );
