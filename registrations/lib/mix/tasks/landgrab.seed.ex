@@ -49,6 +49,12 @@ defmodule Mix.Tasks.Landgrab.Seed do
   @validator_email "buck.doyle+validator@gmail.com"
   @assigner_email "b@chromatin.ca"
 
+  # Word banks for memorable two-word team names ("correct horse" style).
+  @adjectives ~w(correct brave quiet sly amber velvet crimson lucky mellow rustic
+                 cosmic feral gentle jolly nimble plucky rugged spry vivid witty)
+  @nouns ~w(horse battery otter river staple ember pixel comet meadow lantern
+            walrus thistle harbor badger cinder marble sparrow tundra cactus falcon)
+
   @presets %{
     "gameplay" => ~w(playable teams clock),
     "validation" => ~w(validations),
@@ -94,6 +100,9 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       with attacks, pole-losses, and in-progress claims  (20)
       clear           remove ALL captures, in-progress claims, and the attack /
                       pole-lost notifications — a clean, uncaptured map
+      filler:N        create N teamless filler users with memorable proposed
+                      team names — pair with 'teams' to add that many teams  (5)
+      names           rename any leftover "FIXME" teams to two-word names
       clock:N         set the event start to N minutes from now  (60)
                         clock:1  → a one-minute countdown
                         clock:0  → started right now
@@ -132,6 +141,8 @@ defmodule Mix.Tasks.Landgrab.Seed do
   defp run_step({"captures", n}), do: captures(n || 20)
   defp run_step({"clear", _}), do: clear()
   defp run_step({"clock", n}), do: clock(n || 60)
+  defp run_step({"filler", n}), do: filler(n || 5)
+  defp run_step({"names", _}), do: names()
   defp run_step({other, _}), do: Mix.raise("Unknown step or preset: #{inspect(other)}")
 
   # ── playable ────────────────────────────────────────────────────────
@@ -190,6 +201,45 @@ defmodule Mix.Tasks.Landgrab.Seed do
 
   # ── teams ───────────────────────────────────────────────────────────
   defp teams, do: Mix.Task.rerun("landgrab.build_teams", [])
+
+  # ── filler users / team names ───────────────────────────────────────
+  # Create N teamless filler users, each with a memorable proposed team
+  # name so the `teams` step builds a nicely-named solo team from it.
+  defp filler(n) do
+    names = two_word_names(n, team_and_proposed_names())
+
+    created =
+      Enum.reduce(names, 0, fn name, acc ->
+        email = "filler+" <> String.replace(name, " ", "-") <> "@example.test"
+
+        if Repo.get_by(User, email: email) do
+          acc
+        else
+          {:ok, _} =
+            %User{}
+            |> Ecto.Changeset.change(%{email: email, proposed_team_name: name})
+            |> Repo.insert()
+
+          acc + 1
+        end
+      end)
+
+    Mix.shell().info("filler: created #{created} teamless filler user(s) — run 'teams' to build their teams.")
+  end
+
+  # Rename the team-builder's "FIXME" placeholder teams (loners who gave no
+  # proposed name) to memorable two-word names.
+  defp names do
+    fixme = Repo.all(from(t in Team, where: t.name == "FIXME", select: t.id))
+
+    fixme
+    |> Enum.zip(two_word_names(length(fixme), existing_team_names()))
+    |> Enum.each(fn {id, name} ->
+      Repo.update_all(from(t in Team, where: t.id == ^id), set: [name: name])
+    end)
+
+    Mix.shell().info("names: renamed #{length(fixme)} FIXME team(s).")
+  end
 
   # ── validations ─────────────────────────────────────────────────────
   defp validations(n) do
@@ -434,6 +484,22 @@ defmodule Mix.Tasks.Landgrab.Seed do
       It only runs against a *_dev / *_test database, never a real environment.
       """)
     end
+  end
+
+  defp two_word_names(count, exclude) do
+    taken = MapSet.new(exclude)
+
+    for(a <- @adjectives, n <- @nouns, do: "#{a} #{n}")
+    |> Enum.reject(&MapSet.member?(taken, &1))
+    |> Enum.shuffle()
+    |> Enum.take(count)
+  end
+
+  defp existing_team_names, do: Repo.all(from(t in Team, select: t.name))
+
+  defp team_and_proposed_names do
+    existing_team_names() ++
+      Repo.all(from(u in User, where: not is_nil(u.proposed_team_name), select: u.proposed_team_name))
   end
 
   defp now, do: DateTime.truncate(DateTime.utc_now(), :second)
