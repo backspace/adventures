@@ -43,7 +43,7 @@
 
   <%= for pole <- @poles do %>
     <div class="pole-card">
-      <h3><%= pole.label || pole.barcode %></h3>
+      <h3><%= pole_name(pole) %></h3>
       <%= case @owners[pole.id] do %>
         <% nil -> %>
           <p class="owner unclaimed">Unclaimed</p>

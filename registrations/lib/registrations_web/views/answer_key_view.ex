@@ -25,6 +25,12 @@ defmodule RegistrationsWeb.AnswerKeyView do
   end
 
   @doc """
+  A pole's synthetic display name (the stable Automatic Insurrection handle) —
+  the only name a pole has now; the old author `label` is not shown anywhere.
+  """
+  def pole_name(pole), do: Registrations.Landgrab.pole_name(pole)
+
+  @doc """
   The team's members as comma-separated email usernames (the part
   before the @), sorted — enough to recognise who's who without
   printing full addresses on the sheet.
