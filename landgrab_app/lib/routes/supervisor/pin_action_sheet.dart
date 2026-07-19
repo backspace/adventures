@@ -287,6 +287,22 @@ class _PuzzletPinSheetState extends State<_PuzzletPinSheet> {
             ),
             const SizedBox(height: 8),
             Text('Answer: ${p.answer} · Difficulty ${p.difficulty}'),
+            if (p.region != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.place_outlined,
+                      size: 16, color: Theme.of(context).hintColor),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      p.region!.breadcrumb,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             if (p.latitude != null && p.longitude != null) ...[
               const SizedBox(height: 4),
               Text(
