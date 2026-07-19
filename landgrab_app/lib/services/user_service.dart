@@ -32,6 +32,10 @@ class UserService {
 
   // Global (env-independent) keys
   static const String _apiRootOverrideKey = 'api_root_override';
+  // The build flavor that set the override, so a stale override from a
+  // different flavor (e.g. a staging switch carried into a production
+  // install) can be dropped on launch. See EnvService.initialize.
+  static const String _apiRootOverrideFlavorKey = 'api_root_override_flavor';
 
   // Per-env key suffixes — actual storage key is `${suffix}:${apiRoot}`
   static const String _userIdKey = 'user_id';
@@ -135,11 +139,20 @@ class UserService {
   static Future<String?> getApiRootOverride() =>
       _storage.read(key: _apiRootOverrideKey);
 
-  static Future<void> setApiRootOverride(String? value) async {
+  /// The build flavor that set the current override. Null when there's no
+  /// override, or when it was set by a build predating this bookkeeping.
+  static Future<String?> getApiRootOverrideFlavor() =>
+      _storage.read(key: _apiRootOverrideFlavorKey);
+
+  static Future<void> setApiRootOverride(String? value, {String? flavor}) async {
     if (value == null || value.isEmpty) {
       await _storage.delete(key: _apiRootOverrideKey);
+      await _storage.delete(key: _apiRootOverrideFlavorKey);
     } else {
       await _storage.write(key: _apiRootOverrideKey, value: value);
+      if (flavor != null) {
+        await _storage.write(key: _apiRootOverrideFlavorKey, value: flavor);
+      }
     }
   }
 

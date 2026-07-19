@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:landgrab/flavors.dart';
 import 'package:landgrab/services/user_service.dart';
 
 const String _apiRootFromBuild =
@@ -26,7 +27,20 @@ class EnvService {
   /// Resolve and apply the active API root, taking the user's saved override
   /// into account first.
   Future<String> initialize() async {
-    final override = await UserService.getApiRootOverride();
+    var override = await UserService.getApiRootOverride();
+    // Drop a persisted override left by a *different* build flavor — e.g. a
+    // staging switch made in one build carried into a production install, or
+    // a legacy override with no recorded flavor. An override set within the
+    // current flavor is deliberate (testing) and kept, so a production build
+    // can still be pointed at staging on purpose. This just stops a stale
+    // pin from silently outliving a deploy.
+    if (override != null && override.isNotEmpty) {
+      final setFlavor = await UserService.getApiRootOverrideFlavor();
+      if (setFlavor != F.name) {
+        await UserService.setApiRootOverride(null);
+        override = null;
+      }
+    }
     final root = _resolve(override);
     UserService.setCurrentApiRoot(root);
     currentApiRoot.value = root;
@@ -36,7 +50,9 @@ class EnvService {
   /// Switch envs. Pass null to clear the override and revert to the build
   /// default. Returns the resolved new API root.
   Future<String> switchTo(String? override) async {
-    await UserService.setApiRootOverride(override);
+    // Record which flavor made this switch, so a later install of a
+    // different flavor drops it (see [initialize]).
+    await UserService.setApiRootOverride(override, flavor: F.name);
     final root = _resolve(override);
     UserService.setCurrentApiRoot(root);
     currentApiRoot.value = root;
