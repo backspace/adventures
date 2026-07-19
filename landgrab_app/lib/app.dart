@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/app_info.dart';
 import 'package:landgrab/flavors.dart';
+import 'package:landgrab/services/theme_service.dart';
 import 'package:landgrab/refresh_token_interceptor.dart';
 import 'package:landgrab/routes/login_route.dart';
 import 'package:landgrab/routes/home_route.dart';
@@ -29,6 +30,7 @@ class _AppState extends State<App> {
     // takes a moment, `visible` just flips from false → true later.
     // Not awaited before setting _ready so first paint doesn't wait.
     EnvSwitchService.load();
+    ThemeService.load();
     EnvService.instance.initialize().then((_) {
       if (mounted) setState(() => _ready = true);
     });
@@ -36,52 +38,65 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) {
-    // Dark theme to match the (dark) registrations site. The map layers
-    // deliberately stay on the light Positron basemap — dark basemaps
-    // wash out in sunlight, and an outdoor game needs a legible map — so
-    // only the app chrome is dark, not the map itself.
-    final theme = ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        // landgrab-river from the registrations site palette.
-        seedColor: const Color(0xFF2D6A9F),
-        brightness: Brightness.dark,
-      ),
-      useMaterial3: true,
-      // Match the registrations site's body font, which is Foundation's
-      // default system stack (`'Helvetica Neue', Helvetica, Roboto,
-      // Arial`). These are system fonts — nothing to bundle — so this
-      // resolves to Helvetica Neue on iOS/macOS and falls through to
-      // Roboto on Android, exactly as the site does per platform.
-      fontFamily: 'Helvetica Neue',
-      fontFamilyFallback: const ['Helvetica', 'Roboto', 'Arial'],
-      // Anton is the site wordmark's display face; app bar titles
-      // carry the branding in-app. Display-only — body text stays on
-      // the default face for legibility. Bone echoes the site wordmark.
-      appBarTheme: const AppBarTheme(
+    // Everything follows the system or the user's Settings choice (light/dark),
+    // including the app bar. The bar carries the Anton wordmark: in DARK mode a
+    // dark bar with the bone wordmark (the site hero); in LIGHT mode a bone bar
+    // with the blue wordmark + icons, so it reads as branded rather than a
+    // heavy black slab. The map layers stay on the light Positron basemap
+    // regardless — dark basemaps wash out in sunlight — so the map is never
+    // themed either.
+    const seed = Color(0xFF2D6A9F); // landgrab-river from the site palette.
+    const bone = Color(0xFFECE4D3);
+    final darkSurface =
+        ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark)
+            .surface;
+    AppBarTheme appBarFor(Brightness brightness) {
+      // Title + icon colour: bone on the dark bar, blue on the bone bar.
+      final fg = brightness == Brightness.dark ? bone : seed;
+      return AppBarTheme(
+        backgroundColor: brightness == Brightness.dark ? darkSurface : bone,
+        foregroundColor: fg,
         titleTextStyle: TextStyle(
           fontFamily: 'Anton',
           fontSize: 22,
-          color: Color(0xFFECE4D3),
+          color: fg,
         ),
-      ),
-    );
+      );
+    }
+
+    // Match the registrations site's body font (Foundation's system stack) —
+    // system fonts, nothing to bundle: Helvetica Neue on iOS/macOS, Roboto on
+    // Android, as the site does per platform.
+    ThemeData themeFor(Brightness brightness) => ThemeData(
+          colorScheme:
+              ColorScheme.fromSeed(seedColor: seed, brightness: brightness),
+          useMaterial3: true,
+          fontFamily: 'Helvetica Neue',
+          fontFamilyFallback: const ['Helvetica', 'Roboto', 'Arial'],
+          appBarTheme: appBarFor(brightness),
+        );
+    final lightTheme = themeFor(Brightness.light);
+    final darkTheme = themeFor(Brightness.dark);
 
     if (!_ready) {
       return MaterialApp(
         title: F.title,
-        theme: theme,
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        themeMode: ThemeService.mode.value,
         builder: _flavorBanner,
         home: const Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
 
     return ListenableBuilder(
-      // Env change (new api root) or an in-place account swap (bumped
-      // sessionEpoch) both re-key the MaterialApp, forcing a fresh _Boot
-      // that re-reads the active session.
+      // Env change (new api root), an in-place account swap (bumped
+      // sessionEpoch), or a light/dark toggle all rebuild the MaterialApp; the
+      // first two re-key it, forcing a fresh _Boot that re-reads the session.
       listenable: Listenable.merge([
         EnvService.instance.currentApiRoot,
         EnvService.instance.sessionEpoch,
+        ThemeService.mode,
       ]),
       builder: (context, _) {
         final apiRoot =
@@ -90,7 +105,9 @@ class _AppState extends State<App> {
         return MaterialApp(
           key: ValueKey('$apiRoot#$epoch'),
           title: F.title,
-          theme: theme,
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: ThemeService.mode.value,
           builder: _flavorBanner,
           home: _Boot(apiRoot: apiRoot),
         );

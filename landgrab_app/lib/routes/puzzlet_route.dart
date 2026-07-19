@@ -10,6 +10,7 @@ import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
+import 'package:landgrab/widgets/accent_colors.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/team_style.dart';
 import 'package:landgrab/widgets/warning_banner.dart';
@@ -562,24 +563,23 @@ class _ContendedBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Brightness-aware blue, so it reads on both light and dark chrome.
+    final c = AccentColors.of(context, Colors.blue);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        border: Border.all(color: Colors.blue.shade300),
+        color: c.fill,
+        border: Border.all(color: c.border),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          Icon(Icons.groups_outlined, color: Colors.blue.shade700, size: 24),
+          Icon(Icons.groups_outlined, color: c.ink, size: 24),
           const SizedBox(width: 12),
-          // Explicit dark text — the light-blue background is fixed, but the
-          // dark app theme's default text colour is light, so without this
-          // the message renders light-on-light and is unreadable.
           Expanded(
             child: Text(
               PuzzletStrings.contendingTeams(count),
-              style: TextStyle(color: Colors.blue.shade900),
+              style: TextStyle(color: c.ink),
             ),
           ),
         ],

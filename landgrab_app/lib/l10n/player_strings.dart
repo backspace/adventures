@@ -174,6 +174,7 @@ class GameplayStrings {
 
   static const scanFab = 'Scan';
   static const locateMe = 'Locate me';
+  static const settings = 'Settings';
   static const credits = 'Credits';
   static const details = 'Details';
   static const author = 'Author';
@@ -244,6 +245,18 @@ class LocationStrings {
   /// Snackbar action shown when location is permanently denied — jumps to
   /// the OS settings page so the user can re-enable it.
   static const openSettings = 'Open Settings';
+}
+
+/// Settings screen (`routes/settings_route.dart`) — the player-facing part.
+/// The environment switcher below the appearance control stays plain English
+/// (it's the dev affordance behind the 7-tap unlock).
+class SettingsStrings {
+  SettingsStrings._();
+
+  static const appearance = 'Appearance';
+  static const themeSystem = 'System';
+  static const themeLight = 'Light';
+  static const themeDark = 'Dark';
 }
 
 /// Notification history (`routes/notifications_route.dart`).

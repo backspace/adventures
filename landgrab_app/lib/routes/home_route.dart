@@ -33,6 +33,7 @@ import 'package:landgrab/services/landgrab_socket.dart';
 import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/services/push_service.dart';
 import 'package:landgrab/services/user_service.dart';
+import 'package:landgrab/widgets/accent_colors.dart';
 import 'package:landgrab/widgets/attack_rings_layer.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
 import 'package:landgrab/widgets/capture_rings_layer.dart';
@@ -52,7 +53,7 @@ enum _HomeMenuItem {
   joinTeam,
   details,
   credits,
-  switchEnvironment,
+  settings,
   logOut,
 }
 
@@ -620,7 +621,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       value: value,
       child: Row(
         children: [
-          Icon(icon, size: 20),
+          // Explicit colour so the icon reads on the popup surface — without
+          // it, it inherits the app bar's foreground (white) and vanishes on
+          // the light menu background in light mode.
+          Icon(icon,
+              size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: 12),
           if (subtitle == null)
             Text(label)
@@ -671,7 +676,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                 CreditsRoute(eventStarted: _event?.started ?? false),
           ),
         );
-      case _HomeMenuItem.switchEnvironment:
+      case _HomeMenuItem.settings:
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const SettingsRoute()),
         );
@@ -926,6 +931,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       showDragHandle: true,
       builder: (ctx) {
         final theme = Theme.of(ctx);
+        final amber = AccentColors.forBrightness(theme.brightness, Colors.amber);
         return SafeArea(
           top: false,
           child: Padding(
@@ -963,20 +969,17 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.amber.shade50,
+                      color: amber.fill,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.amber.shade200),
+                      border: Border.all(color: amber.border),
                     ),
                     child: Row(children: [
-                      // Fixed dark colours — the amber background is fixed,
-                      // so theme-derived colours would render light-on-light
-                      // under the dark app theme.
                       Icon(Icons.warning_amber_outlined,
-                          size: 20, color: Colors.amber.shade900),
+                          size: 20, color: amber.ink),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(p.warning!,
-                            style: const TextStyle(color: Colors.black87)),
+                            style: TextStyle(color: amber.ink)),
                       ),
                     ]),
                   ),
@@ -1106,11 +1109,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                   GameplayStrings.details),
               _menuItem(_HomeMenuItem.credits, Icons.info_outline,
                   GameplayStrings.credits),
-              // Read directly instead of via ValueListenableBuilder:
-              // itemBuilder runs on every open, so it's always fresh.
-              if (EnvSwitchService.visible.value)
-                _menuItem(_HomeMenuItem.switchEnvironment, Icons.dns_outlined,
-                    LoginStrings.switchEnvironmentTooltip),
+              // Settings is for everyone now (it holds the light/dark toggle);
+              // the environment switcher inside it stays gated by the 7-tap
+              // unlock (EnvSwitchService.visible), checked within the route.
+              _menuItem(_HomeMenuItem.settings, Icons.settings_outlined,
+                  GameplayStrings.settings),
               _menuItem(
                 _HomeMenuItem.logOut,
                 Icons.logout,

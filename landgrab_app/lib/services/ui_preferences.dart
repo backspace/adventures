@@ -22,6 +22,18 @@ class UiPreferences {
     await p.setBool('list_map_view:$screenKey', isMap);
   }
 
+  /// The user's preferred app theme — "system" (default), "light", or "dark".
+  /// Applied at the MaterialApp level via [ThemeService].
+  static Future<String?> getThemeMode() async {
+    final p = await _prefs();
+    return p.getString('theme_mode');
+  }
+
+  static Future<void> setThemeMode(String mode) async {
+    final p = await _prefs();
+    await p.setString('theme_mode', mode);
+  }
+
   /// For a list screen with a sort control, recall the last-chosen sort key
   /// (an opaque enum name). Null the first time, so the caller picks its own
   /// default.

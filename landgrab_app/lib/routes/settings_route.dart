@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:landgrab/flavors.dart';
+import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/services/env_service.dart';
+import 'package:landgrab/services/env_switch_service.dart';
+import 'package:landgrab/services/theme_service.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 
@@ -137,7 +140,12 @@ class _SettingsRouteState extends State<SettingsRoute> {
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Card(
+            _appearanceSection(context),
+            // The environment + account switchers are dev affordances — shown
+            // only once the 7-tap Credits easter egg unlocks them.
+            if (EnvSwitchService.visible.value) ...[
+              const SizedBox(height: 24),
+              Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -216,11 +224,45 @@ class _SettingsRouteState extends State<SettingsRoute> {
                 ),
               ],
             ),
-            const SizedBox(height: 32),
-            _accountsSection(context),
+              const SizedBox(height: 32),
+              _accountsSection(context),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _appearanceSection(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(SettingsStrings.appearance, style: theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        ValueListenableBuilder<ThemeMode>(
+          valueListenable: ThemeService.mode,
+          builder: (context, mode, _) => SegmentedButton<ThemeMode>(
+            showSelectedIcon: false,
+            segments: const [
+              ButtonSegment(
+                value: ThemeMode.system,
+                label: Text(SettingsStrings.themeSystem),
+              ),
+              ButtonSegment(
+                value: ThemeMode.light,
+                label: Text(SettingsStrings.themeLight),
+              ),
+              ButtonSegment(
+                value: ThemeMode.dark,
+                label: Text(SettingsStrings.themeDark),
+              ),
+            ],
+            selected: {mode},
+            onSelectionChanged: (s) => ThemeService.set(s.first),
+          ),
+        ),
+      ],
     );
   }
 

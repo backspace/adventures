@@ -5,6 +5,7 @@ import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/supervisor/content_tab.dart';
 import 'package:landgrab/routes/supervisor/endgame_tab.dart';
 import 'package:landgrab/routes/supervisor/organiser_messages_tab.dart';
+import 'package:landgrab/widgets/accent_colors.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
@@ -130,29 +131,30 @@ class _Overview extends StatelessWidget {
 
     final submittedTotal =
         counts!.poleValidationsSubmitted + counts!.puzzletValidationsSubmitted;
+    // Brightness-aware purple, so the "awaiting review" card reads on both
+    // light and dark chrome.
+    final purple = AccentColors.of(context, Colors.purple);
 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         if (submittedTotal > 0)
           Card(
-            color: Colors.purple.shade50,
+            color: purple.fill,
             child: ListTile(
               leading:
-                  const Icon(Icons.assignment_turned_in, color: Colors.purple),
-              // Fixed dark text — the purple background is fixed, so the
-              // dark theme's light default text would be near-invisible.
+                  Icon(Icons.assignment_turned_in, color: purple.ink),
               title: Text(
                 '$submittedTotal awaiting your review',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: purple.ink,
                 ),
               ),
               subtitle: Text(
                 '${counts!.poleValidationsSubmitted} pole · '
                 '${counts!.puzzletValidationsSubmitted} puzzlet',
-                style: const TextStyle(color: Colors.black54),
+                style: TextStyle(color: purple.ink.withValues(alpha: 0.75)),
               ),
             ),
           ),
