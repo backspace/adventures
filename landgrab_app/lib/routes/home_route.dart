@@ -1032,8 +1032,21 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                             Align(
                               alignment: Alignment.bottomLeft,
                               child: Padding(
-                                padding:
-                                    const EdgeInsets.only(left: 8, bottom: 8),
+                                // Lift above the bottom safe-area inset
+                                // (iOS home indicator) so this lines up with
+                                // the Scan FAB, which the Scaffold already
+                                // insets. Android's inset is typically ~0.
+                                // Uniform 16 margin measured from the safe
+                                // area: the bottom adds the home-indicator
+                                // inset (matching the Scan FAB), while a
+                                // device with no bottom inset (Android
+                                // gesture nav, home-button iPhones) shows an
+                                // even 16 all round.
+                                padding: EdgeInsets.only(
+                                  left: 16,
+                                  bottom: 16 +
+                                      MediaQuery.of(context).padding.bottom,
+                                ),
                                 child: FloatingActionButton.small(
                                   heroTag: null,
                                   tooltip: GameplayStrings.locateMe,
