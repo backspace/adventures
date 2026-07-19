@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -34,6 +35,7 @@ import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/attack_rings_layer.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
 import 'package:landgrab/widgets/capture_rings_layer.dart';
+import 'package:landgrab/widgets/highlight_reticle.dart';
 import 'package:landgrab/widgets/live_location_layer.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/team_style.dart';
@@ -88,6 +90,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   // "Locate me" in flight — disables the button and shows a spinner.
   bool _locating = false;
+  // The stake a notification's "View on map" jumped to. Draws a transient
+  // marching-ants reticle around it (cleared after a few seconds) so it's
+  // unmistakable which one. Matches the TerritoryLayer radius.
+  static const double _zoneRadiusMeters = 200;
+  String? _highlightedPoleId;
   static const double _voFullZoom = 16;
   static const double _voTinyZoom = 13;
   static const double _voFullSize = 32;
@@ -186,6 +193,12 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           content: Text(n.body),
           backgroundColor: Colors.deepOrange.shade700,
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 6),
+          action: SnackBarAction(
+            label: GameplayStrings.viewOnMap,
+            textColor: Colors.white,
+            onPressed: () => _focusPole(poleId),
+          ),
         ));
       }
       if (mounted) setState(() {});
@@ -194,11 +207,19 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       // Losing a pole is significant and infrequent — always toast.
       // The map recolours via the pole_updated broadcast that
       // arrives alongside; this is the "why" for that change.
+      final poleId = n.metadata['pole_id'] as String?;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(n.body),
         backgroundColor: Colors.red.shade700,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 6),
+        action: poleId == null
+            ? null
+            : SnackBarAction(
+                label: GameplayStrings.viewOnMap,
+                textColor: Colors.white,
+                onPressed: () => _focusPole(poleId),
+              ),
       ));
     }
     if (n.type == 'message' && mounted) {
@@ -251,6 +272,53 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // Future notification types (chat, etc.) get their own branches
     // here — or, once a notifications-history screen exists, hand
     // off to a shared inbox stream and drop this ad-hoc dispatch.
+  }
+
+  /// Centres the map on a stake — from a notification's "View on map" action
+  /// (live toast or the history list). If the stake isn't currently on the map
+  /// (poles not loaded yet, or the endgame boundary has passed it) a gentle
+  /// notice replaces a silent no-op.
+  void _focusPole(String poleId) {
+    final poles = _poles;
+    final idx = poles == null ? -1 : poles.indexWhere((p) => p.id == poleId);
+    if (idx < 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(GameplayStrings.zoneNotOnMap),
+          behavior: SnackBarBehavior.floating,
+        ));
+      }
+      return;
+    }
+    final pole = poles![idx];
+    _mapController.move(
+      LatLng(pole.latitude, pole.longitude),
+      _framingZoom(pole.latitude),
+    );
+    // Flag it highlighted, run the pulse ticker so the reticle marches, and
+    // clear after a few seconds so it doesn't linger.
+    setState(() => _highlightedPoleId = poleId);
+    _ensureAnimTicker();
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted && _highlightedPoleId == poleId) {
+        setState(() => _highlightedPoleId = null);
+      }
+    });
+  }
+
+  /// A zoom that frames a stake's ~200 m zone at a consistent fraction of the
+  /// viewport, so "View on map" always lands close enough to make it out
+  /// (clamped so it neither over- nor under-zooms).
+  double _framingZoom(double lat) {
+    final size = MediaQuery.of(context).size;
+    final shortest = math.min(size.width, size.height);
+    if (shortest <= 0) return 17;
+    // Target: the zone radius occupies ~35% of the shorter side.
+    final metersPerPixel = _zoneRadiusMeters / (0.35 * shortest);
+    final z = math.log(
+              156543.03392 * math.cos(lat * math.pi / 180) / metersPerPixel) /
+          math.ln2;
+    return z.clamp(15.0, 18.0);
   }
 
   void _applyUpdate(PoleUpdate update) {
@@ -352,7 +420,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     _pulsePhase = (elapsed.inMicroseconds / _pulseCycle.inMicroseconds) % 1.0;
 
     // Stop the ticker only when nothing on-screen needs animating.
-    if (_captureStartedAt.isEmpty && _lastAttackAt.isEmpty) {
+    if (_captureStartedAt.isEmpty &&
+        _lastAttackAt.isEmpty &&
+        _highlightedPoleId == null) {
       _animTicker?.dispose();
       _animTicker = null;
     }
@@ -496,10 +566,12 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // the screen and reappear on return. (Tapping its own "View"
     // action clears it automatically; opening via the bell doesn't.)
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    await Navigator.of(context).push(
+    final focusPoleId = await Navigator.of(context).push<String>(
       MaterialPageRoute(builder: (_) => NotificationsRoute(api: widget.api)),
     );
     if (!mounted) return;
+    // "View on map" in the list pops with the stake's id — centre on it.
+    if (focusPoleId != null) _focusPole(focusPoleId);
     // Opening marks everything read, but the player may have swiped
     // some back to unread — so reflect the real count rather than
     // assuming zero. Quiet fetch (no "while away" toast).
@@ -1134,6 +1206,21 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                   attackedPoleIds: _lastAttackAt.keys.toSet(),
                                   pulsePhase: _pulsePhase,
                                 ),
+                                // Transient "which one" reticle from a
+                                // notification's "View on map".
+                                if (_highlightedPoleId != null)
+                                  MarkerLayer(markers: [
+                                    for (final pole in _poles!)
+                                      if (pole.id == _highlightedPoleId)
+                                        Marker(
+                                          point: LatLng(
+                                              pole.latitude, pole.longitude),
+                                          width: 120,
+                                          height: 120,
+                                          child: HighlightReticle(
+                                              phase: _pulsePhase),
+                                        ),
+                                  ]),
                                 MarkerLayer(
                                   // The endgame boundary is invisible by design:
                                   // poles it has passed just disappear (their
