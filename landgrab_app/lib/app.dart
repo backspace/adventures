@@ -46,6 +46,13 @@ class _AppState extends State<App> {
         brightness: Brightness.dark,
       ),
       useMaterial3: true,
+      // Match the registrations site's body font, which is Foundation's
+      // default system stack (`'Helvetica Neue', Helvetica, Roboto,
+      // Arial`). These are system fonts — nothing to bundle — so this
+      // resolves to Helvetica Neue on iOS/macOS and falls through to
+      // Roboto on Android, exactly as the site does per platform.
+      fontFamily: 'Helvetica Neue',
+      fontFamilyFallback: const ['Helvetica', 'Roboto', 'Arial'],
       // Anton is the site wordmark's display face; app bar titles
       // carry the branding in-app. Display-only — body text stays on
       // the default face for legibility. Bone echoes the site wordmark.
