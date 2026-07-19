@@ -1155,6 +1155,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                   builder: (_) =>
                                       SupervisorRoute(api: widget.api)),
                             ),
+                            onStarted: () => _load(),
                           )
                         : Stack(children: [
                             FlutterMap(
@@ -1358,6 +1359,11 @@ class _PreEventBody extends StatefulWidget {
   final VoidCallback onValidate;
   final VoidCallback onSupervise;
 
+  /// Fired a few seconds after the countdown reaches the start time — and then
+  /// periodically — so the parent re-fetches the event. `started` is a server
+  /// flag, so the map only appears once a reload reports the event underway.
+  final VoidCallback onStarted;
+
   const _PreEventBody({
     required this.event,
     required this.isAuthor,
@@ -1366,6 +1372,7 @@ class _PreEventBody extends StatefulWidget {
     required this.onAuthor,
     required this.onValidate,
     required this.onSupervise,
+    required this.onStarted,
   });
 
   @override
@@ -1378,6 +1385,14 @@ class _PreEventBodyState extends State<_PreEventBody> {
   String? _lastBarcodeFormat;
   String? _lastNfcUid;
 
+  // `started` is a server flag, so when our local countdown crosses zero the
+  // map doesn't appear on its own. A few seconds after the start passes we
+  // nudge the parent to re-fetch the event, retrying every few seconds in case
+  // the server clock lags ours, until `started` flips and this screen is gone.
+  static const _startGrace = Duration(seconds: 3);
+  static const _startPollInterval = Duration(seconds: 4);
+  DateTime? _lastStartPoll;
+
   @override
   void initState() {
     super.initState();
@@ -1386,7 +1401,9 @@ class _PreEventBodyState extends State<_PreEventBody> {
     // "not yet scheduled" and there's nothing to tick.
     if (widget.event.startTime != null) {
       _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (mounted) setState(() {});
+        if (!mounted) return;
+        setState(() {});
+        _maybePollForStart();
       });
     }
   }
@@ -1395,6 +1412,19 @@ class _PreEventBodyState extends State<_PreEventBody> {
   void dispose() {
     _ticker?.cancel();
     super.dispose();
+  }
+
+  void _maybePollForStart() {
+    final start = widget.event.startTime;
+    if (start == null) return;
+    final now = DateTime.now();
+    if (now.isBefore(start.add(_startGrace))) return;
+    if (_lastStartPoll != null &&
+        now.difference(_lastStartPoll!) < _startPollInterval) {
+      return;
+    }
+    _lastStartPoll = now;
+    widget.onStarted();
   }
 
   Future<void> _openBarcodeScanner() async {
