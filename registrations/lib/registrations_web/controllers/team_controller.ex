@@ -62,7 +62,9 @@ defmodule RegistrationsWeb.TeamController do
   end
 
   def new(conn, _params) do
-    changeset = Team.changeset(%Team{})
+    # Pre-fill risk aversion with 1 so the creation form defaults to it
+    # (the operator can still change it before submitting).
+    changeset = Team.changeset(%Team{risk_aversion: 1})
     render(conn, "new.html", changeset: changeset)
   end
 
