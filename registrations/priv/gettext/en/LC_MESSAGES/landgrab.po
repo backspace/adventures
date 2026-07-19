@@ -198,3 +198,6 @@ msgstr "Your team has used all its attempts on this stake's relic. Wait for anot
 
 msgid "app_no_relic_detail"
 msgstr "That stake has no relic available right now."
+
+msgid "app_not_started_detail"
+msgstr "The simulation has not begun yet. Stakes can't be claimed until it does."

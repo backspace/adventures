@@ -367,6 +367,7 @@ class LandgrabApi {
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) return const ScanUnknownBarcode();
       final code = _errorCode(e);
+      if (code == 'not_started') return const ScanNotStarted();
       final poleJson = _poleJson(e);
       if (code == 'already_owner' && poleJson != null) {
         return ScanAlreadyOwner(Pole.fromJson(poleJson));

@@ -27,6 +27,13 @@ defmodule RegistrationsWeb.Plugs.ReloadUserTest do
     # must see the current teamless state and return the clean 403 —
     # with the stale cache it passed the team check and 500ed on the
     # attempts FK instead.
+    # The attempt endpoint is gated on the event having started; without
+    # this it would 403 not_started before reaching the team check.
+    Repo.insert!(%Registrations.Landgrab.Event{
+      name: "Simulation",
+      start_time: DateTime.utc_now() |> DateTime.add(-3600, :second) |> DateTime.truncate(:second)
+    })
+
     team = insert(:team)
     user = insert(:user, email: unique_email("stale"), team_id: team.id)
     conn = authed_conn(ctx, user)

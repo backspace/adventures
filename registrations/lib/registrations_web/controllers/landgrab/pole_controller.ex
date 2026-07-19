@@ -5,6 +5,9 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
   alias Registrations.Landgrab.PlayerStrings
   alias RegistrationsWeb.Landgrab.Render
 
+  # Scanning a stake is a gameplay action — refused until the event starts.
+  plug(RegistrationsWeb.Plugs.RequireEventStarted when action in [:show])
+
   def index(conn, _params) do
     states = Landgrab.list_poles_with_state()
     json(conn, %{poles: Enum.map(states, &Render.pole_state/1)})

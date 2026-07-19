@@ -21,6 +21,13 @@ defmodule RegistrationsWeb.Landgrab.ActivePuzzletsTest do
 
   describe "on a team" do
     setup ctx do
+      # Scanning is gated on the event having started.
+      Registrations.Repo.insert!(%Registrations.Landgrab.Event{
+        name: "Simulation",
+        start_time:
+          DateTime.utc_now() |> DateTime.add(-3600, :second) |> DateTime.truncate(:second)
+      })
+
       team = insert(:team)
       user = insert(:user, email: unique_email("ap"), team_id: team.id)
       %{conn: authed_conn(ctx, user), team: team, user: user}

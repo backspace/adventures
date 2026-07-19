@@ -87,6 +87,11 @@ class _ScanRouteState extends State<ScanRoute> {
           Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
           return;
 
+        case ScanNotStarted():
+          _showSnack(ScanStrings.notStarted);
+          Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
+          return;
+
         case ScanAtCapacity(:final active):
           await _showAtCapacityDialog(active);
           if (!mounted) return;

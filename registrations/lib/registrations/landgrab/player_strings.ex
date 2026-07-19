@@ -74,6 +74,11 @@ defmodule Registrations.Landgrab.PlayerStrings do
   def team_locked_out_detail, do: phrase("app_team_locked_out_detail")
   def no_relic_detail, do: phrase("app_no_relic_detail")
 
+  # Gameplay actions (scanning a stake, answering a relic) attempted
+  # before the simulation's start time — the server refuses them even
+  # if a client reaches the endpoint early.
+  def not_started_detail, do: phrase("app_not_started_detail")
+
   defp phrase(id, bindings \\ []) do
     Gettext.dgettext(RegistrationsWeb.Gettext, "landgrab", id, bindings)
   end

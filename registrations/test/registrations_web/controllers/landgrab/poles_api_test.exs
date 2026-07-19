@@ -4,6 +4,10 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
   alias Registrations.Landgrab
 
   setup %{conn: conn} do
+    # Gameplay (scanning, answering) is gated on the event having started,
+    # so the default state for these tests is an event already underway.
+    started_event()
+
     team = insert(:team, name: "Wolves")
     user = insert(:octavia, team: team)
 
@@ -401,5 +405,55 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       assert body["error"]["code"] == "no_team"
     end
+  end
+
+  describe "before the event has started" do
+    setup do
+      future_event()
+      :ok
+    end
+
+    test "scanning a stake is refused with not_started", %{conn: conn} do
+      pole = insert(:pole)
+      _puzzlet = insert(:puzzlet, pole: pole, answer: "x")
+
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(403)
+      assert body["error"]["code"] == "not_started"
+    end
+
+    test "answering a relic is refused with not_started", %{conn: conn} do
+      pole = insert(:pole)
+      puzzlet = insert(:puzzlet, pole: pole, answer: "x")
+
+      body =
+        conn
+        |> post("/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "x"})
+        |> json_response(403)
+
+      assert body["error"]["code"] == "not_started"
+      # And nothing slipped through to a capture.
+      assert Registrations.Repo.aggregate(Registrations.Landgrab.Capture, :count) == 0
+    end
+
+    test "listing poles is still allowed", %{conn: conn} do
+      assert conn |> get("/landgrab/poles") |> json_response(200)
+    end
+  end
+
+  # Replaces the current event with one whose start_time is in the past —
+  # gameplay is open.
+  defp started_event, do: put_event(DateTime.add(DateTime.utc_now(), -3600, :second))
+
+  # Replaces the current event with one whose start_time is in the future —
+  # gameplay is closed.
+  defp future_event, do: put_event(DateTime.add(DateTime.utc_now(), 3600, :second))
+
+  defp put_event(start_time) do
+    Registrations.Repo.delete_all(Registrations.Landgrab.Event)
+
+    Registrations.Repo.insert!(%Registrations.Landgrab.Event{
+      name: "Simulation",
+      start_time: DateTime.truncate(start_time, :second)
+    })
   end
 end

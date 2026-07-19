@@ -221,6 +221,12 @@ class ScanOutsideZone extends ScanOutcome {
   const ScanOutsideZone(this.pole);
 }
 
+/// The simulation hasn't started yet — the server refuses scans until
+/// its start time, even if the app somehow reaches the scanner early.
+class ScanNotStarted extends ScanOutcome {
+  const ScanNotStarted();
+}
+
 /// The team is already at its active-puzzlet limit; they must finish
 /// or give up what they're on before picking up this one. Carries the
 /// puzzlet(s) they currently hold so the dialog can name them.

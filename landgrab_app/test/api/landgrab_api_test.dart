@@ -228,6 +228,18 @@ void main() {
       expect((outcome as ScanAtCapacity).active, hasLength(1));
       expect(outcome.active.first.activePuzzlet?.id, 'pz1');
     });
+
+    test('returns ScanNotStarted on 403 not_started', () async {
+      adapter.onGet(
+        '/landgrab/poles/POLE-004',
+        (server) => server.reply(403, {
+          'error': {'code': 'not_started', 'detail': '...'},
+        }),
+      );
+
+      final outcome = await api.scan('POLE-004');
+      expect(outcome, isA<ScanNotStarted>());
+    });
   });
 
   group('active puzzlets', () {

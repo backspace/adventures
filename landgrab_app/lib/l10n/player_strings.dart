@@ -209,7 +209,8 @@ class GameplayStrings {
   // shown when the stake is no longer on the map (e.g. the endgame boundary
   // has passed it, or poles haven't loaded yet).
   static const viewOnMap = 'View';
-  static const zoneNotOnMap = 'That ${Terms.stake} isn\'t on your map right now.';
+  static const zoneNotOnMap =
+      'That ${Terms.stake} isn\'t on your map right now.';
 
   // How many other teams are also on this pole (shown on the
   // in-progress card).
@@ -308,7 +309,10 @@ class ScanStrings {
 
   // Outcome snackbars
   static const poleFullyCaptured = 'This ${Terms.zone} is fully captured.';
-  static const noActivePuzzlet = 'No active ${Terms.relics} for this ${Terms.stake}.';
+  static const noActivePuzzlet =
+      'No active ${Terms.relics} for this ${Terms.stake}.';
+  static const notStarted =
+      'The simulation hasn\'t begun yet — you can\'t claim ${Terms.stakes} until it starts.';
   static String scanFailed(String detail) => 'Scan failed: $detail';
 
   // Unknown-barcode dialog
@@ -397,12 +401,14 @@ class PuzzletStrings {
       'Another team found this ${Terms.relic} first.';
   static const alreadyOwner =
       'Your team already owns this ${Terms.zone}. Wait for a rival to capture it.';
-  static const notActive = 'Scan this ${Terms.stake} to begin before answering.';
+  static const notActive =
+      'Scan this ${Terms.stake} to begin before answering.';
   static const withdrawn =
       'This ${Terms.relic} has been withdrawn from the simulation.';
   // Shown when the puzzlet is resolved out from under you (withdrawn, or a
   // rival captured it) while you're on its screen and we return to the map.
-  static const noLongerAvailable = 'This ${Terms.relic} is no longer available.';
+  static const noLongerAvailable =
+      'This ${Terms.relic} is no longer available.';
   static const ownCreation = "You made this one — you can't capture it.";
 
   // Fallbacks for submissions that fail in ways the app doesn't

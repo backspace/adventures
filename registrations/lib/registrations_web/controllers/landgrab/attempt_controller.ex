@@ -4,6 +4,9 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
   alias Registrations.Landgrab
   alias Registrations.Landgrab.PlayerStrings
 
+  # Answering a relic is a gameplay action — refused until the event starts.
+  plug(RegistrationsWeb.Plugs.RequireEventStarted when action in [:create])
+
   def create(conn, %{"puzzlet_id" => puzzlet_id} = params) do
     user = Pow.Plug.current_user(conn)
     answer = params["answer"] || ""
