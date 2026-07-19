@@ -54,6 +54,22 @@ defmodule Registrations.Landgrab.PlayerStrings do
   def no_team_detail, do: phrase("app_no_team_detail")
   def outside_zone_detail, do: phrase("app_outside_zone_detail")
 
+  # Capture / answer refusals on the player's scan + attempt paths.
+  # The app models most of these with its own (name-bearing) copy, so
+  # these are the fallback voice for when it doesn't — kept in the
+  # stake/relic/zone vocabulary so the internal "pole/puzzlet" terms
+  # never reach a participant.
+  def own_creation_detail, do: phrase("app_own_creation_detail")
+  def already_owner_detail, do: phrase("app_already_owner_detail")
+  def locked_out_detail, do: phrase("app_locked_out_detail")
+  def not_active_detail, do: phrase("app_not_active_detail")
+  def withdrawn_detail, do: phrase("app_withdrawn_detail")
+  def already_captured_detail, do: phrase("app_already_captured_detail")
+  def at_capacity_detail, do: phrase("app_at_capacity_detail")
+  def stake_not_found_detail, do: phrase("app_stake_not_found_detail")
+  def team_locked_out_detail, do: phrase("app_team_locked_out_detail")
+  def no_relic_detail, do: phrase("app_no_relic_detail")
+
   defp phrase(id, bindings \\ []) do
     Gettext.dgettext(RegistrationsWeb.Gettext, "landgrab", id, bindings)
   end

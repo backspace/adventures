@@ -164,4 +164,34 @@ msgid "app_no_team_detail"
 msgstr "You have not been assigned to a team yet."
 
 msgid "app_outside_zone_detail"
-msgstr "This pole has been withdrawn from the simulation. It can no longer be claimed."
+msgstr "This stake has been withdrawn from the simulation. It can no longer be claimed."
+
+msgid "app_own_creation_detail"
+msgstr "You authored this, so you can't claim it. Leave it for the other teams."
+
+msgid "app_already_owner_detail"
+msgstr "Your team already claims this stake. Wait for a rival to capture it."
+
+msgid "app_locked_out_detail"
+msgstr "Your team has used all its attempts on this relic. Wait for another team to capture it."
+
+msgid "app_not_active_detail"
+msgstr "Scan the stake to start this relic before answering."
+
+msgid "app_withdrawn_detail"
+msgstr "This relic has been withdrawn from the simulation."
+
+msgid "app_already_captured_detail"
+msgstr "Another team captured this relic first."
+
+msgid "app_at_capacity_detail"
+msgstr "Your team is already working on a relic. Finish or give it up before starting another."
+
+msgid "app_stake_not_found_detail"
+msgstr "That stake could not be found."
+
+msgid "app_team_locked_out_detail"
+msgstr "Your team has used all its attempts on this stake's relic. Wait for another team to capture it before trying again."
+
+msgid "app_no_relic_detail"
+msgstr "That stake has no relic available right now."

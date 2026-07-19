@@ -49,16 +49,16 @@ defmodule RegistrationsWeb.Landgrab.ActivePuzzletController do
           json(conn, Render.scan_payload(payload))
 
         {:error, :at_capacity} ->
-          error(conn, :conflict, "at_capacity", "Your team is already working on a puzzlet.")
+          error(conn, :conflict, "at_capacity", Landgrab.PlayerStrings.at_capacity_detail())
 
         {:error, :team_locked_out} ->
-          error(conn, :locked, "team_locked_out", "Your team is out of guesses on that puzzlet.")
+          error(conn, :locked, "team_locked_out", Landgrab.PlayerStrings.team_locked_out_detail())
 
         {:error, :no_puzzlet} ->
-          error(conn, :not_found, "no_puzzlet", "That pole has no puzzlet available right now.")
+          error(conn, :not_found, "no_puzzlet", Landgrab.PlayerStrings.no_relic_detail())
 
         {:error, :not_found} ->
-          error(conn, :not_found, "pole_not_found", "No such pole.")
+          error(conn, :not_found, "pole_not_found", Landgrab.PlayerStrings.stake_not_found_detail())
       end
     end
   end

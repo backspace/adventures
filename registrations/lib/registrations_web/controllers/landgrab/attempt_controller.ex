@@ -46,14 +46,14 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
         |> json(%{
           error: %{
             code: "own_creation",
-            detail: "You created this puzzlet or pole — you can't capture it."
+            detail: PlayerStrings.own_creation_detail()
           }
         })
 
       {:error, :already_owner} ->
         conn
         |> put_status(:conflict)
-        |> json(%{error: %{code: "already_owner", detail: "Your team already owns this pole."}})
+        |> json(%{error: %{code: "already_owner", detail: PlayerStrings.already_owner_detail()}})
 
       {:error, :outside_zone} ->
         conn
@@ -68,7 +68,7 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
       {:error, :locked_out} ->
         conn
         |> put_status(:locked)
-        |> json(%{error: %{code: "locked_out", detail: "Too many wrong attempts on this puzzlet."}})
+        |> json(%{error: %{code: "locked_out", detail: PlayerStrings.locked_out_detail()}})
 
       {:error, :not_active} ->
         conn
@@ -76,7 +76,7 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
         |> json(%{
           error: %{
             code: "not_active",
-            detail: "Scan the pole to start this puzzlet before answering."
+            detail: PlayerStrings.not_active_detail()
           }
         })
 
@@ -86,14 +86,14 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
         |> json(%{
           error: %{
             code: "withdrawn",
-            detail: "This puzzlet has been withdrawn from the game."
+            detail: PlayerStrings.withdrawn_detail()
           }
         })
 
       {:error, :already_captured} ->
         conn
         |> put_status(:conflict)
-        |> json(%{error: %{code: "already_captured", detail: "Another team captured this puzzlet first."}})
+        |> json(%{error: %{code: "already_captured", detail: PlayerStrings.already_captured_detail()}})
 
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
