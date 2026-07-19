@@ -313,9 +313,12 @@ class _PuzzletSupervisionDetailRouteState
   Widget build(BuildContext context) {
     final v = _activeValidation;
     final canAssign = v == null && _puzzlet.status == DraftStatus.draft;
+    // Any non-terminal validation can be handed to a validator — including a
+    // submitted one, which reopens it as fresh work (the supervisor's fix for
+    // a mismarked validation, short of rejecting it back to draft).
     final canReassign = v != null &&
-        (v.status == ValidationStatus.assigned ||
-            v.status == ValidationStatus.inProgress);
+        v.status != ValidationStatus.accepted &&
+        v.status != ValidationStatus.rejected;
     // Backend only allows tearing down an assignment that's still fresh
     // (status: assigned, no comments yet). Hiding the button outside that
     // window keeps the affordance honest.

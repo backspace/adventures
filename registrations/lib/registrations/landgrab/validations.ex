@@ -83,19 +83,59 @@ defmodule Registrations.Landgrab.Validations do
   defp maybe_flip_puzzlet(puzzlet, _), do: {:ok, puzzlet}
 
   @doc """
-  Swap the validator on an existing validation in place. Permitted only
-  while the validation is still in flight (`assigned` or `in_progress`);
-  once submitted/accepted/rejected the validation is the validator's
-  artifact and must be resolved through the lifecycle instead.
+  Swap the validator on an existing validation in place. Permitted for any
+  non-terminal validation: `assigned`/`in_progress` keep their status, while
+  a `submitted`/`unfindable` one is *reopened* as fresh `assigned` work for
+  the new validator — the supervisor's recourse when a validator mismarked
+  something and it needs a genuine re-validation (rather than reject, which
+  sends the entity all the way back to draft). Only `accepted`/`rejected`
+  are off-limits.
+
+  Reopening also pulls the parent pole/puzzlet back to `:in_review` — out of
+  play until it's genuinely validated. (Reassigning an already-open
+  `assigned`/`in_progress` validation leaves the parent alone.)
 
   Comments stay attached — they're about the entity, not the validator.
   """
   def reassign_pole_validation(%PoleValidation{} = v, new_validator_id, assigner_id) do
-    do_reassign(v, new_validator_id, assigner_id, &PoleValidation.changeset/2)
+    reassign(v, new_validator_id, assigner_id, &PoleValidation.changeset/2, fn ->
+      pull_into_review(Pole, v.pole_id)
+    end)
   end
 
   def reassign_puzzlet_validation(%PuzzletValidation{} = v, new_validator_id, assigner_id) do
-    do_reassign(v, new_validator_id, assigner_id, &PuzzletValidation.changeset/2)
+    reassign(v, new_validator_id, assigner_id, &PuzzletValidation.changeset/2, fn ->
+      pull_into_review(Puzzlet, v.puzzlet_id)
+    end)
+  end
+
+  # Reassign + (when reopening a submitted/unfindable one) pull the parent
+  # back into review, atomically.
+  defp reassign(validation, new_validator_id, assigner_id, changeset_fun, pull_parent) do
+    reopen? = validation.status in ["submitted", "unfindable"]
+
+    Repo.transaction(fn ->
+      case do_reassign(validation, new_validator_id, assigner_id, changeset_fun) do
+        {:ok, updated} ->
+          if reopen?, do: pull_parent.()
+          updated
+
+        {:error, reason} ->
+          Repo.rollback(reason)
+      end
+    end)
+  end
+
+  # Flip a validated parent back to :in_review (a fresh reassignment means it
+  # isn't trustworthy as validated). No-op if it's already in review/draft.
+  defp pull_into_review(schema, id) do
+    case Repo.get(schema, id) do
+      %{status: :validated} = parent ->
+        parent |> Ecto.Changeset.change(status: :in_review) |> Repo.update!()
+
+      _ ->
+        :ok
+    end
   end
 
   @doc """
@@ -181,21 +221,22 @@ defmodule Registrations.Landgrab.Validations do
   end
 
   defp do_reassign(validation, new_validator_id, assigner_id, changeset_fun) do
-    if validation.status in ["assigned", "in_progress"] do
-      result =
-        validation
-        |> changeset_fun.(%{
-          validator_id: new_validator_id,
-          assigned_by_id: assigner_id
-        })
-        |> Repo.update()
+    if validation.status in ["accepted", "rejected"] do
+      {:error, :terminal_status}
+    else
+      attrs = %{validator_id: new_validator_id, assigned_by_id: assigner_id}
 
-      case result do
+      # Reopening a submitted/unfindable validation hands it to the new
+      # validator as fresh work; a still-open one keeps its status.
+      attrs =
+        if validation.status in ["submitted", "unfindable"],
+          do: Map.put(attrs, :status, "assigned"),
+          else: attrs
+
+      case validation |> changeset_fun.(attrs) |> Repo.update() do
         {:ok, updated} -> {:ok, preload_validator(updated)}
         err -> err
       end
-    else
-      {:error, :terminal_status}
     end
   end
 
