@@ -59,7 +59,12 @@ class TerritoryLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     final cells = _computeCells();
     final now = DateTime.now();
-    final polygons = <Polygon>[];
+    // Rivals first, mine last: PolygonLayer paints in list order, so
+    // drawing my cells on top keeps their outline from being painted over
+    // by a neighbouring rival cell (why it showed on some edges but not
+    // others).
+    final rivals = <Polygon>[];
+    final mine = <Polygon>[];
     for (var i = 0; i < poles.length; i++) {
       final pole = poles[i];
       final owner = pole.currentOwnerTeamId;
@@ -84,30 +89,60 @@ class TerritoryLayer extends StatelessWidget {
           // refilled from empty.
           final previousOwner = captureFromOwner[pole.id];
           if (previousOwner != null) {
-            polygons.add(_territoryPolygon(cell, previousOwner));
+            rivals.add(_territoryPolygon(cell, previousOwner));
           }
           cell = _clipToExpandingDisc(cell, pole, t);
           if (cell == null || cell.length < 3) continue;
         }
       }
 
-      polygons.add(_territoryPolygon(cell, owner));
+      if (owner == myOwnerId) {
+        mine.addAll(_myPolygons(cell, owner));
+      } else {
+        rivals.add(_territoryPolygon(cell, owner));
+      }
     }
-    return PolygonLayer(polygons: polygons);
+    return PolygonLayer(polygons: [...rivals, ...mine]);
   }
 
   Polygon _territoryPolygon(List<LatLng> points, String ownerId) {
     final color = _colorFor(ownerId);
-    final mine = ownerId == myOwnerId;
     return Polygon(
       points: points,
-      color: color.withValues(alpha: mine ? 0.34 : 0.26),
-      // Your own territory gets a bold white border so your holdings stand
-      // out from the sea of rival colours.
-      borderColor: mine ? Colors.white : color.withValues(alpha: 0.7),
-      borderStrokeWidth: mine ? 2.5 : 1.5,
+      color: color.withValues(alpha: 0.26),
+      borderColor: color.withValues(alpha: 0.7),
+      borderStrokeWidth: 1.5,
       isFilled: true,
     );
+  }
+
+  /// My own territory: a slightly stronger fill plus a "cased" outline —
+  /// a dark halo under a white core — so the boundary stays legible over
+  /// both the pale basemap and rival fills. (Plain white vanished where a
+  /// zone met the map instead of a rival colour.) Returned as separate
+  /// fill + halo + core polygons so the outline paints cleanly on top.
+  List<Polygon> _myPolygons(List<LatLng> points, String ownerId) {
+    final color = _colorFor(ownerId);
+    return [
+      Polygon(
+        points: points,
+        color: color.withValues(alpha: 0.40),
+        borderStrokeWidth: 0,
+        isFilled: true,
+      ),
+      Polygon(
+        points: points,
+        isFilled: false,
+        borderStrokeWidth: 4.5,
+        borderColor: Colors.black.withValues(alpha: 0.55),
+      ),
+      Polygon(
+        points: points,
+        isFilled: false,
+        borderStrokeWidth: 2.5,
+        borderColor: Colors.white,
+      ),
+    ];
   }
 
   /// Re-clip the already-computed cell (in LatLng) against a disc
