@@ -117,6 +117,19 @@ defmodule Registrations.Mailer do
     |> log_warnings()
   end
 
+  # Admin notification the first time a registered user opens the app —
+  # most register on the site first, so this is the signal that they've
+  # installed and launched it (useful for pre-event triage).
+  def app_first_opened(user) do
+    new()
+    |> to(adventure_from())
+    |> Swoosh.Email.from(adventure_from())
+    |> subject("[#{phrase("email_title")}] #{user.email} opened the app for the first time")
+    |> text_body("A registered user opened the app for the first time." <> host_footer())
+    |> deliver()
+    |> log_warnings()
+  end
+
   defp host_footer do
     "\n\nHost: #{System.get_env("PHX_HOST") || "(unset)"}"
   end

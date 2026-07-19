@@ -6,16 +6,23 @@ defmodule RegistrationsWeb.Api.TelemetryController do
   """
   use RegistrationsWeb, :controller
 
+  alias Registrations.Mailer
   alias Registrations.Repo
-  alias RegistrationsWeb.User
 
   def app_opened(conn, _params) do
     user = Pow.Plug.current_user(conn)
 
     if user do
+      # A nil timestamp means this is the very first open — flag it for
+      # an admin before we stamp it. Checked before the update so the
+      # email fires exactly once, on the first open.
+      first_open? = is_nil(user.last_app_open_at)
+
       user
       |> Ecto.Changeset.change(last_app_open_at: DateTime.truncate(DateTime.utc_now(), :second))
       |> Repo.update()
+
+      if first_open?, do: Mailer.app_first_opened(user)
     end
 
     json(conn, %{ok: true})
