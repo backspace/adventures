@@ -446,6 +446,9 @@ class LandgrabApi {
       if (code == 'own_creation') {
         return const AttemptFailed(PuzzletStrings.ownCreation);
       }
+      if (code == 'withdrawn') {
+        return const AttemptWithdrawn();
+      }
       if (e.response?.statusCode == 409 || code == 'already_captured') {
         return const AttemptAlreadyCaptured();
       }
@@ -653,6 +656,12 @@ class LandgrabApi {
 
   Future<void> deleteDraftPuzzlet(String id) =>
       dio.delete('/landgrab/drafts/puzzlets/$id');
+
+  /// Withdraw a puzzlet from live play (supervisor). Teams working it are
+  /// notified and offered the pole's next puzzlet — the same flow a rival
+  /// capture triggers. See the server's `withdraw_puzzlet`.
+  Future<void> withdrawPuzzlet(String puzzletId) =>
+      dio.post('/landgrab/supervision/puzzlets/$puzzletId/withdraw');
 
   Future<List<Region>> searchRegions({String? query}) async {
     final response = await dio.get(

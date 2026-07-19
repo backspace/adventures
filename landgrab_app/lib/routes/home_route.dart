@@ -194,11 +194,13 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         duration: const Duration(seconds: 8),
       ));
     }
-    if (n.type == 'puzzlet_taken' && mounted) {
-      // A rival solved the puzzlet we were on. Our active-puzzlet
-      // state clears via the team_puzzlets_changed broadcast; here we
-      // just tell them, and offer the pole's next puzzlet (no rescan)
-      // when one remains.
+    if ((n.type == 'puzzlet_taken' || n.type == 'puzzlet_withdrawn') &&
+        mounted) {
+      // A rival solved the puzzlet we were on, or a supervisor withdrew it
+      // from the game. Either way our active-puzzlet state clears via the
+      // team_puzzlets_changed broadcast; here we just tell them (the body
+      // comes from the server) and offer the pole's next puzzlet (no
+      // rescan) when one remains.
       _refreshActivePuzzlets();
       final poleId = n.metadata['pole_id'] as String?;
       final hasNext = n.metadata['has_next'] == true;

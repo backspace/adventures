@@ -121,6 +121,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       AttemptIncorrect() => PuzzletStrings.incorrect(o.attemptsRemaining),
       AttemptLockedOut() => PuzzletStrings.lockedOut,
       AttemptAlreadyCaptured() => PuzzletStrings.alreadyCapturedByOther,
+      AttemptWithdrawn() => PuzzletStrings.withdrawn,
       AttemptAlreadyOwner() => PuzzletStrings.alreadyOwner,
       AttemptFailed() => o.message,
       _ => null,
@@ -131,6 +132,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
         AttemptIncorrect() => Colors.orange.shade700,
         AttemptLockedOut() ||
         AttemptAlreadyCaptured() ||
+        AttemptWithdrawn() ||
         AttemptAlreadyOwner() ||
         AttemptFailed() =>
           Colors.red.shade700,

@@ -1,6 +1,6 @@
 import 'package:landgrab/models/region.dart';
 
-enum DraftStatus { draft, inReview, validated, retired }
+enum DraftStatus { draft, inReview, validated, retired, withdrawn }
 
 enum AnswerType { looseText, strictText, barcode, nfc }
 
@@ -29,6 +29,7 @@ DraftStatus _statusFromString(String? raw) => switch (raw) {
       'in_review' => DraftStatus.inReview,
       'validated' => DraftStatus.validated,
       'retired' => DraftStatus.retired,
+      'withdrawn' => DraftStatus.withdrawn,
       _ => DraftStatus.draft,
     };
 
@@ -37,6 +38,7 @@ String draftStatusLabel(DraftStatus s) => switch (s) {
       DraftStatus.inReview => 'in review',
       DraftStatus.validated => 'validated',
       DraftStatus.retired => 'retired',
+      DraftStatus.withdrawn => 'withdrawn',
     };
 
 /// Human-readable form of a raw status string from the API (e.g. the keys

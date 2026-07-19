@@ -448,6 +448,13 @@ defmodule Registrations.Landgrab do
       pole && pole_outside_endgame_zone?(pole) ->
         {:error, :outside_zone}
 
+      # Pulled from play out from under an active team (supervisor withdraw,
+      # or otherwise no longer validated). Their team_puzzlet row was
+      # deleted, so this must precede the `not_active` check — otherwise
+      # they'd get a misleading "scan the pole to begin" message.
+      puzzlet.status != :validated ->
+        {:error, :withdrawn}
+
       team_locked_out?(puzzlet, team_id) ->
         {:error, :locked_out}
 
@@ -914,6 +921,82 @@ defmodule Registrations.Landgrab do
         "has_next" => !!has_next
       },
       PlayerStrings.push_title("puzzlet_taken")
+    )
+  end
+
+  @doc """
+  Withdraw a validated puzzlet from live play — a supervisor action taken on
+  out-of-band information that a puzzlet must be pulled mid-event.
+
+  Mirrors capture resolution, minus a captor: the puzzlet is marked
+  `:withdrawn` (so it drops out of `active_puzzlet_for_pole` and can no longer
+  be scanned or answered), then every team currently working it is notified
+  and has its active slot freed, with the pole's next puzzlet offered — the
+  same "your puzzlet was taken, try the next one" flow rivals trigger by
+  capturing. Captures already made stand; withdrawal is forward-looking.
+  """
+  def withdraw_puzzlet(puzzlet_id) do
+    Repo.transaction(fn ->
+      case Repo.get(Puzzlet, puzzlet_id) do
+        nil ->
+          Repo.rollback(:not_found)
+
+        %Puzzlet{status: :withdrawn} ->
+          Repo.rollback(:already_withdrawn)
+
+        %Puzzlet{} = puzzlet ->
+          {:ok, updated} =
+            puzzlet
+            |> Ecto.Changeset.change(status: :withdrawn)
+            |> Repo.update()
+
+          resolve_withdrawn_puzzlet(updated)
+          updated
+      end
+    end)
+  end
+
+  # Withdrawn: notify every team working the puzzlet that it's gone (with the
+  # pole's remaining-puzzlet state for the "try the next" offer), then clear
+  # their active rows. Runs inside withdraw_puzzlet's transaction.
+  defp resolve_withdrawn_puzzlet(%Puzzlet{} = puzzlet) do
+    holders =
+      TeamPuzzlet
+      |> where([tp], tp.puzzlet_id == ^puzzlet.id)
+      |> Repo.all()
+
+    pole = puzzlet.pole_id && Repo.get(Pole, puzzlet.pole_id)
+    # The just-withdrawn puzzlet is already excluded (status != :validated),
+    # so this reflects whatever validated puzzlets remain on the pole.
+    has_next = pole && active_puzzlet_for_pole(pole, nil) != nil
+
+    Enum.each(holders, fn tp ->
+      signal_puzzlet_withdrawn(tp.team_id, puzzlet, pole, has_next)
+    end)
+
+    Repo.delete_all(where(TeamPuzzlet, [tp], tp.puzzlet_id == ^puzzlet.id))
+
+    holders
+    |> Enum.map(& &1.team_id)
+    |> Enum.uniq()
+    |> Enum.each(&broadcast_team_puzzlets_changed/1)
+
+    :ok
+  end
+
+  defp signal_puzzlet_withdrawn(recipient_team_id, %Puzzlet{} = puzzlet, pole, has_next) do
+    persist_and_deliver(
+      "puzzlet_withdrawn",
+      recipient_team_id,
+      nil,
+      PlayerStrings.puzzlet_withdrawn_body(),
+      %{
+        "pole_id" => pole && pole.id,
+        "pole_label" => pole && display_name(pole),
+        "puzzlet_id" => puzzlet.id,
+        "has_next" => !!has_next
+      },
+      PlayerStrings.push_title("puzzlet_withdrawn")
     )
   end
 

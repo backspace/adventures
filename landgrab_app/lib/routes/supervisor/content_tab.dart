@@ -160,16 +160,29 @@ class _ContentTabState extends State<ContentTab> {
     return _statusByKey[_status] == status;
   }
 
+  // Free-text filter over content, applied in both list and map view.
+  // Matches any of a row's text fields (case-insensitive substring).
+  String _query = '';
+
+  bool _matchesQuery(Iterable<String?> fields) {
+    if (_query.isEmpty) return true;
+    return fields.any((f) => f != null && f.toLowerCase().contains(_query));
+  }
+
   List<DraftPole> get _visiblePoles => _kind == _Kind.puzzlets
       ? const []
       : (_poles ?? const [])
-          .where((p) => _statusMatches(p.status, p.activeValidation))
+          .where((p) =>
+              _statusMatches(p.status, p.activeValidation) &&
+              _matchesQuery([p.label, p.barcode, p.notes]))
           .toList();
 
   List<DraftPuzzlet> get _visiblePuzzlets => _kind == _Kind.poles
       ? const []
       : (_puzzlets ?? const [])
-          .where((p) => _statusMatches(p.status, p.activeValidation))
+          .where((p) =>
+              _statusMatches(p.status, p.activeValidation) &&
+              _matchesQuery([p.instructions, p.answer, p.warning]))
           .toList();
 
   Future<void> _reloadAll() async {
@@ -347,6 +360,19 @@ class _ContentTabState extends State<ContentTab> {
             ],
             selected: {_view},
             onSelectionChanged: (set) => _setView(set.first),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: TextField(
+            decoration: const InputDecoration(
+              isDense: true,
+              prefixIcon: Icon(Icons.search),
+              hintText: 'Search content',
+              border: OutlineInputBorder(),
+            ),
+            onChanged: (v) =>
+                setState(() => _query = v.trim().toLowerCase()),
           ),
         ),
         SingleChildScrollView(

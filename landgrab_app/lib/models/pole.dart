@@ -147,6 +147,12 @@ class AttemptAlreadyCaptured extends AttemptOutcome {
   const AttemptAlreadyCaptured();
 }
 
+/// The puzzlet was withdrawn from the game (supervisor action) while the
+/// team was working it — there's nothing to answer anymore.
+class AttemptWithdrawn extends AttemptOutcome {
+  const AttemptWithdrawn();
+}
+
 class AttemptAlreadyOwner extends AttemptOutcome {
   const AttemptAlreadyOwner();
 }

@@ -80,6 +80,16 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
           }
         })
 
+      {:error, :withdrawn} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{
+          error: %{
+            code: "withdrawn",
+            detail: "This puzzlet has been withdrawn from the game."
+          }
+        })
+
       {:error, :already_captured} ->
         conn
         |> put_status(:conflict)

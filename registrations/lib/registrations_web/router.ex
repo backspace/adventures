@@ -395,6 +395,8 @@ defmodule RegistrationsWeb.Router do
 
     patch("/poles/:id", SupervisionController, :update_pole)
     patch("/puzzlets/:id", SupervisionController, :update_puzzlet)
+
+    post("/puzzlets/:id/withdraw", SupervisionController, :withdraw_puzzlet)
   end
 
   scope "/fixme", RegistrationsWeb do

@@ -362,6 +362,8 @@ class PuzzletStrings {
   static const alreadyOwner =
       'Your team already owns this ${Terms.zone}. Wait for a rival to capture it.';
   static const notActive = 'Scan this ${Terms.stake} to begin before answering.';
+  static const withdrawn =
+      'This ${Terms.relic} has been withdrawn from the simulation.';
   static const ownCreation = "You made this one — you can't capture it.";
 
   // Fallbacks for submissions that fail in ways the app doesn't

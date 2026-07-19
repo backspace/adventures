@@ -32,6 +32,8 @@ defmodule Registrations.Landgrab.PlayerStrings do
   def puzzlet_taken_body(nil), do: phrase("app_puzzlet_taken_body_unknown")
   def puzzlet_taken_body(captor), do: phrase("app_puzzlet_taken_body", captor: captor)
 
+  def puzzlet_withdrawn_body, do: phrase("app_puzzlet_withdrawn_body")
+
   def pole_contested_body(nil, pole), do: phrase("app_pole_contested_body_unknown", pole: pole)
   def pole_contested_body(team, pole), do: phrase("app_pole_contested_body", team: team, pole: pole)
 
@@ -43,6 +45,7 @@ defmodule Registrations.Landgrab.PlayerStrings do
   def push_title("attack"), do: phrase("app_push_title_attack")
   def push_title("pole_lost"), do: phrase("app_push_title_pole_lost")
   def push_title("puzzlet_taken"), do: phrase("app_push_title_puzzlet_taken")
+  def push_title("puzzlet_withdrawn"), do: phrase("app_push_title_puzzlet_withdrawn")
   def push_title("pole_contested"), do: phrase("app_push_title_pole_contested")
   def push_title(_type), do: phrase("app_push_title_default")
 

@@ -393,6 +393,24 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
     end
   end
 
+  # Withdraw a puzzlet from live play (out-of-band supervisor decision).
+  # Notifies + frees teams working it, offering the pole's next puzzlet —
+  # see `Landgrab.withdraw_puzzlet/1`.
+  def withdraw_puzzlet(conn, %{"id" => id}) do
+    case Landgrab.withdraw_puzzlet(id) do
+      {:ok, puzzlet} ->
+        json(conn, render_puzzlet(puzzlet))
+
+      {:error, :not_found} ->
+        not_found(conn)
+
+      {:error, :already_withdrawn} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{error: %{code: "already_withdrawn"}})
+    end
+  end
+
   # ──────── Helpers / renderers ────────────────────────────────────
 
   defp unprocessable(conn, %Ecto.Changeset{} = changeset) do

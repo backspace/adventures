@@ -260,6 +260,54 @@ class _PuzzletSupervisionDetailRouteState
         .showSnackBar(SnackBar(content: Text('Action failed: $detail')));
   }
 
+  /// Pull the puzzlet out of live play (supervisor decision on out-of-band
+  /// information). Teams working it are notified + freed and offered the
+  /// pole's next puzzlet; captures already made are unaffected.
+  Future<void> _withdraw() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Withdraw this puzzlet?'),
+        content: const Text(
+          'It will be removed from live play. Any team currently working on '
+          'it is notified and offered the pole’s next puzzlet. Captures '
+          'already made are unaffected. This can’t be undone here.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Withdraw'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _busy = true);
+    try {
+      await widget.api.withdrawPuzzlet(_puzzlet.id);
+      await widget.onChanged?.call();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Puzzlet withdrawn from the game.')),
+      );
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not withdraw: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final v = _activeValidation;
@@ -320,6 +368,20 @@ class _PuzzletSupervisionDetailRouteState
             ),
           ),
           const SizedBox(height: 16),
+          // Withdraw from the live game — only meaningful once the puzzlet is
+          // validated (in play). A confirm dialog guards the destructive act.
+          if (_puzzlet.status == DraftStatus.validated)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: OutlinedButton.icon(
+                onPressed: _busy ? null : _withdraw,
+                icon: const Icon(Icons.block),
+                label: const Text('Withdraw from game'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ),
           if (canAssign)
             FilledButton.icon(
               onPressed: _busy ? null : _pickAndAssign,

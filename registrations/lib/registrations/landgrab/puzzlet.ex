@@ -17,7 +17,10 @@ defmodule Registrations.Landgrab.Puzzlet do
     field(:instructions, :string)
     field(:answer, :string)
     field(:difficulty, :integer)
-    field(:status, Ecto.Enum, values: [:draft, :in_review, :validated, :retired], default: :draft)
+    field(:status, Ecto.Enum,
+      values: [:draft, :in_review, :validated, :retired, :withdrawn],
+      default: :draft
+    )
 
     field(:answer_type, Ecto.Enum,
       values: [:loose_text, :strict_text, :barcode, :nfc],

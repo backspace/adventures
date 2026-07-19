@@ -130,6 +130,9 @@ msgstr "%{captor} solved the puzzlet you were working on."
 msgid "app_puzzlet_taken_body_unknown"
 msgstr "Another team solved the puzzlet you were working on."
 
+msgid "app_puzzlet_withdrawn_body"
+msgstr "A puzzlet you were working on has been withdrawn from the study."
+
 msgid "app_pole_contested_body"
 msgstr "%{team} is now working on %{pole} too — it's a race."
 
@@ -147,6 +150,9 @@ msgstr "Pole lost"
 
 msgid "app_push_title_puzzlet_taken"
 msgstr "Puzzlet taken"
+
+msgid "app_push_title_puzzlet_withdrawn"
+msgstr "Puzzlet withdrawn"
 
 msgid "app_push_title_pole_contested"
 msgstr "Pole contested"

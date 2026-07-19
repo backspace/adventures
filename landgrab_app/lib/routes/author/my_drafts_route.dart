@@ -74,6 +74,7 @@ class _MyDraftsRouteState extends State<MyDraftsRoute> {
         DraftStatus.inReview => Colors.blue.shade700,
         DraftStatus.validated => Colors.green.shade700,
         DraftStatus.retired => Colors.grey.shade700,
+        DraftStatus.withdrawn => Colors.red.shade700,
       };
 
   List<MapPin> _pins(MyDrafts drafts) {
@@ -396,6 +397,7 @@ class _StatusBadge extends StatelessWidget {
       DraftStatus.inReview => ('in review', Colors.blue.shade700),
       DraftStatus.validated => ('validated', Colors.green.shade700),
       DraftStatus.retired => ('retired', Colors.grey.shade700),
+      DraftStatus.withdrawn => ('withdrawn', Colors.red.shade700),
     };
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
