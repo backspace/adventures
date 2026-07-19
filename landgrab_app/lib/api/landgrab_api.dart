@@ -423,6 +423,7 @@ class LandgrabApi {
         return AttemptCorrect(
           captureTeamId: body['pole']['current_owner_team_id'] as String,
           poleLocked: body['pole']['locked'] as bool,
+          captureColorIndex: body['pole']['current_owner_color_index'] as int?,
         );
       }
       return AttemptIncorrect(

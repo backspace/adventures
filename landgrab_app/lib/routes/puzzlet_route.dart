@@ -11,6 +11,7 @@ import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
+import 'package:landgrab/widgets/team_style.dart';
 import 'package:landgrab/widgets/warning_banner.dart';
 
 class PuzzletRoute extends StatefulWidget {
@@ -52,6 +53,9 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   final _answerController = TextEditingController();
   bool _celebrating = false;
   double _stampAngle = 0;
+  // The capturing team's colour index, so the celebration floods in the
+  // team's own colour (matching the map's territory). Null falls back to green.
+  int? _floodColorIndex;
   bool _busy = false;
   int? _attemptsRemaining;
   AttemptOutcome? _outcome;
@@ -99,10 +103,11 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   /// tell the map which pole to animate). maybePop rather than pop so
   /// a bare test harness with a single route doesn't underflow the
   /// navigator.
-  void _celebrateAndPop() {
+  void _celebrateAndPop(int? colorIndex) {
     _leaving = true;
     final random = math.Random();
     setState(() {
+      _floodColorIndex = colorIndex;
       // A varying tilt so each capture's stamp lands a little
       // differently — always at least slightly askew, like a real
       // hand-stamp. ±(5°–13°).
@@ -145,7 +150,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
           _attemptsRemaining = 0;
         }
       });
-      if (outcome is AttemptCorrect) _celebrateAndPop();
+      if (outcome is AttemptCorrect) _celebrateAndPop(outcome.captureColorIndex);
     } catch (e) {
       if (!mounted) return;
       setState(() => _outcome = AttemptFailed(e.toString()));
@@ -336,8 +341,12 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       if (_celebrating)
         Positioned.fill(
           child: _CaptureCelebration(
-            // Matches the map's own-team territory colour.
-            floodColor: Colors.green,
+            // The capturing team's own colour — the same colour the map
+            // floods their territory with. Green only as a fallback when the
+            // server didn't supply an index (older build).
+            floodColor: _floodColorIndex != null
+                ? TeamStyle.forIndex(_floodColorIndex!).color
+                : Colors.green,
             stampAngle: _stampAngle,
           ),
         ),
@@ -401,6 +410,13 @@ class _CaptureCelebrationState extends State<_CaptureCelebration>
     super.dispose();
   }
 
+  // Stamp ink flips to stay legible on any team colour: white on darker
+  // floods, near-black on the lighter ones (e.g. sand/yellow).
+  Color get _stampInk =>
+      ThemeData.estimateBrightnessForColor(widget.floodColor) == Brightness.dark
+          ? Colors.white
+          : Colors.black87;
+
   @override
   Widget build(BuildContext context) {
     // The overlay sits outside the Scaffold, so nothing above it
@@ -435,16 +451,16 @@ class _CaptureCelebrationState extends State<_CaptureCelebration>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 24, vertical: 10),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white, width: 5),
+                            border: Border.all(color: _stampInk, width: 5),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Text(
+                          child: Text(
                             PuzzletStrings.capturedStamp,
                             // Anton, matching the site wordmark — it's
                             // single-weight, so no fontWeight needed.
                             style: TextStyle(
                               fontFamily: 'Anton',
-                              color: Colors.white,
+                              color: _stampInk,
                               fontSize: 44,
                               letterSpacing: 6,
                             ),

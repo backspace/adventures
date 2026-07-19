@@ -106,11 +106,24 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
   defp render_capture(%{capture: capture}, pole) do
     pole_locked = Registrations.Landgrab.pole_locked?(pole)
 
+    # The capturing team's stable colour index, so the app can flood the
+    # capture celebration in the team's own colour — authoritative even on a
+    # team's first capture, when the map hasn't seen that colour yet.
+    color_index =
+      Registrations.Landgrab.team_style_index()
+      |> Map.get(capture.team_id, %{})
+      |> Map.get(:color_index)
+
     %{
       correct: true,
       captured: true,
       capture: %{id: capture.id, team_id: capture.team_id, puzzlet_id: capture.puzzlet_id},
-      pole: %{id: pole.id, locked: pole_locked, current_owner_team_id: capture.team_id}
+      pole: %{
+        id: pole.id,
+        locked: pole_locked,
+        current_owner_team_id: capture.team_id,
+        current_owner_color_index: color_index
+      }
     }
   end
 end

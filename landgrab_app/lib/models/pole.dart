@@ -134,7 +134,17 @@ sealed class AttemptOutcome {
 class AttemptCorrect extends AttemptOutcome {
   final String captureTeamId;
   final bool poleLocked;
-  const AttemptCorrect({required this.captureTeamId, required this.poleLocked});
+
+  /// The capturing team's stable colour index, so the celebration can flood
+  /// in the team's own colour. Null if the server didn't supply it (older
+  /// build), in which case the celebration falls back to a default colour.
+  final int? captureColorIndex;
+
+  const AttemptCorrect({
+    required this.captureTeamId,
+    required this.poleLocked,
+    this.captureColorIndex,
+  });
 }
 
 class AttemptIncorrect extends AttemptOutcome {
