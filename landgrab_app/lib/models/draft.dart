@@ -61,6 +61,9 @@ class ActiveValidationSummary {
   final String id;
   final String status;
   final int commentCount;
+  // Whether the validator left an overall note. With [commentCount], lets
+  // the supervisor treat "no notes or corrections" as a clean submission.
+  final bool hasNotes;
   final String? validatorId;
   final String? validatorName;
 
@@ -68,6 +71,7 @@ class ActiveValidationSummary {
     required this.id,
     required this.status,
     required this.commentCount,
+    this.hasNotes = false,
     this.validatorId,
     this.validatorName,
   });
@@ -77,6 +81,7 @@ class ActiveValidationSummary {
         id: json['id'] as String,
         status: json['status'] as String,
         commentCount: json['comment_count'] as int? ?? 0,
+        hasNotes: json['has_notes'] as bool? ?? false,
         validatorId: json['validator_id'] as String?,
         validatorName: json['validator_name'] as String?,
       );

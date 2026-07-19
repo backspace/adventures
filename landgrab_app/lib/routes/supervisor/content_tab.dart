@@ -339,6 +339,71 @@ class _ContentTabState extends State<ContentTab> {
     return (toValidatorId: picked.id);
   }
 
+  // ── Bulk-accept clean submissions ──────────────────────────────
+  // "Clean" = submitted with no comments/corrections and no overall note
+  // (_ContentRow._cleanSubmitted). Operates on the currently-visible set,
+  // so filters (validator, kind, search) scope it.
+
+  List<DraftPole> get _cleanSubmittedPoles => _visiblePoles
+      .where((p) => _ContentRow._cleanSubmitted(p.activeValidation))
+      .toList();
+
+  List<DraftPuzzlet> get _cleanSubmittedPuzzlets => _visiblePuzzlets
+      .where((p) => _ContentRow._cleanSubmitted(p.activeValidation))
+      .toList();
+
+  int get _cleanSubmittedCount =>
+      _cleanSubmittedPoles.length + _cleanSubmittedPuzzlets.length;
+
+  Future<void> _acceptClean() async {
+    final poles = _cleanSubmittedPoles;
+    final puzzlets = _cleanSubmittedPuzzlets;
+    final total = poles.length + puzzlets.length;
+    if (total == 0) return;
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Accept clean submissions'),
+        content: Text(
+          'Accept $total submitted ${total == 1 ? 'validation' : 'validations'} '
+          'with no notes or corrections? This finalizes them.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Accept all'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    setState(() => _accepting = true);
+    try {
+      final result = await widget.api.bulkAcceptValidations(
+        poleValidationIds:
+            poles.map((p) => p.activeValidation!.id).toList(),
+        puzzletValidationIds:
+            puzzlets.map((p) => p.activeValidation!.id).toList(),
+      );
+      if (!mounted) return;
+      _snack('Accepted ${result.accepted}'
+          '${result.skipped > 0 ? ' · ${result.skipped} skipped' : ''}.');
+      await _reloadAll();
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final detail = e.response?.data?['error']?['detail'] ?? e.message;
+      _snack('Could not accept: $detail');
+    } finally {
+      if (mounted) setState(() => _accepting = false);
+    }
+  }
+
   void _snack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
@@ -598,6 +663,35 @@ class _ContentTabState extends State<ContentTab> {
                           )
                         : const Icon(Icons.move_up),
                     label: const Text('Reassign'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (_status == 'submitted' && _cleanSubmittedCount > 0)
+          Material(
+            color: Theme.of(context).colorScheme.tertiaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '$_cleanSubmittedCount clean '
+                      '(no notes or corrections)',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _accepting ? null : _acceptClean,
+                    icon: _accepting
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.done_all),
+                    label: const Text('Accept all'),
                   ),
                 ],
               ),
@@ -867,8 +961,13 @@ class _ContentRow {
   _ContentRow._(this.icon, this.title, this.subtitle, this.badges, this.open,
       {this.canQuickAccept = false, this.accept});
 
+  // "Clean" = submitted with nothing to review: no per-field corrections
+  // (comments) and no overall note. Safe to accept without opening it.
   static bool _cleanSubmitted(ActiveValidationSummary? v) =>
-      v != null && v.status == 'submitted' && v.commentCount == 0;
+      v != null &&
+      v.status == 'submitted' &&
+      v.commentCount == 0 &&
+      !v.hasNotes;
 
   factory _ContentRow.pole(DraftPole p) {
     final v = p.activeValidation;

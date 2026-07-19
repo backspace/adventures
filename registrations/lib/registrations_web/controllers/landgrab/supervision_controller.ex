@@ -69,10 +69,15 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
       id: validation.id,
       status: validation.status,
       comment_count: length(validation.comments || []),
+      # Whether the validator left an overall note — lets the client treat
+      # "no notes or corrections" as the bar for a clean, one-tap accept.
+      has_notes: present?(validation.overall_notes),
       validator_id: validation.validator_id,
       validator_name: validator_display(validation.validator)
     }
   end
+
+  defp present?(s), do: is_binary(s) and String.trim(s) != ""
 
   # Short label for the map legend: the validator's name, or the
   # local part of their email if unnamed.
@@ -131,6 +136,19 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
         to_validator_id,
         user.id
       )
+    )
+  end
+
+  # Bulk accept the given (submitted, clean) validations in one shot. The
+  # client decides "clean" (no comments, no notes); the server accepts the
+  # submitted ones and skips/counts anything not acceptable.
+  def bulk_accept(conn, params) do
+    pole_validation_ids = List.wrap(params["pole_validation_ids"])
+    puzzlet_validation_ids = List.wrap(params["puzzlet_validation_ids"])
+
+    json(
+      conn,
+      Validations.bulk_accept(pole_validation_ids, puzzlet_validation_ids)
     )
   end
 

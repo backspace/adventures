@@ -149,6 +149,37 @@ defmodule Registrations.Landgrab.Validations do
     end
   end
 
+  @doc """
+  Bulk-accept the given validations. Only `submitted` ones can be accepted
+  (the supervisor transition), so anything else is skipped and counted
+  rather than failing the batch. Backs the supervisor's "accept all clean
+  submissions" action; the caller decides which ids are "clean" (no
+  comments, no overall notes).
+  """
+  def bulk_accept(pole_validation_ids, puzzlet_validation_ids) do
+    results =
+      Enum.map(pole_validation_ids, fn id ->
+        accept_one(get_pole_validation(id), &accept_pole_validation/1)
+      end) ++
+        Enum.map(puzzlet_validation_ids, fn id ->
+          accept_one(get_puzzlet_validation(id), &accept_puzzlet_validation/1)
+        end)
+
+    %{
+      accepted: Enum.count(results, &(&1 == :accepted)),
+      skipped: Enum.count(results, &(&1 == :skipped))
+    }
+  end
+
+  defp accept_one(nil, _accept), do: :skipped
+
+  defp accept_one(validation, accept) do
+    case accept.(validation) do
+      {:ok, _} -> :accepted
+      _ -> :skipped
+    end
+  end
+
   defp do_reassign(validation, new_validator_id, assigner_id, changeset_fun) do
     if validation.status in ["assigned", "in_progress"] do
       result =

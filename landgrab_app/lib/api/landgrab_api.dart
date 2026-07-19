@@ -1128,6 +1128,25 @@ class LandgrabApi {
     );
   }
 
+  /// Bulk-accept the given (clean, submitted) validations. The server
+  /// accepts the submitted ones and skips anything not acceptable, returning
+  /// how many were accepted vs. skipped.
+  Future<({int accepted, int skipped})> bulkAcceptValidations({
+    required List<String> poleValidationIds,
+    required List<String> puzzletValidationIds,
+  }) async {
+    final response =
+        await dio.post('/landgrab/supervision/acceptances', data: {
+      'pole_validation_ids': poleValidationIds,
+      'puzzlet_validation_ids': puzzletValidationIds,
+    });
+    final data = response.data as Map<String, dynamic>;
+    return (
+      accepted: (data['accepted'] as num).toInt(),
+      skipped: (data['skipped'] as num).toInt(),
+    );
+  }
+
   Future<List<ValidatorUser>> listValidators({String? excludeUserId}) async {
     final response = await dio.get('/landgrab/supervision/validators',
         queryParameters: {
