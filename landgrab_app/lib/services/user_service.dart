@@ -39,6 +39,7 @@ class UserService {
   static const String _userNameKey = 'user_name';
   static const String _teamIdKey = 'team_id';
   static const String _teamNameKey = 'team_name';
+  static const String _teamColorIndexKey = 'team_color_index';
   static const String _rolesKey = 'roles';
   static const String _accessTokenKey = 'access_token';
   static const String _renewalTokenKey = 'renewal_token';
@@ -69,6 +70,7 @@ class UserService {
     String? name,
     String? teamId,
     String? teamName,
+    int? teamColorIndex,
     List<String>? roles,
   }) async {
     await _storage.write(key: _key(_userIdKey), value: userId);
@@ -89,6 +91,14 @@ class UserService {
     } else {
       await _storage.delete(key: _key(_teamNameKey));
     }
+    // Same write-or-delete discipline as the team fields: a null in the /me
+    // snapshot must clear a stale colour, not leave the old one behind.
+    if (teamColorIndex != null) {
+      await _storage.write(
+          key: _key(_teamColorIndexKey), value: teamColorIndex.toString());
+    } else {
+      await _storage.delete(key: _key(_teamColorIndexKey));
+    }
     if (roles != null) {
       await _storage.write(key: _key(_rolesKey), value: roles.join(','));
     }
@@ -104,6 +114,8 @@ class UserService {
   static Future<String?> getUserName() => _storage.read(key: _key(_userNameKey));
   static Future<String?> getTeamId() => _storage.read(key: _key(_teamIdKey));
   static Future<String?> getTeamName() => _storage.read(key: _key(_teamNameKey));
+  static Future<int?> getTeamColorIndex() async =>
+      int.tryParse(await _storage.read(key: _key(_teamColorIndexKey)) ?? '');
   static Future<String?> getAccessToken() =>
       _storage.read(key: _key(_accessTokenKey));
   static Future<String?> getRenewalToken() =>
@@ -144,6 +156,7 @@ class UserService {
     await _storage.delete(key: _key(_userNameKey));
     await _storage.delete(key: _key(_teamIdKey));
     await _storage.delete(key: _key(_teamNameKey));
+    await _storage.delete(key: _key(_teamColorIndexKey));
     await _storage.delete(key: _key(_rolesKey));
     await _storage.delete(key: _key(_accessTokenKey));
     await _storage.delete(key: _key(_renewalTokenKey));

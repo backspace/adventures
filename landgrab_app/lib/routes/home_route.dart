@@ -65,6 +65,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   List<Bathroom> _bathrooms = const [];
   String? _teamId;
   String? _teamName;
+  // The team's stable colour index from /me, so its swatch shows beside the
+  // name from launch — before it owns any zone (independent of captures).
+  int? _myColorIndex;
   String? _error;
   // Surfaced under "Log out" so the account you're signed in as is always
   // visible — not just for the dev account-switcher audience.
@@ -379,6 +382,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     try {
       final teamId = await UserService.getTeamId();
       final teamName = await UserService.getTeamName();
+      final teamColorIndex = await UserService.getTeamColorIndex();
       final isAuthor = await UserService.hasRole('author');
       final isValidator = await UserService.hasRole('validator');
       final isSupervisor = await UserService.hasRole('validation_supervisor');
@@ -413,6 +417,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         _validatorOnlyPuzzlets = validatorOnly;
         _teamId = teamId;
         _teamName = teamName;
+        _myColorIndex = teamColorIndex;
         _isAuthor = isAuthor;
         _isValidator = isValidator;
         _isSupervisor = isSupervisor;
@@ -901,6 +906,15 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // "LANDGRAB" prefix is redundant here and only eats width that long
     // team names need in portrait.
     final titleText = (_teamName ?? 'LANDGRAB').toUpperCase();
+    // The team's own map colour, shown as a swatch beside the name in the bar
+    // (the same glyph the zone-tap snackbar uses). Prefer the index from /me
+    // (known from launch, before owning any zone); fall back to what we've
+    // learned from owned zones for an older server that doesn't send it. Null
+    // only when not on a team.
+    final myColorIndex =
+        _myColorIndex ?? (_teamId == null ? null : _teamColorIndex[_teamId]);
+    final myStyle =
+        myColorIndex == null ? null : TeamStyle.forIndex(myColorIndex);
     // In test play we intentionally bypass the event-start gate — the
     // whole point of a rehearsal is to play before the event begins.
     final preEvent = _event != null && !_event!.started;
@@ -909,20 +923,38 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       appBar: AppBar(
         title: ValueListenableBuilder<bool>(
           valueListenable: EnvSwitchService.visible,
-          builder: (context, envVisible, _) => envVisible
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(titleText),
-                    Text(
-                      '${F.title} · ${widget.api.dio.options.baseUrl}',
-                      style: const TextStyle(fontSize: 10),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                )
-              : Text(titleText),
+          builder: (context, envVisible, _) {
+            final label = envVisible
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(titleText),
+                      Text(
+                        '${F.title} · ${widget.api.dio.options.baseUrl}',
+                        style: const TextStyle(fontSize: 10),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  )
+                : Text(titleText);
+            if (myStyle == null) return label;
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CustomPaint(
+                    painter: TeamGlyphPainter(
+                        color: myStyle.color, pattern: myStyle.pattern),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Flexible(child: label),
+              ],
+            );
+          },
         ),
         actions: [
           IconButton(

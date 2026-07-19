@@ -15,5 +15,16 @@ defmodule RegistrationsWeb.Landgrab.MeController do
   end
 
   defp render_team(nil), do: nil
-  defp render_team(team), do: %{id: team.id, name: team.name}
+
+  defp render_team(team) do
+    # The team's stable colour index (its rank among joined teams), so the app
+    # can show the team's map colour beside its name from launch — before it
+    # owns any zone. Independent of captures; only shifts as teams join.
+    color_index =
+      Registrations.Landgrab.team_style_index()
+      |> Map.get(team.id, %{})
+      |> Map.get(:color_index)
+
+    %{id: team.id, name: team.name, color_index: color_index}
+  end
 end
