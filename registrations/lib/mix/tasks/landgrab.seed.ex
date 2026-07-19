@@ -277,8 +277,10 @@ defmodule Mix.Tasks.Landgrab.Seed do
   defp seed_attacks(_owned, teams) when length(teams) < 2, do: 0
 
   defp seed_attacks(owned, teams) do
+    # One per *owning team*, not per pole — so whichever account you play as,
+    # its team's inbox has something (the old "a few" only hit some teams).
     owned
-    |> Enum.take(max(1, div(length(owned), 4)))
+    |> Enum.uniq_by(& &1.team.id)
     |> Enum.reduce(0, fn o, acc ->
       attacker = Enum.find(teams, fn t -> t.id != o.team.id end)
 
@@ -311,8 +313,10 @@ defmodule Mix.Tasks.Landgrab.Seed do
   defp seed_flips(_owned, teams) when length(teams) < 2, do: 0
 
   defp seed_flips(owned, teams) do
+    # One pole-loss per owning team where a spare puzzlet allows the flip —
+    # so every team's inbox gets both notification types where possible.
     owned
-    |> Enum.take(max(1, div(length(owned), 4)))
+    |> Enum.uniq_by(& &1.team.id)
     |> Enum.reduce(0, fn o, acc ->
       with %{} = new_owner <- Enum.find(teams, &(&1.id != o.team.id)),
            puzzlet_id when is_binary(puzzlet_id) <- uncaptured_puzzlet_on_pole(o.pole_id) do
