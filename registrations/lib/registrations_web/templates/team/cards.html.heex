@@ -1,43 +1,87 @@
 <style>
+  /* On screen: one card per row, laid out as a single horizontal line
+     (name · QR · code). Print restores the cut-out grid below. */
   .team-cards {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+    flex-direction: column;
+    /* Big gap so, when scrolling for test-scanning, only one card's QR is
+       comfortably in frame at a time (no neighbour bleeding into shot). */
+    gap: 48px;
     margin-top: 1rem;
   }
 
   .team-card {
-    width: 240px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
     box-sizing: border-box;
     border: 1px solid #333;
     border-radius: 8px;
-    padding: 16px;
-    text-align: center;
+    padding: 24px 32px;
     /* Keep a card intact across a page break when printing. */
     page-break-inside: avoid;
     break-inside: avoid;
   }
 
   .team-card-name {
-    font-size: 1.3rem;
+    font-size: 2rem;
     font-weight: bold;
-    margin-bottom: 8px;
     word-break: break-word;
+    /* Take the slack so the QR and code sit at the right of the line. */
+    flex: 1;
+  }
+
+  .team-card-qr {
+    flex: 0 0 auto;
   }
 
   .team-card-qr svg {
-    width: 180px;
-    height: 180px;
+    /* Large on screen so it scans reliably off a monitor. */
+    width: 280px;
+    height: 280px;
+    display: block;
   }
 
   .team-card-code {
-    margin-top: 8px;
+    flex: 0 0 auto;
     font-family: monospace;
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     letter-spacing: 0.15em;
   }
 
-  /* Print just the cards — drop the site chrome and the intro. */
+  /* Screen: full-page vertical scroll-snap so each card lands one-per-
+     screen for test-scanning — no neighbouring QR ever in frame. Each
+     card becomes a screenful with its name·QR·code centred. */
+  @media screen {
+    html {
+      scroll-snap-type: y mandatory;
+    }
+
+    .team-cards {
+      gap: 0;
+    }
+
+    /* Keep the intro reachable as its own snap point at the top. */
+    .team-cards-intro {
+      scroll-snap-align: start;
+    }
+
+    .team-card {
+      min-height: 100vh;
+      justify-content: center;
+      scroll-snap-align: center;
+      border: none;
+    }
+
+    .team-card-name {
+      /* Don't stretch — keep the trio centred rather than spread. */
+      flex: 0 1 auto;
+    }
+  }
+
+  /* Print: drop the site chrome and the intro, and lay the cards out as
+     a grid of stacked cut-outs (name over a large QR over the code). */
   @media print {
     .row.nav,
     .row.flash,
@@ -45,8 +89,33 @@
       display: none !important;
     }
 
+    .team-cards {
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
     .team-card {
+      flex-direction: column;
+      align-items: center;
+      width: 240px;
+      padding: 16px;
+      text-align: center;
       border-color: #000;
+    }
+
+    .team-card-name {
+      flex: none;
+      margin-bottom: 8px;
+    }
+
+    .team-card-qr svg {
+      width: 180px;
+      height: 180px;
+    }
+
+    .team-card-code {
+      margin-top: 8px;
     }
   }
 </style>
