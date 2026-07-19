@@ -35,6 +35,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
 
   import Ecto.Query
 
+  alias Registrations.Landgrab
   alias Registrations.Landgrab.Capture
   alias Registrations.Landgrab.Notification
   alias Registrations.Landgrab.Pole
@@ -273,171 +274,123 @@ defmodule Mix.Tasks.Landgrab.Seed do
     Mix.shell().info("validations: assigned #{assigned} puzzlet(s) to #{validator.email}.")
   end
 
-  # ── captures (partial gameplay) ─────────────────────────────────────
+  # ── captures (partial gameplay, driven through the REAL game) ───────
+  # Rather than inserting Capture/Notification rows by hand, this plays the
+  # actual scan → answer flow (`scan_payload` then `record_attempt`), so
+  # every capture, attack, pole-loss, pole-contested signal, in-progress
+  # claim, and broadcast is produced by the real game with its real copy.
+  # Slower, but true to real-world conditions.
   defp captures(n) do
-    teams = teams_with_members()
+    players = player_teams()
 
-    if teams == [] do
-      Mix.raise("captures needs teams — run the 'teams' step first (or the 'midgame' preset).")
+    if players == [] do
+      Mix.raise(
+        "captures needs a team with a non-author member — run 'teams'/'filler' first. " <>
+          "(The content author's own team can't answer its own puzzlets.)"
+      )
     end
 
-    owned = capture_poles(teams, n)
-    attacks = seed_attacks(owned, teams)
-    flips = seed_flips(owned, teams)
-    in_progress = seed_in_progress(teams)
+    owned = play_first_wave(unowned_capturable_poles(n), players)
+    flips = play_flips(owned, players)
+    in_progress = play_in_progress(players)
 
     Mix.shell().info(
-      "captures: #{length(owned)} pole(s) owned across #{length(teams)} team(s), " <>
-        "#{attacks} attack(s), #{flips} pole-loss(es), #{in_progress} in-progress."
+      "captures: #{length(owned)} pole(s) captured, #{flips} contested/flipped, " <>
+        "#{in_progress} left in-progress — all via real scan→answer gameplay."
     )
   end
 
-  # Capture one uncaptured puzzlet per still-unowned pole, round-robining
-  # teams so ownership spreads into a contested map.
-  defp capture_poles(teams, n) do
-    captured = from(c in Capture, select: c.puzzlet_id)
-    owned_poles = from(c in Capture, join: z in Puzzlet, on: z.id == c.puzzlet_id, select: z.pole_id)
-
-    from(z in Puzzlet,
-      join: p in Pole,
-      on: p.id == z.pole_id,
-      where: z.status == :validated and not z.validator_only,
-      where: z.id not in subquery(captured),
-      where: z.pole_id not in subquery(owned_poles),
-      select: %{pole_id: p.id, pole_label: p.label, puzzlet_id: z.id}
-    )
-    |> Repo.all()
-    |> Enum.uniq_by(& &1.pole_id)
-    |> Enum.take(n)
-    |> Enum.with_index()
-    |> Enum.map(fn {cand, i} ->
-      team = Enum.at(teams, rem(i, length(teams)))
-
-      {:ok, _} =
-        %Capture{}
-        |> Capture.changeset(%{puzzlet_id: cand.puzzlet_id, team_id: team.id})
-        |> Repo.insert()
-
-      Map.put(cand, :team, team)
-    end)
-  end
-
-  # A few of the freshly-owned poles get an incoming attack from another
-  # team — a real Notification, so the inbox/unread state is populated too.
-  defp seed_attacks(_owned, teams) when length(teams) < 2, do: 0
-
-  defp seed_attacks(owned, teams) do
-    # One per *owning team*, not per pole — so whichever account you play as,
-    # its team's inbox has something (the old "a few" only hit some teams).
-    owned
-    |> Enum.uniq_by(& &1.team.id)
-    |> Enum.reduce(0, fn o, acc ->
-      attacker = Enum.find(teams, fn t -> t.id != o.team.id end)
-
-      result =
-        %Notification{}
-        |> Notification.changeset(%{
-          type: "attack",
-          recipient_team_id: o.team.id,
-          sender_team_id: attacker.id,
-          body: "#{attacker.name} is attacking #{o.pole_label || "a pole"}.",
-          metadata: %{
-            "pole_id" => o.pole_id,
-            "pole_label" => o.pole_label,
-            "sender_team_name" => attacker.name
-          }
-        })
-        |> Repo.insert()
-
-      case result do
-        {:ok, _} -> acc + 1
-        _ -> acc
-      end
-    end)
-  end
-
-  # Flip a few freshly-owned poles to another team by capturing a second
-  # puzzlet on them (the later capture wins ownership) — which is exactly
-  # what generates a "pole lost" notification to the previous owner, so the
-  # inbox reflects notifications real gameplay would already have sent.
-  defp seed_flips(_owned, teams) when length(teams) < 2, do: 0
-
-  defp seed_flips(owned, teams) do
-    # One pole-loss per owning team where a spare puzzlet allows the flip —
-    # so every team's inbox gets both notification types where possible.
-    owned
-    |> Enum.uniq_by(& &1.team.id)
-    |> Enum.reduce(0, fn o, acc ->
-      with %{} = new_owner <- Enum.find(teams, &(&1.id != o.team.id)),
-           puzzlet_id when is_binary(puzzlet_id) <- uncaptured_puzzlet_on_pole(o.pole_id) do
-        {:ok, _} =
-          %Capture{}
-          |> Capture.changeset(%{puzzlet_id: puzzlet_id, team_id: new_owner.id})
-          |> Repo.insert()
-
-        %Notification{}
-        |> Notification.changeset(%{
-          type: "pole_lost",
-          recipient_team_id: o.team.id,
-          sender_team_id: new_owner.id,
-          body: "#{new_owner.name} took #{o.pole_label || "a pole"}.",
-          metadata: %{
-            "pole_id" => o.pole_id,
-            "pole_label" => o.pole_label,
-            "sender_team_name" => new_owner.name
-          }
-        })
-        |> Repo.insert()
-
-        acc + 1
-      else
-        _ -> acc
-      end
-    end)
-  end
-
-  defp uncaptured_puzzlet_on_pole(pole_id) do
-    Repo.one(
-      from(z in Puzzlet,
-        where: z.pole_id == ^pole_id and z.status == :validated and not z.validator_only,
-        where: z.id not in subquery(from(c in Capture, select: c.puzzlet_id)),
-        select: z.id,
-        limit: 1
+  # Teams that can actually play: one with a member who didn't author the
+  # content (record_attempt rejects a puzzlet's or pole's creator).
+  defp player_teams do
+    authors =
+      MapSet.new(
+        Repo.all(from(z in Puzzlet, select: z.creator_id)) ++
+          Repo.all(from(p in Pole, select: p.creator_id))
       )
-    )
+
+    from(t in Team, join: u in User, on: u.team_id == t.id, select: %{team_id: t.id, name: t.name, user_id: u.id})
+    |> Repo.all()
+    |> Enum.reject(&MapSet.member?(authors, &1.user_id))
+    |> Enum.uniq_by(& &1.team_id)
   end
 
-  # Put a handful of teams mid-puzzlet (an active, unresolved claim).
-  defp seed_in_progress(teams) do
-    from(z in Puzzlet,
-      join: p in Pole,
-      on: p.id == z.pole_id,
+  # First wave: round-robin players capturing still-unowned poles.
+  defp play_first_wave(poles, players) do
+    poles
+    |> Enum.with_index()
+    |> Enum.reduce([], fn {pole, i}, acc ->
+      player = Enum.at(players, rem(i, length(players)))
+      if play_capture(pole, player), do: [Map.put(pole, :player, player) | acc], else: acc
+    end)
+  end
+
+  # Contest wave: a different player scans an owned pole (→ real attack) and
+  # answers a spare puzzlet on it (→ real pole-loss + flip). Only fires on
+  # poles that still have an uncaptured puzzlet.
+  defp play_flips(_owned, players) when length(players) < 2, do: 0
+
+  defp play_flips(owned, players) do
+    owned
+    |> Enum.uniq_by(& &1.player.team_id)
+    |> Enum.reduce(0, fn o, acc ->
+      attacker = Enum.find(players, &(&1.team_id != o.player.team_id))
+      if attacker && play_capture(o, attacker), do: acc + 1, else: acc
+    end)
+  end
+
+  # Leave a few players mid-puzzlet — a real scan on a still-unowned pole
+  # that claims the puzzlet but never answers it.
+  defp play_in_progress(players) do
+    unowned_capturable_poles(length(players))
+    |> Enum.with_index()
+    |> Enum.reduce(0, fn {pole, i}, acc ->
+      player = Enum.at(players, rem(i, length(players)))
+
+      case Landgrab.scan_payload(pole.barcode, player.team_id, player.user_id) do
+        {:ok, %{active_puzzlet: %Puzzlet{}}} -> acc + 1
+        _ -> acc
+      end
+    end)
+  end
+
+  # One real scan → answer. Returns true on a capture; frees the claimed
+  # slot again if the answer path didn't capture, so capacity stays clear.
+  defp play_capture(pole, player) do
+    case Landgrab.scan_payload(pole.barcode, player.team_id, player.user_id) do
+      {:ok, %{active_puzzlet: %Puzzlet{id: id}}} ->
+        puzzlet = Repo.get(Puzzlet, id)
+
+        case Landgrab.record_attempt(puzzlet, player.team_id, player.user_id, puzzlet.answer) do
+          {:ok, %{result: :captured}} ->
+            true
+
+          _ ->
+            Landgrab.abandon_active_puzzlet(player.team_id, id)
+            false
+        end
+
+      _ ->
+        false
+    end
+  end
+
+  # Unowned poles that still have an uncaptured, validated, player-facing
+  # puzzlet — the ones a first-wave scan can capture.
+  defp unowned_capturable_poles(n) do
+    owned = from(c in Capture, join: z in Puzzlet, on: z.id == c.puzzlet_id, select: z.pole_id)
+
+    from(p in Pole,
+      join: z in Puzzlet,
+      on: z.pole_id == p.id,
       where: z.status == :validated and not z.validator_only,
       where: z.id not in subquery(from(c in Capture, select: c.puzzlet_id)),
-      where: z.id not in subquery(from(tp in TeamPuzzlet, select: tp.puzzlet_id)),
-      select: %{pole_id: p.id, puzzlet_id: z.id}
+      where: p.id not in subquery(owned),
+      distinct: p.id,
+      select: %{pole_id: p.id, barcode: p.barcode}
     )
     |> Repo.all()
-    |> Enum.take(length(teams))
-    |> Enum.with_index()
-    |> Enum.reduce(0, fn {cand, i}, acc ->
-      team = Enum.at(teams, rem(i, length(teams)))
-
-      result =
-        %TeamPuzzlet{}
-        |> TeamPuzzlet.changeset(%{
-          team_id: team.id,
-          puzzlet_id: cand.puzzlet_id,
-          pole_id: cand.pole_id,
-          started_by_user_id: team.member_id
-        })
-        |> Repo.insert()
-
-      case result do
-        {:ok, _} -> acc + 1
-        _ -> acc
-      end
-    end)
+    |> Enum.take(n)
   end
 
   # ── clock ───────────────────────────────────────────────────────────
@@ -456,17 +409,6 @@ defmodule Mix.Tasks.Landgrab.Seed do
   end
 
   # ── helpers ─────────────────────────────────────────────────────────
-  defp teams_with_members do
-    Repo.all(
-      from(t in Team,
-        join: u in User,
-        on: u.team_id == t.id,
-        distinct: t.id,
-        select: %{id: t.id, name: t.name, member_id: u.id}
-      )
-    )
-  end
-
   defp user!(email, role) do
     case Repo.get_by(User, email: email) do
       nil -> Mix.raise("#{role} user not found: #{email}")
