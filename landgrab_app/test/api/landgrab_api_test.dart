@@ -17,8 +17,7 @@ void main() {
 
   Map<String, dynamic> polePayload({bool locked = false, String? owner}) => {
         'id': 'p1',
-        'barcode': 'POLE-004',
-        'label': 'Esplanade Riel',
+        'name': 'Esplanade Riel',
         'latitude': 49.8898,
         'longitude': -97.1267,
         'current_owner_team_id': owner,
@@ -157,7 +156,7 @@ void main() {
       final outcome = await api.scan('POLE-004');
       expect(outcome, isA<ScanFound>());
       final found = outcome as ScanFound;
-      expect(found.result.pole.barcode, 'POLE-004');
+      expect(found.result.pole.name, 'Esplanade Riel');
       expect(found.result.activePuzzlet?.id, 'pz1');
     });
 
@@ -187,7 +186,7 @@ void main() {
 
       final outcome = await api.scan('POLE-004');
       expect(outcome, isA<ScanAlreadyOwner>());
-      expect((outcome as ScanAlreadyOwner).pole.label, 'Esplanade Riel');
+      expect((outcome as ScanAlreadyOwner).pole.name, 'Esplanade Riel');
     });
 
     test('returns ScanTeamLockedOut on 423 team_locked_out', () async {
@@ -244,7 +243,7 @@ void main() {
 
       final list = await api.listActivePuzzlets();
       expect(list, hasLength(1));
-      expect(list.first.pole.barcode, 'POLE-004');
+      expect(list.first.pole.name, 'Esplanade Riel');
       expect(list.first.activePuzzlet?.id, 'pz1');
     });
 

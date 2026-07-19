@@ -24,8 +24,7 @@ class _FakeApi extends LandgrabApi {
 
 Pole _pole() => Pole(
       id: 'p1',
-      barcode: 'POLE-004',
-      label: 'Esplanade Riel',
+      name: 'Esplanade Riel',
       latitude: 49.8898,
       longitude: -97.1267,
       currentOwnerTeamId: null,

@@ -7,8 +7,7 @@ void main() {
     test('parses all fields', () {
       final pole = Pole.fromJson({
         'id': 'p1',
-        'barcode': 'POLE-001',
-        'label': 'The Forks',
+        'name': 'The Forks',
         'latitude': 49.8889,
         'longitude': -97.1303,
         'current_owner_team_id': 't1',
@@ -16,34 +15,31 @@ void main() {
       });
 
       expect(pole.id, 'p1');
-      expect(pole.barcode, 'POLE-001');
-      expect(pole.label, 'The Forks');
+      expect(pole.name, 'The Forks');
       expect(pole.latitude, 49.8889);
       expect(pole.longitude, -97.1303);
       expect(pole.currentOwnerTeamId, 't1');
       expect(pole.locked, isFalse);
     });
 
-    test('tolerates null label and owner', () {
+    test('tolerates a null owner', () {
       final pole = Pole.fromJson({
         'id': 'p1',
-        'barcode': 'POLE-001',
-        'label': null,
+        'name': 'POLE-001',
         'latitude': 49.0,
         'longitude': -97.0,
         'current_owner_team_id': null,
         'locked': false,
       });
 
-      expect(pole.label, isNull);
+      expect(pole.name, 'POLE-001');
       expect(pole.currentOwnerTeamId, isNull);
     });
 
     test('coerces integer latitude/longitude', () {
       final pole = Pole.fromJson({
         'id': 'p1',
-        'barcode': 'b',
-        'label': null,
+        'name': 'b',
         'latitude': 49,
         'longitude': -97,
         'current_owner_team_id': null,
@@ -86,8 +82,7 @@ void main() {
       final r = ScanResult.fromJson({
         'pole': {
           'id': 'p1',
-          'barcode': 'b',
-          'label': null,
+          'name': 'b',
           'latitude': 49.0,
           'longitude': -97.0,
           'current_owner_team_id': null,
@@ -104,8 +99,7 @@ void main() {
       final r = ScanResult.fromJson({
         'pole': {
           'id': 'p1',
-          'barcode': 'b',
-          'label': 'Lab',
+          'name': 'Lab',
           'latitude': 49.0,
           'longitude': -97.0,
           'current_owner_team_id': null,
@@ -120,7 +114,7 @@ void main() {
         },
       });
 
-      expect(r.pole.label, 'Lab');
+      expect(r.pole.name, 'Lab');
       expect(r.activePuzzlet, isNotNull);
       expect(r.activePuzzlet!.id, 'pz1');
     });
