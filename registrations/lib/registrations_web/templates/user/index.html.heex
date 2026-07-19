@@ -25,7 +25,16 @@
           <td><%= user.id %></td>
           <td class="email"><%= user.email %></td>
           <td><%= user.voicepass %></td>
-          <td class="attending"><%= symbol_for_boolean(user.attending) %></td>
+          <td
+            class="attending"
+            data-sort={case user.attending do
+              true -> "0"
+              nil -> "1"
+              _ -> "2"
+            end}
+          >
+            <%= symbol_for_boolean(user.attending) %>
+          </td>
           <td class="risk-aversion"><%= user.risk_aversion %></td>
           <td class="accessibility-tags">
             <%= for tag <- user.accessibility_tags do %>
@@ -39,14 +48,18 @@
           <td class="team-emails"><%= user.team_emails %></td>
           <td class="source"><%= user.source %></td>
           <td class="comments"><%= user.comments %></td>
-          <td class="teamed">
+          <td class="teamed" data-sort={if user.team, do: "0", else: "1"}>
             <%= if user.team do %>
               ✓
             <% else %>
               ✘
             <% end %>
           </td>
-          <td class="app-opened" title={user.last_app_open_at && to_string(user.last_app_open_at)}>
+          <td
+            class="app-opened"
+            data-sort={(user.last_app_open_at && to_string(user.last_app_open_at)) || ""}
+            title={user.last_app_open_at && to_string(user.last_app_open_at)}
+          >
             <%= if user.last_app_open_at do %>
               <%= Calendar.strftime(user.last_app_open_at, "%b %-d %H:%M") %>
             <% else %>
@@ -65,3 +78,51 @@
     </tbody>
   </table>
 </div>
+
+<style>
+  .table-scroll table th { cursor: pointer; user-select: none; white-space: nowrap; }
+  .table-scroll table th[data-dir="asc"]::after { content: " \25B2"; font-size: 0.75em; }
+  .table-scroll table th[data-dir="desc"]::after { content: " \25BC"; font-size: 0.75em; }
+</style>
+
+<script>
+  // Client-side sort for the users table: click any header to sort by that
+  // column, click again to reverse. Cells may carry a `data-sort` key (used
+  // instead of their text) so booleans/dates order correctly; everything else
+  // sorts by text, numerically when both values look like numbers. Blanks
+  // sink to the bottom. Purely in the DOM — no request, no server changes.
+  (function () {
+    var table = document.querySelector(".table-scroll table");
+    if (!table || !table.tHead) return;
+    var tbody = table.tBodies[0];
+    var headers = table.tHead.rows[0].cells;
+
+    function key(row, i) {
+      var cell = row.cells[i];
+      if (!cell) return "";
+      var v = cell.getAttribute("data-sort");
+      return (v === null ? cell.textContent : v).trim();
+    }
+
+    function cmp(a, b, i) {
+      var x = key(a, i), y = key(b, i);
+      if (x === "" || y === "") return x === y ? 0 : x === "" ? 1 : -1;
+      var nx = parseFloat(x), ny = parseFloat(y);
+      if (!isNaN(nx) && !isNaN(ny) && "" + nx === x && "" + ny === y) return nx - ny;
+      return x.localeCompare(y, undefined, { numeric: true, sensitivity: "base" });
+    }
+
+    Array.prototype.forEach.call(headers, function (th, i) {
+      th.addEventListener("click", function () {
+        var asc = th.getAttribute("data-dir") !== "asc";
+        Array.prototype.forEach.call(headers, function (h) { h.removeAttribute("data-dir"); });
+        th.setAttribute("data-dir", asc ? "asc" : "desc");
+        var rows = Array.prototype.slice.call(tbody.rows);
+        rows.sort(function (a, b) { var c = cmp(a, b, i); return asc ? c : -c; });
+        var frag = document.createDocumentFragment();
+        rows.forEach(function (r) { frag.appendChild(r); });
+        tbody.appendChild(frag);
+      });
+    });
+  })();
+</script>
