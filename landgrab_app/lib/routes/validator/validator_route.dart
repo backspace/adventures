@@ -46,6 +46,9 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
   _ValidatorView _view = _ValidatorView.list;
   _Kind _kind = _Kind.all;
   _Sort _sortBy = _Sort.distance;
+  // Free-text filter over the assignment rows (list + map), matching the
+  // supervisor Content tab's search.
+  String _query = '';
 
   // Cached so the FutureBuilder doesn't reload the asset on every rebuild.
   Future<String>? _criteria;
@@ -198,6 +201,12 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
         ValidationStatus.rejected => 2,
       };
 
+  bool _matchesQuery(_TodoRow r) {
+    if (_query.isEmpty) return true;
+    return r.title.toLowerCase().contains(_query) ||
+        r.subtitle.toLowerCase().contains(_query);
+  }
+
   List<_TodoRow> get _rows {
     final v = _validations;
     if (v == null) return const [];
@@ -207,7 +216,7 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
       if (_kind != _Kind.poles)
         for (final zv in v.puzzletValidations)
           _TodoRow.puzzlet(zv, _openPuzzlet),
-    ];
+    ]..retainWhere(_matchesQuery);
     rows.sort((a, b) {
       // Needs-action first, always — decided work never jumps the queue.
       final rank = _actionRank(a.status).compareTo(_actionRank(b.status));
@@ -293,7 +302,20 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
             onSelectionChanged: (set) => _setView(set.first),
           ),
         ),
-        // The kind filter only applies to the assignment views.
+        // Search + kind filter only apply to the assignment views.
+        if (_view != _ValidatorView.criteria)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: TextField(
+              decoration: const InputDecoration(
+                isDense: true,
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Search assignments',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
+            ),
+          ),
         if (_view != _ValidatorView.criteria)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
