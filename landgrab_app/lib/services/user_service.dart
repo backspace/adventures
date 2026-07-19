@@ -74,8 +74,21 @@ class UserService {
     await _storage.write(key: _key(_userIdKey), value: userId);
     await _storage.write(key: _key(_userEmailKey), value: email);
     if (name != null) await _storage.write(key: _key(_userNameKey), value: name);
-    if (teamId != null) await _storage.write(key: _key(_teamIdKey), value: teamId);
-    if (teamName != null) await _storage.write(key: _key(_teamNameKey), value: teamName);
+    // Team is write-or-delete, not write-if-present: the sole caller
+    // (LandgrabApi.loadAndStoreMe) always passes the full /me snapshot,
+    // so a null here means "no team now" and must clear any previously
+    // stored team — otherwise a user removed from their team keeps
+    // showing the stale one (and the no-team guard never triggers).
+    if (teamId != null) {
+      await _storage.write(key: _key(_teamIdKey), value: teamId);
+    } else {
+      await _storage.delete(key: _key(_teamIdKey));
+    }
+    if (teamName != null) {
+      await _storage.write(key: _key(_teamNameKey), value: teamName);
+    } else {
+      await _storage.delete(key: _key(_teamNameKey));
+    }
     if (roles != null) {
       await _storage.write(key: _key(_rolesKey), value: roles.join(','));
     }
