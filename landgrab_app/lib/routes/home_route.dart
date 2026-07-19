@@ -257,8 +257,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     final old = list[index];
     final replaced = Pole(
       id: old.id,
-      barcode: old.barcode,
-      label: old.label,
+      name: old.name,
       latitude: old.latitude,
       longitude: old.longitude,
       currentOwnerTeamId: update.currentOwnerTeamId,
@@ -700,7 +699,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   Future<void> _giveUpActivePuzzlet(ScanResult entry) async {
     final puzzlet = entry.activePuzzlet;
     if (puzzlet == null) return;
-    final name = entry.pole.label ?? entry.pole.barcode;
+    final name = entry.pole.name;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -767,12 +766,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         : isMine
             ? GameplayStrings.zoneOwnerYou(name)
             : GameplayStrings.zoneOwnerOther(name);
-    // Only ever the label, never the barcode: the barcode is the scannable
-    // code, and reading it off the map would let someone claim the stake
-    // without physically being there.
-    final label = pole.label?.trim();
-    final message =
-        (label != null && label.isNotEmpty) ? '$label — $owner' : owner;
+    // The name is the author's label or a stable generated handle — never
+    // the barcode. The barcode is the scannable code, withheld server-side so
+    // reading it off the map can't let someone claim the stake without being
+    // physically there.
+    final message = '${pole.name} — $owner';
 
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       behavior: SnackBarBehavior.floating,
@@ -1089,7 +1087,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                       width: 24,
                                       height: 24,
                                       child: Tooltip(
-                                        message: pole.label ?? pole.barcode,
+                                        message: pole.name,
                                         child: _PoleDot(
                                           style: _styleForPole(pole),
                                           isMine: pole.currentOwnerTeamId ==
@@ -1447,7 +1445,7 @@ class _InProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = entry.pole.label ?? entry.pole.barcode;
+    final name = entry.pole.name;
     final instructions = entry.activePuzzlet?.instructions ?? '';
     return Card(
       elevation: 3,

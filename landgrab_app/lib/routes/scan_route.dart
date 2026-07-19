@@ -181,7 +181,7 @@ class _ScanRouteState extends State<ScanRoute> {
   }
 
   Future<void> _showAlreadyOwnerDialog(Pole pole) {
-    final name = pole.label ?? pole.barcode;
+    final name = pole.name;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -199,7 +199,7 @@ class _ScanRouteState extends State<ScanRoute> {
   }
 
   Future<void> _showOwnCreationDialog(Pole pole) {
-    final name = pole.label ?? pole.barcode;
+    final name = pole.name;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -219,7 +219,7 @@ class _ScanRouteState extends State<ScanRoute> {
   Future<void> _showAtCapacityDialog(List<ScanResult> active) {
     final current = active.isEmpty
         ? 'another puzzlet'
-        : (active.first.pole.label ?? active.first.pole.barcode);
+        : active.first.pole.name;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -237,7 +237,7 @@ class _ScanRouteState extends State<ScanRoute> {
   }
 
   Future<void> _showOutsideZoneDialog(Pole pole) {
-    final name = pole.label ?? pole.barcode;
+    final name = pole.name;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -255,7 +255,7 @@ class _ScanRouteState extends State<ScanRoute> {
   }
 
   Future<void> _showTeamLockedOutDialog(Pole pole) {
-    final name = pole.label ?? pole.barcode;
+    final name = pole.name;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,

@@ -230,7 +230,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       Scaffold(
         appBar: LandgrabAppBar(
           title:
-              '${PuzzletStrings.titlePrefix}  ${widget.pole.label ?? widget.pole.barcode}',
+              '${PuzzletStrings.titlePrefix}  ${widget.pole.name}',
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
