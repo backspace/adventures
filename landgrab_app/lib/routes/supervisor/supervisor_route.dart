@@ -140,13 +140,19 @@ class _Overview extends StatelessWidget {
             child: ListTile(
               leading:
                   const Icon(Icons.assignment_turned_in, color: Colors.purple),
+              // Fixed dark text — the purple background is fixed, so the
+              // dark theme's light default text would be near-invisible.
               title: Text(
                 '$submittedTotal awaiting your review',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
               subtitle: Text(
                 '${counts!.poleValidationsSubmitted} pole · '
                 '${counts!.puzzletValidationsSubmitted} puzzlet',
+                style: const TextStyle(color: Colors.black54),
               ),
             ),
           ),

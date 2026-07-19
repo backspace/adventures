@@ -556,7 +556,15 @@ class _ContendedBanner extends StatelessWidget {
         children: [
           Icon(Icons.groups_outlined, color: Colors.blue.shade700, size: 24),
           const SizedBox(width: 12),
-          Expanded(child: Text(PuzzletStrings.contendingTeams(count))),
+          // Explicit dark text — the light-blue background is fixed, but the
+          // dark app theme's default text colour is light, so without this
+          // the message renders light-on-light and is unreadable.
+          Expanded(
+            child: Text(
+              PuzzletStrings.contendingTeams(count),
+              style: TextStyle(color: Colors.blue.shade900),
+            ),
+          ),
         ],
       ),
     );

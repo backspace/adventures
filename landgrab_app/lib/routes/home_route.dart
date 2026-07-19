@@ -786,9 +786,16 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                       border: Border.all(color: Colors.amber.shade200),
                     ),
                     child: Row(children: [
-                      const Icon(Icons.warning_amber_outlined, size: 20),
+                      // Fixed dark colours — the amber background is fixed,
+                      // so theme-derived colours would render light-on-light
+                      // under the dark app theme.
+                      Icon(Icons.warning_amber_outlined,
+                          size: 20, color: Colors.amber.shade900),
                       const SizedBox(width: 8),
-                      Expanded(child: Text(p.warning!)),
+                      Expanded(
+                        child: Text(p.warning!,
+                            style: const TextStyle(color: Colors.black87)),
+                      ),
                     ]),
                   ),
                 ],

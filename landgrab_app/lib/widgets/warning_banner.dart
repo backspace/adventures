@@ -9,7 +9,6 @@ class WarningBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -26,8 +25,11 @@ class WarningBanner extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(
-                color: scheme.onSurface,
+              style: const TextStyle(
+                // Fixed dark text: the amber background is fixed, so this
+                // can't derive from the (dark) theme or it renders
+                // light-on-light. onSurface was written for a light theme.
+                color: Colors.black87,
                 fontWeight: FontWeight.w600,
                 fontSize: 15,
                 height: 1.3,
