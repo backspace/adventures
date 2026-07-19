@@ -270,6 +270,13 @@ class ScanStrings {
 
   static const appBarTitle = 'Scan a ${Terms.stake} barcode';
 
+  // Shown when someone scans before joining a team — they can't claim
+  // anything yet, so we warn instead of opening the ${Terms.relic}.
+  static const noTeamTitle = 'Join a team first';
+  static const noTeamBody =
+      'You need a team before you can claim ${Terms.stakes}. Join a team, '
+      'then scan again.';
+
   // Outcome snackbars
   static const poleFullyCaptured = 'This ${Terms.zone} is fully captured.';
   static const noActivePuzzlet = 'No active ${Terms.relics} for this ${Terms.stake}.';

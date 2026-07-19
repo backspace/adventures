@@ -41,6 +41,16 @@ class _ScanRouteState extends State<ScanRoute> {
     setState(() => _processing = true);
     await _controller.stop();
 
+    // No team → can't claim anything yet. Warn and return to the map
+    // rather than hitting the scan endpoint or opening a relic. (Gameplay
+    // has begun for them to reach the scanner, but they still need a team.)
+    if (widget.teamId == null) {
+      await _showNoTeamDialog();
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      return;
+    }
+
     try {
       final outcome = await widget.api.scan(barcode);
       if (!mounted) return;
@@ -127,6 +137,23 @@ class _ScanRouteState extends State<ScanRoute> {
   void _showSnack(String message) {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _showNoTeamDialog() {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(ScanStrings.noTeamTitle),
+        content: const Text(ScanStrings.noTeamBody),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text(ScanStrings.ok),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _showUnknownBarcodeDialog(String barcode) {
