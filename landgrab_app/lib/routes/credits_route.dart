@@ -3,6 +3,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/server_licenses_route.dart';
+import 'package:landgrab/services/env_service.dart';
 import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 
@@ -190,18 +191,36 @@ class _CreditsRouteState extends State<CreditsRoute> {
             ),
             const SizedBox(height: 32),
             Center(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: _onVersionTap,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Text(
-                    F.title,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: _onVersionTap,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        F.title,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  // The server this build is actually talking to. Surfaced so
+                  // a wrong environment — e.g. a stale staging override left by
+                  // the env switcher — is visible rather than silent.
+                  ValueListenableBuilder<String?>(
+                    valueListenable: EnvService.instance.currentApiRoot,
+                    builder: (context, root, _) => Text(
+                      root ?? '—',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
