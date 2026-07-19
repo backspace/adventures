@@ -1244,8 +1244,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                       key: ValueKey(pole.id),
                                       point:
                                           LatLng(pole.latitude, pole.longitude),
-                                      width: 24,
-                                      height: 24,
+                                      width: 12,
+                                      height: 12,
                                       // A direct tap on the marker always
                                       // names the stake — the only way to
                                       // reveal an unclaimed one, since its
@@ -1721,7 +1721,7 @@ class _PoleDot extends StatelessWidget {
           shape: BoxShape.circle,
           color: Colors.blueGrey.shade400,
           border:
-              Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.5),
+              Border.all(color: Colors.white.withValues(alpha: 0.6), width: 0.75),
         ),
       );
     }
@@ -1732,7 +1732,7 @@ class _PoleDot extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(
           color: borderColor.withValues(alpha: isMine ? 1 : 0.7),
-          width: isMine ? 3 : 1.5,
+          width: isMine ? 1.5 : 0.75,
         ),
       ),
       child: CustomPaint(
