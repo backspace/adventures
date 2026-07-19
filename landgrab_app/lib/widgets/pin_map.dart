@@ -613,26 +613,56 @@ class _PinIcon extends StatelessWidget {
             child: Icon(pin.icon, color: Colors.white, size: pin.size * 0.55),
           );
 
-    if (!pin.starred) return base;
+    final overlays = <Widget>[];
 
-    // Validator-only badge, hung just outside the top-right so it
-    // doesn't cover the pin's glyph. Matches the author scouting map.
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        base,
-        const Positioned(
-          right: -2,
-          top: -2,
-          child: DecoratedBox(
-            decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-            child: Padding(
-              padding: EdgeInsets.all(1),
-              child: Icon(Icons.star, size: 12, color: Colors.amber),
+    if (pin.starred) {
+      // Validator-only badge, hung just outside the top-right so it
+      // doesn't cover the pin's glyph. Matches the author scouting map.
+      overlays.add(const Positioned(
+        right: -2,
+        top: -2,
+        child: DecoratedBox(
+          decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+          child: Padding(
+            padding: EdgeInsets.all(1),
+            child: Icon(Icons.star, size: 12, color: Colors.amber),
+          ),
+        ),
+      ));
+    }
+
+    if (pin.difficulty != null) {
+      // Difficulty in tiny numerals at the bottom-right edge of the circle
+      // — opposite the star, so a validator-only pin can show both.
+      overlays.add(Positioned(
+        right: -3,
+        bottom: -3,
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: pin.color, width: 1),
+          ),
+          child: Text(
+            '${pin.difficulty}',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 8,
+              height: 1.2,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
             ),
           ),
         ),
-      ],
+      ));
+    }
+
+    if (overlays.isEmpty) return base;
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [base, ...overlays],
     );
   }
 }

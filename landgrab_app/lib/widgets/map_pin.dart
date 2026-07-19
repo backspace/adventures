@@ -34,6 +34,11 @@ class MapPin {
   /// which are hidden from players and set aside from validation work.
   final bool starred;
 
+  /// Puzzlet difficulty (1–10), shown as a tiny numeral badge at the edge
+  /// of the pin. Null when not annotated (poles, and maps that don't
+  /// surface difficulty).
+  final int? difficulty;
+
   const MapPin({
     required this.position,
     required this.label,
@@ -45,6 +50,7 @@ class MapPin {
     this.accuracyM,
     this.regionId,
     this.starred = false,
+    this.difficulty,
   });
 
   /// Standard pole marker: a barcode glyph in a filled circle.
@@ -74,6 +80,7 @@ class MapPin {
     VoidCallback? onTap,
     String? regionId,
     bool starred = false,
+    int? difficulty,
   }) =>
       MapPin(
         position: position,
@@ -85,6 +92,7 @@ class MapPin {
         filled: true,
         regionId: regionId,
         starred: starred,
+        difficulty: difficulty,
       );
 
   // Poles/puzzlets sit smaller than the old 36 bare pins so a dense
