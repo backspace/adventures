@@ -40,6 +40,15 @@ defmodule Registrations.Landgrab.SeedTest do
     %{author: author, validator: validator, assigner: assigner, players: players, poles: poles}
   end
 
+  defp insert_event(attrs) do
+    {:ok, event} =
+      %Event{}
+      |> Event.changeset(Map.merge(%{name: "Test event"}, Map.new(attrs)))
+      |> Repo.insert()
+
+    event
+  end
+
   test "playable validates draft/in_review puzzlets", %{author: author} do
     draft = insert(:puzzlet, creator_id: author.id, status: :draft)
     review = insert(:puzzlet, creator_id: author.id, status: :in_review)
@@ -106,16 +115,67 @@ defmodule Registrations.Landgrab.SeedTest do
     assert Repo.aggregate(TeamPuzzlet, :count) == 0
   end
 
-  test "clock moves the event start_time into the future" do
-    {:ok, event} =
-      %Event{}
-      |> Event.changeset(%{name: "Test event", start_time: ~U[2020-01-01 00:00:00Z]})
-      |> Repo.insert()
+  test "clock:M puts the start M minutes from now" do
+    event = insert_event(start_time: ~U[2020-01-01 00:00:00Z])
 
-    assert %{minutes: 30, events: 1} = Seed.clock(30)
+    assert %{anchor: :start_time, seconds: 1800, events: 1} = Seed.clock("30")
 
-    updated = Repo.get(Event, event.id)
-    assert DateTime.compare(updated.start_time, DateTime.utc_now()) == :gt
+    secs = DateTime.diff(Repo.get(Event, event.id).start_time, DateTime.utc_now())
+    assert_in_delta secs, 1800, 5
+  end
+
+  test "clock:M.SS reads the fractional part as seconds, not decimal minutes" do
+    event = insert_event(start_time: ~U[2020-01-01 00:00:00Z])
+
+    # 0.30 must be 30 seconds (not 0.3 min = 18s).
+    assert %{seconds: 30} = Seed.clock("0.30")
+
+    secs = DateTime.diff(Repo.get(Event, event.id).start_time, DateTime.utc_now())
+    assert_in_delta secs, 30, 5
+  end
+
+  test "a negative clock anchors on the endgame shrink end and shifts the whole window" do
+    # A coherent endgame window well in the past, its shape to be preserved.
+    event =
+      insert_event(
+        start_time: ~U[2020-01-01 00:00:00Z],
+        endgame_starts_at: ~U[2020-01-01 01:00:00Z],
+        endgame_ends_at: ~U[2020-01-01 01:30:00Z],
+        endgame_latitude: 51.0,
+        endgame_longitude: -114.0,
+        endgame_initial_radius_m: 800.0,
+        endgame_final_radius_m: 50.0
+      )
+
+    # -0.30 = 30 seconds before the shrink ends.
+    assert %{anchor: :endgame_ends_at, seconds: 30, events: 1} = Seed.clock("-0.30")
+
+    reloaded = Repo.get(Event, event.id)
+    ends_in = DateTime.diff(reloaded.endgame_ends_at, DateTime.utc_now())
+    assert_in_delta ends_in, 30, 5
+
+    # The 30-minute shrink window and its 1-hour lead from start are preserved.
+    assert DateTime.diff(reloaded.endgame_ends_at, reloaded.endgame_starts_at) == 1800
+    assert DateTime.diff(reloaded.endgame_starts_at, reloaded.start_time) == 3600
+  end
+
+  test "-0 is treated as negative (the sign, not the number, picks the anchor)" do
+    insert_event(
+      start_time: ~U[2020-01-01 00:00:00Z],
+      endgame_starts_at: ~U[2020-01-01 01:00:00Z],
+      endgame_ends_at: ~U[2020-01-01 01:30:00Z],
+      endgame_latitude: 51.0,
+      endgame_longitude: -114.0,
+      endgame_initial_radius_m: 800.0,
+      endgame_final_radius_m: 50.0
+    )
+
+    assert %{anchor: :endgame_ends_at, seconds: 0} = Seed.clock("-0")
+  end
+
+  test "a negative clock without an endgame window raises" do
+    insert_event(start_time: ~U[2020-01-01 00:00:00Z])
+    assert_raise RuntimeError, ~r/endgame window/, fn -> Seed.clock("-1") end
   end
 
   test "filler creates teamless users that names/teams can pick up" do
