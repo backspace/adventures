@@ -46,10 +46,41 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       [returned] = body["poles"]
 
       assert returned["id"] == pole.id
-      assert returned["barcode"] == pole.barcode
-      assert returned["label"] == "Corner"
+      # The scannable barcode must never be exposed to players — knowing it
+      # would let someone claim a stake without being there.
+      refute Map.has_key?(returned, "barcode")
+      # A labelled stake surfaces its label as its display name.
+      assert returned["name"] == "Corner"
       assert returned["current_owner_team_id"] == nil
       assert returned["locked"] == false
+    end
+
+    test "an unlabelled stake gets a generated name, not its barcode", %{conn: conn} do
+      pole = insert(:pole, label: nil)
+      _puzzlet = insert(:puzzlet, pole: pole, answer: "alpha", difficulty: 1)
+
+      body = conn |> get("/landgrab/poles") |> json_response(200)
+      [returned] = body["poles"]
+
+      refute Map.has_key?(returned, "barcode")
+      assert is_binary(returned["name"])
+      assert returned["name"] != pole.barcode
+      # Stable adjective-noun-number handle, with a 3-digit number.
+      assert returned["name"] =~ ~r/^[a-z]+-[a-z]+-\d{3}$/
+    end
+
+    test "generated stake names are unique across stakes", %{conn: conn} do
+      for _ <- 1..25, do: insert(:pole, label: nil)
+
+      names =
+        conn
+        |> get("/landgrab/poles")
+        |> json_response(200)
+        |> Map.fetch!("poles")
+        |> Enum.map(& &1["name"])
+
+      assert length(names) == 25
+      assert length(Enum.uniq(names)) == 25
     end
   end
 

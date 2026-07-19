@@ -13,6 +13,7 @@ defmodule Registrations.Landgrab do
   alias Registrations.Landgrab.PlayerStrings
   alias Registrations.Landgrab.Pole
   alias Registrations.Landgrab.Puzzlet
+  alias Registrations.Landgrab.PoleNames
   alias Registrations.Landgrab.TeamPuzzlet
   alias Registrations.Landgrab.Thumbnail
   alias Registrations.Repo
@@ -842,8 +843,8 @@ defmodule Registrations.Landgrab do
         "pole_contested",
         team_id,
         new_team_id,
-        PlayerStrings.pole_contested_body(name, display_name(pole)),
-        %{"pole_id" => pole.id, "pole_label" => display_name(pole)},
+        PlayerStrings.pole_contested_body(name, pole_name(pole)),
+        %{"pole_id" => pole.id, "pole_label" => pole_name(pole)},
         PlayerStrings.push_title("pole_contested")
       )
     end)
@@ -954,7 +955,7 @@ defmodule Registrations.Landgrab do
       PlayerStrings.puzzlet_taken_body(captor_name),
       %{
         "pole_id" => pole && pole.id,
-        "pole_label" => pole && display_name(pole),
+        "pole_label" => pole && pole_name(pole),
         "puzzlet_id" => puzzlet.id,
         "has_next" => !!has_next
       },
@@ -1036,7 +1037,7 @@ defmodule Registrations.Landgrab do
       PlayerStrings.puzzlet_withdrawn_body(),
       %{
         "pole_id" => pole && pole.id,
-        "pole_label" => pole && display_name(pole),
+        "pole_label" => pole && pole_name(pole),
         "puzzlet_id" => puzzlet.id,
         "has_next" => !!has_next
       },
@@ -1101,7 +1102,7 @@ defmodule Registrations.Landgrab do
   defp write_attack_signal(%Pole{} = pole, recipient_id, sender_id) do
     attacker_name = team_name(sender_id)
 
-    body = PlayerStrings.attack_body(attacker_name, display_name(pole))
+    body = PlayerStrings.attack_body(attacker_name, pole_name(pole))
 
     deliver_team_notification("attack", pole, recipient_id, sender_id, body, attacker_name)
   end
@@ -1115,7 +1116,7 @@ defmodule Registrations.Landgrab do
   defp maybe_signal_pole_lost(%Pole{} = pole, previous_owner_id, capturing_team_id) do
     captor_name = team_name(capturing_team_id)
 
-    body = PlayerStrings.pole_lost_body(captor_name, display_name(pole))
+    body = PlayerStrings.pole_lost_body(captor_name, pole_name(pole))
 
     deliver_team_notification(
       "pole_lost",
@@ -1151,7 +1152,6 @@ defmodule Registrations.Landgrab do
       %{
         "pole_id" => pole.id,
         "pole_label" => pole.label,
-        "pole_barcode" => pole.barcode,
         "sender_team_name" => sender_name
       },
       push_title(type)
@@ -1197,8 +1197,50 @@ defmodule Registrations.Landgrab do
 
   defp push_title(type), do: PlayerStrings.push_title(type)
 
-  defp display_name(%Pole{label: label}) when is_binary(label) and label != "", do: label
-  defp display_name(%Pole{barcode: barcode}), do: barcode
+  @doc """
+  Human name for a stake: its author-given label, or a stable generated name
+  from its id (`PoleNames`). Never the barcode — that's the scannable code,
+  and putting it on a player-facing surface (a notification persists!) would
+  let someone claim a stake without being there.
+  """
+  def pole_name(%Pole{label: label}) when is_binary(label) and label != "", do: label
+  def pole_name(%Pole{} = pole), do: PoleNames.generate(pole.id, pole_number(pole))
+
+  # A stake's unique, stable 3-digit number for its generated name.
+  #
+  # Deterministic but deliberately NOT tied to creation order — stakes are
+  # often created in nearby batches, and a creation ordinal would let those
+  # numbers reveal which stakes were made together. Instead we rank stakes by
+  # `md5(id)` (a stable pseudo-random order uncorrelated with time), then map
+  # that rank through a multiply coprime to 900 (a bijection) into 100–999.
+  # The result: every stake gets a distinct number, scattered across the
+  # range, that hints at neither creation order nor the total count.
+  defp pole_number(%Pole{id: id}), do: Map.fetch!(pole_number_map(), id)
+
+  # The ranking is identical for every stake in a given pole set, so we build
+  # the whole id→number map in one query and memoise it for the process. A
+  # single request handles the entire pole list in one process, so this turns
+  # the pole list from one COUNT per stake into a single query per request —
+  # and the pole set is fixed during the event, so it never churns.
+  defp pole_number_map do
+    case Process.get(:landgrab_pole_numbers) do
+      nil ->
+        map =
+          from(p in Pole,
+            order_by: [asc: fragment("md5(?::text)", p.id), asc: p.id],
+            select: p.id
+          )
+          |> Repo.all()
+          |> Enum.with_index()
+          |> Map.new(fn {pole_id, rank} -> {pole_id, rem(rank * 137, 900) + 100} end)
+
+        Process.put(:landgrab_pole_numbers, map)
+        map
+
+      map ->
+        map
+    end
+  end
 
   defp insert_capture(puzzlet_id, team_id) do
     %Capture{}

@@ -2,8 +2,9 @@ import 'package:landgrab/models/region.dart';
 
 class Pole {
   final String id;
-  final String barcode;
-  final String? label;
+  // Human display name (the author label, or a stable server-generated one).
+  // The scannable barcode is deliberately never sent to players.
+  final String name;
   final double latitude;
   final double longitude;
   final String? currentOwnerTeamId;
@@ -15,8 +16,7 @@ class Pole {
 
   Pole({
     required this.id,
-    required this.barcode,
-    required this.label,
+    required this.name,
     required this.latitude,
     required this.longitude,
     required this.currentOwnerTeamId,
@@ -27,8 +27,7 @@ class Pole {
 
   factory Pole.fromJson(Map<String, dynamic> json) => Pole(
         id: json['id'] as String,
-        barcode: json['barcode'] as String,
-        label: json['label'] as String?,
+        name: json['name'] as String,
         latitude: (json['latitude'] as num).toDouble(),
         longitude: (json['longitude'] as num).toDouble(),
         currentOwnerTeamId: json['current_owner_team_id'] as String?,

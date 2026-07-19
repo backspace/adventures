@@ -10,8 +10,10 @@ defmodule RegistrationsWeb.Landgrab.Render do
   def pole_state(%{pole: pole, current_owner_team_id: owner, locked?: locked} = state) do
     %{
       id: pole.id,
-      barcode: pole.barcode,
-      label: pole.label,
+      # A human name — the author label, or a stable generated one. The
+      # barcode is deliberately NOT sent to players: it's the scannable code,
+      # and exposing it would let someone claim a stake without being there.
+      name: Registrations.Landgrab.pole_name(pole),
       latitude: pole.latitude,
       longitude: pole.longitude,
       current_owner_team_id: owner,
