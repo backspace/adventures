@@ -11,7 +11,6 @@ if File.exist?(env_file)
   end
 end
 
-ALPHA_API_ROOT      = "https://poles-staging.chromatin.ca"
 PRODUCTION_API_ROOT = "https://landgrab.chromatin.ca"
 FLUTTER_PROJECT_DIR = File.expand_path("../..", __dir__)
 IPA_DIR             = File.join(FLUTTER_PROJECT_DIR, "build/ios/ipa")
@@ -65,43 +64,32 @@ def flutter_build_ipa(flavor:, api_root:, sentry_dsn:)
       "--dart-define=SENTRY_DSN=#{sentry_dsn}"
     )
   end
+  build_number
 end
 
-# Upload the freshly-built IPA to TestFlight and assign it to the
-# groups in TESTFLIGHT_GROUPS.
+# Upload the freshly-built IPA to TestFlight and assign it to the internal
+# group(s) in TESTFLIGHT_INTERNAL_GROUPS. Internal distribution needs no
+# review and is reliable.
 #
-# external: true is what puts a build in front of the public-link
-# "Event attendees" group. It requires a `changelog` ("what to test")
-# and submits the build for Beta App Review — the first external
-# build waits ~24-48h; later ones usually auto-clear. external: false
-# is the internal path (staging dogfood): no review, available in
-# minutes, but only to internal testers on the App Store Connect team.
-def deliver_to_testflight(external:)
-  # Internal and external groups are separate channels and can't be
-  # mixed on one build, so each lane reads its own var. Names must
-  # match App Store Connect → TestFlight exactly (Internal Testing vs
-  # External Testing group names).
-  var = external ? "TESTFLIGHT_EXTERNAL_GROUPS" : "TESTFLIGHT_INTERNAL_GROUPS"
-  groups = ENV.fetch(var, "").split(",").map(&:strip).reject(&:empty?)
+# We deliberately do NOT auto-distribute to the external group here.
+# "LNDGRB external" is a public-link group, and fastlane's
+# `distribute_external: true` silently fails to add builds to it — the build
+# lands BETA_APPROVED but never becomes a member, while fastlane still logs
+# "distributed". So external release is a manual step in App Store Connect
+# (adding the group by hand is the thing that actually sticks); `beta` prints
+# a reminder with the build number.
+def upload_to_internal
+  groups = ENV.fetch("TESTFLIGHT_INTERNAL_GROUPS", "").split(",").map(&:strip).reject(&:empty?)
 
   upload_to_testflight(
     api_key: asc_api_key,
     ipa: find_ipa,
     groups: groups,
-    distribute_external: external,
-    # Don't email/push external testers on every rebuild — we iterate often
-    # and it'd be spammy. The build still becomes available in TestFlight;
-    # testers just pull it when they open the app rather than being pinged.
-    notify_external_testers: false,
-    # Required by App Store Connect for external distribution; harmless
-    # for internal. Override per-build via TESTFLIGHT_CHANGELOG.
+    distribute_external: false,
+    # Sets the build's "What to Test"; override per-build via TESTFLIGHT_CHANGELOG.
     changelog: ENV.fetch("TESTFLIGHT_CHANGELOG", "Bug fixes and improvements."),
     skip_waiting_for_build_processing: false
   )
-rescue Spaceship::UnexpectedResponse => e
-  raise unless e.message.include?("Cannot add internal group to a build")
-  UI.important("TestFlight returned a known false-positive on internal group assignment.")
-  UI.important("The build was uploaded and the group is assigned — verify in App Store Connect.")
 end
 
 platform :ios do
@@ -129,16 +117,6 @@ platform :ios do
     )
   end
 
-  desc "Build with alpha flavor (staging API) and upload to TestFlight internal testers (staging dogfood, no review)."
-  lane :alpha do
-    flutter_build_ipa(
-      flavor: "alpha",
-      api_root: ALPHA_API_ROOT,
-      sentry_dsn: ENV.fetch("SENTRY_DSN", "")
-    )
-    deliver_to_testflight(external: false)
-  end
-
   desc "Push App Store Connect listing metadata (name, subtitle, description, etc.) without uploading a build."
   desc "Reads from fastlane/metadata/<locale>/<field>.txt — only files present get pushed; everything else stays as-is in App Store Connect."
   lane :metadata do
@@ -154,19 +132,26 @@ platform :ios do
     )
   end
 
-  # The ATTENDEE build. Named `beta` to match Android and to be
-  # honest: this goes to external *testers* via TestFlight, not the
-  # public App Store. (The build still uses the "production" Flutter
-  # flavor — real server, env switcher hidden.) There's deliberately
-  # no `production`/store-release lane: we're not releasing publicly.
-  desc "Build with production flavor (production API) and upload to TestFlight external testers — the attendee build."
-  desc "Distributes to the external (public-link) group and submits for Beta App Review; first build waits, later ones usually auto-clear."
+  # The ATTENDEE build. Named `beta` to match Android. It builds the
+  # production flavor (real server, env switcher hidden) and uploads to
+  # TestFlight *internal* testers only — external release to attendees is a
+  # deliberate manual step in App Store Connect (see upload_to_internal for
+  # why). There's no `production`/store-release lane: we're not releasing
+  # publicly. There's also no longer an `alpha`/staging lane — every
+  # TestFlight build is now production, so "the latest build" is never a
+  # staging one, and any build is safe to promote to attendees.
+  desc "Build the production (attendee) app and upload to TestFlight internal testers."
+  desc "External release is manual: App Store Connect → TestFlight → the build → add the 'LNDGRB external' group (see the printed reminder)."
   lane :beta do
-    flutter_build_ipa(
+    build_number = flutter_build_ipa(
       flavor: "production",
       api_root: PRODUCTION_API_ROOT,
       sentry_dsn: ENV.fetch("SENTRY_DSN", "")
     )
-    deliver_to_testflight(external: true)
+    upload_to_internal
+    UI.header("Build #{build_number} uploaded — internal testers have it now")
+    UI.important("To release to attendees, in App Store Connect:")
+    UI.important("  TestFlight → Build #{build_number} → add group 'LNDGRB external'.")
+    UI.important("(Auto-distribute to that public-link group is unreliable, so this stays manual on purpose.)")
   end
 end
