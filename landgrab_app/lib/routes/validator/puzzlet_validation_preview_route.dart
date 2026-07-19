@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:landgrab/widgets/scroll_insets.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
@@ -154,7 +155,7 @@ class _PuzzletValidationPreviewRouteState
     return Scaffold(
       appBar: LandgrabAppBar(title: 'Preview'),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: scrollInsets(context),
         children: [
           if (_p.warning != null && _p.warning!.trim().isNotEmpty) ...[
             WarningBanner(text: _p.warning!),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:landgrab/widgets/scroll_insets.dart';
 import 'package:flutter/services.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
@@ -233,7 +234,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
               '${PuzzletStrings.titlePrefix}  ${widget.pole.name}',
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: scrollInsets(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

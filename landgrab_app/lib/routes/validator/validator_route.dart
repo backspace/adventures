@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:landgrab/widgets/scroll_insets.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
@@ -276,7 +277,7 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
           return const Center(child: CircularProgressIndicator());
         }
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: scrollInsets(context),
           child: MarkdownView(snap.data!),
         );
       },

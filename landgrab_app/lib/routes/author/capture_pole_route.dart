@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:landgrab/widgets/scroll_insets.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/accessibility.dart';
@@ -254,7 +255,7 @@ class _CapturePoleRouteState extends State<CapturePoleRoute> {
 
   Widget _form(bool canSubmit) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: scrollInsets(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

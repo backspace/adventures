@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:landgrab/widgets/scroll_insets.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/accessibility.dart';
 import 'package:landgrab/models/draft.dart';
@@ -120,7 +121,7 @@ class _SupervisorEditPoleRouteState extends State<SupervisorEditPoleRoute> {
       child: Scaffold(
         appBar: LandgrabAppBar(title: 'Edit pole'),
         body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding: scrollInsets(context),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:landgrab/widgets/scroll_insets.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/validation.dart';
@@ -288,7 +289,7 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
-        padding: const EdgeInsets.all(20),
+        padding: scrollInsets(context),
         children: [
           Card(
             child: Padding(

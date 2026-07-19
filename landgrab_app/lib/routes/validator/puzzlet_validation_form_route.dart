@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:landgrab/widgets/scroll_insets.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart' show answerTypeFromString;
 import 'package:landgrab/models/validation.dart';
@@ -148,7 +149,7 @@ class _PuzzletValidationFormRouteState
     return Scaffold(
       appBar: LandgrabAppBar(title: 'Suggest edits'),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: scrollInsets(context),
         children: [
           Container(
             padding: const EdgeInsets.all(12),
