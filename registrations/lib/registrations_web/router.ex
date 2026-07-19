@@ -369,6 +369,7 @@ defmodule RegistrationsWeb.Router do
     get("/puzzlets/:id/validations", SupervisionController, :list_puzzlet_validations)
 
     post("/assignments", SupervisionController, :bulk_assign)
+    post("/reassignments", SupervisionController, :bulk_reassign)
     post("/poles/:id/validations", SupervisionController, :assign_pole)
     post("/puzzlets/:id/validations", SupervisionController, :assign_puzzlet)
 

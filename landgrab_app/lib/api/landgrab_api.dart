@@ -1107,6 +1107,27 @@ class LandgrabApi {
     );
   }
 
+  /// Bulk-reassign a validator's open validations. Pass [toValidatorId] to
+  /// hand them to another validator, or null to return them to the pool
+  /// (unassign). Returns how many moved vs. were skipped (unmovable).
+  Future<({int moved, int skipped})> bulkReassignValidations({
+    required List<String> poleValidationIds,
+    required List<String> puzzletValidationIds,
+    String? toValidatorId,
+  }) async {
+    final response =
+        await dio.post('/landgrab/supervision/reassignments', data: {
+      'pole_validation_ids': poleValidationIds,
+      'puzzlet_validation_ids': puzzletValidationIds,
+      if (toValidatorId != null) 'to_validator_id': toValidatorId,
+    });
+    final data = response.data as Map<String, dynamic>;
+    return (
+      moved: (data['moved'] as num).toInt(),
+      skipped: (data['skipped'] as num).toInt(),
+    );
+  }
+
   Future<List<ValidatorUser>> listValidators({String? excludeUserId}) async {
     final response = await dio.get('/landgrab/supervision/validators',
         queryParameters: {

@@ -109,6 +109,31 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
     |> json(%{error: %{code: "bad_request", detail: "validator_id is required"}})
   end
 
+  # Bulk reassign a validator's unfinished work: the given open validations
+  # move to `to_validator_id`, or back to the pool when it's null/blank.
+  # Unmovable items are skipped and counted (see Validations.bulk_reassign).
+  def bulk_reassign(conn, params) do
+    user = Pow.Plug.current_user(conn)
+    pole_validation_ids = List.wrap(params["pole_validation_ids"])
+    puzzlet_validation_ids = List.wrap(params["puzzlet_validation_ids"])
+
+    to_validator_id =
+      case params["to_validator_id"] do
+        "" -> nil
+        id -> id
+      end
+
+    json(
+      conn,
+      Validations.bulk_reassign(
+        pole_validation_ids,
+        puzzlet_validation_ids,
+        to_validator_id,
+        user.id
+      )
+    )
+  end
+
   def assign_pole(conn, %{"id" => pole_id, "validator_id" => validator_id}) do
     user = Pow.Plug.current_user(conn)
 

@@ -98,6 +98,57 @@ defmodule Registrations.Landgrab.Validations do
     do_reassign(v, new_validator_id, assigner_id, &PuzzletValidation.changeset/2)
   end
 
+  @doc """
+  Bulk-move a set of open validations off one validator: reassign them to
+  `to_validator_id`, or — when that's nil — unassign them back to the pool.
+  Ids that can't be moved (terminal status, or not unassignable because
+  work has begun) are skipped and counted rather than failing the batch.
+  Backs the supervisor's "reassign a validator's unfinished work" action.
+  """
+  def bulk_reassign(pole_validation_ids, puzzlet_validation_ids, to_validator_id, assigner_id) do
+    results =
+      Enum.map(pole_validation_ids, fn id ->
+        move_one(
+          get_pole_validation(id),
+          to_validator_id,
+          assigner_id,
+          &reassign_pole_validation/3,
+          &unassign_pole_validation/1
+        )
+      end) ++
+        Enum.map(puzzlet_validation_ids, fn id ->
+          move_one(
+            get_puzzlet_validation(id),
+            to_validator_id,
+            assigner_id,
+            &reassign_puzzlet_validation/3,
+            &unassign_puzzlet_validation/1
+          )
+        end)
+
+    %{
+      moved: Enum.count(results, &(&1 == :moved)),
+      skipped: Enum.count(results, &(&1 == :skipped))
+    }
+  end
+
+  defp move_one(nil, _to, _assigner, _reassign, _unassign), do: :skipped
+
+  # nil destination → return to the pool (unassign).
+  defp move_one(validation, nil, _assigner, _reassign, unassign) do
+    case unassign.(validation) do
+      {:ok, _} -> :moved
+      _ -> :skipped
+    end
+  end
+
+  defp move_one(validation, to_validator_id, assigner_id, reassign, _unassign) do
+    case reassign.(validation, to_validator_id, assigner_id) do
+      {:ok, _} -> :moved
+      _ -> :skipped
+    end
+  end
+
   defp do_reassign(validation, new_validator_id, assigner_id, changeset_fun) do
     if validation.status in ["assigned", "in_progress"] do
       result =

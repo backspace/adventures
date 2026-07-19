@@ -6,6 +6,7 @@ import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/supervisor/pin_action_sheet.dart';
 import 'package:landgrab/routes/supervisor/pole_supervision_detail_route.dart';
 import 'package:landgrab/routes/supervisor/puzzlet_supervision_detail_route.dart';
+import 'package:landgrab/routes/supervisor/validator_picker.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/attachments_badge.dart';
 import 'package:landgrab/widgets/map_pin.dart';
@@ -83,6 +84,12 @@ class _ContentTabState extends State<ContentTab> {
   _ListOrMap _view = _ListOrMap.list;
   _Kind _kind = _Kind.all;
   String? _status; // null = all statuses
+  // Validator filter (null = all validators). When set, the list/map
+  // narrows to that validator's items and a reassign bar appears so their
+  // unfinished (open) work can be moved in bulk.
+  String? _validatorId;
+  List<ValidatorUser> _validators = const [];
+  bool _reassigning = false;
 
   List<DraftPole>? _poles;
   List<DraftPuzzlet>? _puzzlets;
@@ -131,11 +138,18 @@ class _ContentTabState extends State<ContentTab> {
       final results = await Future.wait([
         widget.api.supervisionListPoles(),
         widget.api.supervisionListPuzzlets(),
+        widget.api.listValidators(),
       ]);
       if (!mounted) return;
       setState(() {
         _poles = results[0] as List<DraftPole>;
         _puzzlets = results[1] as List<DraftPuzzlet>;
+        _validators = results[2] as List<ValidatorUser>;
+        // Drop a stale validator filter if that validator is gone.
+        if (_validatorId != null &&
+            !_validators.any((v) => v.id == _validatorId)) {
+          _validatorId = null;
+        }
       });
     } catch (e) {
       if (!mounted) return;
@@ -169,11 +183,22 @@ class _ContentTabState extends State<ContentTab> {
     return fields.any((f) => f != null && f.toLowerCase().contains(_query));
   }
 
+  bool _matchesValidator(ActiveValidationSummary? v) =>
+      _validatorId == null || v?.validatorId == _validatorId;
+
+  String? _validatorLabel(String id) {
+    for (final v in _validators) {
+      if (v.id == id) return v.name ?? v.email;
+    }
+    return null;
+  }
+
   List<DraftPole> get _visiblePoles => _kind == _Kind.puzzlets
       ? const []
       : (_poles ?? const [])
           .where((p) =>
               _statusMatches(p.status, p.activeValidation) &&
+              _matchesValidator(p.activeValidation) &&
               _matchesQuery([p.label, p.barcode, p.notes]))
           .toList();
 
@@ -182,8 +207,15 @@ class _ContentTabState extends State<ContentTab> {
       : (_puzzlets ?? const [])
           .where((p) =>
               _statusMatches(p.status, p.activeValidation) &&
+              _matchesValidator(p.activeValidation) &&
               _matchesQuery([p.instructions, p.answer, p.warning]))
           .toList();
+
+  // 'open' = the validator hasn't finished it (still assigned or in
+  // progress); submitted/accepted/rejected/unfindable are work they did
+  // reach, so they're left alone by the bulk reassign.
+  static bool _isOpen(String status) =>
+      status == 'assigned' || status == 'in_progress';
 
   Future<void> _reloadAll() async {
     await _load();
@@ -209,6 +241,106 @@ class _ContentTabState extends State<ContentTab> {
     } finally {
       if (mounted) setState(() => _accepting = false);
     }
+  }
+
+  // ── Reassign a validator's unfinished work ─────────────────────
+
+  int get _openCountForFilteredValidator {
+    if (_validatorId == null) return 0;
+    bool open(ActiveValidationSummary? v) =>
+        v != null && v.validatorId == _validatorId && _isOpen(v.status);
+    return (_poles ?? const []).where((p) => open(p.activeValidation)).length +
+        (_puzzlets ?? const [])
+            .where((p) => open(p.activeValidation))
+            .length;
+  }
+
+  Future<void> _reassignOutstanding() async {
+    final poleIds = <String>[];
+    final puzzletIds = <String>[];
+    for (final p in _poles ?? const []) {
+      final v = p.activeValidation;
+      if (v != null && v.validatorId == _validatorId && _isOpen(v.status)) {
+        poleIds.add(v.id);
+      }
+    }
+    for (final p in _puzzlets ?? const []) {
+      final v = p.activeValidation;
+      if (v != null && v.validatorId == _validatorId && _isOpen(v.status)) {
+        puzzletIds.add(v.id);
+      }
+    }
+    final total = poleIds.length + puzzletIds.length;
+    if (total == 0) {
+      _snack('No open items to reassign for this validator.');
+      return;
+    }
+
+    final dest = await _chooseReassignDestination(total);
+    if (dest == null || !mounted) return;
+
+    setState(() => _reassigning = true);
+    try {
+      final result = await widget.api.bulkReassignValidations(
+        poleValidationIds: poleIds,
+        puzzletValidationIds: puzzletIds,
+        toValidatorId: dest.toValidatorId,
+      );
+      if (!mounted) return;
+      _snack('Reassigned ${result.moved}'
+          '${result.skipped > 0 ? ' · ${result.skipped} skipped' : ''}.');
+      // Their open work has moved, so this filter would now be near-empty
+      // — clear back to "all" for a sensible view.
+      setState(() => _validatorId = null);
+      await _reloadAll();
+    } on DioException catch (e) {
+      if (!mounted) return;
+      final detail = e.response?.data?['error']?['detail'] ?? e.message;
+      _snack('Could not reassign: $detail');
+    } finally {
+      if (mounted) setState(() => _reassigning = false);
+    }
+  }
+
+  /// null = cancelled. Otherwise [toValidatorId] is null for "return to the
+  /// pool" (unassign), or a validator id to hand the work to.
+  Future<({String? toValidatorId})?> _chooseReassignDestination(
+      int total) async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: Text('Move $total open item${total == 1 ? '' : 's'}'),
+              subtitle: const Text('Assigned or in-progress work only'),
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.person_add_alt),
+              title: const Text('Reassign to another validator'),
+              onTap: () => Navigator.of(ctx).pop('validator'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person_off_outlined),
+              title: const Text('Return to the pool (unassign)'),
+              onTap: () => Navigator.of(ctx).pop('pool'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (choice == null || !mounted) return null;
+    if (choice == 'pool') return (toValidatorId: null);
+    final picked = await pickValidator(context,
+        api: widget.api, excludeUserId: _validatorId);
+    if (picked == null) return null;
+    return (toValidatorId: picked.id);
+  }
+
+  void _snack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   // ── Draw-to-assign ─────────────────────────────────────────────
@@ -404,8 +536,73 @@ class _ContentTabState extends State<ContentTab> {
                       setState(() => _status = _status == s ? null : s),
                 ),
               ),
+            if (_validators.isNotEmpty) ...[
+              const SizedBox(height: 24, child: VerticalDivider(width: 16)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: PopupMenuButton<String?>(
+                  onSelected: (v) => setState(() => _validatorId = v),
+                  itemBuilder: (_) => [
+                    const PopupMenuItem<String?>(
+                      value: null,
+                      child: Text('All validators'),
+                    ),
+                    for (final v in _validators)
+                      PopupMenuItem<String?>(
+                        value: v.id,
+                        child: Text(v.name ?? v.email),
+                      ),
+                  ],
+                  child: Chip(
+                    avatar: const Icon(Icons.person_outline, size: 18),
+                    label: Text(_validatorId == null
+                        ? 'Validator'
+                        : (_validatorLabel(_validatorId!) ?? 'Validator')),
+                    backgroundColor: _validatorId == null
+                        ? null
+                        : Theme.of(context).colorScheme.secondaryContainer,
+                  ),
+                ),
+              ),
+            ],
           ]),
         ),
+        if (_validatorId != null)
+          Material(
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _openCountForFilteredValidator == 0
+                          ? 'No open items for '
+                              '${_validatorLabel(_validatorId!) ?? 'this validator'}'
+                          : '$_openCountForFilteredValidator open '
+                              '${_openCountForFilteredValidator == 1 ? 'item' : 'items'} · '
+                              '${_validatorLabel(_validatorId!) ?? 'this validator'}',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed:
+                        (_reassigning || _openCountForFilteredValidator == 0)
+                            ? null
+                            : _reassignOutstanding,
+                    icon: _reassigning
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.move_up),
+                    label: const Text('Reassign'),
+                  ),
+                ],
+              ),
+            ),
+          ),
         Expanded(
           child: _error != null
               ? Center(child: Text(_error!))
