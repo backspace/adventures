@@ -942,6 +942,15 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // whole point of a rehearsal is to play before the event begins.
     final preEvent = _event != null && !_event!.started;
 
+    // The "join a team" banner only earns its place near game time — hold it
+    // back until 6h before start so early browsers aren't nagged for days.
+    // Same time basis as the countdown (startTime vs now); shows through the
+    // event once inside the window.
+    final start = _event?.startTime;
+    final showNoTeamBanner = _teamName == null &&
+        start != null &&
+        start.difference(DateTime.now()) <= const Duration(hours: 6);
+
     return Scaffold(
       appBar: AppBar(
         title: ValueListenableBuilder<bool>(
@@ -1041,7 +1050,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           if (_error == null &&
               _poles != null &&
               _event != null &&
-              _teamName == null)
+              showNoTeamBanner)
             _noTeamBanner(),
           Expanded(
             child: _error != null
