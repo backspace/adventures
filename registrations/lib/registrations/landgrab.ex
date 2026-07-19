@@ -1151,7 +1151,7 @@ defmodule Registrations.Landgrab do
       body,
       %{
         "pole_id" => pole.id,
-        "pole_label" => pole.label,
+        "pole_label" => pole_name(pole),
         "sender_team_name" => sender_name
       },
       PlayerStrings.push_title(type, pole_name(pole))
@@ -1196,12 +1196,12 @@ defmodule Registrations.Landgrab do
   end
 
   @doc """
-  Human name for a stake: its author-given label, or a stable generated name
-  from its id (`PoleNames`). Never the barcode — that's the scannable code,
-  and putting it on a player-facing surface (a notification persists!) would
-  let someone claim a stake without being there.
+  A stake's name: always the stable generated handle from its id (`PoleNames`).
+  The author-given `label` is no longer used as a name anywhere — every surface
+  shows this synthetic name. Never the barcode — that's the scannable code, and
+  putting it on a player-facing surface (a notification persists!) would let
+  someone claim a stake without being there.
   """
-  def pole_name(%Pole{label: label}) when is_binary(label) and label != "", do: label
   def pole_name(%Pole{} = pole), do: PoleNames.generate(pole.id, pole_number(pole))
 
   # A stake's unique, stable 3-digit number for its generated name.

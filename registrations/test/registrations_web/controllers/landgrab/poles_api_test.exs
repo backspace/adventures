@@ -53,8 +53,10 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       # The scannable barcode must never be exposed to players — knowing it
       # would let someone claim a stake without being there.
       refute Map.has_key?(returned, "barcode")
-      # A labelled stake surfaces its label as its display name.
-      assert returned["name"] == "Corner"
+      # The author `label` is no longer used as a name — every stake shows the
+      # generated handle, even one that has a label.
+      assert returned["name"] =~ ~r/^[a-z]+-[a-z]+-\d{3}$/
+      assert returned["name"] != "Corner"
       assert returned["current_owner_team_id"] == nil
       assert returned["locked"] == false
     end
