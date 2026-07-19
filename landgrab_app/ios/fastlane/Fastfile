@@ -89,6 +89,10 @@ def deliver_to_testflight(external:)
     ipa: find_ipa,
     groups: groups,
     distribute_external: external,
+    # Don't email/push external testers on every rebuild — we iterate often
+    # and it'd be spammy. The build still becomes available in TestFlight;
+    # testers just pull it when they open the app rather than being pinged.
+    notify_external_testers: false,
     # Required by App Store Connect for external distribution; harmless
     # for internal. Override per-build via TESTFLIGHT_CHANGELOG.
     changelog: ENV.fetch("TESTFLIGHT_CHANGELOG", "Bug fixes and improvements."),
