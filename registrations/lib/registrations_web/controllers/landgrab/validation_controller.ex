@@ -44,7 +44,10 @@ defmodule RegistrationsWeb.Landgrab.ValidationController do
             latitude: p.latitude,
             longitude: p.longitude,
             warning: p.warning,
-            status: p.status
+            status: p.status,
+            # Same region context the scan payload carries, so the gameplay
+            # map can show a validator-only star's region on tap.
+            region: RegistrationsWeb.Landgrab.Render.region(p)
           }
         end)
     })

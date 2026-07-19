@@ -44,7 +44,12 @@ defmodule RegistrationsWeb.Landgrab.Render do
     }
   end
 
-  defp region(puzzlet) do
+  @doc """
+  A puzzlet's region context: its name, full breadcrumb, and the inherited
+  stanzas (root → self, empty rows dropped). `nil` when the puzzlet has no
+  region. Shared by the scan payload and the validator-only map layer.
+  """
+  def region(puzzlet) do
     case Regions.puzzlet_inheritance_payload(puzzlet) do
       %{region: nil} ->
         nil

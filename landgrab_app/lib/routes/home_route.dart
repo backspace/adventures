@@ -35,6 +35,7 @@ import 'package:landgrab/widgets/attack_rings_layer.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
 import 'package:landgrab/widgets/capture_rings_layer.dart';
 import 'package:landgrab/widgets/live_location_layer.dart';
+import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/team_style.dart';
 import 'package:landgrab/widgets/territory_layer.dart';
 
@@ -870,6 +871,13 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     )),
+                if (p.region != null) ...[
+                  const SizedBox(height: 16),
+                  RegionContextCard(
+                    breadcrumb: p.region!.breadcrumb,
+                    stanzas: p.region!.stanzas,
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Text(p.instructions, style: theme.textTheme.bodyLarge),
                 if (p.warning != null && p.warning!.trim().isNotEmpty) ...[
