@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'package:landgrab/app_info.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/server_licenses_route.dart';
 import 'package:landgrab/services/env_service.dart';
@@ -200,7 +201,9 @@ class _CreditsRouteState extends State<CreditsRoute> {
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Text(
-                        F.title,
+                        AppInfo.clientVersion.isEmpty
+                            ? F.title
+                            : '${F.title} · ${AppInfo.clientVersion}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
