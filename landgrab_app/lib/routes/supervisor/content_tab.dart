@@ -718,10 +718,15 @@ class _ContentTabState extends State<ContentTab> {
 
     if (rows.isEmpty) return const Center(child: Text('Nothing here.'));
 
+    // On narrow screens shorten "difficulty 3" to "dif3" to buy back room.
+    final compact = MediaQuery.sizeOf(context).width < 400;
+
     return ListView.builder(
       itemCount: rows.length,
       itemBuilder: (_, i) {
         final row = rows[i];
+        final subtitle =
+            compact ? row.subtitle.replaceFirst('difficulty ', 'dif') : row.subtitle;
         return ListTile(
           leading: SizedBox(
             width: 36,
@@ -733,10 +738,18 @@ class _ContentTabState extends State<ContentTab> {
             Expanded(
                 child: Text(row.title,
                     maxLines: 1, overflow: TextOverflow.ellipsis)),
-            ...row.badges,
+            ...row.extraBadges,
           ]),
-          subtitle:
-              Text(row.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+          subtitle: Row(children: [
+            StatusBadge(
+                label: row.statusLabel, color: row.statusColor, dense: true),
+            if (subtitle.isNotEmpty) ...[
+              const SizedBox(width: 6),
+              Expanded(
+                  child: Text(subtitle,
+                      maxLines: 1, overflow: TextOverflow.ellipsis)),
+            ],
+          ]),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -944,7 +957,13 @@ class _ContentRow {
   final IconData icon;
   final String title;
   final String subtitle;
-  final List<Widget> badges;
+  // Status shown as a small badge on the subtitle line (saves width on
+  // small screens); the icon already conveys pole-vs-puzzlet so the
+  // subtitle no longer repeats the type.
+  final String statusLabel;
+  final Color statusColor;
+  // Non-status indicators (comments, attachments) kept on the title line.
+  final List<Widget> extraBadges;
   final Future<void> Function(
       BuildContext, LandgrabApi, Future<void> Function()) open;
 
@@ -958,8 +977,17 @@ class _ContentRow {
   /// endpoint. Only set when [canQuickAccept] is true.
   final Future<void> Function(LandgrabApi)? accept;
 
-  _ContentRow._(this.icon, this.title, this.subtitle, this.badges, this.open,
-      {this.canQuickAccept = false, this.accept});
+  _ContentRow._(
+    this.icon,
+    this.title,
+    this.subtitle,
+    this.statusLabel,
+    this.statusColor,
+    this.extraBadges,
+    this.open, {
+    this.canQuickAccept = false,
+    this.accept,
+  });
 
   // "Clean" = submitted with nothing to review: no per-field corrections
   // (comments) and no overall note. Safe to accept without opening it.
@@ -972,11 +1000,14 @@ class _ContentRow {
   factory _ContentRow.pole(DraftPole p) {
     final v = p.activeValidation;
     final canQuickAccept = _cleanSubmitted(v);
+    final (statusLabel, statusColor) = _statusOf(p.status, v);
     return _ContentRow._(
       Icons.barcode_reader,
       p.label ?? p.barcode,
-      'Pole · ${p.barcode}${_assignedTo(v)}',
-      _badgesFor(p.status, v, p.attachmentIds.length),
+      '${p.barcode}${_assignedTo(v)}',
+      statusLabel,
+      statusColor,
+      _extraBadges(v, p.attachmentIds.length),
       (context, api, reload) async {
         final changed = await Navigator.of(context).push<bool>(
           MaterialPageRoute(
@@ -998,13 +1029,16 @@ class _ContentRow {
   factory _ContentRow.puzzlet(DraftPuzzlet p) {
     final v = p.activeValidation;
     final canQuickAccept = _cleanSubmitted(v);
+    final (statusLabel, statusColor) = _statusOf(p.status, v);
     return _ContentRow._(
       Icons.question_mark,
       p.instructions,
-      'Puzzlet · difficulty ${p.difficulty}'
+      'difficulty ${p.difficulty}'
       '${p.region != null ? ' · ${p.region!.breadcrumb}' : ''}'
       '${_assignedTo(v)}',
-      _badgesFor(p.status, v, p.attachmentIds.length),
+      statusLabel,
+      statusColor,
+      _extraBadges(v, p.attachmentIds.length),
       (context, api, reload) async {
         final changed = await Navigator.of(context).push<bool>(
           MaterialPageRoute(
@@ -1028,31 +1062,25 @@ class _ContentRow {
     return name == null ? '' : ' · $name';
   }
 
-  static List<Widget> _badgesFor(
-      DraftStatus status, ActiveValidationSummary? v, int attachmentCount) {
-    final tail = <Widget>[
+  // Status label + colour: the active validation's status when assigned,
+  // otherwise the draft's own status.
+  static (String, Color) _statusOf(DraftStatus status, ActiveValidationSummary? v) {
+    final label = v == null ? draftStatusLabel(status) : prettifyStatus(v.status);
+    return (label, statusColorFor(label));
+  }
+
+  // Comments + attachments — the non-status indicators kept on line one.
+  static List<Widget> _extraBadges(
+      ActiveValidationSummary? v, int attachmentCount) {
+    return [
+      if (v != null && v.commentCount > 0) ...[
+        const SizedBox(width: 4),
+        _CommentChip(v.commentCount),
+      ],
       if (attachmentCount > 0) ...[
         const SizedBox(width: 4),
         AttachmentsBadge(count: attachmentCount),
       ],
-    ];
-    if (v == null) {
-      return [
-        StatusBadge(
-          label: draftStatusLabel(status),
-          color: statusColorFor(draftStatusLabel(status)),
-        ),
-        ...tail,
-      ];
-    }
-    return [
-      StatusBadge(
-          label: prettifyStatus(v.status), color: statusColorFor(v.status)),
-      if (v.commentCount > 0) ...[
-        const SizedBox(width: 4),
-        _CommentChip(v.commentCount),
-      ],
-      ...tail,
     ];
   }
 }

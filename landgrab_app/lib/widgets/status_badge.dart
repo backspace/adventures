@@ -4,18 +4,31 @@ class StatusBadge extends StatelessWidget {
   final String label;
   final Color color;
 
-  const StatusBadge({super.key, required this.label, required this.color});
+  /// Tighter padding + smaller text — for list rows that sit the badge on
+  /// the second line to save horizontal room on small screens.
+  final bool dense;
+
+  const StatusBadge({
+    super.key,
+    required this.label,
+    required this.color,
+    this.dense = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: EdgeInsets.symmetric(
+        horizontal: dense ? 6 : 8,
+        vertical: dense ? 1 : 3,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
         border: Border.all(color: color.withValues(alpha: 0.5)),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: Text(label, style: TextStyle(color: color, fontSize: 12)),
+      child: Text(label,
+          style: TextStyle(color: color, fontSize: dense ? 11 : 12)),
     );
   }
 }

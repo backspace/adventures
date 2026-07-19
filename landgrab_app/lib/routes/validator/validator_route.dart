@@ -367,10 +367,14 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
     if (rows.isEmpty) {
       return const Center(child: Text('Nothing assigned to you yet.'));
     }
+    // On narrow screens shorten "difficulty 3" to "dif3" to buy back room.
+    final compact = MediaQuery.sizeOf(context).width < 400;
     return ListView.builder(
       itemCount: rows.length,
       itemBuilder: (_, i) {
         final row = rows[i];
+        final subtitle =
+            compact ? row.subtitle.replaceFirst('difficulty ', 'dif') : row.subtitle;
         return ListTile(
           leading: SizedBox(
             width: 36,
@@ -382,17 +386,22 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
             Expanded(
                 child: Text(row.title,
                     maxLines: 1, overflow: TextOverflow.ellipsis)),
-            StatusBadge(
-              label: validationStatusLabel(row.status),
-              color: statusColorFor(row.status.name),
-            ),
             if (row.attachmentCount > 0) ...[
               const SizedBox(width: 4),
               AttachmentsBadge(count: row.attachmentCount),
             ],
           ]),
-          subtitle:
-              Text(row.subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+          subtitle: Row(children: [
+            StatusBadge(
+              label: validationStatusLabel(row.status),
+              color: statusColorFor(row.status.name),
+              dense: true,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+                child: Text(subtitle,
+                    maxLines: 1, overflow: TextOverflow.ellipsis)),
+          ]),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -533,9 +542,11 @@ class _TodoRow {
       icon: Icons.barcode_reader,
       isPole: true,
       title: pole?.label ?? pole?.barcode ?? v.poleId,
-      subtitle: 'Pole'
-          '${pole != null ? ' · ${pole.barcode}' : ''}'
-          ' · ${v.comments.length} comment${v.comments.length == 1 ? '' : 's'}',
+      // Type ("pole") is dropped — the icon conveys it.
+      subtitle: [
+        if (pole != null) pole.barcode,
+        '${v.comments.length} comment${v.comments.length == 1 ? '' : 's'}',
+      ].join(' · '),
       status: v.status,
       attachmentCount: pole?.attachmentIds.length ?? 0,
       position: pole == null ? null : LatLng(pole.latitude, pole.longitude),
@@ -551,10 +562,12 @@ class _TodoRow {
       icon: Icons.question_mark,
       isPole: false,
       title: puzzlet?.instructions ?? v.puzzletId,
-      subtitle: 'Puzzlet'
-          '${puzzlet?.region != null ? ' · ${puzzlet!.region!.breadcrumb}' : ''}'
-          ' · difficulty ${puzzlet?.difficulty ?? '?'}'
-          ' · ${v.comments.length} comment${v.comments.length == 1 ? '' : 's'}',
+      // Type ("puzzlet") is dropped — the icon conveys it.
+      subtitle: [
+        if (puzzlet?.region != null) puzzlet!.region!.breadcrumb,
+        'difficulty ${puzzlet?.difficulty ?? '?'}',
+        '${v.comments.length} comment${v.comments.length == 1 ? '' : 's'}',
+      ].join(' · '),
       status: v.status,
       attachmentCount: puzzlet?.attachmentIds.length ?? 0,
       difficulty: puzzlet?.difficulty,
