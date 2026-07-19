@@ -14,7 +14,16 @@ typedef ScanRouteResult = ({String barcode, String? capturedPoleId});
 
 class ScanRoute extends StatefulWidget {
   final LandgrabApi api;
-  const ScanRoute({super.key, required this.api});
+  // Forwarded to the PuzzletRoute this scan opens, so it can pop back to the
+  // map if the puzzlet is resolved out from under the solver.
+  final Stream<String>? teamPuzzletsChanged;
+  final String? teamId;
+  const ScanRoute({
+    super.key,
+    required this.api,
+    this.teamPuzzletsChanged,
+    this.teamId,
+  });
 
   @override
   State<ScanRoute> createState() => _ScanRouteState();
@@ -95,6 +104,8 @@ class _ScanRouteState extends State<ScanRoute> {
                 pole: result.pole,
                 puzzlet: result.activePuzzlet!,
                 contendingTeams: result.contendingTeams,
+                teamPuzzletsChanged: widget.teamPuzzletsChanged,
+                teamId: widget.teamId,
               ),
             ),
           );

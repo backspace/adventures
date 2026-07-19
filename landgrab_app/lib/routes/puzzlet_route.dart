@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -20,12 +21,22 @@ class PuzzletRoute extends StatefulWidget {
   /// payload). Shown as a heads-up so the solver knows it's contested.
   final int contendingTeams;
 
+  /// The socket's team-puzzlets-changed stream (team ids) and our team id.
+  /// When an event for [teamId] arrives and this puzzlet is no longer in the
+  /// team's active set, it was resolved out from under us — a supervisor
+  /// withdrew it, or a rival captured it — so we return to the map. Null in
+  /// contexts without a live socket (e.g. tests).
+  final Stream<String>? teamPuzzletsChanged;
+  final String? teamId;
+
   const PuzzletRoute({
     super.key,
     required this.api,
     required this.pole,
     required this.puzzlet,
     this.contendingTeams = 0,
+    this.teamPuzzletsChanged,
+    this.teamId,
   });
 
   @override
@@ -45,11 +56,41 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   AttemptOutcome? _outcome;
   late List<String> _previousWrongAnswers;
 
+  StreamSubscription<String>? _resolutionSub;
+  // Set once we've committed to leaving (our own capture, or a resolution
+  // pop) so the two paths never fire twice.
+  bool _leaving = false;
+
   @override
   void initState() {
     super.initState();
     _attemptsRemaining = widget.puzzlet.attemptsRemaining;
     _previousWrongAnswers = List.of(widget.puzzlet.previousWrongAnswers);
+    _resolutionSub = widget.teamPuzzletsChanged?.listen(_onTeamPuzzletsChanged);
+  }
+
+  /// Live reaction to the team's active puzzlets changing on the server. If
+  /// this puzzlet is no longer ours to work, it was pulled out from under us
+  /// (supervisor withdrawal or a rival capture) — tell them and go back to
+  /// the map, where they can pick up the next one.
+  Future<void> _onTeamPuzzletsChanged(String teamId) async {
+    if (_leaving || teamId != widget.teamId) return;
+    final List<ScanResult> active;
+    try {
+      active = await widget.api.listActivePuzzlets();
+    } catch (_) {
+      return; // transient — leave the screen up
+    }
+    if (!mounted || _leaving) return;
+    final stillMine =
+        active.any((s) => s.activePuzzlet?.id == widget.puzzlet.id);
+    if (stillMine) return;
+
+    _leaving = true;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text(PuzzletStrings.noLongerAvailable)),
+    );
+    Navigator.of(context).maybePop(false);
   }
 
   /// Correct answer: no text — celebrate with the team-colour flood +
@@ -58,6 +99,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   /// a bare test harness with a single route doesn't underflow the
   /// navigator.
   void _celebrateAndPop() {
+    _leaving = true;
     final random = math.Random();
     setState(() {
       // A varying tilt so each capture's stamp lands a little
@@ -165,6 +207,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
 
   @override
   void dispose() {
+    _resolutionSub?.cancel();
     _answerController.dispose();
     super.dispose();
   }

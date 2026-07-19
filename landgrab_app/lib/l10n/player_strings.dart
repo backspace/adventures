@@ -364,6 +364,9 @@ class PuzzletStrings {
   static const notActive = 'Scan this ${Terms.stake} to begin before answering.';
   static const withdrawn =
       'This ${Terms.relic} has been withdrawn from the simulation.';
+  // Shown when the puzzlet is resolved out from under you (withdrawn, or a
+  // rival captured it) while you're on its screen and we return to the map.
+  static const noLongerAvailable = 'This ${Terms.relic} is no longer available.';
   static const ownCreation = "You made this one — you can't capture it.";
 
   // Fallbacks for submissions that fail in ways the app doesn't

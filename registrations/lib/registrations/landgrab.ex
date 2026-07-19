@@ -936,24 +936,30 @@ defmodule Registrations.Landgrab do
   capturing. Captures already made stand; withdrawal is forward-looking.
   """
   def withdraw_puzzlet(puzzlet_id) do
-    Repo.transaction(fn ->
-      case Repo.get(Puzzlet, puzzlet_id) do
-        nil ->
-          Repo.rollback(:not_found)
+    result =
+      Repo.transaction(fn ->
+        case Repo.get(Puzzlet, puzzlet_id) do
+          nil ->
+            Repo.rollback(:not_found)
 
-        %Puzzlet{status: :withdrawn} ->
-          Repo.rollback(:already_withdrawn)
+          %Puzzlet{status: :withdrawn} ->
+            Repo.rollback(:already_withdrawn)
 
-        %Puzzlet{} = puzzlet ->
-          {:ok, updated} =
+          %Puzzlet{} = puzzlet ->
             puzzlet
             |> Ecto.Changeset.change(status: :withdrawn)
-            |> Repo.update()
+            |> Repo.update!()
+        end
+      end)
 
-          resolve_withdrawn_puzzlet(updated)
-          updated
-      end
-    end)
+    # Notify + free teams AFTER the status change commits (like capture
+    # resolution) — so a client that refetches its active puzzlets on the
+    # broadcast sees the freed rows, not the still-open pre-commit state.
+    with {:ok, updated} <- result do
+      resolve_withdrawn_puzzlet(updated)
+    end
+
+    result
   end
 
   # Withdrawn: notify every team working the puzzlet that it's gone (with the

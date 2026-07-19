@@ -581,7 +581,13 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
 
   Future<void> _openScanner() async {
     final result = await Navigator.of(context).push<ScanRouteResult>(
-      MaterialPageRoute(builder: (_) => ScanRoute(api: widget.api)),
+      MaterialPageRoute(
+        builder: (_) => ScanRoute(
+          api: widget.api,
+          teamPuzzletsChanged: _socket?.teamPuzzletsChanged,
+          teamId: _teamId,
+        ),
+      ),
     );
     if (result == null || !mounted) return;
     await _load();
@@ -641,6 +647,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           pole: entry.pole,
           puzzlet: puzzlet,
           contendingTeams: entry.contendingTeams,
+          teamPuzzletsChanged: _socket?.teamPuzzletsChanged,
+          teamId: _teamId,
         ),
       ),
     );
@@ -659,6 +667,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       final entry = await widget.api.assignActivePuzzlet(poleId);
       if (!mounted) return;
       _refreshActivePuzzlets();
+      // Clear the "withdrawn / no longer available" snackbars from the pole
+      // we just left — they live on the root messenger and would otherwise
+      // linger over the fresh puzzlet screen we're about to open.
+      ScaffoldMessenger.of(context).clearSnackBars();
       await _openActivePuzzlet(entry);
     } catch (e) {
       if (!mounted) return;
