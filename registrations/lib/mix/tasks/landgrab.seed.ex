@@ -14,9 +14,9 @@ defmodule Mix.Tasks.Landgrab.Seed do
 
     * playable        validate every draft/in_review puzzlet and attach the
                       loose (non-validator-only) ones to their nearest pole
-    * teams           build teams for teamless users (mix landgrab.build_teams)
+    * teams           build teams for teamless users through the team builder
     * validations:N   assign N validated, uncaptured puzzlets to the test
-                      validator (in_review + assigned); idempotent
+                      validator to fill their queue; idempotent
     * captures:N      partial gameplay — capture N poles spread across the
                       teams, with a few active attacks and in-progress puzzlets
     * clock           set the event start_time to one hour from now
@@ -27,34 +27,17 @@ defmodule Mix.Tasks.Landgrab.Seed do
     * validation = validations
     * midgame    = playable teams clock captures
 
+  The step logic lives in `Registrations.Landgrab.Seed` (this task is a
+  thin CLI over it, and `Registrations.Landgrab.SeedTest` exercises it).
+
   LOCAL ONLY. Refuses to run unless the Repo database looks like a
   *_dev / *_test database — it never touches a real environment (and mix
   isn't present in a release anyway).
   """
   use Mix.Task
 
-  import Ecto.Query
-
-  alias Registrations.Landgrab
-  alias Registrations.Landgrab.Capture
-  alias Registrations.Landgrab.Notification
-  alias Registrations.Landgrab.Pole
-  alias Registrations.Landgrab.Puzzlet
-  alias Registrations.Landgrab.TeamPuzzlet
-  alias Registrations.Landgrab.Validations
-  alias Registrations.Landgrab.Validations.PuzzletValidation
+  alias Registrations.Landgrab.Seed
   alias Registrations.Repo
-  alias RegistrationsWeb.Team
-  alias RegistrationsWeb.User
-
-  @validator_email "buck.doyle+validator@gmail.com"
-  @assigner_email "b@chromatin.ca"
-
-  # Word banks for memorable two-word team names ("correct horse" style).
-  @adjectives ~w(correct brave quiet sly amber velvet crimson lucky mellow rustic
-                 cosmic feral gentle jolly nimble plucky rugged spry vivid witty)
-  @nouns ~w(horse battery otter river staple ember pixel comet meadow lantern
-            walrus thistle harbor badger cinder marble sparrow tundra cactus falcon)
 
   @presets %{
     "gameplay" => ~w(playable teams clock),
@@ -96,7 +79,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       (non-validator-only) ones to their nearest pole
       teams           build teams for every teamless user
       validations:N   assign N validated, uncaptured puzzlets to the test
-                      validator, as in_review + assigned  (40)
+                      validator (fills their queue; puzzlets stay validated)  (40)
       captures:N      partial gameplay — capture N poles spread across the teams,
                       with attacks, pole-losses, and in-progress claims  (20)
       clear           remove ALL captures, in-progress claims, and the attack /
@@ -136,285 +119,52 @@ defmodule Mix.Tasks.Landgrab.Seed do
     end
   end
 
-  defp run_step({"playable", _}), do: playable()
-  defp run_step({"teams", _}), do: teams()
-  defp run_step({"validations", n}), do: validations(n || 40)
-  defp run_step({"captures", n}), do: captures(n || 20)
-  defp run_step({"clear", _}), do: clear()
-  defp run_step({"clock", n}), do: clock(n || 60)
-  defp run_step({"filler", n}), do: filler(n || 5)
-  defp run_step({"names", _}), do: names()
-  defp run_step({other, _}), do: Mix.raise("Unknown step or preset: #{inspect(other)}")
-
-  # ── playable ────────────────────────────────────────────────────────
-  defp playable do
-    {validated, _} =
-      Repo.update_all(
-        from(z in Puzzlet, where: z.status in [:draft, :in_review]),
-        set: [status: :validated, updated_at: now()]
-      )
-
-    attached = attach_loose_puzzlets()
-    Mix.shell().info("playable: validated #{validated} puzzlet(s), attached #{attached} to poles.")
+  # ── steps: run through Registrations.Landgrab.Seed, then report ─────
+  defp run_step({"playable", _}) do
+    %{validated: v, attached: a} = Seed.playable()
+    Mix.shell().info("playable: validated #{v} puzzlet(s), attached #{a} to poles.")
   end
 
-  defp attach_loose_puzzlets do
-    pole_ids = Repo.all(from(p in Pole, select: p.id))
-
-    located_poles =
-      Repo.all(
-        from(p in Pole,
-          where: not is_nil(p.latitude) and not is_nil(p.longitude),
-          select: %{id: p.id, lat: p.latitude, lng: p.longitude}
-        )
-      )
-
-    from(z in Puzzlet,
-      where: is_nil(z.pole_id) and not z.validator_only,
-      select: %{id: z.id, lat: z.latitude, lng: z.longitude}
-    )
-    |> Repo.all()
-    |> Enum.reduce(0, fn z, acc ->
-      target =
-        cond do
-          z.lat && z.lng && located_poles != [] ->
-            Enum.min_by(located_poles, fn p -> sq(p.lat - z.lat) + sq(p.lng - z.lng) end).id
-
-          pole_ids != [] ->
-            # Locationless: spread deterministically rather than piling on one.
-            Enum.at(pole_ids, rem(:erlang.phash2(z.id), length(pole_ids)))
-
-          true ->
-            nil
-        end
-
-      if target do
-        Repo.update_all(from(p in Puzzlet, where: p.id == ^z.id),
-          set: [pole_id: target, updated_at: now()]
-        )
-
-        acc + 1
-      else
-        acc
-      end
-    end)
+  defp run_step({"teams", _}) do
+    %{built: built} = Seed.teams()
+    Mix.shell().info("teams: built #{built} team(s) for teamless users.")
   end
 
-  # ── teams ───────────────────────────────────────────────────────────
-  defp teams, do: Mix.Task.rerun("landgrab.build_teams", [])
-
-  # ── filler users / team names ───────────────────────────────────────
-  # Create N teamless filler users, each with a memorable proposed team
-  # name so the `teams` step builds a nicely-named solo team from it.
-  defp filler(n) do
-    names = two_word_names(n, team_and_proposed_names())
-
-    created =
-      Enum.reduce(names, 0, fn name, acc ->
-        email = "filler+" <> String.replace(name, " ", "-") <> "@example.test"
-
-        if Repo.get_by(User, email: email) do
-          acc
-        else
-          {:ok, _} =
-            %User{}
-            |> Ecto.Changeset.change(%{email: email, proposed_team_name: name})
-            |> Repo.insert()
-
-          acc + 1
-        end
-      end)
-
-    Mix.shell().info("filler: created #{created} teamless filler user(s) — run 'teams' to build their teams.")
+  defp run_step({"validations", n}) do
+    %{assigned: assigned, validator: email} = Seed.validations(n || 40)
+    Mix.shell().info("validations: assigned #{assigned} puzzlet(s) to #{email}.")
   end
 
-  # Rename the team-builder's "FIXME" placeholder teams (loners who gave no
-  # proposed name) to memorable two-word names.
-  defp names do
-    fixme = Repo.all(from(t in Team, where: t.name == "FIXME", select: t.id))
-
-    fixme
-    |> Enum.zip(two_word_names(length(fixme), existing_team_names()))
-    |> Enum.each(fn {id, name} ->
-      Repo.update_all(from(t in Team, where: t.id == ^id), set: [name: name])
-    end)
-
-    Mix.shell().info("names: renamed #{length(fixme)} FIXME team(s).")
-  end
-
-  # ── validations ─────────────────────────────────────────────────────
-  defp validations(n) do
-    validator = user!(@validator_email, "validator")
-    assigner = user!(@assigner_email, "assigner")
-
-    open =
-      from(v in PuzzletValidation,
-        where: v.validator_id == ^validator.id and v.status not in ["accepted", "rejected"],
-        select: v.puzzlet_id
-      )
-
-    captured = from(c in Capture, select: c.puzzlet_id)
-
-    assigned =
-      from(z in Puzzlet,
-        where: z.status == :validated and not z.validator_only,
-        where: z.id not in subquery(captured),
-        where: z.id not in subquery(open),
-        select: z.id,
-        limit: ^n
-      )
-      |> Repo.all()
-      |> Enum.reduce(0, fn puzzlet_id, acc ->
-        case Validations.assign_puzzlet_validation(puzzlet_id, validator.id, assigner.id) do
-          {:ok, _} -> acc + 1
-          _ -> acc
-        end
-      end)
-
-    Mix.shell().info("validations: assigned #{assigned} puzzlet(s) to #{validator.email}.")
-  end
-
-  # ── captures (partial gameplay, driven through the REAL game) ───────
-  # Rather than inserting Capture/Notification rows by hand, this plays the
-  # actual scan → answer flow (`scan_payload` then `record_attempt`), so
-  # every capture, attack, pole-loss, pole-contested signal, in-progress
-  # claim, and broadcast is produced by the real game with its real copy.
-  # Slower, but true to real-world conditions.
-  defp captures(n) do
-    players = player_teams()
-
-    if players == [] do
-      Mix.raise(
-        "captures needs a team with a non-author member — run 'teams'/'filler' first. " <>
-          "(The content author's own team can't answer its own puzzlets.)"
-      )
-    end
-
-    owned = play_first_wave(unowned_capturable_poles(n), players)
-    flips = play_flips(owned, players)
-    in_progress = play_in_progress(players)
+  defp run_step({"captures", n}) do
+    %{captured: captured, flips: flips, in_progress: in_progress} = Seed.captures(n || 20)
 
     Mix.shell().info(
-      "captures: #{length(owned)} pole(s) captured, #{flips} contested/flipped, " <>
+      "captures: #{captured} pole(s) captured, #{flips} contested/flipped, " <>
         "#{in_progress} left in-progress — all via real scan→answer gameplay."
     )
   end
 
-  # Teams that can actually play: one with a member who didn't author the
-  # content (record_attempt rejects a puzzlet's or pole's creator).
-  defp player_teams do
-    authors =
-      MapSet.new(
-        Repo.all(from(z in Puzzlet, select: z.creator_id)) ++
-          Repo.all(from(p in Pole, select: p.creator_id))
-      )
-
-    from(t in Team, join: u in User, on: u.team_id == t.id, select: %{team_id: t.id, name: t.name, user_id: u.id})
-    |> Repo.all()
-    |> Enum.reject(&MapSet.member?(authors, &1.user_id))
-    |> Enum.uniq_by(& &1.team_id)
-  end
-
-  # First wave: round-robin players capturing still-unowned poles.
-  defp play_first_wave(poles, players) do
-    poles
-    |> Enum.with_index()
-    |> Enum.reduce([], fn {pole, i}, acc ->
-      player = Enum.at(players, rem(i, length(players)))
-      if play_capture(pole, player), do: [Map.put(pole, :player, player) | acc], else: acc
-    end)
-  end
-
-  # Contest wave: a different player scans an owned pole (→ real attack) and
-  # answers a spare puzzlet on it (→ real pole-loss + flip). Only fires on
-  # poles that still have an uncaptured puzzlet.
-  defp play_flips(_owned, players) when length(players) < 2, do: 0
-
-  defp play_flips(owned, players) do
-    owned
-    |> Enum.uniq_by(& &1.player.team_id)
-    |> Enum.reduce(0, fn o, acc ->
-      attacker = Enum.find(players, &(&1.team_id != o.player.team_id))
-      if attacker && play_capture(o, attacker), do: acc + 1, else: acc
-    end)
-  end
-
-  # Leave a few players mid-puzzlet — a real scan on a still-unowned pole
-  # that claims the puzzlet but never answers it.
-  defp play_in_progress(players) do
-    unowned_capturable_poles(length(players))
-    |> Enum.with_index()
-    |> Enum.reduce(0, fn {pole, i}, acc ->
-      player = Enum.at(players, rem(i, length(players)))
-
-      case Landgrab.scan_payload(pole.barcode, player.team_id, player.user_id) do
-        {:ok, %{active_puzzlet: %Puzzlet{}}} -> acc + 1
-        _ -> acc
-      end
-    end)
-  end
-
-  # One real scan → answer. Returns true on a capture; frees the claimed
-  # slot again if the answer path didn't capture, so capacity stays clear.
-  defp play_capture(pole, player) do
-    case Landgrab.scan_payload(pole.barcode, player.team_id, player.user_id) do
-      {:ok, %{active_puzzlet: %Puzzlet{id: id}}} ->
-        puzzlet = Repo.get(Puzzlet, id)
-
-        case Landgrab.record_attempt(puzzlet, player.team_id, player.user_id, puzzlet.answer) do
-          {:ok, %{result: :captured}} ->
-            true
-
-          _ ->
-            Landgrab.abandon_active_puzzlet(player.team_id, id)
-            false
-        end
-
-      _ ->
-        false
-    end
-  end
-
-  # Unowned poles that still have an uncaptured, validated, player-facing
-  # puzzlet — the ones a first-wave scan can capture.
-  defp unowned_capturable_poles(n) do
-    owned = from(c in Capture, join: z in Puzzlet, on: z.id == c.puzzlet_id, select: z.pole_id)
-
-    from(p in Pole,
-      join: z in Puzzlet,
-      on: z.pole_id == p.id,
-      where: z.status == :validated and not z.validator_only,
-      where: z.id not in subquery(from(c in Capture, select: c.puzzlet_id)),
-      where: p.id not in subquery(owned),
-      distinct: p.id,
-      select: %{pole_id: p.id, barcode: p.barcode}
-    )
-    |> Repo.all()
-    |> Enum.take(n)
-  end
-
-  # ── clock ───────────────────────────────────────────────────────────
-  defp clock(minutes) do
-    Repo.query!("UPDATE landgrab.events SET start_time = NOW() + $1 * INTERVAL '1 minute'", [minutes])
-    Mix.shell().info("clock: event start_time set to #{minutes} minute(s) from now.")
-  end
-
-  # ── clear (fresh, uncaptured map) ───────────────────────────────────
-  defp clear do
-    {tp, _} = Repo.delete_all(TeamPuzzlet)
-    {caps, _} = Repo.delete_all(Capture)
-    {notes, _} = Repo.delete_all(from(n in Notification, where: n.type in ["attack", "pole_lost"]))
-
+  defp run_step({"clear", _}) do
+    %{captures: caps, in_progress: tp, notifications: notes} = Seed.clear()
     Mix.shell().info("clear: removed #{caps} capture(s), #{tp} in-progress, #{notes} gameplay notification(s).")
   end
 
-  # ── helpers ─────────────────────────────────────────────────────────
-  defp user!(email, role) do
-    case Repo.get_by(User, email: email) do
-      nil -> Mix.raise("#{role} user not found: #{email}")
-      user -> user
-    end
+  defp run_step({"clock", n}) do
+    %{minutes: minutes} = Seed.clock(n || 60)
+    Mix.shell().info("clock: event start_time set to #{minutes} minute(s) from now.")
   end
+
+  defp run_step({"filler", n}) do
+    %{created: created} = Seed.filler(n || 5)
+    Mix.shell().info("filler: created #{created} teamless filler user(s) — run 'teams' to build their teams.")
+  end
+
+  defp run_step({"names", _}) do
+    %{renamed: renamed} = Seed.names()
+    Mix.shell().info("names: renamed #{renamed} FIXME team(s).")
+  end
+
+  defp run_step({other, _}), do: Mix.raise("Unknown step or preset: #{inspect(other)}")
 
   defp guard_not_production! do
     db = to_string(Repo.config()[:database] || "")
@@ -427,23 +177,4 @@ defmodule Mix.Tasks.Landgrab.Seed do
       """)
     end
   end
-
-  defp two_word_names(count, exclude) do
-    taken = MapSet.new(exclude)
-
-    for(a <- @adjectives, n <- @nouns, do: "#{a} #{n}")
-    |> Enum.reject(&MapSet.member?(taken, &1))
-    |> Enum.shuffle()
-    |> Enum.take(count)
-  end
-
-  defp existing_team_names, do: Repo.all(from(t in Team, select: t.name))
-
-  defp team_and_proposed_names do
-    existing_team_names() ++
-      Repo.all(from(u in User, where: not is_nil(u.proposed_team_name), select: u.proposed_team_name))
-  end
-
-  defp now, do: DateTime.truncate(DateTime.utc_now(), :second)
-  defp sq(x), do: x * x
 end
