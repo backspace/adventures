@@ -22,6 +22,19 @@ class UiPreferences {
     await p.setBool('list_map_view:$screenKey', isMap);
   }
 
+  /// For a list screen with a sort control, recall the last-chosen sort key
+  /// (an opaque enum name). Null the first time, so the caller picks its own
+  /// default.
+  static Future<String?> getSort(String screenKey) async {
+    final p = await _prefs();
+    return p.getString('sort:$screenKey');
+  }
+
+  static Future<void> setSort(String screenKey, String value) async {
+    final p = await _prefs();
+    await p.setString('sort:$screenKey', value);
+  }
+
   /// Most-recently-picked region in the region picker. Stored per-device,
   /// not synced — purely a UX nicety so the picker hoists the last choice
   /// to the top of the list.

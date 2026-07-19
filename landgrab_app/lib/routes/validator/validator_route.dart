@@ -19,6 +19,11 @@ enum _ValidatorView { list, map, criteria }
 
 enum _Kind { all, poles, puzzlets }
 
+/// Within-group ordering for the to-do list. Needs-action rank is always the
+/// top grouping (see `_actionRank`); this picks the key applied *inside* each
+/// group, with distance the tiebreak either way.
+enum _Sort { distance, difficulty }
+
 /// One "to validate" view over both pole and puzzlet validations —
 /// the validator cares about what's left to do, not which table a row
 /// lives in. Rows sort needs-action-first (assigned / in progress
@@ -40,6 +45,7 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
   String? _error;
   _ValidatorView _view = _ValidatorView.list;
   _Kind _kind = _Kind.all;
+  _Sort _sortBy = _Sort.distance;
 
   // Cached so the FutureBuilder doesn't reload the asset on every rebuild.
   Future<String>? _criteria;
@@ -86,6 +92,18 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
     return da.compareTo(db);
   }
 
+  /// Orders two rows by difficulty, hardest first. Rows without a difficulty
+  /// (poles — only puzzlets carry one) sort last, mirroring how unlocated
+  /// rows fall to the bottom of the distance sort.
+  int _compareDifficulty(_TodoRow a, _TodoRow b) {
+    final da = a.difficulty;
+    final db = b.difficulty;
+    if (da == null && db == null) return 0;
+    if (da == null) return 1;
+    if (db == null) return -1;
+    return db.compareTo(da);
+  }
+
   String? _distanceLabel(LatLng? pos) {
     final here = _here;
     if (here == null || pos == null) return null;
@@ -95,8 +113,20 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
 
   Future<void> _loadPref() async {
     final isMap = await UiPreferences.getMapPreferred(_prefKey);
+    final sortName = await UiPreferences.getSort(_prefKey);
     if (!mounted) return;
-    setState(() => _view = isMap ? _ValidatorView.map : _ValidatorView.list);
+    setState(() {
+      _view = isMap ? _ValidatorView.map : _ValidatorView.list;
+      _sortBy = _Sort.values.firstWhere(
+        (s) => s.name == sortName,
+        orElse: () => _Sort.distance,
+      );
+    });
+  }
+
+  void _setSort(_Sort s) {
+    setState(() => _sortBy = s);
+    UiPreferences.setSort(_prefKey, s.name);
   }
 
   void _setView(_ValidatorView v) {
@@ -179,9 +209,15 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
           _TodoRow.puzzlet(zv, _openPuzzlet),
     ];
     rows.sort((a, b) {
-      // Needs-action first, then nearest first, then alphabetical.
+      // Needs-action first, always — decided work never jumps the queue.
       final rank = _actionRank(a.status).compareTo(_actionRank(b.status));
       if (rank != 0) return rank;
+      // Then the chosen within-group key (difficulty is opt-in), with
+      // distance as the tiebreak either way, then alphabetical.
+      if (_sortBy == _Sort.difficulty) {
+        final byDiff = _compareDifficulty(a, b);
+        if (byDiff != 0) return byDiff;
+      }
       final byDist = _compareDistance(a, b);
       if (byDist != 0) return byDist;
       return a.title.toLowerCase().compareTo(b.title.toLowerCase());
@@ -195,6 +231,26 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
       appBar: LandgrabAppBar(
         title: 'To validate',
         actions: [
+          // Sort only applies to the list; needs-action stays the top
+          // grouping either way — this picks the within-group order.
+          if (_view == _ValidatorView.list)
+            PopupMenuButton<_Sort>(
+              icon: const Icon(Icons.sort),
+              tooltip: 'Sort',
+              onSelected: _setSort,
+              itemBuilder: (_) => [
+                CheckedPopupMenuItem(
+                  value: _Sort.distance,
+                  checked: _sortBy == _Sort.distance,
+                  child: const Text('Nearest first'),
+                ),
+                CheckedPopupMenuItem(
+                  value: _Sort.difficulty,
+                  checked: _sortBy == _Sort.difficulty,
+                  child: const Text('Hardest first'),
+                ),
+              ],
+            ),
           IconButton(
             onPressed: () {
               _load();
@@ -364,6 +420,7 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
                 color: statusColorFor(r.status.name),
                 onTap: r.open,
                 regionId: r.regionId,
+                difficulty: r.difficulty,
               ))
         .toList();
 
@@ -423,6 +480,10 @@ class _TodoRow {
   final LatLng? position;
   final double? accuracyM;
 
+  /// Puzzlet difficulty (1–10), for the optional difficulty sort. Null for
+  /// poles, which carry no validation difficulty.
+  final int? difficulty;
+
   /// The region this row belongs to (puzzlets only). Puzzlets sharing a
   /// region are plotted around the region centroid, since their
   /// individual in-building GPS is unreliable.
@@ -438,6 +499,7 @@ class _TodoRow {
     required this.attachmentCount,
     required this.position,
     this.accuracyM,
+    this.difficulty,
     this.regionId,
     required this.open,
   });
@@ -473,6 +535,7 @@ class _TodoRow {
           ' · ${v.comments.length} comment${v.comments.length == 1 ? '' : 's'}',
       status: v.status,
       attachmentCount: puzzlet?.attachmentIds.length ?? 0,
+      difficulty: puzzlet?.difficulty,
       position: (puzzlet?.latitude != null && puzzlet?.longitude != null)
           ? LatLng(puzzlet!.latitude!, puzzlet.longitude!)
           : null,
