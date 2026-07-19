@@ -328,16 +328,85 @@ defmodule Registrations.Landgrab.Seed do
   end
 
   # ── clock ───────────────────────────────────────────────────────────
+  # Every event carries these instants; a shift moves the whole timeline
+  # by one delta so the intervals between them are preserved.
+  @time_fields ~w(start_time endgame_starts_at endgame_ends_at endgame_announced_at)a
+
   @doc """
-  Set every event's start_time to N minutes from now. Computes the target
-  in Elixir and binds it — no raw SQL `NOW()`, whose `timestamptz` result
-  gets timezone-shifted when stored into the `:utc_datetime` column.
-  Returns `%{minutes: n, events: count}`.
+  Position "now" a given distance before an event milestone by shifting the
+  whole timeline. The spec is `M[.SS]` minutes (`.SS` is *seconds*, so
+  `0.30` is 30 seconds, not 0.3 minutes):
+
+    * a non-negative spec anchors on the **start** — `clock("0.30")` puts the
+      start 30 seconds from now (now is 30s before the start);
+    * a negative spec anchors on the **endgame shrink end**
+      (`endgame_ends_at`) — `clock("-1")` puts the shrink end 1 minute from
+      now, dragging the rest of the endgame window along with it. `-0`
+      counts as negative (the sign, not the number, picks the anchor), so
+      `clock("-0")` ends the shrink right now.
+
+  Computes the targets in Elixir and binds them — no raw SQL `NOW()`, whose
+  `timestamptz` result gets timezone-shifted into the `:utc_datetime`
+  columns. Raises on a negative spec when no event has an endgame window.
+  Returns `%{anchor: :start_time | :endgame_ends_at, seconds: n, events: count}`.
   """
-  def clock(minutes) do
-    start = DateTime.utc_now() |> DateTime.add(minutes * 60, :second) |> DateTime.truncate(:second)
-    {events, _} = Repo.update_all(Event, set: [start_time: start, updated_at: now()])
-    %{minutes: minutes, events: events}
+  def clock(spec) when is_binary(spec) do
+    {anchor, offset_seconds} = parse_clock_spec(spec)
+    target = DateTime.add(now(), offset_seconds, :second)
+
+    shifted =
+      Event
+      |> Repo.all()
+      |> Enum.count(&shift_event(&1, anchor, target))
+
+    if anchor == :endgame_ends_at and shifted == 0 do
+      raise "clock:-N needs an event with an endgame window (endgame_ends_at) configured."
+    end
+
+    %{anchor: anchor, seconds: offset_seconds, events: shifted}
+  end
+
+  # A leading "-" (even on "-0") selects the endgame-end anchor. The part
+  # after the dot is a literal seconds count, so "0.30" is 30s and "1.05" is
+  # 65s — matching wall-clock M.SS, not decimal minutes.
+  defp parse_clock_spec("-" <> rest), do: {:endgame_ends_at, spec_seconds(rest)}
+  defp parse_clock_spec(spec), do: {:start_time, spec_seconds(spec)}
+
+  defp spec_seconds(spec) do
+    case String.split(spec, ".", parts: 2) do
+      [mins] -> String.to_integer(mins) * 60
+      [mins, secs] -> String.to_integer(mins) * 60 + String.to_integer(secs)
+    end
+  end
+
+  # Anchor on start_time: shift the timeline so the start lands on target
+  # (setting it outright if the event never had one). Anchor on
+  # endgame_ends_at: shift so the shrink ends on target, but only for events
+  # that actually have an endgame — others report false (not shifted).
+  defp shift_event(%Event{start_time: nil} = event, :start_time, target) do
+    # Repo.update! auto-bumps updated_at, so we only set the instants here.
+    event |> Ecto.Changeset.change(%{start_time: target}) |> Repo.update!()
+    true
+  end
+
+  defp shift_event(event, anchor, target) do
+    case Map.fetch!(event, anchor) do
+      nil ->
+        false
+
+      current ->
+        apply_shift(event, DateTime.diff(target, current, :second))
+        true
+    end
+  end
+
+  defp apply_shift(event, delta_seconds) do
+    changes =
+      for field <- @time_fields, current = Map.fetch!(event, field), current != nil, into: %{} do
+        {field, current |> DateTime.add(delta_seconds, :second) |> DateTime.truncate(:second)}
+      end
+
+    event |> Ecto.Changeset.change(changes) |> Repo.update!()
   end
 
   # ── clear (fresh, uncaptured map) ───────────────────────────────────

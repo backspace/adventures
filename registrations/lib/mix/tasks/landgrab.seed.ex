@@ -19,7 +19,8 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       validator to fill their queue; idempotent
     * captures:N      partial gameplay — capture N poles spread across the
                       teams, with a few active attacks and in-progress puzzlets
-    * clock           set the event start_time to one hour from now
+    * clock:M[.SS]    put "now" M min SS sec before the start (.SS = seconds);
+                      a negative spec anchors on the endgame shrink end instead
 
   Presets expand to an ordered list of steps:
 
@@ -87,9 +88,17 @@ defmodule Mix.Tasks.Landgrab.Seed do
       filler:N        create N teamless filler users with memorable proposed
                       team names — pair with 'teams' to add that many teams  (5)
       names           rename any leftover "FIXME" teams to two-word names
-      clock:N         set the event start to N minutes from now  (60)
-                        clock:1  → a one-minute countdown
-                        clock:0  → started right now
+      clock:M[.SS]    put "now" M min SS sec before the event START, shifting
+                      the whole timeline to match  (.SS is seconds, so
+                      0.30 = 30s; default 60)
+                        clock:1     → 1 minute before the start
+                        clock:0.30  → 30 seconds before the start
+                        clock:0     → started right now
+      clock:-M[.SS]   put "now" that far before the endgame SHRINK END
+                      instead (needs an event with an endgame window)
+                        clock:-1    → 1 minute before the shrink ends
+                        clock:-0.30 → 30 seconds before the shrink ends
+                        clock:-0    → shrink ends right now
 
     Examples:
       ADVENTURE=landgrab mix landgrab.seed gameplay
@@ -112,10 +121,23 @@ defmodule Mix.Tasks.Landgrab.Seed do
     end)
   end
 
+  # Keep the raw count string — clock needs "0.30" / "-0" verbatim; the
+  # integer steps convert with count/2 at the call site.
   defp parse(arg) do
     case String.split(arg, ":", parts: 2) do
-      [name, n] -> {name, String.to_integer(n)}
+      [name, n] -> {name, n}
       [name] -> {name, nil}
+    end
+  end
+
+  defp count(nil, default), do: default
+  defp count(raw, _default), do: String.to_integer(raw)
+
+  defp format_offset(seconds) do
+    case {div(seconds, 60), rem(seconds, 60)} do
+      {0, s} -> "#{s}s"
+      {m, 0} -> "#{m}m"
+      {m, s} -> "#{m}m #{s}s"
     end
   end
 
@@ -131,12 +153,12 @@ defmodule Mix.Tasks.Landgrab.Seed do
   end
 
   defp run_step({"validations", n}) do
-    %{assigned: assigned, validator: email} = Seed.validations(n || 40)
+    %{assigned: assigned, validator: email} = Seed.validations(count(n, 40))
     Mix.shell().info("validations: assigned #{assigned} puzzlet(s) to #{email}.")
   end
 
   defp run_step({"captures", n}) do
-    %{captured: captured, flips: flips, in_progress: in_progress} = Seed.captures(n || 20)
+    %{captured: captured, flips: flips, in_progress: in_progress} = Seed.captures(count(n, 20))
 
     Mix.shell().info(
       "captures: #{captured} pole(s) captured, #{flips} contested/flipped, " <>
@@ -149,13 +171,14 @@ defmodule Mix.Tasks.Landgrab.Seed do
     Mix.shell().info("clear: removed #{caps} capture(s), #{tp} in-progress, #{notes} gameplay notification(s).")
   end
 
-  defp run_step({"clock", n}) do
-    %{minutes: minutes} = Seed.clock(n || 60)
-    Mix.shell().info("clock: event start_time set to #{minutes} minute(s) from now.")
+  defp run_step({"clock", spec}) do
+    %{anchor: anchor, seconds: seconds, events: events} = Seed.clock(spec || "60")
+    milestone = if anchor == :endgame_ends_at, do: "endgame shrink end", else: "start"
+    Mix.shell().info("clock: now set #{format_offset(seconds)} before the #{milestone} across #{events} event(s).")
   end
 
   defp run_step({"filler", n}) do
-    %{created: created} = Seed.filler(n || 5)
+    %{created: created} = Seed.filler(count(n, 5))
     Mix.shell().info("filler: created #{created} teamless filler user(s) — run 'teams' to build their teams.")
   end
 
