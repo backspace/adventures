@@ -787,24 +787,29 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // physically there.
     final message = '${pole.name} — $owner';
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      behavior: SnackBarBehavior.floating,
-      duration: const Duration(seconds: 3),
-      content: Row(children: [
-        if (style != null) ...[
-          SizedBox(
-            width: 22,
-            height: 22,
-            child: CustomPaint(
-              painter: TeamGlyphPainter(
-                  color: style.color, pattern: style.pattern),
+    // Replace any current popup immediately rather than queueing — tapping a
+    // new zone should show it at once, not wait for the previous one to time
+    // out. removeCurrentSnackBar skips the dismiss animation so it feels instant.
+    ScaffoldMessenger.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+        content: Row(children: [
+          if (style != null) ...[
+            SizedBox(
+              width: 22,
+              height: 22,
+              child: CustomPaint(
+                painter: TeamGlyphPainter(
+                    color: style.color, pattern: style.pattern),
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-        ],
-        Expanded(child: Text(message)),
-      ]),
-    ));
+            const SizedBox(width: 12),
+          ],
+          Expanded(child: Text(message)),
+        ]),
+      ));
   }
 
   double get _voSize {
