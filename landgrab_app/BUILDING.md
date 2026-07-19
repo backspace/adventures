@@ -34,6 +34,24 @@ The build number is derived from git commit count, which is always monotonic and
 
 That number maps back to a git revision if you ever need to investigate a crash. Apple wants the build number to increase per marketing version; Google wants it to increase across all releases ever. Commit count satisfies both because it only ever goes up.
 
+## Crash reporting (Sentry DSN) — read before building
+
+Sentry only initializes when a non-empty DSN is compiled in via
+`--dart-define=SENTRY_DSN=...` (see `main.dart`). If the DSN is empty, the
+build ships with crash reporting **silently disabled** — no error, no
+events. The DSN lives in `ios/fastlane/.env.fastlane` /
+`android/fastlane/.env.fastlane` (gitignored; see the `.example` files).
+
+- **Building via fastlane:** nothing to remember. Each Fastfile auto-loads
+  its `.env.fastlane` on startup, passes the DSN through, and now **aborts
+  if it's empty** — so you can't ship a reporting-less build by accident.
+  (No `--env` flag needed.)
+- **Manual `flutter build`** (the commands below expand `$SENTRY_DSN`):
+  export it first, or the define bakes in empty:
+  ```bash
+  export SENTRY_DSN=$(grep '^SENTRY_DSN=' android/fastlane/.env.fastlane | cut -d '=' -f2-)
+  ```
+
 ## Alpha build
 
 For testers who need to switch environments.

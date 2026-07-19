@@ -50,6 +50,14 @@ def next_build_number
 end
 
 def flutter_build_aab(flavor:, api_root:, sentry_dsn:, build_number:)
+  # Fail fast rather than silently shipping a build with crash reporting
+  # disabled. This Fastfile auto-loads android/fastlane/.env.fastlane (see
+  # the top of the file), so an empty DSN here means that file is missing
+  # or has no SENTRY_DSN — see .env.fastlane.example.
+  if sentry_dsn.to_s.strip.empty?
+    UI.user_error!("SENTRY_DSN is empty — Sentry would be disabled in this build. Set SENTRY_DSN in android/fastlane/.env.fastlane (see .env.fastlane.example) and retry.")
+  end
+
   Dir.chdir(FLUTTER_PROJECT_DIR) do
     sh(
       "flutter", "build", "appbundle",
