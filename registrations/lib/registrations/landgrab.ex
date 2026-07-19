@@ -105,9 +105,6 @@ defmodule Registrations.Landgrab do
 
       pole ->
         cond do
-          user_id && pole.creator_id == user_id ->
-            {:error, :own_creation, pole}
-
           pole_locked?(pole) ->
             state = pole_with_state(pole)
 
@@ -123,8 +120,14 @@ defmodule Registrations.Landgrab do
 
           # Checked before serving a puzzlet (and before the attack
           # signal) — a pole the boundary has passed is out of play.
+          # This precedes own_creation: an out-of-play stake is out of
+          # play for everyone, its author included, so the author gets
+          # the out-of-play message rather than a misleading "yours".
           pole_outside_endgame_zone?(pole) ->
             {:error, :outside_zone, pole}
+
+          user_id && pole.creator_id == user_id ->
+            {:error, :own_creation, pole}
 
           true ->
             state = pole_with_state(pole)
@@ -471,17 +474,20 @@ defmodule Registrations.Landgrab do
     pole = puzzlet.pole_id && Repo.get(Pole, puzzlet.pole_id)
 
     cond do
+      pole && pole_owned_by_team?(pole, team_id) ->
+        {:error, :already_owner}
+
+      # Out of play for everyone once the boundary passes — takes
+      # priority over own_creation so an author answering their own
+      # withdrawn relic learns it's out of play, not just "yours".
+      pole && pole_outside_endgame_zone?(pole) ->
+        {:error, :outside_zone}
+
       puzzlet.creator_id == user_id ->
         {:error, :own_creation}
 
       pole && pole.creator_id == user_id ->
         {:error, :own_creation}
-
-      pole && pole_owned_by_team?(pole, team_id) ->
-        {:error, :already_owner}
-
-      pole && pole_outside_endgame_zone?(pole) ->
-        {:error, :outside_zone}
 
       # Pulled from play out from under an active team (supervisor withdraw,
       # or otherwise no longer validated). Their team_puzzlet row was

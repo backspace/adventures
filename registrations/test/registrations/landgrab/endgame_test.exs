@@ -107,4 +107,56 @@ defmodule Registrations.Landgrab.EndgameTest do
       assert Repo.aggregate(Notification, :count) == 1
     end
   end
+
+  describe "out-of-play takes priority over own-creation" do
+    # scan_payload/3 and record_attempt/4 check the boundary against the
+    # real clock, so configure an endgame that is shrinking right now.
+    defp shrinking_now do
+      now = DateTime.utc_now()
+
+      {:ok, _event} =
+        Events.update(Events.current(), %{
+          endgame_latitude: @party_lat,
+          endgame_longitude: @party_lng,
+          endgame_starts_at: DateTime.add(now, -3600, :second),
+          endgame_ends_at: DateTime.add(now, 3600, :second),
+          endgame_initial_radius_m: 2000.0,
+          endgame_final_radius_m: 100.0
+        })
+
+      :ok
+    end
+
+    # ~1500 m north of the party centre — outside the ~1050 m mid-shrink
+    # radius — created by the scanning user.
+    defp far_own_pole(creator) do
+      insert(:pole,
+        creator: creator,
+        latitude: @party_lat + 1500 / 111_000.0,
+        longitude: @party_lng
+      )
+    end
+
+    test "scan of an out-of-play stake reports outside_zone, not own_creation" do
+      shrinking_now()
+      creator = insert(:user, email: "oz#{System.unique_integer([:positive])}@example.com")
+      team = insert(:team)
+      pole = far_own_pole(creator)
+      insert(:puzzlet, pole: pole, answer: "x")
+
+      assert {:error, :outside_zone, _pole} =
+               Landgrab.scan_payload(pole.barcode, team.id, creator.id)
+    end
+
+    test "answering an out-of-play relic reports outside_zone, not own_creation" do
+      shrinking_now()
+      creator = insert(:user, email: "oz#{System.unique_integer([:positive])}@example.com")
+      team = insert(:team)
+      pole = far_own_pole(creator)
+      puzzlet = insert(:puzzlet, pole: pole, answer: "x")
+
+      assert {:error, :outside_zone} =
+               Landgrab.record_attempt(puzzlet, team.id, creator.id, "x")
+    end
+  end
 end
