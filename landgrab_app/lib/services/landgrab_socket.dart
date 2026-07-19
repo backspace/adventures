@@ -12,17 +12,23 @@ export 'package:landgrab/models/notification.dart';
 class PoleUpdate {
   final String id;
   final String? currentOwnerTeamId;
+  final String? currentOwnerTeamName;
+  final int? currentOwnerColorIndex;
   final bool locked;
 
   PoleUpdate({
     required this.id,
     required this.currentOwnerTeamId,
+    this.currentOwnerTeamName,
+    this.currentOwnerColorIndex,
     required this.locked,
   });
 
   factory PoleUpdate.fromJson(Map<String, dynamic> json) => PoleUpdate(
         id: json['id'] as String,
         currentOwnerTeamId: json['current_owner_team_id'] as String?,
+        currentOwnerTeamName: json['current_owner_team_name'] as String?,
+        currentOwnerColorIndex: json['current_owner_color_index'] as int?,
         locked: json['locked'] as bool? ?? false,
       );
 }

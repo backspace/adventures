@@ -45,17 +45,51 @@ defmodule Registrations.Landgrab do
   Returns a list of `%{pole: %Pole{}, current_owner_team_id: id|nil, locked?: bool}`.
   """
   def list_poles_with_state do
+    teams = team_style_index()
+
     Pole
     |> Repo.all()
-    |> Enum.map(&pole_with_state/1)
+    |> Enum.map(&pole_with_state(&1, teams))
   end
 
-  def pole_with_state(%Pole{} = pole) do
+  def pole_with_state(%Pole{} = pole, teams \\ nil) do
+    teams = teams || team_style_index()
+    owner_id = current_owner_team_id_for_pole(pole)
+    owner = owner_id && Map.get(teams, owner_id)
+
     %{
       pole: pole,
-      current_owner_team_id: current_owner_team_id_for_pole(pole),
+      current_owner_team_id: owner_id,
+      current_owner_team_name: owner && owner.name,
+      current_owner_color_index: owner && owner.color_index,
       locked?: pole_locked?(pole)
     }
+  end
+
+  # Stable per-team colour slot: teams ordered by creation get 0, 1, 2, …
+  # The client maps the index onto a fixed palette × pattern grid, so a team
+  # keeps the same colour+pattern in every player's view. An ordinal (not a
+  # stored column) — stable for the life of an event, where teams aren't
+  # deleted mid-run.
+  #
+  # Only teams with at least one member are indexed. Teams are pre-created so
+  # people can join a QR code, and many are never joined — those must not
+  # consume palette slots, or the colour spread would be wasted on phantoms.
+  def team_style_index do
+    member_team_ids =
+      RegistrationsWeb.User
+      |> where([u], not is_nil(u.team_id))
+      |> select([u], u.team_id)
+      |> distinct(true)
+      |> Repo.all()
+      |> MapSet.new()
+
+    RegistrationsWeb.Team
+    |> order_by([t], asc: t.inserted_at, asc: t.id)
+    |> Repo.all()
+    |> Enum.filter(&MapSet.member?(member_team_ids, &1.id))
+    |> Enum.with_index()
+    |> Map.new(fn {team, i} -> {team.id, %{name: team.name, color_index: i}} end)
   end
 
   @doc """
@@ -540,9 +574,13 @@ defmodule Registrations.Landgrab do
   end
 
   defp broadcast_pole_update(%Pole{} = pole, %Capture{} = capture) do
+    owner = Map.get(team_style_index(), capture.team_id)
+
     RegistrationsWeb.Endpoint.broadcast("landgrab:map", "pole_updated", %{
       id: pole.id,
       current_owner_team_id: capture.team_id,
+      current_owner_team_name: owner && owner.name,
+      current_owner_color_index: owner && owner.color_index,
       locked: pole_locked?(pole),
       captured_by_team_id: capture.team_id,
       captured_at: capture.inserted_at

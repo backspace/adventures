@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:landgrab/models/pole.dart';
+import 'package:landgrab/widgets/team_style.dart';
 
 /// Renders the expanding "just captured" ring at each pole whose id
 /// currently appears in [captureStartedAt]. The parent is responsible
@@ -19,6 +20,7 @@ class CaptureRingsLayer extends StatelessWidget {
   final Map<String, DateTime> captureStartedAt;
   final Duration duration;
   final String? myOwnerId;
+  final Map<String, int> colorIndexByTeam;
 
   const CaptureRingsLayer({
     super.key,
@@ -26,6 +28,7 @@ class CaptureRingsLayer extends StatelessWidget {
     required this.captureStartedAt,
     required this.duration,
     this.myOwnerId,
+    this.colorIndexByTeam = const {},
   });
 
   @override
@@ -60,7 +63,8 @@ class CaptureRingsLayer extends StatelessWidget {
 
   Color _baseColor(String? ownerId) {
     if (ownerId == null) return Colors.blueGrey;
-    if (ownerId == myOwnerId) return Colors.green;
-    return Colors.red;
+    final index = colorIndexByTeam[ownerId];
+    if (index == null) return Colors.blueGrey;
+    return TeamStyle.forIndex(index).color;
   }
 }

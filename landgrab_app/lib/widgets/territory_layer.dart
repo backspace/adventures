@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:landgrab/models/pole.dart';
+import 'package:landgrab/widgets/team_style.dart';
 
 /// Draws a coloured territory zone around each *captured* pole.
 ///
@@ -30,6 +31,10 @@ import 'package:landgrab/models/pole.dart';
 class TerritoryLayer extends StatelessWidget {
   final List<Pole> poles;
   final String? myOwnerId;
+  // team_id → colour index (from the server's stable per-team ordinal), so
+  // each team's territory gets its own colour. Includes just-deposed teams
+  // (for the capture animation's under-fill).
+  final Map<String, int> colorIndexByTeam;
   final double radiusMeters;
   final Map<String, DateTime> captureStartedAt;
 
@@ -43,6 +48,7 @@ class TerritoryLayer extends StatelessWidget {
     super.key,
     required this.poles,
     this.myOwnerId,
+    this.colorIndexByTeam = const {},
     this.radiusMeters = 200,
     this.captureStartedAt = const {},
     this.captureFromOwner = const {},
@@ -91,11 +97,15 @@ class TerritoryLayer extends StatelessWidget {
   }
 
   Polygon _territoryPolygon(List<LatLng> points, String ownerId) {
+    final color = _colorFor(ownerId);
+    final mine = ownerId == myOwnerId;
     return Polygon(
       points: points,
-      color: _colorFor(ownerId).withValues(alpha: 0.28),
-      borderColor: _colorFor(ownerId).withValues(alpha: 0.7),
-      borderStrokeWidth: 1.5,
+      color: color.withValues(alpha: mine ? 0.34 : 0.26),
+      // Your own territory gets a bold white border so your holdings stand
+      // out from the sea of rival colours.
+      borderColor: mine ? Colors.white : color.withValues(alpha: 0.7),
+      borderStrokeWidth: mine ? 2.5 : 1.5,
       isFilled: true,
     );
   }
@@ -184,10 +194,10 @@ class TerritoryLayer extends StatelessWidget {
   }
 
   Color _colorFor(String ownerId) {
-    // Match `_pinColor` in home_route: your team's territory is
-    // green, rivals' red.
-    if (ownerId == myOwnerId) return Colors.green;
-    return Colors.red;
+    final index = colorIndexByTeam[ownerId];
+    // Unknown team (colour index not seen yet) — neutral rather than a crash.
+    if (index == null) return Colors.blueGrey;
+    return TeamStyle.forIndex(index).color;
   }
 
   // ─── Geometry ────────────────────────────────────────────────────

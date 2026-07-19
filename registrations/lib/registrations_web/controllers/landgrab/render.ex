@@ -7,7 +7,7 @@ defmodule RegistrationsWeb.Landgrab.Render do
 
   alias Registrations.Landgrab.Regions
 
-  def pole_state(%{pole: pole, current_owner_team_id: owner, locked?: locked}) do
+  def pole_state(%{pole: pole, current_owner_team_id: owner, locked?: locked} = state) do
     %{
       id: pole.id,
       barcode: pole.barcode,
@@ -15,6 +15,10 @@ defmodule RegistrationsWeb.Landgrab.Render do
       latitude: pole.latitude,
       longitude: pole.longitude,
       current_owner_team_id: owner,
+      # Present on the map's pole list (list_poles_with_state); absent on
+      # some single-pole state maps, hence Map.get rather than a match.
+      current_owner_team_name: Map.get(state, :current_owner_team_name),
+      current_owner_color_index: Map.get(state, :current_owner_color_index),
       locked: locked
     }
   end

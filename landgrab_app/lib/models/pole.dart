@@ -7,6 +7,10 @@ class Pole {
   final double latitude;
   final double longitude;
   final String? currentOwnerTeamId;
+  final String? currentOwnerTeamName;
+  // Stable per-team colour slot from the server (ordinal). Drives the
+  // team's colour+pattern on the map. Null when unowned.
+  final int? currentOwnerColorIndex;
   final bool locked;
 
   Pole({
@@ -16,6 +20,8 @@ class Pole {
     required this.latitude,
     required this.longitude,
     required this.currentOwnerTeamId,
+    this.currentOwnerTeamName,
+    this.currentOwnerColorIndex,
     required this.locked,
   });
 
@@ -26,6 +32,8 @@ class Pole {
         latitude: (json['latitude'] as num).toDouble(),
         longitude: (json['longitude'] as num).toDouble(),
         currentOwnerTeamId: json['current_owner_team_id'] as String?,
+        currentOwnerTeamName: json['current_owner_team_name'] as String?,
+        currentOwnerColorIndex: json['current_owner_color_index'] as int?,
         locked: json['locked'] as bool? ?? false,
       );
 }

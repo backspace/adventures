@@ -35,6 +35,7 @@ import 'package:landgrab/widgets/attack_rings_layer.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
 import 'package:landgrab/widgets/capture_rings_layer.dart';
 import 'package:landgrab/widgets/live_location_layer.dart';
+import 'package:landgrab/widgets/team_style.dart';
 import 'package:landgrab/widgets/territory_layer.dart';
 
 /// Entries in the app bar's overflow menu. Role-gated tools and
@@ -117,6 +118,19 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   final Map<String, DateTime> _captureStartedAt = {};
   final Map<String, String?> _prevOwners = {};
   final Map<String, String?> _captureFromOwner = {};
+
+  // team_id → colour index, accumulated from pole payloads and never
+  // forgotten — so a just-deposed team still styles correctly during the
+  //800 ms capture animation. Passed to TerritoryLayer.
+  final Map<String, int> _teamColorIndex = {};
+
+  void _rememberTeamColors(Iterable<Pole> poles) {
+    for (final p in poles) {
+      final id = p.currentOwnerTeamId;
+      final idx = p.currentOwnerColorIndex;
+      if (id != null && idx != null) _teamColorIndex[id] = idx;
+    }
+  }
 
   // Re-filters pole pins as the (invisible) endgame boundary
   // shrinks past them. 10 s granularity is plenty: the shrink runs
@@ -248,8 +262,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       latitude: old.latitude,
       longitude: old.longitude,
       currentOwnerTeamId: update.currentOwnerTeamId,
+      currentOwnerTeamName: update.currentOwnerTeamName,
+      currentOwnerColorIndex: update.currentOwnerColorIndex,
       locked: update.locked,
     );
+    _rememberTeamColors([replaced]);
     if (!mounted) return;
     setState(() {
       _seedCaptureAnimations([replaced]);
@@ -388,6 +405,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       final poles = results[1] as List<Pole>;
       final bathrooms = results[2] as List<Bathroom>;
       final validatorOnly = results[3] as List<ValidatorOnlyPuzzlet>;
+      _rememberTeamColors(poles);
       if (!mounted) return;
       setState(() {
         _seedCaptureAnimations(poles);
@@ -709,11 +727,71 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     _refreshActivePuzzlets();
   }
 
-  Color _pinColor(Pole pole) {
-    if (pole.locked) return Colors.grey;
-    if (pole.currentOwnerTeamId == null) return Colors.blue;
-    if (pole.currentOwnerTeamId == _teamId) return Colors.green;
-    return Colors.red;
+  /// Map style for a pole's current owner — colour + pattern from the
+  /// server's stable per-team index. Null when unclaimed.
+  TeamStyle? _styleForPole(Pole pole) {
+    final index = pole.currentOwnerColorIndex;
+    if (pole.currentOwnerTeamId == null || index == null) return null;
+    return TeamStyle.forIndex(index);
+  }
+
+  /// Tap-to-inspect: show who holds the zone nearest the tapped point.
+  /// Territories are radius-capped Voronoi (each point belongs to its
+  /// nearest pole), so the tapped zone is the nearest pole within the
+  /// territory radius; taps in open space do nothing.
+  void _showOwnerAt(LatLng point) {
+    final poles = _poles;
+    if (poles == null || poles.isEmpty) return;
+    const distance = Distance();
+    Pole? nearest;
+    var best = double.infinity;
+    for (final pole in poles) {
+      final d = distance.as(
+          LengthUnit.Meter, point, LatLng(pole.latitude, pole.longitude));
+      if (d < best) {
+        best = d;
+        nearest = pole;
+      }
+    }
+    if (nearest == null || best > 200) return; // matches TerritoryLayer radius
+    final pole = nearest;
+
+    final idx = pole.currentOwnerColorIndex;
+    final owned = pole.currentOwnerTeamId != null && idx != null;
+    final style = owned ? TeamStyle.forIndex(idx) : null;
+    final isMine = pole.currentOwnerTeamId == _teamId;
+    final name = pole.currentOwnerTeamName;
+
+    final owner = !owned
+        ? GameplayStrings.zoneUnclaimed
+        : isMine
+            ? GameplayStrings.zoneOwnerYou(name)
+            : GameplayStrings.zoneOwnerOther(name);
+    // Only ever the label, never the barcode: the barcode is the scannable
+    // code, and reading it off the map would let someone claim the stake
+    // without physically being there.
+    final label = pole.label?.trim();
+    final message =
+        (label != null && label.isNotEmpty) ? '$label — $owner' : owner;
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 3),
+      content: Row(children: [
+        if (style != null) ...[
+          SizedBox(
+            width: 22,
+            height: 22,
+            child: CustomPaint(
+              painter: TeamGlyphPainter(
+                  color: style.color, pattern: style.pattern),
+            ),
+          ),
+          const SizedBox(width: 12),
+        ],
+        Expanded(child: Text(message)),
+      ]),
+    ));
   }
 
   double get _voSize {
@@ -942,6 +1020,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                               options: MapOptions(
                                 initialCenter: _center(),
                                 initialZoom: 14,
+                                // Tap a zone to see who holds it.
+                                onTap: (_, point) => _showOwnerAt(point),
                                 // Make rotation deliberate: the gesture race
                                 // commits a two-finger gesture to whichever
                                 // intent (zoom/move/rotate) crosses its threshold
@@ -971,6 +1051,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                 TerritoryLayer(
                                   poles: _poles!,
                                   myOwnerId: _teamId,
+                                  colorIndexByTeam: _teamColorIndex,
                                   captureStartedAt: _captureStartedAt,
                                   captureFromOwner: _captureFromOwner,
                                   captureAnimationDuration:
@@ -982,6 +1063,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                   captureStartedAt: _captureStartedAt,
                                   duration: _captureAnimationDuration,
                                   myOwnerId: _teamId,
+                                  colorIndexByTeam: _teamColorIndex,
                                 ),
                                 AttackRingsLayer(
                                   poles: _poles!,
@@ -1008,7 +1090,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                       height: 24,
                                       child: Tooltip(
                                         message: pole.label ?? pole.barcode,
-                                        child: _PoleDot(color: _pinColor(pole)),
+                                        child: _PoleDot(
+                                          style: _styleForPole(pole),
+                                          isMine: pole.currentOwnerTeamId ==
+                                              _teamId,
+                                        ),
                                       ),
                                     );
                                   }).toList(),
@@ -1423,25 +1509,39 @@ class _InProgressCard extends StatelessWidget {
 /// match the site's `transition: fill 200ms ease-out, stroke 200ms
 /// ease-out` rule, so a capture flip reads as a gradient rather than
 /// a hard cut.
+/// A pole marker: the owning team's colour + pattern glyph, an unclaimed
+/// neutral dot when nobody holds it, and a bold white ring when it's *your*
+/// team's — so you can find yourself by shape, not colour alone.
 class _PoleDot extends StatelessWidget {
-  final Color color;
-  const _PoleDot({required this.color});
+  final TeamStyle? style;
+  final bool isMine;
+  const _PoleDot({required this.style, this.isMine = false});
 
   @override
   Widget build(BuildContext context) {
-    // `color-mix(fill 55%, white 45%)` on the site becomes
-    // Color.lerp(fill, white, 0.45) here — same shape, same lift.
-    final borderColor = Color.lerp(color, Colors.white, 0.45)!;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
+    final s = style;
+    if (s == null) {
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.blueGrey.shade400,
+          border:
+              Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.5),
+        ),
+      );
+    }
+    final borderColor =
+        isMine ? Colors.white : Color.lerp(s.color, Colors.white, 0.45)!;
+    return DecoratedBox(
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color,
         border: Border.all(
-          color: borderColor.withValues(alpha: 0.65),
-          width: 1.5,
+          color: borderColor.withValues(alpha: isMine ? 1 : 0.7),
+          width: isMine ? 3 : 1.5,
         ),
+      ),
+      child: CustomPaint(
+        painter: TeamGlyphPainter(color: s.color, pattern: s.pattern),
       ),
     );
   }

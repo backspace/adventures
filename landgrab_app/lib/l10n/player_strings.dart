@@ -209,6 +209,13 @@ class GameplayStrings {
   static String othersHere(int n) => '$n other${n == 1 ? '' : 's'} here';
   static String couldNotLoadPoles(String error) =>
       'Could not load ${Terms.stakes}: $error';
+
+  // Tap-a-zone owner sheet.
+  static const zoneUnclaimed = 'Unclaimed';
+  static String zoneOwnerYou(String? team) =>
+      team == null ? 'Held by your team' : 'Held by your team ($team)';
+  static String zoneOwnerOther(String? team) =>
+      'Held by ${team ?? 'another team'}';
 }
 
 /// Location-permission pre-prompt rationale, shown just before the OS
