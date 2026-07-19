@@ -4,8 +4,11 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
   alias Registrations.Landgrab
   alias Registrations.Landgrab.PlayerStrings
 
-  # Answering a relic is a gameplay action — refused until the event starts.
+  # Answering a relic is a gameplay action — refused before the event
+  # starts and again once the game is over (stakes can still be scanned
+  # and relics viewed after the end, just not captured).
   plug(RegistrationsWeb.Plugs.RequireEventStarted when action in [:create])
+  plug(RegistrationsWeb.Plugs.RequireGameNotEnded when action in [:create])
 
   def create(conn, %{"puzzlet_id" => puzzlet_id} = params) do
     user = Pow.Plug.current_user(conn)

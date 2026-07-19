@@ -172,6 +172,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       AttemptAlreadyCaptured() => PuzzletStrings.alreadyCapturedByOther,
       AttemptWithdrawn() => PuzzletStrings.withdrawn,
       AttemptAlreadyOwner() => PuzzletStrings.alreadyOwner,
+      AttemptGameOver() => PuzzletStrings.gameOver,
       AttemptFailed() => o.message,
       _ => null,
     };
@@ -183,6 +184,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
         AttemptAlreadyCaptured() ||
         AttemptWithdrawn() ||
         AttemptAlreadyOwner() ||
+        AttemptGameOver() ||
         AttemptFailed() =>
           Colors.red.shade700,
         _ => null,
@@ -225,6 +227,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
         _outcome is AttemptLockedOut ||
         _outcome is AttemptAlreadyCaptured ||
         _outcome is AttemptAlreadyOwner ||
+        _outcome is AttemptGameOver ||
         (_attemptsRemaining ?? 0) <= 0;
 
     final outcomeText = _outcomeText();

@@ -334,6 +334,19 @@ void main() {
       expect(outcome, isA<AttemptLockedOut>());
     });
 
+    test('returns AttemptGameOver on 403 game_over', () async {
+      adapter.onPost(
+        '/landgrab/puzzlets/pz1/attempts',
+        (server) => server.reply(403, {
+          'error': {'code': 'game_over', 'detail': '...'},
+        }),
+        data: {'answer': 'x'},
+      );
+
+      final outcome = await api.submitAnswer('pz1', 'x');
+      expect(outcome, isA<AttemptGameOver>());
+    });
+
     test('returns AttemptAlreadyOwner on 409 already_owner', () async {
       adapter.onPost(
         '/landgrab/puzzlets/pz1/attempts',

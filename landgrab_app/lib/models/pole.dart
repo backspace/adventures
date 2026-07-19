@@ -174,6 +174,13 @@ class AttemptAlreadyOwner extends AttemptOutcome {
   const AttemptAlreadyOwner();
 }
 
+/// The game is over (its endgame window has closed). Stakes can still
+/// be scanned and relics viewed, but no relic can be captured — a
+/// terminal state for the puzzlet screen, not a retryable failure.
+class AttemptGameOver extends AttemptOutcome {
+  const AttemptGameOver();
+}
+
 /// Catch-all for submissions the server rejected in a way the app
 /// doesn't specifically model (e.g. 403 no_team) or that never
 /// reached the server (network failure). Carries a display message

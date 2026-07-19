@@ -56,6 +56,18 @@ defmodule Registrations.Landgrab.Event do
   end
 
   @doc """
+  Whether the game is over. The endgame shrink-window's end
+  (`endgame_ends_at`) doubles as the game's end: once it passes,
+  relics can no longer be captured (stakes can still be scanned and
+  relics viewed). An event without an endgame configured never ends.
+  """
+  def ended?(%__MODULE__{endgame_ends_at: nil}, _now), do: false
+
+  def ended?(%__MODULE__{endgame_ends_at: ends_at}, now) do
+    DateTime.compare(now, ends_at) != :lt
+  end
+
+  @doc """
   The endgame zone as of `now`, or nil when not configured or not yet
   begun. Returns `%{latitude, longitude, radius_m}` with the radius
   interpolated linearly between the initial and final values across

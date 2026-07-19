@@ -79,6 +79,11 @@ defmodule Registrations.Landgrab.PlayerStrings do
   # if a client reaches the endpoint early.
   def not_started_detail, do: phrase("app_not_started_detail")
 
+  # Answering a relic after the game has ended (its endgame window's
+  # end). Stakes can still be scanned and relics viewed — only capture
+  # is closed.
+  def game_over_detail, do: phrase("app_game_over_detail")
+
   defp phrase(id, bindings \\ []) do
     Gettext.dgettext(RegistrationsWeb.Gettext, "landgrab", id, bindings)
   end

@@ -405,6 +405,8 @@ class PuzzletStrings {
       'Scan this ${Terms.stake} to begin before answering.';
   static const withdrawn =
       'This ${Terms.relic} has been withdrawn from the simulation.';
+  static const gameOver =
+      'The simulation has ended — ${Terms.relics} can no longer be claimed.';
   // Shown when the puzzlet is resolved out from under you (withdrawn, or a
   // rival captured it) while you're on its screen and we return to the map.
   static const noLongerAvailable =

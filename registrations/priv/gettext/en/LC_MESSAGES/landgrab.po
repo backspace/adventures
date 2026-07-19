@@ -201,3 +201,6 @@ msgstr "That stake has no relic available right now."
 
 msgid "app_not_started_detail"
 msgstr "The simulation has not begun yet. Stakes can't be claimed until it does."
+
+msgid "app_game_over_detail"
+msgstr "The simulation has ended. Stakes can still be examined, but relics can no longer be claimed."

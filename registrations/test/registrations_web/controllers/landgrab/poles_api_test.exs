@@ -442,6 +442,37 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
     end
   end
 
+  describe "after the game has ended" do
+    setup do
+      ended_event()
+      :ok
+    end
+
+    test "scanning a stake is still allowed, so relics can be viewed", %{conn: conn} do
+      # The default pole sits at the endgame centre, so it's still in-zone.
+      pole = insert(:pole)
+      puzzlet = insert(:puzzlet, pole: pole, answer: "x")
+
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(200)
+      assert body["pole"]["id"] == pole.id
+      assert body["active_puzzlet"]["id"] == puzzlet.id
+    end
+
+    test "answering a relic is refused with game_over", %{conn: conn} do
+      pole = insert(:pole)
+      puzzlet = insert(:puzzlet, pole: pole, answer: "x")
+
+      body =
+        conn
+        |> post("/landgrab/puzzlets/#{puzzlet.id}/attempts", %{"answer" => "x"})
+        |> json_response(403)
+
+      assert body["error"]["code"] == "game_over"
+      # And nothing slipped through to a capture.
+      assert Registrations.Repo.aggregate(Registrations.Landgrab.Capture, :count) == 0
+    end
+  end
+
   # Replaces the current event with one whose start_time is in the past —
   # gameplay is open.
   defp started_event, do: put_event(DateTime.add(DateTime.utc_now(), -3600, :second))
@@ -456,6 +487,25 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
     Registrations.Repo.insert!(%Registrations.Landgrab.Event{
       name: "Simulation",
       start_time: DateTime.truncate(start_time, :second)
+    })
+  end
+
+  # Replaces the current event with one that has already begun and whose
+  # endgame window has already closed — the game is over. The endgame is
+  # centred on the default pole's coordinates so scanning stays in-zone.
+  defp ended_event do
+    Registrations.Repo.delete_all(Registrations.Landgrab.Event)
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    Registrations.Repo.insert!(%Registrations.Landgrab.Event{
+      name: "Simulation",
+      start_time: DateTime.add(now, -7200, :second),
+      endgame_latitude: 51.04,
+      endgame_longitude: -114.07,
+      endgame_starts_at: DateTime.add(now, -3600, :second),
+      endgame_ends_at: DateTime.add(now, -60, :second),
+      endgame_initial_radius_m: 2000.0,
+      endgame_final_radius_m: 100.0
     })
   end
 end

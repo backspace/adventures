@@ -443,6 +443,9 @@ class LandgrabApi {
       if (code == 'already_owner') {
         return const AttemptAlreadyOwner();
       }
+      if (code == 'game_over') {
+        return const AttemptGameOver();
+      }
       if (code == 'not_active') {
         return const AttemptFailed(PuzzletStrings.notActive);
       }
