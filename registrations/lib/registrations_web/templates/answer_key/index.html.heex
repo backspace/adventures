@@ -36,60 +36,30 @@
       <p class="meta">
         <%= length(@poles) %> poles ·
         <%= Enum.sum(for p <- @poles, do: length(p.puzzlets)) %> attached puzzlets ·
+        <%= length(@withdrawn_poles) %> withdrawn ·
         <%= length(@unattached) %> unattached
       </p>
     </div>
   </div>
 
   <%= for pole <- @poles do %>
-    <div class="pole-card">
-      <h3><%= pole_name(pole) %></h3>
-      <%= case @owners[pole.id] do %>
-        <% nil -> %>
-          <p class="owner unclaimed">Unclaimed</p>
-        <% team -> %>
-          <p class="owner">
-            Held by <strong><%= team.name %></strong>
-            (<%= member_usernames(team) %>)
-          </p>
-      <% end %>
-      <%= barcode_svg(pole.barcode) %>
-      <p class="barcode-text"><%= pole.barcode %></p>
+    <%= render "pole_card.html", pole: pole, owners: @owners %>
+  <% end %>
 
-      <%= if pole.puzzlets == [] do %>
-        <p class="meta">No puzzlets attached.</p>
-      <% else %>
-        <table>
-          <thead>
-            <tr>
-              <th>Question</th>
-              <th>Answer</th>
-              <th>Meta</th>
-            </tr>
-          </thead>
-          <tbody>
-            <%= for puzzlet <- pole.puzzlets do %>
-              <tr>
-                <td><%= puzzlet.instructions %></td>
-                <td class="answer">
-                  <%= if puzzlet.answer_type == :barcode do %>
-                    <%= barcode_svg(puzzlet.answer, height: 40) %>
-                    <p class="barcode-text"><%= puzzlet.answer %></p>
-                  <% else %>
-                    <%= puzzlet.answer %>
-                  <% end %>
-                </td>
-                <td class="meta">
-                  difficulty <%= puzzlet.difficulty %> ·
-                  <%= puzzlet.answer_type %> ·
-                  <%= puzzlet.status %>
-                  <%= if puzzlet.validator_only do %>· ★ validators only<% end %>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      <% end %>
+  <%= if @withdrawn_poles != [] do %>
+    <div class="pole-card">
+      <details>
+        <summary>
+          <h3>Withdrawn by the endgame (<%= length(@withdrawn_poles) %>)</h3>
+        </summary>
+        <p class="meta">
+          These stakes are outside the current endgame radius — off the players'
+          maps and unclaimable — but kept here so the key stays complete.
+        </p>
+        <%= for pole <- @withdrawn_poles do %>
+          <%= render "pole_card.html", pole: pole, owners: @owners %>
+        <% end %>
+      </details>
     </div>
   <% end %>
 

@@ -33,8 +33,20 @@ defmodule RegistrationsWeb.AnswerKeyController do
         )
       )
 
+    # Poles the shrinking endgame boundary has passed are withdrawn from play
+    # (off the players' maps, unclaimable). Tuck them into a collapsible
+    # section so the key reflects what's still live but stays complete. Before
+    # the endgame starts, nothing is withdrawn.
+    now = DateTime.utc_now()
+
+    {live_poles, withdrawn_poles} =
+      Enum.split_with(poles, fn pole ->
+        not Landgrab.pole_outside_endgame_zone?(pole, now)
+      end)
+
     render(conn, "index.html",
-      poles: poles,
+      poles: live_poles,
+      withdrawn_poles: withdrawn_poles,
       unattached: unattached,
       owners: owning_teams_by_pole(poles)
     )
