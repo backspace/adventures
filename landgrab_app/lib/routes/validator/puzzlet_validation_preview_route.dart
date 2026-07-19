@@ -264,6 +264,8 @@ class _PuzzletValidationPreviewRouteState
             TextField(
               controller: _note,
               maxLines: 3,
+              // Relabel the endorse button live as a note is typed.
+              onChanged: (_) => setState(() {}),
               decoration: const InputDecoration(
                 labelText: 'Notes for the supervisor (optional)',
                 border: OutlineInputBorder(),
@@ -278,7 +280,11 @@ class _PuzzletValidationPreviewRouteState
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2))
                   : const Icon(Icons.thumb_up_outlined),
-              label: const Text('Looks good — endorse'),
+              // With a note attached, "Looks good" misreads when the note is
+              // actually a correction — so reflect that a note is going along.
+              label: Text(_note.text.trim().isEmpty
+                  ? 'Looks good — endorse'
+                  : 'Endorse with a note'),
             ),
             const SizedBox(height: 12),
             OutlinedButton.icon(
