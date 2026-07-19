@@ -18,8 +18,15 @@ defmodule RegistrationsWeb.Api.TelemetryController do
       # email fires exactly once, on the first open.
       first_open? = is_nil(user.last_app_open_at)
 
+      # The client announces its build here (X-Client-Version header, e.g.
+      # "1.0.0+2403"). nil for pre-telemetry clients — informative in itself.
+      version = conn |> get_req_header("x-client-version") |> List.first()
+
       user
-      |> Ecto.Changeset.change(last_app_open_at: DateTime.truncate(DateTime.utc_now(), :second))
+      |> Ecto.Changeset.change(
+        last_app_open_at: DateTime.truncate(DateTime.utc_now(), :second),
+        last_app_version: version
+      )
       |> Repo.update()
 
       if first_open?, do: Mailer.app_first_opened(user)

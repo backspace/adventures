@@ -16,6 +16,7 @@
         <th>Comments</th>
         <th>Teamed</th>
         <th>App opened</th>
+        <th>Version</th>
       </tr>
     </thead>
     <tbody>
@@ -66,6 +67,7 @@
               —
             <% end %>
           </td>
+          <td class="app-version"><%= user.last_app_version || "—" %></td>
           <td>
             <%= link("Build",
               to: Routes.team_path(@conn, :build, user_id: user.id),

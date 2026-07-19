@@ -2,8 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:landgrab/app.dart';
+import 'package:landgrab/app_info.dart';
 import 'package:landgrab/firebase_options.dart';
 import 'package:landgrab/flavors.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 const String _flavorFromBuild =
@@ -24,6 +26,17 @@ Future<void> main() async {
     }
   }
   F.appFlavor = F.fromName(_flavorFromBuild);
+
+  // Read the app's version+build once, so every request can announce it via
+  // an X-Client-Version header (see AppInfo / the server's telemetry). Failure
+  // is non-fatal — the header just goes unset.
+  try {
+    final info = await PackageInfo.fromPlatform();
+    AppInfo.version = info.version;
+    AppInfo.build = info.buildNumber;
+  } catch (_) {
+    // Leave AppInfo empty; the header is simply omitted.
+  }
 
   // Firebase powers push notifications (FCM on Android, FCM→APNs
   // relay on iOS). Init failure is non-fatal — the app works fully

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/app_info.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/refresh_token_interceptor.dart';
 import 'package:landgrab/routes/login_route.dart';
@@ -155,6 +156,10 @@ class _BootState extends State<_Boot> {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        // Announce the client build so the server can track which versions
+        // are live (compat-drift visibility). Omitted if not yet known.
+        if (AppInfo.clientVersion.isNotEmpty)
+          'X-Client-Version': AppInfo.clientVersion,
       },
     );
 

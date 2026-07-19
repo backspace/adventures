@@ -57,6 +57,11 @@ defmodule RegistrationsWeb.User do
     # yet." See `RegistrationsWeb.Api.TelemetryController`.
     field(:last_app_open_at, :utc_datetime)
 
+    # The client's version+build (e.g. "1.0.0+2403") from the boot ping's
+    # X-Client-Version header, so we can see which app builds are live —
+    # compat-drift visibility. Nil for pre-telemetry clients.
+    field(:last_app_version, :string)
+
     # specific to unmnemonic-devices
     field(:voicepass, :string)
 

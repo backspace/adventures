@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 import 'package:flutter_map_compass/flutter_map_compass.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/pole.dart';
@@ -502,7 +503,12 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           if (mounted) setState(() {});
         });
       }
-    } catch (e) {
+    } catch (e, st) {
+      // Report to Sentry as well as showing the message. This is a *handled*
+      // error, so it'd otherwise be invisible there — and it's exactly the
+      // surface a server/client compat break shows up on ("could not load
+      // stakes"), so we want it tracked, not just displayed.
+      unawaited(Sentry.captureException(e, stackTrace: st));
       if (!mounted) return;
       setState(() => _error = GameplayStrings.couldNotLoadPoles(e.toString()));
     }
