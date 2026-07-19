@@ -74,10 +74,18 @@ class _NotificationsRouteState extends State<NotificationsRoute> {
                         separatorBuilder: (_, __) => const Divider(height: 1),
                         itemBuilder: (context, index) {
                           final n = _notifications![index];
+                          final poleId = n.metadata['pole_id'] as String?;
+                          // Attack / pole-lost notifications point at a stake;
+                          // offer a jump to it — pop back to the map with its id.
+                          final canView = poleId != null &&
+                              (n.type == 'attack' || n.type == 'pole_lost');
                           return _NotificationTile(
                             key: ValueKey(n.id),
                             notification: n,
                             onToggleRead: () => _toggleRead(n),
+                            onViewOnMap: canView
+                                ? () => Navigator.of(context).pop(poleId)
+                                : null,
                           );
                         },
                       ),
@@ -108,10 +116,15 @@ class _NotificationsRouteState extends State<NotificationsRoute> {
 class _NotificationTile extends StatelessWidget {
   final LandgrabNotification notification;
   final VoidCallback onToggleRead;
+  // Non-null when the notification points at a stake — renders a
+  // "View on map" button (and makes the row tappable) that returns to
+  // the map focused on it.
+  final VoidCallback? onViewOnMap;
   const _NotificationTile({
     super.key,
     required this.notification,
     required this.onToggleRead,
+    this.onViewOnMap,
   });
 
   @override
@@ -155,7 +168,7 @@ class _NotificationTile extends StatelessWidget {
   }
 
   Widget _tile(BuildContext context) {
-    return ListTile(
+    final tile = ListTile(
       leading: SizedBox(
         width: 36,
         height: 36,
@@ -168,10 +181,31 @@ class _NotificationTile extends StatelessWidget {
             : null,
       ),
       subtitle: Text(_subtitle),
+      onTap: onViewOnMap,
       trailing: notification.unread
           ? Icon(Icons.circle,
               size: 10, color: Theme.of(context).colorScheme.primary)
           : null,
+    );
+    if (onViewOnMap == null) return tile;
+    // Explicit affordance beneath the row (aligned under the text) as well
+    // as the whole-row tap, so the jump-to-map is discoverable.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        tile,
+        Padding(
+          padding: const EdgeInsets.only(left: 68, bottom: 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: onViewOnMap,
+              icon: const Icon(Icons.map_outlined, size: 18),
+              label: const Text(NotificationStrings.viewOnMap),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -1154,7 +1154,7 @@ defmodule Registrations.Landgrab do
         "pole_label" => pole.label,
         "sender_team_name" => sender_name
       },
-      push_title(type)
+      PlayerStrings.push_title(type, pole_name(pole))
     )
   end
 
@@ -1194,8 +1194,6 @@ defmodule Registrations.Landgrab do
 
     :ok
   end
-
-  defp push_title(type), do: PlayerStrings.push_title(type)
 
   @doc """
   Human name for a stake: its author-given label, or a stable generated name

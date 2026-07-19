@@ -49,6 +49,10 @@ defmodule Registrations.Landgrab.PlayerStrings do
   def push_title("pole_contested"), do: phrase("app_push_title_pole_contested")
   def push_title(_type), do: phrase("app_push_title_default")
 
+  # Same title, but naming the stake — so a glanced push says which one.
+  def push_title(type, pole_name),
+    do: phrase("app_push_title_named", title: push_title(type), pole: pole_name)
+
   # ── Error details the app displays verbatim ──────────────────────
 
   def no_team_detail, do: phrase("app_no_team_detail")

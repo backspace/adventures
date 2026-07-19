@@ -32,6 +32,7 @@ LandgrabNotification _notification({
   String type = 'attack',
   String body = 'qfabrv scanned 2066297',
   DateTime? readAt,
+  Map<String, dynamic> metadata = const {},
 }) =>
     LandgrabNotification(
       id: id,
@@ -39,7 +40,7 @@ LandgrabNotification _notification({
       recipientTeamId: 't1',
       senderTeamId: 't2',
       body: body,
-      metadata: const {},
+      metadata: metadata,
       insertedAt: DateTime.now().toUtc().subtract(const Duration(minutes: 5)),
       readAt: readAt,
     );
@@ -108,5 +109,50 @@ void main() {
     expect(api.toggles, hasLength(1));
     expect(api.toggles.first.id, 'n1');
     expect(api.toggles.first.read, isFalse);
+  });
+
+  testWidgets('no "View on map" when the notification points at no stake',
+      (tester) async {
+    final api = _FakeApi()
+      ..result = (notifications: [_notification()], unread: 0);
+    await _pump(tester, api);
+
+    expect(find.text(NotificationStrings.viewOnMap), findsNothing);
+  });
+
+  testWidgets('"View on map" pops with the stake id for a stake notification',
+      (tester) async {
+    final api = _FakeApi()
+      ..result = (
+        notifications: [_notification(metadata: const {'pole_id': 'p1'})],
+        unread: 0,
+      );
+
+    String? popped;
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: ElevatedButton(
+              onPressed: () async {
+                popped = await Navigator.of(context).push<String>(
+                  MaterialPageRoute(builder: (_) => NotificationsRoute(api: api)),
+                );
+              },
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(find.text(NotificationStrings.viewOnMap), findsOneWidget);
+
+    await tester.tap(find.text(NotificationStrings.viewOnMap));
+    await tester.pumpAndSettle();
+
+    expect(popped, 'p1');
   });
 }

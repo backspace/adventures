@@ -160,6 +160,9 @@ msgstr "Pole contested"
 msgid "app_push_title_default"
 msgstr "LANDGRAB"
 
+msgid "app_push_title_named"
+msgstr "%{title}: %{pole}"
+
 msgid "app_no_team_detail"
 msgstr "You have not been assigned to a team yet."
 

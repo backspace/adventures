@@ -204,6 +204,12 @@ class GameplayStrings {
   // A rival captured the puzzlet your team was working on.
   static const puzzletTakenTryNext = 'Try the next one';
 
+  // "View on map" action on an attack / pole-lost toast, and the notice
+  // shown when the stake is no longer on the map (e.g. the endgame boundary
+  // has passed it, or poles haven't loaded yet).
+  static const viewOnMap = 'View';
+  static const zoneNotOnMap = 'That ${Terms.stake} isn\'t on your map right now.';
+
   // How many other teams are also on this pole (shown on the
   // in-progress card).
   static String othersHere(int n) => '$n other${n == 1 ? '' : 's'} here';
@@ -250,6 +256,9 @@ class NotificationStrings {
       '${Terms.zones}, it shows up here.';
   static String couldNotLoad(String error) =>
       'Could not load notifications: $error';
+
+  // "View on map" button on notifications that point at a stake.
+  static const viewOnMap = 'View on map';
 
   // Swipe-to-toggle read state.
   static const markRead = 'Mark read';
