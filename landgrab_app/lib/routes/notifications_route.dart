@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
@@ -11,7 +13,14 @@ import 'package:landgrab/widgets/landgrab_app_bar.dart';
 /// so the reader can still see what's new.
 class NotificationsRoute extends StatefulWidget {
   final LandgrabApi api;
-  const NotificationsRoute({super.key, required this.api});
+
+  /// Live notification stream (the map socket's). When a notification arrives
+  /// while this screen is open, the list refreshes in place — so tapping a
+  /// toast's "View" while already here updates the list rather than doing
+  /// nothing. Null in contexts without a socket (e.g. tests).
+  final Stream<LandgrabNotification>? incoming;
+
+  const NotificationsRoute({super.key, required this.api, this.incoming});
 
   @override
   State<NotificationsRoute> createState() => _NotificationsRouteState();
@@ -20,11 +29,23 @@ class NotificationsRoute extends StatefulWidget {
 class _NotificationsRouteState extends State<NotificationsRoute> {
   List<LandgrabNotification>? _notifications;
   String? _error;
+  StreamSubscription<LandgrabNotification>? _incomingSub;
 
   @override
   void initState() {
     super.initState();
     _load();
+    // Refresh when a new notification lands while we're open. Reload rather
+    // than splice the one event, so read-state and ordering stay authoritative.
+    _incomingSub = widget.incoming?.listen((_) {
+      if (mounted) _load();
+    });
+  }
+
+  @override
+  void dispose() {
+    _incomingSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {

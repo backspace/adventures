@@ -92,6 +92,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   final MapController _mapController = MapController();
   // "Locate me" in flight — disables the button and shows a spinner.
   bool _locating = false;
+  // True while the notifications list is on the stack, so a second "View"
+  // (e.g. from a toast that arrived while the list is open) refreshes the
+  // existing list rather than pushing another copy on top.
+  bool _notificationsOpen = false;
   // The stake a notification's "View on map" jumped to. Draws a transient
   // marching-ants reticle around it (cleared after a few seconds) so it's
   // unmistakable which one. Matches the TerritoryLayer radius.
@@ -573,9 +577,20 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // the screen and reappear on return. (Tapping its own "View"
     // action clears it automatically; opening via the bell doesn't.)
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    // Already viewing the list (a toast's "View" tapped while it's open) —
+    // don't stack a second copy. The open list live-refreshes from the socket
+    // stream, so it's already current.
+    if (_notificationsOpen) return;
+    _notificationsOpen = true;
     final focusPoleId = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (_) => NotificationsRoute(api: widget.api)),
+      MaterialPageRoute(
+        builder: (_) => NotificationsRoute(
+          api: widget.api,
+          incoming: _socket?.notifications,
+        ),
+      ),
     );
+    _notificationsOpen = false;
     if (!mounted) return;
     // "View on map" in the list pops with the stake's id — centre on it.
     if (focusPoleId != null) _focusPole(focusPoleId);
