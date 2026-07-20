@@ -333,44 +333,57 @@ defmodule Registrations.Landgrab.Seed do
   @time_fields ~w(start_time endgame_starts_at endgame_ends_at endgame_announced_at)a
 
   @doc """
-  Position "now" a given distance before an event milestone by shifting the
-  whole timeline. The spec is `M[.SS]` minutes (`.SS` is *seconds*, so
-  `0.30` is 30 seconds, not 0.3 minutes):
+  Position "now" relative to an event milestone by shifting the whole
+  timeline (so the intervals between the milestones are preserved). The
+  spec is `[±]M[.SS]` minutes — `.SS` is *seconds*, so `0.30` is 30
+  seconds, not 0.3 minutes. The sign picks which of the three dramatic
+  moments to sit near:
 
-    * a non-negative spec anchors on the **start** — `clock("0.30")` puts the
-      start 30 seconds from now (now is 30s before the start);
-    * a negative spec anchors on the **endgame shrink end**
-      (`endgame_ends_at`) — `clock("-1")` puts the shrink end 1 minute from
-      now, dragging the rest of the endgame window along with it. `-0`
+    * **`M`** (no sign) — M before the **start**. `clock("0.30")` puts the
+      start 30 seconds from now (pre-event countdown).
+    * **`+M`** — M after the **endgame shrink begins** (`endgame_starts_at`).
+      `clock("+2")` sits 2 minutes into the endgame, radius still near its
+      widest — the mid-game state where poles at the far edge start to
+      vanish but most are still capturable.
+    * **`-M`** — M before the **endgame shrink ends** (`endgame_ends_at`).
+      `clock("-1")` sits 1 minute from the end, radius nearly closed. `-0`
       counts as negative (the sign, not the number, picks the anchor), so
       `clock("-0")` ends the shrink right now.
 
   Computes the targets in Elixir and binds them — no raw SQL `NOW()`, whose
   `timestamptz` result gets timezone-shifted into the `:utc_datetime`
-  columns. Raises on a negative spec when no event has an endgame window.
-  Returns `%{anchor: :start_time | :endgame_ends_at, seconds: n, events: count}`.
+  columns. A `+`/`-` spec raises when no event has an endgame window.
+  Returns `%{anchor: :start_time | :endgame_starts_at | :endgame_ends_at,
+  direction: :before | :after, seconds: n, events: count}`.
   """
   def clock(spec) when is_binary(spec) do
-    {anchor, offset_seconds} = parse_clock_spec(spec)
-    target = DateTime.add(now(), offset_seconds, :second)
+    {anchor, direction, offset_seconds} = parse_clock_spec(spec)
+
+    # `before`: the milestone lands `offset` after now (now is `offset`
+    # before it). `after`: the milestone lands `offset` before now.
+    signed = if direction == :before, do: offset_seconds, else: -offset_seconds
+    target = DateTime.add(now(), signed, :second)
 
     shifted =
       Event
       |> Repo.all()
       |> Enum.count(&shift_event(&1, anchor, target))
 
-    if anchor == :endgame_ends_at and shifted == 0 do
-      raise "clock:-N needs an event with an endgame window (endgame_ends_at) configured."
+    if anchor in [:endgame_starts_at, :endgame_ends_at] and shifted == 0 do
+      raise "clock:#{spec} needs an event with an endgame window configured."
     end
 
-    %{anchor: anchor, seconds: offset_seconds, events: shifted}
+    %{anchor: anchor, direction: direction, seconds: offset_seconds, events: shifted}
   end
 
-  # A leading "-" (even on "-0") selects the endgame-end anchor. The part
-  # after the dot is a literal seconds count, so "0.30" is 30s and "1.05" is
-  # 65s — matching wall-clock M.SS, not decimal minutes.
-  defp parse_clock_spec("-" <> rest), do: {:endgame_ends_at, spec_seconds(rest)}
-  defp parse_clock_spec(spec), do: {:start_time, spec_seconds(spec)}
+  # The leading sign selects the anchor (and, for the endgame, the side we
+  # sit on). "+" → just after the shrink begins; "-" (even "-0") → just
+  # before it ends; none → before the start. The part after the dot is a
+  # literal seconds count, so "0.30" is 30s and "1.05" is 65s — wall-clock
+  # M.SS, not decimal minutes.
+  defp parse_clock_spec("+" <> rest), do: {:endgame_starts_at, :after, spec_seconds(rest)}
+  defp parse_clock_spec("-" <> rest), do: {:endgame_ends_at, :before, spec_seconds(rest)}
+  defp parse_clock_spec(spec), do: {:start_time, :before, spec_seconds(spec)}
 
   defp spec_seconds(spec) do
     case String.split(spec, ".", parts: 2) do
@@ -380,9 +393,9 @@ defmodule Registrations.Landgrab.Seed do
   end
 
   # Anchor on start_time: shift the timeline so the start lands on target
-  # (setting it outright if the event never had one). Anchor on
-  # endgame_ends_at: shift so the shrink ends on target, but only for events
-  # that actually have an endgame — others report false (not shifted).
+  # (setting it outright if the event never had one). Anchor on an endgame
+  # instant: shift so that instant lands on target, but only for events that
+  # actually have an endgame — others report false (not shifted).
   defp shift_event(%Event{start_time: nil} = event, :start_time, target) do
     # Repo.update! auto-bumps updated_at, so we only set the instants here.
     event |> Ecto.Changeset.change(%{start_time: target}) |> Repo.update!()

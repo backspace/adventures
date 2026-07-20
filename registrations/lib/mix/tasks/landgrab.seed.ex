@@ -26,7 +26,9 @@ defmodule Mix.Tasks.Landgrab.Seed do
 
     * gameplay   = playable teams clock
     * validation = validations
-    * midgame    = playable teams clock captures
+    * midgame    = playable teams clock:5 captures clock:+2
+                   (seed captures pre-event, then sit "now" just after the
+                   endgame begins — a game in flight; see the note by @presets)
 
   The step logic lives in `Registrations.Landgrab.Seed` (this task is a
   thin CLI over it, and `Registrations.Landgrab.SeedTest` exercises it).
@@ -40,10 +42,19 @@ defmodule Mix.Tasks.Landgrab.Seed do
   alias Registrations.Landgrab.Seed
   alias Registrations.Repo
 
+  # midgame: clock:5 first parks "now" pre-event so the endgame radius is
+  # NOT enforced while captures are seeded (scan/answer would otherwise be
+  # refused as "outside the zone" whenever the clock is already mid-endgame
+  # — e.g. re-running midgame). Then captures play through real gameplay,
+  # and clock:+2 drops "now" just after the shrink begins — a game in
+  # flight, poles at the far edge starting to vanish. The two clock steps
+  # are the price of a deterministic capture set regardless of the clock's
+  # prior state; the preset expansion is echoed at run time so they read as
+  # intentional, not redundant.
   @presets %{
     "gameplay" => ~w(playable teams clock),
     "validation" => ~w(validations),
-    "midgame" => ~w(playable teams clock captures),
+    "midgame" => ~w(playable teams clock:5 captures clock:+2),
     "kickoff" => ~w(clear playable teams clock:0)
   }
 
@@ -57,6 +68,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
         Mix.shell().info(help())
 
       steps ->
+        announce_presets(args)
         Enum.each(steps, &run_step/1)
         Mix.shell().info("Done.")
     end
@@ -70,10 +82,10 @@ defmodule Mix.Tasks.Landgrab.Seed do
     Steps run left to right; presets expand to steps.
 
     Presets:
-      gameplay     playable + teams + clock             (ready to play, pre-event)
-      midgame      playable + teams + clock + captures  (a game already unfolding)
-      validation   validations                          (fills the validator queue)
-      kickoff      clear + playable + teams + clock:0    (fresh map, game just begun)
+      gameplay     playable + teams + clock                     (ready to play, pre-event)
+      midgame      playable + teams + clock:5 + captures + clock:+2   (a game in flight, endgame just begun)
+      validation   validations                                  (fills the validator queue)
+      kickoff      clear + playable + teams + clock:0           (fresh map, game just begun)
 
     Steps  (N is a number; the default is shown in parens):
       playable        validate every draft/in_review puzzlet and attach loose
@@ -90,12 +102,15 @@ defmodule Mix.Tasks.Landgrab.Seed do
       names           rename any leftover "FIXME" teams to two-word names
       clock:M[.SS]    put "now" M min SS sec before the event START, shifting
                       the whole timeline to match  (.SS is seconds, so
-                      0.30 = 30s; default 60)
+                      0.30 = 30s; default 60). The sign picks the milestone:
                         clock:1     → 1 minute before the start
                         clock:0.30  → 30 seconds before the start
                         clock:0     → started right now
-      clock:-M[.SS]   put "now" that far before the endgame SHRINK END
-                      instead (needs an event with an endgame window)
+      clock:+M[.SS]   put "now" that far AFTER the endgame SHRINK BEGINS —
+                      radius still wide, most poles still capturable
+                        clock:+2    → 2 minutes into the endgame
+      clock:-M[.SS]   put "now" that far BEFORE the endgame SHRINK ENDS —
+                      radius nearly closed  (+/- need an endgame window)
                         clock:-1    → 1 minute before the shrink ends
                         clock:-0.30 → 30 seconds before the shrink ends
                         clock:-0    → shrink ends right now
@@ -106,6 +121,14 @@ defmodule Mix.Tasks.Landgrab.Seed do
       ADVENTURE=landgrab mix landgrab.seed clear clock:1
       ADVENTURE=landgrab mix landgrab.seed kickoff
     """
+  end
+
+  # Echo each preset's expansion before running, so the steps it stands for
+  # (e.g. midgame's two clock moves) read as intentional, not redundant.
+  defp announce_presets(args) do
+    for arg <- args, steps = Map.get(@presets, arg) do
+      Mix.shell().info("#{arg} → #{Enum.join(steps, " ")}")
+    end
   end
 
   # ── argument parsing ────────────────────────────────────────────────
@@ -172,9 +195,18 @@ defmodule Mix.Tasks.Landgrab.Seed do
   end
 
   defp run_step({"clock", spec}) do
-    %{anchor: anchor, seconds: seconds, events: events} = Seed.clock(spec || "60")
-    milestone = if anchor == :endgame_ends_at, do: "endgame shrink end", else: "start"
-    Mix.shell().info("clock: now set #{format_offset(seconds)} before the #{milestone} across #{events} event(s).")
+    %{anchor: anchor, direction: direction, seconds: seconds, events: events} = Seed.clock(spec || "60")
+
+    milestone =
+      case anchor do
+        :endgame_starts_at -> "endgame shrink start"
+        :endgame_ends_at -> "endgame shrink end"
+        :start_time -> "start"
+      end
+
+    Mix.shell().info(
+      "clock: now set #{format_offset(seconds)} #{direction} the #{milestone} across #{events} event(s)."
+    )
   end
 
   defp run_step({"filler", n}) do

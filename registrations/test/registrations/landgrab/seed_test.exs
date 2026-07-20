@@ -49,6 +49,20 @@ defmodule Registrations.Landgrab.SeedTest do
     event
   end
 
+  # A coherent endgame window well in the past (30-min shrink, 1-hour lead
+  # from the start) — its shape is what the +/- clock shifts preserve.
+  defp insert_endgame_event do
+    insert_event(
+      start_time: ~U[2020-01-01 00:00:00Z],
+      endgame_starts_at: ~U[2020-01-01 01:00:00Z],
+      endgame_ends_at: ~U[2020-01-01 01:30:00Z],
+      endgame_latitude: 51.0,
+      endgame_longitude: -114.0,
+      endgame_initial_radius_m: 800.0,
+      endgame_final_radius_m: 50.0
+    )
+  end
+
   test "playable validates draft/in_review puzzlets", %{author: author} do
     draft = insert(:puzzlet, creator_id: author.id, status: :draft)
     review = insert(:puzzlet, creator_id: author.id, status: :in_review)
@@ -134,21 +148,28 @@ defmodule Registrations.Landgrab.SeedTest do
     assert_in_delta secs, 30, 5
   end
 
+  test "a positive clock anchors just after the endgame shrink begins (midgame)" do
+    event = insert_endgame_event()
+
+    # +2 = 2 minutes after the shrink begins; radius still near its widest.
+    assert %{anchor: :endgame_starts_at, direction: :after, seconds: 120, events: 1} =
+             Seed.clock("+2")
+
+    reloaded = Repo.get(Event, event.id)
+    # The shrink began 2 minutes ago, and the event is under way (start is past).
+    assert_in_delta DateTime.diff(DateTime.utc_now(), reloaded.endgame_starts_at), 120, 5
+    assert DateTime.compare(reloaded.start_time, DateTime.utc_now()) == :lt
+    # Window shape preserved: 30-min shrink, 1-hour lead from start.
+    assert DateTime.diff(reloaded.endgame_ends_at, reloaded.endgame_starts_at) == 1800
+    assert DateTime.diff(reloaded.endgame_starts_at, reloaded.start_time) == 3600
+  end
+
   test "a negative clock anchors on the endgame shrink end and shifts the whole window" do
-    # A coherent endgame window well in the past, its shape to be preserved.
-    event =
-      insert_event(
-        start_time: ~U[2020-01-01 00:00:00Z],
-        endgame_starts_at: ~U[2020-01-01 01:00:00Z],
-        endgame_ends_at: ~U[2020-01-01 01:30:00Z],
-        endgame_latitude: 51.0,
-        endgame_longitude: -114.0,
-        endgame_initial_radius_m: 800.0,
-        endgame_final_radius_m: 50.0
-      )
+    event = insert_endgame_event()
 
     # -0.30 = 30 seconds before the shrink ends.
-    assert %{anchor: :endgame_ends_at, seconds: 30, events: 1} = Seed.clock("-0.30")
+    assert %{anchor: :endgame_ends_at, direction: :before, seconds: 30, events: 1} =
+             Seed.clock("-0.30")
 
     reloaded = Repo.get(Event, event.id)
     ends_in = DateTime.diff(reloaded.endgame_ends_at, DateTime.utc_now())
@@ -160,22 +181,14 @@ defmodule Registrations.Landgrab.SeedTest do
   end
 
   test "-0 is treated as negative (the sign, not the number, picks the anchor)" do
-    insert_event(
-      start_time: ~U[2020-01-01 00:00:00Z],
-      endgame_starts_at: ~U[2020-01-01 01:00:00Z],
-      endgame_ends_at: ~U[2020-01-01 01:30:00Z],
-      endgame_latitude: 51.0,
-      endgame_longitude: -114.0,
-      endgame_initial_radius_m: 800.0,
-      endgame_final_radius_m: 50.0
-    )
-
+    insert_endgame_event()
     assert %{anchor: :endgame_ends_at, seconds: 0} = Seed.clock("-0")
   end
 
-  test "a negative clock without an endgame window raises" do
+  test "a +/- clock without an endgame window raises" do
     insert_event(start_time: ~U[2020-01-01 00:00:00Z])
     assert_raise RuntimeError, ~r/endgame window/, fn -> Seed.clock("-1") end
+    assert_raise RuntimeError, ~r/endgame window/, fn -> Seed.clock("+2") end
   end
 
   test "filler creates teamless users that names/teams can pick up" do
