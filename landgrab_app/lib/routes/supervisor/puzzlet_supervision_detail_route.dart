@@ -8,6 +8,7 @@ import 'package:landgrab/routes/supervisor/supervisor_edit_puzzlet_route.dart';
 import 'package:landgrab/routes/supervisor/validator_picker.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
+import 'package:landgrab/widgets/mini_location_map.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
 class PuzzletSupervisionDetailRoute extends StatefulWidget {
@@ -367,6 +368,29 @@ class _PuzzletSupervisionDetailRouteState
                   const SizedBox(height: 8),
                   Text('Answer: ${_puzzlet.answer}'),
                   Text('Difficulty: ${_puzzlet.difficulty}'),
+                  if (_puzzlet.latitude != null &&
+                      _puzzlet.longitude != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      '${_puzzlet.latitude!.toStringAsFixed(5)}, '
+                      '${_puzzlet.longitude!.toStringAsFixed(5)}'
+                      '${formatPositionMeta(_puzzlet.accuracyM, null)}',
+                    ),
+                    const SizedBox(height: 12),
+                    MiniLocationMap.pole(
+                      latitude: _puzzlet.latitude!,
+                      longitude: _puzzlet.longitude!,
+                      label: 'Puzzlet',
+                      color: statusColorFor(draftStatusLabel(_puzzlet.status)),
+                      accuracyM: _puzzlet.accuracyM,
+                    ),
+                  ] else ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'No distinct location — uses its stake’s position.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ],
               ),
             ),

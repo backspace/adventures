@@ -8,6 +8,7 @@ import 'package:landgrab/routes/supervisor/supervisor_edit_pole_route.dart';
 import 'package:landgrab/routes/supervisor/validator_picker.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
+import 'package:landgrab/widgets/mini_location_map.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
 class PoleSupervisionDetailRoute extends StatefulWidget {
@@ -310,6 +311,14 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
                     const SizedBox(height: 8),
                     Text('Notes: ${_pole.notes}'),
                   ],
+                  const SizedBox(height: 12),
+                  MiniLocationMap.pole(
+                    latitude: _pole.latitude,
+                    longitude: _pole.longitude,
+                    label: _pole.label ?? _pole.barcode,
+                    color: statusColorFor(draftStatusLabel(_pole.status)),
+                    accuracyM: _pole.accuracyM,
+                  ),
                 ],
               ),
             ),
