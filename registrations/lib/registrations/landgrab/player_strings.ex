@@ -10,6 +10,12 @@ defmodule Registrations.Landgrab.PlayerStrings do
   the rest of the storyline copy — edit them there (msgids prefixed
   `app_`). This module only names the surfaces and interpolates.
 
+  The recurring in-game vocabulary (stake / relic / …) is extracted to
+  its own `term_*` msgids and injected into every lookup by `terms/0`,
+  so renaming a word once there flows through every string — the server
+  mirror of the app's `Terms` class. Copy below must use the `%{stake}`
+  /`%{relic}` placeholders, never the literal internal "pole"/"puzzlet".
+
   These reach players three ways:
     * notification bodies (toast + push + history render them verbatim)
     * push titles
@@ -84,7 +90,26 @@ defmodule Registrations.Landgrab.PlayerStrings do
   # is closed.
   def game_over_detail, do: phrase("app_game_over_detail")
 
+  # The in-game vocabulary, injected into every lookup so any app_* string
+  # can interpolate %{stake} / %{relic} / … and a rename in one place (the
+  # term_* msgids) flows everywhere. Mirrors the app's `Terms` class. Real
+  # bindings (a stake's name, a team name) win over these on key clash,
+  # though the sets don't overlap.
+  defp terms do
+    [
+      stake: term("term_stake"),
+      stakes: term("term_stakes"),
+      stakeCap: term("term_stake_cap"),
+      stakesCap: term("term_stakes_cap"),
+      relic: term("term_relic"),
+      relics: term("term_relics"),
+      relicCap: term("term_relic_cap")
+    ]
+  end
+
+  defp term(id), do: Gettext.dgettext(RegistrationsWeb.Gettext, "landgrab", id)
+
   defp phrase(id, bindings \\ []) do
-    Gettext.dgettext(RegistrationsWeb.Gettext, "landgrab", id, bindings)
+    Gettext.dgettext(RegistrationsWeb.Gettext, "landgrab", id, Keyword.merge(terms(), bindings))
   end
 end
