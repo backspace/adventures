@@ -115,7 +115,12 @@
         </div>
       <% end %>
       <%= if is_landgrab() do %>
-        <% selected_tags = f.data.accessibility_tags || [] %>
+        <%# Read through the changeset (changes-then-data), not f.data, so a
+            failed submit — e.g. a blank attending answer when confirmation is
+            required — re-renders with the boxes the user just checked rather
+            than reverting to the last-saved values. clean_accessibility_tags
+            has already stripped the sentinel from these changes. %>
+        <% selected_tags = Ecto.Changeset.get_field(f.source, :accessibility_tags) || [] %>
         <div class="form-group accessibility-tags">
           <label>Accessibility choices</label>
           <p class="help-text" id="accessibility-tags-help">

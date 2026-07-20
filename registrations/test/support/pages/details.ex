@@ -229,6 +229,43 @@ defmodule Registrations.Pages.Details do
     end
   end
 
+  def accessibility_tags do
+    Registrations.Pages.Details.AccessibilityTags
+  end
+
+  # The landgrab-only accessibility-tag chips. Each is a checkbox sharing
+  # the name `user[accessibility_tags][]`, distinguished by its `value`
+  # (the tag id), so we target one by value.
+  defmodule AccessibilityTags do
+    @moduledoc false
+    alias Wallaby.Browser
+    alias Wallaby.Query
+    require WaitForIt
+
+    defp box(tag), do: Query.css("input[type='checkbox'][value='#{tag}']")
+    defp checked_box(tag), do: Query.css("input[type='checkbox'][value='#{tag}']:checked")
+
+    def check(session, tag) do
+      Browser.click(session, box(tag))
+      WaitForIt.wait!(Browser.has?(session, checked_box(tag)))
+      session
+    end
+
+    def checked?(session, tag) do
+      Browser.has?(session, checked_box(tag))
+    end
+
+    def assert_checked(session, tag, message \\ nil) do
+      WaitForIt.wait!(checked?(session, tag))
+
+      unless checked?(session, tag) do
+        raise(message || "Expected accessibility tag #{inspect(tag)} to be checked")
+      end
+
+      session
+    end
+  end
+
   defmodule Team do
     @moduledoc false
     alias Wallaby.Browser
