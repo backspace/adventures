@@ -228,9 +228,9 @@ class GameplayStrings {
       'Every ${Terms.relic} here has accessibility requirements a member of your team '
       'has set aside. You can still choose to attempt.';
   static String prohibitiveHide(int n) =>
-      'Hide $n unsuited ${n == 1 ? Terms.stake : Terms.stakes}';
+      'Hide $n incompatible ${n == 1 ? Terms.stake : Terms.stakes}';
   static String prohibitiveShow(int n) =>
-      'Show $n unsuited ${n == 1 ? Terms.stake : Terms.stakes}';
+      'Show $n incompatible ${n == 1 ? Terms.stake : Terms.stakes}';
 
   // Tap-a-zone owner sheet.
   static const zoneUnclaimed = 'Unclaimed';
