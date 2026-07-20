@@ -232,6 +232,14 @@ class GameplayStrings {
   static String prohibitiveShow(int n) =>
       'Show $n incompatible ${n == 1 ? Terms.stake : Terms.stakes}';
 
+  // Extra lines appended to the tap snackbar so each map icon is explained.
+  // A locked stake (lock glyph) — fully captured, nothing left to solve.
+  static const zoneLocked =
+      'Fully captured — no ${Terms.relics} left to solve here.';
+  // A stake under attack (pulsing ring) — a rival recently scanned it.
+  static const zoneUnderAttack =
+      'Under attack — a rival recently scanned this ${Terms.stake}.';
+
   // Tap-a-zone owner sheet.
   static const zoneUnclaimed = 'Unclaimed';
   static String zoneOwnerYou(String? team) =>

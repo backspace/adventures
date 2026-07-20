@@ -905,11 +905,18 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // the barcode. The barcode is the scannable code, withheld server-side so
     // reading it off the map can't let someone claim the stake without being
     // physically there.
-    // A prohibitive stake gets the in-game accessibility warning appended, so a
-    // tap explains why it's marked.
-    final message = pole.prohibitive
-        ? '${pole.name} — $owner\n${GameplayStrings.zoneProhibitive}'
-        : '${pole.name} — $owner';
+    //
+    // Explain every distinct map icon here: the owner line always, then a line
+    // per marker state so a tap says what the icon means (lock, under-attack
+    // ring, accessibility-blocked glyph). Locked and prohibitive are mutually
+    // exclusive (a locked stake has no puzzlets left to conflict).
+    final lines = <String>['${pole.name} — $owner'];
+    if (pole.locked) lines.add(GameplayStrings.zoneLocked);
+    if (_lastAttackAt.containsKey(pole.id)) {
+      lines.add(GameplayStrings.zoneUnderAttack);
+    }
+    if (pole.prohibitive) lines.add(GameplayStrings.zoneProhibitive);
+    final message = lines.join('\n');
 
     // Replace any current popup immediately rather than queueing — tapping a
     // new zone should show it at once, not wait for the previous one to time
@@ -918,19 +925,22 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       ..removeCurrentSnackBar()
       ..showSnackBar(SnackBar(
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 4),
         content: Row(children: [
-          if (style != null) ...[
-            SizedBox(
-              width: 22,
-              height: 22,
-              child: CustomPaint(
-                painter: TeamGlyphPainter(
-                    color: style.color, pattern: style.pattern),
-              ),
+          // The exact marker from the map, larger — so "this icon means…" is
+          // literally the same glyph beside the words.
+          SizedBox(
+            width: 24,
+            height: 24,
+            child: _PoleDot(
+              style: style,
+              isMine: isMine,
+              prohibitive: pole.prohibitive,
+              locked: pole.locked,
+              dimension: 24,
             ),
-            const SizedBox(width: 12),
-          ],
+          ),
+          const SizedBox(width: 12),
           Expanded(child: Text(message)),
         ]),
       ));
@@ -1825,11 +1835,15 @@ class _PoleDot extends StatelessWidget {
   // the prohibitive "blocked" glyph, tinted with the owner's colour so you can
   // still see who holds it.
   final bool locked;
+  // Rendered size; drives icon sizing so the same marker is legible both as a
+  // ~12px map pin and as a larger swatch in the tap snackbar.
+  final double dimension;
   const _PoleDot({
     required this.style,
     this.isMine = false,
     this.prohibitive = false,
     this.locked = false,
+    this.dimension = 12,
   });
 
   @override
@@ -1846,7 +1860,7 @@ class _PoleDot extends StatelessWidget {
               color: Colors.white.withValues(alpha: isMine ? 1 : 0.8),
               width: isMine ? 1.5 : 0.75),
         ),
-        child: const Icon(Icons.lock, size: 9, color: Colors.white),
+        child: Icon(Icons.lock, size: dimension * 0.72, color: Colors.white),
       );
     }
     if (prohibitive) {
@@ -1859,8 +1873,8 @@ class _PoleDot extends StatelessWidget {
           border: Border.all(
               color: Colors.white.withValues(alpha: 0.85), width: 0.75),
         ),
-        child: const Icon(Icons.do_not_disturb_on_outlined,
-            size: 12, color: Colors.white),
+        child: Icon(Icons.do_not_disturb_on_outlined,
+            size: dimension, color: Colors.white),
       );
     }
     final s = style;
