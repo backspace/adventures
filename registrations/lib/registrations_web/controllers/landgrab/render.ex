@@ -75,7 +75,10 @@ defmodule RegistrationsWeb.Landgrab.Render do
         ),
       # How many *other* teams currently hold an active puzzlet on
       # this pole — lets the app tell the player it's contested.
-      contending_teams: Map.get(state, :contending_teams, 0)
+      contending_teams: Map.get(state, :contending_teams, 0),
+      # Accessibility needs the served puzzlet conflicts with ([] when none) —
+      # the app offers "we've got it / not this one" when non-empty.
+      conflict_tags: Map.get(state, :conflict_tags, [])
     }
   end
 end

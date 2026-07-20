@@ -149,6 +149,47 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       assert body["active_puzzlet"]["id"] == easy.id
       assert body["active_puzzlet"]["instructions"] == "easy"
       assert body["active_puzzlet"]["attempts_remaining"] == Landgrab.max_attempts_per_puzzlet()
+      # No accessibility conflict for a team with no declared needs.
+      assert body["conflict_tags"] == []
+    end
+
+    test "reports conflict_tags when the served puzzlet conflicts with the team",
+         %{conn: conn, user: user} do
+      user
+      |> Ecto.Changeset.change(accessibility_tags: ["stairs"])
+      |> Registrations.Repo.update!()
+
+      region = insert(:poles_region, accessibility_tags: ["stairs"])
+      pole = insert(:pole)
+      _puzzlet = insert(:puzzlet, pole: pole, region_id: region.id, answer: "a")
+
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(200)
+
+      # Surfaced, not skipped: the puzzlet is still served, flagged conflicting.
+      assert body["active_puzzlet"] != nil
+      assert body["conflict_tags"] == ["stairs"]
+    end
+
+    test "exclude skips declined puzzlets to serve the next one", %{conn: conn} do
+      pole = insert(:pole)
+      first = insert(:puzzlet, pole: pole, answer: "a", difficulty: 1)
+      second = insert(:puzzlet, pole: pole, answer: "b", difficulty: 2)
+
+      # Unfiltered, the easiest is served (and assigned to the team).
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(200)
+      assert body["active_puzzlet"]["id"] == first.id
+
+      # "Not this one" abandons the held puzzlet, then re-scans excluding it —
+      # otherwise the still-held assignment trips the at-capacity gate. This is
+      # the exact client flow.
+      conn |> delete("/landgrab/active-puzzlets/#{first.id}") |> json_response(200)
+
+      body =
+        conn
+        |> get("/landgrab/poles/#{pole.barcode}?exclude=#{first.id}")
+        |> json_response(200)
+
+      assert body["active_puzzlet"]["id"] == second.id
     end
 
     test "active_puzzlet region carries the description/notes up the hierarchy",

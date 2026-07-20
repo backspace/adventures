@@ -119,11 +119,19 @@ class ScanResult {
   /// pole — so the UI can warn that it's contested.
   final int contendingTeams;
 
+  /// The team's accessibility needs the served puzzlet conflicts with (empty
+  /// when none). Non-empty → offer "we've got it / not this one" before
+  /// committing, rather than deciding for them.
+  final List<String> conflictTags;
+
   ScanResult({
     required this.pole,
     required this.activePuzzlet,
     this.contendingTeams = 0,
+    this.conflictTags = const [],
   });
+
+  bool get hasConflict => conflictTags.isNotEmpty;
 
   factory ScanResult.fromJson(Map<String, dynamic> json) => ScanResult(
         pole: Pole.fromJson(json['pole'] as Map<String, dynamic>),
@@ -131,6 +139,10 @@ class ScanResult {
             ? null
             : Puzzlet.fromJson(json['active_puzzlet'] as Map<String, dynamic>),
         contendingTeams: (json['contending_teams'] as num?)?.toInt() ?? 0,
+        conflictTags: (json['conflict_tags'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
       );
 }
 

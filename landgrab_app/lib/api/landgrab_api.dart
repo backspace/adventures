@@ -359,9 +359,15 @@ class LandgrabApi {
         .toList(growable: false);
   }
 
-  Future<ScanOutcome> scan(String barcode) async {
+  Future<ScanOutcome> scan(String barcode, {List<String> exclude = const []}) async {
     try {
-      final response = await dio.get('/landgrab/poles/$barcode');
+      // `exclude` carries puzzlets the team declined this session ("Not this
+      // one" on an accessibility conflict), so the server serves the next.
+      final response = await dio.get(
+        '/landgrab/poles/$barcode',
+        queryParameters:
+            exclude.isEmpty ? null : {'exclude': exclude.join(',')},
+      );
       return ScanFound(
           ScanResult.fromJson(response.data as Map<String, dynamic>));
     } on DioException catch (e) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
+import 'package:landgrab/models/accessibility.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/routes/puzzlet_route.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
@@ -11,6 +12,10 @@ import 'package:landgrab/widgets/landgrab_app_bar.dart';
 /// successful capture, the captured pole's id so the map can replay
 /// the territory animation.
 typedef ScanRouteResult = ({String barcode, String? capturedPoleId});
+
+/// The team's answer to an accessibility conflict on the served puzzlet:
+/// take it on themselves, or move to the next stake's puzzlet.
+enum _ConflictChoice { take, skip }
 
 class ScanRoute extends StatefulWidget {
   final LandgrabApi api;
@@ -103,12 +108,52 @@ class _ScanRouteState extends State<ScanRoute> {
           return;
 
         case ScanFound(:final result):
-          if (result.activePuzzlet == null) {
-            _showSnack(result.pole.locked
-                ? ScanStrings.poleFullyCaptured
-                : ScanStrings.noActivePuzzlet);
-            Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
-            return;
+          // Resolve any accessibility conflict by asking the team (surface,
+          // don't decide), then open the puzzlet they accept. Capture the
+          // navigator up front so it's not read off `context` across the
+          // awaits in the loop below.
+          final navigator = Navigator.of(context);
+          var current = result;
+          final declined = <String>[];
+
+          while (true) {
+            if (current.activePuzzlet == null) {
+              _showSnack(current.pole.locked
+                  ? ScanStrings.poleFullyCaptured
+                  : declined.isEmpty
+                      ? ScanStrings.noActivePuzzlet
+                      : ScanStrings.noSuitablePuzzlet);
+              navigator.pop((barcode: barcode, capturedPoleId: null));
+              return;
+            }
+
+            if (current.hasConflict) {
+              final choice = await _showConflictChoice(current.conflictTags);
+              if (!mounted) return;
+              // Dismissed, or "not this one": let go of the held puzzlet.
+              if (choice != _ConflictChoice.take) {
+                await widget.api
+                    .abandonActivePuzzlet(current.activePuzzlet!.id);
+              }
+              if (choice == _ConflictChoice.skip) {
+                declined.add(current.activePuzzlet!.id);
+                final next = await widget.api.scan(barcode, exclude: declined);
+                if (!mounted) return;
+                if (next is ScanFound) {
+                  current = next.result;
+                  continue; // evaluate the next-served puzzlet
+                }
+                // State shifted under us (e.g. a rival captured) — back to map.
+                navigator.pop((barcode: barcode, capturedPoleId: null));
+                return;
+              }
+              if (choice == null) {
+                // Cancelled — nothing committed; return to the map.
+                navigator.pop((barcode: barcode, capturedPoleId: null));
+                return;
+              }
+            }
+            break; // no conflict, or "we've got it" — open it
           }
 
           // PuzzletRoute pops `true` after a successful capture (and
@@ -116,13 +161,13 @@ class _ScanRouteState extends State<ScanRoute> {
           // it can replay the territory animation on arrival — the
           // socket broadcast usually fires while the player is still
           // on the puzzlet screen, so without this they'd miss it.
-          final captured = await Navigator.of(context).push<bool>(
+          final captured = await navigator.push<bool>(
             MaterialPageRoute(
               builder: (_) => PuzzletRoute(
                 api: widget.api,
-                pole: result.pole,
-                puzzlet: result.activePuzzlet!,
-                contendingTeams: result.contendingTeams,
+                pole: current.pole,
+                puzzlet: current.activePuzzlet!,
+                contendingTeams: current.contendingTeams,
                 teamPuzzletsChanged: widget.teamPuzzletsChanged,
                 teamId: widget.teamId,
                 gameEndsAt: widget.gameEndsAt,
@@ -133,7 +178,7 @@ class _ScanRouteState extends State<ScanRoute> {
           if (!mounted) return;
           Navigator.of(context).pop((
             barcode: barcode,
-            capturedPoleId: captured == true ? result.pole.id : null,
+            capturedPoleId: captured == true ? current.pole.id : null,
           ));
       }
     } catch (e) {
@@ -220,6 +265,34 @@ class _ScanRouteState extends State<ScanRoute> {
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text(ScanStrings.ok),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The served relic has accessibility requirements a member of the cohort
+  /// set aside. Ask, rather than deciding: take it on (split up, whoever can),
+  /// or move to the next. Names the specific requirement(s) so the team can
+  /// judge. Dismissing (returns null) cancels back to the map.
+  Future<_ConflictChoice?> _showConflictChoice(List<String> conflictTags) {
+    final requirements =
+        conflictTags.map(accessibilityTagLabel).join(', ');
+    return showDialog<_ConflictChoice>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(ScanStrings.conflictTitle),
+        content: Text(ScanStrings.conflictBody(requirements)),
+        actions: [
+          TextButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(_ConflictChoice.skip),
+            child: const Text(ScanStrings.conflictSkip),
+          ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(_ConflictChoice.take),
+            child: const Text(ScanStrings.conflictTake),
           ),
         ],
       ),

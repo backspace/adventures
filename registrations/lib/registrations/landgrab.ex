@@ -138,7 +138,7 @@ defmodule Registrations.Landgrab do
   pole state plus active puzzlet (or nil if locked) and the team's
   remaining attempts on that puzzlet.
   """
-  def scan_payload(barcode, team_id, user_id \\ nil) do
+  def scan_payload(barcode, team_id, user_id \\ nil, exclude \\ []) do
     case get_pole_by_barcode(barcode) do
       nil ->
         {:error, :not_found}
@@ -171,7 +171,7 @@ defmodule Registrations.Landgrab do
 
           true ->
             state = pole_with_state(pole)
-            active = active_puzzlet_for_pole(pole, user_id)
+            active = active_puzzlet_for_pole(pole, user_id, exclude)
 
             if active && team_locked_out?(active, team_id) do
               {:error, :team_locked_out, pole}
@@ -207,7 +207,12 @@ defmodule Registrations.Landgrab do
                      active_puzzlet: active,
                      attempts_remaining: attempts_remaining,
                      previous_wrong_answers: prior_wrong,
-                     contending_teams: contending_active_teams(pole.id, team_id)
+                     contending_teams: contending_active_teams(pole.id, team_id),
+                     # Which of the team's accessibility needs the served
+                     # puzzlet conflicts with — [] when none. Surfaced so the
+                     # app can offer "we've got it / not this one" rather than
+                     # deciding for them.
+                     conflict_tags: puzzlet_conflict_tags(active, team_id)
                    })}
               end
             end
@@ -395,7 +400,7 @@ defmodule Registrations.Landgrab do
   When `user_id` is provided, puzzlets authored by that user are skipped in
   the rotation — the author silently rotates past their own work.
   """
-  def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id \\ nil) do
+  def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id \\ nil, exclude \\ []) do
     captured_puzzlet_ids = select(Capture, [c], c.puzzlet_id)
 
     query =
@@ -414,7 +419,28 @@ defmodule Registrations.Landgrab do
         query
       end
 
+    # Puzzlets the scanning team has explicitly declined this session ("Not
+    # this one" on an accessibility conflict) — an orthogonal filter over the
+    # candidate pool, so it composes with whatever else narrows it.
+    query =
+      case exclude do
+        [] -> query
+        ids -> where(query, [p], p.id not in ^ids)
+      end
+
     Repo.one(query)
+  end
+
+  # The team's accessibility needs the given puzzlet conflicts with (sorted),
+  # or [] when there's no puzzlet, no team, or no conflict. Team-union needs, so
+  # any one member's need shows up — matching the map flag.
+  defp puzzlet_conflict_tags(nil, _team_id), do: []
+
+  defp puzzlet_conflict_tags(%Puzzlet{} = puzzlet, team_id) do
+    Accessibility.conflicting_tags(
+      Accessibility.team_needs(team_id),
+      Accessibility.effective_tags(puzzlet)
+    )
   end
 
   def pole_owned_by_team?(_pole, nil), do: false

@@ -220,11 +220,13 @@ class GameplayStrings {
 
   // Accessibility: a stake whose every remaining ${Terms.relic} demands
   // something a member of your cohort has set aside. In-fiction, never
-  // clinical — matter-of-fact, not othering. Shown on tap; you can still claim
-  // the ground (there's just nothing here to solve).
+  // clinical — matter-of-fact, not othering. Shown on tap. Consistent with the
+  // scan choice: a member who's able can still take these on ("We've got it").
+  // (When the accommodation claim ships, revisit to mention claiming without
+  // solving — that path doesn't exist yet.)
   static const zoneProhibitive =
-      'The trials bound here demand what your cohort has set aside. You may '
-      'still claim the ground, but there is nothing here to solve.';
+      'Every ${Terms.relic} here has accessibility requirements a member of your team '
+      'has set aside. You can still choose to attempt.';
   static String prohibitiveHide(int n) =>
       'Hide $n unsuited ${n == 1 ? Terms.stake : Terms.stakes}';
   static String prohibitiveShow(int n) =>
@@ -326,6 +328,22 @@ class ScanStrings {
   static const notStarted =
       'The simulation hasn’t begun yet — you can’t claim ${Terms.stakes} until it starts.';
   static String scanFailed(String detail) => 'Scan failed: $detail';
+
+  // Every remaining ${Terms.relic} here was declined — none suit the cohort.
+  // (Claiming without solving comes later; for now, move on.)
+  static const noSuitablePuzzlet =
+      'All ${Terms.relics} here have incompatible accessibility requirements.';
+
+  // Accessibility conflict choice: the served ${Terms.relic} has requirements a
+  // member of the cohort set aside. Names the specific requirement(s) so the
+  // team can decide (split up, or move on) — matter-of-fact, never othering.
+  static const conflictTitle = 'Accessibility requirements';
+  static String conflictBody(String requirements) =>
+      'This ${Terms.relic} has accessibility requirements a member of your '
+      'cohort has set aside: $requirements. Take it on together, or move to '
+      'another ${Terms.stake}?';
+  static const conflictTake = 'We’ll try it';
+  static const conflictSkip = 'Moving along';
 
   // Unknown-barcode dialog
   static const unknownBarcodeTitle = 'Unknown barcode';

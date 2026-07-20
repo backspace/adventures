@@ -16,10 +16,13 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
     json(conn, %{poles: Enum.map(states, &Render.pole_state/1)})
   end
 
-  def show(conn, %{"barcode" => barcode}) do
+  def show(conn, %{"barcode" => barcode} = params) do
     user = Pow.Plug.current_user(conn)
+    # Puzzlets the team declined this scan session ("Not this one" on an
+    # accessibility conflict) — skip them when choosing what to serve.
+    exclude = parse_exclude(params["exclude"])
 
-    case Landgrab.scan_payload(barcode, user.team_id, user.id) do
+    case Landgrab.scan_payload(barcode, user.team_id, user.id, exclude) do
       {:ok, state} ->
         json(conn, Render.scan_payload(state))
 
@@ -85,4 +88,13 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
         })
     end
   end
+
+  # Comma-separated declined puzzlet ids from the `exclude` query param.
+  defp parse_exclude(nil), do: []
+  defp parse_exclude(""), do: []
+
+  defp parse_exclude(csv) when is_binary(csv),
+    do: csv |> String.split(",", trim: true) |> Enum.map(&String.trim/1)
+
+  defp parse_exclude(_), do: []
 end

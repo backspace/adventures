@@ -1308,6 +1308,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                             isMine: pole.currentOwnerTeamId ==
                                                 _teamId,
                                             prohibitive: pole.prohibitive,
+                                            locked: pole.locked,
                                           ),
                                         ),
                                       ),
@@ -1820,11 +1821,34 @@ class _PoleDot extends StatelessWidget {
   // Every remaining puzzlet here conflicts with the team's needs — shown as a
   // distinct muted "blocked" marker (still claimable, hence not alarming).
   final bool prohibitive;
-  const _PoleDot(
-      {required this.style, this.isMine = false, this.prohibitive = false});
+  // Fully captured — no puzzlets left to solve. Shown as a lock, distinct from
+  // the prohibitive "blocked" glyph, tinted with the owner's colour so you can
+  // still see who holds it.
+  final bool locked;
+  const _PoleDot({
+    required this.style,
+    this.isMine = false,
+    this.prohibitive = false,
+    this.locked = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    if (locked) {
+      // A lock in the owner's colour (grey if somehow unowned) — reads as
+      // "done / nothing to do here", not as blocked-for-accessibility.
+      final owner = style?.color ?? Colors.blueGrey.shade400;
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: owner,
+          border: Border.all(
+              color: Colors.white.withValues(alpha: isMine ? 1 : 0.8),
+              width: isMine ? 1.5 : 0.75),
+        ),
+        child: const Icon(Icons.lock, size: 9, color: Colors.white),
+      );
+    }
     if (prohibitive) {
       // Distinct from owned/unowned dots: a muted circle with a "no entry"
       // glyph. Neutral, not red — it's a heads-up, not an error.
