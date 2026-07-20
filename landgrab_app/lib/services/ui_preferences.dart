@@ -22,6 +22,19 @@ class UiPreferences {
     await p.setBool('list_map_view:$screenKey', isMap);
   }
 
+  /// Whether to hide stakes flagged prohibitive (nothing the team can engage)
+  /// from the gameplay map. Default false — they stay visible but marked, since
+  /// a prohibitive stake can still be claimed.
+  static Future<bool> getHideProhibitive() async {
+    final p = await _prefs();
+    return p.getBool('map:hide_prohibitive') ?? false;
+  }
+
+  static Future<void> setHideProhibitive(bool hide) async {
+    final p = await _prefs();
+    await p.setBool('map:hide_prohibitive', hide);
+  }
+
   /// The user's preferred app theme — "system" (default), "light", or "dark".
   /// Applied at the MaterialApp level via [ThemeService].
   static Future<String?> getThemeMode() async {

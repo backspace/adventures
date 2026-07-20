@@ -218,6 +218,18 @@ class GameplayStrings {
   static String couldNotLoadPoles(String error) =>
       'Could not load ${Terms.stakes}: $error';
 
+  // Accessibility: a stake whose every remaining ${Terms.relic} demands
+  // something a member of your cohort has set aside. In-fiction, never
+  // clinical — matter-of-fact, not othering. Shown on tap; you can still claim
+  // the ground (there's just nothing here to solve).
+  static const zoneProhibitive =
+      'The trials bound here demand what your cohort has set aside. You may '
+      'still claim the ground, but there is nothing here to solve.';
+  static String prohibitiveHide(int n) =>
+      'Hide $n unsuited ${n == 1 ? Terms.stake : Terms.stakes}';
+  static String prohibitiveShow(int n) =>
+      'Show $n unsuited ${n == 1 ? Terms.stake : Terms.stakes}';
+
   // Tap-a-zone owner sheet.
   static const zoneUnclaimed = 'Unclaimed';
   static String zoneOwnerYou(String? team) =>

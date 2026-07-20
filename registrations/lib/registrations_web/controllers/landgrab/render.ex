@@ -21,7 +21,11 @@ defmodule RegistrationsWeb.Landgrab.Render do
       # some single-pole state maps, hence Map.get rather than a match.
       current_owner_team_name: Map.get(state, :current_owner_team_name),
       current_owner_color_index: Map.get(state, :current_owner_color_index),
-      locked: locked
+      locked: locked,
+      # True when every remaining puzzlet here conflicts with the viewing team's
+      # accessibility needs — the map flags it. Only set on the pole-list path
+      # (per-viewer); absent elsewhere, hence the default.
+      prohibitive: Map.get(state, :prohibitive, false)
     }
   end
 

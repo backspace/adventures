@@ -32,6 +32,7 @@ import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/services/landgrab_socket.dart';
 import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/services/push_service.dart';
+import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/accent_colors.dart';
 import 'package:landgrab/widgets/attack_rings_layer.dart';
@@ -96,6 +97,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // (e.g. from a toast that arrived while the list is open) refreshes the
   // existing list rather than pushing another copy on top.
   bool _notificationsOpen = false;
+  // Hide stakes flagged prohibitive (nothing the team can engage) from the map.
+  // Persisted; the toggle only appears when there's at least one such stake.
+  bool _hideProhibitive = false;
   // The stake a notification's "View on map" jumped to. Draws a transient
   // marching-ants reticle around it (cleared after a few seconds) so it's
   // unmistakable which one. Matches the TerritoryLayer radius.
@@ -160,6 +164,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     super.initState();
     _load();
     _connectSocket();
+    UiPreferences.getHideProhibitive().then((v) {
+      if (mounted && v) setState(() => _hideProhibitive = v);
+    });
     // Ask for push permission here — the player has just signed in
     // and landed on the map, so "get alerts about your poles" has
     // context. Fire-and-forget; PushService owns retries/rotation.
@@ -342,6 +349,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       currentOwnerTeamName: update.currentOwnerTeamName,
       currentOwnerColorIndex: update.currentOwnerColorIndex,
       locked: update.locked,
+      // The owner-change broadcast is team-agnostic and carries no prohibitive
+      // flag; keep the value from the last pole-list fetch. A full reload
+      // (reconnect / event change) refreshes it authoritatively.
+      prohibitive: old.prohibitive,
     );
     _rememberTeamColors([replaced]);
     if (!mounted) return;
@@ -562,14 +573,22 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   /// Poles the endgame boundary hasn't passed. Everything when no
   /// boundary is configured or it hasn't begun shrinking.
   List<Pole> _polesInPlay() {
+    Iterable<Pole> poles = _poles!;
+    // Optional declutter: drop stakes the whole team can't engage.
+    if (_hideProhibitive) poles = poles.where((p) => !p.prohibitive);
     final zone = _event?.endgame;
-    if (zone == null) return _poles!;
     final now = DateTime.now().toUtc();
-    if (!zone.activeAt(now)) return _poles!;
-    return _poles!
-        .where((pole) => zone.containsAt(pole.latitude, pole.longitude, now))
-        .toList(growable: false);
+    if (zone != null && zone.activeAt(now)) {
+      poles = poles
+          .where((pole) => zone.containsAt(pole.latitude, pole.longitude, now));
+    }
+    return poles.toList(growable: false);
   }
+
+  // How many loaded stakes are flagged prohibitive — gates the hide toggle so
+  // it only appears for a team that actually has inaccessible stakes.
+  int get _prohibitiveCount =>
+      _poles?.where((p) => p.prohibitive).length ?? 0;
 
   Future<void> _openNotifications() async {
     // Dismiss the "N while you were away" catch-up toast — they're
@@ -886,7 +905,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // the barcode. The barcode is the scannable code, withheld server-side so
     // reading it off the map can't let someone claim the stake without being
     // physically there.
-    final message = '${pole.name} — $owner';
+    // A prohibitive stake gets the in-game accessibility warning appended, so a
+    // tap explains why it's marked.
+    final message = pole.prohibitive
+        ? '${pole.name} — $owner\n${GameplayStrings.zoneProhibitive}'
+        : '${pole.name} — $owner';
 
     // Replace any current popup immediately rather than queueing — tapping a
     // new zone should show it at once, not wait for the previous one to time
@@ -911,6 +934,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           Expanded(child: Text(message)),
         ]),
       ));
+  }
+
+  void _toggleHideProhibitive() {
+    setState(() => _hideProhibitive = !_hideProhibitive);
+    UiPreferences.setHideProhibitive(_hideProhibitive);
   }
 
   double get _voSize {
@@ -1279,6 +1307,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                             style: _styleForPole(pole),
                                             isMine: pole.currentOwnerTeamId ==
                                                 _teamId,
+                                            prohibitive: pole.prohibitive,
                                           ),
                                         ),
                                       ),
@@ -1355,6 +1384,19 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                 ),
                               ),
                             ),
+                            // Hide-inaccessible toggle — only when the team has
+                            // at least one prohibitive stake, so it never
+                            // clutters the map for players without such needs.
+                            if (_prohibitiveCount > 0)
+                              Positioned(
+                                top: _activePuzzlets.isNotEmpty ? 96 : 8,
+                                right: 8,
+                                child: _HideProhibitiveChip(
+                                  hidden: _hideProhibitive,
+                                  count: _prohibitiveCount,
+                                  onToggle: _toggleHideProhibitive,
+                                ),
+                              ),
                           ]),
           ),
         ],
@@ -1723,6 +1765,51 @@ class _InProgressCard extends StatelessWidget {
 /// still read against the map. Colour transitions ease over 200 ms to
 /// match the site's `transition: fill 200ms ease-out, stroke 200ms
 /// ease-out` rule, so a capture flip reads as a gradient rather than
+/// Map control to show/hide stakes flagged prohibitive (nothing the team can
+/// engage). A compact pill on the map; only rendered when such stakes exist.
+class _HideProhibitiveChip extends StatelessWidget {
+  final bool hidden;
+  final int count;
+  final VoidCallback onToggle;
+  const _HideProhibitiveChip({
+    required this.hidden,
+    required this.count,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      elevation: 2,
+      borderRadius: BorderRadius.circular(20),
+      color: theme.colorScheme.surface.withValues(alpha: 0.95),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onToggle,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(
+                hidden
+                    ? Icons.visibility_off_outlined
+                    : Icons.do_not_disturb_on_outlined,
+                size: 18,
+                color: theme.colorScheme.onSurfaceVariant),
+            const SizedBox(width: 6),
+            Text(
+              hidden
+                  ? GameplayStrings.prohibitiveShow(count)
+                  : GameplayStrings.prohibitiveHide(count),
+              style: theme.textTheme.labelMedium,
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
 /// a hard cut.
 /// A pole marker: the owning team's colour + pattern glyph, an unclaimed
 /// neutral dot when nobody holds it, and a bold white ring when it's *your*
@@ -1730,10 +1817,28 @@ class _InProgressCard extends StatelessWidget {
 class _PoleDot extends StatelessWidget {
   final TeamStyle? style;
   final bool isMine;
-  const _PoleDot({required this.style, this.isMine = false});
+  // Every remaining puzzlet here conflicts with the team's needs — shown as a
+  // distinct muted "blocked" marker (still claimable, hence not alarming).
+  final bool prohibitive;
+  const _PoleDot(
+      {required this.style, this.isMine = false, this.prohibitive = false});
 
   @override
   Widget build(BuildContext context) {
+    if (prohibitive) {
+      // Distinct from owned/unowned dots: a muted circle with a "no entry"
+      // glyph. Neutral, not red — it's a heads-up, not an error.
+      return DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.blueGrey.shade700.withValues(alpha: 0.85),
+          border: Border.all(
+              color: Colors.white.withValues(alpha: 0.85), width: 0.75),
+        ),
+        child: const Icon(Icons.do_not_disturb_on_outlined,
+            size: 12, color: Colors.white),
+      );
+    }
     final s = style;
     if (s == null) {
       return DecoratedBox(

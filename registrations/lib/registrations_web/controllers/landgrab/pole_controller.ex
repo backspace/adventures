@@ -9,7 +9,10 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
   plug(RegistrationsWeb.Plugs.RequireEventStarted when action in [:show])
 
   def index(conn, _params) do
-    states = Landgrab.list_poles_with_state()
+    # Pass the viewer's team so poles prohibitive for that team (every remaining
+    # puzzlet conflicts with a member's accessibility needs) come back flagged.
+    user = Pow.Plug.current_user(conn)
+    states = Landgrab.list_poles_with_state(user && user.team_id)
     json(conn, %{poles: Enum.map(states, &Render.pole_state/1)})
   end
 

@@ -88,6 +88,52 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       assert length(names) == 25
       assert length(Enum.uniq(names)) == 25
     end
+
+    test "a stake is not prohibitive when nothing conflicts with the team",
+         %{conn: conn} do
+      pole = insert(:pole)
+      _puzzlet = insert(:puzzlet, pole: pole, answer: "alpha")
+
+      body = conn |> get("/landgrab/poles") |> json_response(200)
+      [returned] = body["poles"]
+
+      # The setup team declared no needs, so no stake is prohibitive.
+      assert returned["prohibitive"] == false
+    end
+
+    test "a stake is prohibitive when every puzzlet conflicts with a member's needs",
+         %{conn: conn, user: user} do
+      # A team member who avoids stairs; the only puzzlet is in a stairs region.
+      user
+      |> Ecto.Changeset.change(accessibility_tags: ["stairs"])
+      |> Registrations.Repo.update!()
+
+      region = insert(:poles_region, accessibility_tags: ["stairs"])
+      pole = insert(:pole)
+      _puzzlet = insert(:puzzlet, pole: pole, region_id: region.id, answer: "alpha")
+
+      body = conn |> get("/landgrab/poles") |> json_response(200)
+      returned = Enum.find(body["poles"], &(&1["id"] == pole.id))
+
+      assert returned["prohibitive"] == true
+    end
+
+    test "a stake with one doable puzzlet is not prohibitive", %{conn: conn, user: user} do
+      user
+      |> Ecto.Changeset.change(accessibility_tags: ["stairs"])
+      |> Registrations.Repo.update!()
+
+      stairs = insert(:poles_region, accessibility_tags: ["stairs"])
+      pole = insert(:pole)
+      _hard = insert(:puzzlet, pole: pole, region_id: stairs.id, answer: "a")
+      # A second puzzlet on the same pole with no stairs demand — doable.
+      _easy = insert(:puzzlet, pole: pole, answer: "b")
+
+      body = conn |> get("/landgrab/poles") |> json_response(200)
+      returned = Enum.find(body["poles"], &(&1["id"] == pole.id))
+
+      assert returned["prohibitive"] == false
+    end
   end
 
   describe "GET /poles/poles/:barcode" do

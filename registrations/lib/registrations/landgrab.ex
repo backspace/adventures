@@ -2,6 +2,7 @@ defmodule Registrations.Landgrab do
   @moduledoc false
   import Ecto.Query, warn: false
 
+  alias Registrations.Landgrab.Accessibility
   alias Registrations.Landgrab.Attachment
   alias Registrations.Landgrab.Attempt
   alias Registrations.Landgrab.Capture
@@ -45,12 +46,51 @@ defmodule Registrations.Landgrab do
   Returns each pole with its current owner team_id and locked state.
   Returns a list of `%{pole: %Pole{}, current_owner_team_id: id|nil, locked?: bool}`.
   """
-  def list_poles_with_state do
+  def list_poles_with_state(team_id \\ nil) do
     teams = team_style_index()
+    prohibitive_ids = prohibitive_pole_ids(team_id)
 
     Pole
     |> Repo.all()
-    |> Enum.map(&pole_with_state(&1, teams))
+    |> Enum.map(fn pole ->
+      pole
+      |> pole_with_state(teams)
+      |> Map.put(:prohibitive, MapSet.member?(prohibitive_ids, pole.id))
+    end)
+  end
+
+  # Pole ids where EVERY remaining (uncaptured, validated, non-validator-only)
+  # puzzlet conflicts with the team's accessibility needs — so the whole team
+  # can't engage anything there (they could still claim it; see the
+  # accommodation path). Per-viewer, so it rides the pole-list fetch rather than
+  # the team-agnostic pole_updated broadcast. Empty for a team with no declared
+  # needs — the common case — which skips all the puzzlet loading.
+  defp prohibitive_pole_ids(team_id) do
+    needs = Accessibility.team_needs(team_id)
+
+    if MapSet.size(needs) == 0 do
+      MapSet.new()
+    else
+      uncaptured_playable_puzzlets_by_pole()
+      |> Enum.filter(fn {_pole_id, puzzlets} -> Accessibility.prohibitive?(puzzlets, needs) end)
+      |> Enum.map(fn {pole_id, _} -> pole_id end)
+      |> MapSet.new()
+    end
+  end
+
+  # All uncaptured, playable puzzlets grouped by pole id — same filters as
+  # active_puzzlet_for_pole, across every pole in one query. Region is loaded
+  # so effective-tag computation doesn't re-query per puzzlet's own row.
+  defp uncaptured_playable_puzzlets_by_pole do
+    captured_puzzlet_ids = select(Capture, [c], c.puzzlet_id)
+
+    Puzzlet
+    |> where([p], not is_nil(p.pole_id))
+    |> where([p], p.status == :validated)
+    |> where([p], not p.validator_only)
+    |> where([p], p.id not in subquery(captured_puzzlet_ids))
+    |> Repo.all()
+    |> Enum.group_by(& &1.pole_id)
   end
 
   def pole_with_state(%Pole{} = pole, teams \\ nil) do

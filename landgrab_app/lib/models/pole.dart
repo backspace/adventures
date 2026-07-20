@@ -14,6 +14,11 @@ class Pole {
   final int? currentOwnerColorIndex;
   final bool locked;
 
+  /// Every remaining puzzlet here conflicts with the viewing team's
+  /// accessibility needs — nobody on the team can engage anything (they can
+  /// still claim it). Per-viewer, set on the pole-list fetch; the map flags it.
+  final bool prohibitive;
+
   Pole({
     required this.id,
     required this.name,
@@ -23,6 +28,7 @@ class Pole {
     this.currentOwnerTeamName,
     this.currentOwnerColorIndex,
     required this.locked,
+    this.prohibitive = false,
   });
 
   factory Pole.fromJson(Map<String, dynamic> json) => Pole(
@@ -34,6 +40,7 @@ class Pole {
         currentOwnerTeamName: json['current_owner_team_name'] as String?,
         currentOwnerColorIndex: json['current_owner_color_index'] as int?,
         locked: json['locked'] as bool? ?? false,
+        prohibitive: json['prohibitive'] as bool? ?? false,
       );
 }
 
