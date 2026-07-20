@@ -49,7 +49,7 @@ class TerritoryLayer extends StatelessWidget {
     required this.poles,
     this.myOwnerId,
     this.colorIndexByTeam = const {},
-    this.radiusMeters = 200,
+    this.radiusMeters = 100,
     this.captureStartedAt = const {},
     this.captureFromOwner = const {},
     this.captureAnimationDuration = const Duration(milliseconds: 800),
