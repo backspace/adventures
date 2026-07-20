@@ -71,7 +71,7 @@ defmodule Registrations.Landgrab.PlayerStringsTest do
     assert PS.push_title("pole_contested") == "Stake contested"
     assert PS.game_over_detail() =~ "Stakes can still be examined"
     assert PS.game_over_detail() =~ "relics can no longer"
-    assert PS.not_started_detail() =~ "Stakes can't be claimed"
+    assert PS.not_started_detail() =~ "Stakes can’t be claimed"
   end
 
   test "dynamic name bindings still interpolate the real value" do

@@ -72,7 +72,7 @@ class LoginStrings {
 
   static const invalidCredentials = 'Invalid email or password';
   static const serverUnreachable =
-      'Can\'t reach the server. Check your connection (and VPN, if you '
+      'Can’t reach the server. Check your connection (and VPN, if you '
       'use one) and try again.';
   static const loginFailed = 'Sign-in failed. Please try again.';
   static const appleNoIdentityToken =
@@ -93,17 +93,17 @@ class JoinTeamStrings {
   JoinTeamStrings._();
 
   static const appBarTitle = 'Join a team';
-  static const noTeamPrompt = 'You haven\'t joined a team yet.';
+  static const noTeamPrompt = 'You haven’t joined a team yet.';
   static const intro =
-      'Scan your team\'s QR code, or type the join code from your team card.';
+      'Scan your team’s QR code, or type the join code from your team card.';
   static const scanButton = 'Scan team QR';
   static const orDivider = 'or';
   static const codeLabel = 'Join code';
   static const joinButton = 'Join';
-  static const success = 'You\'ve joined your team.';
+  static const success = 'You’ve joined your team.';
   static const notFound =
       'No team found for that code. Double-check it and try again.';
-  static const failed = 'Couldn\'t join that team. Please try again.';
+  static const failed = 'Couldn’t join that team. Please try again.';
 }
 
 /// Password-reset WebView (`routes/forgot_password_route.dart`), which
@@ -113,7 +113,7 @@ class ForgotPasswordStrings {
 
   static const appBarTitle = 'Reset password';
   static const intro =
-      'Enter your email and we\'ll send you a link to choose a new '
+      'Enter your email and we’ll send you a link to choose a new '
       'password.';
   static const emailLabel = 'Email';
   static const emailRequired = 'Enter your email address.';
@@ -123,7 +123,7 @@ class ForgotPasswordStrings {
       'Open it on this device to choose a new password.';
   static const backToSignIn = 'Back to sign in';
   static const serverUnreachable =
-      'Can\'t reach the server. Check your connection (and VPN, if you '
+      'Can’t reach the server. Check your connection (and VPN, if you '
       'use one) and try again.';
 }
 
@@ -134,7 +134,7 @@ class RegisterStrings {
 
   static const appBarTitle = 'Create account';
   static const intro =
-      'Create an account with your email, then we\'ll get your details.';
+      'Create an account with your email, then we’ll get your details.';
   static const emailLabel = 'Email';
   static const passwordLabel = 'Password';
   static const createAccountButton = 'Create account';
@@ -142,9 +142,9 @@ class RegisterStrings {
   static const signInLink = 'Sign in';
 
   static const serverUnreachable =
-      'Can\'t reach the server. Check your connection (and VPN, if you '
+      'Can’t reach the server. Check your connection (and VPN, if you '
       'use one) and try again.';
-  static const failed = 'Couldn\'t create your account. Please try again.';
+  static const failed = 'Couldn’t create your account. Please try again.';
 }
 
 /// Pre-event home body (`_PreEventBody` in `routes/home_route.dart`).
@@ -210,7 +210,7 @@ class GameplayStrings {
   // has passed it, or poles haven't loaded yet).
   static const viewOnMap = 'View';
   static const zoneNotOnMap =
-      'That ${Terms.stake} isn\'t on your map right now.';
+      'That ${Terms.stake} isn’t on your map right now.';
 
   // How many other teams are also on this pole (shown on the
   // in-progress card).
@@ -312,14 +312,14 @@ class ScanStrings {
   static const noActivePuzzlet =
       'No active ${Terms.relics} for this ${Terms.stake}.';
   static const notStarted =
-      'The simulation hasn\'t begun yet — you can\'t claim ${Terms.stakes} until it starts.';
+      'The simulation hasn’t begun yet — you can’t claim ${Terms.stakes} until it starts.';
   static String scanFailed(String detail) => 'Scan failed: $detail';
 
   // Unknown-barcode dialog
   static const unknownBarcodeTitle = 'Unknown barcode';
   static String unknownBarcodeBody(String barcode) =>
-      '“$barcode” doesn\'t match any known ${Terms.stake}. '
-      'Make sure you scanned a ${Terms.stake}\'s barcode and try again.';
+      '“$barcode” doesn’t match any known ${Terms.stake}. '
+      'Make sure you scanned a ${Terms.stake}’s barcode and try again.';
   static const unknownBarcodeBack = 'Back to map';
   static const unknownBarcodeRetry = 'Try again';
 
@@ -336,9 +336,9 @@ class ScanStrings {
       'Wait for another team to capture it before you can try again.';
 
   // Own-creation dialog (authors can't capture their own content)
-  static const ownCreationTitle = 'That one\'s yours';
+  static const ownCreationTitle = 'That one’s yours';
   static String ownCreationBody(String poleName) =>
-      'You authored $poleName, so you can\'t capture it. Leave it for the other teams.';
+      'You authored $poleName, so you can’t capture it. Leave it for the other teams.';
 
   // Outside-the-endgame-boundary dialog. The boundary itself is
   // deliberately invisible — poles it has passed vanish from the
@@ -411,7 +411,7 @@ class PuzzletStrings {
   // rival captured it) while you're on its screen and we return to the map.
   static const noLongerAvailable =
       'This ${Terms.relic} is no longer available.';
-  static const ownCreation = "You made this one — you can't capture it.";
+  static const ownCreation = "You made this one — you can’t capture it.";
 
   // Fallbacks for submissions that fail in ways the app doesn't
   // specifically model. When the server supplies an error detail,

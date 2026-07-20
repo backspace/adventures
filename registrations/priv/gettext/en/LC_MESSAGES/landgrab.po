@@ -165,10 +165,10 @@ msgid "app_puzzlet_withdrawn_body"
 msgstr "A %{relic} you were working on has been withdrawn from the study."
 
 msgid "app_pole_contested_body"
-msgstr "%{team} is now working on %{pole} too — it's a race."
+msgstr "%{team} is now working on %{pole} too — it’s a race."
 
 msgid "app_pole_contested_body_unknown"
-msgstr "Another team is now working on %{pole} too — it's a race."
+msgstr "Another team is now working on %{pole} too — it’s a race."
 
 msgid "app_endgame_announcement"
 msgstr "ANOMALY DETECTED. %{stakesCap} at the periphery are being withdrawn from the simulation. Withdrawn %{stakes} disappear from your map. Claims are only accepted on %{stakes} still shown."
@@ -201,7 +201,7 @@ msgid "app_outside_zone_detail"
 msgstr "This %{stake} has been withdrawn from the simulation. It can no longer be claimed."
 
 msgid "app_own_creation_detail"
-msgstr "You authored this, so you can't claim it. Leave it for the other teams."
+msgstr "You authored this, so you can’t claim it. Leave it for the other teams."
 
 msgid "app_already_owner_detail"
 msgstr "Your team already claims this %{stake}. Wait for a rival to capture it."
@@ -225,13 +225,13 @@ msgid "app_stake_not_found_detail"
 msgstr "That %{stake} could not be found."
 
 msgid "app_team_locked_out_detail"
-msgstr "Your team has used all its attempts on this %{stake}'s %{relic}. Wait for another team to capture it before trying again."
+msgstr "Your team has used all its attempts on this %{stake}’s %{relic}. Wait for another team to capture it before trying again."
 
 msgid "app_no_relic_detail"
 msgstr "That %{stake} has no %{relic} available right now."
 
 msgid "app_not_started_detail"
-msgstr "The simulation has not begun yet. %{stakesCap} can't be claimed until it does."
+msgstr "The simulation has not begun yet. %{stakesCap} can’t be claimed until it does."
 
 msgid "app_game_over_detail"
 msgstr "The simulation has ended. %{stakesCap} can still be examined, but %{relics} can no longer be claimed."
