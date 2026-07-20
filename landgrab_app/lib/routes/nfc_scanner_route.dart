@@ -1,13 +1,23 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:nfc_manager/nfc_manager.dart';
+import 'package:nfc_manager/nfc_manager_android.dart';
+import 'package:nfc_manager/nfc_manager_ios.dart';
 
 /// Full-screen scanner that starts an NFC session and pops with the first
 /// scanned tag's UID as an uppercase hex string (e.g. "04A1B2C3D4"), or
 /// null if the user cancels.
+///
+/// On Android we drive the reader directly via [NfcManagerAndroid] rather
+/// than the cross-platform helper, specifically so we can pass
+/// SKIP_NDEF_CHECK + NO_PLATFORM_SOUNDS. Without those, Android's own tag
+/// dispatcher ("New tag scanned" overlay) and scan sound fire alongside our
+/// read — the reason for the migration off nfc_manager 3.x, whose Android
+/// reader mode set neither flag and offered no way to.
 class NfcScannerRoute extends StatefulWidget {
   final String title;
   const NfcScannerRoute({super.key, this.title = 'Scan NFC tag'});
@@ -28,14 +38,64 @@ class _NfcScannerRouteState extends State<NfcScannerRoute> {
   }
 
   Future<void> _start() async {
-    final available = await NfcManager.instance.isAvailable();
-    if (!available) {
+    final availability = await NfcManager.instance.checkAvailability();
+    if (availability != NfcAvailability.enabled) {
       if (!mounted) return;
-      setState(() => _status = 'NFC is not available on this device.');
+      setState(() => _status = availability == NfcAvailability.disabled
+          ? 'NFC is turned off. Enable it in system settings and try again.'
+          : 'NFC is not available on this device.');
       return;
     }
 
-    NfcManager.instance.startSession(
+    if (Platform.isAndroid) {
+      await _startAndroid();
+    } else {
+      await _startIos();
+    }
+  }
+
+  Future<void> _startAndroid() async {
+    await NfcManagerAndroid.instance.enableReaderMode(
+      // ISO14443 (MIFARE, NTAG, …) = NFC-A/B; ISO15693 = NFC-V. FeliCa
+      // (NFC-F) is deliberately excluded, matching iOS. skipNdefCheck +
+      // noPlatformSounds keep the OS tag dispatcher and scan sound out of
+      // the way so only the app reacts to the tag.
+      flags: {
+        NfcReaderFlagAndroid.nfcA,
+        NfcReaderFlagAndroid.nfcB,
+        NfcReaderFlagAndroid.nfcV,
+        NfcReaderFlagAndroid.skipNdefCheck,
+        NfcReaderFlagAndroid.noPlatformSounds,
+      },
+      onTagDiscovered: (tag) async {
+        if (_popping) return;
+        final android = NfcTagAndroid.from(tag);
+        final id = android?.id;
+        if (id == null || id.isEmpty) {
+          // Field-side scans have no debug terminal attached, so surface
+          // what the platform exposed on-screen too.
+          final diag = _androidDiagnostic(android);
+          debugPrint('NFC tag with no identifier:\n$diag');
+          await NfcManagerAndroid.instance.disableReaderMode();
+          if (!mounted) return;
+          setState(() {
+            _status = 'Could not read that tag. See diagnostic below.';
+            _diagnostic = diag;
+          });
+          // Re-arm so the user can try a different tag.
+          _start();
+          return;
+        }
+        _popping = true;
+        await NfcManagerAndroid.instance.disableReaderMode();
+        if (!mounted) return;
+        Navigator.of(context).pop<String>(_toHex(id));
+      },
+    );
+  }
+
+  Future<void> _startIos() async {
+    await NfcManager.instance.startSession(
       // Restrict to ISO14443 (MIFARE, NTAG, etc.) and ISO15693. Excluding
       // ISO18092 (FeliCa) avoids needing the felica.systemcodes entitlement,
       // which is intended for Japanese transit-card-style tags we don't use.
@@ -43,24 +103,20 @@ class _NfcScannerRouteState extends State<NfcScannerRoute> {
         NfcPollingOption.iso14443,
         NfcPollingOption.iso15693,
       },
-      onDiscovered: (NfcTag tag) async {
+      alertMessageIos: widget.title,
+      onDiscovered: (tag) async {
         if (_popping) return;
-        final id = _extractIdentifier(tag);
+        final id = _iosIdentifier(tag);
         if (id == null) {
-          // Capture what the platform actually exposed so we can extend
-          // the probe list. Surfaced on-screen too because field-side
-          // tag scans don't have a debug terminal attached.
-          final diag = _formatTagDiagnostic(tag.data);
+          final diag = _iosDiagnostic(tag);
           debugPrint('NFC tag with unrecognized shape:\n$diag');
-          await NfcManager.instance.stopSession(
-            errorMessage: 'Could not read this tag.',
-          );
+          await NfcManager.instance
+              .stopSession(errorMessageIos: 'Could not read this tag.');
           if (!mounted) return;
           setState(() {
             _status = 'Could not read that tag. See diagnostic below.';
             _diagnostic = diag;
           });
-          // Re-start the session so user can scan a different tag.
           _start();
           return;
         }
@@ -69,86 +125,58 @@ class _NfcScannerRouteState extends State<NfcScannerRoute> {
         if (!mounted) return;
         Navigator.of(context).pop<String>(id);
       },
-      onError: (error) async {
+      onSessionErrorIos: (error) {
         if (!mounted) return;
         setState(() => _status = error.message);
       },
     );
   }
 
-  /// Read the tag's hardware identifier across platforms. nfc_manager
-  /// exposes platform-specific tag-tech data; the same physical tag can
-  /// surface under different keys depending on platform and whether it's
-  /// NDEF-formatted, so we probe the common ones in order.
-  String? _extractIdentifier(NfcTag tag) {
-    final data = tag.data;
-    const probes = [
-      // iOS
-      'mifare',
-      'iso15693',
-      'iso7816',
-      'felica',
-      // Android
-      'nfca',
-      'nfcb',
-      'nfcf',
-      'nfcv',
-      'isodep',
-      'mifareclassic',
-      'mifareultralight',
-    ];
-    for (final key in probes) {
-      final tech = data[key];
-      if (tech is Map) {
-        final id = tech['identifier'];
-        if (id is List<int>) return _toHex(id);
-        if (id is Uint8List) return _toHex(id);
-      }
-    }
-    // Some platforms wrap the tag in `ndef` with the raw tech nested
-    // under `cachedMessage`/`tag` — check one level down too.
-    final ndef = data['ndef'];
-    if (ndef is Map) {
-      final id = ndef['identifier'];
-      if (id is List<int>) return _toHex(id);
-      if (id is Uint8List) return _toHex(id);
-    }
+  /// The tag's hardware identifier on iOS. The same physical tag surfaces
+  /// under different tech classes depending on its type, so probe the ones
+  /// we poll for in order.
+  String? _iosIdentifier(NfcTag tag) {
+    final mifare = MiFareIos.from(tag)?.identifier;
+    if (mifare != null && mifare.isNotEmpty) return _toHex(mifare);
+    final iso15693 = Iso15693Ios.from(tag)?.identifier;
+    if (iso15693 != null && iso15693.isNotEmpty) return _toHex(iso15693);
+    final iso7816 = Iso7816Ios.from(tag)?.identifier;
+    if (iso7816 != null && iso7816.isNotEmpty) return _toHex(iso7816);
+    final felica = FeliCaIos.from(tag)?.currentIDm;
+    if (felica != null && felica.isNotEmpty) return _toHex(felica);
     return null;
   }
 
   String _toHex(List<int> bytes) =>
       bytes.map((b) => b.toRadixString(16).padLeft(2, '0').toUpperCase()).join();
 
-  /// Render the raw tag.data map as a human-readable diagnostic. Bytes
-  /// get hex-formatted so the identifier (if buried in there) is visible.
-  String _formatTagDiagnostic(Map<String, dynamic> data) {
-    final buf = StringBuffer();
-    buf.writeln('Techs: ${data.keys.join(", ")}');
-    data.forEach((key, value) {
-      buf.writeln();
-      buf.writeln('[$key]');
-      if (value is Map) {
-        value.forEach((k, v) {
-          buf.writeln('  $k: ${_formatValue(v)}');
-        });
-      } else {
-        buf.writeln('  $value');
-      }
-    });
-    return buf.toString();
+  String _androidDiagnostic(NfcTagAndroid? tag) {
+    if (tag == null) return 'No Android tag data was exposed.';
+    final id = tag.id.isEmpty ? '(empty)' : _toHex(tag.id);
+    final techs = tag.techList.isEmpty ? '(none)' : tag.techList.join(', ');
+    return 'Techs: $techs\nID: $id';
   }
 
-  String _formatValue(dynamic v) {
-    if (v is Uint8List) return '[${_toHex(v)}] (${v.length} bytes)';
-    if (v is List<int>) return '[${_toHex(v)}] (${v.length} bytes)';
-    if (v is List) return '[${v.length} items] $v';
-    return '$v';
+  String _iosDiagnostic(NfcTag tag) {
+    final types = <String>[
+      if (MiFareIos.from(tag) != null) 'MiFare',
+      if (Iso15693Ios.from(tag) != null) 'ISO15693',
+      if (Iso7816Ios.from(tag) != null) 'ISO7816',
+      if (FeliCaIos.from(tag) != null) 'FeliCa',
+    ];
+    return types.isEmpty
+        ? 'No recognized tag type on this tag.'
+        : 'Recognized ${types.join(", ")} but no identifier was present.';
   }
 
   @override
   void dispose() {
-    // Best-effort cleanup if the user backs out.
-    NfcManager.instance.stopSession().catchError((_) {});
+    // Best-effort cleanup if the user backs out mid-session.
+    if (Platform.isAndroid) {
+      NfcManagerAndroid.instance.disableReaderMode().catchError((_) {});
+    } else {
+      NfcManager.instance.stopSession().catchError((_) {});
+    }
     super.dispose();
   }
 
