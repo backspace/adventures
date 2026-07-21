@@ -230,6 +230,12 @@ msgstr "Your team has used all its attempts on this %{stake}’s %{relic}. Wait 
 msgid "app_no_relic_detail"
 msgstr "That %{stake} has no %{relic} available right now."
 
+msgid "app_not_prohibitive_detail"
+msgstr "This %{stake} has a %{relic} your cohort can attempt, so it can’t be claimed without solving."
+
+msgid "app_claim_failed_detail"
+msgstr "That %{stake} couldn’t be claimed. Try again."
+
 msgid "app_not_started_detail"
 msgstr "The simulation has not begun yet. %{stakesCap} can’t be claimed until it does."
 

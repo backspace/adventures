@@ -5,8 +5,9 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
   alias Registrations.Landgrab.PlayerStrings
   alias RegistrationsWeb.Landgrab.Render
 
-  # Scanning a stake is a gameplay action — refused until the event starts.
-  plug(RegistrationsWeb.Plugs.RequireEventStarted when action in [:show])
+  # Scanning / claiming a stake are gameplay actions — refused until the event
+  # starts.
+  plug(RegistrationsWeb.Plugs.RequireEventStarted when action in [:show, :accommodate])
 
   def index(conn, _params) do
     # Pass the viewer's team so poles prohibitive for that team (every remaining
@@ -87,6 +88,53 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
           pole: Render.pole_state(Landgrab.pole_with_state(pole))
         })
     end
+  end
+
+  # Claim a prohibitive stake without solving (accommodation). Presence is the
+  # gate as with scanning: the stake is resolved by its scanned barcode.
+  def accommodate(conn, %{"barcode" => barcode}) do
+    user = Pow.Plug.current_user(conn)
+
+    case Landgrab.get_pole_by_barcode(barcode) do
+      nil ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: %{code: "pole_not_found", detail: PlayerStrings.stake_not_found_detail()}})
+
+      pole ->
+        case Landgrab.accommodate_pole(pole, user.team_id, user.id) do
+          {:ok, claimed} ->
+            json(conn, %{pole: Render.pole_state(Landgrab.pole_with_state(claimed))})
+
+          {:error, :no_team} ->
+            conn
+            |> put_status(:forbidden)
+            |> json(%{error: %{code: "no_team", detail: PlayerStrings.no_team_detail()}})
+
+          {:error, :already_owner} ->
+            claim_error(conn, pole, "already_owner", PlayerStrings.already_owner_detail())
+
+          {:error, :outside_zone} ->
+            claim_error(conn, pole, "outside_zone", PlayerStrings.outside_zone_detail())
+
+          {:error, :not_prohibitive} ->
+            claim_error(conn, pole, "not_prohibitive", PlayerStrings.not_prohibitive_detail())
+
+          {:error, _} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{error: %{code: "claim_failed", detail: PlayerStrings.claim_failed_detail()}})
+        end
+    end
+  end
+
+  defp claim_error(conn, pole, code, detail) do
+    conn
+    |> put_status(:conflict)
+    |> json(%{
+      error: %{code: code, detail: detail},
+      pole: Render.pole_state(Landgrab.pole_with_state(pole))
+    })
   end
 
   # Comma-separated declined puzzlet ids from the `exclude` query param.

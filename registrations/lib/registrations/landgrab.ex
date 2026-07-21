@@ -216,7 +216,10 @@ defmodule Registrations.Landgrab do
                      # puzzlet conflicts with — [] when none. Surfaced so the
                      # app can offer "we've got it / not this one" rather than
                      # deciding for them.
-                     conflict_tags: puzzlet_conflict_tags(active, team_id)
+                     conflict_tags: puzzlet_conflict_tags(active, team_id),
+                     # Whether EVERY remaining relic here conflicts for the team
+                     # — so the app can offer claiming without solving.
+                     prohibitive: prohibitive_for_team?(pole, team_id)
                    })}
               end
             end
@@ -439,6 +442,71 @@ defmodule Registrations.Landgrab do
     Repo.one(query)
   end
 
+  @doc """
+  Claim a stake **without solving** — the accommodation path for a stake that's
+  prohibitive for the team (every remaining relic conflicts with a member's
+  accessibility needs). Records an `accommodation` ownership event (a soft hold:
+  the relics stay unsolved, so a team that *can* solve one may still take it).
+
+  Guards mirror `record_attempt`; the prohibitive check is server-verified so a
+  client can't claim a stake it could actually solve.
+  """
+  def accommodate_pole(%Pole{} = pole, team_id, _user_id) do
+    cond do
+      is_nil(team_id) ->
+        {:error, :no_team}
+
+      pole_owned_by_team?(pole, team_id) ->
+        {:error, :already_owner}
+
+      pole_outside_endgame_zone?(pole) ->
+        {:error, :outside_zone}
+
+      not prohibitive_for_team?(pole, team_id) ->
+        {:error, :not_prohibitive}
+
+      true ->
+        previous_owner_id = current_owner_team_id_for_pole(pole)
+
+        %OwnershipEvent{}
+        |> OwnershipEvent.changeset(%{kind: "accommodation", pole_id: pole.id, team_id: team_id})
+        |> Repo.insert()
+        |> case do
+          {:ok, event} ->
+            broadcast_pole_update(pole, event)
+            maybe_signal_pole_lost(pole, previous_owner_id, team_id)
+            {:ok, pole}
+
+          {:error, _changeset} ->
+            {:error, :insert_failed}
+        end
+    end
+  end
+
+  @doc """
+  Whether a stake is prohibitive for a team: none of its uncaptured playable
+  puzzlets suits the team's union of accessibility needs. Same rule as the map
+  flag; the gate for `accommodate_pole`.
+  """
+  def prohibitive_for_team?(%Pole{id: pole_id}, team_id) do
+    needs = Accessibility.team_needs(team_id)
+
+    MapSet.size(needs) > 0 and
+      Accessibility.prohibitive?(uncaptured_playable_puzzlets(pole_id), needs)
+  end
+
+  # A pole's uncaptured, validated, non-validator-only puzzlets — the pool the
+  # prohibitive check and scan-serving both draw from.
+  defp uncaptured_playable_puzzlets(pole_id) do
+    captured =
+      from(c in OwnershipEvent, where: not is_nil(c.puzzlet_id), select: c.puzzlet_id)
+
+    Puzzlet
+    |> where([p], p.pole_id == ^pole_id and p.status == :validated and not p.validator_only)
+    |> where([p], p.id not in subquery(captured))
+    |> Repo.all()
+  end
+
   # The team's accessibility needs the given puzzlet conflicts with (sorted),
   # or [] when there's no puzzlet, no team, or no conflict. Team-union needs, so
   # any one member's need shows up — matching the map flag.
@@ -458,17 +526,39 @@ defmodule Registrations.Landgrab do
   end
 
   def current_owner_team_id_for_pole(%Pole{id: pole_id}) do
-    # Owner = the team of the newest capture among the pole's puzzlets. (When
-    # pole-only kinds like liberate/accommodation land, this gains a pole_id
-    # branch + kind-awareness; today only capture events exist.)
-    OwnershipEvent
-    |> where([c], c.kind == "capture")
-    |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
-    |> where([_c, p], p.pole_id == ^pole_id)
-    |> order_by([c, _p], desc: c.inserted_at)
-    |> limit(1)
-    |> select([c, _p], c.team_id)
-    |> Repo.one()
+    # Owner = the newest ownership event for this pole, from EITHER source,
+    # newest-wins across both:
+    #   * capture events, tied to the pole via their puzzlet;
+    #   * pole-only events (accommodation now; liberate later), tied by pole_id.
+    # Its kind decides the owner: capture/accommodation → that team; liberate
+    # (future) → nil (no owner).
+    capture_events =
+      from(c in OwnershipEvent,
+        join: p in Puzzlet,
+        on: p.id == c.puzzlet_id,
+        where: c.kind == "capture" and p.pole_id == ^pole_id,
+        select: %{team_id: c.team_id, kind: c.kind, inserted_at: c.inserted_at}
+      )
+
+    pole_events =
+      from(c in OwnershipEvent,
+        where: c.pole_id == ^pole_id and is_nil(c.puzzlet_id),
+        select: %{team_id: c.team_id, kind: c.kind, inserted_at: c.inserted_at}
+      )
+
+    latest =
+      capture_events
+      |> union_all(^pole_events)
+      |> subquery()
+      |> order_by([e], desc: e.inserted_at)
+      |> limit(1)
+      |> Repo.one()
+
+    case latest do
+      nil -> nil
+      %{kind: "liberate"} -> nil
+      %{team_id: team_id} -> team_id
+    end
   end
 
   def pole_locked?(%Pole{id: pole_id}) do

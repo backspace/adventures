@@ -274,6 +274,7 @@ defmodule RegistrationsWeb.Router do
     get("/event", EventController, :show)
     get("/poles", PoleController, :index)
     get("/poles/:barcode", PoleController, :show)
+    post("/poles/:barcode/accommodation", PoleController, :accommodate)
     get("/attachments/:id", AttachmentController, :show)
     get("/attachments/:id/thumb", AttachmentController, :show_thumb)
     post("/puzzlets/:puzzlet_id/attempts", AttemptController, :create)

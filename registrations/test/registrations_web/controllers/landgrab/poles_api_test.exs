@@ -560,6 +560,39 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
     end
   end
 
+  describe "POST /poles/:barcode/accommodation" do
+    test "claims a prohibitive stake without solving", %{conn: conn, user: user, team: team} do
+      user
+      |> Ecto.Changeset.change(accessibility_tags: ["stairs"])
+      |> Registrations.Repo.update!()
+
+      region = insert(:poles_region, accessibility_tags: ["stairs"])
+      pole = insert(:pole)
+      insert(:puzzlet, pole: pole, region_id: region.id, answer: "a")
+
+      body =
+        conn
+        |> post("/landgrab/poles/#{pole.barcode}/accommodation")
+        |> json_response(200)
+
+      assert body["pole"]["id"] == pole.id
+      assert body["pole"]["current_owner_team_id"] == team.id
+    end
+
+    test "refuses when the stake is not prohibitive for the team", %{conn: conn} do
+      # The setup team has no declared needs, so its puzzlet is doable.
+      pole = insert(:pole)
+      insert(:puzzlet, pole: pole, answer: "a")
+
+      body =
+        conn
+        |> post("/landgrab/poles/#{pole.barcode}/accommodation")
+        |> json_response(409)
+
+      assert body["error"]["code"] == "not_prohibitive"
+    end
+  end
+
   # Replaces the current event with one whose start_time is in the past —
   # gameplay is open.
   defp started_event, do: put_event(DateTime.add(DateTime.utc_now(), -3600, :second))

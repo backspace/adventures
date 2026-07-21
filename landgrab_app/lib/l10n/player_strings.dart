@@ -221,12 +221,11 @@ class GameplayStrings {
   // Accessibility: a stake whose every remaining ${Terms.relic} demands
   // something a member of your cohort has set aside. In-fiction, never
   // clinical — matter-of-fact, not othering. Shown on tap. Consistent with the
-  // scan choice: a member who's able can still take these on ("We've got it").
-  // (When the accommodation claim ships, revisit to mention claiming without
-  // solving — that path doesn't exist yet.)
+  // scan choice: a member who's able can still attempt, or the team can claim
+  // the stake without solving.
   static const zoneProhibitive =
       'Every ${Terms.relic} here has accessibility requirements a member of your team '
-      'has set aside. You can still choose to attempt.';
+      'has set aside. Scan it to attempt anyway, or claim it without solving.';
   static String prohibitiveHide(int n) =>
       'Hide $n incompatible ${n == 1 ? Terms.stake : Terms.stakes}';
   static String prohibitiveShow(int n) =>
@@ -337,21 +336,29 @@ class ScanStrings {
       'The simulation hasn’t begun yet — you can’t claim ${Terms.stakes} until it starts.';
   static String scanFailed(String detail) => 'Scan failed: $detail';
 
-  // Every remaining ${Terms.relic} here was declined — none suit the cohort.
-  // (Claiming without solving comes later; for now, move on.)
-  static const noSuitablePuzzlet =
-      'All ${Terms.relics} here have incompatible accessibility requirements.';
-
   // Accessibility conflict choice: the served ${Terms.relic} has requirements a
   // member of the cohort set aside. Names the specific requirement(s) so the
   // team can decide (split up, or move on) — matter-of-fact, never othering.
   static const conflictTitle = 'Accessibility requirements';
-  static String conflictBody(String requirements) =>
+  static String conflictBody(String requirements, {bool canClaim = false}) =>
       'This ${Terms.relic} has accessibility requirements a member of your '
-      'cohort has set aside: $requirements. Take it on together, or move to '
-      'another ${Terms.stake}?';
+      'cohort has set aside: $requirements. '
+      '${canClaim ? 'Attempt it together, try a different ${Terms.relic} here, or claim this ${Terms.stake} without solving?' : 'Attempt it together, or try a different ${Terms.relic} here?'}';
   static const conflictTake = 'We’ll try it';
-  static const conflictSkip = 'Moving along';
+  static const conflictSkip = 'Give me another';
+
+  // Accommodation claim: offered on a stake where every relic is incompatible
+  // for the cohort — take the ground without solving. Presented as a third
+  // option in the conflict dialog and at the decline-everything dead-end.
+  static const conflictClaim = 'Claim it';
+  static const claimConfirmTitle = 'Claim without solving?';
+  static const claimConfirmBody =
+      'No ${Terms.relic} here suits your cohort. You can claim this '
+      '${Terms.stake} for your team without solving. It stays open for teams '
+      'who can solve it, so a rival may take it back.';
+  static const claimConfirm = 'Claim it';
+  static const claimCancel = 'Not now';
+  static const claimFailed = 'Couldn’t claim that ${Terms.stake}. Try again.';
 
   // Unknown-barcode dialog
   static const unknownBarcodeTitle = 'Unknown barcode';

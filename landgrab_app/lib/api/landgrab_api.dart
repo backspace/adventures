@@ -420,6 +420,16 @@ class LandgrabApi {
     await dio.delete('/landgrab/active-puzzlets/$puzzletId');
   }
 
+  /// Claim a prohibitive stake without solving (accommodation). Returns the
+  /// updated pole on success. Throws on failure (the caller surfaces it) — the
+  /// server verifies the stake really is prohibitive for the team, so this can
+  /// come back 409 `not_prohibitive` if the map was stale.
+  Future<Pole> claimWithoutSolving(String barcode) async {
+    final response =
+        await dio.post('/landgrab/poles/$barcode/accommodation');
+    return Pole.fromJson(response.data['pole'] as Map<String, dynamic>);
+  }
+
   Future<AttemptOutcome> submitAnswer(String puzzletId, String answer) async {
     try {
       final response = await dio.post(

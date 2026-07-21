@@ -13,9 +13,10 @@ import 'package:landgrab/widgets/landgrab_app_bar.dart';
 /// the territory animation.
 typedef ScanRouteResult = ({String barcode, String? capturedPoleId});
 
-/// The team's answer to an accessibility conflict on the served puzzlet:
-/// take it on themselves, or move to the next stake's puzzlet.
-enum _ConflictChoice { take, skip }
+/// The team's answer to an accessibility conflict on the served puzzlet: take
+/// it on themselves, move to the next stake's puzzlet, or (on a stake nothing
+/// suits) claim the ground without solving.
+enum _ConflictChoice { take, skip, claim }
 
 class ScanRoute extends StatefulWidget {
   final LandgrabApi api;
@@ -118,18 +119,44 @@ class _ScanRouteState extends State<ScanRoute> {
 
           while (true) {
             if (current.activePuzzlet == null) {
-              _showSnack(current.pole.locked
-                  ? ScanStrings.poleFullyCaptured
-                  : declined.isEmpty
-                      ? ScanStrings.noActivePuzzlet
-                      : ScanStrings.noSuitablePuzzlet);
+              // Nothing (left) to serve. On a prohibitive stake that's the
+              // dead-end where claiming without solving is offered.
+              if (current.pole.prohibitive) {
+                if (await _confirmClaim() && mounted) {
+                  await _claimWithoutSolving(navigator, barcode, current.pole.id);
+                  return;
+                }
+                if (!mounted) return;
+              } else {
+                _showSnack(current.pole.locked
+                    ? ScanStrings.poleFullyCaptured
+                    : ScanStrings.noActivePuzzlet);
+              }
               navigator.pop((barcode: barcode, capturedPoleId: null));
               return;
             }
 
             if (current.hasConflict) {
-              final choice = await _showConflictChoice(current.conflictTags);
+              // "Claim it" only where the whole stake is prohibitive — a stake
+              // with a doable relic must be solved, not claimed.
+              final choice = await _showConflictChoice(
+                current.conflictTags,
+                canClaim: current.pole.prohibitive,
+              );
               if (!mounted) return;
+
+              if (choice == _ConflictChoice.claim) {
+                if (await _confirmClaim() && mounted) {
+                  // Let go of the held (conflicting) puzzlet, then claim.
+                  await widget.api
+                      .abandonActivePuzzlet(current.activePuzzlet!.id);
+                  await _claimWithoutSolving(navigator, barcode, current.pole.id);
+                  return;
+                }
+                if (!mounted) return;
+                continue; // confirm dismissed — re-offer the choice
+              }
+
               // Dismissed, or "not this one": let go of the held puzzlet.
               if (choice != _ConflictChoice.take) {
                 await widget.api
@@ -274,21 +301,28 @@ class _ScanRouteState extends State<ScanRoute> {
   /// The served relic has accessibility requirements a member of the cohort
   /// set aside. Ask, rather than deciding: take it on (split up, whoever can),
   /// or move to the next. Names the specific requirement(s) so the team can
-  /// judge. Dismissing (returns null) cancels back to the map.
-  Future<_ConflictChoice?> _showConflictChoice(List<String> conflictTags) {
-    final requirements =
-        conflictTags.map(accessibilityTagLabel).join(', ');
+  /// judge. When [canClaim] (the whole stake is prohibitive), also offers
+  /// claiming without solving. Dismissing (returns null) cancels to the map.
+  Future<_ConflictChoice?> _showConflictChoice(List<String> conflictTags,
+      {required bool canClaim}) {
+    final requirements = conflictTags.map(accessibilityTagLabel).join(', ');
     return showDialog<_ConflictChoice>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text(ScanStrings.conflictTitle),
-        content: Text(ScanStrings.conflictBody(requirements)),
+        content: Text(ScanStrings.conflictBody(requirements, canClaim: canClaim)),
         actions: [
           TextButton(
             onPressed: () =>
                 Navigator.of(dialogContext).pop(_ConflictChoice.skip),
             child: const Text(ScanStrings.conflictSkip),
           ),
+          if (canClaim)
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(_ConflictChoice.claim),
+              child: const Text(ScanStrings.conflictClaim),
+            ),
           FilledButton(
             onPressed: () =>
                 Navigator.of(dialogContext).pop(_ConflictChoice.take),
@@ -297,6 +331,44 @@ class _ScanRouteState extends State<ScanRoute> {
         ],
       ),
     );
+  }
+
+  /// Confirm before claiming a stake without solving — it takes the ground
+  /// from another team, so it's a deliberate step, not a stray tap.
+  Future<bool> _confirmClaim() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(ScanStrings.claimConfirmTitle),
+        content: const Text(ScanStrings.claimConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text(ScanStrings.claimCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text(ScanStrings.claimConfirm),
+          ),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
+  /// Record the accommodation claim and return to the map. Passes the pole id
+  /// so the map replays the ownership animation on arrival.
+  Future<void> _claimWithoutSolving(
+      NavigatorState navigator, String barcode, String poleId) async {
+    try {
+      await widget.api.claimWithoutSolving(barcode);
+      if (!mounted) return;
+      navigator.pop((barcode: barcode, capturedPoleId: poleId));
+    } catch (e) {
+      if (!mounted) return;
+      _showSnack(ScanStrings.claimFailed);
+      navigator.pop((barcode: barcode, capturedPoleId: null));
+    }
   }
 
   Future<void> _showAtCapacityDialog(List<ScanResult> active) {
