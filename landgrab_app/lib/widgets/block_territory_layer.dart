@@ -26,6 +26,9 @@ import 'package:landgrab/widgets/team_style.dart';
 ///    extends into an *empty* block that contains one of its puzzlets, as long
 ///    as that block stays contiguous with the pole's existing territory — so
 ///    zones reflect where the puzzlets are, without islands.
+///  * Every remaining block inside the seeds' convex hull joins its nearest
+///    pole (a block-level Voronoi, hull-clipped), so captured zones grow toward
+///    each other and leave no zone-less gaps within the play area.
 class BlockTerritoryLayer extends StatelessWidget {
   final List<TerritoryBlock> blocks;
   final List<Pole> poles;
@@ -92,7 +95,31 @@ class BlockTerritoryLayer extends StatelessWidget {
       _emit(blocks[b].ring, poles[p].currentOwnerTeamId!, rivals, mine);
     });
 
+    // Fill: every remaining block inside the seeds' convex hull joins its
+    // nearest pole, so captured zones grow toward each other and leave no
+    // zone-less gaps within the play area (a block-level Voronoi, clipped to
+    // the hull). A gap whose nearest pole isn't captured stays genuinely
+    // blank — that's an unclaimed region, not a hole.
+    final fill = _fillFor(blocks, poles, _seeds(), occupied);
+    fill.forEach((b, p) {
+      if (extended.containsKey(b)) return; // puzzlet extension already owns it
+      final owner = poles[p].currentOwnerTeamId;
+      if (owner == null) return;
+      _emit(blocks[b].ring, owner, rivals, mine);
+    });
+
     return PolygonLayer(polygons: [...rivals, ...mine]);
+  }
+
+  List<LatLng> _seeds() {
+    final s = [for (final p in poles) LatLng(p.latitude, p.longitude)];
+    final pts = puzzletPointsByPole;
+    if (pts != null) {
+      for (final list in pts.values) {
+        s.addAll(list);
+      }
+    }
+    return s;
   }
 
   void _emit(
@@ -394,6 +421,93 @@ class BlockTerritoryLayer extends StatelessWidget {
     _adjKey = key;
     _adjCache = adj;
     return adj;
+  }
+
+  // ── Hull-bounded fill (block-level Voronoi; memoised, geometry-only) ──
+
+  static Object? _fillKey;
+  static Map<int, int>? _fillCache;
+
+  static Map<int, int> _fillFor(
+    List<TerritoryBlock> blocks,
+    List<Pole> poles,
+    List<LatLng> seeds,
+    Set<int> occupied,
+  ) {
+    final key = Object.hash(
+      identityHashCode(blocks),
+      Object.hashAll(poles.map((p) => '${p.id}:${p.latitude}:${p.longitude}')),
+      Object.hashAll(occupied),
+      seeds.length,
+    );
+    if (key == _fillKey && _fillCache != null) return _fillCache!;
+
+    final hull = _convexHull(seeds);
+    final out = <int, int>{};
+    for (var b = 0; b < blocks.length; b++) {
+      if (occupied.contains(b)) continue;
+      final c = blocks[b].centroid;
+      if (!_inHull(hull, c)) continue;
+      final perDegLon = 111000.0 * math.cos(c.latitude * math.pi / 180);
+      var best = -1;
+      var bestD = double.infinity;
+      for (var p = 0; p < poles.length; p++) {
+        final dx = (poles[p].longitude - c.longitude) * perDegLon;
+        final dy = (poles[p].latitude - c.latitude) * 111000.0;
+        final d = dx * dx + dy * dy;
+        if (d < bestD) {
+          bestD = d;
+          best = p;
+        }
+      }
+      if (best >= 0) out[b] = best;
+    }
+    _fillKey = key;
+    _fillCache = out;
+    return out;
+  }
+
+  /// Andrew's monotone chain, on (lng=x, lat=y). Returns the hull as a CCW
+  /// ring; distances are tiny at event scale so raw degrees are fine.
+  static List<LatLng> _convexHull(List<LatLng> pts) {
+    if (pts.length < 3) return pts;
+    final p = [...pts]..sort((a, b) => a.longitude != b.longitude
+        ? a.longitude.compareTo(b.longitude)
+        : a.latitude.compareTo(b.latitude));
+    double cross(LatLng o, LatLng a, LatLng b) =>
+        (a.longitude - o.longitude) * (b.latitude - o.latitude) -
+        (a.latitude - o.latitude) * (b.longitude - o.longitude);
+    final lower = <LatLng>[];
+    for (final q in p) {
+      while (lower.length >= 2 &&
+          cross(lower[lower.length - 2], lower.last, q) <= 0) {
+        lower.removeLast();
+      }
+      lower.add(q);
+    }
+    final upper = <LatLng>[];
+    for (final q in p.reversed) {
+      while (upper.length >= 2 &&
+          cross(upper[upper.length - 2], upper.last, q) <= 0) {
+        upper.removeLast();
+      }
+      upper.add(q);
+    }
+    lower.removeLast();
+    upper.removeLast();
+    return [...lower, ...upper];
+  }
+
+  /// Point in a CCW convex hull — left-of (or on) every directed edge.
+  static bool _inHull(List<LatLng> hull, LatLng pt) {
+    if (hull.length < 3) return false;
+    for (var i = 0; i < hull.length; i++) {
+      final a = hull[i], b = hull[(i + 1) % hull.length];
+      final cross = (b.longitude - a.longitude) * (pt.latitude - a.latitude) -
+          (b.latitude - a.latitude) * (pt.longitude - a.longitude);
+      if (cross < 0) return false;
+    }
+    return true;
   }
 
   /// Ray-casting point-in-polygon on the (lat,lng) ring.
