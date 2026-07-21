@@ -1014,7 +1014,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                   ),
                 ]),
                 const SizedBox(height: 4),
-                Text('Validators only · status: ${p.status}',
+                Text('Reserved for helpers · status: ${p.status}',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     )),
