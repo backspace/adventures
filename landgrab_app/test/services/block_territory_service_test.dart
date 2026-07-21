@@ -89,4 +89,29 @@ void main() {
       expect(BlockTerritoryService.parsePuzzletPoints('{}'), isNull);
     });
   });
+
+  group('BlockTerritoryService.parseTerritory', () {
+    test('parses per-pole Polygon regions', () {
+      final regions = BlockTerritoryService.parseTerritory('''
+        {"type":"FeatureCollection","features":[
+          {"type":"Feature","properties":{"pole_id":"pA"},
+           "geometry":{"type":"Polygon","coordinates":[
+             [[-97.12,49.88],[-97.11,49.88],[-97.11,49.89]]]}},
+          {"type":"Feature","properties":{"pole_id":"pB"},
+           "geometry":{"type":"MultiPolygon","coordinates":[
+             [[[0,0],[1,0],[1,1]]]]}}
+        ]}
+      ''');
+      expect(regions, isNotNull);
+      expect(regions!, hasLength(2));
+      expect(regions.first.poleId, 'pA');
+      expect(regions.first.ring.first.latitude, 49.88);
+      expect(regions.first.ring.first.longitude, -97.12);
+    });
+
+    test('returns null when nothing valid / malformed', () {
+      expect(BlockTerritoryService.parseTerritory('{}'), isNull);
+      expect(BlockTerritoryService.parseTerritory('not json'), isNull);
+    });
+  });
 }

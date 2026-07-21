@@ -31,9 +31,20 @@ class TerritoryBlock {
   });
 }
 
+/// A pre-dissolved, contiguous territory shape for one pole, produced offline
+/// by tool/territory/assign_territory.py. The app colours it by the pole's
+/// current owner and taps it for ownership — one authoritative shape used for
+/// both, so colour and tap never disagree.
+class TerritoryRegion {
+  final String poleId;
+  final List<LatLng> ring;
+  const TerritoryRegion({required this.poleId, required this.ring});
+}
+
 class BlockTerritoryService {
   static const _asset = 'assets/experimental/blocks.geojson';
   static const _puzzletAsset = 'assets/experimental/puzzlet_points.geojson';
+  static const _territoryAsset = 'assets/experimental/territory.geojson';
 
   /// Parse the blocks asset, or null if it isn't there / can't be read.
   static Future<List<TerritoryBlock>?> load() async {
@@ -44,6 +55,56 @@ class BlockTerritoryService {
     } catch (_) {
       // Missing asset (the common case until someone generates it) or
       // malformed JSON — either way, let the caller fall back to Voronoi.
+      return null;
+    }
+  }
+
+  /// Pre-dissolved per-pole territory shapes, or null if absent. When present,
+  /// this supersedes the raw blocks path: the app renders/tap-tests these
+  /// directly instead of assigning blocks live.
+  static Future<List<TerritoryRegion>?> loadTerritory() async {
+    try {
+      final raw = (await rootBundle.loadString(_territoryAsset)).trim();
+      if (raw.isEmpty) return null;
+      return parseTerritory(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Parse a GeoJSON FeatureCollection of Polygon / MultiPolygon features
+  /// carrying a `pole_id`. Exposed for testing.
+  static List<TerritoryRegion>? parseTerritory(String raw) {
+    try {
+      final json = jsonDecode(raw);
+      if (json is! Map) return null;
+      final features = json['features'];
+      if (features is! List) return null;
+      final out = <TerritoryRegion>[];
+      for (final f in features) {
+        if (f is! Map) continue;
+        final props = f['properties'];
+        final poleId = props is Map ? props['pole_id']?.toString() : null;
+        final geom = f['geometry'];
+        if (poleId == null || geom is! Map) continue;
+        final coords = geom['coordinates'];
+        final rings = <List<LatLng>>[];
+        switch (geom['type']) {
+          case 'Polygon':
+            if (coords is List && coords.isNotEmpty) rings.add(_ring(coords.first));
+          case 'MultiPolygon':
+            if (coords is List) {
+              for (final poly in coords) {
+                if (poly is List && poly.isNotEmpty) rings.add(_ring(poly.first));
+              }
+            }
+        }
+        for (final ring in rings) {
+          if (ring.length >= 3) out.add(TerritoryRegion(poleId: poleId, ring: ring));
+        }
+      }
+      return out.isEmpty ? null : out;
+    } catch (_) {
       return null;
     }
   }

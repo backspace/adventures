@@ -113,22 +113,12 @@ def fetch_roads(south, west, north, east, highways, endpoints=None, alleys=True)
     return lines
 
 
-def fetch_water(south, west, north, east, endpoints=None):
-    """Water-body way geometries (rivers, riverbanks, lakes) as coordinate
-    rings. Used both to *close* blocks that a street doesn't bound (the river
-    is the fourth edge) and to *clip* blocks back to the bank."""
+def _fetch_area_rings(query, endpoints, label):
+    """POST an Overpass area query and return every way/relation-member ring
+    (coordinate lists). Ways carry `geometry`; relations carry members'
+    geometry — take them all and let polygonize assemble the areas."""
     import requests
 
-    query = (
-        "[out:json][timeout:60];"
-        "("
-        f'way["natural"="water"]({south},{west},{north},{east});'
-        f'way["waterway"="riverbank"]({south},{west},{north},{east});'
-        f'way["water"]({south},{west},{north},{east});'
-        f'relation["natural"="water"]({south},{west},{north},{east});'
-        ");"
-        "out geom;"
-    )
     last_err = None
     for url in endpoints or ENDPOINTS:
         try:
@@ -138,59 +128,109 @@ def fetch_water(south, west, north, east, endpoints=None):
             data = resp.json()
             break
         except Exception as e:  # noqa: BLE001
-            print(f"  water fetch via {url} failed: {e}", file=sys.stderr)
+            print(f"  {label} fetch via {url} failed: {e}", file=sys.stderr)
             last_err = e
     else:
-        print(f"  no water fetched ({last_err}) — continuing without a river",
+        print(f"  no {label} fetched ({last_err}) — continuing without it",
               file=sys.stderr)
         return []
 
     lines = []
     for el in data.get("elements", []):
-        # Ways carry `geometry`; relations carry member geometries under
-        # `members[].geometry`. Take every ring we can see and let polygonize
-        # assemble the water areas.
-        if el.get("geometry"):
-            g = el["geometry"]
-            if len(g) >= 2:
-                lines.append([(pt["lon"], pt["lat"]) for pt in g])
+        g = el.get("geometry")
+        if g and len(g) >= 2:
+            lines.append([(pt["lon"], pt["lat"]) for pt in g])
         for m in el.get("members", []):
-            g = m.get("geometry")
-            if g and len(g) >= 2:
-                lines.append([(pt["lon"], pt["lat"]) for pt in g])
+            mg = m.get("geometry")
+            if mg and len(mg) >= 2:
+                lines.append([(pt["lon"], pt["lat"]) for pt in mg])
     return lines
 
 
-def build_blocks(road_lines, water_lines, min_area_m2, merge_below_m2):
-    from shapely.geometry import LineString, MultiPolygon, Polygon
+def fetch_water(south, west, north, east, endpoints=None):
+    """Water-body rings (rivers, riverbanks, lakes). Used both to *close*
+    blocks a street doesn't bound (the river is the fourth edge) and to *clip*
+    blocks back to the bank."""
+    bbox = f"{south},{west},{north},{east}"
+    query = (
+        "[out:json][timeout:60];("
+        f'way["natural"="water"]({bbox});'
+        f'way["waterway"="riverbank"]({bbox});'
+        f'way["water"]({bbox});'
+        f'relation["natural"="water"]({bbox});'
+        ");out geom;"
+    )
+    return _fetch_area_rings(query, endpoints, "water")
+
+
+def fetch_areas(south, west, north, east, endpoints=None):
+    """Open-space "property" rings — parks, gardens, greens, recreation land.
+    These become blocks in their own right, so land the street grid doesn't
+    enclose (riverfront parks, plazas) still belongs to a zone instead of
+    reading as a blank gap."""
+    bbox = f"{south},{west},{north},{east}"
+    leisure = "park|garden|recreation_ground|common|pitch|playground|nature_reserve"
+    landuse = "grass|recreation_ground|meadow|forest|village_green|greenfield"
+    query = (
+        "[out:json][timeout:60];("
+        f'way["leisure"~"^({leisure})$"]({bbox});'
+        f'way["landuse"~"^({landuse})$"]({bbox});'
+        f'relation["leisure"~"^({leisure})$"]({bbox});'
+        f'relation["landuse"~"^({landuse})$"]({bbox});'
+        ");out geom;"
+    )
+    return _fetch_area_rings(query, endpoints, "areas")
+
+
+def build_blocks(bbox, road_lines, water_lines, area_lines, min_area_m2,
+                 merge_below_m2):
+    from shapely.geometry import LineString, MultiPolygon, Polygon, box
     from shapely.ops import polygonize, unary_union
+
+    south, west, north, east = bbox
 
     def as_lines(rings):
         return [LineString(c) for c in rings if len(c) >= 2]
 
-    # Faces enclosed by streets AND the river's edge — including the river as a
-    # boundary means a block a street leaves open on the water side still
-    # closes against the bank.
-    merged = unary_union(as_lines(road_lines) + as_lines(water_lines))
-    faces = list(polygonize(merged))
-
-    # The water area itself, so we can carve it back out of any face that
-    # crossed the bank.
-    water = None
-    if water_lines:
-        wp = list(polygonize(unary_union(as_lines(water_lines))))
-        if wp:
-            water = unary_union(wp)
-
-    polys = []
-    for f in faces:
-        g = f.difference(water) if water is not None else f
+    def explode(g):
         if g.is_empty:
-            continue  # a face that was all water
+            return []
         parts = g.geoms if isinstance(g, MultiPolygon) else [g]
-        polys.extend(p for p in parts if isinstance(p, Polygon) and not p.is_empty)
+        return [p for p in parts if isinstance(p, Polygon) and not p.is_empty]
 
-    polys = _merge_slivers(polys, merge_below_m2)
+    def area_of(lines):
+        if not lines:
+            return None
+        polys = list(polygonize(unary_union(lines)))
+        return unary_union(polys) if polys else None
+
+    # Complete tiling: every boundary line — streets, alleys, the river's edge,
+    # park edges — plus the bbox rectangle so nothing stays open, polygonized
+    # into faces that tile the whole box with NO gaps between them. (The old
+    # approach overlaid street faces and park polygons, which left voids
+    # wherever a park edge didn't meet a road centreline — e.g. around a
+    # roundabout.)
+    frame = LineString(box(west, south, east, north).exterior.coords)
+    all_lines = (as_lines(road_lines) + as_lines(water_lines) +
+                 as_lines(area_lines) + [frame])
+    faces = list(polygonize(unary_union(all_lines)))
+
+    water = area_of(as_lines(water_lines))
+    parks = area_of(as_lines(area_lines))
+
+    # Keep every face except open water. A face is dropped only if it's in the
+    # river AND not in a park — parks are dry land and win over a river polygon
+    # that OSM drew onto the shore.
+    kept = []
+    for f in faces:
+        c = f.representative_point()
+        in_water = water is not None and water.contains(c)
+        in_park = parks is not None and parks.contains(c)
+        if in_water and not in_park:
+            continue
+        kept.extend(explode(f))
+
+    polys = _merge_slivers(kept, merge_below_m2)
     return [p for p in polys if _area_m2(p) >= min_area_m2]
 
 
@@ -271,15 +311,19 @@ def main():
                          "built-in mirror list")
     ap.add_argument("--no-river", action="store_true",
                     help="Skip water fetch; blocks follow streets only")
+    ap.add_argument("--no-parks", action="store_true",
+                    help="Skip parks/landuse; land the streets don't enclose "
+                         "(riverfront, plazas) stays a blank gap")
     ap.add_argument("--alleys", action=argparse.BooleanOptionalAction,
                     default=True,
                     help="Include alleys + pedestrian ways so blocks subdivide "
                          "finer (default: on)")
     ap.add_argument("--min-area-m2", type=float, default=60.0,
                     help="Drop unmergeable slivers smaller than this (m²)")
-    ap.add_argument("--merge-below-m2", type=float, default=350.0,
+    ap.add_argument("--merge-below-m2", type=float, default=500.0,
                     help="Fold faces smaller than this into their largest "
-                         "neighbour (roundabout/junction slivers)")
+                         "neighbour (roundabout islands / junction slivers). "
+                         "Raise it (e.g. 1000) if a traffic circle persists.")
     ap.add_argument("--cache-dir", default=os.path.join(
                         os.path.dirname(__file__), ".cache"),
                     help="Where to cache raw OSM fetches (default: "
@@ -307,8 +351,16 @@ def main():
             lambda: fetch_water(south, west, north, east, args.endpoint))
         print(f"  {len(water_lines)} water ways", file=sys.stderr)
 
-    blocks = build_blocks(road_lines, water_lines,
-                          args.min_area_m2, args.merge_below_m2)
+    area_lines = []
+    if not args.no_parks:
+        print("Fetching parks/landuse …", file=sys.stderr)
+        area_lines = cached(
+            args.cache_dir, "areas", f"areas|{bbox}", args.refresh,
+            lambda: fetch_areas(south, west, north, east, args.endpoint))
+        print(f"  {len(area_lines)} property ways", file=sys.stderr)
+
+    blocks = build_blocks((south, west, north, east), road_lines, water_lines,
+                          area_lines, args.min_area_m2, args.merge_below_m2)
     print(f"  {len(blocks)} blocks", file=sys.stderr)
 
     with open(args.out, "w") as f:

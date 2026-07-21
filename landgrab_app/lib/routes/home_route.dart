@@ -42,6 +42,7 @@ import 'package:landgrab/widgets/block_territory_layer.dart';
 import 'package:landgrab/widgets/capture_rings_layer.dart';
 import 'package:landgrab/widgets/highlight_reticle.dart';
 import 'package:landgrab/widgets/live_location_layer.dart';
+import 'package:landgrab/widgets/precomputed_territory_layer.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/team_style.dart';
 import 'package:landgrab/widgets/territory_layer.dart';
@@ -78,6 +79,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // EXPERIMENT step 1: puzzlet locations (pole id → points), local-only asset,
   // so a pole's territory can extend into its puzzlets' blocks.
   Map<String, List<LatLng>>? _puzzletPoints;
+  // EXPERIMENT: pre-dissolved per-pole territory shapes (from
+  // assign_territory.py). When present, supersedes the live block path — one
+  // shape per pole, used for both drawing and tap. See
+  // landgrab-street-aware-territory.md.
+  List<TerritoryRegion>? _territory;
   String? _teamId;
   String? _teamName;
   // The team's stable colour index from /me, so its swatch shows beside the
@@ -186,10 +192,13 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // EXPERIMENT: load pre-computed street blocks once. Absent asset → stays
   // null and the map keeps using the Voronoi TerritoryLayer.
   Future<void> _loadTerritoryBlocks() async {
+    final territory = await BlockTerritoryService.loadTerritory();
     final blocks = await BlockTerritoryService.load();
     final puzzletPoints = await BlockTerritoryService.loadPuzzletPoints();
-    if (mounted && (blocks != null || puzzletPoints != null)) {
+    if (mounted &&
+        (territory != null || blocks != null || puzzletPoints != null)) {
       setState(() {
+        _territory = territory;
         _territoryBlocks = blocks;
         _puzzletPoints = puzzletPoints;
       });
@@ -890,13 +899,29 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     return TeamStyle.forIndex(index);
   }
 
-  /// Tap-to-inspect: show who holds the zone nearest the tapped point.
-  /// Territories are radius-capped Voronoi (each point belongs to its
-  /// nearest pole), so the tapped zone is the nearest pole within the
-  /// territory radius; taps in open space do nothing.
+  /// Tap-to-inspect: show who holds the tapped zone.
+  ///
+  /// With pre-dissolved territory shapes present, the tapped owner is whichever
+  /// region *contains* the point — the same shape that's coloured there, so
+  /// colour and tap always agree. Otherwise falls back to the Voronoi rule
+  /// (nearest pole within the territory radius); taps in open space do nothing.
   void _showOwnerAt(LatLng point) {
     final poles = _poles;
     if (poles == null || poles.isEmpty) return;
+
+    final territory = _territory;
+    if (territory != null) {
+      for (final region in territory) {
+        if (!_ringContains(region.ring, point)) continue;
+        final pole = poles.where((p) => p.id == region.poleId).firstOrNull;
+        // A region only shows when its pole is captured; match that here.
+        if (pole == null || pole.currentOwnerTeamId == null) return;
+        _showPoleOwner(pole);
+        return;
+      }
+      return; // tapped outside every zone
+    }
+
     const distance = Distance();
     Pole? nearest;
     var best = double.infinity;
@@ -915,6 +940,20 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // (wired on the marker itself); a claimed zone still responds anywhere.
     if (nearest.currentOwnerTeamId == null) return;
     _showPoleOwner(nearest);
+  }
+
+  /// Ray-casting point-in-polygon on a (lat,lng) ring.
+  static bool _ringContains(List<LatLng> ring, LatLng pt) {
+    var inside = false;
+    for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      final yi = ring[i].latitude, xi = ring[i].longitude;
+      final yj = ring[j].latitude, xj = ring[j].longitude;
+      if (((yi > pt.latitude) != (yj > pt.latitude)) &&
+          (pt.longitude < (xj - xi) * (pt.latitude - yi) / (yj - yi) + xi)) {
+        inside = !inside;
+      }
+    }
+    return inside;
   }
 
   /// Brief snackbar naming a stake and its current owner, with the owning
@@ -1280,10 +1319,17 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                 // Territory fills sit above the tiles and below
                                 // the marker pins so pole icons remain readable
                                 // over their own coloured cells.
-                                // EXPERIMENT: street-aware territory when a
-                                // blocks asset is bundled; otherwise the
+                                // EXPERIMENT: prefer pre-dissolved per-pole
+                                // shapes; then the live block path; else the
                                 // Voronoi layer (unchanged).
-                                if (_territoryBlocks != null)
+                                if (_territory != null)
+                                  PrecomputedTerritoryLayer(
+                                    regions: _territory!,
+                                    poles: _poles!,
+                                    myOwnerId: _teamId,
+                                    colorIndexByTeam: _teamColorIndex,
+                                  )
+                                else if (_territoryBlocks != null)
                                   BlockTerritoryLayer(
                                     blocks: _territoryBlocks!,
                                     poles: _poles!,

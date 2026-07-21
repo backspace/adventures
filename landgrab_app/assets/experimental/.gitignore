@@ -1,7 +1,11 @@
 # Venue data, kept local while the street-aware-territory experiment is still
-# being refined — committing blocks.geojson would activate it in every build
-# (incl. TestFlight). Regenerate with tool/territory/generate_blocks.py.
+# being refined — committing these would activate it in every build (incl.
+# TestFlight). Regenerate with tool/territory/*.py.
 blocks.geojson
+territory.geojson
+
+# DB-derived, local-only (pole/puzzlet positions). Never commit.
+poles.geojson
 
 # Local-only: raw puzzlet coordinates dumped from a dev DB. NEVER commit — it
 # would ship exact puzzlet locations in the app bundle (a cheating leak). The
