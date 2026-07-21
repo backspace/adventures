@@ -52,11 +52,6 @@ class _EndgameTabState extends State<EndgameTab> {
   List<LatLng> _poleDots = const [];
   List<LatLng> _puzzletDots = const [];
 
-  // Relief valve — re-opens stakes for per-team consumption when the event is
-  // running ahead of content. A live toggle, independent of the endgame timer.
-  bool _reliefActive = false;
-  bool _reliefBusy = false;
-
   @override
   void initState() {
     super.initState();
@@ -125,28 +120,8 @@ class _EndgameTabState extends State<EndgameTab> {
           // initialCenter when it does build.
         }
       }
-      // Relief state is independent; a failure here shouldn't block the tab.
-      try {
-        final active = await widget.api.getReliefActive();
-        if (mounted) setState(() => _reliefActive = active);
-      } catch (_) {}
     } catch (e) {
       if (mounted) setState(() => _error = 'Could not load endgame: $e');
-    }
-  }
-
-  Future<void> _toggleRelief(bool on) async {
-    setState(() => _reliefBusy = true);
-    try {
-      final active = await widget.api.setReliefActive(on);
-      if (!mounted) return;
-      setState(() => _reliefActive = active);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Could not change relief: $e')));
-    } finally {
-      if (mounted) setState(() => _reliefBusy = false);
     }
   }
 
@@ -386,22 +361,6 @@ class _EndgameTabState extends State<EndgameTab> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Relief valve — separate from the endgame timer. Re-opens
-              // stakes for per-team consumption when the event is running
-              // ahead of content (teams have solved most of what's out there).
-              Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: SwitchListTile(
-                  dense: true,
-                  value: _reliefActive,
-                  onChanged: _reliefBusy ? null : _toggleRelief,
-                  title: const Text('Relief valve'),
-                  subtitle: const Text(
-                    'Re-open stakes so each team can solve puzzlets others '
-                    'already took. Use when the map is running dry.',
-                  ),
-                ),
-              ),
               if (_poleDots.isNotEmpty || _puzzletDots.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),

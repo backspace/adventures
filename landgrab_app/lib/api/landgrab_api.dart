@@ -4,6 +4,7 @@ import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/pole.dart';
+import 'package:landgrab/models/relief_status.dart';
 import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/models/notification.dart';
 import 'package:landgrab/models/organiser_message.dart';
@@ -1075,13 +1076,14 @@ class LandgrabApi {
     );
   }
 
-  /// Whether the relief valve (re-openable stakes, per-team consumption) is on.
-  Future<bool> getReliefActive() async {
+  /// Relief valve state + the readiness dashboard (pole counts + ownership
+  /// leaderboard) — a supervisor's sense of whether the map is running dry.
+  Future<ReliefStatus> getReliefStatus() async {
     final response = await dio.get('/landgrab/supervision/relief');
-    return response.data['active'] == true;
+    return ReliefStatus.fromJson(response.data as Map<String, dynamic>);
   }
 
-  /// Turn the relief valve on or off. Returns the resulting state.
+  /// Turn the relief valve on or off. Returns the resulting active state.
   Future<bool> setReliefActive(bool on) async {
     final response =
         await dio.put('/landgrab/supervision/relief', data: {'on': on});

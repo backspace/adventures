@@ -13,6 +13,38 @@ defmodule Registrations.Landgrab.ReliefTest do
       })
   end
 
+  describe "relief_stats/0" do
+    test "counts poles and builds an ownership leaderboard, most first" do
+      a = insert(:team)
+      b = insert(:team)
+
+      # Two poles owned by A (each fully captured), one by B, one uncaptured.
+      for _ <- 1..2 do
+        pole = insert(:pole)
+        z = insert(:puzzlet, pole: pole, status: :validated)
+        insert(:ownership_event, puzzlet: z, team: a, pole_id: pole.id)
+      end
+
+      b_pole = insert(:pole)
+      bz = insert(:puzzlet, pole: b_pole, status: :validated)
+      insert(:ownership_event, puzzlet: bz, team: b, pole_id: b_pole.id)
+
+      open_pole = insert(:pole)
+      insert(:puzzlet, pole: open_pole, status: :validated)
+
+      stats = Landgrab.relief_stats()
+
+      assert stats.total_poles == 4
+      assert stats.in_play == 4
+      # Only the uncaptured one has anything left to do.
+      assert stats.not_fully_captured == 1
+      assert stats.capturable_in_play == 1
+
+      assert [%{team_id: first, owned: 2}, %{owned: 1}] = stats.leaderboard
+      assert first == a.id
+    end
+  end
+
   describe "relief_active?/0" do
     test "false by default, true once the flag is set" do
       refute Landgrab.relief_active?()

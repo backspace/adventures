@@ -9,10 +9,23 @@ defmodule RegistrationsWeb.Landgrab.ReliefController do
   """
   use RegistrationsWeb, :controller
 
+  alias Registrations.Landgrab
   alias Registrations.Landgrab.Events
 
   def show(conn, _params) do
-    json(conn, %{active: active?()})
+    stats = Landgrab.relief_stats()
+
+    json(conn, %{
+      active: active?(),
+      total_poles: stats.total_poles,
+      in_play: stats.in_play,
+      not_fully_captured: stats.not_fully_captured,
+      capturable_in_play: stats.capturable_in_play,
+      leaderboard:
+        Enum.map(stats.leaderboard, fn e ->
+          %{team_id: e.team_id, name: e.name, owned: e.owned}
+        end)
+    })
   end
 
   def update(conn, params) do

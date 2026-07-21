@@ -489,6 +489,59 @@ defmodule Registrations.Landgrab do
     match?(%Event{relief_started_at: %DateTime{}}, Events.current())
   end
 
+  @doc """
+  A snapshot for the supervisor's relief dashboard — how much playable content
+  is left (the signal for whether to open the valve), plus an ownership
+  leaderboard:
+
+    * `total_poles` — every stake;
+    * `in_play` — stakes still inside the (shrinking) endgame zone;
+    * `not_fully_captured` — stakes with a playable puzzlet still uncaptured;
+    * `capturable_in_play` — in-zone AND not fully captured (the real "is there
+      anything left to do" number);
+    * `leaderboard` — teams by stakes owned, most first.
+
+  Per-pole queries at event scale (~dozens of stakes) — fine for a manually
+  refreshed admin view.
+  """
+  def relief_stats do
+    now = DateTime.utc_now()
+    zone = Event.endgame_zone(Events.current(), now)
+    poles = Repo.all(Pole)
+
+    outside? = fn pole ->
+      is_number(pole.latitude) and is_number(pole.longitude) and zone != nil and
+        distance_m(pole.latitude, pole.longitude, zone.latitude, zone.longitude) > zone.radius_m
+    end
+
+    {in_play, not_captured, capturable, owners} =
+      Enum.reduce(poles, {0, 0, 0, %{}}, fn pole, {ip, nc, cap, owns} ->
+        in_zone = not outside?.(pole)
+        open = not pole_locked?(pole)
+        owner = current_owner_team_id_for_pole(pole)
+
+        {
+          ip + if(in_zone, do: 1, else: 0),
+          nc + if(open, do: 1, else: 0),
+          cap + if(in_zone and open, do: 1, else: 0),
+          if(owner, do: Map.update(owns, owner, 1, &(&1 + 1)), else: owns)
+        }
+      end)
+
+    leaderboard =
+      owners
+      |> Enum.map(fn {team_id, count} -> %{team_id: team_id, name: team_name(team_id), owned: count} end)
+      |> Enum.sort_by(& &1.owned, :desc)
+
+    %{
+      total_poles: length(poles),
+      in_play: in_play,
+      not_fully_captured: not_captured,
+      capturable_in_play: capturable,
+      leaderboard: leaderboard
+    }
+  end
+
   @doc "Puzzlet ids a team has solved (a `capture` event of theirs), as a MapSet."
   def team_solved_puzzlet_ids(team_id) when is_binary(team_id) do
     from(c in OwnershipEvent,
