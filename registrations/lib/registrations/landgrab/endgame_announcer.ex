@@ -33,6 +33,17 @@ defmodule Registrations.Landgrab.EndgameAnnouncer do
         :ok
     end
 
+    # Bedab's stance-gated final-location messages ride the same poll —
+    # due once the shrink begins AND the supervisor has written them, so
+    # bodies set late simply go out on a later tick.
+    case Registrations.Landgrab.maybe_send_final_location_messages() do
+      {:sent, team_count} ->
+        Logger.info("final-location messages sent to #{team_count} teams")
+
+      :noop ->
+        :ok
+    end
+
     schedule()
     {:noreply, state}
   rescue

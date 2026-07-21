@@ -40,6 +40,28 @@ defmodule RegistrationsWeb.Landgrab.EndgameController do
     end
   end
 
+  # Bedab's final-location messages — a separate action from the boundary
+  # `update` (which is deliberately full-replace over its six fields) so a
+  # message edit can never clear the boundary or vice versa. Editable until
+  # the announcer sends them (once the shrink begins); edits after sending
+  # save fine but reach no one — the sent stamp in the payload says so.
+  def update_messages(conn, params) do
+    attrs = %{
+      final_message_joined: params["joined"],
+      final_message_others: params["others"]
+    }
+
+    case Events.update(Events.current(), attrs) do
+      {:ok, updated} ->
+        json(conn, render_endgame(updated))
+
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: Ecto.Changeset.traverse_errors(changeset, fn {msg, _opts} -> msg end)})
+    end
+  end
+
   defp render_endgame(event) do
     endgame =
       if Event.endgame_configured?(event) do
@@ -53,6 +75,14 @@ defmodule RegistrationsWeb.Landgrab.EndgameController do
         }
       end
 
-    %{endgame: endgame, announced_at: event.endgame_announced_at}
+    %{
+      endgame: endgame,
+      announced_at: event.endgame_announced_at,
+      final_messages: %{
+        joined: event.final_message_joined,
+        others: event.final_message_others,
+        sent_at: event.final_messages_sent_at
+      }
+    }
   end
 end

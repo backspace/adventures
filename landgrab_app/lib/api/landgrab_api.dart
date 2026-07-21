@@ -21,6 +21,11 @@ typedef NotificationsResult = ({
 
 typedef EndgameConfig = ({EndgameZone? endgame, DateTime? announcedAt});
 
+/// Bedab's stance-gated final-location messages: `joined` goes to teams
+/// that accepted the liberation, `others` to everyone else. Sent by the
+/// server once the endgame shrink begins; [sentAt] non-null afterwards.
+typedef FinalMessages = ({String? joined, String? others, DateTime? sentAt});
+
 /// Result of an email/password login attempt, kept distinct so the
 /// UI can tell "wrong password" apart from "couldn't reach the server".
 enum LoginOutcome { success, invalidCredentials, unreachable, failed }
@@ -1111,6 +1116,39 @@ class LandgrabApi {
       announcedAt: data['announced_at'] == null
           ? null
           : DateTime.tryParse('${data['announced_at']}Z'),
+    );
+  }
+
+  /// Bedab's final-location messages ride the endgame payload; parsed
+  /// separately so the boundary editor and the message editor stay
+  /// decoupled (they save through different endpoints too).
+  Future<FinalMessages> getFinalMessages() async {
+    final response = await dio.get('/landgrab/supervision/endgame');
+    return _parseFinalMessages(response.data as Map<String, dynamic>);
+  }
+
+  /// Save the message bodies. Editable until the server sends them (once
+  /// the endgame shrink begins); a save after that lands but reaches no one.
+  Future<FinalMessages> updateFinalMessages({
+    String? joined,
+    String? others,
+  }) async {
+    final response = await dio.put(
+      '/landgrab/supervision/endgame/messages',
+      data: {'joined': joined, 'others': others},
+    );
+    return _parseFinalMessages(response.data as Map<String, dynamic>);
+  }
+
+  FinalMessages _parseFinalMessages(Map<String, dynamic> data) {
+    final messages =
+        (data['final_messages'] as Map?)?.cast<String, dynamic>() ?? const {};
+    return (
+      joined: messages['joined'] as String?,
+      others: messages['others'] as String?,
+      sentAt: messages['sent_at'] == null
+          ? null
+          : DateTime.tryParse('${messages['sent_at']}Z'),
     );
   }
 

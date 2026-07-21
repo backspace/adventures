@@ -360,6 +360,7 @@ defmodule RegistrationsWeb.Router do
     get("/dashboard", SupervisionController, :dashboard)
     get("/endgame", EndgameController, :show)
     put("/endgame", EndgameController, :update)
+    put("/endgame/messages", EndgameController, :update_messages)
     get("/relief", ReliefController, :show)
     put("/relief", ReliefController, :update)
     get("/liberation", LiberationController, :show)

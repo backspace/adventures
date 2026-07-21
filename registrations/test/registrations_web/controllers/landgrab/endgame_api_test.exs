@@ -58,6 +58,27 @@ defmodule RegistrationsWeb.Landgrab.EndgameApiTest do
       assert cleared["endgame"] == nil
     end
 
+    test "round-trips Bedab's final messages without touching the boundary", %{conn: conn} do
+      conn |> put("/landgrab/supervision/endgame", @config) |> json_response(200)
+
+      updated =
+        conn
+        |> put("/landgrab/supervision/endgame/messages", %{
+          "joined" => "The precise spot.",
+          "others" => "The vague nudge."
+        })
+        |> json_response(200)
+
+      assert updated["final_messages"]["joined"] == "The precise spot."
+      assert updated["final_messages"]["others"] == "The vague nudge."
+      assert updated["final_messages"]["sent_at"] == nil
+      # A messages save must never clear the boundary (separate action on purpose).
+      assert updated["endgame"]["latitude"] == 49.8874
+
+      fetched = conn |> get("/landgrab/supervision/endgame") |> json_response(200)
+      assert fetched["final_messages"]["joined"] == "The precise spot."
+    end
+
     test "rejects a partial configuration", %{conn: conn} do
       body =
         conn

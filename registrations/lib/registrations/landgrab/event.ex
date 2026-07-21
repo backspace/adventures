@@ -44,6 +44,15 @@ defmodule Registrations.Landgrab.Event do
     field(:liberation_starts_at, :utc_datetime)
     field(:liberation_rollout_ends_at, :utc_datetime)
 
+    # Bedab's final-location messages, sent stance-gated once the endgame
+    # shrink begins: teams that JOINED the liberation get the precise spot,
+    # everyone else the vaguer nudge. DB fields (supervisor-edited in the
+    # app's Endgame tab) rather than code strings, so the location stays
+    # changeable as the event unfolds. The stamp makes sending one-shot.
+    field(:final_message_joined, :string)
+    field(:final_message_others, :string)
+    field(:final_messages_sent_at, :utc_datetime)
+
     timestamps()
   end
 
@@ -56,7 +65,9 @@ defmodule Registrations.Landgrab.Event do
       :start_time,
       :relief_started_at,
       :liberation_starts_at,
-      :liberation_rollout_ends_at | @endgame_fields
+      :liberation_rollout_ends_at,
+      :final_message_joined,
+      :final_message_others | @endgame_fields
     ])
     |> validate_required([:name])
     |> validate_number(:endgame_initial_radius_m, greater_than: 0)

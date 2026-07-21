@@ -1126,13 +1126,77 @@ defmodule Registrations.Landgrab do
     end
   end
 
-  # ─── Liberation phase (internal codename "conspiracy") ─────────────
+  @doc """
+  Send Bedab's final-location messages once the endgame shrink has begun —
+  the shrink doubles as the freeze, and this is the convergence call.
+  Stance-gated: teams that ACCEPTED the liberation get `final_message_joined`
+  (the precise spot); everyone else gets `final_message_others` (the vaguer
+  nudge). Each team gets whichever applies only if that body is non-blank.
+
+  The bodies are supervisor-edited event fields, read at send time — so the
+  location stays changeable right up to the freeze, and setting them late
+  just sends on the next announcer poll. One-shot via the sent stamp.
+
+  Returns `{:sent, n}` or `:noop`.
+  """
+  def maybe_send_final_location_messages(now \\ DateTime.utc_now()) do
+    event = Events.current()
+    joined_body = presence(event.final_message_joined)
+    others_body = presence(event.final_message_others)
+
+    if is_nil(event.final_messages_sent_at) and Event.endgame_zone(event, now) &&
+         (joined_body || others_body) do
+      sent =
+        member_teams()
+        |> Enum.count(fn team ->
+          body =
+            if team.liberation_response == "accepted", do: joined_body, else: others_body
+
+          if body do
+            persist_and_deliver("message", team.id, nil, body, %{"sender_name" => "Bedab"}, "Bedab")
+            true
+          else
+            false
+          end
+        end)
+
+      {:ok, _event} =
+        event
+        |> Ecto.Changeset.change(final_messages_sent_at: DateTime.truncate(now, :second))
+        |> Repo.update()
+
+      {:sent, sent}
+    else
+      :noop
+    end
+  end
+
+  defp presence(nil), do: nil
+  defp presence(string), do: if(String.trim(string) == "", do: nil, else: string)
+
+  # Teams with at least one member — pre-created QR teams nobody joined
+  # aren't part of the game.
+  defp member_teams do
+    member_team_ids =
+      RegistrationsWeb.User
+      |> where([u], not is_nil(u.team_id))
+      |> select([u], u.team_id)
+      |> distinct(true)
+      |> Repo.all()
+      |> MapSet.new()
+
+    RegistrationsWeb.Team
+    |> Repo.all()
+    |> Enum.filter(&MapSet.member?(member_team_ids, &1.id))
+  end
+
+  # ─── Liberation phase (internal codename "recruitment") ────────────
   #
   # Partway through the event, Bedab invites teams — one at a time, trickled
   # across a rollout window — to liberate zones instead of capturing them.
-  # This is the invitation plumbing only: the schedule, the interactive
-  # invite notification, and the per-team stance. The gameplay inversion
-  # (liberate events in record_attempt) is a later phase.
+  # The plumbing here covers the schedule, the interactive invite
+  # notification, and the per-team stance; the gameplay inversion (liberate
+  # events) lives in record_attempt and the serving rules above.
 
   @liberation_responses ~w(accepted declined)
 
@@ -1183,19 +1247,7 @@ defmodule Registrations.Landgrab do
     # team's position doesn't accelerate as earlier teams get their invites.
     # A team joining mid-rollout can shift its neighbours' slots slightly —
     # acceptable; invitations already sent are never repeated.
-    member_team_ids =
-      RegistrationsWeb.User
-      |> where([u], not is_nil(u.team_id))
-      |> select([u], u.team_id)
-      |> distinct(true)
-      |> Repo.all()
-      |> MapSet.new()
-
-    teams =
-      RegistrationsWeb.Team
-      |> Repo.all()
-      |> Enum.filter(&MapSet.member?(member_team_ids, &1.id))
-      |> Enum.sort_by(&{:erlang.phash2(&1.id), &1.id})
+    teams = Enum.sort_by(member_teams(), &{:erlang.phash2(&1.id), &1.id})
 
     window_seconds =
       case event.liberation_rollout_ends_at do

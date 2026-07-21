@@ -108,6 +108,89 @@ defmodule Registrations.Landgrab.EndgameTest do
     end
   end
 
+  describe "maybe_send_final_location_messages/1" do
+    defp member_team(response \\ nil) do
+      team = insert(:team)
+
+      team =
+        if response,
+          do: team |> Ecto.Changeset.change(liberation_response: response) |> Repo.update!(),
+          else: team
+
+      insert(:user, email: "final#{System.unique_integer([:positive])}@example.com", team_id: team.id)
+      team
+    end
+
+    defp set_messages(joined, others) do
+      {:ok, _} =
+        Events.update(Events.current(), %{
+          final_message_joined: joined,
+          final_message_others: others
+        })
+    end
+
+    test "noop before the shrink begins, and without any body set" do
+      member_team()
+      configure_endgame()
+      set_messages("Come to the spot.", "Ask around.")
+
+      # Shrink hasn't started.
+      assert Landgrab.maybe_send_final_location_messages(~U[2026-07-25 21:00:00Z]) == :noop
+
+      # Shrink started but nothing written yet.
+      set_messages(nil, "  ")
+      assert Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:00:30Z]) == :noop
+      assert Repo.aggregate(Notification, :count) == 0
+    end
+
+    test "sends the stance-gated body from Bedab, exactly once" do
+      joined = member_team("accepted")
+      declined = member_team("declined")
+      undecided = member_team()
+      configure_endgame()
+      set_messages("Meet at the precise spot.", "Something is happening. Ask around.")
+
+      assert {:sent, 3} = Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:00:30Z])
+
+      body_for = fn team_id ->
+        Repo.one(from(n in Notification, where: n.recipient_team_id == ^team_id)).body
+      end
+
+      assert body_for.(joined.id) == "Meet at the precise spot."
+      assert body_for.(declined.id) == "Something is happening. Ask around."
+      assert body_for.(undecided.id) == "Something is happening. Ask around."
+
+      [first | _] = Repo.all(Notification)
+      assert first.metadata["sender_name"] == "Bedab"
+
+      # One-shot: the stamp survives later polls and later edits.
+      set_messages("Changed my mind.", "Changed too.")
+      assert Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:05:00Z]) == :noop
+      assert Repo.aggregate(Notification, :count) == 3
+    end
+
+    test "a blank body skips those teams (and only those)" do
+      member_team("accepted")
+      other = member_team()
+      configure_endgame()
+      set_messages(nil, "The vague nudge.")
+
+      assert {:sent, 1} = Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:00:30Z])
+      [notification] = Repo.all(Notification)
+      assert notification.recipient_team_id == other.id
+    end
+
+    test "bodies written after the shrink begins send on a later poll" do
+      member_team()
+      configure_endgame()
+
+      assert Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:00:30Z]) == :noop
+
+      set_messages("Late but here.", "Late nudge.")
+      assert {:sent, 1} = Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:10:00Z])
+    end
+  end
+
   describe "out-of-play takes priority over own-creation" do
     # scan_payload/3 and record_attempt/4 check the boundary against the
     # real clock, so configure an endgame that is shrinking right now.

@@ -52,10 +52,30 @@ class _EndgameTabState extends State<EndgameTab> {
   List<LatLng> _poleDots = const [];
   List<LatLng> _puzzletDots = const [];
 
+  // Bedab's stance-gated final-location messages. DB-backed so the
+  // location stays editable as the event unfolds; the server sends them
+  // once the shrink begins. DRAFT prefills below appear only when the
+  // server has no saved body yet — [FINAL LOCATION] is a deliberate
+  // placeholder, since the real spot is a spoiler that must not live in
+  // this (public) source.
+  static const _draftJoined =
+      'Friend — the simulation is collapsing, and Sabuk’s ledgers with it. '
+      'Bring your team to [FINAL LOCATION]. Stand with me on freed ground '
+      'and see what we made of it.';
+  static const _draftOthers =
+      'The simulation is collapsing. Where it ends, something is beginning — '
+      'the teams who freed the ground know the place. Ask them, and come.';
+
+  final _joinedController = TextEditingController();
+  final _othersController = TextEditingController();
+  DateTime? _messagesSentAt;
+  bool _savingMessages = false;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadMessages();
     _loadContentDots();
     _radiusTimer = Timer.periodic(const Duration(seconds: 10), (_) {
       if (mounted && _saved != null) setState(() {});
@@ -87,7 +107,48 @@ class _EndgameTabState extends State<EndgameTab> {
   @override
   void dispose() {
     _radiusTimer?.cancel();
+    _joinedController.dispose();
+    _othersController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadMessages() async {
+    try {
+      final messages = await widget.api.getFinalMessages();
+      if (!mounted) return;
+      setState(() {
+        _messagesSentAt = messages.sentAt;
+        _joinedController.text = messages.joined ?? _draftJoined;
+        _othersController.text = messages.others ?? _draftOthers;
+      });
+    } catch (_) {
+      // The editor still works from the drafts; a save will surface any
+      // real connectivity problem.
+      _joinedController.text = _draftJoined;
+      _othersController.text = _draftOthers;
+    }
+  }
+
+  Future<void> _saveMessages() async {
+    setState(() => _savingMessages = true);
+    try {
+      final messages = await widget.api.updateFinalMessages(
+        joined: _joinedController.text,
+        others: _othersController.text,
+      );
+      if (!mounted) return;
+      setState(() => _messagesSentAt = messages.sentAt);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Final messages saved.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save messages: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _savingMessages = false);
+    }
   }
 
   Future<void> _load() async {
@@ -451,9 +512,57 @@ class _EndgameTabState extends State<EndgameTab> {
                   child: Text(_configured ? 'Update' : 'Save'),
                 ),
               ]),
+              _finalMessagesEditor(context),
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  /// Bedab's final-location messages, collapsed by default so the
+  /// boundary controls keep the room. Both bodies stay editable until
+  /// the server sends them (when the shrink begins).
+  Widget _finalMessagesEditor(BuildContext context) {
+    final sent = _messagesSentAt;
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      title: const Text('Bedab’s final messages'),
+      subtitle: Text(
+        sent != null
+            ? 'Sent ${_format(sent.toLocal())} — later edits reach no one.'
+            : 'Sent from Bedab when the withdrawal begins. Editable until then.',
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+      children: [
+        TextField(
+          controller: _joinedController,
+          minLines: 2,
+          maxLines: 5,
+          decoration: const InputDecoration(
+            labelText: 'To teams who joined the liberation (precise location)',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _othersController,
+          minLines: 2,
+          maxLines: 5,
+          decoration: const InputDecoration(
+            labelText: 'To everyone else (vague nudge)',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: FilledButton(
+            onPressed: _savingMessages ? null : _saveMessages,
+            child: const Text('Save messages'),
+          ),
+        ),
+        const SizedBox(height: 8),
       ],
     );
   }
