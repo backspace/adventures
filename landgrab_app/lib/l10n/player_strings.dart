@@ -176,7 +176,7 @@ class GameplayStrings {
   static const locateMe = 'Locate me';
   static const settings = 'Settings';
   static const credits = 'Credits';
-  static const details = 'Details';
+  static const details = 'Your details';
   static const author = 'Author';
   static const validate = 'Validate';
   static const supervise = 'Supervise';
