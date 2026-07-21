@@ -4,6 +4,7 @@ import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/supervisor/content_tab.dart';
 import 'package:landgrab/routes/supervisor/endgame_tab.dart';
+import 'package:landgrab/routes/supervisor/liberation_tab.dart';
 import 'package:landgrab/routes/supervisor/organiser_messages_tab.dart';
 import 'package:landgrab/routes/supervisor/relief_tab.dart';
 import 'package:landgrab/widgets/accent_colors.dart';
@@ -79,7 +80,7 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
     }
 
     return DefaultTabController(
-      length: 5,
+      length: 6,
       initialIndex: _eventStarted! ? _messagesTab : _overviewTab,
       child: Scaffold(
         appBar: LandgrabAppBar(
@@ -91,6 +92,7 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
               Tab(text: 'Content'),
               Tab(text: 'Messages'),
               Tab(text: 'Relief'),
+              Tab(text: 'Liberation'),
               Tab(text: 'Endgame'),
             ],
           ),
@@ -113,6 +115,7 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
             ),
             OrganiserMessagesTab(api: widget.api),
             ReliefTab(api: widget.api),
+            LiberationTab(api: widget.api),
             EndgameTab(api: widget.api),
           ],
         ),

@@ -63,6 +63,7 @@ defmodule Registrations.Landgrab.Event do
     |> validate_number(:endgame_final_radius_m, greater_than: 0)
     |> validate_endgame_complete()
     |> validate_endgame_window()
+    |> validate_liberation_window()
   end
 
   def started?(%__MODULE__{start_time: nil}, _now), do: false
@@ -138,6 +139,22 @@ defmodule Registrations.Landgrab.Event do
       add_error(changeset, :endgame_ends_at, "must be after the endgame start")
     else
       changeset
+    end
+  end
+
+  defp validate_liberation_window(changeset) do
+    starts = get_field(changeset, :liberation_starts_at)
+    ends = get_field(changeset, :liberation_rollout_ends_at)
+
+    cond do
+      is_nil(starts) and not is_nil(ends) ->
+        add_error(changeset, :liberation_starts_at, "is required when a rollout end is set")
+
+      starts && ends && DateTime.compare(ends, starts) != :gt ->
+        add_error(changeset, :liberation_rollout_ends_at, "must be after the liberation start")
+
+      true ->
+        changeset
     end
   end
 end

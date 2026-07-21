@@ -1195,6 +1195,37 @@ defmodule Registrations.Landgrab do
   end
 
   @doc """
+  The liberation rollout at a glance, for the supervisor: the configured
+  window plus how far the trickle has got (invitations out, answers in).
+  Only teams with members count — empty QR teams aren't part of the game.
+  """
+  def liberation_status do
+    event = Events.current()
+
+    member_team_ids =
+      RegistrationsWeb.User
+      |> where([u], not is_nil(u.team_id))
+      |> select([u], u.team_id)
+      |> distinct(true)
+      |> Repo.all()
+      |> MapSet.new()
+
+    teams =
+      RegistrationsWeb.Team
+      |> Repo.all()
+      |> Enum.filter(&MapSet.member?(member_team_ids, &1.id))
+
+    %{
+      starts_at: event.liberation_starts_at,
+      rollout_ends_at: event.liberation_rollout_ends_at,
+      team_count: length(teams),
+      invited: Enum.count(teams, & &1.liberation_invited_at),
+      accepted: Enum.count(teams, &(&1.liberation_response == "accepted")),
+      declined: Enum.count(teams, &(&1.liberation_response == "declined"))
+    }
+  end
+
+  @doc """
   Organiser messages, newest first — drafts and sent alike, for the
   supervisor's message screen.
   """

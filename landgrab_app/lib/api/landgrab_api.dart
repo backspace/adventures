@@ -3,6 +3,7 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/draft.dart';
+import 'package:landgrab/models/liberation_status.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/relief_status.dart';
 import 'package:landgrab/models/landgrab_event.dart';
@@ -1074,6 +1075,24 @@ class LandgrabApi {
           ? null
           : DateTime.tryParse('${data['announced_at']}Z'),
     );
+  }
+
+  /// The liberation rollout: configured window + invitation/answer progress.
+  Future<LiberationStatus> getLiberationStatus() async {
+    final response = await dio.get('/landgrab/supervision/liberation');
+    return LiberationStatus.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Schedule (or, with nulls, cancel) the liberation rollout window.
+  Future<LiberationStatus> updateLiberationSchedule({
+    DateTime? startsAt,
+    DateTime? rolloutEndsAt,
+  }) async {
+    final response = await dio.put('/landgrab/supervision/liberation', data: {
+      'starts_at': startsAt?.toUtc().toIso8601String(),
+      'rollout_ends_at': rolloutEndsAt?.toUtc().toIso8601String(),
+    });
+    return LiberationStatus.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Relief valve state + the readiness dashboard (pole counts + ownership
