@@ -1,6 +1,6 @@
 defmodule Registrations.Landgrab.Bathroom do
   @moduledoc """
-  Author-published point of interest for players who need a restroom
+  Author-published point of interest for players who need a bathroom
   during the adventure. No validation lifecycle — created by authors,
   immediately visible to everyone. Optional region linkage so a bathroom
   inside a building can inherit the region's accessibility / entry

@@ -44,7 +44,7 @@ class AuthorRoute extends StatelessWidget {
           _Tile(
             icon: Icons.wash,
             title: 'Add a bathroom',
-            subtitle: 'Mark a restroom so players can find one.',
+            subtitle: 'Mark a bathroom so players can find one.',
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => CaptureBathroomRoute(api: api)),
             ),
