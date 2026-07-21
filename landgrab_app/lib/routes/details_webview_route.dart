@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/routes/login_route.dart';
+import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -27,6 +28,11 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
   // Fires once when we intercept the post-deletion redirect, so the
   // logout/navigate teardown can't run twice.
   bool _handledDeletion = false;
+  // Mirrors the web form's dirty state (pushed from the injected tracker
+  // over the DirtyBridge channel), so leaving the WebView can warn about
+  // edits the user never scrolled down to Save. Reset to false on every
+  // fresh page load (including the post-save reload).
+  bool _dirty = false;
 
   @override
   void initState() {
@@ -37,7 +43,10 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
         NavigationDelegate(
           onProgress: (_) {},
           onPageStarted: (_) => setState(() => _loading = true),
-          onPageFinished: (_) => setState(() => _loading = false),
+          onPageFinished: (_) {
+            setState(() => _loading = false);
+            _installDirtyTracker();
+          },
           onNavigationRequest: _onNavigationRequest,
           onWebResourceError: (err) {
             // Ignore subresource errors (favicons, ads, tracking) —
@@ -55,7 +64,16 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
       // unhandled confirm resolves to `false`, so the delete silently
       // did nothing. Bridge them to native dialogs.
       ..setOnJavaScriptConfirmDialog((request) => _showConfirm(request.message))
-      ..setOnJavaScriptAlertDialog((request) => _showAlert(request.message));
+      ..setOnJavaScriptAlertDialog((request) => _showAlert(request.message))
+      // The injected tracker posts '1'/'0' here whenever the form's dirty
+      // state flips, mirroring it into [_dirty].
+      ..addJavaScriptChannel(
+        'DirtyBridge',
+        onMessageReceived: (message) {
+          final dirty = message.message == '1';
+          if (mounted && dirty != _dirty) setState(() => _dirty = dirty);
+        },
+      );
     // A transparent background is a load-time nicety, but on macOS
     // `setBackgroundColor` is unimplemented — the WKWebView backend
     // throws "opaque is not implemented on macOS" — so only set it
@@ -87,11 +105,56 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
 
     final path = uri.path;
     if (path.isEmpty || path == '/') {
-      if (mounted) Navigator.of(context).pop();
+      // The layout's "Home" link — leave the WebView, warning first if the
+      // form has unsaved edits.
+      _confirmAndPop();
       return NavigationDecision.prevent;
     }
 
     return NavigationDecision.navigate;
+  }
+
+  // Injected on every page load. Flips a dirty flag on any form edit and
+  // mirrors it to Dart over the DirtyBridge channel, so leaving can warn
+  // about unsaved changes. Wired at capture phase on the document so it
+  // catches every control — text fields, the attending radios, the
+  // accessibility-tag checkboxes — without knowing the form's structure. A
+  // successful Save submits the form and reloads the page, so the flag
+  // resets on the fresh document; the submit listener and the trailing
+  // notify(false) also clear it immediately, defensively.
+  static const _dirtyTrackerJs = '''
+(function () {
+  if (window.__dirtyWired) return;
+  window.__dirtyWired = true;
+  window.__detailsDirty = false;
+  function notify(v) { try { DirtyBridge.postMessage(v ? '1' : '0'); } catch (e) {} }
+  function setDirty(v) {
+    if (window.__detailsDirty === v) return;
+    window.__detailsDirty = v;
+    notify(v);
+  }
+  document.addEventListener('input', function () { setDirty(true); }, true);
+  document.addEventListener('change', function () { setDirty(true); }, true);
+  document.addEventListener('submit', function () { setDirty(false); }, true);
+  notify(false);
+})();
+''';
+
+  Future<void> _installDirtyTracker() async {
+    try {
+      await _controller.runJavaScript(_dirtyTrackerJs);
+    } catch (_) {
+      // Best-effort: without the tracker we simply won't warn on exit.
+    }
+  }
+
+  /// Leave the WebView, first confirming if the form has unsaved edits.
+  Future<void> _confirmAndPop() async {
+    if (_dirty) {
+      final discard = await confirmDiscardChanges(context);
+      if (!discard) return;
+    }
+    if (mounted) Navigator.of(context).pop();
   }
 
   Future<void> _onAccountDeleted() async {
@@ -164,41 +227,50 @@ class _DetailsWebViewRouteState extends State<DetailsWebViewRoute> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: LandgrabAppBar(
-        title: DetailsStrings.appBarTitle,
-        actions: [
-          IconButton(
-            tooltip: DetailsStrings.reloadTooltip,
-            onPressed: _load,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          if (_error == null) WebViewWidget(controller: _controller),
-          if (_loading)
-            const Center(child: CircularProgressIndicator()),
-          if (_error != null)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(_error!, textAlign: TextAlign.center),
-                    const SizedBox(height: 16),
-                    FilledButton.icon(
-                      onPressed: _load,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text(DetailsStrings.tryAgain),
-                    ),
-                  ],
+    return PopScope(
+      // When the form is dirty, intercept the back button / system back and
+      // confirm before discarding. Clean forms pop normally (swipe-back and
+      // predictive-back animations preserved).
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _confirmAndPop();
+      },
+      child: Scaffold(
+        appBar: LandgrabAppBar(
+          title: DetailsStrings.appBarTitle,
+          actions: [
+            IconButton(
+              tooltip: DetailsStrings.reloadTooltip,
+              onPressed: _load,
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
+        ),
+        body: Stack(
+          children: [
+            if (_error == null) WebViewWidget(controller: _controller),
+            if (_loading) const Center(child: CircularProgressIndicator()),
+            if (_error != null)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_error!, textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: _load,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text(DetailsStrings.tryAgain),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
