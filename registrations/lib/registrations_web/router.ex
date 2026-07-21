@@ -359,6 +359,8 @@ defmodule RegistrationsWeb.Router do
     get("/dashboard", SupervisionController, :dashboard)
     get("/endgame", EndgameController, :show)
     put("/endgame", EndgameController, :update)
+    get("/relief", ReliefController, :show)
+    put("/relief", ReliefController, :update)
     get("/messages", OrganiserMessageController, :index)
     post("/messages", OrganiserMessageController, :create)
     post("/messages/:id/send", OrganiserMessageController, :send_message)

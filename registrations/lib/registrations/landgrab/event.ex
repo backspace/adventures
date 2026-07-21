@@ -34,6 +34,10 @@ defmodule Registrations.Landgrab.Event do
     field(:endgame_final_radius_m, :float)
     field(:endgame_announced_at, :utc_datetime)
 
+    # Relief valve: non-null once a supervisor re-opens stakes (per-team
+    # consumption) because the event is running ahead of content.
+    field(:relief_started_at, :utc_datetime)
+
     timestamps()
   end
 
@@ -41,7 +45,7 @@ defmodule Registrations.Landgrab.Event do
 
   def changeset(event, attrs) do
     event
-    |> cast(attrs, [:name, :start_time | @endgame_fields])
+    |> cast(attrs, [:name, :start_time, :relief_started_at | @endgame_fields])
     |> validate_required([:name])
     |> validate_number(:endgame_initial_radius_m, greater_than: 0)
     |> validate_number(:endgame_final_radius_m, greater_than: 0)

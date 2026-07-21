@@ -1075,6 +1075,19 @@ class LandgrabApi {
     );
   }
 
+  /// Whether the relief valve (re-openable stakes, per-team consumption) is on.
+  Future<bool> getReliefActive() async {
+    final response = await dio.get('/landgrab/supervision/relief');
+    return response.data['active'] == true;
+  }
+
+  /// Turn the relief valve on or off. Returns the resulting state.
+  Future<bool> setReliefActive(bool on) async {
+    final response =
+        await dio.put('/landgrab/supervision/relief', data: {'on': on});
+    return response.data['active'] == true;
+  }
+
   Future<List<OrganiserMessage>> listOrganiserMessages() async {
     final response = await dio.get('/landgrab/supervision/messages');
     return (response.data['messages'] as List)

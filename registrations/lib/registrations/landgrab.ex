@@ -49,14 +49,40 @@ defmodule Registrations.Landgrab do
   def list_poles_with_state(team_id \\ nil) do
     teams = team_style_index()
     prohibitive_ids = prohibitive_pole_ids(team_id)
+    # In relief mode the map's "locked" is per-team (a stake you've drained),
+    # not the global lock — so a stake others captured but you can still play
+    # doesn't wrongly read as done. `team_solved` loaded once for the sweep.
+    relief? = is_binary(team_id) and relief_active?()
+    team_solved = if relief?, do: team_solved_puzzlet_ids(team_id), else: MapSet.new()
+
+    playable_by_pole = if relief?, do: playable_puzzlet_ids_by_pole(), else: %{}
 
     Pole
     |> Repo.all()
     |> Enum.map(fn pole ->
-      pole
-      |> pole_with_state(teams)
-      |> Map.put(:prohibitive, MapSet.member?(prohibitive_ids, pole.id))
+      state =
+        pole
+        |> pole_with_state(teams)
+        |> Map.put(:prohibitive, MapSet.member?(prohibitive_ids, pole.id))
+
+      if relief? do
+        ids = Map.get(playable_by_pole, pole.id, [])
+        exhausted = ids != [] and Enum.all?(ids, &MapSet.member?(team_solved, &1))
+        Map.put(state, :locked?, exhausted)
+      else
+        state
+      end
     end)
+  end
+
+  # Playable (validated, non-VO) puzzlet ids grouped by pole — one query for the
+  # relief per-team exhaustion sweep.
+  defp playable_puzzlet_ids_by_pole do
+    Puzzlet
+    |> where([p], not is_nil(p.pole_id) and p.status == :validated and not p.validator_only)
+    |> select([p], {p.pole_id, p.id})
+    |> Repo.all()
+    |> Enum.group_by(fn {pole_id, _} -> pole_id end, fn {_, id} -> id end)
   end
 
   # Pole ids where EVERY remaining (uncaptured, validated, non-validator-only)
@@ -149,7 +175,10 @@ defmodule Registrations.Landgrab do
 
       pole ->
         cond do
-          pole_locked?(pole) ->
+          # "Nothing to serve here": globally captured normally, or — in relief
+          # mode — every playable puzzlet already solved by THIS team (other
+          # teams may still have some left).
+          serving_locked?(pole, team_id) ->
             state = pole_with_state(pole)
 
             {:ok,
@@ -175,7 +204,7 @@ defmodule Registrations.Landgrab do
 
           true ->
             state = pole_with_state(pole)
-            active = active_puzzlet_for_pole(pole, user_id, exclude)
+            active = active_puzzlet_for_pole(pole, user_id, exclude, team_id)
 
             if active && team_locked_out?(active, team_id) do
               {:error, :team_locked_out, pole}
@@ -407,19 +436,29 @@ defmodule Registrations.Landgrab do
   When `user_id` is provided, puzzlets authored by that user are skipped in
   the rotation — the author silently rotates past their own work.
   """
-  def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id \\ nil, exclude \\ []) do
-    # Puzzlets with a solve event (any team). Guard non-null puzzlet_id so
-    # future pole-only events (liberate/accommodation) never leak a NULL into
-    # the `not in` set (which would drop every row).
-    captured_puzzlet_ids =
-      from(c in OwnershipEvent, where: not is_nil(c.puzzlet_id), select: c.puzzlet_id)
+  def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id \\ nil, exclude \\ [], team_id \\ nil) do
+    # Which puzzlets count as "consumed" and so aren't served:
+    #   * relief mode + a team → the ones THIS team has solved (per-team pool,
+    #     so a stake another team took is still playable for you);
+    #   * otherwise → the globally captured ones (consume-once).
+    # Guard non-null puzzlet_id so pole-only events (liberate/accommodation)
+    # never leak a NULL into the `not in` set (which would drop every row).
+    consumed_puzzlet_ids =
+      if relief_active?() and team_id do
+        from(c in OwnershipEvent,
+          where: c.kind == "capture" and c.team_id == ^team_id and not is_nil(c.puzzlet_id),
+          select: c.puzzlet_id
+        )
+      else
+        from(c in OwnershipEvent, where: not is_nil(c.puzzlet_id), select: c.puzzlet_id)
+      end
 
     query =
       Puzzlet
       |> where([p], p.pole_id == ^pole_id)
       |> where([p], p.status == :validated)
       |> where([p], not p.validator_only)
-      |> where([p], p.id not in subquery(captured_puzzlet_ids))
+      |> where([p], p.id not in subquery(consumed_puzzlet_ids))
       |> order_by([p], asc: p.difficulty, asc: p.inserted_at)
       |> limit(1)
 
@@ -440,6 +479,56 @@ defmodule Registrations.Landgrab do
       end
 
     Repo.one(query)
+  end
+
+  @doc """
+  Whether the relief valve is on — a supervisor has re-opened stakes for
+  per-team consumption because the event is running ahead of content.
+  """
+  def relief_active? do
+    match?(%Event{relief_started_at: %DateTime{}}, Events.current())
+  end
+
+  @doc "Puzzlet ids a team has solved (a `capture` event of theirs), as a MapSet."
+  def team_solved_puzzlet_ids(team_id) when is_binary(team_id) do
+    from(c in OwnershipEvent,
+      where: c.kind == "capture" and c.team_id == ^team_id and not is_nil(c.puzzlet_id),
+      select: c.puzzlet_id
+    )
+    |> Repo.all()
+    |> MapSet.new()
+  end
+
+  def team_solved_puzzlet_ids(_), do: MapSet.new()
+
+  @doc """
+  Relief-mode "locked for you": the team has solved every playable puzzlet at
+  this stake, so it has nothing left to serve them (other teams may still play
+  it). Distinct from the global `pole_locked?`.
+  """
+  def pole_exhausted_for_team?(%Pole{id: pole_id}, team_id) when is_binary(team_id) do
+    ids = playable_puzzlet_ids(pole_id)
+    solved = team_solved_puzzlet_ids(team_id)
+    ids != [] and Enum.all?(ids, &MapSet.member?(solved, &1))
+  end
+
+  def pole_exhausted_for_team?(_pole, _team_id), do: false
+
+  # "Nothing left to serve here" for a scanning team: per-team exhaustion in
+  # relief mode, the global lock otherwise.
+  defp serving_locked?(pole, team_id) do
+    if relief_active?() and is_binary(team_id) do
+      pole_exhausted_for_team?(pole, team_id)
+    else
+      pole_locked?(pole)
+    end
+  end
+
+  defp playable_puzzlet_ids(pole_id) do
+    Puzzlet
+    |> where([p], p.pole_id == ^pole_id and p.status == :validated and not p.validator_only)
+    |> select([p], p.id)
+    |> Repo.all()
   end
 
   @doc """
@@ -1419,15 +1508,15 @@ defmodule Registrations.Landgrab do
   end
 
   defp insert_capture(pole_id, puzzlet_id, team_id) do
-    # Normal-mode "one capture per puzzlet globally" is now enforced here, not
-    # by a DB constraint (the constraint relaxed to per-team so the relief
-    # valve can let many teams solve one puzzlet). Relief mode will skip this
-    # guard. There's a tiny race — two teams answering the SAME puzzlet
+    # Normal-mode "one capture per puzzlet globally" is enforced here, not by a
+    # DB constraint (the constraint relaxed to per-team so the relief valve can
+    # let many teams solve one puzzlet). In relief mode this global guard is
+    # SKIPPED — a puzzlet another team solved is fair game — leaving the
+    # per-team unique below as the only limit (a team still can't double-solve).
+    # There's a tiny race in normal mode — two teams answering the SAME puzzlet
     # correctly within the same instant could both pass this check — that the
-    # old atomic unique prevented; at event scale it's negligible, and it's the
-    # intended relief behaviour anyway. The per-team unique below still stops a
-    # single team double-capturing.
-    if puzzlet_captured?(puzzlet_id) do
+    # old atomic unique prevented; at event scale it's negligible.
+    if not relief_active?() and puzzlet_captured?(puzzlet_id) do
       {:error, :already_captured}
     else
       %OwnershipEvent{}
