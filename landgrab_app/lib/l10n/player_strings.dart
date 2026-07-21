@@ -279,6 +279,14 @@ class SettingsStrings {
   static const themeSystem = 'System';
   static const themeLight = 'Light';
   static const themeDark = 'Dark';
+
+  // Team join QR — a member shows this so someone can join their team by
+  // scanning it (the same code the team card carries).
+  static const teamQrHeading = 'Invite to your team';
+  static const teamQrBody =
+      'Have someone scan this with “Join a team” to join you.';
+  static String teamQrName(String team) => 'Team $team';
+  static const teamQrCodeLabel = 'Join code';
 }
 
 /// Notification history (`routes/notifications_route.dart`).

@@ -86,7 +86,7 @@ msgid "accessibility_tag.dim_lighting.label"
 msgstr "No low light"
 
 msgid "accessibility_tag.dim_lighting.help"
-msgstr "Some locations or approaches are poorly lit, especially after dark."
+msgstr "Some locations or approaches are poorly lit."
 
 msgid "accessibility_tag.crouch_required.label"
 msgstr "No crouching"
