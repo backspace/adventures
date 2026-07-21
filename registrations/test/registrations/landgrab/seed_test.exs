@@ -8,12 +8,15 @@ defmodule Registrations.Landgrab.SeedTest do
   """
   use Registrations.DataCase
 
+  alias Registrations.Landgrab
   alias Registrations.Landgrab.OwnershipEvent
   alias Registrations.Landgrab.Event
+  alias Registrations.Landgrab.Notification
   alias Registrations.Landgrab.Puzzlet
   alias Registrations.Landgrab.Seed
   alias Registrations.Landgrab.TeamPuzzlet
   alias Registrations.Landgrab.Validations.PuzzletValidation
+  alias RegistrationsWeb.Team
   alias RegistrationsWeb.User
 
   setup do
@@ -149,6 +152,22 @@ defmodule Registrations.Landgrab.SeedTest do
     assert Repo.aggregate(TeamPuzzlet, :count) == 0
   end
 
+  test "clear resets the liberation rollout: invites, answers, and schedule" do
+    Seed.teams()
+
+    # Run a real rollout to completion: schedule in the past, every team due.
+    insert_event(liberation_starts_at: ~U[2020-01-01 00:00:00Z])
+    {:invited, invited} = Landgrab.maybe_invite_liberation_teams()
+    assert invited > 0
+
+    assert %{liberation_teams: ^invited} = Seed.clear()
+
+    assert Repo.aggregate(from(t in Team, where: not is_nil(t.liberation_invited_at)), :count) == 0
+    assert Repo.aggregate(from(n in Notification, where: n.type == "liberation_invite"), :count) == 0
+    # The schedule is gone too, so the announcer won't immediately re-invite.
+    assert Repo.aggregate(from(e in Event, where: not is_nil(e.liberation_starts_at)), :count) == 0
+  end
+
   test "clock:M puts the start M minutes from now" do
     event = insert_event(start_time: ~U[2020-01-01 00:00:00Z])
 
@@ -156,6 +175,23 @@ defmodule Registrations.Landgrab.SeedTest do
 
     secs = DateTime.diff(Repo.get(Event, event.id).start_time, DateTime.utc_now())
     assert_in_delta secs, 1800, 5
+  end
+
+  test "clock shifts a set liberation window along with the timeline" do
+    # Liberation set 45 min after the start with a 15-min rollout — the
+    # shift must preserve both intervals.
+    event =
+      insert_event(
+        start_time: ~U[2020-01-01 00:00:00Z],
+        liberation_starts_at: ~U[2020-01-01 00:45:00Z],
+        liberation_rollout_ends_at: ~U[2020-01-01 01:00:00Z]
+      )
+
+    Seed.clock("30")
+
+    reloaded = Repo.get(Event, event.id)
+    assert DateTime.diff(reloaded.liberation_starts_at, reloaded.start_time) == 45 * 60
+    assert DateTime.diff(reloaded.liberation_rollout_ends_at, reloaded.liberation_starts_at) == 15 * 60
   end
 
   test "clock:M.SS reads the fractional part as seconds, not decimal minutes" do

@@ -366,8 +366,11 @@ defmodule Registrations.Landgrab.Seed do
 
   # ── clock ───────────────────────────────────────────────────────────
   # Every event carries these instants; a shift moves the whole timeline
-  # by one delta so the intervals between them are preserved.
-  @time_fields ~w(start_time endgame_starts_at endgame_ends_at endgame_announced_at)a
+  # by one delta so the intervals between them are preserved. The
+  # liberation window rides along when set, so a scripted rollout keeps
+  # its place in a replayed event.
+  @time_fields ~w(start_time endgame_starts_at endgame_ends_at endgame_announced_at
+                  liberation_starts_at liberation_rollout_ends_at)a
 
   @doc """
   Position "now" relative to an event milestone by shifting the whole
@@ -461,16 +464,30 @@ defmodule Registrations.Landgrab.Seed do
 
   # ── clear (fresh, uncaptured map) ───────────────────────────────────
   @doc """
-  Remove ALL captures, in-progress claims, and the attack / pole-lost
-  notifications — a clean, uncaptured map. Returns
-  `%{captures: n, in_progress: n, notifications: n}`.
+  Remove ALL captures, in-progress claims, and the attack / pole-lost /
+  liberation-invite notifications, and reset the liberation rollout (team
+  invite stamps + answers, and the events' schedule) — a clean, uncaptured
+  map. Returns `%{captures: n, in_progress: n, notifications: n,
+  liberation_teams: n}`.
   """
   def clear do
     {tp, _} = Repo.delete_all(TeamPuzzlet)
     {caps, _} = Repo.delete_all(OwnershipEvent)
-    {notes, _} = Repo.delete_all(from(n in Notification, where: n.type in ["attack", "pole_lost"]))
 
-    %{captures: caps, in_progress: tp, notifications: notes}
+    {notes, _} =
+      Repo.delete_all(from(n in Notification, where: n.type in ["attack", "pole_lost", "liberation_invite"]))
+
+    {invited, _} =
+      Repo.update_all(
+        from(t in Team, where: not is_nil(t.liberation_invited_at) or not is_nil(t.liberation_response)),
+        set: [liberation_invited_at: nil, liberation_response: nil, liberation_responded_at: nil]
+      )
+
+    # Un-schedule the rollout too — a past-dated window left behind would
+    # have the announcer re-invite every team within a minute of the wipe.
+    Repo.update_all(Event, set: [liberation_starts_at: nil, liberation_rollout_ends_at: nil])
+
+    %{captures: caps, in_progress: tp, notifications: notes, liberation_teams: invited}
   end
 
   # ── helpers ─────────────────────────────────────────────────────────

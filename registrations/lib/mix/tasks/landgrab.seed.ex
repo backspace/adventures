@@ -106,7 +106,9 @@ defmodule Mix.Tasks.Landgrab.Seed do
       capture_all     capture EVERY capturable pole across the teams — a fully
                       owned map (run 'playable' first; needs the endgame inactive)
       clear           remove ALL captures, in-progress claims, and the attack /
-                      pole-lost notifications — a clean, uncaptured map
+                      pole-lost / liberation-invite notifications, and reset the
+                      liberation rollout (invites, answers, schedule) — a clean,
+                      uncaptured map
       filler:N        create N teamless filler users with memorable proposed
                       team names — pair with 'teams' to add that many teams  (5)
       names           rename any leftover "FIXME" teams to two-word names
@@ -206,8 +208,12 @@ defmodule Mix.Tasks.Landgrab.Seed do
   end
 
   defp run_step({"clear", _}) do
-    %{captures: caps, in_progress: tp, notifications: notes} = Seed.clear()
-    Mix.shell().info("clear: removed #{caps} capture(s), #{tp} in-progress, #{notes} gameplay notification(s).")
+    %{captures: caps, in_progress: tp, notifications: notes, liberation_teams: lib} = Seed.clear()
+
+    Mix.shell().info(
+      "clear: removed #{caps} capture(s), #{tp} in-progress, #{notes} gameplay notification(s); " <>
+        "reset liberation for #{lib} team(s) and unscheduled the rollout."
+    )
   end
 
   defp run_step({"clock", spec}) do
