@@ -41,6 +41,8 @@ import 'package:landgrab/widgets/bathroom_layer.dart';
 import 'package:landgrab/widgets/block_territory_layer.dart';
 import 'package:landgrab/widgets/capture_rings_layer.dart';
 import 'package:landgrab/widgets/highlight_reticle.dart';
+import 'package:landgrab/widgets/liberated_zone_layer.dart';
+import 'package:landgrab/widgets/liberated_zone_tuner.dart';
 import 'package:landgrab/widgets/live_location_layer.dart';
 import 'package:landgrab/widgets/precomputed_territory_layer.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
@@ -84,6 +86,12 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // shape per pole, used for both drawing and tap. See
   // landgrab-street-aware-territory.md.
   List<TerritoryRegion>? _territory;
+  // PROTOTYPE: liberated-zone look (moving hatch over freed ground). Style is
+  // dev-tunable via LiberatedZoneTuner; _liberatedPreview lets the tuner treat
+  // N owned zones as liberated so the effect is visible without running a real
+  // liberation. Both no-ops in normal builds.
+  LiberatedZoneStyle _liberatedStyle = const LiberatedZoneStyle();
+  int _liberatedPreview = 0;
   String? _teamId;
   String? _teamName;
   // The team's stable colour index from /me, so its swatch shows beside the
@@ -404,6 +412,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     );
     _rememberTeamColors([replaced]);
     if (!mounted) return;
+    // A liberation lands here as owner→null + liberated: keep the ambient
+    // ticker running so its hatch drifts.
+    if (replaced.liberated) _ensureAnimTicker();
     setState(() {
       _seedCaptureAnimations([replaced]);
       // A change of ownership on a pole retires any active attack
@@ -484,14 +495,84 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // Ambient pulse for the attack rings — 0..1 loop.
     _pulsePhase = (elapsed.inMicroseconds / _pulseCycle.inMicroseconds) % 1.0;
 
-    // Stop the ticker only when nothing on-screen needs animating.
+    // Stop the ticker only when nothing on-screen needs animating —
+    // liberated zones keep it alive so their hatch keeps drifting.
     if (_captureStartedAt.isEmpty &&
         _lastAttackAt.isEmpty &&
-        _highlightedPoleId == null) {
+        _highlightedPoleId == null &&
+        !_anyLiberated()) {
       _animTicker?.dispose();
       _animTicker = null;
     }
     if (mounted) setState(() {});
+  }
+
+  // PROTOTYPE: is there anything for the liberated-zone layer to animate?
+  // Real liberated poles, or (dev) the tuner's preview count.
+  bool _anyLiberated() =>
+      _liberatedPreview > 0 || (_poles?.any((p) => p.liberated) ?? false);
+
+  // The liberated zones to paint, drawn from whichever territory geometry is
+  // active (precomputed per-pole regions preferred; live blocks otherwise).
+  // Includes the tuner's preview poles so the look is visible without a real
+  // liberation.
+  List<LiberatedShape> _liberatedShapes() {
+    final poles = _poles;
+    if (poles == null || !_anyLiberated()) return const [];
+
+    final ids = <String>{};
+    for (final p in poles) {
+      if (p.liberated) ids.add(p.id);
+    }
+    if (_liberatedPreview > 0) {
+      for (final p in poles) {
+        if (ids.length >= _liberatedPreview) break;
+        if (p.currentOwnerTeamId != null && !p.liberated) ids.add(p.id);
+      }
+    }
+    if (ids.isEmpty) return const [];
+
+    final regions = _territory;
+    if (regions != null) {
+      return [
+        for (final r in regions)
+          if (ids.contains(r.poleId))
+            LiberatedShape(ring: r.ring, holes: r.holes),
+      ];
+    }
+    final blocks = _territoryBlocks;
+    if (blocks != null) {
+      final out = <LiberatedShape>[];
+      for (final p in poles) {
+        if (!ids.contains(p.id)) continue;
+        final ring = _blockRingForPole(p, blocks);
+        if (ring != null) out.add(LiberatedShape(ring: ring));
+      }
+      return out;
+    }
+    return const [];
+  }
+
+  // A pole's home block: the block it stands in, else the nearest centroid
+  // within ~300 m (mirrors BlockTerritoryLayer's assignment closely enough
+  // for a look-test; the shipped version should share that layer's exact
+  // assignment rather than re-derive it).
+  List<LatLng>? _blockRingForPole(Pole pole, List<TerritoryBlock> blocks) {
+    final at = LatLng(pole.latitude, pole.longitude);
+    final perDegLon = 111000.0 * math.cos(pole.latitude * math.pi / 180);
+    List<LatLng>? near;
+    var nearD = double.infinity;
+    for (final b in blocks) {
+      if (_ringContains(b.ring, at)) return b.ring;
+      final dx = (b.centroid.longitude - pole.longitude) * perDegLon;
+      final dy = (b.centroid.latitude - pole.latitude) * 111000.0;
+      final d = dx * dx + dy * dy;
+      if (d < nearD) {
+        nearD = d;
+        near = b.ring;
+      }
+    }
+    return nearD <= 300 * 300 ? near : null;
   }
 
   /// The app-bar refresh button: re-fetch identity (team, roles)
@@ -560,6 +641,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         _accountEmail = accountEmail;
         _event = event;
       });
+      // Poles may arrive already liberated (app reopened mid-phase) — start
+      // the ambient ticker so the hatch drifts from first paint.
+      if (_anyLiberated()) _ensureAnimTicker();
       _refreshUnreadCount();
       _refreshActivePuzzlets();
       if (event.endgame != null && _zoneTimer == null) {
@@ -1365,6 +1449,15 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                     captureAnimationDuration:
                                         _captureAnimationDuration,
                                   ),
+                                // PROTOTYPE: moving hatch over freed ground,
+                                // above the static territory fill and below the
+                                // pins. Empty (and free) unless zones are
+                                // liberated (or the dev tuner previews some).
+                                LiberatedZoneLayer(
+                                  shapes: _liberatedShapes(),
+                                  phase: _pulsePhase,
+                                  style: _liberatedStyle,
+                                ),
                                 BathroomLayer(bathrooms: _bathrooms),
                                 CaptureRingsLayer(
                                   poles: _poles!,
@@ -1513,6 +1606,25 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                   hidden: _hideProhibitive,
                                   count: _prohibitiveCount,
                                   onToggle: _toggleHideProhibitive,
+                                ),
+                              ),
+                            // THROWAWAY dev tuner for the liberated look —
+                            // only in --dart-define=LIBERATED_TUNER=true builds.
+                            if (kLiberatedTunerEnabled)
+                              Positioned(
+                                left: 8,
+                                right: 8,
+                                bottom: 80 +
+                                    MediaQuery.of(context).padding.bottom,
+                                child: LiberatedZoneTuner(
+                                  style: _liberatedStyle,
+                                  previewCount: _liberatedPreview,
+                                  onStyle: (s) =>
+                                      setState(() => _liberatedStyle = s),
+                                  onPreview: (n) {
+                                    setState(() => _liberatedPreview = n);
+                                    if (n > 0) _ensureAnimTicker();
+                                  },
                                 ),
                               ),
                           ]),
