@@ -29,16 +29,11 @@ defmodule RegistrationsWeb.Landgrab.ReliefController do
   end
 
   def update(conn, params) do
-    event = Events.current()
-    on = params["on"] == true
-
-    stamp =
-      if on, do: DateTime.utc_now() |> DateTime.truncate(:second), else: nil
-
-    case Events.update(event, %{relief_started_at: stamp}) do
-      {:ok, _updated} ->
+    # Landgrab.set_relief_active handles the SYSTEM announcement on OFF→ON.
+    case Landgrab.set_relief_active(params["on"] == true) do
+      {:ok, active} ->
         RegistrationsWeb.Endpoint.broadcast("landgrab:map", "event_updated", %{})
-        json(conn, %{active: on})
+        json(conn, %{active: active})
 
       {:error, changeset} ->
         conn

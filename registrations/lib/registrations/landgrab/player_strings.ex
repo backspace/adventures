@@ -46,6 +46,9 @@ defmodule Registrations.Landgrab.PlayerStrings do
   @doc "SYSTEM broadcast when the endgame withdrawal begins."
   def endgame_announcement, do: phrase("app_endgame_announcement")
 
+  @doc "SYSTEM broadcast when the relief valve is turned on."
+  def relief_enabled_body, do: phrase("app_relief_enabled_body")
+
   # ── Push titles ──────────────────────────────────────────────────
 
   def push_title("attack"), do: phrase("app_push_title_attack")
@@ -107,7 +110,10 @@ defmodule Registrations.Landgrab.PlayerStrings do
       stakesCap: term("term_stakes_cap"),
       relic: term("term_relic"),
       relics: term("term_relics"),
-      relicCap: term("term_relic_cap")
+      relicCap: term("term_relic_cap"),
+      zone: term("term_zone"),
+      zones: term("term_zones"),
+      zoneCap: term("term_zone_cap")
     ]
   end
 

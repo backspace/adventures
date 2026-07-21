@@ -490,6 +490,40 @@ defmodule Registrations.Landgrab do
   end
 
   @doc """
+  Turn the relief valve on or off. On the OFF→ON transition, broadcasts a SYSTEM
+  message to every team (players must know stakes they'd written off are back in
+  contention, or the re-opened content goes unused). Re-enabling while already
+  on doesn't re-announce. Returns `{:ok, active?}`.
+  """
+  def set_relief_active(true) do
+    event = Events.current()
+    was_on = match?(%Event{relief_started_at: %DateTime{}}, event)
+
+    with {:ok, _updated} <-
+           Events.update(event, %{
+             relief_started_at: DateTime.utc_now() |> DateTime.truncate(:second)
+           }) do
+      unless was_on do
+        {:ok, message} =
+          create_organiser_message(%{
+            body: PlayerStrings.relief_enabled_body(),
+            sender_name: "SYSTEM"
+          })
+
+        send_organiser_message(message)
+      end
+
+      {:ok, true}
+    end
+  end
+
+  def set_relief_active(false) do
+    with {:ok, _updated} <- Events.update(Events.current(), %{relief_started_at: nil}) do
+      {:ok, false}
+    end
+  end
+
+  @doc """
   A snapshot for the supervisor's relief dashboard — how much playable content
   is left (the signal for whether to open the valve), plus an ownership
   leaderboard:

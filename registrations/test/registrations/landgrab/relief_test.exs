@@ -5,6 +5,10 @@ defmodule Registrations.Landgrab.ReliefTest do
 
   alias Registrations.Landgrab
   alias Registrations.Landgrab.Events
+  alias Registrations.Landgrab.Notification
+
+  defp message_count,
+    do: Repo.aggregate(from(n in Notification, where: n.type == "message"), :count)
 
   defp turn_relief_on do
     {:ok, _} =
@@ -156,5 +160,40 @@ defmodule Registrations.Landgrab.ReliefTest do
 
     # (A team can't double-solve one puzzlet — enforced by the per-team unique
     # index, covered deterministically in OwnershipEventTest.)
+  end
+
+  describe "set_relief_active/1 announcements" do
+    setup do
+      # send_organiser_message fans to teams with at least one member.
+      t1 = insert(:team)
+      insert(:user, team_id: t1.id)
+      t2 = insert(:team)
+      insert(:user, team_id: t2.id)
+      :ok
+    end
+
+    test "enabling notifies every team once; re-enabling doesn't re-notify" do
+      assert message_count() == 0
+
+      {:ok, true} = Landgrab.set_relief_active(true)
+      assert message_count() == 2
+
+      # Already on → no fresh announcement.
+      {:ok, true} = Landgrab.set_relief_active(true)
+      assert message_count() == 2
+    end
+
+    test "the announcement carries the relief copy with gameplay terms" do
+      {:ok, true} = Landgrab.set_relief_active(true)
+      note = Repo.one(from(n in Notification, where: n.type == "message", limit: 1))
+      assert note.body =~ "revisited"
+      assert note.body =~ "zones"
+      assert note.metadata["sender_name"] == "SYSTEM"
+    end
+
+    test "disabling doesn't notify" do
+      {:ok, false} = Landgrab.set_relief_active(false)
+      assert message_count() == 0
+    end
   end
 end

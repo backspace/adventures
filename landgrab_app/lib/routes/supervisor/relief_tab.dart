@@ -40,6 +40,32 @@ class _ReliefTabState extends State<ReliefTab> {
   }
 
   Future<void> _toggle(bool on) async {
+    // Enabling messages every team, so confirm before the blast. (Disabling is
+    // silent, so it needs no confirmation.)
+    if (on) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Enable relief valve?'),
+          content: const Text(
+            'This re-opens stakes for per-team play and sends a message to '
+            'every team that fully-captured zones can be revisited.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Enable & notify'),
+            ),
+          ],
+        ),
+      );
+      if (ok != true || !mounted) return;
+    }
+
     setState(() => _busy = true);
     try {
       final active = await widget.api.setReliefActive(on);
