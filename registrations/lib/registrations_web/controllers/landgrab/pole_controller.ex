@@ -133,6 +133,9 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
           {:error, :not_prohibitive} ->
             claim_error(conn, pole, "not_prohibitive", PlayerStrings.not_prohibitive_detail())
 
+          {:error, :nothing_to_liberate} ->
+            claim_error(conn, pole, "nothing_to_liberate", PlayerStrings.nothing_to_liberate_detail())
+
           {:error, _} ->
             conn
             |> put_status(:unprocessable_entity)

@@ -363,25 +363,45 @@ class ScanStrings {
   // member of the cohort set aside. Names the specific requirement(s) so the
   // team can decide (split up, or move on) — matter-of-fact, never othering.
   static const conflictTitle = 'Accessibility requirements';
-  static String conflictBody(String requirements, {bool canClaim = false}) =>
-      'This ${Terms.relic} has accessibility requirements a member of your '
-      'cohort has set aside: $requirements. '
-      '${canClaim ? 'Attempt it together, try a different ${Terms.relic} here, or claim this ${Terms.stake} without solving?' : 'Attempt it together, or try a different ${Terms.relic} here?'}';
+  // The third-option verb flips with stance: a liberator frees the stake
+  // rather than claiming it. DRAFT liberate copy, pending the sensitivity pass.
+  static String conflictBody(String requirements,
+      {bool canClaim = false, bool liberating = false}) {
+    final third = !canClaim
+        ? ''
+        : liberating
+            ? ', or liberate this ${Terms.stake} without solving'
+            : ', or claim this ${Terms.stake} without solving';
+    return 'This ${Terms.relic} has accessibility requirements a member of your '
+        'cohort has set aside: $requirements. '
+        'Attempt it together, try a different ${Terms.relic} here$third?';
+  }
+
   static const conflictTake = 'We’ll try it';
   static const conflictSkip = 'Give me another';
 
-  // Accommodation claim: offered on a stake where every relic is incompatible
-  // for the cohort — take the ground without solving. Presented as a third
-  // option in the conflict dialog and at the decline-everything dead-end.
+  // Accommodation: offered on a stake where every relic is incompatible for
+  // the cohort — a third option in the conflict dialog and at the
+  // decline-everything dead-end. A capturer takes the ground without solving;
+  // a liberator frees it without solving.
   static const conflictClaim = 'Claim it';
+  static const conflictLiberate = 'Liberate it';
   static const claimConfirmTitle = 'Claim without solving?';
   static const claimConfirmBody =
       'No ${Terms.relic} here suits your cohort. You can claim this '
       '${Terms.stake} for your team without solving. It stays open for teams '
       'who can solve it, so a rival may take it back.';
   static const claimConfirm = 'Claim it';
+  // Liberator variants of the confirm dialog.
+  static const liberateConfirmTitle = 'Liberate without solving?';
+  static const liberateConfirmBody =
+      'No ${Terms.relic} here suits your cohort. You can liberate this '
+      '${Terms.stake} without solving — it returns to no one.';
+  static const liberateConfirm = 'Liberate it';
   static const claimCancel = 'Not now';
   static const claimFailed = 'Couldn’t claim that ${Terms.stake}. Try again.';
+  static const liberateFailed =
+      'Couldn’t liberate that ${Terms.stake}. Try again.';
 
   // Unknown-barcode dialog
   static const unknownBarcodeTitle = 'Unknown barcode';

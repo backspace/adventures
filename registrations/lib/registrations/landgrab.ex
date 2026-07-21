@@ -658,36 +658,55 @@ defmodule Registrations.Landgrab do
   @doc """
   Claim a stake **without solving** — the accommodation path for a stake that's
   prohibitive for the team (every remaining relic conflicts with a member's
-  accessibility needs). Records an `accommodation` ownership event (a soft hold:
-  the relics stay unsolved, so a team that *can* solve one may still take it).
+  accessibility needs). Stance decides what claiming does, exactly as solving
+  does in `record_attempt`: a capturer records an `accommodation` (a soft hold
+  — relics stay unsolved, so a team that *can* solve one may still take it); a
+  team that joined the liberation records a `liberate` (the stake is freed
+  without solving), never a capture.
 
   Guards mirror `record_attempt`; the prohibitive check is server-verified so a
   client can't claim a stake it could actually solve.
   """
   def accommodate_pole(%Pole{} = pole, team_id, _user_id) do
+    liberating? = liberator?(team_id)
+
     cond do
       is_nil(team_id) ->
         {:error, :no_team}
 
-      pole_owned_by_team?(pole, team_id) ->
+      # A capturer can't re-claim a pole it already holds; a liberator freeing
+      # their team's OWN stake is legitimate, so this guard is capture-only.
+      not liberating? and pole_owned_by_team?(pole, team_id) ->
         {:error, :already_owner}
 
       pole_outside_endgame_zone?(pole) ->
         {:error, :outside_zone}
+
+      # Strict roles: a liberator can only free OWNED ground (nothing to
+      # liberate on never-claimed or already-freed stakes).
+      liberating? and is_nil(current_owner_team_id_for_pole(pole)) ->
+        {:error, :nothing_to_liberate}
 
       not prohibitive_for_team?(pole, team_id) ->
         {:error, :not_prohibitive}
 
       true ->
         previous_owner_id = current_owner_team_id_for_pole(pole)
+        kind = if liberating?, do: "liberate", else: "accommodation"
 
         %OwnershipEvent{}
-        |> OwnershipEvent.changeset(%{kind: "accommodation", pole_id: pole.id, team_id: team_id})
+        |> OwnershipEvent.changeset(%{kind: kind, pole_id: pole.id, team_id: team_id})
         |> Repo.insert()
         |> case do
           {:ok, event} ->
             broadcast_pole_update(pole, event)
-            maybe_signal_pole_lost(pole, previous_owner_id, team_id)
+
+            if liberating? do
+              maybe_signal_pole_freed(pole, previous_owner_id, team_id)
+            else
+              maybe_signal_pole_lost(pole, previous_owner_id, team_id)
+            end
+
             {:ok, pole}
 
           {:error, _changeset} ->

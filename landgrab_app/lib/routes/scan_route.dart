@@ -128,8 +128,11 @@ class _ScanRouteState extends State<ScanRoute> {
               // Nothing (left) to serve. On a prohibitive stake that's the
               // dead-end where claiming without solving is offered.
               if (current.pole.prohibitive) {
-                if (await _confirmClaim() && mounted) {
-                  await _claimWithoutSolving(navigator, barcode, current.pole.id);
+                if (await _confirmClaim(liberating: current.liberating) &&
+                    mounted) {
+                  await _claimWithoutSolving(
+                      navigator, barcode, current.pole.id,
+                      liberating: current.liberating);
                   return;
                 }
                 if (!mounted) return;
@@ -148,15 +151,19 @@ class _ScanRouteState extends State<ScanRoute> {
               final choice = await _showConflictChoice(
                 current.conflictTags,
                 canClaim: current.pole.prohibitive,
+                liberating: current.liberating,
               );
               if (!mounted) return;
 
               if (choice == _ConflictChoice.claim) {
-                if (await _confirmClaim() && mounted) {
-                  // Let go of the held (conflicting) puzzlet, then claim.
+                if (await _confirmClaim(liberating: current.liberating) &&
+                    mounted) {
+                  // Let go of the held (conflicting) puzzlet, then claim/free.
                   await widget.api
                       .abandonActivePuzzlet(current.activePuzzlet!.id);
-                  await _claimWithoutSolving(navigator, barcode, current.pole.id);
+                  await _claimWithoutSolving(
+                      navigator, barcode, current.pole.id,
+                      liberating: current.liberating);
                   return;
                 }
                 if (!mounted) return;
@@ -328,13 +335,14 @@ class _ScanRouteState extends State<ScanRoute> {
   /// judge. When [canClaim] (the whole stake is prohibitive), also offers
   /// claiming without solving. Dismissing (returns null) cancels to the map.
   Future<_ConflictChoice?> _showConflictChoice(List<String> conflictTags,
-      {required bool canClaim}) {
+      {required bool canClaim, bool liberating = false}) {
     final requirements = conflictTags.map(accessibilityTagLabel).join(', ');
     return showDialog<_ConflictChoice>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text(ScanStrings.conflictTitle),
-        content: Text(ScanStrings.conflictBody(requirements, canClaim: canClaim)),
+        content: Text(ScanStrings.conflictBody(requirements,
+            canClaim: canClaim, liberating: liberating)),
         actions: [
           TextButton(
             onPressed: () =>
@@ -345,7 +353,9 @@ class _ScanRouteState extends State<ScanRoute> {
             TextButton(
               onPressed: () =>
                   Navigator.of(dialogContext).pop(_ConflictChoice.claim),
-              child: const Text(ScanStrings.conflictClaim),
+              child: Text(liberating
+                  ? ScanStrings.conflictLiberate
+                  : ScanStrings.conflictClaim),
             ),
           FilledButton(
             onPressed: () =>
@@ -357,14 +367,19 @@ class _ScanRouteState extends State<ScanRoute> {
     );
   }
 
-  /// Confirm before claiming a stake without solving — it takes the ground
-  /// from another team, so it's a deliberate step, not a stray tap.
-  Future<bool> _confirmClaim() async {
+  /// Confirm before claiming/liberating a stake without solving — a deliberate
+  /// step, not a stray tap. A capturer takes the ground from another team; a
+  /// liberator frees it.
+  Future<bool> _confirmClaim({bool liberating = false}) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text(ScanStrings.claimConfirmTitle),
-        content: const Text(ScanStrings.claimConfirmBody),
+        title: Text(liberating
+            ? ScanStrings.liberateConfirmTitle
+            : ScanStrings.claimConfirmTitle),
+        content: Text(liberating
+            ? ScanStrings.liberateConfirmBody
+            : ScanStrings.claimConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -372,7 +387,9 @@ class _ScanRouteState extends State<ScanRoute> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text(ScanStrings.claimConfirm),
+            child: Text(liberating
+                ? ScanStrings.liberateConfirm
+                : ScanStrings.claimConfirm),
           ),
         ],
       ),
@@ -380,17 +397,23 @@ class _ScanRouteState extends State<ScanRoute> {
     return ok ?? false;
   }
 
-  /// Record the accommodation claim and return to the map. Passes the pole id
-  /// so the map replays the ownership animation on arrival.
+  /// Record the accommodation and return to the map. A capture relays the pole
+  /// id so the map replays the capture animation on arrival; a liberation does
+  /// NOT — the freed look comes from the pole_updated broadcast and the
+  /// liberated layer, and a capture ping there would be wrong.
   Future<void> _claimWithoutSolving(
-      NavigatorState navigator, String barcode, String poleId) async {
+      NavigatorState navigator, String barcode, String poleId,
+      {bool liberating = false}) async {
     try {
       await widget.api.claimWithoutSolving(barcode);
       if (!mounted) return;
-      navigator.pop((barcode: barcode, capturedPoleId: poleId));
+      navigator.pop((
+        barcode: barcode,
+        capturedPoleId: liberating ? null : poleId,
+      ));
     } catch (e) {
       if (!mounted) return;
-      _showSnack(ScanStrings.claimFailed);
+      _showSnack(liberating ? ScanStrings.liberateFailed : ScanStrings.claimFailed);
       navigator.pop((barcode: barcode, capturedPoleId: null));
     }
   }

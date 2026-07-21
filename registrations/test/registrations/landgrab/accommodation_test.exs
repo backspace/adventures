@@ -49,6 +49,44 @@ defmodule Registrations.Landgrab.AccommodationTest do
     end
   end
 
+  describe "accommodate_pole/3 as a liberator" do
+    defp accepted(team),
+      do: team |> Ecto.Changeset.change(liberation_response: "accepted") |> Repo.update!()
+
+    test "frees a prohibitive OWNED stake instead of capturing it" do
+      %{team: owner, pole: pole} = prohibitive_setup()
+      # Owner holds it without solving (so the relic stays uncaptured and the
+      # stake stays prohibitive). Inserted a minute back so it's unambiguously
+      # older than the liberation below — newest-wins is second-granular, so
+      # two events in the same second would tie.
+      insert(:ownership_event,
+        kind: "accommodation",
+        pole_id: pole.id,
+        team: owner,
+        inserted_at: DateTime.utc_now() |> DateTime.add(-60, :second) |> DateTime.truncate(:second)
+      )
+
+      assert Landgrab.current_owner_team_id_for_pole(pole) == owner.id
+
+      liberator = insert(:team) |> accepted()
+      insert(:user, team_id: liberator.id, accessibility_tags: ["stairs"])
+
+      assert {:ok, ^pole} = Landgrab.accommodate_pole(pole, liberator.id, nil)
+      # Freed, not captured — belongs to no one.
+      assert Landgrab.current_owner_team_id_for_pole(pole) == nil
+      assert Landgrab.pole_liberated?(pole)
+    end
+
+    test "refuses unowned ground — nothing to liberate" do
+      %{pole: pole} = prohibitive_setup()
+      liberator = insert(:team) |> accepted()
+      insert(:user, team_id: liberator.id, accessibility_tags: ["stairs"])
+
+      assert {:error, :nothing_to_liberate} =
+               Landgrab.accommodate_pole(pole, liberator.id, nil)
+    end
+  end
+
   describe "ownership union (accommodation vs capture, newest wins)" do
     test "a later capture by a team that can solve overrides an accommodation" do
       %{team: cohort, pole: pole, puzzlet: puzzlet} = prohibitive_setup()

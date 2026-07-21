@@ -131,11 +131,17 @@ class ScanResult {
   /// committing, rather than deciding for them.
   final List<String> conflictTags;
 
+  /// The scanning team joined the liberation, so this stake's puzzlet (or a
+  /// claim-without-solving) frees it rather than capturing — the app frames
+  /// the affordances accordingly.
+  final bool liberating;
+
   ScanResult({
     required this.pole,
     required this.activePuzzlet,
     this.contendingTeams = 0,
     this.conflictTags = const [],
+    this.liberating = false,
   });
 
   bool get hasConflict => conflictTags.isNotEmpty;
@@ -150,6 +156,7 @@ class ScanResult {
                 ?.map((e) => e as String)
                 .toList(growable: false) ??
             const [],
+        liberating: json['liberating'] as bool? ?? false,
       );
 }
 

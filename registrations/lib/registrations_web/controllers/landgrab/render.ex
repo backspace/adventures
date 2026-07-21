@@ -28,7 +28,11 @@ defmodule RegistrationsWeb.Landgrab.Render do
       # True when every remaining puzzlet here conflicts with the viewing team's
       # accessibility needs — the map flags it. Only set on the pole-list path
       # (per-viewer); absent elsewhere, hence the default.
-      prohibitive: Map.get(state, :prohibitive, false)
+      prohibitive: Map.get(state, :prohibitive, false),
+      # The scanning team joined the liberation, so a "claim without solving"
+      # here frees the stake rather than capturing it. Only set on a fresh
+      # scan; defaults false elsewhere (owner map, active-puzzlet resume).
+      liberating: Map.get(state, :liberating, false)
     }
   end
 
