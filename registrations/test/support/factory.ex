@@ -102,8 +102,8 @@ defmodule Registrations.Factory do
     }
   end
 
-  def capture_factory do
-    %Registrations.Landgrab.Capture{}
+  def ownership_event_factory do
+    %Registrations.Landgrab.OwnershipEvent{kind: "capture"}
   end
 
   def attempt_factory do

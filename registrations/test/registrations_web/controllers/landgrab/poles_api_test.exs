@@ -235,7 +235,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
     test "returns nil active_puzzlet when pole is locked", %{conn: conn, team: team} do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, answer: "a")
-      insert(:capture, puzzlet: puzzlet, team: team)
+      insert(:ownership_event, puzzlet: puzzlet, team: team)
 
       body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(200)
       assert body["pole"]["locked"] == true
@@ -252,7 +252,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, answer: "a", difficulty: 1)
       _other = insert(:puzzlet, pole: pole, answer: "b", difficulty: 5)
-      insert(:capture, puzzlet: puzzlet, team: team)
+      insert(:ownership_event, puzzlet: puzzlet, team: team)
 
       body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(409)
       assert body["error"]["code"] == "already_owner"
@@ -345,7 +345,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       pole = insert(:pole)
       easy = insert(:puzzlet, pole: pole, answer: "a", difficulty: 1)
       hard = insert(:puzzlet, pole: pole, answer: "b", difficulty: 5)
-      insert(:capture, puzzlet: easy, team: team)
+      insert(:ownership_event, puzzlet: easy, team: team)
 
       body =
         conn
@@ -361,7 +361,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       puzzlet = insert(:puzzlet, pole: pole, answer: "right")
       insert(:team_puzzlet, team: team, puzzlet: puzzlet, pole: pole)
       other_team = insert(:team)
-      insert(:capture, puzzlet: puzzlet, team: other_team)
+      insert(:ownership_event, puzzlet: puzzlet, team: other_team)
 
       body =
         conn
@@ -384,7 +384,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       assert body["error"]["code"] == "not_active"
       # And it didn't sneak through a capture.
-      assert Registrations.Repo.aggregate(Registrations.Landgrab.Capture, :count) == 0
+      assert Registrations.Repo.aggregate(Registrations.Landgrab.OwnershipEvent, :count) == 0
     end
   end
 
@@ -521,7 +521,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       assert body["error"]["code"] == "not_started"
       # And nothing slipped through to a capture.
-      assert Registrations.Repo.aggregate(Registrations.Landgrab.Capture, :count) == 0
+      assert Registrations.Repo.aggregate(Registrations.Landgrab.OwnershipEvent, :count) == 0
     end
 
     test "listing poles is still allowed", %{conn: conn} do
@@ -556,7 +556,7 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
       assert body["error"]["code"] == "game_over"
       # And nothing slipped through to a capture.
-      assert Registrations.Repo.aggregate(Registrations.Landgrab.Capture, :count) == 0
+      assert Registrations.Repo.aggregate(Registrations.Landgrab.OwnershipEvent, :count) == 0
     end
   end
 

@@ -19,7 +19,7 @@ defmodule Registrations.Landgrab.Seed do
   import Ecto.Query
 
   alias Registrations.Landgrab
-  alias Registrations.Landgrab.Capture
+  alias Registrations.Landgrab.OwnershipEvent
   alias Registrations.Landgrab.Event
   alias Registrations.Landgrab.Notification
   alias Registrations.Landgrab.Pole
@@ -185,7 +185,7 @@ defmodule Registrations.Landgrab.Seed do
         select: v.puzzlet_id
       )
 
-    captured = from(c in Capture, select: c.puzzlet_id)
+    captured = from(c in OwnershipEvent, where: not is_nil(c.puzzlet_id), select: c.puzzlet_id)
 
     assigned =
       from(z in Puzzlet,
@@ -312,13 +312,21 @@ defmodule Registrations.Landgrab.Seed do
   # Unowned poles that still have an uncaptured, validated, player-facing
   # puzzlet — the ones a first-wave scan can capture.
   defp unowned_capturable_poles(n) do
-    owned = from(c in Capture, join: z in Puzzlet, on: z.id == c.puzzlet_id, select: z.pole_id)
+    owned =
+      from(c in OwnershipEvent,
+        join: z in Puzzlet,
+        on: z.id == c.puzzlet_id,
+        select: z.pole_id
+      )
 
     from(p in Pole,
       join: z in Puzzlet,
       on: z.pole_id == p.id,
       where: z.status == :validated and not z.validator_only,
-      where: z.id not in subquery(from(c in Capture, select: c.puzzlet_id)),
+      where:
+        z.id not in subquery(
+          from(c in OwnershipEvent, where: not is_nil(c.puzzlet_id), select: c.puzzlet_id)
+        ),
       where: p.id not in subquery(owned),
       distinct: p.id,
       select: %{pole_id: p.id, barcode: p.barcode}
@@ -430,7 +438,7 @@ defmodule Registrations.Landgrab.Seed do
   """
   def clear do
     {tp, _} = Repo.delete_all(TeamPuzzlet)
-    {caps, _} = Repo.delete_all(Capture)
+    {caps, _} = Repo.delete_all(OwnershipEvent)
     {notes, _} = Repo.delete_all(from(n in Notification, where: n.type in ["attack", "pole_lost"]))
 
     %{captures: caps, in_progress: tp, notifications: notes}

@@ -8,7 +8,7 @@ defmodule Registrations.Landgrab.SeedTest do
   """
   use Registrations.DataCase
 
-  alias Registrations.Landgrab.Capture
+  alias Registrations.Landgrab.OwnershipEvent
   alias Registrations.Landgrab.Event
   alias Registrations.Landgrab.Puzzlet
   alias Registrations.Landgrab.Seed
@@ -88,7 +88,7 @@ defmodule Registrations.Landgrab.SeedTest do
     assert %{captured: captured, flips: _, in_progress: _} = Seed.captures(length(poles))
     assert captured > 0
     # Every capture is a real Capture row from the scan→answer flow.
-    assert Repo.aggregate(Capture, :count) >= captured
+    assert Repo.aggregate(OwnershipEvent, :count) >= captured
   end
 
   test "captures raises when no team can play (only the author has a team)", %{author: author} do
@@ -125,7 +125,7 @@ defmodule Registrations.Landgrab.SeedTest do
     Seed.captures(6)
 
     assert %{captures: _, in_progress: _, notifications: _} = Seed.clear()
-    assert Repo.aggregate(Capture, :count) == 0
+    assert Repo.aggregate(OwnershipEvent, :count) == 0
     assert Repo.aggregate(TeamPuzzlet, :count) == 0
   end
 

@@ -5,7 +5,7 @@ defmodule Registrations.Landgrab do
   alias Registrations.Landgrab.Accessibility
   alias Registrations.Landgrab.Attachment
   alias Registrations.Landgrab.Attempt
-  alias Registrations.Landgrab.Capture
+  alias Registrations.Landgrab.OwnershipEvent
   alias Registrations.Landgrab.DeviceToken
   alias Registrations.Landgrab.Event
   alias Registrations.Landgrab.Events
@@ -82,7 +82,11 @@ defmodule Registrations.Landgrab do
   # active_puzzlet_for_pole, across every pole in one query. Region is loaded
   # so effective-tag computation doesn't re-query per puzzlet's own row.
   defp uncaptured_playable_puzzlets_by_pole do
-    captured_puzzlet_ids = select(Capture, [c], c.puzzlet_id)
+    # Puzzlets with a solve event (any team). Guard non-null puzzlet_id so
+    # future pole-only events (liberate/accommodation) never leak a NULL into
+    # the `not in` set (which would drop every row).
+    captured_puzzlet_ids =
+      from(c in OwnershipEvent, where: not is_nil(c.puzzlet_id), select: c.puzzlet_id)
 
     Puzzlet
     |> where([p], not is_nil(p.pole_id))
@@ -401,7 +405,11 @@ defmodule Registrations.Landgrab do
   the rotation — the author silently rotates past their own work.
   """
   def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id \\ nil, exclude \\ []) do
-    captured_puzzlet_ids = select(Capture, [c], c.puzzlet_id)
+    # Puzzlets with a solve event (any team). Guard non-null puzzlet_id so
+    # future pole-only events (liberate/accommodation) never leak a NULL into
+    # the `not in` set (which would drop every row).
+    captured_puzzlet_ids =
+      from(c in OwnershipEvent, where: not is_nil(c.puzzlet_id), select: c.puzzlet_id)
 
     query =
       Puzzlet
@@ -450,7 +458,11 @@ defmodule Registrations.Landgrab do
   end
 
   def current_owner_team_id_for_pole(%Pole{id: pole_id}) do
-    Capture
+    # Owner = the team of the newest capture among the pole's puzzlets. (When
+    # pole-only kinds like liberate/accommodation land, this gains a pole_id
+    # branch + kind-awareness; today only capture events exist.)
+    OwnershipEvent
+    |> where([c], c.kind == "capture")
     |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
     |> where([_c, p], p.pole_id == ^pole_id)
     |> order_by([c, _p], desc: c.inserted_at)
@@ -474,14 +486,18 @@ defmodule Registrations.Landgrab do
         )
       )
 
+    # Count DISTINCT captured puzzlets — the relaxed constraint permits several
+    # teams to solve one puzzlet (relief valve), so counting rows would
+    # over-count; distinct puzzlet_id keeps "captured == validated" correct.
     captured_count =
-      Capture
+      OwnershipEvent
+      |> where([c], c.kind == "capture")
       |> join(:inner, [c], p in Puzzlet, on: p.id == c.puzzlet_id)
       |> where(
         [_c, p],
         p.pole_id == ^pole_id and p.status == :validated and not p.validator_only
       )
-      |> select([c, _p], count(c.id))
+      |> select([c, _p], count(c.puzzlet_id, :distinct))
       |> Repo.one()
 
     validated_count > 0 and validated_count == captured_count
@@ -606,7 +622,7 @@ defmodule Registrations.Landgrab do
               end
 
             if correct? do
-              case insert_capture(puzzlet.id, team_id) do
+              case insert_capture(puzzlet.pole_id, puzzlet.id, team_id) do
                 {:ok, capture} ->
                   %{result: :captured, attempt: attempt, capture: capture}
 
@@ -646,7 +662,7 @@ defmodule Registrations.Landgrab do
     end
   end
 
-  defp broadcast_pole_update(%Pole{} = pole, %Capture{} = capture) do
+  defp broadcast_pole_update(%Pole{} = pole, %OwnershipEvent{} = capture) do
     owner = Map.get(team_style_index(), capture.team_id)
 
     RegistrationsWeb.Endpoint.broadcast("landgrab:map", "pole_updated", %{
@@ -1312,20 +1328,44 @@ defmodule Registrations.Landgrab do
     end
   end
 
-  defp insert_capture(puzzlet_id, team_id) do
-    %Capture{}
-    |> Capture.changeset(%{
-      puzzlet_id: puzzlet_id,
-      team_id: team_id
-    })
-    |> Repo.insert()
-    |> case do
-      {:ok, capture} ->
-        {:ok, capture}
+  defp insert_capture(pole_id, puzzlet_id, team_id) do
+    # Normal-mode "one capture per puzzlet globally" is now enforced here, not
+    # by a DB constraint (the constraint relaxed to per-team so the relief
+    # valve can let many teams solve one puzzlet). Relief mode will skip this
+    # guard. There's a tiny race — two teams answering the SAME puzzlet
+    # correctly within the same instant could both pass this check — that the
+    # old atomic unique prevented; at event scale it's negligible, and it's the
+    # intended relief behaviour anyway. The per-team unique below still stops a
+    # single team double-capturing.
+    if puzzlet_captured?(puzzlet_id) do
+      {:error, :already_captured}
+    else
+      %OwnershipEvent{}
+      |> OwnershipEvent.changeset(%{
+        kind: "capture",
+        pole_id: pole_id,
+        puzzlet_id: puzzlet_id,
+        team_id: team_id
+      })
+      |> Repo.insert()
+      |> case do
+        {:ok, capture} ->
+          {:ok, capture}
 
-      {:error, %Ecto.Changeset{errors: errors}} ->
-        if Keyword.has_key?(errors, :puzzlet_id), do: {:error, :already_captured}, else: {:error, :insert_failed}
+        {:error, %Ecto.Changeset{errors: errors}} ->
+          if Keyword.has_key?(errors, :puzzlet_id),
+            do: {:error, :already_captured},
+            else: {:error, :insert_failed}
+      end
     end
+  end
+
+  # Whether any team already holds a capture on this puzzlet (the global
+  # consume-once check for normal mode).
+  defp puzzlet_captured?(puzzlet_id) do
+    Repo.exists?(
+      from(c in OwnershipEvent, where: c.puzzlet_id == ^puzzlet_id and c.kind == "capture")
+    )
   end
 
   defp answers_match?(_type, expected, given) when not (is_binary(expected) and is_binary(given)), do: false

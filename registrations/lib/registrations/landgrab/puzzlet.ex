@@ -6,7 +6,7 @@ defmodule Registrations.Landgrab.Puzzlet do
 
   alias Registrations.Landgrab.AccessibilityTag
   alias Registrations.Landgrab.Attempt
-  alias Registrations.Landgrab.Capture
+  alias Registrations.Landgrab.OwnershipEvent
   alias Registrations.Landgrab.Pole
   alias Registrations.Landgrab.Region
 
@@ -47,7 +47,9 @@ defmodule Registrations.Landgrab.Puzzlet do
     belongs_to(:creator, RegistrationsWeb.User, type: :binary_id, foreign_key: :creator_id)
 
     has_many(:attempts, Attempt, on_delete: :nilify_all)
-    has_one(:capture, Capture, on_delete: :nilify_all)
+    # A puzzlet can now be solved by several teams (relief valve), so this is
+    # a collection of solve events, not a single capture.
+    has_many(:ownership_events, OwnershipEvent, on_delete: :nilify_all)
 
     timestamps()
   end
