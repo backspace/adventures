@@ -262,6 +262,110 @@ defmodule Registrations.Landgrab.Seed do
     Repo.aggregate(from(p in Pole, where: p.id not in subquery(owned_pole_ids_query())), :count)
   end
 
+  # ── liberate (free a share of owned zones, through the REAL game) ────
+  @doc """
+  Free `percent`% of the currently-owned zones through the real liberation
+  flow: a liberator team (one that ACCEPTED Bedab's invitation) scans an
+  owned pole and answers its relic, which *frees* the stake instead of
+  taking it — a newest-wins `liberate` ownership event, so the pole then
+  reads as liberated. The playing teams are accepted into liberation so they
+  can do the freeing, and each target zone is freed by a team that ISN'T its
+  current owner (a team can't re-solve the relic it already captured). Needs
+  the endgame inactive (an active shrink refuses out-of-radius poles) and a
+  not-yet-ended game — so run it pre-event or mid-arc. Raises without at
+  least two playing teams (nobody to free another team's ground). Percent is
+  of the zones owned *now*, so re-running frees a share of what's left.
+  Returns `%{liberated: n, owned: total_owned, requested: n}`.
+  """
+  def liberate(percent) when is_integer(percent) and percent >= 0 and percent <= 100 do
+    players = player_teams()
+
+    if length(players) < 2 do
+      raise "liberate needs at least two playing teams — one frees another's ground. " <>
+              "Run teams/filler first."
+    end
+
+    accept_liberation(players)
+    age_captures()
+
+    owned = owned_zones()
+    requested = round(length(owned) * percent / 100)
+
+    liberated =
+      owned
+      |> Enum.take(requested)
+      |> Enum.reduce(0, fn zone, acc ->
+        freer = Enum.find(players, &(&1.team_id != zone.owner_team_id))
+        if freer && play_liberate(zone, freer), do: acc + 1, else: acc
+      end)
+
+    %{liberated: liberated, owned: length(owned), requested: requested}
+  end
+
+  # A liberation only registers if it's the NEWEST event for its pole, but
+  # ownership is derived by ordering on second-precision `inserted_at` with
+  # no tiebreak — so a capture and liberation in the same wall-clock second
+  # tie, and the capture wins. Nudge existing captures an hour into the past
+  # (a constant shift, so their relative order is preserved) so a just-now
+  # liberation reliably wins even in a single `capture_all liberate` command.
+  # Captures precede liberations anyway, so this only makes the log honest.
+  defp age_captures do
+    from(c in OwnershipEvent,
+      where: c.kind == "capture",
+      update: [set: [inserted_at: fragment("? - interval '1 hour'", c.inserted_at)]]
+    )
+    |> Repo.update_all([])
+  end
+
+  # Mark the playing teams as liberation-accepters, so their scan→answer
+  # frees rather than takes. Idempotent (players are unique by team).
+  defp accept_liberation(players) do
+    stamp = now()
+
+    Enum.each(players, fn %{team_id: team_id} ->
+      Team
+      |> Repo.get(team_id)
+      |> Ecto.Changeset.change(%{
+        liberation_response: "accepted",
+        liberation_invited_at: stamp,
+        liberation_responded_at: stamp
+      })
+      |> Repo.update!()
+    end)
+  end
+
+  # Currently-owned zones (newest event a capture), with owner + barcode —
+  # the domain derives ownership, so already-liberated poles drop out.
+  defp owned_zones do
+    Landgrab.list_poles_with_state()
+    |> Enum.filter(&(&1.current_owner_team_id != nil))
+    |> Enum.map(fn %{pole: pole, current_owner_team_id: owner} ->
+      %{barcode: pole.barcode, owner_team_id: owner}
+    end)
+  end
+
+  # One real scan → answer as a liberator on an owned pole. True when the
+  # answer freed it; frees the claimed slot again on any other outcome so
+  # capacity stays clear for the next zone.
+  defp play_liberate(zone, freer) do
+    case Landgrab.scan_payload(zone.barcode, freer.team_id, freer.user_id) do
+      {:ok, %{active_puzzlet: %Puzzlet{id: id}}} ->
+        puzzlet = Repo.get(Puzzlet, id)
+
+        case Landgrab.record_attempt(puzzlet, freer.team_id, freer.user_id, puzzlet.answer) do
+          {:ok, %{result: :liberated}} ->
+            true
+
+          _ ->
+            Landgrab.abandon_active_puzzlet(freer.team_id, id)
+            false
+        end
+
+      _ ->
+        false
+    end
+  end
+
   # Teams that can actually play: one with a member who didn't author the
   # content (record_attempt rejects a puzzlet's or pole's creator).
   defp player_teams do

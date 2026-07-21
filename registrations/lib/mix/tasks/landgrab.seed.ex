@@ -20,6 +20,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
     * captures:N      partial gameplay — capture N poles spread across the
                       teams, with a few active attacks and in-progress puzzlets
     * capture_all     capture EVERY capturable pole — a fully owned map
+    * liberate:X      free X% of the currently-owned zones (real liberation flow)
     * schedule:X      lay out the whole timeline to run over X minutes from now
                       (start now, shrink at 1/2, liberation 5/8–6/8, end at X)
     * clock:M[.SS]    put "now" M min SS sec before the start (.SS = seconds);
@@ -115,6 +116,9 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       with attacks, pole-losses, and in-progress claims  (20)
       capture_all     capture EVERY capturable pole across the teams — a fully
                       owned map (run 'playable' first; needs the endgame inactive)
+      liberate:X      free X% of the currently-owned zones through real liberation
+                      (a liberator team frees another's stake; needs >=2 teams
+                      and captures already on the board)  (50)
       schedule:X      lay out the whole event timeline to run over X minutes from
                       now: start now, endgame shrink at 1/2 (X/2), liberation
                       invites 5/8–6/8, end at X. Re-arms one-shot stamps; fills a
@@ -245,6 +249,15 @@ defmodule Mix.Tasks.Landgrab.Seed do
     %{captured: captured, uncapturable: uncapturable} = Seed.capture_all()
     note = if uncapturable == 0, do: "every pole is owned", else: "#{uncapturable} left uncapturable (no player-facing puzzlet)"
     Mix.shell().info("capture_all: #{captured} pole(s) captured — #{note}.")
+  end
+
+  defp run_step({"liberate", n}) do
+    %{liberated: liberated, owned: owned, requested: requested} = Seed.liberate(count(n, 50))
+
+    Mix.shell().info(
+      "liberate: freed #{liberated} of #{owned} owned zone(s) (#{requested} at #{count(n, 50)}%) " <>
+        "— all via real liberation gameplay."
+    )
   end
 
   defp run_step({"schedule", n}) do

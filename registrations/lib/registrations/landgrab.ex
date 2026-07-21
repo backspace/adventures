@@ -258,7 +258,11 @@ defmodule Registrations.Landgrab do
                      conflict_tags: puzzlet_conflict_tags(active, team_id),
                      # Whether EVERY remaining relic here conflicts for the team
                      # — so the app can offer claiming without solving.
-                     prohibitive: prohibitive_for_team?(pole, team_id)
+                     prohibitive: prohibitive_for_team?(pole, team_id),
+                     # The scanning team's stance, so the app frames the claim
+                     # affordance correctly: a liberator's "claim without
+                     # solving" liberates (frees the stake), it doesn't capture.
+                     liberating: liberator?(team_id)
                    })}
               end
             end
