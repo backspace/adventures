@@ -123,6 +123,39 @@ defmodule Registrations.Landgrab.SeedTest do
     assert uncapturable >= 1
   end
 
+  test "liberate frees the requested share of owned zones via the real flow" do
+    Seed.teams()
+    Seed.capture_all()
+
+    owned_before = owned_zone_count()
+    assert owned_before > 0
+
+    assert %{liberated: liberated, owned: owned, requested: requested} = Seed.liberate(50)
+    assert owned == owned_before
+    assert requested == round(owned_before * 50 / 100)
+    assert liberated == requested
+    # The freed zones are gone from the owned set (their newest event is a
+    # liberation, so the domain no longer reads them as owned).
+    assert owned_zone_count() == owned_before - liberated
+    assert Repo.aggregate(from(c in OwnershipEvent, where: c.kind == "liberate"), :count) == liberated
+  end
+
+  test "liberate raises without two playing teams", %{author: author, players: players} do
+    # Leave only the author and a single non-author, so there's exactly one
+    # playing team. Done before any captures so no attempts reference the
+    # users being removed.
+    keep = hd(players)
+    Repo.delete_all(from(u in User, where: u.id not in ^[author.id, keep.id]))
+    Seed.teams()
+
+    assert_raise RuntimeError, ~r/two playing teams/, fn -> Seed.liberate(50) end
+  end
+
+  defp owned_zone_count do
+    Landgrab.list_poles_with_state()
+    |> Enum.count(&(&1.current_owner_team_id != nil))
+  end
+
   test "validations fills the test validator's queue with assigned work",
        %{validator: validator} do
     assert %{assigned: assigned, validator: email} = Seed.validations(2)
