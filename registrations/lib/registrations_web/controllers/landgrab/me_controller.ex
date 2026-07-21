@@ -25,6 +25,10 @@ defmodule RegistrationsWeb.Landgrab.MeController do
       |> Map.get(team.id, %{})
       |> Map.get(:color_index)
 
-    %{id: team.id, name: team.name, color_index: color_index}
+    # The join code is the team's own invite token (what the team-card QR
+    # encodes). Returned so a member can show a join QR from the app — it's
+    # their team's, meant to be shared; /me only ever exposes the caller's
+    # own team.
+    %{id: team.id, name: team.name, color_index: color_index, join_code: team.join_code}
   end
 end

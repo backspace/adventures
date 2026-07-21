@@ -8,6 +8,7 @@ import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/services/theme_service.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 Map<String, String> _knownEnvs() => {
       'Production': 'https://landgrab.chromatin.ca',
@@ -32,6 +33,11 @@ class _SettingsRouteState extends State<SettingsRoute> {
   List<SavedAccount> _accounts = const [];
   String? _currentUserId;
 
+  // The current team's join code + name, for the invite QR. Null when the
+  // user isn't on a team (or the server predates exposing the code).
+  String? _joinCode;
+  String? _teamName;
+
   void _markDirty() {
     if (!_dirty) setState(() => _dirty = true);
   }
@@ -40,6 +46,17 @@ class _SettingsRouteState extends State<SettingsRoute> {
   void initState() {
     super.initState();
     _load();
+    _loadTeam();
+  }
+
+  Future<void> _loadTeam() async {
+    final code = await UserService.getTeamJoinCode();
+    final name = await UserService.getTeamName();
+    if (!mounted) return;
+    setState(() {
+      _joinCode = code;
+      _teamName = name;
+    });
   }
 
   Future<void> _load() async {
@@ -141,6 +158,10 @@ class _SettingsRouteState extends State<SettingsRoute> {
           padding: const EdgeInsets.all(16),
           children: [
             _appearanceSection(context),
+            if (_joinCode != null) ...[
+              const SizedBox(height: 24),
+              _teamQrSection(context, _joinCode!),
+            ],
             // The environment + account switchers are dev affordances — shown
             // only once the 7-tap Credits easter egg unlocks them.
             if (EnvSwitchService.visible.value) ...[
@@ -230,6 +251,61 @@ class _SettingsRouteState extends State<SettingsRoute> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _teamQrSection(BuildContext context, String code) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(SettingsStrings.teamQrHeading, style: theme.textTheme.titleMedium),
+        if (_teamName != null) ...[
+          const SizedBox(height: 2),
+          Text(SettingsStrings.teamQrName(_teamName!),
+              style: theme.textTheme.bodyMedium),
+        ],
+        const SizedBox(height: 4),
+        Text(SettingsStrings.teamQrBody, style: theme.textTheme.bodySmall),
+        const SizedBox(height: 12),
+        Center(
+          child: Column(
+            children: [
+              // Always a dark-on-white QR (regardless of app theme) so it
+              // scans reliably; the white plate provides the quiet zone.
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: QrImageView(
+                  data: code,
+                  version: QrVersions.auto,
+                  size: 220,
+                  backgroundColor: Colors.white,
+                  // Fixed dark modules so contrast never depends on the theme.
+                  eyeStyle: const QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: Colors.black,
+                  ),
+                  dataModuleStyle: const QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(SettingsStrings.teamQrCodeLabel,
+                  style: theme.textTheme.labelSmall),
+              SelectableText(
+                code,
+                style: theme.textTheme.titleMedium?.copyWith(letterSpacing: 2),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

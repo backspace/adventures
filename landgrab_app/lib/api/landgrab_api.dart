@@ -327,6 +327,7 @@ class LandgrabApi {
       teamId: team?['id'] as String?,
       teamName: team?['name'] as String?,
       teamColorIndex: team?['color_index'] as int?,
+      teamJoinCode: team?['join_code'] as String?,
       roles: roles,
     );
     // Auto-remember this account for the dev account-switcher (no-op in
