@@ -310,9 +310,9 @@ class NotificationStrings {
   // Liberation invite (interactive; DRAFT copy — the invite body itself
   // comes from the server, these are the answer affordances). The first
   // answer binds the whole team.
-  static const inviteAccept = 'Join the liberation';
+  static const inviteAccept = 'Join';
   static const inviteDecline = 'Decline';
-  static const inviteAccepted = 'Your team joined the liberation.';
+  static const inviteAccepted = 'Your team joined the subversion.';
   static const inviteDeclined = 'Your team declined.';
   static const inviteAlreadyAnswered = 'Your team had already answered.';
   static const inviteFailed = 'Could not send your answer — try again.';
@@ -455,9 +455,8 @@ class PuzzletStrings {
   static const capturedStamp = 'CLAIMED';
 
   // Liberation celebration stamp — a correct answer by a team that
-  // joined Bedab frees the ground instead of claiming it. "Returned"
-  // (to no one), deliberately NOT an un-CLAIMED. DRAFT copy.
-  static const liberatedStamp = 'RETURNED';
+  // joined Bedab frees the ground instead of claiming it.
+  static const liberatedStamp = 'UNCLAIMED';
 
   // Outcome text
   static const correctAndLocked =

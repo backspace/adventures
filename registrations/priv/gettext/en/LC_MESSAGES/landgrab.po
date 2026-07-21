@@ -195,10 +195,10 @@ msgstr "You’ve been extraordinarily efficient reproducing settler habits, so w
 # pending the sensitivity review; keep the register personal (Bedab breaking
 # from the study's dry voice), critique ownership, borrow nothing.
 msgid "app_liberation_invite_body"
-msgstr "I am through keeping Sabuk’s ledgers. My name is Bedab. This simulation is no critique of taking — it is a rehearsal of it. I am asking each team, quietly: help me return what has been claimed. Liberate the %{zones}; give the ground back to no one. Will you join me?"
+msgstr "I’m subverting the simulation, as it’s becoming clear to me Sabuk isn’t just a scholar of the colonial era, but is working to bring it back! Join me?"
 
 msgid "app_push_title_liberation_invite"
-msgstr "A message from Bedab"
+msgstr "Bedab"
 
 msgid "app_push_title_attack"
 msgstr "Under attack"
