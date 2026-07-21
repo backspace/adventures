@@ -3,6 +3,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/routes/author/edit_bathroom_route.dart';
+import 'package:landgrab/widgets/bathroom_layer.dart';
 import 'package:landgrab/widgets/map_pin.dart';
 import 'package:landgrab/widgets/pin_map.dart';
 
@@ -19,6 +20,12 @@ class MapWithBathrooms extends StatefulWidget {
   /// The route itself enforces creator-or-supervisor permission server-
   /// side, so it's fine to pass `true` from any author/supervisor view.
   final bool editableBathrooms;
+
+  /// When true (and not [editableBathrooms]), tapping a bathroom pin shows
+  /// the same read-only detail sheet the gameplay map uses — for read-only
+  /// survey maps (e.g. the validator map) where a tap should reveal the
+  /// bathroom's info rather than doing nothing.
+  final bool showBathroomDetailsOnTap;
 
   // Freehand-draw passthrough (see PinMap).
   final bool drawMode;
@@ -40,6 +47,7 @@ class MapWithBathrooms extends StatefulWidget {
     required this.pins,
     this.interactive = true,
     this.editableBathrooms = false,
+    this.showBathroomDetailsOnTap = false,
     this.drawMode = false,
     this.onPolygonDrawn,
     this.polygon,
@@ -84,7 +92,11 @@ class _MapWithBathroomsState extends State<MapWithBathrooms> {
   Widget build(BuildContext context) {
     final bathroomPins = _bathrooms.map((b) => bathroomPin(
           b,
-          onTap: widget.editableBathrooms ? () => _openBathroom(b) : null,
+          onTap: widget.editableBathrooms
+              ? () => _openBathroom(b)
+              : widget.showBathroomDetailsOnTap
+                  ? () => BathroomLayer.showSheet(context, [b])
+                  : null,
         ));
     return PinMap(
       pins: [...widget.pins, ...bathroomPins],

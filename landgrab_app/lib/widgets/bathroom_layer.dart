@@ -32,7 +32,7 @@ class BathroomLayer extends StatelessWidget {
                 height: 32,
                 child: _BathroomMarker(
                   group: group,
-                  onTap: () => _showSheet(context, group),
+                  onTap: () => showSheet(context, group),
                 ),
               ))
           .toList(growable: false),
@@ -66,7 +66,11 @@ class BathroomLayer extends StatelessWidget {
     return groups;
   }
 
-  static void _showSheet(BuildContext context, List<Bathroom> group) {
+  /// Shows the bathroom detail bottom sheet — a single bathroom's details,
+  /// or an expandable list when several share a spot. Reused by any map that
+  /// wants the gameplay bathroom popover (e.g. the validator map, which
+  /// passes a one-element group).
+  static void showSheet(BuildContext context, List<Bathroom> group) {
     showModalBottomSheet(
       context: context,
       // `isScrollControlled: true` lets the sheet grow beyond half-

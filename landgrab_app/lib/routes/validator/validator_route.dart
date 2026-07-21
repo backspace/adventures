@@ -473,6 +473,9 @@ class _ValidatorRouteState extends State<ValidatorRoute> {
                   api: widget.api,
                   pins: pins,
                   cameraMemoryKey: 'validator_map',
+                  // Read-only map: tapping a bathroom shows the gameplay
+                  // detail sheet rather than doing nothing.
+                  showBathroomDetailsOnTap: true,
                 ),
               ),
               Positioned(
