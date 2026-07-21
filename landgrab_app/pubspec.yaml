@@ -56,18 +56,34 @@ dev_dependencies:
   flutter_native_splash: ^2.4.4
 
 # Cold-start splash. Dark so there's no white flash before the (dark-themed)
-# app renders its first frame. The background matches the banner's own
-# #0A0A0A so the centred image has no visible edge. Source is a cropped
-# landgrab/meta.png — top/bottom trimmed to dot-free rows so nothing clips.
-# Regenerate after editing: dart run flutter_native_splash:create
+# app renders its first frame. Source is a TEXT-ONLY wordmark — "LANDGRAB"
+# over the site's "a settler habit simulation" subtitle, both Anton in brand
+# cream #ECE4D3 (the subtitle ~21% the wordmark size, lowercase, matching the
+# site) — centred on a large transparent square. The wide meta.png banner was
+# truncated left/right and left odd edge gaps when Android centred it; text on
+# transparency composites to the #0A0A0A `color` below, so letterboxing is
+# invisible on every screen and nothing clips. The wordmark drives the width,
+# landing at ~73% of the screen on every density (pointsize keeps it ~260dp =
+# px/4, since the plugin treats the source as 4x and draws it centred at native
+# size — bigger truncates). To regenerate (needs ImageMagick):
+#   AF=assets/fonts/Anton-Regular.ttf
+#   magick -background none -fill '#ECE4D3' -font $AF -pointsize 280 \
+#     label:'LANDGRAB' -trim +repage /tmp/wm.png
+#   magick -background none -fill '#ECE4D3' -font $AF -kerning 2 -pointsize 60 \
+#     label:'a settler habit simulation' -trim +repage /tmp/sub.png
+#   magick -size 2x40 xc:none /tmp/gap.png
+#   magick -background none -gravity center /tmp/wm.png /tmp/gap.png /tmp/sub.png \
+#     -append -gravity center -background none -extent 1440x1440 \
+#     assets/splash/splash.png
+# Then apply to the platforms: dart run flutter_native_splash:create
 flutter_native_splash:
   color: "#0A0A0A"
   image: assets/splash/splash.png
-  # Scale the banner to the screen instead of centring it at native size, so
-  # it reaches the left/right edges (letterboxed top/bottom in the same black,
-  # so no visible frame). iOS-only: Android's launch bitmap has no aspect-fit
-  # gravity (fill_* distorts), and Android 12+ shows the launcher icon via the
-  # system splash regardless — so Android keeps the centred default.
+  # Fit the square wordmark to the screen width, centred (letterboxed top/
+  # bottom in the same black, so no visible frame). iOS-only: Android's launch
+  # bitmap has no aspect-fit gravity (fill_* distorts), and Android 12+ shows
+  # the launcher icon via the system splash regardless — so Android keeps the
+  # centred default.
   ios_content_mode: scaleAspectFit
   # Android 12+ uses the system splash: the launcher icon centred on the
   # window background. Set just the colour and let it show the LANDGRAB
