@@ -285,17 +285,27 @@ def _area_m2(poly):
     return poly.area * per_lat * per_lon
 
 
+def _poly_coords(poly):
+    # GeoJSON Polygon: [exterior, hole1, …]. Interior rings MUST be kept — a
+    # block can wrap an inner block (courtyard); dropping the hole fills it in
+    # and the block then overlaps whatever sat inside.
+    rings = [[[x, y] for (x, y) in poly.exterior.coords]]
+    rings += [[[x, y] for (x, y) in r.coords] for r in poly.interiors]
+    return rings
+
+
 def to_geojson(blocks):
-    features = []
-    for i, poly in enumerate(blocks):
-        # Exterior ring only; GeoJSON is [lng, lat].
-        ring = [[x, y] for (x, y) in poly.exterior.coords]
-        features.append({
-            "type": "Feature",
-            "properties": {"id": f"b{i}"},
-            "geometry": {"type": "Polygon", "coordinates": [ring]},
-        })
-    return {"type": "FeatureCollection", "features": features}
+    return {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "properties": {"id": f"b{i}"},
+                "geometry": {"type": "Polygon", "coordinates": _poly_coords(poly)},
+            }
+            for i, poly in enumerate(blocks)
+        ],
+    }
 
 
 def main():

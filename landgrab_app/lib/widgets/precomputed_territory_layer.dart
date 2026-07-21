@@ -47,9 +47,9 @@ class PrecomputedTerritoryLayer extends StatelessWidget {
       final owner = ownerByPole[r.poleId];
       if (owner == null) continue; // pole not captured → no fill
       if (owner == myOwnerId) {
-        mine.addAll(_myPolygons(r.ring, owner));
+        mine.addAll(_myPolygons(r.ring, r.holes, owner));
       } else {
-        rivals.add(_fill(r.ring, owner));
+        rivals.add(_fill(r.ring, r.holes, owner));
       }
     }
     return PolygonLayer(polygons: [...rivals, ...mine]);
@@ -61,10 +61,11 @@ class PrecomputedTerritoryLayer extends StatelessWidget {
     return TeamStyle.forIndex(index).color;
   }
 
-  Polygon _fill(List<LatLng> points, String ownerId) {
+  Polygon _fill(List<LatLng> points, List<List<LatLng>> holes, String ownerId) {
     final color = _colorFor(ownerId);
     return Polygon(
       points: points,
+      holePointsList: holes.isEmpty ? null : holes,
       color: color.withValues(alpha: 0.26),
       borderColor: color.withValues(alpha: 0.7),
       borderStrokeWidth: 1.5,
@@ -72,23 +73,28 @@ class PrecomputedTerritoryLayer extends StatelessWidget {
     );
   }
 
-  List<Polygon> _myPolygons(List<LatLng> points, String ownerId) {
+  List<Polygon> _myPolygons(
+      List<LatLng> points, List<List<LatLng>> holes, String ownerId) {
     final color = _colorFor(ownerId);
+    final holeList = holes.isEmpty ? null : holes;
     return [
       Polygon(
         points: points,
+        holePointsList: holeList,
         color: color.withValues(alpha: 0.40),
         borderStrokeWidth: 0,
         isFilled: true,
       ),
       Polygon(
         points: points,
+        holePointsList: holeList,
         isFilled: false,
         borderStrokeWidth: 4.5,
         borderColor: Colors.black.withValues(alpha: 0.55),
       ),
       Polygon(
         points: points,
+        holePointsList: holeList,
         isFilled: false,
         borderStrokeWidth: 2.5,
         borderColor: Colors.white,

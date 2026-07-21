@@ -38,7 +38,16 @@ class TerritoryBlock {
 class TerritoryRegion {
   final String poleId;
   final List<LatLng> ring;
-  const TerritoryRegion({required this.poleId, required this.ring});
+
+  /// Interior rings (holes) — a zone can surround another team's zone, and
+  /// the hole must be cut out or it paints over the inner zone.
+  final List<List<LatLng>> holes;
+
+  const TerritoryRegion({
+    required this.poleId,
+    required this.ring,
+    this.holes = const [],
+  });
 }
 
 class BlockTerritoryService {
@@ -88,19 +97,25 @@ class BlockTerritoryService {
         final geom = f['geometry'];
         if (poleId == null || geom is! Map) continue;
         final coords = geom['coordinates'];
-        final rings = <List<LatLng>>[];
+        // Each polygon → outer ring + hole rings.
+        final polys = <List<List<LatLng>>>[];
         switch (geom['type']) {
           case 'Polygon':
-            if (coords is List && coords.isNotEmpty) rings.add(_ring(coords.first));
+            if (coords is List) polys.add(_polyRings(coords));
           case 'MultiPolygon':
             if (coords is List) {
               for (final poly in coords) {
-                if (poly is List && poly.isNotEmpty) rings.add(_ring(poly.first));
+                if (poly is List) polys.add(_polyRings(poly));
               }
             }
         }
-        for (final ring in rings) {
-          if (ring.length >= 3) out.add(TerritoryRegion(poleId: poleId, ring: ring));
+        for (final rings in polys) {
+          if (rings.isEmpty || rings.first.length < 3) continue;
+          out.add(TerritoryRegion(
+            poleId: poleId,
+            ring: rings.first,
+            holes: rings.skip(1).where((h) => h.length >= 3).toList(),
+          ));
         }
       }
       return out.isEmpty ? null : out;
@@ -215,6 +230,10 @@ class BlockTerritoryService {
     }
     return out;
   }
+
+  /// A polygon's rings (outer + holes) → list of point rings.
+  static List<List<LatLng>> _polyRings(List poly) =>
+      [for (final r in poly) if (r is List) _ring(r)];
 
   static LatLng _centroid(List<LatLng> ring) {
     var lat = 0.0, lng = 0.0;

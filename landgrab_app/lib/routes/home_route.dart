@@ -929,6 +929,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     if (territory != null) {
       for (final region in territory) {
         if (!_ringContains(region.ring, point)) continue;
+        // Skip if the tap fell in a hole (an enclosed rival zone).
+        if (region.holes.any((h) => _ringContains(h, point))) continue;
         final pole = poles.where((p) => p.id == region.poleId).firstOrNull;
         // A region only shows when its pole is captured; match that here.
         if (pole == null || pole.currentOwnerTeamId == null) return;

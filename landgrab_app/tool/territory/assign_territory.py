@@ -83,16 +83,64 @@ def _metres(a, b):
     return math.hypot((a.x - b.x) * lonm, (a.y - b.y) * latm)
 
 
+def _split_block(block, plist):
+    """Partition [block] among the poles in [plist] by their Voronoi bisectors,
+    as half-plane clips in local metres. (shapely's voronoi_diagram produced
+    overlapping cells when a pole sat just outside the block it was nearest to;
+    independent half-plane clipping is robust to that and always disjoint.)
+    Returns [(pole_id, polygon)]."""
+    import math
+    from shapely.affinity import affine_transform
+    from shapely.geometry import Polygon
+
+    c = block.representative_point()
+    sx = 111000.0 * math.cos(c.y * math.pi / 180)
+    sy = 111000.0
+    bm = affine_transform(block, [sx, 0, 0, sy, -c.x * sx, -c.y * sy])
+    pts = [(pid, ((pt.x - c.x) * sx, (pt.y - c.y) * sy)) for pid, pt in plist]
+
+    out = []
+    for pid, (px, py) in pts:
+        cell = bm
+        for qid, (qx, qy) in pts:
+            if qid == pid:
+                continue
+            nx, ny = qx - px, qy - py
+            nl = math.hypot(nx, ny)
+            if nl < 0.01:
+                # Coincident poles (bad data: stacked at one coordinate) have
+                # no bisector, so both would otherwise take the whole block and
+                # overlap. Give it to the lowest id deterministically; the rest
+                # get nothing (they're on the same spot — no distinct zone).
+                if str(qid) < str(pid):
+                    cell = Polygon()  # this pole loses the shared spot
+                    break
+                continue
+            mx, my = (px + qx) / 2, (py + qy) / 2
+            big = 5000.0
+            # a large rectangle on p's side of the perpendicular bisector
+            ax, ay = -ny / nl * big, nx / nl * big   # along the bisector
+            ox, oy = -nx / nl * big, -ny / nl * big  # toward p
+            hp = Polygon([
+                (mx + ax, my + ay), (mx - ax, my - ay),
+                (mx - ax + ox, my - ay + oy), (mx + ax + ox, my + ay + oy),
+            ])
+            cell = cell.intersection(hp)
+            if cell.is_empty:
+                break
+        if not cell.is_empty:
+            out.append((pid, affine_transform(cell, [1 / sx, 0, 0, 1 / sy, c.x, c.y])))
+    return out
+
+
 def build_units(blocks, poles, hull):
     """Turn blocks into assignment *units*, splitting any block that holds more
-    than one pole by a Voronoi of those poles — so every pole gets its own
-    slice of a shared/superblock instead of one pole taking the whole thing
-    (which left the others with no zone). Returns (unit_geoms, unit_home) where
+    than one pole among those poles — so every pole gets its own slice of a
+    shared/superblock instead of one pole taking the whole thing (which left
+    the others with no zone). Returns (unit_geoms, unit_home) where
     unit_home[i] is the pole id that owns unit i outright, or None (an empty
     unit to be filled)."""
     from collections import defaultdict
-    from shapely.geometry import MultiPoint
-    from shapely.ops import voronoi_diagram
 
     in_hull = [i for i, b in enumerate(blocks)
                if hull.contains(b.representative_point())]
@@ -114,19 +162,12 @@ def build_units(blocks, poles, hull):
             geoms.append(blocks[i])
             home.append(here[0][0] if here else None)
             continue
-        # Split this block among its poles by their Voronoi.
-        cells = voronoi_diagram(MultiPoint([pt for _, pt in here]),
-                                envelope=blocks[i])
-        for cell in cells.geoms:
-            piece = cell.intersection(blocks[i])
-            if piece.is_empty:
-                continue
-            owner_pid = next((pid for pid, pt in here if cell.contains(pt)), None)
+        for pid, piece in _split_block(blocks[i], here):
             for poly in (piece.geoms if piece.geom_type == "MultiPolygon"
                          else [piece]):
                 if poly.geom_type == "Polygon" and not poly.is_empty:
                     geoms.append(poly)
-                    home.append(owner_pid)
+                    home.append(pid)
     return geoms, home
 
 
@@ -161,9 +202,31 @@ def assign(units, unit_home, poles):
     return owner
 
 
-def dissolve(units, owner):
-    """Union each pole's units; keep the largest connected piece so the result
-    is a single contiguous polygon per pole."""
+def _reach_cap(seed_pts, reach_m):
+    """Union of `reach_m`-radius discs around a pole's own seeds (the pole +
+    its puzzlets), as a lat/lng polygon. A territory is clipped to this so it
+    can't sprawl far past where the team actually has content — the fill fills
+    gaps *between* poles, it shouldn't run hundreds of metres down an empty
+    riverbank."""
+    import math
+    from shapely.geometry import Polygon
+    from shapely.ops import unary_union
+
+    discs = []
+    for p in seed_pts:
+        dlat = reach_m / 111000.0
+        dlng = reach_m / (111000.0 * math.cos(p.y * math.pi / 180))
+        discs.append(Polygon([
+            (p.x + dlng * math.cos(2 * math.pi * k / 48),
+             p.y + dlat * math.sin(2 * math.pi * k / 48))
+            for k in range(48)
+        ]))
+    return unary_union(discs)
+
+
+def dissolve(units, owner, seeds_by_pole, reach_m):
+    """Union each pole's units, clip to its reach cap, and keep the largest
+    connected piece — one contiguous, extent-limited polygon per pole."""
     from shapely.ops import unary_union
     from shapely.geometry import MultiPolygon
 
@@ -174,13 +237,22 @@ def dissolve(units, owner):
     feats = []
     for pid, polys in by_pole.items():
         merged = unary_union(polys)
+        seeds = seeds_by_pole.get(pid)
+        if reach_m and seeds:
+            merged = merged.intersection(_reach_cap(seeds, reach_m))
+        if merged.is_empty:
+            continue
         if isinstance(merged, MultiPolygon):
             merged = max(merged.geoms, key=lambda p: p.area)
-        ring = [[x, y] for x, y in merged.exterior.coords]
+        if merged.geom_type != "Polygon" or merged.is_empty:
+            continue
+        # Keep interior rings — a zone can surround another team's zone.
+        rings = [[[x, y] for x, y in merged.exterior.coords]]
+        rings += [[[x, y] for x, y in r.coords] for r in merged.interiors]
         feats.append({
             "type": "Feature",
             "properties": {"pole_id": pid},
-            "geometry": {"type": "Polygon", "coordinates": [ring]},
+            "geometry": {"type": "Polygon", "coordinates": rings},
         })
     return {"type": "FeatureCollection", "features": feats}
 
@@ -194,6 +266,9 @@ def main():
     ap.add_argument("--puzzlets", default=None,
                     help="Included in the play-area hull so zones can reach "
                          "puzzlet locations")
+    ap.add_argument("--max-reach-m", type=float, default=150.0,
+                    help="Cap how far a zone extends past the team's own poles "
+                         "and puzzlets (metres). 0 disables the cap.")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
 
@@ -204,6 +279,14 @@ def main():
     puzzlets = load_points(args.puzzlets, "pole_id")
     print(f"{len(blocks)} blocks, {len(poles)} poles, {len(puzzlets)} puzzlets",
           file=sys.stderr)
+
+    # Each pole's own seeds (itself + its puzzlets) — the reach cap radiates
+    # from these, so a zone stays near where its team actually has content.
+    seeds_by_pole = {}
+    for pid, pt in poles:
+        seeds_by_pole.setdefault(pid, []).append(pt)
+    for pid, pt in puzzlets:
+        seeds_by_pole.setdefault(pid, []).append(pt)
 
     seeds = [pt for _, pt in poles] + [pt for _, pt in puzzlets]
     hull = MultiPoint(seeds).convex_hull
@@ -216,7 +299,7 @@ def main():
     print(f"{len(owner)} units assigned to {len(set(owner.values()))} poles",
           file=sys.stderr)
 
-    fc = dissolve(units, owner)
+    fc = dissolve(units, owner, seeds_by_pole, args.max_reach_m)
     json.dump(fc, open(args.out, "w"))
     print(f"Wrote {args.out} — {len(fc['features'])} territories",
           file=sys.stderr)
