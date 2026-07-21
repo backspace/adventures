@@ -79,15 +79,21 @@ class LiberatedZoneLayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (shapes.isEmpty) return const SizedBox.shrink();
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: CustomPaint(
-          painter: _HatchPainter(
-            camera: MapCamera.of(context),
-            shapes: shapes,
-            phase: phase,
-            style: style,
-          ),
+    final camera = MapCamera.of(context);
+    // MobileLayerTransformer puts the canvas in the map's origin space and
+    // applies the pan/zoom transform for us — the same wrapper flutter_map's
+    // own PolygonLayer uses. Ring vertices are projected with
+    // getOffsetFromOrigin to match. (A bare Positioned/CustomPaint here is
+    // NOT a direct Stack child — flutter_map wraps each layer — which throws
+    // "Incorrect use of ParentDataWidget".)
+    return MobileLayerTransformer(
+      child: CustomPaint(
+        size: Size(camera.size.x, camera.size.y),
+        painter: _HatchPainter(
+          camera: camera,
+          shapes: shapes,
+          phase: phase,
+          style: style,
         ),
       ),
     );
@@ -107,10 +113,9 @@ class _HatchPainter extends CustomPainter {
     required this.style,
   });
 
-  Offset _project(LatLng p) {
-    final pt = camera.latLngToScreenPoint(p);
-    return Offset(pt.x, pt.y);
-  }
+  // Origin-space projection (not screen space): MobileLayerTransformer applies
+  // the map transform on top, matching flutter_map's own PolygonPainter.
+  Offset _project(LatLng p) => camera.getOffsetFromOrigin(p);
 
   ui.Path? _pathFor(LiberatedShape shape) {
     if (shape.ring.length < 3) return null;
