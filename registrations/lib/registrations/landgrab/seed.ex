@@ -462,6 +462,112 @@ defmodule Registrations.Landgrab.Seed do
     event |> Ecto.Changeset.change(changes) |> Repo.update!()
   end
 
+  # ── schedule (lay out the whole timeline across X minutes) ──────────
+  # Fixed fractions of the total span. Unlike `clock` (which shifts an
+  # existing timeline, preserving its intervals), this *sets* the timeline
+  # from scratch out of a single duration.
+  @schedule_fractions %{
+    endgame_starts_at: {1, 2},
+    liberation_starts_at: {5, 8},
+    liberation_rollout_ends_at: {6, 8},
+    endgame_ends_at: {1, 1}
+  }
+
+  @doc """
+  Lay out the entire event timeline to run over `minutes` from now — start
+  now, end (the endgame shrink end) `minutes` out — with the milestones
+  spaced by fixed fractions of that span:
+
+      start ............. 0
+      endgame shrink .... 1/2
+      liberation opens .. 5/8
+      liberation closes . 6/8
+      end (shrink ends) . 1
+
+  So `schedule(30)` starts now, the shrink begins at 15 min, liberation
+  invites roll out from 18.75 to 22.5 min, and the shrink ends at 30 min.
+  Re-arms the one-shot event stamps (endgame announcement, final messages)
+  so a compressed run replays them — pair with `clear` to also reset the
+  per-team liberation state. An event with no endgame *location* gets a
+  sensible default (the poles' centroid, wide→tight radii) so the shrink
+  actually functions; one that already has a location keeps it. Returns
+  `%{events, minutes, endgame_start_s, liberation_start_s,
+  liberation_end_s, end_s}` (offsets in seconds from now).
+  """
+  def schedule(minutes) when is_integer(minutes) and minutes > 0 do
+    start = now()
+    total = minutes * 60
+    offset = fn {num, den} -> div(total * num, den) end
+    at = fn seconds -> DateTime.add(start, seconds, :second) end
+
+    times =
+      for {field, fraction} <- @schedule_fractions, into: %{start_time: start} do
+        {field, at.(offset.(fraction))}
+      end
+
+    space = endgame_space_defaults()
+
+    events = Repo.all(Event)
+
+    Enum.each(events, fn event ->
+      changes =
+        times
+        # Re-arm one-shot stamps so the compressed run fires them again.
+        |> Map.merge(%{endgame_announced_at: nil, final_messages_sent_at: nil})
+        |> Map.merge(if endgame_space_configured?(event), do: %{}, else: space)
+
+      event |> Ecto.Changeset.change(changes) |> Repo.update!()
+    end)
+
+    %{
+      events: length(events),
+      minutes: minutes,
+      endgame_start_s: offset.(@schedule_fractions.endgame_starts_at),
+      liberation_start_s: offset.(@schedule_fractions.liberation_starts_at),
+      liberation_end_s: offset.(@schedule_fractions.liberation_rollout_ends_at),
+      end_s: total
+    }
+  end
+
+  defp endgame_space_configured?(e) do
+    not is_nil(e.endgame_latitude) and not is_nil(e.endgame_longitude) and
+      not is_nil(e.endgame_initial_radius_m) and not is_nil(e.endgame_final_radius_m)
+  end
+
+  # A default endgame boundary for events that have none — centred on the
+  # poles so most start inside it, closing from wide to tight.
+  defp endgame_space_defaults do
+    {lat, lng} = poles_centroid()
+
+    %{
+      endgame_latitude: lat,
+      endgame_longitude: lng,
+      endgame_initial_radius_m: 5000.0,
+      endgame_final_radius_m: 30.0
+    }
+  end
+
+  defp poles_centroid do
+    located =
+      Repo.all(
+        from(p in Pole,
+          where: not is_nil(p.latitude) and not is_nil(p.longitude),
+          select: {p.latitude, p.longitude}
+        )
+      )
+
+    case located do
+      # No located poles — a plausible fallback (matches the test fixtures).
+      [] ->
+        {51.05, -114.09}
+
+      coords ->
+        n = length(coords)
+        {slat, slng} = Enum.reduce(coords, {0.0, 0.0}, fn {la, ln}, {a, b} -> {a + la, b + ln} end)
+        {slat / n, slng / n}
+    end
+  end
+
   # ── clear (fresh, uncaptured map) ───────────────────────────────────
   @doc """
   Remove ALL captures, in-progress claims, and the attack / pole-lost /

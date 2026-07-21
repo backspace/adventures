@@ -168,6 +168,54 @@ defmodule Registrations.Landgrab.SeedTest do
     assert Repo.aggregate(from(e in Event, where: not is_nil(e.liberation_starts_at)), :count) == 0
   end
 
+  test "schedule lays out the whole timeline as fixed fractions of X minutes" do
+    event = insert_event(start_time: ~U[2020-01-01 00:00:00Z])
+
+    assert %{
+             events: 1,
+             minutes: 30,
+             endgame_start_s: 900,
+             liberation_start_s: 1125,
+             liberation_end_s: 1350,
+             end_s: 1800
+           } = Seed.schedule(30)
+
+    e = Repo.get(Event, event.id)
+    now = DateTime.utc_now()
+    # start now, shrink at 15m, liberation 18.75m–22.5m, end at 30m.
+    assert_in_delta DateTime.diff(e.start_time, now), 0, 5
+    assert_in_delta DateTime.diff(e.endgame_starts_at, now), 900, 5
+    assert_in_delta DateTime.diff(e.liberation_starts_at, now), 1125, 5
+    assert_in_delta DateTime.diff(e.liberation_rollout_ends_at, now), 1350, 5
+    assert_in_delta DateTime.diff(e.endgame_ends_at, now), 1800, 5
+  end
+
+  test "schedule fills a default endgame location when the event has none, and re-arms stamps" do
+    event =
+      insert_event(
+        start_time: ~U[2020-01-01 00:00:00Z],
+        endgame_announced_at: ~U[2020-01-01 00:30:00Z]
+      )
+
+    Seed.schedule(30)
+
+    e = Repo.get(Event, event.id)
+    assert e.endgame_latitude && e.endgame_longitude
+    assert e.endgame_initial_radius_m && e.endgame_final_radius_m
+    # One-shot stamp cleared so the compressed run re-announces.
+    assert is_nil(e.endgame_announced_at)
+  end
+
+  test "schedule preserves an existing endgame location" do
+    event = insert_endgame_event()
+
+    Seed.schedule(30)
+
+    e = Repo.get(Event, event.id)
+    assert {e.endgame_latitude, e.endgame_longitude} == {51.0, -114.0}
+    assert {e.endgame_initial_radius_m, e.endgame_final_radius_m} == {800.0, 50.0}
+  end
+
   test "clock:M puts the start M minutes from now" do
     event = insert_event(start_time: ~U[2020-01-01 00:00:00Z])
 

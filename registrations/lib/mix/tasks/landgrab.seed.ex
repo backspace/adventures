@@ -20,6 +20,8 @@ defmodule Mix.Tasks.Landgrab.Seed do
     * captures:N      partial gameplay — capture N poles spread across the
                       teams, with a few active attacks and in-progress puzzlets
     * capture_all     capture EVERY capturable pole — a fully owned map
+    * schedule:X      lay out the whole timeline to run over X minutes from now
+                      (start now, shrink at 1/2, liberation 5/8–6/8, end at X)
     * clock:M[.SS]    put "now" M min SS sec before the start (.SS = seconds);
                       a negative spec anchors on the endgame shrink end instead
 
@@ -31,6 +33,12 @@ defmodule Mix.Tasks.Landgrab.Seed do
                    (seed captures pre-event, then sit "now" just after the
                    endgame begins — a game in flight; see the note by @presets)
     * conquered  = playable teams clock:5 capture_all  (every pole captured)
+
+  Parameterized presets thread their value into a step:
+
+    * runthrough:X = clear playable teams schedule:X captures
+                     (a fresh, partly-captured game compressed into X minutes;
+                     X defaults to 30)
 
   The step logic lives in `Registrations.Landgrab.Seed` (this task is a
   thin CLI over it, and `Registrations.Landgrab.SeedTest` exercises it).
@@ -94,6 +102,8 @@ defmodule Mix.Tasks.Landgrab.Seed do
       validation   validations                                  (fills the validator queue)
       kickoff      clear + playable + teams + clock:0           (fresh map, game just begun)
       conquered    playable + teams + clock:5 + capture_all     (every pole captured)
+      runthrough:X clear + playable + teams + schedule:X + captures  (a fresh game
+                   compressed into X minutes; X defaults to 30)
 
     Steps  (N is a number; the default is shown in parens):
       playable        validate every draft/in_review puzzlet and attach loose
@@ -105,6 +115,10 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       with attacks, pole-losses, and in-progress claims  (20)
       capture_all     capture EVERY capturable pole across the teams — a fully
                       owned map (run 'playable' first; needs the endgame inactive)
+      schedule:X      lay out the whole event timeline to run over X minutes from
+                      now: start now, endgame shrink at 1/2 (X/2), liberation
+                      invites 5/8–6/8, end at X. Re-arms one-shot stamps; fills a
+                      default endgame location if none. Pair with 'clear'.  (30)
       clear           remove ALL captures, in-progress claims, and the attack /
                       pole-lost / liberation-invite notifications, and reset the
                       liberation rollout (invites, answers, schedule) — a clean,
@@ -136,25 +150,44 @@ defmodule Mix.Tasks.Landgrab.Seed do
   end
 
   # Echo each preset's expansion before running, so the steps it stands for
-  # (e.g. midgame's two clock moves) read as intentional, not redundant.
+  # (e.g. midgame's two clock moves, or runthrough's threaded duration) read
+  # as intentional, not redundant.
   defp announce_presets(args) do
-    for arg <- args, steps = Map.get(@presets, arg) do
-      Mix.shell().info("#{arg} → #{Enum.join(steps, " ")}")
-    end
+    Enum.each(args, fn arg ->
+      {name, count} = parse(arg)
+
+      case Map.get(@presets, name) || param_preset(name, count) do
+        nil -> :ok
+        steps -> Mix.shell().info("#{arg} → #{Enum.join(steps, " ")}")
+      end
+    end)
   end
 
   # ── argument parsing ────────────────────────────────────────────────
-  # Each arg is a step (`captures:30`) or a preset that expands to steps.
+  # Each arg is a step (`captures:30`), a fixed preset (`midgame`), or a
+  # parameterized preset (`runthrough:20`) whose value threads into a step.
   defp expand(args) do
     Enum.flat_map(args, fn arg ->
       {name, count} = parse(arg)
 
-      case Map.get(@presets, name) do
+      case Map.get(@presets, name) || param_preset(name, count) do
         nil -> [{name, count}]
         steps -> Enum.map(steps, &parse/1)
       end
     end)
   end
+
+  # Parameterized presets: unlike @presets (fixed step lists), the count
+  # threads into a specific step. `runthrough:X` clears, makes a playable
+  # map with teams, lays the whole timeline over X minutes, and seeds some
+  # captures — a fresh, partly-captured game compressed into X minutes to
+  # watch the endgame + liberation unfold. Returns a step-string list, or
+  # nil when `name` isn't a parameterized preset.
+  defp param_preset("runthrough", count) do
+    ~w(clear playable teams) ++ ["schedule:#{count || 30}", "captures"]
+  end
+
+  defp param_preset(_name, _count), do: nil
 
   # Keep the raw count string — clock needs "0.30" / "-0" verbatim; the
   # integer steps convert with count/2 at the call site.
@@ -174,6 +207,13 @@ defmodule Mix.Tasks.Landgrab.Seed do
       {m, 0} -> "#{m}m"
       {m, s} -> "#{m}m #{s}s"
     end
+  end
+
+  # Minutes for the schedule summary, keeping the fractional part when the
+  # milestone doesn't land on a whole minute (e.g. 18.75m).
+  defp fmt_min(seconds) do
+    m = seconds / 60
+    if m == Float.round(m), do: "#{trunc(m)}m", else: "#{Float.round(m, 2)}m"
   end
 
   # ── steps: run through Registrations.Landgrab.Seed, then report ─────
@@ -205,6 +245,22 @@ defmodule Mix.Tasks.Landgrab.Seed do
     %{captured: captured, uncapturable: uncapturable} = Seed.capture_all()
     note = if uncapturable == 0, do: "every pole is owned", else: "#{uncapturable} left uncapturable (no player-facing puzzlet)"
     Mix.shell().info("capture_all: #{captured} pole(s) captured — #{note}.")
+  end
+
+  defp run_step({"schedule", n}) do
+    %{
+      events: events,
+      minutes: minutes,
+      endgame_start_s: es,
+      liberation_start_s: ls,
+      liberation_end_s: le,
+      end_s: en
+    } = Seed.schedule(count(n, 30))
+
+    Mix.shell().info(
+      "schedule: a #{minutes}m arc across #{events} event(s) — start now, shrink at " <>
+        "#{fmt_min(es)}, liberation #{fmt_min(ls)}–#{fmt_min(le)}, end at #{fmt_min(en)}."
+    )
   end
 
   defp run_step({"clear", _}) do
