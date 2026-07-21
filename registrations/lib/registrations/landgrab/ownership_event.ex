@@ -27,6 +27,10 @@ defmodule Registrations.Landgrab.OwnershipEvent do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @schema_prefix "landgrab"
+  # Microsecond timestamps (not the default second granularity): ownership is
+  # newest-wins on inserted_at, so two flips on one pole within a second must
+  # not tie. See the ownership_events_usec_timestamps migration.
+  @timestamps_opts [type: :naive_datetime_usec]
 
   schema "ownership_events" do
     field(:kind, :string, default: "capture")

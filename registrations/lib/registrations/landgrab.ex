@@ -791,19 +791,22 @@ defmodule Registrations.Landgrab do
         join: p in Puzzlet,
         on: p.id == c.puzzlet_id,
         where: c.kind == "capture" and p.pole_id == ^pole_id,
-        select: %{team_id: c.team_id, kind: c.kind, inserted_at: c.inserted_at}
+        select: %{id: c.id, team_id: c.team_id, kind: c.kind, inserted_at: c.inserted_at}
       )
 
     pole_events =
       from(c in OwnershipEvent,
         where: c.pole_id == ^pole_id and c.kind != "capture",
-        select: %{team_id: c.team_id, kind: c.kind, inserted_at: c.inserted_at}
+        select: %{id: c.id, team_id: c.team_id, kind: c.kind, inserted_at: c.inserted_at}
       )
 
+    # inserted_at is microsecond-precise (see the schema's @timestamps_opts), so
+    # ties are effectively impossible; the id sort is a deterministic backstop
+    # so a same-microsecond dead heat still resolves the same way every time.
     capture_events
     |> union_all(^pole_events)
     |> subquery()
-    |> order_by([e], desc: e.inserted_at)
+    |> order_by([e], desc: e.inserted_at, desc: e.id)
     |> limit(1)
     |> Repo.one()
   end
