@@ -185,6 +185,15 @@ msgstr "ANOMALY DETECTED. %{stakesCap} at the periphery are being withdrawn from
 msgid "app_relief_enabled_body"
 msgstr "You’ve been extraordinarily efficient reproducing settler habits, so we’ve enabled a new mode where %{zones} that were previously fully captured can be revisited if there are %{relics} your team has yet to find."
 
+# DRAFT — Bedab's liberation invitation. Final wording is the organiser's,
+# pending the sensitivity review; keep the register personal (Bedab breaking
+# from the study's dry voice), critique ownership, borrow nothing.
+msgid "app_liberation_invite_body"
+msgstr "I am through keeping Sabuk’s ledgers. My name is Bedab. This simulation is no critique of taking — it is a rehearsal of it. I am asking each team, quietly: help me return what has been claimed. Liberate the %{zones}; give the ground back to no one. Will you join me?"
+
+msgid "app_push_title_liberation_invite"
+msgstr "A message from Bedab"
+
 msgid "app_push_title_attack"
 msgstr "Under attack"
 

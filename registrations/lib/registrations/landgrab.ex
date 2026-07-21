@@ -1051,6 +1051,149 @@ defmodule Registrations.Landgrab do
     end
   end
 
+  # ─── Liberation phase (internal codename "conspiracy") ─────────────
+  #
+  # Partway through the event, Bedab invites teams — one at a time, trickled
+  # across a rollout window — to liberate zones instead of capturing them.
+  # This is the invitation plumbing only: the schedule, the interactive
+  # invite notification, and the per-team stance. The gameplay inversion
+  # (liberate events in record_attempt) is a later phase.
+
+  @liberation_responses ~w(accepted declined)
+
+  @doc """
+  Send liberation invitations to every team whose rollout slot has passed and
+  who hasn't been invited yet. Called each minute by `LiberationAnnouncer`.
+
+  Teams are ordered by a stable hash of their id — deterministic, but not
+  creation order, so the trickle doesn't reveal team age — and their slots are
+  spread evenly across `liberation_starts_at`..`liberation_rollout_ends_at`.
+  A nil rollout end means everyone is due at the start instant. Only teams
+  with at least one member are invited (pre-created QR teams nobody joined
+  aren't part of the game).
+
+  Returns `{:invited, n}` or `:noop`.
+  """
+  def maybe_invite_liberation_teams(now \\ DateTime.utc_now()) do
+    event = Events.current()
+    starts_at = event.liberation_starts_at
+
+    if starts_at && DateTime.compare(now, starts_at) != :lt do
+      invite_due_liberation_teams(event, now)
+    else
+      :noop
+    end
+  end
+
+  defp invite_due_liberation_teams(event, now) do
+    # Slot indices are computed over ALL member teams (invited or not) so a
+    # team's position doesn't accelerate as earlier teams get their invites.
+    # A team joining mid-rollout can shift its neighbours' slots slightly —
+    # acceptable; invitations already sent are never repeated.
+    member_team_ids =
+      RegistrationsWeb.User
+      |> where([u], not is_nil(u.team_id))
+      |> select([u], u.team_id)
+      |> distinct(true)
+      |> Repo.all()
+      |> MapSet.new()
+
+    teams =
+      RegistrationsWeb.Team
+      |> Repo.all()
+      |> Enum.filter(&MapSet.member?(member_team_ids, &1.id))
+      |> Enum.sort_by(&{:erlang.phash2(&1.id), &1.id})
+
+    window_seconds =
+      case event.liberation_rollout_ends_at do
+        nil -> 0
+        ends_at -> max(DateTime.diff(ends_at, event.liberation_starts_at, :second), 0)
+      end
+
+    count = length(teams)
+
+    due =
+      teams
+      |> Enum.with_index()
+      |> Enum.filter(fn {team, index} ->
+        slot =
+          DateTime.add(
+            event.liberation_starts_at,
+            if(count == 0, do: 0, else: div(index * window_seconds, count)),
+            :second
+          )
+
+        is_nil(team.liberation_invited_at) and DateTime.compare(now, slot) != :lt
+      end)
+
+    Enum.each(due, fn {team, _index} -> send_liberation_invite(team, now) end)
+
+    case length(due) do
+      0 -> :noop
+      n -> {:invited, n}
+    end
+  end
+
+  defp send_liberation_invite(team, now) do
+    persist_and_deliver(
+      "liberation_invite",
+      team.id,
+      nil,
+      PlayerStrings.liberation_invite_body(),
+      %{"sender_name" => "Bedab"},
+      PlayerStrings.push_title("liberation_invite")
+    )
+
+    {:ok, _} =
+      team
+      |> Ecto.Changeset.change(liberation_invited_at: DateTime.truncate(now, :second))
+      |> Repo.update()
+  end
+
+  @doc """
+  Record a team's answer to their liberation invitation — on the notification
+  (so the history shows it) and on the team (the stance the gameplay phase
+  reads). One member answers for the whole team, and the first answer is
+  binding: later attempts return `{:error, :already_responded, response}`.
+  """
+  def respond_to_liberation_invite(team_id, notification_id, response) do
+    notification = Repo.get(Notification, notification_id)
+    team = team_id && Repo.get(RegistrationsWeb.Team, team_id)
+
+    cond do
+      response not in @liberation_responses ->
+        {:error, :invalid_response}
+
+      is_nil(notification) or is_nil(team) or notification.recipient_team_id != team.id or
+          notification.type != "liberation_invite" ->
+        {:error, :not_found}
+
+      not is_nil(team.liberation_response) ->
+        {:error, :already_responded, team.liberation_response}
+
+      true ->
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+        {:ok, _} =
+          Repo.transaction(fn ->
+            {:ok, _} =
+              notification
+              |> Ecto.Changeset.change(response: response, responded_at: now)
+              |> Repo.update()
+
+            {:ok, _} =
+              team
+              |> Ecto.Changeset.change(
+                liberation_response: response,
+                liberation_responded_at: now
+              )
+              |> Repo.update()
+          end)
+
+        {:ok, response}
+    end
+  end
+
   @doc """
   Organiser messages, newest first — drafts and sent alike, for the
   supervisor's message screen.

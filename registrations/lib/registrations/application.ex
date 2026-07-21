@@ -39,7 +39,9 @@ defmodule Registrations.Application do
         # Start a worker by calling: Registrations.Worker.start_link(arg)
         # {Registrations.Worker, arg}
         {ConCache, [name: :registrations_cache, ttl_check_interval: false]}
-      ] ++ redix_child() ++ push_children() ++ endgame_announcer_child()
+      ] ++
+        redix_child() ++
+        push_children() ++ endgame_announcer_child() ++ liberation_announcer_child()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -61,6 +63,16 @@ defmodule Registrations.Application do
   defp endgame_announcer_child do
     if Application.get_env(:registrations, :start_endgame_announcer, true) do
       [Registrations.Landgrab.EndgameAnnouncer]
+    else
+      []
+    end
+  end
+
+  # Same deal as the endgame announcer: disabled in tests;
+  # `maybe_invite_liberation_teams` is tested directly instead.
+  defp liberation_announcer_child do
+    if Application.get_env(:registrations, :start_liberation_announcer, true) do
+      [Registrations.Landgrab.LiberationAnnouncer]
     else
       []
     end

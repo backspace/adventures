@@ -96,6 +96,56 @@ defmodule RegistrationsWeb.Landgrab.NotificationsTest do
       body = conn |> get("/landgrab/notifications") |> json_response(200)
       refute Enum.any?(body["notifications"], &(&1["id"] == n.id))
     end
+
+    test "answers a liberation invitation; the first answer binds", %{conn: conn, team: team} do
+      invite = insert_notification(team.id, %{type: "liberation_invite", body: "…"})
+
+      body =
+        conn
+        |> post("/landgrab/notifications/#{invite.id}/respond", %{"response" => "accepted"})
+        |> json_response(200)
+
+      assert body["response"] == "accepted"
+      assert Repo.get!(RegistrationsWeb.Team, team.id).liberation_response == "accepted"
+
+      # The history carries the answered state for the app to render.
+      list = conn |> get("/landgrab/notifications") |> json_response(200)
+      rendered = Enum.find(list["notifications"], &(&1["id"] == invite.id))
+      assert rendered["response"] == "accepted"
+
+      # Repeat answers are refused with the recorded one.
+      conflict =
+        conn
+        |> post("/landgrab/notifications/#{invite.id}/respond", %{"response" => "declined"})
+        |> json_response(409)
+
+      assert conflict["response"] == "accepted"
+    end
+
+    test "cannot answer another team's invitation or a one-way type", %{
+      conn: conn,
+      team: team,
+      other_team: other_team
+    } do
+      foreign = insert_notification(other_team.id, %{type: "liberation_invite", body: "…"})
+
+      conn
+      |> post("/landgrab/notifications/#{foreign.id}/respond", %{"response" => "accepted"})
+      |> json_response(404)
+
+      attack = insert_notification(team.id)
+
+      conn
+      |> post("/landgrab/notifications/#{attack.id}/respond", %{"response" => "accepted"})
+      |> json_response(404)
+
+      # An unknown answer value is rejected.
+      invite = insert_notification(team.id, %{type: "liberation_invite", body: "…"})
+
+      conn
+      |> post("/landgrab/notifications/#{invite.id}/respond", %{"response" => "maybe"})
+      |> json_response(422)
+    end
   end
 
   test "a teamless user gets an empty history", %{conn: conn} = ctx do

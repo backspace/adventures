@@ -11,9 +11,11 @@ config :logger, level: :warning
 
 config :registrations, Registrations.Mailer, adapter: Swoosh.Adapters.Local
 
-# The polling announcer would fight the Ecto sandbox; the underlying
-# maybe_announce_endgame/1 is tested directly.
+# The polling announcers would fight the Ecto sandbox; the underlying
+# maybe_announce_endgame/1 and maybe_invite_liberation_teams/1 are tested
+# directly.
 config :registrations, start_endgame_announcer: false
+config :registrations, start_liberation_announcer: false
 
 # Configure your database
 config :registrations, Registrations.Repo,

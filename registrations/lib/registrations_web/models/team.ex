@@ -13,6 +13,14 @@ defmodule RegistrationsWeb.Team do
     # from a QR "team card" or typed). Server-generated, never user-set.
     field(:join_code, :string)
 
+    # LANDGRAB liberation phase: when this team's invitation went out, and
+    # how they answered ("accepted"/"declined" — binding; first answer wins).
+    # Written by the liberation context via Ecto.Changeset.change, never
+    # through the form changeset below.
+    field(:liberation_invited_at, :utc_datetime)
+    field(:liberation_response, :string)
+    field(:liberation_responded_at, :utc_datetime)
+
     has_many(:users, RegistrationsWeb.User)
 
     timestamps()

@@ -18,6 +18,12 @@ defmodule Registrations.Landgrab.Notification do
     field(:metadata, :map)
     field(:read_at, :utc_datetime)
 
+    # Interactive notifications (currently only `liberation_invite`): the
+    # team's answer, recorded on the row so the history shows how it was
+    # answered. Nil for the one-way types, and until someone answers.
+    field(:response, :string)
+    field(:responded_at, :utc_datetime)
+
     belongs_to(:recipient_team, RegistrationsWeb.Team, type: :binary_id)
     belongs_to(:sender_team, RegistrationsWeb.Team, type: :binary_id)
 

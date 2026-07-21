@@ -38,6 +38,12 @@ defmodule Registrations.Landgrab.Event do
     # consumption) because the event is running ahead of content.
     field(:relief_started_at, :utc_datetime)
 
+    # Liberation phase: invitations trickle out team-by-team across this
+    # window (nil rollout end = every team at the start instant). Per-team
+    # invited/answered state lives on the team itself.
+    field(:liberation_starts_at, :utc_datetime)
+    field(:liberation_rollout_ends_at, :utc_datetime)
+
     timestamps()
   end
 
@@ -45,7 +51,13 @@ defmodule Registrations.Landgrab.Event do
 
   def changeset(event, attrs) do
     event
-    |> cast(attrs, [:name, :start_time, :relief_started_at | @endgame_fields])
+    |> cast(attrs, [
+      :name,
+      :start_time,
+      :relief_started_at,
+      :liberation_starts_at,
+      :liberation_rollout_ends_at | @endgame_fields
+    ])
     |> validate_required([:name])
     |> validate_number(:endgame_initial_radius_m, greater_than: 0)
     |> validate_number(:endgame_final_radius_m, greater_than: 0)

@@ -45,6 +45,32 @@ defmodule RegistrationsWeb.Landgrab.NotificationController do
     json(conn, %{ok: true})
   end
 
+  # Answer an interactive notification (currently only the liberation
+  # invitation). One member answers for the whole team; the first answer is
+  # binding — a repeat attempt gets 409 with the recorded answer so the app
+  # can show what the team already chose.
+  def respond(conn, %{"id" => id} = params) do
+    case Landgrab.respond_to_liberation_invite(team_id(conn), id, params["response"]) do
+      {:ok, response} ->
+        json(conn, %{ok: true, response: response})
+
+      {:error, :invalid_response} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: %{code: "invalid_response"}})
+
+      {:error, :already_responded, response} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{error: %{code: "already_responded"}, response: response})
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: %{code: "notification_not_found"}})
+    end
+  end
+
   defp team_id(conn) do
     Pow.Plug.current_user(conn).team_id
   end
@@ -58,6 +84,10 @@ defmodule RegistrationsWeb.Landgrab.NotificationController do
       body: notification.body,
       metadata: notification.metadata,
       read_at: notification.read_at,
+      # Interactive notifications: how the team answered (nil until they do),
+      # so the history can render the invite's answered state.
+      response: notification.response,
+      responded_at: notification.responded_at,
       inserted_at: notification.inserted_at
     }
   end

@@ -49,6 +49,13 @@ defmodule Registrations.Landgrab.PlayerStrings do
   @doc "SYSTEM broadcast when the relief valve is turned on."
   def relief_enabled_body, do: phrase("app_relief_enabled_body")
 
+  @doc """
+  Bedab's liberation invitation — the interactive notification each team
+  receives on its rollout slot. NOTE: draft copy; the final wording is the
+  organiser's, pending the sensitivity review (see the Concepts doc).
+  """
+  def liberation_invite_body, do: phrase("app_liberation_invite_body")
+
   # ── Push titles ──────────────────────────────────────────────────
 
   def push_title("attack"), do: phrase("app_push_title_attack")
@@ -56,6 +63,7 @@ defmodule Registrations.Landgrab.PlayerStrings do
   def push_title("puzzlet_taken"), do: phrase("app_push_title_puzzlet_taken")
   def push_title("puzzlet_withdrawn"), do: phrase("app_push_title_puzzlet_withdrawn")
   def push_title("pole_contested"), do: phrase("app_push_title_pole_contested")
+  def push_title("liberation_invite"), do: phrase("app_push_title_liberation_invite")
   def push_title(_type), do: phrase("app_push_title_default")
 
   # Same title, but naming the stake — so a glanced push says which one.
