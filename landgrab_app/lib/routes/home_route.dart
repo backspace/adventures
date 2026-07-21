@@ -33,10 +33,12 @@ import 'package:landgrab/services/landgrab_socket.dart';
 import 'package:landgrab/services/location_service.dart';
 import 'package:landgrab/services/push_service.dart';
 import 'package:landgrab/services/ui_preferences.dart';
+import 'package:landgrab/services/block_territory_service.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/accent_colors.dart';
 import 'package:landgrab/widgets/attack_rings_layer.dart';
 import 'package:landgrab/widgets/bathroom_layer.dart';
+import 'package:landgrab/widgets/block_territory_layer.dart';
 import 'package:landgrab/widgets/capture_rings_layer.dart';
 import 'package:landgrab/widgets/highlight_reticle.dart';
 import 'package:landgrab/widgets/live_location_layer.dart';
@@ -69,6 +71,13 @@ class HomeRoute extends StatefulWidget {
 class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   List<Pole>? _poles;
   List<Bathroom> _bathrooms = const [];
+  // EXPERIMENT: street-aware territory. Pre-computed city blocks, loaded once
+  // from a bundled asset if present; null → fall back to the Voronoi
+  // TerritoryLayer. See landgrab-street-aware-territory.md.
+  List<TerritoryBlock>? _territoryBlocks;
+  // EXPERIMENT step 1: puzzlet locations (pole id → points), local-only asset,
+  // so a pole's territory can extend into its puzzlets' blocks.
+  Map<String, List<LatLng>>? _puzzletPoints;
   String? _teamId;
   String? _teamName;
   // The team's stable colour index from /me, so its swatch shows beside the
@@ -162,6 +171,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _loadTerritoryBlocks();
     _load();
     _connectSocket();
     UiPreferences.getHideProhibitive().then((v) {
@@ -171,6 +181,19 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // and landed on the map, so "get alerts about your poles" has
     // context. Fire-and-forget; PushService owns retries/rotation.
     PushService.register(widget.api);
+  }
+
+  // EXPERIMENT: load pre-computed street blocks once. Absent asset → stays
+  // null and the map keeps using the Voronoi TerritoryLayer.
+  Future<void> _loadTerritoryBlocks() async {
+    final blocks = await BlockTerritoryService.load();
+    final puzzletPoints = await BlockTerritoryService.loadPuzzletPoints();
+    if (mounted && (blocks != null || puzzletPoints != null)) {
+      setState(() {
+        _territoryBlocks = blocks;
+        _puzzletPoints = puzzletPoints;
+      });
+    }
   }
 
   Future<void> _connectSocket() async {
@@ -1257,15 +1280,27 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                 // Territory fills sit above the tiles and below
                                 // the marker pins so pole icons remain readable
                                 // over their own coloured cells.
-                                TerritoryLayer(
-                                  poles: _poles!,
-                                  myOwnerId: _teamId,
-                                  colorIndexByTeam: _teamColorIndex,
-                                  captureStartedAt: _captureStartedAt,
-                                  captureFromOwner: _captureFromOwner,
-                                  captureAnimationDuration:
-                                      _captureAnimationDuration,
-                                ),
+                                // EXPERIMENT: street-aware territory when a
+                                // blocks asset is bundled; otherwise the
+                                // Voronoi layer (unchanged).
+                                if (_territoryBlocks != null)
+                                  BlockTerritoryLayer(
+                                    blocks: _territoryBlocks!,
+                                    poles: _poles!,
+                                    myOwnerId: _teamId,
+                                    colorIndexByTeam: _teamColorIndex,
+                                    puzzletPointsByPole: _puzzletPoints,
+                                  )
+                                else
+                                  TerritoryLayer(
+                                    poles: _poles!,
+                                    myOwnerId: _teamId,
+                                    colorIndexByTeam: _teamColorIndex,
+                                    captureStartedAt: _captureStartedAt,
+                                    captureFromOwner: _captureFromOwner,
+                                    captureAnimationDuration:
+                                        _captureAnimationDuration,
+                                  ),
                                 BathroomLayer(bathrooms: _bathrooms),
                                 CaptureRingsLayer(
                                   poles: _poles!,
