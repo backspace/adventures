@@ -78,7 +78,7 @@ String accessibilityTagExplanation(String tag) => switch (tag) {
       'narrow_path' =>
         'Players will pass through a path or doorway too narrow for wheelchairs or strollers.',
       'dim_lighting' =>
-        'The location or path is poorly lit. Hard for low-vision users and anyone after dark.',
+        'The location or path is poorly lit. Harder for low-vision users.',
       'crouch_required' =>
         'Players will need to crouch or bend down — to inspect something, look under or behind an object, or read low text.',
       'reach_required' =>
