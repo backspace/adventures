@@ -241,6 +241,9 @@ class GameplayStrings {
 
   // Tap-a-zone owner sheet.
   static const zoneUnclaimed = 'Unclaimed';
+  // A liberated zone — freed, belongs to no one (distinct from never-claimed).
+  // DRAFT copy, pending the sensitivity pass.
+  static const zoneLiberated = 'Liberated — it belongs to no one now.';
   static String zoneOwnerYou(String? team) =>
       team == null ? 'Held by your team' : 'Held by your team ($team)';
   static String zoneOwnerOther(String? team) =>

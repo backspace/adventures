@@ -1016,8 +1016,13 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         // Skip if the tap fell in a hole (an enclosed rival zone).
         if (region.holes.any((h) => _ringContains(h, point))) continue;
         final pole = poles.where((p) => p.id == region.poleId).firstOrNull;
-        // A region only shows when its pole is captured; match that here.
-        if (pole == null || pole.currentOwnerTeamId == null) return;
+        // A region is painted when its pole is captured OR liberated (the
+        // freed hatch) — respond to a tap in either case. A never-claimed
+        // pole paints nothing here, so its area stays silent (tap its pin).
+        if (pole == null ||
+            (pole.currentOwnerTeamId == null && !pole.liberated)) {
+          return;
+        }
         _showPoleOwner(pole);
         return;
       }
@@ -1039,8 +1044,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // An unclaimed pole paints no territory, so a tap this far from it landed
     // on blank space — popping something up there just reads as confusing.
     // Unclaimed stakes are revealed only by a direct tap on their marker
-    // (wired on the marker itself); a claimed zone still responds anywhere.
-    if (nearest.currentOwnerTeamId == null) return;
+    // (wired on the marker itself); a claimed OR liberated zone (both painted)
+    // responds anywhere within it.
+    if (nearest.currentOwnerTeamId == null && !nearest.liberated) return;
     _showPoleOwner(nearest);
   }
 
@@ -1069,7 +1075,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     final name = pole.currentOwnerTeamName;
 
     final owner = !owned
-        ? GameplayStrings.zoneUnclaimed
+        ? (pole.liberated
+            ? GameplayStrings.zoneLiberated
+            : GameplayStrings.zoneUnclaimed)
         : isMine
             ? GameplayStrings.zoneOwnerYou(name)
             : GameplayStrings.zoneOwnerOther(name);
