@@ -789,6 +789,27 @@ class LandgrabApi {
     await dio.post('/landgrab/notifications/$id/${read ? 'read' : 'unread'}');
   }
 
+  /// Answer an interactive notification (the liberation invite) for the
+  /// whole team. Returns the recorded answer — normally the one sent, but
+  /// if a teammate answered first (409) their binding answer is returned
+  /// instead, so the caller can just display whatever comes back.
+  Future<String> respondToNotification(String id, String response) async {
+    try {
+      final result = await dio.post(
+        '/landgrab/notifications/$id/respond',
+        data: {'response': response},
+      );
+      return (result.data as Map<String, dynamic>)['response'] as String;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 409) {
+        final body = e.response?.data;
+        final recorded = body is Map ? body['response'] as String? : null;
+        if (recorded != null) return recorded;
+      }
+      rethrow;
+    }
+  }
+
   Future<List<Bathroom>> listMyBathrooms() async {
     final response = await dio.get('/landgrab/bathrooms/mine');
     final list = (response.data as Map<String, dynamic>)['bathrooms'] as List;

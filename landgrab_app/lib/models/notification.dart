@@ -13,6 +13,12 @@ class LandgrabNotification {
   final DateTime? insertedAt;
   final DateTime? readAt;
 
+  /// Interactive notifications only (the liberation invite): the team's
+  /// recorded answer ("accepted"/"declined"), null until someone answers.
+  /// The first answer binds the whole team.
+  final String? response;
+  final DateTime? respondedAt;
+
   LandgrabNotification({
     required this.id,
     required this.type,
@@ -22,6 +28,8 @@ class LandgrabNotification {
     required this.metadata,
     this.insertedAt,
     this.readAt,
+    this.response,
+    this.respondedAt,
   });
 
   factory LandgrabNotification.fromJson(Map<String, dynamic> json) =>
@@ -35,6 +43,8 @@ class LandgrabNotification {
             (json['metadata'] as Map?)?.cast<String, dynamic>() ?? const {},
         insertedAt: _parseUtc(json['inserted_at']),
         readAt: _parseUtc(json['read_at']),
+        response: json['response'] as String?,
+        respondedAt: _parseUtc(json['responded_at']),
       );
 
   bool get unread => readAt == null;
@@ -50,6 +60,24 @@ class LandgrabNotification {
         metadata: metadata,
         insertedAt: insertedAt,
         readAt: read ? (readAt ?? DateTime.now().toUtc()) : null,
+        response: response,
+        respondedAt: respondedAt,
+      );
+
+  /// Copy with the team's answer recorded — after a successful respond
+  /// call (or a 409 telling us a teammate beat us to it).
+  LandgrabNotification withResponse(String newResponse) =>
+      LandgrabNotification(
+        id: id,
+        type: type,
+        recipientTeamId: recipientTeamId,
+        senderTeamId: senderTeamId,
+        body: body,
+        metadata: metadata,
+        insertedAt: insertedAt,
+        readAt: readAt,
+        response: newResponse,
+        respondedAt: respondedAt ?? DateTime.now().toUtc(),
       );
 
   /// Server datetimes are UTC but serialize without a zone suffix

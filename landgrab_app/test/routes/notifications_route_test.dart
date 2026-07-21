@@ -25,6 +25,17 @@ class _FakeApi extends LandgrabApi {
   Future<void> setNotificationRead(String id, bool read) async {
     toggles.add((id: id, read: read));
   }
+
+  // What respondToNotification returns — set to something other than
+  // the sent response to simulate a teammate having answered first.
+  String? respondResult;
+  final List<({String id, String response})> responses = [];
+
+  @override
+  Future<String> respondToNotification(String id, String response) async {
+    responses.add((id: id, response: response));
+    return respondResult ?? response;
+  }
 }
 
 LandgrabNotification _notification({
@@ -33,6 +44,7 @@ LandgrabNotification _notification({
   String body = 'qfabrv scanned 2066297',
   DateTime? readAt,
   Map<String, dynamic> metadata = const {},
+  String? response,
 }) =>
     LandgrabNotification(
       id: id,
@@ -43,6 +55,7 @@ LandgrabNotification _notification({
       metadata: metadata,
       insertedAt: DateTime.now().toUtc().subtract(const Duration(minutes: 5)),
       readAt: readAt,
+      response: response,
     );
 
 Future<void> _pump(WidgetTester tester, _FakeApi api) async {
@@ -154,5 +167,75 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(popped, 'p1');
+  });
+
+  LandgrabNotification invite({String? response}) => _notification(
+        id: 'inv1',
+        type: 'liberation_invite',
+        body: 'Will you join me?',
+        readAt: DateTime.now().toUtc(),
+        response: response,
+      );
+
+  testWidgets('an unanswered invite offers accept and decline',
+      (tester) async {
+    final api = _FakeApi()..result = (notifications: [invite()], unread: 0);
+    await _pump(tester, api);
+
+    expect(find.text(NotificationStrings.inviteAccept), findsOneWidget);
+    expect(find.text(NotificationStrings.inviteDecline), findsOneWidget);
+  });
+
+  testWidgets('accepting records the answer and shows the answered state',
+      (tester) async {
+    final api = _FakeApi()..result = (notifications: [invite()], unread: 0);
+    await _pump(tester, api);
+
+    await tester.tap(find.text(NotificationStrings.inviteAccept));
+    await tester.pumpAndSettle();
+
+    expect(api.responses, hasLength(1));
+    expect(api.responses.first.id, 'inv1');
+    expect(api.responses.first.response, 'accepted');
+    expect(find.text(NotificationStrings.inviteAccept), findsNothing);
+    expect(find.text(NotificationStrings.inviteAccepted), findsOneWidget);
+  });
+
+  testWidgets('declining shows the declined state', (tester) async {
+    final api = _FakeApi()..result = (notifications: [invite()], unread: 0);
+    await _pump(tester, api);
+
+    await tester.tap(find.text(NotificationStrings.inviteDecline));
+    await tester.pumpAndSettle();
+
+    expect(api.responses.first.response, 'declined');
+    expect(find.text(NotificationStrings.inviteDeclined), findsOneWidget);
+  });
+
+  testWidgets('a teammate answering first wins and is surfaced',
+      (tester) async {
+    // The API resolves the server's 409 to the recorded answer; the tile
+    // should show THAT, not what was tapped, plus an explanatory toast.
+    final api = _FakeApi()
+      ..result = (notifications: [invite()], unread: 0)
+      ..respondResult = 'declined';
+    await _pump(tester, api);
+
+    await tester.tap(find.text(NotificationStrings.inviteAccept));
+    await tester.pumpAndSettle();
+
+    expect(find.text(NotificationStrings.inviteDeclined), findsOneWidget);
+    expect(
+        find.text(NotificationStrings.inviteAlreadyAnswered), findsOneWidget);
+  });
+
+  testWidgets('an answered invite shows no buttons', (tester) async {
+    final api = _FakeApi()
+      ..result = (notifications: [invite(response: 'accepted')], unread: 0);
+    await _pump(tester, api);
+
+    expect(find.text(NotificationStrings.inviteAccept), findsNothing);
+    expect(find.text(NotificationStrings.inviteDecline), findsNothing);
+    expect(find.text(NotificationStrings.inviteAccepted), findsOneWidget);
   });
 }

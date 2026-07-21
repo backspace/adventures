@@ -278,6 +278,21 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         duration: const Duration(seconds: 8),
       ));
     }
+    if (n.type == 'liberation_invite' && mounted) {
+      // Bedab's invitation — narrative styling like 'message', but with
+      // a route to the history screen, where the accept/decline pair
+      // lives. Long duration: it's a question, not a status.
+      final sender = n.metadata['sender_name'] as String?;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(sender == null ? n.body : '$sender: ${n.body}'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 12),
+        action: SnackBarAction(
+          label: NotificationStrings.inviteRespondAction,
+          onPressed: _openNotifications,
+        ),
+      ));
+    }
     if ((n.type == 'puzzlet_taken' || n.type == 'puzzlet_withdrawn') &&
         mounted) {
       // A rival solved the puzzlet we were on, or a supervisor withdrew it

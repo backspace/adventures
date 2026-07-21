@@ -307,6 +307,18 @@ class NotificationStrings {
       : '$n notifications while you were away';
   static const viewAction = 'View';
 
+  // Liberation invite (interactive; DRAFT copy — the invite body itself
+  // comes from the server, these are the answer affordances). The first
+  // answer binds the whole team.
+  static const inviteAccept = 'Join the liberation';
+  static const inviteDecline = 'Decline';
+  static const inviteAccepted = 'Your team joined the liberation.';
+  static const inviteDeclined = 'Your team declined.';
+  static const inviteAlreadyAnswered = 'Your team had already answered.';
+  static const inviteFailed = 'Could not send your answer — try again.';
+  // Live-toast action that opens the history, where the answer buttons are.
+  static const inviteRespondAction = 'Respond';
+
   // Relative timestamps for the list entries.
   static const justNow = 'just now';
   static String minutesAgo(int m) => '${m}m ago';
