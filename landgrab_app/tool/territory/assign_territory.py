@@ -225,16 +225,18 @@ def _reach_cap(seed_pts, reach_m):
 
 
 def dissolve(units, owner, seeds_by_pole, reach_m):
-    """Union each pole's units, clip to its reach cap, and keep the largest
-    connected piece — one contiguous, extent-limited polygon per pole."""
+    """Union each pole's units, clip to its reach cap, keep the largest
+    connected piece, and fill holes that no other zone occupies — one
+    contiguous, extent-limited polygon per pole."""
     from shapely.ops import unary_union
-    from shapely.geometry import MultiPolygon
+    from shapely.geometry import MultiPolygon, Polygon
 
     by_pole = {}
     for u, pid in owner.items():
         by_pole.setdefault(pid, []).append(units[u])
 
-    feats = []
+    # First pass: each pole's clipped, single-piece region (holes intact).
+    regions = {}
     for pid, polys in by_pole.items():
         merged = unary_union(polys)
         seeds = seeds_by_pole.get(pid)
@@ -244,11 +246,23 @@ def dissolve(units, owner, seeds_by_pole, reach_m):
             continue
         if isinstance(merged, MultiPolygon):
             merged = max(merged.geoms, key=lambda p: p.area)
-        if merged.geom_type != "Polygon" or merged.is_empty:
-            continue
-        # Keep interior rings — a zone can surround another team's zone.
-        rings = [[[x, y] for x, y in merged.exterior.coords]]
-        rings += [[[x, y] for x, y in r.coords] for r in merged.interiors]
+        if merged.geom_type == "Polygon" and not merged.is_empty:
+            regions[pid] = merged
+
+    all_union = unary_union(list(regions.values())) if regions else None
+
+    feats = []
+    for pid, merged in regions.items():
+        # Keep only holes that a *different* zone actually fills; drop (fill)
+        # empty pockets — the thin alley/service slivers that read as stray
+        # lines. Filling an unowned hole can't overlap anyone (nobody's there).
+        keep = []
+        for r in merged.interiors:
+            hole = Polygon(r)
+            others = all_union.difference(merged) if all_union else None
+            if others is not None and hole.intersection(others).area > 0.3 * hole.area:
+                keep.append([[x, y] for x, y in r.coords])
+        rings = [[[x, y] for x, y in merged.exterior.coords]] + keep
         feats.append({
             "type": "Feature",
             "properties": {"pole_id": pid},

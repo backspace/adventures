@@ -234,20 +234,32 @@ def build_blocks(bbox, road_lines, water_lines, area_lines, min_area_m2,
     return [p for p in polys if _area_m2(p) >= min_area_m2]
 
 
+def _is_sliver(poly, merge_below_m2):
+    """A face to fold into a neighbour: either small, or long-and-thin. The
+    thinness test catches alley/service-lane corridors — faces well above the
+    area floor but shaped like a line — which otherwise survive as their own
+    ribbon-zone (or, unassigned, as a stray hole)."""
+    a = _area_m2(poly)
+    if a < merge_below_m2:
+        return True
+    # perimeter² / area is dimensionless: ~16 for a square, climbs fast as a
+    # shape gets thin (≈90 at 1:10, ≈170 at 1:20). Alleys sit well above 55.
+    thinness = (poly.length ** 2) / poly.area if poly.area > 0 else 0
+    return thinness > 55 and a < 3000
+
+
 def _merge_slivers(polys, merge_below_m2):
-    """Fold faces smaller than [merge_below_m2] into the neighbour they share
-    the most boundary with. Absorbs the thin triangles roundabouts and
-    Y-junctions leave behind (e.g. the Waterfront Drive circle) instead of
-    letting them read as their own micro-zone."""
+    """Fold sliver faces (small, or thin alley/junction ribbons) into the
+    neighbour they share the most boundary with, so they don't read as their
+    own micro-zone or leave a stray thin hole."""
     from shapely.ops import unary_union
 
     polys = list(polys)
     while True:
-        order = sorted(range(len(polys)), key=lambda i: _area_m2(polys[i]))
         merged_one = False
-        for i in order:
-            if _area_m2(polys[i]) >= merge_below_m2:
-                break  # everything left is big enough
+        for i in sorted(range(len(polys)), key=lambda k: _area_m2(polys[k])):
+            if not _is_sliver(polys[i], merge_below_m2):
+                continue
             s = polys[i]
             best_j, best_len = None, 0.0
             for j, q in enumerate(polys):
