@@ -232,18 +232,30 @@ class _BathroomDetails extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!hideName)
-          Text(bathroom.displayName(), style: theme.textTheme.titleLarge),
-        if (!hideName && bathroom.region != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              bathroom.region!.breadcrumb,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+        // A single-bathroom sheet always leads with "Bathroom" so the pin's
+        // kind is unmistakable (mirroring the group sheet's "N bathrooms
+        // here" heading); the bathroom's own name, when it has one, sits
+        // just beneath. In the group sheet each row's tile already names the
+        // bathroom, so this header is suppressed there (hideName).
+        if (!hideName) ...[
+          Text('Bathroom', style: theme.textTheme.titleLarge),
+          if ((bathroom.name?.trim().isNotEmpty ?? false))
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child:
+                  Text(bathroom.name!.trim(), style: theme.textTheme.titleMedium),
+            ),
+          if (bathroom.region != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                bathroom.region!.breadcrumb,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
-          ),
+        ],
         if (allTags.isNotEmpty) ...[
           const SizedBox(height: 12),
           Wrap(
