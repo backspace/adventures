@@ -555,6 +555,17 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     if (joined == true && mounted) await _load();
   }
 
+  Future<void> _openDetails() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => DetailsWebViewRoute(api: widget.api)),
+    );
+    // Editing details in the WebView (accessibility choices, team info) can
+    // change what the map should show, but the WebView is opaque so we can't
+    // tell whether anything changed. Re-fetch identity and reload on return —
+    // exactly what the refresh button does — so any change is reflected.
+    if (mounted) await _refreshIdentityAndLoad();
+  }
+
   // Prompt shown above the map/pre-event body when a signed-in player
   // isn't on a team yet — the common case for day-of walk-ups.
   Widget _noTeamBanner() {
@@ -699,10 +710,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       case _HomeMenuItem.joinTeam:
         _openJoinTeam();
       case _HomeMenuItem.details:
-        Navigator.of(context).push(
-          MaterialPageRoute(
-              builder: (_) => DetailsWebViewRoute(api: widget.api)),
-        );
+        _openDetails();
       case _HomeMenuItem.credits:
         Navigator.of(context).push(
           MaterialPageRoute(
