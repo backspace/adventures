@@ -8,6 +8,7 @@ import 'package:landgrab/routes/supervisor/supervisor_edit_pole_route.dart';
 import 'package:landgrab/routes/supervisor/validator_picker.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
+import 'package:landgrab/widgets/location_suggestion_map.dart';
 import 'package:landgrab/widgets/mini_location_map.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
@@ -391,6 +392,7 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (c.suggestedValue != null) Text('Suggest: ${c.suggestedValue}'),
+                      LocationSuggestionMap(comment: c),
                       if (c.comment != null) Text(c.comment!),
                       if (c.status == CommentStatus.pending && canDecide)
                         Padding(
@@ -463,6 +465,7 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
                               children: [
                                 if (c.suggestedValue != null)
                                   Text('Suggest: ${c.suggestedValue}'),
+                                LocationSuggestionMap(comment: c),
                                 if (c.comment != null) Text(c.comment!),
                               ],
                             ),
