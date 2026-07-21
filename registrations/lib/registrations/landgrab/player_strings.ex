@@ -35,6 +35,11 @@ defmodule Registrations.Landgrab.PlayerStrings do
   def pole_lost_body(nil, pole_name), do: phrase("app_pole_lost_body_unknown", pole: pole_name)
   def pole_lost_body(captor, pole_name), do: phrase("app_pole_lost_body", captor: captor, pole: pole_name)
 
+  # Sent under the pole_lost type (same client handling); its own body
+  # because the pole wasn't taken — it was freed. DRAFT copy.
+  def pole_freed_body(nil, pole_name), do: phrase("app_pole_freed_body_unknown", pole: pole_name)
+  def pole_freed_body(liberator, pole_name), do: phrase("app_pole_freed_body", liberator: liberator, pole: pole_name)
+
   def puzzlet_taken_body(nil), do: phrase("app_puzzlet_taken_body_unknown")
   def puzzlet_taken_body(captor), do: phrase("app_puzzlet_taken_body", captor: captor)
 
@@ -94,6 +99,10 @@ defmodule Registrations.Landgrab.PlayerStrings do
   # Accommodation-claim refusals (claiming a stake without solving).
   def not_prohibitive_detail, do: phrase("app_not_prohibitive_detail")
   def claim_failed_detail, do: phrase("app_claim_failed_detail")
+
+  # Liberation refusals (strict roles + races). DRAFT copy.
+  def nothing_to_liberate_detail, do: phrase("app_nothing_to_liberate_detail")
+  def already_liberated_detail, do: phrase("app_already_liberated_detail")
 
   # Gameplay actions (scanning a stake, answering a relic) attempted
   # before the simulation's start time — the server refuses them even

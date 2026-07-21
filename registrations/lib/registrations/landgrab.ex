@@ -133,7 +133,8 @@ defmodule Registrations.Landgrab do
       current_owner_team_id: owner_id,
       current_owner_team_name: owner && owner.name,
       current_owner_color_index: owner && owner.color_index,
-      locked?: pole_locked?(pole)
+      locked?: pole_locked?(pole),
+      liberated?: pole_liberated?(pole)
     }
   end
 
@@ -188,7 +189,10 @@ defmodule Registrations.Landgrab do
                previous_wrong_answers: []
              })}
 
-          pole_owned_by_team?(pole, team_id) ->
+          # A liberator's own stake is NOT "already yours" — the doc makes a
+          # team's own earlier captures fair game to liberate, so only the
+          # capture side gets this refusal.
+          not liberator?(team_id) and pole_owned_by_team?(pole, team_id) ->
             {:error, :already_owner, pole}
 
           # Checked before serving a puzzlet (and before the attack
@@ -201,6 +205,12 @@ defmodule Registrations.Landgrab do
 
           user_id && pole.creator_id == user_id ->
             {:error, :own_creation, pole}
+
+          # Strict roles: a liberator can only liberate OWNED ground.
+          # Unowned covers both never-claimed and already-liberated stakes —
+          # either way there's nothing here for them to free.
+          liberator?(team_id) and is_nil(current_owner_team_id_for_pole(pole)) ->
+            {:error, :nothing_to_liberate, pole}
 
           true ->
             state = pole_with_state(pole)
@@ -436,17 +446,22 @@ defmodule Registrations.Landgrab do
   When `user_id` is provided, puzzlets authored by that user are skipped in
   the rotation — the author silently rotates past their own work.
   """
-  def active_puzzlet_for_pole(%Pole{id: pole_id}, user_id \\ nil, exclude \\ [], team_id \\ nil) do
+  def active_puzzlet_for_pole(%Pole{id: pole_id} = pole, user_id \\ nil, exclude \\ [], team_id \\ nil) do
     # Which puzzlets count as "consumed" and so aren't served:
-    #   * relief mode + a team → the ones THIS team has solved (per-team pool,
-    #     so a stake another team took is still playable for you);
-    #   * otherwise → the globally captured ones (consume-once).
-    # Guard non-null puzzlet_id so pole-only events (liberate/accommodation)
-    # never leak a NULL into the `not in` set (which would drop every row).
+    #   * per-team serving (relief mode, a liberated stake being re-seized,
+    #     or a liberator working an owned stake) → the ones THIS team has
+    #     solved (capture or liberate — both are solve credit), so a relic
+    #     another team took is still playable for you;
+    #   * otherwise → the globally consumed ones (consume-once). Liberate
+    #     events carry their solved puzzlet, so they consume globally too.
+    # Guard non-null puzzlet_id so pole-only events (accommodation) never
+    # leak a NULL into the `not in` set (which would drop every row).
     consumed_puzzlet_ids =
-      if relief_active?() and team_id do
+      if team_id && per_team_serving?(pole, team_id) do
         from(c in OwnershipEvent,
-          where: c.kind == "capture" and c.team_id == ^team_id and not is_nil(c.puzzlet_id),
+          where:
+            c.kind in ["capture", "liberate"] and c.team_id == ^team_id and
+              not is_nil(c.puzzlet_id),
           select: c.puzzlet_id
         )
       else
@@ -576,10 +591,16 @@ defmodule Registrations.Landgrab do
     }
   end
 
-  @doc "Puzzlet ids a team has solved (a `capture` event of theirs), as a MapSet."
+  @doc """
+  Puzzlet ids a team has solved, as a MapSet. Captures AND liberations —
+  a liberate event carries the relic the liberators solved, and it counts
+  as their solve credit (never re-served to them).
+  """
   def team_solved_puzzlet_ids(team_id) when is_binary(team_id) do
     from(c in OwnershipEvent,
-      where: c.kind == "capture" and c.team_id == ^team_id and not is_nil(c.puzzlet_id),
+      where:
+        c.kind in ["capture", "liberate"] and c.team_id == ^team_id and
+          not is_nil(c.puzzlet_id),
       select: c.puzzlet_id
     )
     |> Repo.all()
@@ -601,14 +622,26 @@ defmodule Registrations.Landgrab do
 
   def pole_exhausted_for_team?(_pole, _team_id), do: false
 
-  # "Nothing left to serve here" for a scanning team: per-team exhaustion in
-  # relief mode, the global lock otherwise.
+  # "Nothing left to serve here" for a scanning team: per-team exhaustion
+  # when serving from the team's own pool, the global lock otherwise.
   defp serving_locked?(pole, team_id) do
-    if relief_active?() and is_binary(team_id) do
+    if is_binary(team_id) and per_team_serving?(pole, team_id) do
       pole_exhausted_for_team?(pole, team_id)
     else
       pole_locked?(pole)
     end
+  end
+
+  # When a team's serving pool is "what THEY haven't solved" rather than the
+  # global consume-once pool:
+  #   * relief mode — the supervisor re-opened all stakes per-team;
+  #   * a liberated stake — re-seizure must get relics even though every one
+  #     may be globally captured (that's how the stake got owned, then freed);
+  #   * a liberator at an owned stake — the inverted loop serves them a relic
+  #     there even when the stake is fully captured (locked).
+  defp per_team_serving?(pole, team_id) do
+    relief_active?() or pole_liberated?(pole) or
+      (liberator?(team_id) and current_owner_team_id_for_pole(pole) != nil)
   end
 
   defp playable_puzzlet_ids(pole_id) do
@@ -702,12 +735,34 @@ defmodule Registrations.Landgrab do
   end
 
   def current_owner_team_id_for_pole(%Pole{id: pole_id}) do
-    # Owner = the newest ownership event for this pole, from EITHER source,
-    # newest-wins across both:
-    #   * capture events, tied to the pole via their puzzlet;
-    #   * pole-only events (accommodation now; liberate later), tied by pole_id.
-    # Its kind decides the owner: capture/accommodation → that team; liberate
-    # (future) → nil (no owner).
+    case latest_ownership_event_for_pole(pole_id) do
+      nil -> nil
+      %{kind: "liberate"} -> nil
+      %{team_id: team_id} -> team_id
+    end
+  end
+
+  @doc """
+  Whether the stake's newest ownership event is a liberation — freed,
+  belonging to no one. Distinct from never-captured (also unowned): the
+  liberated state gets its own look on the map and its own serving rule
+  (re-seizure draws from the per-team pool).
+  """
+  def pole_liberated?(%Pole{id: pole_id}), do: pole_liberated?(pole_id)
+
+  def pole_liberated?(pole_id) when is_binary(pole_id) do
+    match?(%{kind: "liberate"}, latest_ownership_event_for_pole(pole_id))
+  end
+
+  # The newest ownership event for this pole, from EITHER source,
+  # newest-wins across both:
+  #   * capture events, tied to the pole via their puzzlet;
+  #   * non-capture events (accommodation, liberate), tied by pole_id —
+  #     matched by kind, NOT by a nil puzzlet_id: liberate events carry the
+  #     solved puzzlet (the team's solve credit) and must still count here.
+  # Its kind decides the owner: capture/accommodation → that team;
+  # liberate → nil (no owner).
+  defp latest_ownership_event_for_pole(pole_id) do
     capture_events =
       from(c in OwnershipEvent,
         join: p in Puzzlet,
@@ -718,23 +773,16 @@ defmodule Registrations.Landgrab do
 
     pole_events =
       from(c in OwnershipEvent,
-        where: c.pole_id == ^pole_id and is_nil(c.puzzlet_id),
+        where: c.pole_id == ^pole_id and c.kind != "capture",
         select: %{team_id: c.team_id, kind: c.kind, inserted_at: c.inserted_at}
       )
 
-    latest =
-      capture_events
-      |> union_all(^pole_events)
-      |> subquery()
-      |> order_by([e], desc: e.inserted_at)
-      |> limit(1)
-      |> Repo.one()
-
-    case latest do
-      nil -> nil
-      %{kind: "liberate"} -> nil
-      %{team_id: team_id} -> team_id
-    end
+    capture_events
+    |> union_all(^pole_events)
+    |> subquery()
+    |> order_by([e], desc: e.inserted_at)
+    |> limit(1)
+    |> Repo.one()
   end
 
   def pole_locked?(%Pole{id: pole_id}) do
@@ -820,9 +868,15 @@ defmodule Registrations.Landgrab do
   """
   def record_attempt(%Puzzlet{} = puzzlet, team_id, user_id, answer_given) do
     pole = puzzlet.pole_id && Repo.get(Pole, puzzlet.pole_id)
+    # Stance decides what a correct answer DOES: capture for everyone
+    # except a team that accepted Bedab's invitation, whose solves
+    # liberate instead (returned to no-owner).
+    liberating? = liberator?(team_id)
 
     cond do
-      pole && pole_owned_by_team?(pole, team_id) ->
+      # A liberator solving at their own stake is freeing it, not
+      # re-claiming it — the refusal is capture-side only.
+      pole && not liberating? && pole_owned_by_team?(pole, team_id) ->
         {:error, :already_owner}
 
       # Out of play for everyone once the boundary passes — takes
@@ -888,12 +942,22 @@ defmodule Registrations.Landgrab do
               end
 
             if correct? do
-              case insert_capture(puzzlet.pole_id, puzzlet.id, team_id) do
-                {:ok, capture} ->
-                  %{result: :captured, attempt: attempt, capture: capture}
+              if liberating? do
+                case insert_liberation(pole, puzzlet.id, team_id) do
+                  {:ok, liberation} ->
+                    %{result: :liberated, attempt: attempt, capture: liberation}
 
-                {:error, :already_captured} ->
-                  Repo.rollback(:already_captured)
+                  {:error, reason} ->
+                    Repo.rollback(reason)
+                end
+              else
+                case insert_capture(puzzlet.pole_id, puzzlet.id, team_id) do
+                  {:ok, capture} ->
+                    %{result: :captured, attempt: attempt, capture: capture}
+
+                  {:error, :already_captured} ->
+                    Repo.rollback(:already_captured)
+                end
               end
             else
               remaining =
@@ -903,18 +967,23 @@ defmodule Registrations.Landgrab do
             end
           end)
 
-        with {:ok, %{result: :captured, capture: capture}} <- result,
-             %Pole{} = captured_pole <- pole do
-          broadcast_pole_update(captured_pole, capture)
-          maybe_signal_pole_lost(captured_pole, previous_owner_id, team_id)
+        with {:ok, %{result: outcome, capture: event}} <- result,
+             true <- outcome in [:captured, :liberated],
+             %Pole{} = changed_pole <- pole do
+          broadcast_pole_update(changed_pole, event)
+
+          case outcome do
+            :captured -> maybe_signal_pole_lost(changed_pole, previous_owner_id, team_id)
+            :liberated -> maybe_signal_pole_freed(changed_pole, previous_owner_id, team_id)
+          end
         end
 
-        # Resolve active-puzzlet state: a capture clears the puzzlet
-        # for everyone (and notifies the rivals who were on it); an
-        # incorrect answer that exhausts the team's guesses frees
+        # Resolve active-puzzlet state: a capture OR liberation consumes
+        # the puzzlet for everyone (and notifies the rivals who were on
+        # it); an incorrect answer that exhausts the team's guesses frees
         # their slot since they can no longer attempt this puzzlet.
         case result do
-          {:ok, %{result: :captured}} ->
+          {:ok, %{result: outcome}} when outcome in [:captured, :liberated] ->
             resolve_captured_puzzlet(puzzlet, team_id)
 
           {:ok, %{result: :incorrect, attempts_remaining: 0}} ->
@@ -928,17 +997,23 @@ defmodule Registrations.Landgrab do
     end
   end
 
-  defp broadcast_pole_update(%Pole{} = pole, %OwnershipEvent{} = capture) do
-    owner = Map.get(team_style_index(), capture.team_id)
+  defp broadcast_pole_update(%Pole{} = pole, %OwnershipEvent{} = event) do
+    # The event's kind decides the new owner: a liberation frees the pole
+    # (owner nil); capture/accommodation hand it to the acting team.
+    # `captured_by_team_id` stays the ACTING team either way — it's the
+    # attribution ("freed by …") and the client's animation cue.
+    owner_id = if event.kind == "liberate", do: nil, else: event.team_id
+    owner = owner_id && Map.get(team_style_index(), owner_id)
 
     RegistrationsWeb.Endpoint.broadcast("landgrab:map", "pole_updated", %{
       id: pole.id,
-      current_owner_team_id: capture.team_id,
+      current_owner_team_id: owner_id,
       current_owner_team_name: owner && owner.name,
       current_owner_color_index: owner && owner.color_index,
       locked: pole_locked?(pole),
-      captured_by_team_id: capture.team_id,
-      captured_at: capture.inserted_at
+      liberated: event.kind == "liberate",
+      captured_by_team_id: event.team_id,
+      captured_at: event.inserted_at
     })
   end
 
@@ -1060,6 +1135,24 @@ defmodule Registrations.Landgrab do
   # (liberate events in record_attempt) is a later phase.
 
   @liberation_responses ~w(accepted declined)
+
+  @doc """
+  The team's liberation stance. `:liberator` once the team has ACCEPTED
+  Bedab's invitation — from then on they can only liberate owned stakes.
+  Everyone else — declined, invited-but-undecided, not yet invited, or
+  teamless — plays the capture game (`:capturer`): strict roles, and the
+  fog-of-war means an uninvited team is indistinguishable from a decliner.
+  """
+  def team_liberation_stance(nil), do: :capturer
+
+  def team_liberation_stance(team_id) do
+    case Repo.get(RegistrationsWeb.Team, team_id) do
+      %{liberation_response: "accepted"} -> :liberator
+      _ -> :capturer
+    end
+  end
+
+  def liberator?(team_id), do: team_liberation_stance(team_id) == :liberator
 
   @doc """
   Send liberation invitations to every team whose rollout slot has passed and
@@ -1635,6 +1728,36 @@ defmodule Registrations.Landgrab do
     deliver_team_notification("attack", pole, recipient_id, sender_id, body, attacker_name)
   end
 
+  # Tell the previous owner their pole was liberated. Same notification
+  # type as pole_lost (the client's toast/map-jump handling applies
+  # unchanged) but its own body — "freed", not "captured from you". A
+  # team liberating its OWN stake gets nothing: telling them about their
+  # own deliberate act would be noise.
+  defp maybe_signal_pole_freed(_pole, nil, _liberating_team_id), do: :ok
+
+  defp maybe_signal_pole_freed(_pole, owner_id, liberating_team_id) when owner_id == liberating_team_id, do: :ok
+
+  defp maybe_signal_pole_freed(%Pole{} = pole, previous_owner_id, liberating_team_id) do
+    liberator_name = team_name(liberating_team_id)
+
+    body = PlayerStrings.pole_freed_body(liberator_name, pole_name(pole))
+
+    deliver_team_notification(
+      "pole_lost",
+      pole,
+      previous_owner_id,
+      liberating_team_id,
+      body,
+      liberator_name
+    )
+  rescue
+    error ->
+      require Logger
+
+      Logger.error("pole-freed signal failed: #{Exception.message(error)}")
+      :ok
+  end
+
   # Tell the previous owner they lost the pole. Same rescue rationale
   # as attack signals: a notification bug must never fail the capture.
   defp maybe_signal_pole_lost(_pole, nil, _capturing_team_id), do: :ok
@@ -1768,16 +1891,52 @@ defmodule Registrations.Landgrab do
     end
   end
 
+  # The liberate twin of insert_capture: records that this team solved this
+  # relic AND that the pole is returned to no-owner (both live on the one
+  # event — puzzlet_id is the solve credit, kind decides ownership). The
+  # owner re-check closes the scan→answer race: if another team freed the
+  # pole while this team was solving, there's nothing left to liberate.
+  defp insert_liberation(%Pole{} = pole, puzzlet_id, team_id) do
+    if is_nil(current_owner_team_id_for_pole(pole)) do
+      {:error, :already_liberated}
+    else
+      %OwnershipEvent{}
+      |> OwnershipEvent.changeset(%{
+        kind: "liberate",
+        pole_id: pole.id,
+        puzzlet_id: puzzlet_id,
+        team_id: team_id
+      })
+      |> Repo.insert()
+      |> case do
+        {:ok, liberation} ->
+          {:ok, liberation}
+
+        # The per-team unique tripping means THIS team already has solve
+        # credit for the relic — a double-submit; nothing new to do here.
+        {:error, %Ecto.Changeset{errors: errors}} ->
+          if Keyword.has_key?(errors, :puzzlet_id),
+            do: {:error, :already_liberated},
+            else: {:error, :insert_failed}
+      end
+    end
+  end
+
   defp insert_capture(pole_id, puzzlet_id, team_id) do
     # Normal-mode "one capture per puzzlet globally" is enforced here, not by a
     # DB constraint (the constraint relaxed to per-team so the relief valve can
-    # let many teams solve one puzzlet). In relief mode this global guard is
-    # SKIPPED — a puzzlet another team solved is fair game — leaving the
-    # per-team unique below as the only limit (a team still can't double-solve).
+    # let many teams solve one puzzlet). The global guard is SKIPPED when the
+    # serving was per-team — relief mode, or re-seizing a LIBERATED stake
+    # (whose relics were all captured once already; that's how it got owned,
+    # then freed) — leaving the per-team unique below as the only limit (a
+    # team still can't double-solve). The read path (per_team_serving?) and
+    # this write path must agree, or a served relic bounces on answer.
     # There's a tiny race in normal mode — two teams answering the SAME puzzlet
     # correctly within the same instant could both pass this check — that the
     # old atomic unique prevented; at event scale it's negligible.
-    if not relief_active?() and puzzlet_captured?(puzzlet_id) do
+    per_team? = relief_active?() or (pole_id && pole_liberated?(pole_id))
+
+    if not per_team? and puzzlet_captured?(puzzlet_id) do
       {:error, :already_captured}
     else
       %OwnershipEvent{}

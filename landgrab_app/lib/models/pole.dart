@@ -14,6 +14,11 @@ class Pole {
   final int? currentOwnerColorIndex;
   final bool locked;
 
+  /// Freed by liberators — unowned, but distinct from never-claimed. The
+  /// map will give this its own look (deferred to the block territory
+  /// layer); until then the flag just flows through.
+  final bool liberated;
+
   /// Every remaining puzzlet here conflicts with the viewing team's
   /// accessibility needs — nobody on the team can engage anything (they can
   /// still claim it). Per-viewer, set on the pole-list fetch; the map flags it.
@@ -28,6 +33,7 @@ class Pole {
     this.currentOwnerTeamName,
     this.currentOwnerColorIndex,
     required this.locked,
+    this.liberated = false,
     this.prohibitive = false,
   });
 
@@ -40,6 +46,7 @@ class Pole {
         currentOwnerTeamName: json['current_owner_team_name'] as String?,
         currentOwnerColorIndex: json['current_owner_color_index'] as int?,
         locked: json['locked'] as bool? ?? false,
+        liberated: json['liberated'] as bool? ?? false,
         prohibitive: json['prohibitive'] as bool? ?? false,
       );
 }
@@ -166,6 +173,14 @@ class AttemptCorrect extends AttemptOutcome {
   });
 }
 
+/// A liberator's correct answer: the stake was freed, not taken — it
+/// belongs to no one now. Celebrated distinctly from a capture (no team
+/// colour; the ground left the ownership system).
+class AttemptLiberated extends AttemptOutcome {
+  final bool poleLocked;
+  const AttemptLiberated({required this.poleLocked});
+}
+
 class AttemptIncorrect extends AttemptOutcome {
   final int attemptsRemaining;
   final List<String> previousWrongAnswers;
@@ -181,6 +196,12 @@ class AttemptLockedOut extends AttemptOutcome {
 
 class AttemptAlreadyCaptured extends AttemptOutcome {
   const AttemptAlreadyCaptured();
+}
+
+/// Someone else freed the stake while the team was solving — there is
+/// nothing left to liberate here. Terminal for this puzzlet screen.
+class AttemptAlreadyLiberated extends AttemptOutcome {
+  const AttemptAlreadyLiberated();
 }
 
 /// The puzzlet was withdrawn from the game (supervisor action) while the
@@ -251,6 +272,14 @@ class ScanOutsideZone extends ScanOutcome {
 /// its start time, even if the app somehow reaches the scanner early.
 class ScanNotStarted extends ScanOutcome {
   const ScanNotStarted();
+}
+
+/// Strict roles: the scanner's team joined the liberation, and this
+/// ground is unowned (never claimed, or already freed) — there is
+/// nothing here for them to liberate.
+class ScanNothingToLiberate extends ScanOutcome {
+  final Pole pole;
+  const ScanNothingToLiberate(this.pole);
 }
 
 /// The team is already at its active-puzzlet limit; they must finish

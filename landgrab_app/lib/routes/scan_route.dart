@@ -102,6 +102,12 @@ class _ScanRouteState extends State<ScanRoute> {
           Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
           return;
 
+        case ScanNothingToLiberate(:final pole):
+          await _showNothingToLiberateDialog(pole);
+          if (!mounted) return;
+          Navigator.of(context).pop((barcode: barcode, capturedPoleId: null));
+          return;
+
         case ScanAtCapacity(:final active):
           await _showAtCapacityDialog(active);
           if (!mounted) return;
@@ -270,6 +276,24 @@ class _ScanRouteState extends State<ScanRoute> {
       builder: (dialogContext) => AlertDialog(
         title: const Text(ScanStrings.alreadyOwnerTitle),
         content: Text(ScanStrings.alreadyOwnerBody(name)),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text(ScanStrings.ok),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showNothingToLiberateDialog(Pole pole) {
+    final name = pole.name;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(ScanStrings.nothingToLiberateTitle),
+        content: Text(ScanStrings.nothingToLiberateBody(name)),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),

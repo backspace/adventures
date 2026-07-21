@@ -87,6 +87,19 @@ defmodule RegistrationsWeb.Landgrab.PoleController do
           },
           pole: Render.pole_state(Landgrab.pole_with_state(pole))
         })
+
+      # Strict roles: a liberator scanning unowned (or already-liberated)
+      # ground has nothing to free here.
+      {:error, :nothing_to_liberate, pole} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{
+          error: %{
+            code: "nothing_to_liberate",
+            detail: PlayerStrings.nothing_to_liberate_detail()
+          },
+          pole: Render.pole_state(Landgrab.pole_with_state(pole))
+        })
     end
   end
 

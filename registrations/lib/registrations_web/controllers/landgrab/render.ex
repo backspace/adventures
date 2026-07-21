@@ -22,6 +22,9 @@ defmodule RegistrationsWeb.Landgrab.Render do
       current_owner_team_name: Map.get(state, :current_owner_team_name),
       current_owner_color_index: Map.get(state, :current_owner_color_index),
       locked: locked,
+      # Freed by liberators — unowned, but distinct from never-claimed.
+      # Map.get: some single-pole state maps predate the flag.
+      liberated: Map.get(state, :liberated?, false),
       # True when every remaining puzzlet here conflicts with the viewing team's
       # accessibility needs — the map flags it. Only set on the pole-list path
       # (per-viewer); absent elsewhere, hence the default.

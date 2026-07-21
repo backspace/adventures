@@ -16,12 +16,18 @@ class PoleUpdate {
   final int? currentOwnerColorIndex;
   final bool locked;
 
+  /// The event was a liberation — owner nil, but distinct from
+  /// never-claimed. The block territory layer will render this state;
+  /// the flag flows through now so the map's local pole list stays true.
+  final bool liberated;
+
   PoleUpdate({
     required this.id,
     required this.currentOwnerTeamId,
     this.currentOwnerTeamName,
     this.currentOwnerColorIndex,
     required this.locked,
+    this.liberated = false,
   });
 
   factory PoleUpdate.fromJson(Map<String, dynamic> json) => PoleUpdate(
@@ -30,6 +36,7 @@ class PoleUpdate {
         currentOwnerTeamName: json['current_owner_team_name'] as String?,
         currentOwnerColorIndex: json['current_owner_color_index'] as int?,
         locked: json['locked'] as bool? ?? false,
+        liberated: json['liberated'] as bool? ?? false,
       );
 }
 

@@ -202,6 +202,20 @@ void main() {
       expect(outcome, isA<ScanTeamLockedOut>());
     });
 
+    test('returns ScanNothingToLiberate on 409 nothing_to_liberate', () async {
+      adapter.onGet(
+        '/landgrab/poles/POLE-004',
+        (server) => server.reply(409, {
+          'error': {'code': 'nothing_to_liberate', 'detail': '...'},
+          'pole': polePayload(),
+        }),
+      );
+
+      final outcome = await api.scan('POLE-004');
+      expect(outcome, isA<ScanNothingToLiberate>());
+      expect((outcome as ScanNothingToLiberate).pole.name, 'Esplanade Riel');
+    });
+
     test('rethrows on network/5xx', () async {
       adapter.onGet(
         '/landgrab/poles/POLE-004',
@@ -301,6 +315,43 @@ void main() {
       final correct = outcome as AttemptCorrect;
       expect(correct.captureTeamId, 't1');
       expect(correct.poleLocked, isFalse);
+    });
+
+    test('returns AttemptLiberated on a liberator solve (null owner)', () async {
+      adapter.onPost(
+        '/landgrab/puzzlets/pz1/attempts',
+        (server) => server.reply(200, {
+          'correct': true,
+          'captured': false,
+          'liberated': true,
+          'liberation': {'id': 'l1', 'team_id': 't1', 'puzzlet_id': 'pz1'},
+          'pole': {
+            'id': 'p1',
+            'locked': true,
+            'current_owner_team_id': null,
+            'current_owner_color_index': null,
+            'liberated': true,
+          },
+        }),
+        data: {'answer': 'Red'},
+      );
+
+      final outcome = await api.submitAnswer('pz1', 'Red');
+      expect(outcome, isA<AttemptLiberated>());
+      expect((outcome as AttemptLiberated).poleLocked, isTrue);
+    });
+
+    test('returns AttemptAlreadyLiberated on 409 already_liberated', () async {
+      adapter.onPost(
+        '/landgrab/puzzlets/pz1/attempts',
+        (server) => server.reply(409, {
+          'error': {'code': 'already_liberated', 'detail': '...'},
+        }),
+        data: {'answer': 'x'},
+      );
+
+      final outcome = await api.submitAnswer('pz1', 'x');
+      expect(outcome, isA<AttemptAlreadyLiberated>());
     });
 
     test('returns AttemptIncorrect with previous wrong answers', () async {

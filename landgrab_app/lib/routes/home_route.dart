@@ -396,6 +396,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       currentOwnerTeamName: update.currentOwnerTeamName,
       currentOwnerColorIndex: update.currentOwnerColorIndex,
       locked: update.locked,
+      liberated: update.liberated,
       // The owner-change broadcast is team-agnostic and carries no prohibitive
       // flag; keep the value from the last pole-list fetch. A full reload
       // (reconnect / event change) refreshes it authoritatively.

@@ -61,6 +61,9 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
 
   final _answerController = TextEditingController();
   bool _celebrating = false;
+  // A liberation's celebration: white flood + RETURNED stamp instead of
+  // the team colour + CLAIMED (the ground belongs to no one now).
+  bool _liberationCelebration = false;
   double _stampAngle = 0;
   // The capturing team's colour index, so the celebration floods in the
   // team's own colour (matching the map's territory). Null falls back to green.
@@ -118,11 +121,13 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   /// CLAIMED stamp, then pop back (with `true` so the scanner can
   /// tell the map which pole to animate). maybePop rather than pop so
   /// a bare test harness with a single route doesn't underflow the
-  /// navigator.
-  void _celebrateAndPop(int? colorIndex) {
+  /// navigator. A liberation celebrates the same way but with no team
+  /// colour (the ground belongs to no one now) and its own stamp.
+  void _celebrateAndPop(int? colorIndex, {bool liberated = false}) {
     _leaving = true;
     final random = math.Random();
     setState(() {
+      _liberationCelebration = liberated;
       _floodColorIndex = colorIndex;
       // A varying tilt so each capture's stamp lands a little
       // differently — always at least slightly askew, like a real
@@ -167,6 +172,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
         }
       });
       if (outcome is AttemptCorrect) _celebrateAndPop(outcome.captureColorIndex);
+      if (outcome is AttemptLiberated) _celebrateAndPop(null, liberated: true);
     } catch (e) {
       if (!mounted) return;
       setState(() => _outcome = AttemptFailed(e.toString()));
@@ -178,13 +184,15 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   String? _outcomeText() {
     final o = _outcome;
     return switch (o) {
-      // AttemptCorrect deliberately renders no text — the CLAIMED
-      // stamp plus the return-to-map territory animation carry the
+      // AttemptCorrect/AttemptLiberated deliberately render no text —
+      // the stamp plus the return-to-map territory animation carry the
       // success feedback.
       AttemptCorrect() => null,
+      AttemptLiberated() => null,
       AttemptIncorrect() => PuzzletStrings.incorrect(o.attemptsRemaining),
       AttemptLockedOut() => PuzzletStrings.lockedOut,
       AttemptAlreadyCaptured() => PuzzletStrings.alreadyCapturedByOther,
+      AttemptAlreadyLiberated() => PuzzletStrings.alreadyLiberated,
       AttemptWithdrawn() => PuzzletStrings.withdrawn,
       AttemptAlreadyOwner() => PuzzletStrings.alreadyOwner,
       AttemptGameOver() => PuzzletStrings.gameOver,
@@ -197,6 +205,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
         AttemptIncorrect() => Colors.orange.shade700,
         AttemptLockedOut() ||
         AttemptAlreadyCaptured() ||
+        AttemptAlreadyLiberated() ||
         AttemptWithdrawn() ||
         AttemptAlreadyOwner() ||
         AttemptGameOver() ||
@@ -239,8 +248,10 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   @override
   Widget build(BuildContext context) {
     final disabled = _outcome is AttemptCorrect ||
+        _outcome is AttemptLiberated ||
         _outcome is AttemptLockedOut ||
         _outcome is AttemptAlreadyCaptured ||
+        _outcome is AttemptAlreadyLiberated ||
         _outcome is AttemptAlreadyOwner ||
         _outcome is AttemptGameOver ||
         (_attemptsRemaining ?? 0) <= 0;
@@ -362,10 +373,16 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
           child: _CaptureCelebration(
             // The capturing team's own colour — the same colour the map
             // floods their territory with. Green only as a fallback when the
-            // server didn't supply an index (older build).
-            floodColor: _floodColorIndex != null
-                ? TeamStyle.forIndex(_floodColorIndex!).color
-                : Colors.green,
+            // server didn't supply an index (older build). A liberation
+            // floods white: no team colour, the ground belongs to no one.
+            floodColor: _liberationCelebration
+                ? Colors.white
+                : _floodColorIndex != null
+                    ? TeamStyle.forIndex(_floodColorIndex!).color
+                    : Colors.green,
+            stampText: _liberationCelebration
+                ? PuzzletStrings.liberatedStamp
+                : PuzzletStrings.capturedStamp,
             stampAngle: _stampAngle,
           ),
         ),
@@ -378,10 +395,12 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
 /// slams in just behind it with a heavy haptic as it lands.
 class _CaptureCelebration extends StatefulWidget {
   final Color floodColor;
+  final String stampText;
   final double stampAngle;
 
   const _CaptureCelebration({
     required this.floodColor,
+    required this.stampText,
     required this.stampAngle,
   });
 
@@ -475,7 +494,7 @@ class _CaptureCelebrationState extends State<_CaptureCelebration>
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            PuzzletStrings.capturedStamp,
+                            widget.stampText,
                             // Anton, matching the site wordmark — it's
                             // single-weight, so no fontWeight needed.
                             style: const TextStyle(

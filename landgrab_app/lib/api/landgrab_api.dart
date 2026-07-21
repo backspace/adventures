@@ -389,6 +389,9 @@ class LandgrabApi {
       if (code == 'outside_zone' && poleJson != null) {
         return ScanOutsideZone(Pole.fromJson(poleJson));
       }
+      if (code == 'nothing_to_liberate' && poleJson != null) {
+        return ScanNothingToLiberate(Pole.fromJson(poleJson));
+      }
       if (code == 'at_capacity') {
         final active = (e.response?.data['active_puzzlets'] as List?)
                 ?.map((p) => ScanResult.fromJson(p as Map<String, dynamic>))
@@ -440,6 +443,14 @@ class LandgrabApi {
       );
       final body = response.data as Map<String, dynamic>;
       if (body['correct'] == true) {
+        // Checked before AttemptCorrect: a liberation has NO owner (the
+        // ground was freed), so the capture parse below would trip on the
+        // null current_owner_team_id.
+        if (body['liberated'] == true) {
+          return AttemptLiberated(
+            poleLocked: body['pole']['locked'] as bool? ?? false,
+          );
+        }
         return AttemptCorrect(
           captureTeamId: body['pole']['current_owner_team_id'] as String,
           poleLocked: body['pole']['locked'] as bool,
@@ -472,6 +483,11 @@ class LandgrabApi {
       }
       if (code == 'withdrawn') {
         return const AttemptWithdrawn();
+      }
+      // Before the 409 catch-all: a liberator racing another liberator gets
+      // its own message, not "another team captured this relic first".
+      if (code == 'already_liberated') {
+        return const AttemptAlreadyLiberated();
       }
       if (e.response?.statusCode == 409 || code == 'already_captured') {
         return const AttemptAlreadyCaptured();

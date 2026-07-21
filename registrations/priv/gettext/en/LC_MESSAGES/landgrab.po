@@ -164,6 +164,12 @@ msgstr "%{captor} captured %{pole} from you"
 msgid "app_pole_lost_body_unknown"
 msgstr "A rival team captured %{pole} from you"
 
+msgid "app_pole_freed_body"
+msgstr "%{liberator} liberated %{pole} — it belongs to no one now"
+
+msgid "app_pole_freed_body_unknown"
+msgstr "%{pole} has been liberated — it belongs to no one now"
+
 msgid "app_puzzlet_taken_body"
 msgstr "%{captor} solved the %{relic} you were working on."
 
@@ -256,6 +262,12 @@ msgstr "This %{stake} has a %{relic} your cohort can attempt, so it can’t be c
 
 msgid "app_claim_failed_detail"
 msgstr "That %{stake} couldn’t be claimed. Try again."
+
+msgid "app_nothing_to_liberate_detail"
+msgstr "No one holds this %{zone} — there is nothing here to liberate. Free the %{zones} that are held."
+
+msgid "app_already_liberated_detail"
+msgstr "This %{zone} was returned to no one while you worked — it is already free."
 
 msgid "app_not_started_detail"
 msgstr "The simulation has not begun yet. %{stakesCap} can’t be claimed until it does."

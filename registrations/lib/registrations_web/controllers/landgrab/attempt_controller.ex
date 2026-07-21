@@ -37,6 +37,10 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
         pole = Landgrab.get_pole!(puzzlet.pole_id)
         json(conn, render_capture(outcome, pole))
 
+      {:ok, %{result: :liberated} = outcome} ->
+        pole = Landgrab.get_pole!(puzzlet.pole_id)
+        json(conn, render_liberation(outcome, pole))
+
       {:ok, %{result: :incorrect, attempts_remaining: remaining}} ->
         wrong_answers = Landgrab.team_wrong_answers(puzzlet, user.team_id)
 
@@ -101,6 +105,13 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
         |> put_status(:conflict)
         |> json(%{error: %{code: "already_captured", detail: PlayerStrings.already_captured_detail()}})
 
+      # The liberator's race: another team freed the stake while this one
+      # was solving (or a double-submit) — nothing left to liberate.
+      {:error, :already_liberated} ->
+        conn
+        |> put_status(:conflict)
+        |> json(%{error: %{code: "already_liberated", detail: PlayerStrings.already_liberated_detail()}})
+
       {:error, %Ecto.Changeset{} = changeset} ->
         conn
         |> put_status(:unprocessable_entity)
@@ -128,7 +139,31 @@ defmodule RegistrationsWeb.Landgrab.AttemptController do
         id: pole.id,
         locked: pole_locked,
         current_owner_team_id: capture.team_id,
-        current_owner_color_index: color_index
+        current_owner_color_index: color_index,
+        liberated: false
+      }
+    }
+  end
+
+  # A liberator's correct answer: the stake is freed, not taken. `captured:
+  # false` + `liberated: true` so the app celebrates the right act; owner
+  # fields nil because the ground now belongs to no one.
+  defp render_liberation(%{capture: liberation}, pole) do
+    %{
+      correct: true,
+      captured: false,
+      liberated: true,
+      liberation: %{
+        id: liberation.id,
+        team_id: liberation.team_id,
+        puzzlet_id: liberation.puzzlet_id
+      },
+      pole: %{
+        id: pole.id,
+        locked: Registrations.Landgrab.pole_locked?(pole),
+        current_owner_team_id: nil,
+        current_owner_color_index: nil,
+        liberated: true
       }
     }
   end

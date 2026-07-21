@@ -405,6 +405,13 @@ class ScanStrings {
       'The simulation has withdrawn $poleName — it can no longer be '
       'claimed. Only ${Terms.stakes} still on your map remain in play.';
 
+  // Nothing-to-liberate dialog (strict roles: a team that joined the
+  // liberation can only free OWNED ground). DRAFT copy.
+  static const nothingToLiberateTitle = 'Nothing to liberate';
+  static String nothingToLiberateBody(String poleName) =>
+      'No one holds $poleName — there is nothing here to free. '
+      'Liberate the ${Terms.zones} that are held.';
+
   // Generic acknowledge button used across the dialogs above.
   static const ok = 'OK';
 }
@@ -447,6 +454,11 @@ class PuzzletStrings {
   // answer; deliberately terse, like a bureaucratic seal).
   static const capturedStamp = 'CLAIMED';
 
+  // Liberation celebration stamp — a correct answer by a team that
+  // joined Bedab frees the ground instead of claiming it. "Returned"
+  // (to no one), deliberately NOT an un-CLAIMED. DRAFT copy.
+  static const liberatedStamp = 'RETURNED';
+
   // Outcome text
   static const correctAndLocked =
       'Correct! ${Terms.zoneCap} captured and now fully locked.';
@@ -456,6 +468,10 @@ class PuzzletStrings {
   static const lockedOut = 'Locked out — too many wrong answers.';
   static const alreadyCapturedByOther =
       'Another team found this ${Terms.relic} first.';
+  // The liberator's race: the stake was freed while they were solving.
+  static const alreadyLiberated =
+      'This ${Terms.zone} was returned to no one while you worked — '
+      'it is already free.';
   static const alreadyOwner =
       'Your team already owns this ${Terms.zone}. Wait for a rival to capture it.';
   static const notActive =
