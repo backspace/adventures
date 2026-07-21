@@ -234,6 +234,34 @@ defmodule Registrations.Landgrab.Seed do
     %{captured: length(owned), flips: flips, in_progress: in_progress}
   end
 
+  @doc """
+  Capture EVERY capturable pole, round-robin across the player teams, through
+  the real scan → answer flow — a fully-owned map, with no contested/in-progress
+  noise. A pole is capturable when it has a validated, player-facing puzzlet a
+  non-author team can answer; a pole without one can't be taken this way and
+  stays unowned (reported as `uncapturable` — run `playable` first to validate
+  and attach puzzlets so this is 0). Needs the endgame inactive — an active
+  shrink refuses out-of-radius poles — so run it pre-event. Raises if no team
+  has a non-author member. Returns `%{captured: n, uncapturable: n}`.
+  """
+  def capture_all do
+    players = player_teams()
+
+    if players == [] do
+      raise "capture_all needs a team with a non-author member — run teams/filler first. " <>
+              "(The content author's own team can't answer its own puzzlets.)"
+    end
+
+    captured = length(play_first_wave(all_capturable_poles(), players))
+    %{captured: captured, uncapturable: unowned_pole_count()}
+  end
+
+  # Poles with no owner. After capture_all, these are the uncapturable ones
+  # (no validated, player-facing puzzlet to answer).
+  defp unowned_pole_count do
+    Repo.aggregate(from(p in Pole, where: p.id not in subquery(owned_pole_ids_query())), :count)
+  end
+
   # Teams that can actually play: one with a member who didn't author the
   # content (record_attempt rejects a puzzlet's or pole's creator).
   defp player_teams do
@@ -310,15 +338,13 @@ defmodule Registrations.Landgrab.Seed do
   end
 
   # Unowned poles that still have an uncaptured, validated, player-facing
-  # puzzlet — the ones a first-wave scan can capture.
-  defp unowned_capturable_poles(n) do
-    owned =
-      from(c in OwnershipEvent,
-        join: z in Puzzlet,
-        on: z.id == c.puzzlet_id,
-        select: z.pole_id
-      )
+  # puzzlet — the ones a first-wave scan can capture. Capped variant for
+  # partial gameplay; `all_capturable_poles` takes the lot for capture_all.
+  defp unowned_capturable_poles(n), do: capturable_poles_query() |> Repo.all() |> Enum.take(n)
 
+  defp all_capturable_poles, do: capturable_poles_query() |> Repo.all()
+
+  defp capturable_poles_query do
     from(p in Pole,
       join: z in Puzzlet,
       on: z.pole_id == p.id,
@@ -327,12 +353,15 @@ defmodule Registrations.Landgrab.Seed do
         z.id not in subquery(
           from(c in OwnershipEvent, where: not is_nil(c.puzzlet_id), select: c.puzzlet_id)
         ),
-      where: p.id not in subquery(owned),
+      where: p.id not in subquery(owned_pole_ids_query()),
       distinct: p.id,
       select: %{pole_id: p.id, barcode: p.barcode}
     )
-    |> Repo.all()
-    |> Enum.take(n)
+  end
+
+  # Pole ids that currently have an owner (any capture on one of their puzzlets).
+  defp owned_pole_ids_query do
+    from(c in OwnershipEvent, join: z in Puzzlet, on: z.id == c.puzzlet_id, select: z.pole_id)
   end
 
   # ── clock ───────────────────────────────────────────────────────────

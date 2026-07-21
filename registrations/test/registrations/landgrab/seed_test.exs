@@ -100,6 +100,26 @@ defmodule Registrations.Landgrab.SeedTest do
     assert_raise RuntimeError, ~r/non-author member/, fn -> Seed.captures(3) end
   end
 
+  test "capture_all captures every capturable pole", %{poles: poles} do
+    Seed.teams()
+
+    assert %{captured: captured, uncapturable: uncapturable} = Seed.capture_all()
+    assert captured == length(poles)
+    # uncapturable counts poles left without an owner — a fully conquered map is 0.
+    assert uncapturable == 0
+  end
+
+  test "capture_all reports poles it can't take (no player-facing puzzlet)", %{author: author} do
+    Seed.teams()
+
+    # An extra pole whose only puzzlet is validator-only — never capturable.
+    lonely = insert(:pole, creator_id: author.id)
+    insert(:puzzlet, pole: lonely, creator_id: author.id, status: :validated, validator_only: true)
+
+    assert %{uncapturable: uncapturable} = Seed.capture_all()
+    assert uncapturable >= 1
+  end
+
   test "validations fills the test validator's queue with assigned work",
        %{validator: validator} do
     assert %{assigned: assigned, validator: email} = Seed.validations(2)

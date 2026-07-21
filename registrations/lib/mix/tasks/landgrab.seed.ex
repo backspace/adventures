@@ -19,6 +19,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       validator to fill their queue; idempotent
     * captures:N      partial gameplay — capture N poles spread across the
                       teams, with a few active attacks and in-progress puzzlets
+    * capture_all     capture EVERY capturable pole — a fully owned map
     * clock:M[.SS]    put "now" M min SS sec before the start (.SS = seconds);
                       a negative spec anchors on the endgame shrink end instead
 
@@ -29,6 +30,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
     * midgame    = playable teams clock:5 captures clock:+2
                    (seed captures pre-event, then sit "now" just after the
                    endgame begins — a game in flight; see the note by @presets)
+    * conquered  = playable teams clock:5 capture_all  (every pole captured)
 
   The step logic lives in `Registrations.Landgrab.Seed` (this task is a
   thin CLI over it, and `Registrations.Landgrab.SeedTest` exercises it).
@@ -55,7 +57,12 @@ defmodule Mix.Tasks.Landgrab.Seed do
     "gameplay" => ~w(playable teams clock),
     "validation" => ~w(validations),
     "midgame" => ~w(playable teams clock:5 captures clock:+2),
-    "kickoff" => ~w(clear playable teams clock:0)
+    "kickoff" => ~w(clear playable teams clock:0),
+    # A fully-conquered board: validate + attach puzzlets, build teams, then
+    # capture every pole. clock:5 keeps the endgame inactive during capture
+    # (so no pole is refused as out-of-radius); add clock:0 yourself if you
+    # want the event started to view it.
+    "conquered" => ~w(playable teams clock:5 capture_all)
   }
 
   @impl Mix.Task
@@ -86,6 +93,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
       midgame      playable + teams + clock:5 + captures + clock:+2   (a game in flight, endgame just begun)
       validation   validations                                  (fills the validator queue)
       kickoff      clear + playable + teams + clock:0           (fresh map, game just begun)
+      conquered    playable + teams + clock:5 + capture_all     (every pole captured)
 
     Steps  (N is a number; the default is shown in parens):
       playable        validate every draft/in_review puzzlet and attach loose
@@ -95,6 +103,8 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       validator (fills their queue; puzzlets stay validated)  (40)
       captures:N      partial gameplay — capture N poles spread across the teams,
                       with attacks, pole-losses, and in-progress claims  (20)
+      capture_all     capture EVERY capturable pole across the teams — a fully
+                      owned map (run 'playable' first; needs the endgame inactive)
       clear           remove ALL captures, in-progress claims, and the attack /
                       pole-lost notifications — a clean, uncaptured map
       filler:N        create N teamless filler users with memorable proposed
@@ -187,6 +197,12 @@ defmodule Mix.Tasks.Landgrab.Seed do
       "captures: #{captured} pole(s) captured, #{flips} contested/flipped, " <>
         "#{in_progress} left in-progress — all via real scan→answer gameplay."
     )
+  end
+
+  defp run_step({"capture_all", _}) do
+    %{captured: captured, uncapturable: uncapturable} = Seed.capture_all()
+    note = if uncapturable == 0, do: "every pole is owned", else: "#{uncapturable} left uncapturable (no player-facing puzzlet)"
+    Mix.shell().info("capture_all: #{captured} pole(s) captured — #{note}.")
   end
 
   defp run_step({"clear", _}) do
