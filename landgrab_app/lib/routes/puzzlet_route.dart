@@ -467,8 +467,9 @@ class _CaptureCelebrationState extends State<_CaptureCelebration>
                       child: Opacity(
                         opacity: _stamp.value.clamp(0.0, 1.0),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 10),
+                          // Tight, even margin so the border reads like an
+                          // inked stamp hugging the word (tuned on-device).
+                          padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
                             border: Border.all(color: _stampInk, width: 5),
                             borderRadius: BorderRadius.circular(6),
@@ -477,12 +478,18 @@ class _CaptureCelebrationState extends State<_CaptureCelebration>
                             PuzzletStrings.capturedStamp,
                             // Anton, matching the site wordmark — it's
                             // single-weight, so no fontWeight needed.
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Anton',
-                              color: _stampInk,
                               fontSize: 44,
-                              letterSpacing: 6,
-                            ),
+                              letterSpacing: 1,
+                              // Pull the line box below the font's natural
+                              // leading and centre it, so the border sits snug
+                              // against the caps top and bottom rather than
+                              // floating. (Anton is all-caps here, no
+                              // descenders, so a sub-1.0 height won't clip.)
+                              height: 0.92,
+                              leadingDistribution: TextLeadingDistribution.even,
+                            ).copyWith(color: _stampInk),
                           ),
                         ),
                       ),
