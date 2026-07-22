@@ -140,6 +140,35 @@ defmodule Registrations.Landgrab.SeedTest do
     assert Repo.aggregate(from(c in OwnershipEvent, where: c.kind == "liberate"), :count) == liberated
   end
 
+  test "liberate flags an active endgame that refuses out-of-radius poles" do
+    Seed.teams()
+    Seed.capture_all()
+    owned_before = owned_zone_count()
+    assert owned_before > 0
+
+    # Configure an endgame shrink that's active NOW, centred far from the
+    # fixture poles (51.04,-114.07) with a tiny radius — so every owned pole
+    # is outside it. Update the CURRENT event rather than inserting a second:
+    # capture_all's scan path already lazily created a placeholder event via
+    # Events.current/0, and a same-second insert would tie it on inserted_at.
+    Repo.one(from(e in Event, order_by: [desc: e.inserted_at], limit: 1))
+    |> Ecto.Changeset.change(%{
+      start_time: DateTime.add(DateTime.utc_now(), -3600, :second) |> DateTime.truncate(:second),
+      endgame_starts_at: DateTime.add(DateTime.utc_now(), -600, :second) |> DateTime.truncate(:second),
+      endgame_ends_at: DateTime.add(DateTime.utc_now(), 600, :second) |> DateTime.truncate(:second),
+      endgame_latitude: 40.0,
+      endgame_longitude: -80.0,
+      endgame_initial_radius_m: 50.0,
+      endgame_final_radius_m: 10.0
+    })
+    |> Repo.update!()
+
+    assert %{liberated: 0, requested: requested, endgame_active: true} = Seed.liberate(90)
+    assert requested > 0
+    # Nothing freed — the zones are all still owned.
+    assert owned_zone_count() == owned_before
+  end
+
   test "liberate raises without two playing teams", %{author: author, players: players} do
     # Leave only the author and a single non-author, so there's exactly one
     # playing team. Done before any captures so no attempts reference the

@@ -275,7 +275,9 @@ defmodule Registrations.Landgrab.Seed do
   not-yet-ended game — so run it pre-event or mid-arc. Raises without at
   least two playing teams (nobody to free another team's ground). Percent is
   of the zones owned *now*, so re-running frees a share of what's left.
-  Returns `%{liberated: n, owned: total_owned, requested: n}`.
+  Returns `%{liberated: n, owned: total_owned, requested: n, endgame_active:
+  bool}` — `endgame_active` flags the common reason a run frees fewer than
+  requested (an active shrink refuses out-of-radius poles).
   """
   def liberate(percent) when is_integer(percent) and percent >= 0 and percent <= 100 do
     players = player_teams()
@@ -299,7 +301,18 @@ defmodule Registrations.Landgrab.Seed do
         if freer && play_liberate(zone, freer), do: acc + 1, else: acc
       end)
 
-    %{liberated: liberated, owned: length(owned), requested: requested}
+    # If the shrink is active, poles outside its radius are refused — the
+    # usual reason a run frees fewer than requested (or zero). Surface it so
+    # the caller can explain the shortfall instead of a silent "freed 0".
+    %{liberated: liberated, owned: length(owned), requested: requested, endgame_active: endgame_active?()}
+  end
+
+  defp endgame_active? do
+    now = now()
+
+    Event
+    |> Repo.all()
+    |> Enum.any?(&(Event.endgame_zone(&1, now) != nil))
   end
 
   # A liberation only registers if it's the NEWEST event for its pole, but

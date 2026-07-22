@@ -252,12 +252,22 @@ defmodule Mix.Tasks.Landgrab.Seed do
   end
 
   defp run_step({"liberate", n}) do
-    %{liberated: liberated, owned: owned, requested: requested} = Seed.liberate(count(n, 50))
+    pct = count(n, 50)
+    %{liberated: liberated, owned: owned, requested: requested, endgame_active: endgame_active} = Seed.liberate(pct)
 
     Mix.shell().info(
-      "liberate: freed #{liberated} of #{owned} owned zone(s) (#{requested} at #{count(n, 50)}%) " <>
+      "liberate: freed #{liberated} of #{owned} owned zone(s) (#{requested} at #{pct}%) " <>
         "— all via real liberation gameplay."
     )
+
+    # The active-shrink refusal is the usual reason for a shortfall; call it
+    # out so a "freed 0" doesn't look like a broken step.
+    if liberated < requested and endgame_active do
+      Mix.shell().info(
+        "  note: the endgame shrink is active, so poles outside its radius were refused. " <>
+          "Reset the clock (e.g. clock:5) before 'liberate' to free the whole map."
+      )
+    end
   end
 
   defp run_step({"schedule", n}) do
