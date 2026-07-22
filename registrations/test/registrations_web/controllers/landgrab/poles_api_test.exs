@@ -61,6 +61,18 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       assert returned["locked"] == false
     end
 
+    test "omits poles that aren't validated (draft / in_review / retired)",
+         %{conn: conn} do
+      live = insert(:pole, status: :validated)
+      insert(:pole, status: :draft)
+      insert(:pole, status: :in_review)
+      insert(:pole, status: :retired)
+
+      body = conn |> get("/landgrab/poles") |> json_response(200)
+
+      assert Enum.map(body["poles"], & &1["id"]) == [live.id]
+    end
+
     test "an unlabelled stake gets a generated name, not its barcode", %{conn: conn} do
       pole = insert(:pole, label: nil)
       _puzzlet = insert(:puzzlet, pole: pole, answer: "alpha", difficulty: 1)
@@ -245,6 +257,17 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
 
     test "returns 404 for unknown barcode", %{conn: conn} do
       body = conn |> get("/landgrab/poles/NOPE") |> json_response(404)
+      assert body["error"]["code"] == "pole_not_found"
+    end
+
+    test "a non-validated pole is denied like an unknown barcode", %{conn: conn} do
+      # Retired (also draft/in_review): out of play. Scanning must look exactly
+      # like scanning a barcode the server has never heard of — same 404 code,
+      # no leak that a stake exists there.
+      pole = insert(:pole, status: :retired)
+      insert(:puzzlet, pole: pole, answer: "a", status: :validated)
+
+      body = conn |> get("/landgrab/poles/#{pole.barcode}") |> json_response(404)
       assert body["error"]["code"] == "pole_not_found"
     end
 

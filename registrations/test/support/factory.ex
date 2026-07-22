@@ -86,10 +86,14 @@ defmodule Registrations.Factory do
   end
 
   def pole_factory do
+    # Default to :validated — a pole in a gameplay test is a live, scannable
+    # stake. Validation/supervision tests that need a draft/retired pole set
+    # status explicitly. (Only validated poles reach the player map + scan.)
     %Registrations.Landgrab.Pole{
       barcode: sequence(:barcode, &"BC-#{&1}"),
       latitude: 51.04,
-      longitude: -114.07
+      longitude: -114.07,
+      status: :validated
     }
   end
 

@@ -36,8 +36,17 @@ defmodule Registrations.Landgrab do
 
   def get_pole!(id), do: Repo.get!(Pole, id)
 
+  @doc """
+  Resolve a scanned barcode to a pole for the PLAYER paths (scan + claim).
+  Only `:validated` poles are visible: a draft/in_review/retired pole is
+  treated as unknown — `nil`, exactly as an unrecognised barcode — so the
+  server denies its existence and the app shows its "unknown tag" outcome.
+  Admin/author/validator paths resolve poles by id, not through here.
+  """
   def get_pole_by_barcode(barcode) do
-    Repo.get_by(Pole, barcode: barcode)
+    Pole
+    |> where([p], p.barcode == ^barcode and p.status == :validated)
+    |> Repo.one()
   end
 
   def get_puzzlet(id), do: Repo.get(Puzzlet, id)
@@ -57,7 +66,11 @@ defmodule Registrations.Landgrab do
 
     playable_by_pole = if relief?, do: playable_puzzlet_ids_by_pole(), else: %{}
 
+    # Players only ever see validated poles — draft/in_review/retired stakes
+    # are out of play and must not appear on the map (a supervisor retiring a
+    # stake expects it gone). Admin/validator surfaces list poles elsewhere.
     Pole
+    |> where([p], p.status == :validated)
     |> Repo.all()
     |> Enum.map(fn pole ->
       state =
