@@ -28,8 +28,8 @@ class LiberatedZoneStyle {
   final double lineAlpha;
 
   const LiberatedZoneStyle({
-    this.spacing = 14,
-    this.strokeWidth = 2,
+    this.spacing = 20,
+    this.strokeWidth = 8,
     this.speed = 1,
     this.angleDeg = 45,
     this.washAlpha = 0.10,
