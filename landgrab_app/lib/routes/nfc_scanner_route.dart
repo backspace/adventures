@@ -87,11 +87,37 @@ class _NfcScannerRouteState extends State<NfcScannerRoute> {
           return;
         }
         _popping = true;
-        await NfcManagerAndroid.instance.disableReaderMode();
+        // Deliberately do NOT disableReaderMode here. Disabling while the
+        // tag is still on the antenna hands it straight to Android's own
+        // dispatcher, which pops the "New tag" / NDEF overlay (this showed
+        // up as the overlay appearing during the post-answer celebration —
+        // the one moment the tag rests on the phone while no screen is
+        // actively reading). dispose() swaps to a silent no-op reader mode
+        // instead, so the OS never sees the lingering tag.
         if (!mounted) return;
         Navigator.of(context).pop<String>(_toHex(id));
       },
     );
+  }
+
+  /// Keep Android in reader mode after a successful read, but with an empty
+  /// callback and the OS-silencing flags — so a tag left on the antenna
+  /// (e.g. during the answer celebration) is swallowed by us rather than
+  /// dispatched by the OS. Android clears reader mode automatically when the
+  /// app next backgrounds; the next real scan replaces this.
+  Future<void> _enableSilentAndroidReaderMode() async {
+    try {
+      await NfcManagerAndroid.instance.enableReaderMode(
+        flags: {
+          NfcReaderFlagAndroid.nfcA,
+          NfcReaderFlagAndroid.nfcB,
+          NfcReaderFlagAndroid.nfcV,
+          NfcReaderFlagAndroid.skipNdefCheck,
+          NfcReaderFlagAndroid.noPlatformSounds,
+        },
+        onTagDiscovered: (_) {},
+      );
+    } catch (_) {}
   }
 
   Future<void> _startIos() async {
@@ -171,9 +197,16 @@ class _NfcScannerRouteState extends State<NfcScannerRoute> {
 
   @override
   void dispose() {
-    // Best-effort cleanup if the user backs out mid-session.
     if (Platform.isAndroid) {
-      NfcManagerAndroid.instance.disableReaderMode().catchError((_) {});
+      if (_popping) {
+        // A tag was read and we're unwinding to show the result — keep the
+        // OS suppressed (see _enableSilentAndroidReaderMode) so a tag still
+        // on the antenna doesn't trigger the system overlay.
+        _enableSilentAndroidReaderMode();
+      } else {
+        // Backed out without reading — fully release the reader.
+        NfcManagerAndroid.instance.disableReaderMode().catchError((_) {});
+      }
     } else {
       NfcManager.instance.stopSession().catchError((_) {});
     }
