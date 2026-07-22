@@ -1461,6 +1461,8 @@ class LandgrabApi {
     List<String>? accessibilityTags,
     String? accessibilityNotes,
     String? warning,
+    String? poleId,
+    bool clearPole = false,
   }) async {
     final response =
         await dio.patch('/landgrab/supervision/puzzlets/$id', data: {
@@ -1471,6 +1473,10 @@ class LandgrabApi {
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
       if (warning != null) 'warning': warning,
+      // Pole (re)attachment mirrors the author's updateDraftPuzzlet: clearPole
+      // wins over poleId so "detach" is unambiguous. Only sent when one is set,
+      // so an ordinary field edit never disturbs the attachment.
+      if (clearPole) 'pole_id': null else if (poleId != null) 'pole_id': poleId,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);
   }

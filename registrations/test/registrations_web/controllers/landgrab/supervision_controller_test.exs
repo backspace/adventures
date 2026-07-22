@@ -210,6 +210,31 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
       assert Repo.get!(Pole, pole.id).label == "after"
     end
 
+    test "supervisor can attach and detach a puzzlet's pole while it's still in review",
+         %{conn: conn} do
+      author = insert(:user, email: unique_email("a"))
+      pole = insert(:pole, creator: author, status: :validated)
+      # in_review = validation underway but not finished; the supervisor must
+      # still be able to (re)attach it, mirroring the author's attach flow.
+      puzzlet = insert(:puzzlet, creator: author, status: :in_review)
+
+      attached =
+        conn
+        |> patch("/landgrab/supervision/puzzlets/#{puzzlet.id}", %{"pole_id" => pole.id})
+        |> json_response(200)
+
+      assert attached["pole_id"] == pole.id
+      assert Repo.get!(Puzzlet, puzzlet.id).pole_id == pole.id
+
+      detached =
+        conn
+        |> patch("/landgrab/supervision/puzzlets/#{puzzlet.id}", %{"pole_id" => nil})
+        |> json_response(200)
+
+      assert detached["pole_id"] == nil
+      assert Repo.get!(Puzzlet, puzzlet.id).pole_id == nil
+    end
+
     test "list_poles includes active_validation summary when assigned",
          %{conn: conn, supervisor: supervisor} do
       validator = insert(:user, email: unique_email("v"))

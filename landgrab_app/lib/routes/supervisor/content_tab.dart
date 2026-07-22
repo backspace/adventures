@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/validation.dart';
+import 'package:landgrab/routes/supervisor/attachment_map_route.dart';
 import 'package:landgrab/routes/supervisor/pin_action_sheet.dart';
 import 'package:landgrab/routes/supervisor/pole_supervision_detail_route.dart';
 import 'package:landgrab/routes/supervisor/puzzlet_supervision_detail_route.dart';
@@ -641,19 +642,33 @@ class _ContentTabState extends State<ContentTab> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: SegmentedButton<_ListOrMap>(
-            segments: const [
-              ButtonSegment(
-                  value: _ListOrMap.list,
-                  label: Text('List'),
-                  icon: Icon(Icons.list)),
-              ButtonSegment(
-                  value: _ListOrMap.map,
-                  label: Text('Map'),
-                  icon: Icon(Icons.map)),
+          child: Row(
+            children: [
+              Expanded(
+                child: SegmentedButton<_ListOrMap>(
+                  segments: const [
+                    ButtonSegment(
+                        value: _ListOrMap.list,
+                        label: Text('List'),
+                        icon: Icon(Icons.list)),
+                    ButtonSegment(
+                        value: _ListOrMap.map,
+                        label: Text('Map'),
+                        icon: Icon(Icons.map)),
+                  ],
+                  selected: {_view},
+                  onSelectionChanged: (set) => _setView(set.first),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Separate pole↔puzzlet attachment map: links + transparency,
+              // the way the author map shows them.
+              IconButton.filledTonal(
+                tooltip: 'Attachment map',
+                onPressed: _openAttachmentMap,
+                icon: const Icon(Icons.hub_outlined),
+              ),
             ],
-            selected: {_view},
-            onSelectionChanged: (set) => _setView(set.first),
           ),
         ),
         Padding(
@@ -808,9 +823,23 @@ class _ContentTabState extends State<ContentTab> {
   }
 
   Widget _buildList() {
+    // Attachment view: how many puzzlets hang off each pole, and the label
+    // of the pole each puzzlet is attached to (null = unattached).
+    final poleLabelById = {
+      for (final p in _poles ?? const []) p.id: (p.label ?? p.barcode),
+    };
+    final attachedCounts = <String, int>{};
+    for (final p in _puzzlets ?? const []) {
+      final id = p.poleId;
+      if (id != null) attachedCounts[id] = (attachedCounts[id] ?? 0) + 1;
+    }
+
     final rows = <_ContentRow>[
-      for (final p in _visiblePoles) _ContentRow.pole(p),
-      for (final p in _visiblePuzzlets) _ContentRow.puzzlet(p),
+      for (final p in _visiblePoles)
+        _ContentRow.pole(p, attachedCounts[p.id] ?? 0),
+      for (final p in _visiblePuzzlets)
+        _ContentRow.puzzlet(
+            p, p.poleId == null ? null : poleLabelById[p.poleId]),
     ]..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
 
     if (rows.isEmpty) return const Center(child: Text('Nothing here.'));
@@ -1028,11 +1057,19 @@ class _ContentTabState extends State<ContentTab> {
     ]);
   }
 
+  Future<void> _openAttachmentMap() async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => AttachmentMapRoute(api: widget.api)),
+    );
+    if (changed == true) await _reloadAll();
+  }
+
   Future<void> _onPolePinTap(DraftPole pole) async {
     final result = await showPolePinSheet(
       context,
       api: widget.api,
       pole: pole,
+      allPuzzlets: _puzzlets ?? const [],
       onUndone: _reloadAll,
     );
     if (result == PinActionResult.changed) await _reloadAll();
@@ -1043,6 +1080,7 @@ class _ContentTabState extends State<ContentTab> {
       context,
       api: widget.api,
       puzzlet: puzzlet,
+      allPoles: _poles ?? const [],
       onUndone: _reloadAll,
     );
     if (result == PinActionResult.changed) await _reloadAll();
@@ -1094,7 +1132,7 @@ class _ContentRow {
       v.commentCount == 0 &&
       !v.hasNotes;
 
-  factory _ContentRow.pole(DraftPole p) {
+  factory _ContentRow.pole(DraftPole p, int puzzletCount) {
     final v = p.activeValidation;
     final canQuickAccept = _cleanSubmitted(v);
     final (statusLabel, statusColor) = _statusOf(p.status, v);
@@ -1104,7 +1142,13 @@ class _ContentRow {
       '${p.barcode}${_assignedTo(v)}',
       statusLabel,
       statusColor,
-      _extraBadges(v, p.attachmentIds.length),
+      [
+        ..._extraBadges(v, p.attachmentIds.length),
+        if (puzzletCount > 0) ...[
+          const SizedBox(width: 4),
+          _PuzzletCountChip(puzzletCount),
+        ],
+      ],
       (context, api, reload) async {
         final changed = await Navigator.of(context).push<bool>(
           MaterialPageRoute(
@@ -1123,7 +1167,7 @@ class _ContentRow {
     );
   }
 
-  factory _ContentRow.puzzlet(DraftPuzzlet p) {
+  factory _ContentRow.puzzlet(DraftPuzzlet p, String? poleLabel) {
     final v = p.activeValidation;
     final canQuickAccept = _cleanSubmitted(v);
     final (statusLabel, statusColor) = _statusOf(p.status, v);
@@ -1135,7 +1179,11 @@ class _ContentRow {
       '${_assignedTo(v)}',
       statusLabel,
       statusColor,
-      _extraBadges(v, p.attachmentIds.length),
+      [
+        ..._extraBadges(v, p.attachmentIds.length),
+        const SizedBox(width: 4),
+        _PoleLinkChip(poleLabel),
+      ],
       (context, api, reload) async {
         final changed = await Navigator.of(context).push<bool>(
           MaterialPageRoute(
@@ -1203,6 +1251,71 @@ class _CommentChip extends StatelessWidget {
           const SizedBox(width: 2),
           Text('$count',
               style: const TextStyle(fontSize: 12, color: Colors.purple)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Pole list badge: how many puzzlets are attached to this pole.
+class _PuzzletCountChip extends StatelessWidget {
+  final int count;
+  const _PuzzletCountChip(this.count);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.teal.withValues(alpha: 0.15),
+        border: Border.all(color: Colors.teal.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.link, size: 12, color: Colors.teal),
+          const SizedBox(width: 2),
+          Text('$count',
+              style: const TextStyle(fontSize: 12, color: Colors.teal)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Puzzlet list badge: the pole it's attached to, or a muted "no pole"
+/// when it's an orphan — so unattached puzzlets are visible at a glance.
+class _PoleLinkChip extends StatelessWidget {
+  final String? poleLabel;
+  const _PoleLinkChip(this.poleLabel);
+
+  @override
+  Widget build(BuildContext context) {
+    final attached = poleLabel != null;
+    final color =
+        attached ? Colors.teal : Theme.of(context).colorScheme.outline;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      constraints: const BoxConstraints(maxWidth: 120),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(attached ? Icons.link : Icons.link_off, size: 12, color: color),
+          const SizedBox(width: 2),
+          Flexible(
+            child: Text(
+              attached ? poleLabel! : 'no pole',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12, color: color),
+            ),
+          ),
         ],
       ),
     );

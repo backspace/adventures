@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
+import 'package:landgrab/routes/supervisor/attachment_sheets.dart';
 import 'package:landgrab/routes/supervisor/pole_supervision_detail_route.dart';
 import 'package:landgrab/routes/supervisor/puzzlet_supervision_detail_route.dart';
 import 'package:landgrab/routes/supervisor/validator_picker.dart';
@@ -15,12 +16,18 @@ Future<PinActionResult> showPolePinSheet(
   BuildContext context, {
   required LandgrabApi api,
   required DraftPole pole,
+  List<DraftPuzzlet> allPuzzlets = const [],
   Future<void> Function()? onUndone,
 }) async {
   final result = await showModalBottomSheet<PinActionResult>(
     context: context,
     isScrollControlled: true,
-    builder: (ctx) => _PolePinSheet(api: api, pole: pole, onUndone: onUndone),
+    builder: (ctx) => _PolePinSheet(
+      api: api,
+      pole: pole,
+      allPuzzlets: allPuzzlets,
+      onUndone: onUndone,
+    ),
   );
   return result ?? PinActionResult.unchanged;
 }
@@ -29,13 +36,18 @@ Future<PinActionResult> showPuzzletPinSheet(
   BuildContext context, {
   required LandgrabApi api,
   required DraftPuzzlet puzzlet,
+  List<DraftPole> allPoles = const [],
   Future<void> Function()? onUndone,
 }) async {
   final result = await showModalBottomSheet<PinActionResult>(
     context: context,
     isScrollControlled: true,
-    builder: (ctx) =>
-        _PuzzletPinSheet(api: api, puzzlet: puzzlet, onUndone: onUndone),
+    builder: (ctx) => _PuzzletPinSheet(
+      api: api,
+      puzzlet: puzzlet,
+      allPoles: allPoles,
+      onUndone: onUndone,
+    ),
   );
   return result ?? PinActionResult.unchanged;
 }
@@ -43,9 +55,15 @@ Future<PinActionResult> showPuzzletPinSheet(
 class _PolePinSheet extends StatefulWidget {
   final LandgrabApi api;
   final DraftPole pole;
+  final List<DraftPuzzlet> allPuzzlets;
   final Future<void> Function()? onUndone;
 
-  const _PolePinSheet({required this.api, required this.pole, this.onUndone});
+  const _PolePinSheet({
+    required this.api,
+    required this.pole,
+    this.allPuzzlets = const [],
+    this.onUndone,
+  });
 
   @override
   State<_PolePinSheet> createState() => _PolePinSheetState();
@@ -133,10 +151,23 @@ class _PolePinSheetState extends State<_PolePinSheet> {
     }
   }
 
+  Future<void> _manageAttachments() async {
+    final changed = await showSupervisorPoleAttachments(
+      context,
+      api: widget.api,
+      pole: widget.pole,
+      allPuzzlets: widget.allPuzzlets,
+    );
+    if (!mounted) return;
+    if (changed) Navigator.of(context).pop(PinActionResult.changed);
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = widget.pole;
     final isDraft = p.status == DraftStatus.draft;
+    final attachedCount =
+        widget.allPuzzlets.where((x) => x.poleId == p.id).length;
 
     return SafeArea(
       child: Padding(
@@ -222,6 +253,14 @@ class _PolePinSheetState extends State<_PolePinSheet> {
                   ),
               ],
             ),
+            const Divider(height: 24),
+            // Pole↔puzzlet attachments — attach/detach the same way the
+            // author does, but usable on not-yet-validated items too.
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _manageAttachments,
+              icon: const Icon(Icons.link, size: 18),
+              label: Text('Puzzlets · $attachedCount attached'),
+            ),
           ],
         ),
       ),
@@ -232,11 +271,13 @@ class _PolePinSheetState extends State<_PolePinSheet> {
 class _PuzzletPinSheet extends StatefulWidget {
   final LandgrabApi api;
   final DraftPuzzlet puzzlet;
+  final List<DraftPole> allPoles;
   final Future<void> Function()? onUndone;
 
   const _PuzzletPinSheet({
     required this.api,
     required this.puzzlet,
+    this.allPoles = const [],
     this.onUndone,
   });
 
@@ -324,10 +365,31 @@ class _PuzzletPinSheetState extends State<_PuzzletPinSheet> {
     }
   }
 
+  DraftPole? get _attachedPole {
+    final id = widget.puzzlet.poleId;
+    if (id == null) return null;
+    for (final pole in widget.allPoles) {
+      if (pole.id == id) return pole;
+    }
+    return null;
+  }
+
+  Future<void> _managePole() async {
+    final changed = await showSupervisorPuzzletPole(
+      context,
+      api: widget.api,
+      puzzlet: widget.puzzlet,
+      allPoles: widget.allPoles,
+    );
+    if (!mounted) return;
+    if (changed) Navigator.of(context).pop(PinActionResult.changed);
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = widget.puzzlet;
     final isDraft = p.status == DraftStatus.draft;
+    final pole = _attachedPole;
 
     return SafeArea(
       child: Padding(
@@ -428,6 +490,16 @@ class _PuzzletPinSheetState extends State<_PuzzletPinSheet> {
                     ),
                   ),
               ],
+            ),
+            const Divider(height: 24),
+            // Pole attachment — move this puzzlet onto (or off) a pole the
+            // same way the author does, usable at any status.
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _managePole,
+              icon: const Icon(Icons.link, size: 18),
+              label: Text(pole == null
+                  ? 'Attach to a pole'
+                  : 'Pole · ${pole.label ?? pole.barcode}'),
             ),
           ],
         ),
