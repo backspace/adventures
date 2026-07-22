@@ -127,6 +127,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // marching-ants reticle around it (cleared after a few seconds) so it's
   // unmistakable which one. Matches the TerritoryLayer radius.
   static const double _zoneRadiusMeters = 200;
+  // Forgiving tap radius (logical px) around a pole pin. A pole can sit
+  // outside its own region (by design), so a tap this close to one names
+  // the stake rather than whatever zone the pin happens to overlap. Larger
+  // than the 12 px pin so a near-miss still lands.
+  static const double _poleTapSlopPx = 22;
   String? _highlightedPoleId;
   static const double _voFullZoom = 16;
   static const double _voTinyZoom = 13;
@@ -1008,6 +1013,32 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   void _showOwnerAt(LatLng point) {
     final poles = _poles;
     if (poles == null || poles.isEmpty) return;
+
+    // Poles win the tap. A pole dot can sit outside its own region (you
+    // asked for that), so resolving a tap purely by which zone it landed in
+    // would name the unrelated zone the pin overlaps — and the pin's own hit
+    // box is only ~12 px, easy to just miss. Project every in-play pole to
+    // the screen; if the tap fell within a forgiving radius of one, name
+    // that stake instead of the ground underneath it.
+    final camera = _mapController.camera;
+    final tapPx = camera.latLngToScreenPoint(point);
+    Pole? nearestPole;
+    var bestPx2 = double.infinity;
+    for (final pole in _polesInPlay()) {
+      final px =
+          camera.latLngToScreenPoint(LatLng(pole.latitude, pole.longitude));
+      final dx = px.x - tapPx.x;
+      final dy = px.y - tapPx.y;
+      final d2 = dx * dx + dy * dy;
+      if (d2 < bestPx2) {
+        bestPx2 = d2;
+        nearestPole = pole;
+      }
+    }
+    if (nearestPole != null && bestPx2 <= _poleTapSlopPx * _poleTapSlopPx) {
+      _showPoleOwner(nearestPole);
+      return;
+    }
 
     final territory = _territory;
     if (territory != null) {
