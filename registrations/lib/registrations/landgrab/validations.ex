@@ -211,6 +211,73 @@ defmodule Registrations.Landgrab.Validations do
     }
   end
 
+  @doc """
+  Supervisor override: force a set of poles/puzzlets to `status` in one shot —
+  the map's draw-an-area and tap-a-pin bulk actions. `status` is one of
+  "draft" | "validated" | "retired" (puzzlets also accept "withdrawn").
+
+    * "validated" — approve straight into gameplay (no validation needed).
+    * "draft" / "retired" / "withdrawn" — pull it out of play; also cancels any
+      still-open validation on the item (marks it "rejected") so it drops off
+      the validator's map too, not just gameplay.
+
+  Returns a count of items changed. Unknown ids and bad statuses are skipped.
+  """
+  def bulk_set_status(pole_ids, puzzlet_ids, status) do
+    pole_atom = pole_status(status)
+    pz_atom = puzzlet_status(status)
+
+    Repo.transaction(fn ->
+      poles =
+        if pole_atom, do: set_status(Pole, pole_ids, pole_atom, :pole_id), else: 0
+
+      puzzlets =
+        if pz_atom, do: set_status(Puzzlet, puzzlet_ids, pz_atom, :puzzlet_id), else: 0
+
+      %{poles: poles, puzzlets: puzzlets}
+    end)
+  end
+
+  # A "removed" status also clears live validations so the item leaves the
+  # validator map; "validated" leaves validations untouched.
+  @removed_statuses [:draft, :retired, :withdrawn]
+
+  defp pole_status("draft"), do: :draft
+  defp pole_status("validated"), do: :validated
+  defp pole_status("retired"), do: :retired
+  defp pole_status(_), do: nil
+
+  defp puzzlet_status("withdrawn"), do: :withdrawn
+  defp puzzlet_status(other), do: pole_status(other)
+
+  defp set_status(schema, ids, status, fk) when is_list(ids) do
+    changed =
+      Enum.count(ids, fn id ->
+        case Repo.get(schema, id) do
+          nil ->
+            false
+
+          record ->
+            record |> Ecto.Changeset.change(status: status) |> Repo.update!()
+
+            if status in @removed_statuses do
+              validation_schema = if schema == Pole, do: PoleValidation, else: PuzzletValidation
+
+              from(v in validation_schema,
+                where: field(v, ^fk) == ^id and v.status not in ["accepted", "rejected"]
+              )
+              |> Repo.update_all(set: [status: "rejected"])
+            end
+
+            true
+        end
+      end)
+
+    changed
+  end
+
+  defp set_status(_schema, _ids, _status, _fk), do: 0
+
   defp accept_one(nil, _accept), do: :skipped
 
   defp accept_one(validation, accept) do

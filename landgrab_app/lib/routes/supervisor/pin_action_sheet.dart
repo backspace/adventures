@@ -115,6 +115,24 @@ class _PolePinSheetState extends State<_PolePinSheet> {
     );
   }
 
+  Future<void> _setStatus(String status, String label) async {
+    setState(() => _busy = true);
+    try {
+      await widget.api.bulkSetStatus(status: status, poleIds: [widget.pole.id]);
+      if (!mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      Navigator.of(context).pop(PinActionResult.changed);
+      messenger.showSnackBar(SnackBar(
+          content: Text('$label ${widget.pole.label ?? widget.pole.barcode}.')));
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      final detail = e.response?.data?['error']?['detail'] ?? e.message;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('$label failed: $detail')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = widget.pole;
@@ -171,6 +189,35 @@ class _PolePinSheetState extends State<_PolePinSheet> {
                     child: FilledButton(
                       onPressed: _busy ? null : _openDetail,
                       child: const Text('Open'),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Quick supervisor state changes — the same actions the
+            // draw-an-area gesture offers, for one item.
+            Wrap(
+              spacing: 8,
+              children: [
+                if (p.status != DraftStatus.validated)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : () => _setStatus('validated', 'Approved'),
+                    icon: const Icon(Icons.check_circle_outline, size: 18),
+                    label: const Text('Approve'),
+                  ),
+                if (p.status != DraftStatus.draft)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : () => _setStatus('draft', 'Sent to draft'),
+                    icon: const Icon(Icons.edit_note, size: 18),
+                    label: const Text('Draft'),
+                  ),
+                if (p.status != DraftStatus.retired)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : () => _setStatus('retired', 'Removed'),
+                    icon: const Icon(Icons.block, size: 18),
+                    label: const Text('Remove'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
                     ),
                   ),
               ],
@@ -259,6 +306,24 @@ class _PuzzletPinSheetState extends State<_PuzzletPinSheet> {
     );
   }
 
+  Future<void> _setStatus(String status, String label) async {
+    setState(() => _busy = true);
+    try {
+      await widget.api
+          .bulkSetStatus(status: status, puzzletIds: [widget.puzzlet.id]);
+      if (!mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      Navigator.of(context).pop(PinActionResult.changed);
+      messenger.showSnackBar(SnackBar(content: Text('$label this puzzlet.')));
+    } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() => _busy = false);
+      final detail = e.response?.data?['error']?['detail'] ?? e.message;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('$label failed: $detail')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = widget.puzzlet;
@@ -331,6 +396,35 @@ class _PuzzletPinSheetState extends State<_PuzzletPinSheet> {
                     child: FilledButton(
                       onPressed: _busy ? null : _openDetail,
                       child: const Text('Open'),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Quick supervisor state changes — the same actions the
+            // draw-an-area gesture offers, for one item.
+            Wrap(
+              spacing: 8,
+              children: [
+                if (p.status != DraftStatus.validated)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : () => _setStatus('validated', 'Approved'),
+                    icon: const Icon(Icons.check_circle_outline, size: 18),
+                    label: const Text('Approve'),
+                  ),
+                if (p.status != DraftStatus.draft)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : () => _setStatus('draft', 'Sent to draft'),
+                    icon: const Icon(Icons.edit_note, size: 18),
+                    label: const Text('Draft'),
+                  ),
+                if (p.status != DraftStatus.retired)
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : () => _setStatus('retired', 'Removed'),
+                    icon: const Icon(Icons.block, size: 18),
+                    label: const Text('Remove'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
                     ),
                   ),
               ],

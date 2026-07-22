@@ -457,4 +457,110 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
       assert Validations.active_validations_by_puzzlet([vo.id])[vo.id] == nil
     end
   end
+
+  describe "bulk set status (POST /statuses)" do
+    setup ctx do
+      supervisor = insert(:user, email: unique_email("super"))
+      Accounts.assign_role(supervisor.id, "validation_supervisor")
+      %{conn: authed_conn(ctx, supervisor), supervisor: supervisor}
+    end
+
+    test "approve makes draft poles and puzzlets validated", %{conn: conn} do
+      pole = insert(:pole, status: :draft)
+      puzzlet = insert(:puzzlet, status: :draft)
+
+      body =
+        conn
+        |> post("/landgrab/supervision/statuses", %{
+          "status" => "validated",
+          "pole_ids" => [pole.id],
+          "puzzlet_ids" => [puzzlet.id]
+        })
+        |> json_response(200)
+
+      assert body == %{"poles" => 1, "puzzlets" => 1}
+      assert Repo.get(Pole, pole.id).status == :validated
+      assert Repo.get(Puzzlet, puzzlet.id).status == :validated
+    end
+
+    test "remove retires items and cancels their open validations", %{
+      conn: conn,
+      supervisor: supervisor
+    } do
+      validator = insert(:user, email: unique_email("v"))
+      Accounts.assign_role(validator.id, "validator")
+      author = insert(:user, email: unique_email("a"))
+      pole = insert(:pole, creator: author, status: :draft)
+      {:ok, v} = Validations.assign_pole_validation(pole.id, validator.id, supervisor.id)
+
+      body =
+        conn
+        |> post("/landgrab/supervision/statuses", %{
+          "status" => "retired",
+          "pole_ids" => [pole.id]
+        })
+        |> json_response(200)
+
+      assert body["poles"] == 1
+      assert Repo.get(Pole, pole.id).status == :retired
+      # The open validation is cancelled, so it drops off the validator map.
+      assert Validations.get_pole_validation(v.id).status == "rejected"
+    end
+
+    test "send to draft pulls a validated pole out of play", %{conn: conn} do
+      pole = insert(:pole, status: :validated)
+
+      conn
+      |> post("/landgrab/supervision/statuses", %{
+        "status" => "draft",
+        "pole_ids" => [pole.id]
+      })
+      |> json_response(200)
+
+      assert Repo.get(Pole, pole.id).status == :draft
+    end
+
+    test "withdrawn applies to puzzlets", %{conn: conn} do
+      puzzlet = insert(:puzzlet, status: :validated)
+
+      conn
+      |> post("/landgrab/supervision/statuses", %{
+        "status" => "withdrawn",
+        "puzzlet_ids" => [puzzlet.id]
+      })
+      |> json_response(200)
+
+      assert Repo.get(Puzzlet, puzzlet.id).status == :withdrawn
+    end
+
+    test "unknown ids are skipped, not errors", %{conn: conn} do
+      body =
+        conn
+        |> post("/landgrab/supervision/statuses", %{
+          "status" => "retired",
+          "pole_ids" => [Ecto.UUID.generate()]
+        })
+        |> json_response(200)
+
+      assert body == %{"poles" => 0, "puzzlets" => 0}
+    end
+
+    test "an unknown status is a 400", %{conn: conn} do
+      body =
+        conn
+        |> post("/landgrab/supervision/statuses", %{"status" => "banana"})
+        |> json_response(400)
+
+      assert body["error"]["code"] == "bad_request"
+    end
+
+    test "requires the supervisor role", ctx do
+      user = insert(:user, email: unique_email("nosup"))
+      conn = authed_conn(ctx, user)
+
+      conn
+      |> post("/landgrab/supervision/statuses", %{"status" => "retired"})
+      |> json_response(403)
+    end
+  end
 end

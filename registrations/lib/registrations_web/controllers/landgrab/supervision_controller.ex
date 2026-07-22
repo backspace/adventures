@@ -152,6 +152,33 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
     )
   end
 
+  # Bulk force a status on the given poles/puzzlets — the map's draw-an-area
+  # and tap-a-pin actions. status: "draft" | "validated" | "retired"
+  # ("withdrawn" also valid for puzzlets). "validated" approves into gameplay;
+  # the removed statuses also drop the items off the validator map.
+  @bulk_statuses ~w(draft validated retired withdrawn)
+
+  def bulk_set_status(conn, %{"status" => status} = params)
+      when status in @bulk_statuses do
+    pole_ids = List.wrap(params["pole_ids"])
+    puzzlet_ids = List.wrap(params["puzzlet_ids"])
+    {:ok, result} = Validations.bulk_set_status(pole_ids, puzzlet_ids, status)
+    json(conn, result)
+  end
+
+  def bulk_set_status(conn, _params), do: unprocessable_status(conn)
+
+  defp unprocessable_status(conn) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{
+      error: %{
+        code: "bad_request",
+        detail: "status must be draft, validated, retired (or withdrawn for puzzlets)"
+      }
+    })
+  end
+
   def assign_pole(conn, %{"id" => pole_id, "validator_id" => validator_id}) do
     user = Pow.Plug.current_user(conn)
 

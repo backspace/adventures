@@ -1277,6 +1277,28 @@ class LandgrabApi {
     );
   }
 
+  /// Bulk force a status on poles/puzzlets — the supervisor's draw-an-area
+  /// and tap-a-pin actions. [status] is 'draft' | 'validated' | 'retired'
+  /// ('withdrawn' also valid for puzzlets). 'validated' approves into
+  /// gameplay; the removed statuses also pull items off the validator map.
+  /// Returns how many poles/puzzlets changed.
+  Future<({int poles, int puzzlets})> bulkSetStatus({
+    required String status,
+    List<String> poleIds = const [],
+    List<String> puzzletIds = const [],
+  }) async {
+    final response = await dio.post('/landgrab/supervision/statuses', data: {
+      'status': status,
+      'pole_ids': poleIds,
+      'puzzlet_ids': puzzletIds,
+    });
+    final data = response.data as Map<String, dynamic>;
+    return (
+      poles: (data['poles'] as num).toInt(),
+      puzzlets: (data['puzzlets'] as num).toInt(),
+    );
+  }
+
   Future<List<ValidatorUser>> listValidators({String? excludeUserId}) async {
     final response = await dio.get('/landgrab/supervision/validators',
         queryParameters: {

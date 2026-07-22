@@ -18,6 +18,9 @@ enum _ListOrMap { list, map }
 
 enum _Kind { all, poles, puzzlets }
 
+/// What the draw-an-area gesture does with the selected items.
+enum _AreaAction { assign, approve, draft, remove }
+
 // 'assigned' and 'submitted' are the two review stages that the server
 // rolls up into a single `in_review` draft status; we split them here so
 // a supervisor can filter "out with a validator" separately from
@@ -442,38 +445,132 @@ class _ContentTabState extends State<ContentTab> {
       (status == DraftStatus.draft || status == DraftStatus.inReview);
 
   Future<void> _onPolygonDrawn(List<LatLng> polygon) async {
+    // Everything located in the area (any status). Assign narrows to the
+    // assignable subset; the status actions apply to all of these.
+    // Validator-only puzzlets are set-aside content — never selectable.
     final poles = _visiblePoles
-        .where((p) =>
-            _assignable(p.status, p.activeValidation) &&
-            _inPolygon(p.latitude, p.longitude, polygon))
+        .where((p) => _inPolygon(p.latitude, p.longitude, polygon))
         .toList();
     final puzzlets = _visiblePuzzlets
         .where((p) =>
             p.latitude != null &&
-            // Validator-only puzzlets are set-aside content, not
-            // validation work — never selectable for assignment.
             !p.validatorOnly &&
-            _assignable(p.status, p.activeValidation) &&
             _inPolygon(p.latitude!, p.longitude!, polygon))
         .toList();
-
-    setState(() => _polygon = polygon);
 
     if (poles.isEmpty && puzzlets.isEmpty) {
       setState(() => _polygon = null);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('No assignable items in that area '
-              '(already assigned or validated ones don\'t count).'),
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nothing in that area.')),
+        );
       }
+      return;
+    }
+
+    setState(() => _polygon = polygon);
+    final action = await _pickAreaAction(poles.length + puzzlets.length);
+    if (!mounted) return;
+    if (action == null) {
+      setState(() => _polygon = null);
+      return;
+    }
+    switch (action) {
+      case _AreaAction.assign:
+        await _assignFromPolygon(poles, puzzlets);
+      case _AreaAction.approve:
+        await _statusFromPolygon(poles, puzzlets, 'validated', 'Approved');
+      case _AreaAction.draft:
+        await _statusFromPolygon(poles, puzzlets, 'draft', 'Sent to draft');
+      case _AreaAction.remove:
+        await _statusFromPolygon(poles, puzzlets, 'retired', 'Removed');
+    }
+  }
+
+  Future<_AreaAction?> _pickAreaAction(int count) {
+    return showModalBottomSheet<_AreaAction>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text('$count item${count == 1 ? '' : 's'} in area',
+                  style: Theme.of(ctx).textTheme.titleMedium),
+            ),
+            ListTile(
+              leading: const Icon(Icons.assignment_ind),
+              title: const Text('Assign to validator'),
+              onTap: () => Navigator.pop(ctx, _AreaAction.assign),
+            ),
+            ListTile(
+              leading: const Icon(Icons.check_circle_outline),
+              title: const Text('Approve — make live'),
+              onTap: () => Navigator.pop(ctx, _AreaAction.approve),
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit_note),
+              title: const Text('Send to draft'),
+              onTap: () => Navigator.pop(ctx, _AreaAction.draft),
+            ),
+            ListTile(
+              leading: Icon(Icons.block, color: Theme.of(ctx).colorScheme.error),
+              title: const Text('Remove from game'),
+              subtitle: const Text('Retires them — off gameplay and the '
+                  'validator map'),
+              onTap: () => Navigator.pop(ctx, _AreaAction.remove),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _statusFromPolygon(List<DraftPole> poles,
+      List<DraftPuzzlet> puzzlets, String status, String label) async {
+    try {
+      final r = await widget.api.bulkSetStatus(
+        status: status,
+        poleIds: poles.map((p) => p.id).toList(),
+        puzzletIds: puzzlets.map((p) => p.id).toList(),
+      );
+      if (!mounted) return;
+      _exitDraw();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('$label ${r.poles + r.puzzlets} item'
+            '${r.poles + r.puzzlets == 1 ? '' : 's'}.'),
+      ));
+      await _reloadAll();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _polygon = null);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('$label failed: $e')));
+    }
+  }
+
+  Future<void> _assignFromPolygon(
+      List<DraftPole> polesAll, List<DraftPuzzlet> puzzletsAll) async {
+    // Only unassigned draft/in-review items can be handed to a validator.
+    final poles =
+        polesAll.where((p) => _assignable(p.status, p.activeValidation)).toList();
+    final puzzlets = puzzletsAll
+        .where((p) => _assignable(p.status, p.activeValidation))
+        .toList();
+
+    if (poles.isEmpty && puzzlets.isEmpty) {
+      setState(() => _polygon = null);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Nothing assignable there '
+            '(already assigned or validated ones don\'t count).'),
+      ));
       return;
     }
 
     // Loop so that picking someone who authored everything selected
     // just re-opens the picker (with an explanation) instead of a
-    // confusing "all skipped". Nobody validates their own work, so a
-    // validator can only take items they didn't create.
+    // confusing "all skipped".
     while (mounted) {
       final validator = await _pickValidator(poles.length, puzzlets.length);
       if (validator == null) {
@@ -494,7 +591,7 @@ class _ContentTabState extends State<ContentTab> {
             'that area — nobody validates their own work. Pick someone else.',
           ),
         ));
-        continue; // re-open the picker, polygon still shown
+        continue;
       }
 
       try {
@@ -925,7 +1022,7 @@ class _ContentTabState extends State<ContentTab> {
             }
           },
           icon: Icon(_drawArmed ? Icons.close : Icons.gesture),
-          label: Text(_drawArmed ? 'Cancel' : 'Assign area'),
+          label: Text(_drawArmed ? 'Cancel' : 'Area actions'),
         ),
       ),
     ]);
