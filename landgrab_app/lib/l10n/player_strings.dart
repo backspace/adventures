@@ -227,6 +227,21 @@ class GameplayStrings {
   static String couldNotLoadPoles(String error) =>
       'Could not load ${Terms.stakes}: $error';
 
+  // Home-route load failure. A 401 (expired/rejected session) gets its own
+  // wording since the fix is usually "try again" then "log out"; anything
+  // else is a generic load failure. The raw error hides behind "Details".
+  static const loadSessionExpired =
+      'Your session needs refreshing. Try again — or log out and back in if '
+      'that doesn’t work.';
+  static const loadFailed =
+      'Something went wrong loading the map. Try again, or log out and back '
+      'in if it persists.';
+  static const loadTryAgain = 'Try again';
+  static const loadShowDetails = 'Show details';
+  static const loadHideDetails = 'Hide details';
+  static const loadCopyDetails = 'Copy';
+  static const loadDetailsCopied = 'Error details copied.';
+
   // Accessibility: a stake whose every remaining ${Terms.relic} demands
   // something a member of your cohort has set aside. In-fiction, never
   // clinical — matter-of-fact, not othering. Shown on tap. Consistent with the

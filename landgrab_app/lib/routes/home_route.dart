@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 import 'package:flutter_map_compass/flutter_map_compass.dart';
@@ -97,7 +99,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // The team's stable colour index from /me, so its swatch shows beside the
   // name from launch — before it owns any zone (independent of captures).
   int? _myColorIndex;
+  // Clean, player-facing load-failure message (null when loaded fine).
   String? _error;
+  // The raw error behind [_error], shown on demand for troubleshooting.
+  String? _errorDetail;
   // Surfaced under "Log out" so the account you're signed in as is always
   // visible — not just for the dev account-switcher audience.
   String? _accountEmail;
@@ -605,7 +610,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   }
 
   Future<void> _load() async {
-    setState(() => _error = null);
+    setState(() {
+      _error = null;
+      _errorDetail = null;
+    });
     try {
       final teamId = await UserService.getTeamId();
       final teamName = await UserService.getTeamName();
@@ -668,7 +676,17 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       // stakes"), so we want it tracked, not just displayed.
       unawaited(Sentry.captureException(e, stackTrace: st));
       if (!mounted) return;
-      setState(() => _error = GameplayStrings.couldNotLoadPoles(e.toString()));
+      // A 401 means the session was rejected (usually a token that needs
+      // refreshing) — give it its own guidance since "try again" then
+      // "log out" is the fix; everything else is a generic load failure.
+      // Either way the raw error is kept behind a "Show details" toggle.
+      final is401 = e is DioException && e.response?.statusCode == 401;
+      setState(() {
+        _error = is401
+            ? GameplayStrings.loadSessionExpired
+            : GameplayStrings.loadFailed;
+        _errorDetail = e.toString();
+      });
     }
   }
 
@@ -1406,7 +1424,12 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
             _noTeamBanner(),
           Expanded(
             child: _error != null
-                ? Center(child: Text(_error!))
+                ? _LoadErrorView(
+                    message: _error!,
+                    detail: _errorDetail,
+                    onRetry: _load,
+                    onLogout: _logout,
+                  )
                 : _poles == null || _event == null
                     ? const Center(child: CircularProgressIndicator())
                     : preEvent
@@ -2246,6 +2269,130 @@ class _MapAttribution extends StatelessWidget {
               style: TextStyle(fontSize: 10, color: Colors.black87),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown in place of the map when the initial load fails. Gives a calm
+/// message with the recovery ladder the failure usually needs — retry first,
+/// log out if that doesn't help — plus a collapsible raw-error view (with
+/// copy) so a stuck player can read/report the real cause.
+class _LoadErrorView extends StatefulWidget {
+  final String message;
+  final String? detail;
+  final Future<void> Function() onRetry;
+  final Future<void> Function() onLogout;
+
+  const _LoadErrorView({
+    required this.message,
+    required this.detail,
+    required this.onRetry,
+    required this.onLogout,
+  });
+
+  @override
+  State<_LoadErrorView> createState() => _LoadErrorViewState();
+}
+
+class _LoadErrorViewState extends State<_LoadErrorView> {
+  bool _showDetail = false;
+  bool _retrying = false;
+
+  Future<void> _retry() async {
+    setState(() => _retrying = true);
+    try {
+      await widget.onRetry();
+    } finally {
+      if (mounted) setState(() => _retrying = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off, size: 48, color: theme.colorScheme.outline),
+            const SizedBox(height: 16),
+            Text(
+              widget.message,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge,
+            ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: _retrying ? null : _retry,
+              icon: _retrying
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh),
+              label: const Text(GameplayStrings.loadTryAgain),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _retrying ? null : () => widget.onLogout(),
+              icon: const Icon(Icons.logout),
+              label: const Text(GameplayStrings.logOut),
+            ),
+            if (widget.detail != null) ...[
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => setState(() => _showDetail = !_showDetail),
+                child: Text(_showDetail
+                    ? GameplayStrings.loadHideDetails
+                    : GameplayStrings.loadShowDetails),
+              ),
+              if (_showDetail)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                    border: Border.all(color: theme.dividerColor),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          onPressed: () {
+                            Clipboard.setData(
+                                ClipboardData(text: widget.detail!));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text(GameplayStrings.loadDetailsCopied),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.copy, size: 16),
+                          label: const Text(GameplayStrings.loadCopyDetails),
+                        ),
+                      ),
+                      SelectableText(
+                        widget.detail!,
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ],
         ),
       ),
     );
