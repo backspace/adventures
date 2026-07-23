@@ -50,6 +50,19 @@ class LandgrabApi {
 
   LandgrabApi(this.dio);
 
+  /// Poke an authenticated endpoint so the refresh-token interceptor renews
+  /// the access token if it has expired (single-flight; a no-op when the
+  /// token is still valid). The socket calls this when it drops, so its next
+  /// reconnect has a fresh token — without duplicating renewal logic or
+  /// racing the interceptor's single-flight lock.
+  Future<void> ensureFreshToken() async {
+    try {
+      await dio.get('/landgrab/me');
+    } catch (_) {
+      // Best effort: a genuine outage just retries on the next socket cycle.
+    }
+  }
+
   Future<LoginOutcome> login(String email, String password) async {
     try {
       final response = await dio.post(

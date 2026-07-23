@@ -219,7 +219,12 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   }
 
   Future<void> _connectSocket() async {
-    final socket = LandgrabSocket(apiRoot: widget.api.dio.options.baseUrl);
+    final socket = LandgrabSocket(
+      apiRoot: widget.api.dio.options.baseUrl,
+      // If the socket drops because the access token expired, renew it via
+      // the API's single-flight interceptor so the reconnect can auth.
+      onReauthNeeded: widget.api.ensureFreshToken,
+    );
     _socket = socket;
     _updatesSub = socket.updates.listen(_applyUpdate);
     _notificationsSub = socket.notifications.listen(_handleNotification);

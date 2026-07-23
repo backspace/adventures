@@ -47,10 +47,20 @@ class LandgrabSocket {
   final String apiRoot;
   final Logger _log = Logger();
 
+  // Fetches the access token for each (re)connect. Injectable for tests;
+  // defaults to the stored token.
+  final Future<String?> Function() _tokenProvider;
+
+  // Called when the socket drops, so the app can renew an expired access
+  // token (the usual cause) before the next reconnect. Optional.
+  final Future<void> Function()? _onReauthNeeded;
+
   PhoenixSocket? _socket;
   PhoenixChannel? _channel;
   StreamSubscription? _channelSub;
   StreamSubscription? _socketSub;
+  StreamSubscription? _closeSub;
+  StreamSubscription? _errorSub;
 
   final _updates = StreamController<PoleUpdate>.broadcast();
   final _notifications = StreamController<LandgrabNotification>.broadcast();
@@ -60,8 +70,16 @@ class LandgrabSocket {
   // teammates' apps refetch and stay in sync.
   final _teamPuzzletsChanged = StreamController<String>.broadcast();
   bool _hadFirstConnect = false;
+  // One reauth nudge per outage — reset when the socket opens again — so a
+  // reconnect backoff loop doesn't hammer the renewal endpoint.
+  bool _reauthNudged = false;
 
-  LandgrabSocket({required this.apiRoot});
+  LandgrabSocket({
+    required this.apiRoot,
+    Future<String?> Function()? tokenProvider,
+    Future<void> Function()? onReauthNeeded,
+  })  : _tokenProvider = tokenProvider ?? UserService.getAccessToken,
+        _onReauthNeeded = onReauthNeeded;
 
   Stream<PoleUpdate> get updates => _updates.stream;
   Stream<LandgrabNotification> get notifications => _notifications.stream;
@@ -69,8 +87,7 @@ class LandgrabSocket {
   Stream<String> get teamPuzzletsChanged => _teamPuzzletsChanged.stream;
 
   Future<void> connect() async {
-    final token = await UserService.getAccessToken();
-    if (token == null) {
+    if (await _tokenProvider() == null) {
       _log.w('LandgrabSocket: no token, refusing to connect');
       return;
     }
@@ -79,10 +96,25 @@ class LandgrabSocket {
 
     _socket = PhoenixSocket(
       wsUrl,
-      socketOptions: PhoenixSocketOptions(params: {'Authorization': token}),
+      socketOptions: PhoenixSocketOptions(
+        // Fetch the token lazily on EVERY (re)connect. Previously the token
+        // was captured once here, so once it expired (Pow's 30-min access
+        // token TTL) every auto-reconnect re-sent the stale token, the
+        // server rejected the socket, and live delivery (notifications,
+        // territory) died silently for the rest of the session. Reading it
+        // fresh each time picks up whatever the HTTP layer (or the reauth
+        // nudge below) has since renewed.
+        dynamicParams: () async {
+          final token = await _tokenProvider();
+          return token == null || token.isEmpty
+              ? <String, String>{}
+              : {'Authorization': token};
+        },
+      ),
     );
 
     _socketSub = _socket!.openStream.listen((_) {
+      _reauthNudged = false; // healthy again — allow a future nudge
       if (_hadFirstConnect) {
         _log.d('LandgrabSocket: reconnected, signalling resync');
         _reconnects.add(null);
@@ -90,11 +122,28 @@ class LandgrabSocket {
       _hadFirstConnect = true;
     });
 
+    // A dropped/errored socket used to be silent. Log it, and nudge a token
+    // renewal — the usual cause is an expired access token, and the next
+    // reconnect re-reads the token via dynamicParams.
+    _closeSub = _socket!.closeStream.listen((_) => _onDisconnected('closed'));
+    _errorSub = _socket!.errorStream
+        .listen((e) => _onDisconnected('error: ${e.error}'));
+
     await _socket!.connect();
 
     _channel = _socket!.addChannel(topic: 'landgrab:map');
     _channelSub = _channel!.messages.listen(_handleMessage);
     await _channel!.join().future;
+  }
+
+  void _onDisconnected(String why) {
+    _log.d('LandgrabSocket: $why');
+    final reauth = _onReauthNeeded;
+    if (reauth == null || _reauthNudged) return;
+    _reauthNudged = true;
+    // Fire-and-forget: refresh the access token so the next reconnect
+    // (which re-reads it) can authenticate. Reset when we reconnect.
+    reauth().catchError((_) {});
   }
 
   void _handleMessage(Message message) {
@@ -129,6 +178,8 @@ class LandgrabSocket {
   Future<void> dispose() async {
     await _channelSub?.cancel();
     await _socketSub?.cancel();
+    await _closeSub?.cancel();
+    await _errorSub?.cancel();
     _channel?.leave();
     _socket?.close();
     await _updates.close();
