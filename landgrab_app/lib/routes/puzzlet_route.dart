@@ -290,6 +290,15 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
                 const SizedBox(height: 16),
               ],
               Text(
+                PuzzletStrings.findRelicHeader,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
                 widget.puzzlet.instructions,
                 style: Theme.of(context).textTheme.titleMedium,
               ),

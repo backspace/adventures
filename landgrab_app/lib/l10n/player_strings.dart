@@ -461,6 +461,9 @@ class PuzzletStrings {
   PuzzletStrings._();
 
   static const titlePrefix = Terms.stakeCap;
+  // Small header above the puzzlet instructions, framing what the player is
+  // doing at the stake.
+  static const findRelicHeader = 'Find this ${Terms.relic}';
   static String attemptsRemaining(int n) => 'Attempts remaining: $n';
   static String contendingTeams(int n) => n == 1
       ? 'Another team is also working on this ${Terms.stake} — first to find the ${Terms.relic} claims the zone.'
