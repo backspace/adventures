@@ -142,9 +142,15 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
     # `validate_id_token` fails with `MissingKeyError{key: :base_url}`. We only
     # override `client_id`: a NATIVE identity token's `aud` is the app's Bundle
     # ID, not the web Services ID.
+    # `session_params` normally carries the OAuth `nonce`/`state` from the
+    # authorization request, but the native SDK flow has no such round-trip
+    # and the client sends no nonce — so the token carries none either.
+    # validate_id_token still *requires the key to exist*; an empty map
+    # passes nonce validation (nothing on either side to compare).
     apple_config =
       Assent.Strategy.Apple.default_config([])
       |> Keyword.put(:client_id, bundle_id)
+      |> Keyword.put(:session_params, %{})
 
     client_user = Map.get(params, "user", %{})
 
