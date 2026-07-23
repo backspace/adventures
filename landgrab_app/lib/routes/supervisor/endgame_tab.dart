@@ -7,6 +7,7 @@ import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/models/pole.dart';
+import 'package:landgrab/widgets/keyboard_aware_sheet.dart';
 import 'package:latlong2/latlong.dart';
 
 /// Map-first editor for the endgame boundary. The centre is picked
@@ -136,26 +137,83 @@ class _EndgameTabState extends State<EndgameTab> {
     }
   }
 
-  Future<void> _saveMessages() async {
+  /// Persist the two message bodies. Returns true on success so the editing
+  /// sheet can close itself only when the save landed.
+  Future<bool> _saveMessages() async {
     setState(() => _savingMessages = true);
     try {
       final messages = await widget.api.updateFinalMessages(
         joined: _joinedController.text,
         others: _othersController.text,
       );
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() => _messagesSentAt = messages.sentAt);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Final messages saved.')),
       );
+      return true;
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) return false;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Could not save messages: $e')),
       );
+      return false;
     } finally {
       if (mounted) setState(() => _savingMessages = false);
     }
+  }
+
+  /// Open the two message fields in a keyboard-aware sheet, so on iPad (and
+  /// anywhere the keyboard is tall) the focused field lifts above the keyboard
+  /// instead of hiding behind it — the fixed bottom panel here can't scroll.
+  Future<void> _openMessagesEditor() async {
+    await showKeyboardAwareSheet<void>(
+      context: context,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) {
+          Future<void> save() async {
+            setSheetState(() {});
+            final ok = await _saveMessages();
+            if (ok && sheetContext.mounted) Navigator.of(sheetContext).pop();
+          }
+
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Bedab’s final messages',
+                  style: Theme.of(sheetContext).textTheme.titleMedium),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _joinedController,
+                minLines: 3,
+                maxLines: 8,
+                decoration: const InputDecoration(
+                  labelText:
+                      'To teams who joined the liberation (precise location)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _othersController,
+                minLines: 3,
+                maxLines: 8,
+                decoration: const InputDecoration(
+                  labelText: 'To everyone else (vague nudge)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: _savingMessages ? null : save,
+                child: const Text('Save messages'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _load() async {
@@ -527,13 +585,15 @@ class _EndgameTabState extends State<EndgameTab> {
     );
   }
 
-  /// Bedab's final-location messages, collapsed by default so the
-  /// boundary controls keep the room. Both bodies stay editable until
+  /// Entry point for Bedab's final-location messages — a tap-to-edit row that
+  /// opens the keyboard-aware sheet, so the fields aren't crammed into (and
+  /// hidden within) this fixed bottom panel. Both bodies stay editable until
   /// the server sends them (when the shrink begins).
   Widget _finalMessagesEditor(BuildContext context) {
     final sent = _messagesSentAt;
-    return ExpansionTile(
-      tilePadding: EdgeInsets.zero,
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.mail_outline),
       title: const Text('Bedab’s final messages'),
       subtitle: Text(
         sent != null
@@ -541,36 +601,8 @@ class _EndgameTabState extends State<EndgameTab> {
             : 'Sent from Bedab when the withdrawal begins. Editable until then.',
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      children: [
-        TextField(
-          controller: _joinedController,
-          minLines: 2,
-          maxLines: 5,
-          decoration: const InputDecoration(
-            labelText: 'To teams who joined the liberation (precise location)',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _othersController,
-          minLines: 2,
-          maxLines: 5,
-          decoration: const InputDecoration(
-            labelText: 'To everyone else (vague nudge)',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Align(
-          alignment: Alignment.centerRight,
-          child: FilledButton(
-            onPressed: _savingMessages ? null : _saveMessages,
-            child: const Text('Save messages'),
-          ),
-        ),
-        const SizedBox(height: 8),
-      ],
+      trailing: const Icon(Icons.edit_outlined),
+      onTap: _openMessagesEditor,
     );
   }
 }
