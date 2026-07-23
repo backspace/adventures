@@ -48,10 +48,18 @@ class _PuzzletValidationPreviewRouteState
       widget.validation.status != ValidationStatus.accepted &&
       widget.validation.status != ValidationStatus.rejected;
 
+  // Exact-match answer types — surfaces the "(Exact text/Barcode/NFC)" hint
+  // on the answer field so the validator knows the match is unforgiving.
   bool get _isStrict =>
       _p.answerType == 'strict_text' ||
       _p.answerType == 'barcode' ||
       _p.answerType == 'nfc';
+
+  // Only barcode/NFC answers are captured by scanning; strict_text (and
+  // loose text) are typed. Gating the scan button on _isStrict wrongly
+  // offered a barcode scan for strict_text puzzlets.
+  bool get _isScannable =>
+      _p.answerType == 'barcode' || _p.answerType == 'nfc';
 
   bool get _canScan =>
       defaultTargetPlatform == TargetPlatform.iOS ||
@@ -178,7 +186,7 @@ class _PuzzletValidationPreviewRouteState
           // Answer entry — mirrors the player's puzzlet screen. Only
           // shown while the validation is still open.
           if (_editable) ...[
-            if (_isStrict && _canScan) ...[
+            if (_isScannable && _canScan) ...[
               FilledButton.icon(
                 onPressed: _busy
                     ? null
