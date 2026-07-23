@@ -152,6 +152,9 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
       })
     else
       {:error, reason} ->
+        require Logger
+        Logger.warning("Apple native sign-in rejected: #{inspect(reason)}")
+
         conn
         |> put_status(:unauthorized)
         |> json(%{error: %{status: 401, message: "Apple sign-in rejected", detail: inspect(reason)}})

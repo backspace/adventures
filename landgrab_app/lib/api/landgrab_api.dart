@@ -21,6 +21,11 @@ typedef NotificationsResult = ({
 
 typedef EndgameConfig = ({EndgameZone? endgame, DateTime? announcedAt});
 
+/// Outcome of a native Sign in with Apple attempt. [detail] carries the
+/// server's rejection reason on failure, so the UI can show *why* rather
+/// than a bare "failed".
+typedef AppleNativeResult = ({bool ok, String? detail});
+
 /// Bedab's stance-gated final-location messages: `joined` goes to teams
 /// that accepted the liberation, `others` to everyone else. Sent by the
 /// server once the endgame shrink begins; [sentAt] non-null afterwards.
@@ -216,7 +221,7 @@ class LandgrabApi {
   /// [email] / [givenName] / [familyName] are only returned by Apple
   /// on the FIRST sign-in with the app — pass whatever the credential
   /// includes; the backend uses them to seed a new account.
-  Future<bool> loginWithAppleNative({
+  Future<AppleNativeResult> loginWithAppleNative({
     required String identityToken,
     String? email,
     String? givenName,
@@ -241,10 +246,32 @@ class LandgrabApi {
         data['renewal_token'] as String,
       );
       await loadAndStoreMe();
-      return true;
-    } catch (_) {
-      return false;
+      return (ok: true, detail: null);
+    } on DioException catch (e) {
+      // Surface the server's rejection reason instead of swallowing it —
+      // the native-Apple callback returns 401 with `error.detail` (the token
+      // verification failure) or a 5xx if it's misconfigured.
+      return (ok: false, detail: _appleErrorDetail(e));
+    } catch (e) {
+      return (ok: false, detail: e.toString());
     }
+  }
+
+  /// Pull the most useful reason out of a failed native-Apple call: the
+  /// server's `error.detail`/`message`, else the HTTP status, else the
+  /// transport error.
+  String _appleErrorDetail(DioException e) {
+    final data = e.response?.data;
+    if (data is Map) {
+      final error = data['error'];
+      if (error is Map) {
+        final reason = error['detail'] ?? error['message'];
+        if (reason is String && reason.isNotEmpty) return reason;
+      }
+    }
+    final status = e.response?.statusCode;
+    if (status != null) return 'server returned HTTP $status';
+    return e.message ?? 'could not reach the server';
   }
 
   /// Runs the "sign in with `<provider>`" flow via a system-provided

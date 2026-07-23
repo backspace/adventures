@@ -94,21 +94,23 @@ class _LoginRouteState extends State<LoginRoute> {
         });
         return;
       }
-      final ok = await widget.api.loginWithAppleNative(
+      final result = await widget.api.loginWithAppleNative(
         identityToken: token,
         email: credential.email,
         givenName: credential.givenName,
         familyName: credential.familyName,
       );
       if (!mounted) return;
-      if (ok) {
+      if (result.ok) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => HomeRoute(api: widget.api)),
         );
       } else {
         setState(() {
           _busy = false;
-          _error = LoginStrings.appleSignInFailed;
+          _error = result.detail == null
+              ? LoginStrings.appleSignInFailed
+              : LoginStrings.appleSignInFailedWith(result.detail!);
         });
       }
     } on SignInWithAppleAuthorizationException catch (e) {
