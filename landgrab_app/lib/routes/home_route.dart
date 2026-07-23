@@ -4,10 +4,7 @@ import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:landgrab/widgets/landgrab_tile_layer.dart';
-import 'package:flutter_map_compass/flutter_map_compass.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:landgrab/api/landgrab_api.dart';
@@ -18,13 +15,17 @@ import 'package:landgrab/models/validator_only_puzzlet.dart';
 import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/author/author_route.dart';
-import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/credits_route.dart';
+import 'package:landgrab/routes/home/home_menu.dart';
+import 'package:landgrab/routes/home/in_progress_card.dart';
+import 'package:landgrab/routes/home/load_error_view.dart';
+import 'package:landgrab/routes/home/map_markers.dart';
+import 'package:landgrab/routes/home/pre_event_body.dart';
+import 'package:landgrab/routes/home/territory_map_view.dart';
 import 'package:landgrab/routes/instructions_route.dart';
 import 'package:landgrab/routes/details_webview_route.dart';
 import 'package:landgrab/routes/join_team_route.dart';
 import 'package:landgrab/routes/login_route.dart';
-import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/routes/notifications_route.dart';
 import 'package:landgrab/routes/puzzlet_route.dart';
 import 'package:landgrab/routes/scan_route.dart';
@@ -39,33 +40,10 @@ import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/services/block_territory_service.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/accent_colors.dart';
-import 'package:landgrab/widgets/attack_rings_layer.dart';
-import 'package:landgrab/widgets/bathroom_layer.dart';
-import 'package:landgrab/widgets/block_territory_layer.dart';
-import 'package:landgrab/widgets/capture_rings_layer.dart';
-import 'package:landgrab/widgets/highlight_reticle.dart';
 import 'package:landgrab/widgets/liberated_zone_layer.dart';
 import 'package:landgrab/widgets/liberated_zone_tuner.dart';
-import 'package:landgrab/widgets/live_location_layer.dart';
-import 'package:landgrab/widgets/precomputed_territory_layer.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/team_style.dart';
-import 'package:landgrab/widgets/territory_layer.dart';
-
-/// Entries in the app bar's overflow menu. Role-gated tools and
-/// occasional actions live here so the bar itself never overflows,
-/// however many roles the signed-in user holds.
-enum _HomeMenuItem {
-  author,
-  validate,
-  supervise,
-  joinTeam,
-  details,
-  instructions,
-  credits,
-  settings,
-  logOut,
-}
 
 class HomeRoute extends StatefulWidget {
   final LandgrabApi api;
@@ -821,77 +799,43 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     }).catchError((_) {});
   }
 
-  PopupMenuItem<_HomeMenuItem> _menuItem(
-      _HomeMenuItem value, IconData icon, String label,
-      {String? subtitle}) {
-    return PopupMenuItem<_HomeMenuItem>(
-      value: value,
-      child: Row(
-        children: [
-          // Explicit colour so the icon reads on the popup surface — without
-          // it, it inherits the app bar's foreground (white) and vanishes on
-          // the light menu background in light mode.
-          Icon(icon,
-              size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
-          const SizedBox(width: 12),
-          if (subtitle == null)
-            Text(label)
-          else
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(label),
-                  Text(subtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  void _onMenuSelected(_HomeMenuItem item) {
+  void _onMenuSelected(HomeMenuItem item) {
     switch (item) {
-      case _HomeMenuItem.author:
+      case HomeMenuItem.author:
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => AuthorRoute(api: widget.api)),
         );
-      case _HomeMenuItem.validate:
+      case HomeMenuItem.validate:
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => ValidatorRoute(api: widget.api)),
         );
-      case _HomeMenuItem.supervise:
+      case HomeMenuItem.supervise:
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => SupervisorRoute(api: widget.api)),
         );
-      case _HomeMenuItem.joinTeam:
+      case HomeMenuItem.joinTeam:
         _openJoinTeam();
-      case _HomeMenuItem.details:
+      case HomeMenuItem.details:
         _openDetails();
-      case _HomeMenuItem.instructions:
+      case HomeMenuItem.instructions:
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) =>
                 InstructionsRoute(eventStarted: _event?.started ?? false),
           ),
         );
-      case _HomeMenuItem.credits:
+      case HomeMenuItem.credits:
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) =>
                 CreditsRoute(eventStarted: _event?.started ?? false),
           ),
         );
-      case _HomeMenuItem.settings:
+      case HomeMenuItem.settings:
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const SettingsRoute()),
         );
-      case _HomeMenuItem.logOut:
+      case HomeMenuItem.logOut:
         _logout();
     }
   }
@@ -1175,7 +1119,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           SizedBox(
             width: 24,
             height: 24,
-            child: _PoleDot(
+            child: PoleDot(
               style: style,
               isMine: isMine,
               prohibitive: pole.prohibitive,
@@ -1216,7 +1160,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
               message: p.instructions.length > 40
                   ? '${p.instructions.substring(0, 40)}…'
                   : p.instructions,
-              child: _ValidatorOnlyStar(size: size),
+              child: ValidatorOnlyStar(size: size),
             ),
           ),
         ),
@@ -1239,7 +1183,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  const _ValidatorOnlyStar(size: 28),
+                  const ValidatorOnlyStar(size: 28),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -1384,45 +1328,14 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           ),
           // Everything else lives in one menu so the bar never
           // overflows for people holding several roles.
-          PopupMenuButton<_HomeMenuItem>(
-            tooltip: GameplayStrings.menuTooltip,
+          HomeMenu(
+            isAuthor: _isAuthor,
+            isValidator: _isValidator,
+            isSupervisor: _isSupervisor,
+            hasTeam: _teamName != null,
+            preEvent: preEvent,
+            accountEmail: _accountEmail,
             onSelected: _onMenuSelected,
-            itemBuilder: (context) => [
-              if (!preEvent && _isAuthor)
-                _menuItem(_HomeMenuItem.author, Icons.edit_note,
-                    GameplayStrings.author),
-              if (!preEvent && _isValidator)
-                _menuItem(_HomeMenuItem.validate, Icons.fact_check_outlined,
-                    GameplayStrings.validate),
-              if (!preEvent && _isSupervisor)
-                _menuItem(_HomeMenuItem.supervise, Icons.supervisor_account,
-                    GameplayStrings.supervise),
-              // Only while unteamed — once on a team "Join a team" reads
-              // wrong, and hiding it avoids accidental mid-game switching.
-              // (People without a team also get the banner on the map.)
-              if (_teamName == null)
-                _menuItem(_HomeMenuItem.joinTeam, Icons.group_add_outlined,
-                    JoinTeamStrings.appBarTitle),
-              _menuItem(_HomeMenuItem.details, Icons.badge_outlined,
-                  GameplayStrings.details),
-              _menuItem(_HomeMenuItem.instructions, Icons.menu_book_outlined,
-                  GameplayStrings.instructions),
-              _menuItem(_HomeMenuItem.credits, Icons.info_outline,
-                  GameplayStrings.credits),
-              // Settings is for everyone now (it holds the light/dark toggle);
-              // the environment switcher inside it stays gated by the 7-tap
-              // unlock (EnvSwitchService.visible), checked within the route.
-              _menuItem(_HomeMenuItem.settings, Icons.settings_outlined,
-                  GameplayStrings.settings),
-              _menuItem(
-                _HomeMenuItem.logOut,
-                Icons.logout,
-                GameplayStrings.logOut,
-                // Always show which account you're signed in as, so it's
-                // never a mystery who you're logged in with.
-                subtitle: _accountEmail,
-              ),
-            ],
           ),
         ],
       ),
@@ -1435,7 +1348,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
             _noTeamBanner(),
           Expanded(
             child: _error != null
-                ? _LoadErrorView(
+                ? LoadErrorView(
                     message: _error!,
                     detail: _errorDetail,
                     onRetry: _load,
@@ -1444,7 +1357,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                 : _poles == null || _event == null
                     ? const Center(child: CircularProgressIndicator())
                     : preEvent
-                        ? _PreEventBody(
+                        ? PreEventBody(
                             event: _event!,
                             isAuthor: _isAuthor,
                             isValidator: _isValidator,
@@ -1466,171 +1379,47 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                             onStarted: () => _load(),
                           )
                         : Stack(children: [
-                            FlutterMap(
+                            TerritoryMapView(
                               mapController: _mapController,
-                              options: MapOptions(
-                                initialCenter: _center(),
-                                initialZoom: 14,
-                                // Tap a zone to see who holds it.
-                                onTap: (_, point) => _showOwnerAt(point),
-                                // Make rotation deliberate: the gesture race
-                                // commits a two-finger gesture to whichever
-                                // intent (zoom/move/rotate) crosses its threshold
-                                // first, and the raised rotation threshold means
-                                // a casual twist mid-pinch stays a zoom. North
-                                // is always restorable via the compass button.
-                                interactionOptions: const InteractionOptions(
-                                  enableMultiFingerGestureRace: true,
-                                  rotationThreshold: 25,
-                                ),
-                                // Track camera zoom for size-scaled overlays
-                                // (validator-only puzzlet pins). Only setState
-                                // when the zoom actually changes so panning
-                                // doesn't force a rebuild every frame.
-                                onPositionChanged: (position, _) {
-                                  final z = position.zoom;
-                                  if (z != null && z != _mapZoom) {
-                                    setState(() => _mapZoom = z);
-                                  }
-                                },
-                              ),
-                              children: [
-                                landgrabTileLayer(context),
-                                // Territory fills sit above the tiles and below
-                                // the marker pins so pole icons remain readable
-                                // over their own coloured cells.
-                                // EXPERIMENT: prefer pre-dissolved per-pole
-                                // shapes; then the live block path; else the
-                                // Voronoi layer (unchanged).
-                                if (_territory != null)
-                                  PrecomputedTerritoryLayer(
-                                    regions: _territory!,
-                                    poles: _poles!,
-                                    myOwnerId: _teamId,
-                                    colorIndexByTeam: _teamColorIndex,
-                                  )
-                                else if (_territoryBlocks != null)
-                                  BlockTerritoryLayer(
-                                    blocks: _territoryBlocks!,
-                                    poles: _poles!,
-                                    myOwnerId: _teamId,
-                                    colorIndexByTeam: _teamColorIndex,
-                                    puzzletPointsByPole: _puzzletPoints,
-                                  )
-                                else
-                                  TerritoryLayer(
-                                    poles: _poles!,
-                                    myOwnerId: _teamId,
-                                    colorIndexByTeam: _teamColorIndex,
-                                    captureStartedAt: _captureStartedAt,
-                                    captureFromOwner: _captureFromOwner,
-                                    captureAnimationDuration:
-                                        _captureAnimationDuration,
-                                  ),
-                                // PROTOTYPE: moving hatch over freed ground,
-                                // above the static territory fill and below the
-                                // pins. Empty (and free) unless zones are
-                                // liberated (or the dev tuner previews some).
-                                LiberatedZoneLayer(
-                                  shapes: _liberatedShapes(),
-                                  phase: _pulsePhase,
-                                  style: _liberatedStyle,
-                                ),
-                                BathroomLayer(bathrooms: _bathrooms),
-                                CaptureRingsLayer(
-                                  poles: _poles!,
-                                  captureStartedAt: _captureStartedAt,
-                                  duration: _captureAnimationDuration,
-                                  myOwnerId: _teamId,
-                                  colorIndexByTeam: _teamColorIndex,
-                                ),
-                                AttackRingsLayer(
-                                  poles: _poles!,
-                                  attackedPoleIds: _lastAttackAt.keys.toSet(),
-                                  pulsePhase: _pulsePhase,
-                                ),
-                                // Transient "which one" reticle from a
-                                // notification's "View on map".
-                                if (_highlightedPoleId != null)
-                                  MarkerLayer(markers: [
-                                    for (final pole in _poles!)
-                                      if (pole.id == _highlightedPoleId)
-                                        Marker(
-                                          point: LatLng(
-                                              pole.latitude, pole.longitude),
-                                          width: 120,
-                                          height: 120,
-                                          child: HighlightReticle(
-                                              phase: _pulsePhase),
-                                        ),
-                                  ]),
-                                MarkerLayer(
-                                  // The endgame boundary is invisible by design:
-                                  // poles it has passed just disappear (their
-                                  // territory stays — TerritoryLayer gets the
-                                  // unfiltered list), so players sense the
-                                  // squeeze without seeing a circle.
-                                  markers: _polesInPlay().map((pole) {
-                                    return Marker(
-                                      // Keyed by pole so zoom-time culling can't
-                                      // hand this element a different pole —
-                                      // unkeyed, the _PoleDot's AnimatedContainer
-                                      // tweened between neighbouring poles'
-                                      // colours on every reshuffle.
-                                      key: ValueKey(pole.id),
-                                      point:
-                                          LatLng(pole.latitude, pole.longitude),
-                                      width: 12,
-                                      height: 12,
-                                      // A direct tap on the marker always
-                                      // names the stake — the only way to
-                                      // reveal an unclaimed one, since its
-                                      // blank surroundings don't respond.
-                                      child: GestureDetector(
-                                        behavior: HitTestBehavior.opaque,
-                                        onTap: () => _showPoleOwner(pole),
-                                        child: Tooltip(
-                                          message: pole.name,
-                                          child: _PoleDot(
-                                            style: _styleForPole(pole),
-                                            isMine: pole.currentOwnerTeamId ==
-                                                _teamId,
-                                            prohibitive: pole.prohibitive,
-                                            locked: pole.locked,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                                // Validator-only puzzlets: rendered outside the
-                                // pole/cluster stack so they never spider with
-                                // other markers, and sized against the current
-                                // zoom so they shrink to a small star far out and
-                                // grow to full pin close in — same treatment
-                                // poles get on the author map.
-                                if (_validatorOnlyPuzzlets.isNotEmpty)
-                                  MarkerLayer(markers: _validatorOnlyMarkers()),
-                                // User's own position + heading cone (only while
-                                // walking). Above the pole markers so a pole
-                                // directly under the user doesn't obscure the
-                                // marker; below attribution/compass.
-                                const LiveLocationLayer(),
-                                const _MapAttribution(),
-                                // Compass appears only when the map is rotated; tap
-                                // animates it back to north-up. The plugin picks up the
-                                // enclosing FlutterMap's controller via context — no
-                                // controller wiring on our side.
-                                const MapCompass.cupertino(
-                                    hideIfRotatedNorth: true),
-                              ],
+                              center: _center(),
+                              onMapTap: _showOwnerAt,
+                              // Track camera zoom for size-scaled overlays
+                              // (validator-only pins); only setState when it
+                              // actually changes so panning doesn't rebuild
+                              // every frame.
+                              onZoomChanged: (z) {
+                                if (z != _mapZoom) {
+                                  setState(() => _mapZoom = z);
+                                }
+                              },
+                              territory: _territory,
+                              territoryBlocks: _territoryBlocks,
+                              puzzletPoints: _puzzletPoints,
+                              poles: _poles!,
+                              teamId: _teamId,
+                              colorIndexByTeam: _teamColorIndex,
+                              captureStartedAt: _captureStartedAt,
+                              captureFromOwner: _captureFromOwner,
+                              captureAnimationDuration: _captureAnimationDuration,
+                              liberatedShapes: _liberatedShapes(),
+                              pulsePhase: _pulsePhase,
+                              liberatedStyle: _liberatedStyle,
+                              bathrooms: _bathrooms,
+                              attackedPoleIds: _lastAttackAt.keys.toSet(),
+                              highlightedPoleId: _highlightedPoleId,
+                              polesInPlay: _polesInPlay(),
+                              onPoleTap: _showPoleOwner,
+                              styleForPole: _styleForPole,
+                              validatorOnlyMarkers: _validatorOnlyPuzzlets.isEmpty
+                                  ? const []
+                                  : _validatorOnlyMarkers(),
                             ),
                             if (_activePuzzlets.isNotEmpty)
                               Positioned(
                                 top: 8,
                                 left: 8,
                                 right: 8,
-                                child: _InProgressCard(
+                                child: InProgressCard(
                                   entry: _activePuzzlets.first,
                                   onOpen: () =>
                                       _openActivePuzzlet(_activePuzzlets.first),
@@ -1680,7 +1469,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                               Positioned(
                                 top: _activePuzzlets.isNotEmpty ? 96 : 8,
                                 right: 8,
-                                child: _HideProhibitiveChip(
+                                child: HideProhibitiveChip(
                                   hidden: _hideProhibitive,
                                   count: _prohibitiveCount,
                                   onToggle: _toggleHideProhibitive,
@@ -1716,696 +1505,6 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
               icon: const Icon(Icons.qr_code_scanner),
               label: const Text(GameplayStrings.scanFab),
             ),
-    );
-  }
-}
-
-class _PreEventBody extends StatefulWidget {
-  final LandgrabEvent event;
-  final bool isAuthor;
-  final bool isValidator;
-  final bool isSupervisor;
-  final VoidCallback onAuthor;
-  final VoidCallback onValidate;
-  final VoidCallback onSupervise;
-
-  /// Fired a few seconds after the countdown reaches the start time — and then
-  /// periodically — so the parent re-fetches the event. `started` is a server
-  /// flag, so the map only appears once a reload reports the event underway.
-  final VoidCallback onStarted;
-
-  const _PreEventBody({
-    required this.event,
-    required this.isAuthor,
-    required this.isValidator,
-    required this.isSupervisor,
-    required this.onAuthor,
-    required this.onValidate,
-    required this.onSupervise,
-    required this.onStarted,
-  });
-
-  @override
-  State<_PreEventBody> createState() => _PreEventBodyState();
-}
-
-class _PreEventBodyState extends State<_PreEventBody> {
-  Timer? _ticker;
-  String? _lastBarcode;
-  String? _lastBarcodeFormat;
-  String? _lastNfcUid;
-
-  // `started` is a server flag, so when our local countdown crosses zero the
-  // map doesn't appear on its own. A few seconds after the start passes we
-  // nudge the parent to re-fetch the event, retrying every few seconds in case
-  // the server clock lags ours, until `started` flips and this screen is gone.
-  static const _startGrace = Duration(seconds: 3);
-  static const _startPollInterval = Duration(seconds: 4);
-  DateTime? _lastStartPoll;
-
-  @override
-  void initState() {
-    super.initState();
-    // Only run the countdown ticker when we have a target to count
-    // down TO. If the event has no start time yet, the display shows
-    // "not yet scheduled" and there's nothing to tick.
-    if (widget.event.startTime != null) {
-      _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (!mounted) return;
-        setState(() {});
-        _maybePollForStart();
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _ticker?.cancel();
-    super.dispose();
-  }
-
-  void _maybePollForStart() {
-    final start = widget.event.startTime;
-    if (start == null) return;
-    final now = DateTime.now();
-    if (now.isBefore(start.add(_startGrace))) return;
-    if (_lastStartPoll != null &&
-        now.difference(_lastStartPoll!) < _startPollInterval) {
-      return;
-    }
-    _lastStartPoll = now;
-    widget.onStarted();
-  }
-
-  Future<void> _openBarcodeScanner() async {
-    String? format;
-    final result = await Navigator.of(context).push<String>(
-      MaterialPageRoute(
-        builder: (_) => BarcodeScannerRoute(
-          title: PreEventStrings.barcodePracticeTitle,
-          onFormat: (f) => format = f,
-        ),
-      ),
-    );
-    if (!mounted || result == null) return;
-    setState(() {
-      _lastBarcode = result;
-      _lastBarcodeFormat = format;
-    });
-  }
-
-  Future<void> _openNfcScanner() async {
-    final result = await Navigator.of(context).push<String>(
-      MaterialPageRoute(
-        builder: (_) =>
-            const NfcScannerRoute(title: PreEventStrings.nfcPracticeTitle),
-      ),
-    );
-    if (!mounted || result == null) return;
-    setState(() => _lastNfcUid = result);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final start = widget.event.startTime;
-
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (start == null)
-              Text(PreEventStrings.notYetScheduled,
-                  style: theme.textTheme.titleLarge)
-            else
-              _Countdown(startTime: start),
-            const SizedBox(height: 12),
-            Text(
-              PreEventStrings.openingCopy,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 24),
-            if (widget.isAuthor)
-              _BigButton(
-                icon: Icons.edit_note,
-                label: GameplayStrings.author,
-                onPressed: widget.onAuthor,
-              ),
-            if (widget.isValidator) ...[
-              const SizedBox(height: 12),
-              _BigButton(
-                icon: Icons.fact_check_outlined,
-                label: GameplayStrings.validate,
-                onPressed: widget.onValidate,
-              ),
-            ],
-            if (widget.isSupervisor) ...[
-              const SizedBox(height: 12),
-              _BigButton(
-                icon: Icons.supervisor_account,
-                label: GameplayStrings.supervise,
-                onPressed: widget.onSupervise,
-              ),
-            ],
-            const SizedBox(height: 32),
-            Text(PreEventStrings.practiceHeading,
-                style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            _ScannerTile(
-              icon: Icons.qr_code_scanner,
-              label: PreEventStrings.barcodePracticeLabel,
-              lastResult: _lastBarcode,
-              resultDetail: _lastBarcodeFormat,
-              onPressed: _openBarcodeScanner,
-            ),
-            const SizedBox(height: 8),
-            _ScannerTile(
-              icon: Icons.nfc,
-              label: PreEventStrings.nfcPracticeLabel,
-              lastResult: _lastNfcUid,
-              onPressed: _openNfcScanner,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Live-updating countdown for the event start. Rebuilds each second
-/// from the parent's ticker; hides its subtitle line once the
-/// remaining duration crosses zero (server flips `started` at that
-/// point and this whole widget is swapped out anyway).
-class _Countdown extends StatelessWidget {
-  final DateTime startTime;
-  const _Countdown({required this.startTime});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final remaining = startTime.difference(DateTime.now());
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(PreEventStrings.countdownHeading,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            )),
-        const SizedBox(height: 4),
-        Text(
-          _formatRemaining(remaining),
-          style: theme.textTheme.displaySmall?.copyWith(
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(_formatStart(startTime),
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            )),
-      ],
-    );
-  }
-
-  /// "3d 14:22:07" when > 1 day away, "14:22:07" when < 1 day, and
-  /// "starting now" once the remaining crosses zero (a transient
-  /// state until the server flips `started`).
-  static String _formatRemaining(Duration r) {
-    if (r.isNegative || r.inSeconds == 0) return PreEventStrings.startingNow;
-    final days = r.inDays;
-    final hours = r.inHours.remainder(24);
-    final minutes = r.inMinutes.remainder(60);
-    final seconds = r.inSeconds.remainder(60);
-    final hhmmss =
-        '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    return days > 0 ? '${days}d $hhmmss' : hhmmss;
-  }
-
-  static String _formatStart(DateTime utc) {
-    final local = utc.toLocal();
-    final y = local.year.toString().padLeft(4, '0');
-    final m = local.month.toString().padLeft(2, '0');
-    final d = local.day.toString().padLeft(2, '0');
-    final hh = local.hour.toString().padLeft(2, '0');
-    final mm = local.minute.toString().padLeft(2, '0');
-    return '$y-$m-$d $hh:$mm';
-  }
-}
-
-class _ScannerTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String? lastResult;
-  // Extra detail shown alongside the value — the barcode symbology for the
-  // barcode tile (e.g. "Code 128"); null for tiles that have no type (NFC).
-  final String? resultDetail;
-  final VoidCallback onPressed;
-
-  const _ScannerTile({
-    required this.icon,
-    required this.label,
-    required this.lastResult,
-    this.resultDetail,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      margin: EdgeInsets.zero,
-      child: ListTile(
-        leading: Icon(icon),
-        title: Text(label),
-        subtitle: lastResult == null
-            ? Text(PreEventStrings.noScansYet, style: theme.textTheme.bodySmall)
-            : Text(
-                resultDetail == null
-                    ? PreEventStrings.lastScan(lastResult!)
-                    : PreEventStrings.lastScanWithType(
-                        lastResult!, resultDetail!),
-                style: theme.textTheme.bodySmall?.copyWith(
-                    fontFeatures: const [FontFeature.tabularFigures()]),
-              ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: onPressed,
-      ),
-    );
-  }
-}
-
-/// The team's active ("in progress") puzzlet, pinned over the map so
-/// any member can resume it without rescanning. Tap to open; the
-/// overflow gives it up.
-class _InProgressCard extends StatelessWidget {
-  final ScanResult entry;
-  final VoidCallback onOpen;
-  final VoidCallback onGiveUp;
-
-  const _InProgressCard({
-    required this.entry,
-    required this.onOpen,
-    required this.onGiveUp,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final name = entry.pole.name;
-    final instructions = entry.activePuzzlet?.instructions ?? '';
-    return Card(
-      elevation: 3,
-      child: InkWell(
-        onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
-          child: Row(
-            children: [
-              const Icon(Icons.hourglass_top, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${GameplayStrings.inProgressHeading}: $name',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (instructions.isNotEmpty)
-                      Text(
-                        instructions,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    if (entry.contendingTeams > 0)
-                      Text(
-                        GameplayStrings.othersHere(entry.contendingTeams),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.blue.shade700,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              TextButton(
-                  onPressed: onOpen, child: const Text(GameplayStrings.resume)),
-              IconButton(
-                tooltip: GameplayStrings.giveUp,
-                icon: const Icon(Icons.close),
-                onPressed: onGiveUp,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Matches the site's `.landgrab-pole` visual: a filled circle with a
-/// stroke lightened toward white so dark colours (black especially)
-/// still read against the map. Colour transitions ease over 200 ms to
-/// match the site's `transition: fill 200ms ease-out, stroke 200ms
-/// ease-out` rule, so a capture flip reads as a gradient rather than
-/// Map control to show/hide stakes flagged prohibitive (nothing the team can
-/// engage). A compact pill on the map; only rendered when such stakes exist.
-class _HideProhibitiveChip extends StatelessWidget {
-  final bool hidden;
-  final int count;
-  final VoidCallback onToggle;
-  const _HideProhibitiveChip({
-    required this.hidden,
-    required this.count,
-    required this.onToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Material(
-      elevation: 2,
-      borderRadius: BorderRadius.circular(20),
-      color: theme.colorScheme.surface.withValues(alpha: 0.95),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onToggle,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(
-                hidden
-                    ? Icons.visibility_off_outlined
-                    : Icons.do_not_disturb_on_outlined,
-                size: 18,
-                color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(width: 6),
-            Text(
-              hidden
-                  ? GameplayStrings.prohibitiveShow(count)
-                  : GameplayStrings.prohibitiveHide(count),
-              style: theme.textTheme.labelMedium,
-            ),
-          ]),
-        ),
-      ),
-    );
-  }
-}
-
-/// a hard cut.
-/// A pole marker: the owning team's colour + pattern glyph, an unclaimed
-/// neutral dot when nobody holds it, and a bold white ring when it's *your*
-/// team's — so you can find yourself by shape, not colour alone.
-class _PoleDot extends StatelessWidget {
-  final TeamStyle? style;
-  final bool isMine;
-  // Every remaining puzzlet here conflicts with the team's needs — shown as a
-  // distinct muted "blocked" marker (still claimable, hence not alarming).
-  final bool prohibitive;
-  // Fully captured — no puzzlets left to solve. Shown as a lock, distinct from
-  // the prohibitive "blocked" glyph, tinted with the owner's colour so you can
-  // still see who holds it.
-  final bool locked;
-  // Rendered size; drives icon sizing so the same marker is legible both as a
-  // ~12px map pin and as a larger swatch in the tap snackbar.
-  final double dimension;
-  const _PoleDot({
-    required this.style,
-    this.isMine = false,
-    this.prohibitive = false,
-    this.locked = false,
-    this.dimension = 12,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (locked) {
-      // A lock in the owner's colour (grey if somehow unowned) — reads as
-      // "done / nothing to do here", not as blocked-for-accessibility.
-      final owner = style?.color ?? Colors.blueGrey.shade400;
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: owner,
-          border: Border.all(
-              color: Colors.white.withValues(alpha: isMine ? 1 : 0.8),
-              width: isMine ? 1.5 : 0.75),
-        ),
-        child: Icon(Icons.lock, size: dimension * 0.72, color: Colors.white),
-      );
-    }
-    if (prohibitive) {
-      // Distinct from owned/unowned dots: a muted circle with a "no entry"
-      // glyph. Neutral, not red — it's a heads-up, not an error.
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.blueGrey.shade700.withValues(alpha: 0.85),
-          border: Border.all(
-              color: Colors.white.withValues(alpha: 0.85), width: 0.75),
-        ),
-        child: Icon(Icons.do_not_disturb_on_outlined,
-            size: dimension, color: Colors.white),
-      );
-    }
-    final s = style;
-    if (s == null) {
-      return DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.blueGrey.shade400,
-          border:
-              Border.all(color: Colors.white.withValues(alpha: 0.6), width: 0.75),
-        ),
-      );
-    }
-    final borderColor =
-        isMine ? Colors.white : Color.lerp(s.color, Colors.white, 0.45)!;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: borderColor.withValues(alpha: isMine ? 1 : 0.7),
-          width: isMine ? 1.5 : 0.75,
-        ),
-      ),
-      child: CustomPaint(
-        painter: TeamGlyphPainter(color: s.color, pattern: s.pattern),
-      ),
-    );
-  }
-}
-
-class _BigButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  const _BigButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 72,
-      child: FilledButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 32),
-        label: Text(label, style: const TextStyle(fontSize: 20)),
-      ),
-    );
-  }
-}
-
-/// The starred puzzlet marker for validator-only content. Amber
-/// star on a white disc for legibility against the light basemap.
-/// Scales its inner icon proportionally so at very small sizes the
-/// star still reads as a star rather than a formless dot.
-class _ValidatorOnlyStar extends StatelessWidget {
-  final double size;
-  const _ValidatorOnlyStar({required this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        border:
-            Border.all(color: Colors.amber.shade700, width: size >= 20 ? 2 : 1),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x33000000), blurRadius: 3, offset: Offset(0, 1)),
-        ],
-      ),
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.star,
-        color: Colors.amber.shade700,
-        size: size * 0.65,
-      ),
-    );
-  }
-}
-
-class _MapAttribution extends StatelessWidget {
-  const _MapAttribution();
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomRight,
-      child: Padding(
-        padding: const EdgeInsets.only(right: 4, bottom: 4),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.75),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            child: Text(
-              '© CartoDB · © OpenStreetMap',
-              style: TextStyle(fontSize: 10, color: Colors.black87),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Shown in place of the map when the initial load fails. Gives a calm
-/// message with the recovery ladder the failure usually needs — retry first,
-/// log out if that doesn't help — plus a collapsible raw-error view (with
-/// copy) so a stuck player can read/report the real cause.
-class _LoadErrorView extends StatefulWidget {
-  final String message;
-  final String? detail;
-  final Future<void> Function() onRetry;
-  final Future<void> Function() onLogout;
-
-  const _LoadErrorView({
-    required this.message,
-    required this.detail,
-    required this.onRetry,
-    required this.onLogout,
-  });
-
-  @override
-  State<_LoadErrorView> createState() => _LoadErrorViewState();
-}
-
-class _LoadErrorViewState extends State<_LoadErrorView> {
-  bool _showDetail = false;
-  bool _retrying = false;
-
-  Future<void> _retry() async {
-    setState(() => _retrying = true);
-    try {
-      await widget.onRetry();
-    } finally {
-      if (mounted) setState(() => _retrying = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.cloud_off, size: 48, color: theme.colorScheme.outline),
-            const SizedBox(height: 16),
-            Text(
-              widget.message,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: _retrying ? null : _retry,
-              icon: _retrying
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.refresh),
-              label: const Text(GameplayStrings.loadTryAgain),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: _retrying ? null : () => widget.onLogout(),
-              icon: const Icon(Icons.logout),
-              label: const Text(GameplayStrings.logOut),
-            ),
-            if (widget.detail != null) ...[
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => setState(() => _showDetail = !_showDetail),
-                child: Text(_showDetail
-                    ? GameplayStrings.loadHideDetails
-                    : GameplayStrings.loadShowDetails),
-              ),
-              if (_showDetail)
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.only(top: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    border: Border.all(color: theme.dividerColor),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton.icon(
-                          onPressed: () {
-                            Clipboard.setData(
-                                ClipboardData(text: widget.detail!));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text(GameplayStrings.loadDetailsCopied),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.copy, size: 16),
-                          label: const Text(GameplayStrings.loadCopyDetails),
-                        ),
-                      ),
-                      SelectableText(
-                        widget.detail!,
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ],
-        ),
-      ),
     );
   }
 }
