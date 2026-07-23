@@ -156,8 +156,10 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
 
     with {:ok, jwt} <- validate_apple_id_token(apple_config, id_token),
          claims = jwt.claims,
-         {:ok, user_identity_params, user_params} <- build_upsert_params(claims, client_user),
-         {:ok, user} <- find_or_create_apple_user(user_identity_params, user_params) do
+         {:ok, user_identity_params, user_params, verified_email} <-
+           build_upsert_params(claims, client_user),
+         {:ok, user} <-
+           find_or_create_apple_user(user_identity_params, user_params, verified_email) do
       conn = Pow.Plug.create(conn, user, Pow.Plug.fetch_config(conn))
 
       json(conn, %{
@@ -167,6 +169,16 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
         }
       })
     else
+      # New Apple user, but Apple withheld the email (it's only returned on the
+      # FIRST authorization ever for this Apple ID). We can't create an
+      # email-keyed account without one, so ask the app to collect an email and
+      # resubmit the same token. 422 + this code is distinct from the 401
+      # rejection below so the client can tell "need email" from "bad token".
+      {:error, :email_required} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: %{code: "email_required", message: "Apple didn’t share an email; please provide one."}})
+
       {:error, reason} ->
         require Logger
         Logger.warning("Apple native sign-in rejected: #{inspect(reason)}")
@@ -177,17 +189,30 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
     end
   end
 
+  # Verifies the Apple identity token against Apple's public keys. Overridable
+  # in tests (config `:apple_id_token_validator`, a `fn config, token -> ... end`)
+  # so the link/create/email_required branches can be exercised locally without
+  # a real Apple-signed token — the SDK + signature path still needs a device.
   defp validate_apple_id_token(apple_config, id_token) do
-    Assent.Strategy.OIDC.validate_id_token(apple_config, id_token)
+    case Application.get_env(:registrations, :apple_id_token_validator) do
+      fun when is_function(fun, 2) -> fun.(apple_config, id_token)
+      _ -> Assent.Strategy.OIDC.validate_id_token(apple_config, id_token)
+    end
   end
 
   defp build_upsert_params(%{"sub" => sub} = claims, client_user) do
+    # Apple-verified email (from the signed token) is the ONLY email we'll
+    # trust to link into an existing account. A manually-entered prompt email
+    # arrives via `client_user` and must never link — only create.
+    verified_email =
+      if claims["email_verified"] in [true, "true"], do: claims["email"], else: nil
+
     email = claims["email"] || Map.get(client_user, "email")
 
     user_identity_params = %{"provider" => "apple", "uid" => sub}
     user_params = maybe_put_name(%{"email" => email}, client_user)
 
-    {:ok, user_identity_params, user_params}
+    {:ok, user_identity_params, user_params, verified_email}
   end
 
   defp build_upsert_params(_claims, _client_user), do: {:error, :missing_sub}
@@ -200,10 +225,12 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
 
   defp maybe_put_name(user_params, _), do: user_params
 
-  # First lookup by (provider, uid). If found, return that user; if
-  # not, invoke our custom UserIdentities.create_user so the same
-  # welcome-email hook fires as the web-flow path.
-  defp find_or_create_apple_user(user_identity_params, user_params) do
+  # First lookup by (provider, uid). If found, return that user (a returning
+  # sign-in needs no email — Apple's stable `uid` is the identity). If not
+  # found, create — but only if we actually have an email; otherwise signal
+  # `:email_required` so the app can collect one and resubmit, rather than
+  # letting the User changeset fail on a blank email.
+  defp find_or_create_apple_user(user_identity_params, user_params, verified_email) do
     import Ecto.Query
 
     existing =
@@ -214,9 +241,46 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
         )
       )
 
-    case existing do
-      %{user: user} -> {:ok, user}
-      nil -> RegistrationsWeb.PowAssent.UserIdentities.create_user(user_identity_params, user_params, %{})
+    cond do
+      # Returning Apple user — logged in by their stable uid, no email needed.
+      match?(%{user: %{}}, existing) ->
+        {:ok, existing.user}
+
+      # No email at all — ask the app to collect one and resubmit.
+      blank?(user_params["email"]) ->
+        {:error, :email_required}
+
+      true ->
+        link_or_create(user_identity_params, user_params, verified_email)
     end
   end
+
+  # Link the Apple identity to an EXISTING account when Apple gave us a
+  # verified email that matches one (so "Sign in with Apple" logs into the
+  # account you already have). Otherwise create. Only the Apple-verified email
+  # may link — a manually-entered one can only create, so nobody can attach
+  # their Apple ID to someone else's account by typing that person's address.
+  defp link_or_create(user_identity_params, user_params, verified_email) do
+    existing_user =
+      verified_email &&
+        Registrations.Repo.get_by(RegistrationsWeb.User, email: String.downcase(verified_email))
+
+    case existing_user do
+      %RegistrationsWeb.User{} = user ->
+        case RegistrationsWeb.PowAssent.UserIdentities.upsert(user, user_identity_params) do
+          {:ok, _identity} -> {:ok, user}
+          {:error, _reason} -> {:error, :link_failed}
+        end
+
+      _ ->
+        # nil (not %{}) as the third arg is load-bearing: PowAssent takes the
+        # email from `user_params` only when `user_id_params` is nil — pass a
+        # map and it reads the email from THAT instead, dropping ours.
+        RegistrationsWeb.PowAssent.UserIdentities.create_user(user_identity_params, user_params, nil)
+    end
+  end
+
+  defp blank?(nil), do: true
+  defp blank?(value) when is_binary(value), do: String.trim(value) == ""
+  defp blank?(_), do: false
 end

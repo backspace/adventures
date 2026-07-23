@@ -21,10 +21,15 @@ typedef NotificationsResult = ({
 
 typedef EndgameConfig = ({EndgameZone? endgame, DateTime? announcedAt});
 
-/// Outcome of a native Sign in with Apple attempt. [detail] carries the
-/// server's rejection reason on failure, so the UI can show *why* rather
-/// than a bare "failed".
-typedef AppleNativeResult = ({bool ok, String? detail});
+/// Outcome of a native Sign in with Apple attempt.
+///  * [success] — signed in, tokens stored.
+///  * [emailRequired] — a new Apple user whose token carried no email (Apple
+///    only sends it on first authorization); the app should collect an email
+///    and resubmit the same token.
+///  * [failed] — anything else; [detail] carries the server's reason.
+enum AppleNativeStatus { success, emailRequired, failed }
+
+typedef AppleNativeResult = ({AppleNativeStatus status, String? detail});
 
 /// Bedab's stance-gated final-location messages: `joined` goes to teams
 /// that accepted the liberation, `others` to everyone else. Sent by the
@@ -246,14 +251,21 @@ class LandgrabApi {
         data['renewal_token'] as String,
       );
       await loadAndStoreMe();
-      return (ok: true, detail: null);
+      return (status: AppleNativeStatus.success, detail: null);
     } on DioException catch (e) {
-      // Surface the server's rejection reason instead of swallowing it —
-      // the native-Apple callback returns 401 with `error.detail` (the token
-      // verification failure) or a 5xx if it's misconfigured.
-      return (ok: false, detail: _appleErrorDetail(e));
+      // The callback returns 422 `email_required` when it's a new Apple user
+      // and Apple sent no email — recoverable by collecting one and resubmitting.
+      final data = e.response?.data;
+      final code =
+          data is Map && data['error'] is Map ? data['error']['code'] : null;
+      if (code == 'email_required') {
+        return (status: AppleNativeStatus.emailRequired, detail: null);
+      }
+      // Otherwise surface the server's reason rather than swallowing it (401
+      // token rejection, or a 5xx misconfig).
+      return (status: AppleNativeStatus.failed, detail: _appleErrorDetail(e));
     } catch (e) {
-      return (ok: false, detail: e.toString());
+      return (status: AppleNativeStatus.failed, detail: e.toString());
     }
   }
 

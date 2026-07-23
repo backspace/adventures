@@ -77,6 +77,15 @@ class LoginStrings {
   static const loginFailed = 'Sign-in failed. Please try again.';
   static const appleNoIdentityToken =
       'Apple sign-in returned no identity token';
+
+  // Shown when Apple signs a NEW user in without sharing an email (it only
+  // sends one on the first authorization). We collect one to finish creating
+  // the account.
+  static const appleEmailTitle = 'One more thing';
+  static const appleEmailBody =
+      'Apple didn’t share your email, so we need it to set up your account.';
+  static const appleEmailContinue = 'Continue';
+  static const appleEmailCancel = 'Cancel';
   static const appleSignInFailed = 'Apple sign-in failed';
   static String appleSignInFailedWith(String detail) =>
       'Apple sign-in failed: $detail';

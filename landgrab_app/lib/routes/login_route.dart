@@ -94,25 +94,12 @@ class _LoginRouteState extends State<LoginRoute> {
         });
         return;
       }
-      final result = await widget.api.loginWithAppleNative(
-        identityToken: token,
+      await _submitAppleToken(
+        token,
         email: credential.email,
         givenName: credential.givenName,
         familyName: credential.familyName,
       );
-      if (!mounted) return;
-      if (result.ok) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => HomeRoute(api: widget.api)),
-        );
-      } else {
-        setState(() {
-          _busy = false;
-          _error = result.detail == null
-              ? LoginStrings.appleSignInFailed
-              : LoginStrings.appleSignInFailedWith(result.detail!);
-        });
-      }
     } on SignInWithAppleAuthorizationException catch (e) {
       // Includes the user tapping "Cancel" on the sheet — treat as a
       // quiet dismissal rather than an error message.
@@ -130,6 +117,110 @@ class _LoginRouteState extends State<LoginRoute> {
         _error = LoginStrings.appleSignInFailedWith(e.toString());
       });
     }
+  }
+
+  /// Submit an Apple identity token to the server. If Apple withheld the email
+  /// for a new user, prompt for one and resubmit the SAME token (valid for a
+  /// few minutes, reusable). [_busy] stays true across the prompt so the
+  /// buttons remain disabled; only terminal states clear it.
+  Future<void> _submitAppleToken(
+    String token, {
+    String? email,
+    String? givenName,
+    String? familyName,
+  }) async {
+    final result = await widget.api.loginWithAppleNative(
+      identityToken: token,
+      email: email,
+      givenName: givenName,
+      familyName: familyName,
+    );
+    if (!mounted) return;
+    switch (result.status) {
+      case AppleNativeStatus.success:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => HomeRoute(api: widget.api)),
+        );
+      case AppleNativeStatus.emailRequired:
+        final entered = await _promptForAppleEmail();
+        if (!mounted) return;
+        if (entered == null) {
+          // Cancelled the email prompt — abandon quietly, no error.
+          setState(() {
+            _busy = false;
+            _error = null;
+          });
+          return;
+        }
+        await _submitAppleToken(
+          token,
+          email: entered,
+          givenName: givenName,
+          familyName: familyName,
+        );
+      case AppleNativeStatus.failed:
+        setState(() {
+          _busy = false;
+          _error = result.detail == null
+              ? LoginStrings.appleSignInFailed
+              : LoginStrings.appleSignInFailedWith(result.detail!);
+        });
+    }
+  }
+
+  /// Ask for an email when Apple didn't provide one. Returns the trimmed
+  /// address, or null if cancelled. Requires an "@" before enabling submit —
+  /// the server's email format check would otherwise reject it.
+  Future<String?> _promptForAppleEmail() {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            final value = controller.text.trim();
+            final valid = value.contains('@') && !value.startsWith('@');
+            return AlertDialog(
+              title: const Text(LoginStrings.appleEmailTitle),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(LoginStrings.appleEmailBody),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    keyboardType: TextInputType.emailAddress,
+                    autocorrect: false,
+                    decoration: const InputDecoration(
+                      labelText: LoginStrings.emailLabel,
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (_) => setDialogState(() {}),
+                    onSubmitted: (_) {
+                      if (valid) Navigator.of(dialogContext).pop(value);
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text(LoginStrings.appleEmailCancel),
+                ),
+                FilledButton(
+                  onPressed:
+                      valid ? () => Navigator.of(dialogContext).pop(value) : null,
+                  child: const Text(LoginStrings.appleEmailContinue),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _signInWithProvider(String provider, String label) async {
