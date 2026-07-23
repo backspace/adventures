@@ -18,6 +18,11 @@ migrate_working_dir/
 # public repo. The committed README.md keeps the directory present.
 assets/credits/*.txt
 
+# Player instructions briefing — local-only, like the credits copy. The
+# committed README.md keeps the directory present. Ignore the content file
+# specifically (not *.md) so README.md stays tracked.
+assets/instructions/instructions.md
+
 # IntelliJ related
 *.iml
 *.ipr

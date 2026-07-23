@@ -20,6 +20,7 @@ import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/author/author_route.dart';
 import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/credits_route.dart';
+import 'package:landgrab/routes/instructions_route.dart';
 import 'package:landgrab/routes/details_webview_route.dart';
 import 'package:landgrab/routes/join_team_route.dart';
 import 'package:landgrab/routes/login_route.dart';
@@ -60,6 +61,7 @@ enum _HomeMenuItem {
   supervise,
   joinTeam,
   details,
+  instructions,
   credits,
   settings,
   logOut,
@@ -871,6 +873,13 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         _openJoinTeam();
       case _HomeMenuItem.details:
         _openDetails();
+      case _HomeMenuItem.instructions:
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) =>
+                InstructionsRoute(eventStarted: _event?.started ?? false),
+          ),
+        );
       case _HomeMenuItem.credits:
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -1396,6 +1405,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                     JoinTeamStrings.appBarTitle),
               _menuItem(_HomeMenuItem.details, Icons.badge_outlined,
                   GameplayStrings.details),
+              _menuItem(_HomeMenuItem.instructions, Icons.menu_book_outlined,
+                  GameplayStrings.instructions),
               _menuItem(_HomeMenuItem.credits, Icons.info_outline,
                   GameplayStrings.credits),
               // Settings is for everyone now (it holds the light/dark toggle);

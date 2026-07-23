@@ -185,6 +185,7 @@ class GameplayStrings {
   static const locateMe = 'Locate me';
   static const settings = 'Settings';
   static const credits = 'Credits';
+  static const instructions = 'Instructions';
   static const details = 'Your details';
   static const author = 'Author';
   static const validate = 'Validate';
@@ -314,6 +315,20 @@ class SettingsStrings {
       'Have someone scan this with “Join a team” to join you.';
   static String teamQrName(String team) => 'Team $team';
   static const teamQrCodeLabel = 'Join code';
+}
+
+/// Instructions screen (`routes/instructions_route.dart`). Like Credits, the
+/// body is a local-only bundled file — gitignored, so the storyline briefing
+/// isn't published — held back behind [placeholder] until the simulation
+/// begins. [unavailable] shows if the file is absent post-start (a build that
+/// never had one dropped in).
+class InstructionsStrings {
+  InstructionsStrings._();
+
+  static const appBarTitle = 'Instructions';
+  static const placeholder =
+      'Check back here for instructions once the simulation has begun.';
+  static const unavailable = 'No instructions were provided for this session.';
 }
 
 /// Notification history (`routes/notifications_route.dart`).
