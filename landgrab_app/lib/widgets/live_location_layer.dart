@@ -207,9 +207,14 @@ class _LiveLocationLayerState extends State<LiveLocationLayer>
         ]),
       MarkerLayer(markers: [
         Marker(
+          // Sized to fit the heading cone without clipping — the cone
+          // reaches _coneLength out from the centred dot, so the box needs
+          // to be at least twice that on a side. The extra space is
+          // transparent (and the marker isn't interactive), so a roomy box
+          // costs nothing.
           point: latLng,
-          width: 48,
-          height: 48,
+          width: 96,
+          height: 96,
           child: _LiveLocationMarker(headingDegrees: effectiveHeading),
         ),
       ]),
@@ -233,6 +238,11 @@ class _LiveLocationPainter extends CustomPainter {
   final double? headingDegrees;
   _LiveLocationPainter({required this.headingDegrees});
 
+  // Heading cone geometry. Kept larger than the dot so the direction the
+  // player is facing reads clearly at a glance.
+  static const double _coneLength = 40;
+  static const double _coneHalfWidth = 10;
+
   @override
   void paint(Canvas canvas, Size size) {
     final centre = Offset(size.width / 2, size.height / 2);
@@ -251,17 +261,15 @@ class _LiveLocationPainter extends CustomPainter {
       // by default, then heading in radians.
       final rad = heading * math.pi / 180;
       canvas.rotate(rad);
-      final coneLength = 24.0;
-      final coneHalfWidth = 12.0;
       final conePath = ui.Path()
-        ..moveTo(-coneHalfWidth, 0)
-        ..lineTo(coneHalfWidth, 0)
-        ..lineTo(0, -coneLength)
+        ..moveTo(-_coneHalfWidth, 0)
+        ..lineTo(_coneHalfWidth, 0)
+        ..lineTo(0, -_coneLength)
         ..close();
       canvas.drawPath(
         conePath,
         Paint()
-          ..shader = _coneShader(coneLength)
+          ..shader = _coneShader(_coneLength)
           ..style = PaintingStyle.fill,
       );
       canvas.restore();
@@ -295,6 +303,7 @@ class _LiveLocationPainter extends CustomPainter {
         Color(0x66418AFB),
         Color(0x00418AFB),
       ],
-    ).createShader(Rect.fromLTWH(-16, -length, 32, length));
+    ).createShader(
+        Rect.fromLTWH(-_coneHalfWidth, -length, _coneHalfWidth * 2, length));
   }
 }
