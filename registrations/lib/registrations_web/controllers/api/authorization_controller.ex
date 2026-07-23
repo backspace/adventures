@@ -135,7 +135,17 @@ defmodule RegistrationsWeb.ApiAuthorizationController do
   @spec apple_native_callback(Conn.t(), map()) :: Conn.t()
   def apple_native_callback(conn, %{"identity_token" => id_token} = params) do
     bundle_id = Application.fetch_env!(:registrations, :apple_bundle_id)
-    apple_config = [client_id: bundle_id, strategy: Assent.Strategy.Apple]
+
+    # Verifying the token needs the OIDC issuer + provider config (base_url,
+    # openid_configuration/jwks_uri). Those come from the Apple strategy's
+    # defaults — a hand-built `[client_id: ...]` omits them and
+    # `validate_id_token` fails with `MissingKeyError{key: :base_url}`. We only
+    # override `client_id`: a NATIVE identity token's `aud` is the app's Bundle
+    # ID, not the web Services ID.
+    apple_config =
+      Assent.Strategy.Apple.default_config([])
+      |> Keyword.put(:client_id, bundle_id)
+
     client_user = Map.get(params, "user", %{})
 
     with {:ok, jwt} <- validate_apple_id_token(apple_config, id_token),
