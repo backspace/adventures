@@ -219,12 +219,10 @@ defmodule Registrations.Landgrab do
           user_id && pole.creator_id == user_id ->
             {:error, :own_creation, pole}
 
-          # Strict roles: a liberator can only liberate OWNED ground.
-          # Unowned covers both never-claimed and already-liberated stakes —
-          # either way there's nothing here for them to free.
-          liberator?(team_id) and is_nil(current_owner_team_id_for_pole(pole)) ->
-            {:error, :nothing_to_liberate, pole}
-
+          # A liberator can work any stake — owned (freeing it), already-freed,
+          # or never-claimed. The ownerless cases won't change the zone, but the
+          # subversion player is still served a puzzlet and can complete it, so
+          # there's no "nothing to liberate" refusal on the scan path anymore.
           true ->
             state = pole_with_state(pole)
             active = active_puzzlet_for_pole(pole, user_id, exclude, team_id)
@@ -1988,28 +1986,27 @@ defmodule Registrations.Landgrab do
   # owner re-check closes the scan→answer race: if another team freed the
   # pole while this team was solving, there's nothing left to liberate.
   defp insert_liberation(%Pole{} = pole, puzzlet_id, team_id) do
-    if is_nil(current_owner_team_id_for_pole(pole)) do
-      {:error, :already_liberated}
-    else
-      %OwnershipEvent{}
-      |> OwnershipEvent.changeset(%{
-        kind: "liberate",
-        pole_id: pole.id,
-        puzzlet_id: puzzlet_id,
-        team_id: team_id
-      })
-      |> Repo.insert()
-      |> case do
-        {:ok, liberation} ->
-          {:ok, liberation}
+    # A liberator can work any stake: owned (this frees it), already-freed, or
+    # never-claimed. On any ownerless stake the event is an ownership no-op
+    # (owner stays nil), but it always books this team's solve credit
+    # (puzzlet_id) so the puzzlet completes. The per-team unique below still
+    # blocks a double-solve of the same relic (a double-submit).
+    %OwnershipEvent{}
+    |> OwnershipEvent.changeset(%{
+      kind: "liberate",
+      pole_id: pole.id,
+      puzzlet_id: puzzlet_id,
+      team_id: team_id
+    })
+    |> Repo.insert()
+    |> case do
+      {:ok, liberation} ->
+        {:ok, liberation}
 
-        # The per-team unique tripping means THIS team already has solve
-        # credit for the relic — a double-submit; nothing new to do here.
-        {:error, %Ecto.Changeset{errors: errors}} ->
-          if Keyword.has_key?(errors, :puzzlet_id),
-            do: {:error, :already_liberated},
-            else: {:error, :insert_failed}
-      end
+      {:error, %Ecto.Changeset{errors: errors}} ->
+        if Keyword.has_key?(errors, :puzzlet_id),
+          do: {:error, :already_liberated},
+          else: {:error, :insert_failed}
     end
   end
 

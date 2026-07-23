@@ -65,15 +65,16 @@ defmodule Registrations.Landgrab.LiberationGameplayTest do
       assert payload.active_puzzlet && payload.active_puzzlet.id != p1.id
     end
 
-    test "unowned ground refuses: nothing to liberate" do
+    test "never-claimed ground still serves a liberator — they can work any stake" do
       pole = insert(:pole)
-      insert(:puzzlet, pole: pole, status: :validated)
+      puzzlet = insert(:puzzlet, pole: pole, status: :validated)
       liberator = insert(:team) |> accept!()
 
-      assert {:error, :nothing_to_liberate, _pole} = Landgrab.scan_payload(pole.barcode, liberator.id)
+      assert {:ok, payload} = Landgrab.scan_payload(pole.barcode, liberator.id)
+      assert payload.active_puzzlet && payload.active_puzzlet.id == puzzlet.id
     end
 
-    test "an already-liberated stake also refuses: nothing left to free" do
+    test "an already-liberated stake still serves — the zone won't change, but the liberator can keep solving its puzzlets" do
       pole = insert(:pole)
       puzzlet = insert(:puzzlet, pole: pole, status: :validated)
       owner = insert(:team)
@@ -89,8 +90,12 @@ defmodule Registrations.Landgrab.LiberationGameplayTest do
         inserted_at: ago(60)
       )
 
+      # A fresh liberator walking up to already-freed ground isn't refused. It
+      # stays freed, and per-team serving offers the relic they haven't solved.
       liberator = insert(:team) |> accept!()
-      assert {:error, :nothing_to_liberate, _pole} = Landgrab.scan_payload(pole.barcode, liberator.id)
+      assert {:ok, payload} = Landgrab.scan_payload(pole.barcode, liberator.id)
+      assert payload.active_puzzlet && payload.active_puzzlet.id == puzzlet.id
+      assert Landgrab.pole_liberated?(pole)
     end
   end
 
@@ -156,7 +161,7 @@ defmodule Registrations.Landgrab.LiberationGameplayTest do
              ) == 0
     end
 
-    test "the race: freed by someone else mid-solve → already_liberated", ctx do
+    test "freed by someone else mid-solve → the answer still counts; the zone was already free and stays free", ctx do
       other = insert(:team) |> accept!()
 
       insert(:ownership_event,
@@ -167,8 +172,28 @@ defmodule Registrations.Landgrab.LiberationGameplayTest do
         inserted_at: ago(10)
       )
 
-      assert {:error, :already_liberated} =
+      assert {:ok, %{result: :liberated}} =
                Landgrab.record_attempt(ctx.puzzlet, ctx.liberator.id, ctx.user.id, "x")
+
+      # Ownership is unchanged — already freed, still freed — but the
+      # liberator's solve is credited so the puzzlet is theirs, done.
+      assert Landgrab.current_owner_team_id_for_pole(ctx.pole) == nil
+      assert Landgrab.pole_liberated?(ctx.pole)
+      assert MapSet.member?(Landgrab.team_solved_puzzlet_ids(ctx.liberator.id), ctx.puzzlet.id)
+    end
+
+    test "solving never-claimed ground records credit and leaves it unclaimed", ctx do
+      fresh = insert(:pole)
+      relic = insert(:puzzlet, pole: fresh, status: :validated, answer: "y")
+      insert(:team_puzzlet, team: ctx.liberator, puzzlet: relic, pole: fresh)
+
+      assert {:ok, %{result: :liberated}} =
+               Landgrab.record_attempt(relic, ctx.liberator.id, ctx.user.id, "y")
+
+      # Never had an owner, still has none — but the solve is credited.
+      assert Landgrab.current_owner_team_id_for_pole(fresh) == nil
+      assert Landgrab.pole_liberated?(fresh)
+      assert MapSet.member?(Landgrab.team_solved_puzzlet_ids(ctx.liberator.id), relic.id)
     end
 
     test "a wrong answer is just a wrong answer", ctx do
