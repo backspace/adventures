@@ -1,3 +1,21 @@
 $global-font-size: 120%;
 
 @import 'landgrab';
+
+// Foundation's reset groups the headers — `h1, .h1, h2, .h2, … {
+// font-family: "Helvetica Neue" }` — which ties the plain
+// `h2 { font-family: Anton }` from landgrab.scss on specificity (both
+// (0,0,1) for an <h2>). Browsers break the tie by source order, so Anton
+// wins and the on-site email PREVIEW looks right. But Premailex's inliner
+// scores that grouped selector by its strongest member (`.h2` → (0,1,0)),
+// so it ranks the Helvetica reset above Anton and inlines Helvetica onto
+// every <h2> in the sent mail. (The LANDGRAB <h1> escapes this because its
+// `.row.title h1` selector is (0,2,1) — high enough to win regardless.)
+// Scope the Anton rule to the email body (`.email h2` → (0,1,1)) so it
+// outranks the reset no matter how the inliner scores the group. Kept in
+// the email sheet only; the site's plain `h2` rule is unchanged. h3 gets
+// it here too (email-only — the site leaves h3 as Foundation's default).
+.email h2,
+.email h3 {
+  font-family: 'Anton', 'Helvetica Neue', sans-serif;
+}
