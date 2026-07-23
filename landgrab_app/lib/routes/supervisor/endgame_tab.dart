@@ -92,10 +92,17 @@ class _EndgameTabState extends State<EndgameTab> {
       final puzzlets = results[1] as List<DraftPuzzlet>;
       if (!mounted) return;
       setState(() {
+        // listPoles already returns validated poles only (retired/draft ones
+        // never reach here), so the pole dots need no status filter.
         _poleDots =
             poles.map((p) => LatLng(p.latitude, p.longitude)).toList();
+        // supervisionListPuzzlets returns every status, so drop retired ones
+        // — they're off the game and shouldn't clutter the endgame view.
         _puzzletDots = puzzlets
-            .where((p) => p.latitude != null && p.longitude != null)
+            .where((p) =>
+                p.status != DraftStatus.retired &&
+                p.latitude != null &&
+                p.longitude != null)
             .map((p) => LatLng(p.latitude!, p.longitude!))
             .toList();
       });
