@@ -56,6 +56,41 @@ defmodule RegistrationsWeb.Landgrab.LiberationApiTest do
       assert cleared["starts_at"] == nil
     end
 
+    test "reports each member team's stage and members for the breakdown", %{conn: conn} do
+      accepted =
+        insert(:team,
+          name: "Alpha",
+          liberation_invited_at: ~U[2026-07-25 21:00:00Z],
+          liberation_response: "accepted"
+        )
+
+      insert(:user, email: "acc-a@example.com", name: "Ada", team_id: accepted.id)
+
+      invited = insert(:team, name: "Bravo", liberation_invited_at: ~U[2026-07-25 21:00:00Z])
+      insert(:user, email: "inv-b@example.com", team_id: invited.id)
+
+      uninvited = insert(:team, name: "Charlie")
+      insert(:user, email: "un-c@example.com", team_id: uninvited.id)
+
+      # A memberless team must not appear (empty QR teams aren't in the game).
+      insert(:team, name: "Empty")
+
+      body = conn |> get("/landgrab/supervision/liberation") |> json_response(200)
+
+      assert body["team_count"] == 3
+      teams = body["teams"]
+      assert length(teams) == 3
+      by_name = Map.new(teams, &{&1["name"], &1})
+
+      assert by_name["Alpha"]["status"] == "accepted"
+      assert by_name["Bravo"]["status"] == "invited"
+      assert by_name["Charlie"]["status"] == "uninvited"
+      refute Map.has_key?(by_name, "Empty")
+
+      # Members carry through so a team chip can reveal who's on it.
+      assert [%{"email" => "acc-a@example.com", "name" => "Ada"}] = by_name["Alpha"]["members"]
+    end
+
     test "rejects a rollout end at or before the start", %{conn: conn} do
       body =
         conn

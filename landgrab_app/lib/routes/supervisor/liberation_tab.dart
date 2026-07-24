@@ -99,6 +99,128 @@ class _LiberationTabState extends State<LiberationTab> {
         '${two(value.hour)}:${two(value.minute)}';
   }
 
+  // Invitations summary + an expandable per-team breakdown. Collapsed it
+  // shows the counts; expanded it groups every team by rollout stage into
+  // tappable chips (tap → the team's members).
+  Widget _invitationsCard(ThemeData theme, LiberationStatus status) {
+    final undecided = status.invited - status.accepted - status.declined;
+    return Card(
+      child: Theme(
+        // Drop the ExpansionTile's default divider lines for a cleaner card.
+        data: theme.copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          title: Text('Invitations', style: theme.textTheme.titleMedium),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              '${status.invited} of ${status.teamCount} invited · '
+              '${status.accepted} accepted · ${status.declined} declined · '
+              '$undecided undecided',
+              style: theme.textTheme.bodySmall,
+            ),
+          ),
+          children: [
+            _teamGroup(theme, status, 'accepted', 'Accepted', Colors.green),
+            _teamGroup(
+                theme, status, 'declined', 'Declined', theme.colorScheme.error),
+            _teamGroup(theme, status, 'invited', 'Invited — undecided',
+                Colors.orange.shade800),
+            _teamGroup(theme, status, 'uninvited', 'Not yet invited',
+                theme.colorScheme.outline),
+            if (status.teams.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text('No teams yet.', style: theme.textTheme.bodySmall),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // One status group: a coloured heading and a wrap of team chips, or nothing
+  // when no team is in this stage.
+  Widget _teamGroup(ThemeData theme, LiberationStatus status, String key,
+      String label, Color color) {
+    final teams = status.teamsWithStatus(key);
+    if (teams.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label (${teams.length})',
+            style: theme.textTheme.labelMedium
+                ?.copyWith(color: color, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final t in teams)
+                ActionChip(
+                  avatar: Icon(Icons.group, size: 16, color: color),
+                  label: Text(t.name),
+                  onPressed: () => _showTeamMembers(t),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Bottom sheet listing who's on the tapped team.
+  void _showTeamMembers(LiberationTeam team) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final maxHeight = MediaQuery.of(ctx).size.height * 0.7;
+        final n = team.members.length;
+        return SafeArea(
+          top: false,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(team.name, style: theme.textTheme.titleLarge),
+                  const SizedBox(height: 2),
+                  Text('$n member${n == 1 ? '' : 's'}',
+                      style: theme.textTheme.bodySmall),
+                  const SizedBox(height: 12),
+                  if (team.members.isEmpty)
+                    const Text('No members.')
+                  else
+                    for (final m in team.members)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                        leading: const Icon(Icons.person_outline),
+                        title: Text(m.display),
+                        // Only show the email as a subtitle when it isn't
+                        // already the displayed handle.
+                        subtitle: m.display == m.email ? null : Text(m.email),
+                      ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_error != null) return Center(child: Text(_error!));
@@ -113,29 +235,7 @@ class _LiberationTabState extends State<LiberationTab> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Invitations', style: theme.textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${status.invited} of ${status.teamCount} teams invited',
-                    style: theme.textTheme.bodyLarge
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${status.accepted} accepted · ${status.declined} declined · '
-                    '${status.invited - status.accepted - status.declined} undecided',
-                    style: theme.textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _invitationsCard(theme, status),
           const SizedBox(height: 12),
           Card(
             child: Padding(

@@ -42,7 +42,10 @@ defmodule RegistrationsWeb.Landgrab.LiberationController do
       team_count: status.team_count,
       invited: status.invited,
       accepted: status.accepted,
-      declined: status.declined
+      declined: status.declined,
+      # Per-team breakdown for the supervisor's expandable view: each team's
+      # invite stage plus its members (so a team chip can reveal who's on it).
+      teams: status.teams
     }
   end
 end

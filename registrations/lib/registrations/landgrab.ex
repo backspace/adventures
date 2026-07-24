@@ -1400,18 +1400,35 @@ defmodule Registrations.Landgrab do
   def liberation_status do
     event = Events.current()
 
-    member_team_ids =
+    members_by_team =
       RegistrationsWeb.User
       |> where([u], not is_nil(u.team_id))
-      |> select([u], u.team_id)
-      |> distinct(true)
+      |> select([u], %{id: u.id, email: u.email, name: u.name, team_id: u.team_id})
       |> Repo.all()
-      |> MapSet.new()
+      |> Enum.group_by(& &1.team_id)
+
+    member_team_ids = MapSet.new(Map.keys(members_by_team))
 
     teams =
       RegistrationsWeb.Team
       |> Repo.all()
       |> Enum.filter(&MapSet.member?(member_team_ids, &1.id))
+
+    team_details =
+      teams
+      |> Enum.map(fn t ->
+        %{
+          id: t.id,
+          name: t.name,
+          status: liberation_team_status(t),
+          members:
+            members_by_team
+            |> Map.get(t.id, [])
+            |> Enum.map(&Map.take(&1, [:id, :email, :name]))
+            |> Enum.sort_by(&(&1.name || &1.email))
+        }
+      end)
+      |> Enum.sort_by(& &1.name)
 
     %{
       starts_at: event.liberation_starts_at,
@@ -1419,8 +1436,21 @@ defmodule Registrations.Landgrab do
       team_count: length(teams),
       invited: Enum.count(teams, & &1.liberation_invited_at),
       accepted: Enum.count(teams, &(&1.liberation_response == "accepted")),
-      declined: Enum.count(teams, &(&1.liberation_response == "declined"))
+      declined: Enum.count(teams, &(&1.liberation_response == "declined")),
+      teams: team_details
     }
+  end
+
+  # A team's liberation stage for the supervisor breakdown: accepted /
+  # declined once answered, invited (undecided) once the invite is out, else
+  # uninvited (its rollout slot hasn't come yet).
+  defp liberation_team_status(team) do
+    cond do
+      team.liberation_response == "accepted" -> "accepted"
+      team.liberation_response == "declined" -> "declined"
+      team.liberation_invited_at -> "invited"
+      true -> "uninvited"
+    end
   end
 
   @doc """
