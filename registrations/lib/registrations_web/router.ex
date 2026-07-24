@@ -378,6 +378,7 @@ defmodule RegistrationsWeb.Router do
 
     get("/dashboard", SupervisionController, :dashboard)
     get("/team_board", SupervisionController, :team_board)
+    get("/wrong_answers", SupervisionController, :wrong_answers)
     get("/endgame", EndgameController, :show)
     put("/endgame", EndgameController, :update)
     put("/endgame/messages", EndgameController, :update_messages)

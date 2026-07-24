@@ -8,6 +8,7 @@ import 'package:landgrab/routes/supervisor/liberation_tab.dart';
 import 'package:landgrab/routes/supervisor/organiser_messages_tab.dart';
 import 'package:landgrab/routes/supervisor/relief_tab.dart';
 import 'package:landgrab/routes/supervisor/teams_tab.dart';
+import 'package:landgrab/routes/supervisor/wrong_answers_tab.dart';
 import 'package:landgrab/widgets/accent_colors.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/status_badge.dart';
@@ -26,7 +27,7 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
   // then); before the event they land on Overview for validation
   // triage.
   static const _overviewTab = 0;
-  static const _messagesTab = 3;
+  static const _messagesTab = 4;
 
   DashboardCounts? _counts;
   String? _error;
@@ -81,7 +82,7 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
     }
 
     return DefaultTabController(
-      length: 7,
+      length: 8,
       initialIndex: _eventStarted! ? _messagesTab : _overviewTab,
       child: Scaffold(
         appBar: LandgrabAppBar(
@@ -92,6 +93,7 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
               Tab(text: 'Overview'),
               Tab(text: 'Content'),
               Tab(text: 'Teams'),
+              Tab(text: 'Wrong answers'),
               Tab(text: 'Messages'),
               Tab(text: 'Relief'),
               Tab(text: 'Liberation'),
@@ -116,6 +118,7 @@ class _SupervisorRouteState extends State<SupervisorRoute> {
                   setState(() => _contentDrawing = drawing),
             ),
             TeamsTab(api: widget.api),
+            WrongAnswersTab(api: widget.api),
             OrganiserMessagesTab(api: widget.api),
             ReliefTab(api: widget.api),
             LiberationTab(api: widget.api),

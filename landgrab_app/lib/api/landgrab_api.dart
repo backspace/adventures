@@ -5,6 +5,7 @@ import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/liberation_status.dart';
 import 'package:landgrab/models/team_board.dart';
+import 'package:landgrab/models/wrong_answers_board.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/relief_status.dart';
 import 'package:landgrab/models/landgrab_event.dart';
@@ -1217,6 +1218,13 @@ class LandgrabApi {
   Future<TeamBoard> getSupervisionTeamBoard() async {
     final response = await dio.get('/landgrab/supervision/team_board');
     return TeamBoard.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Supervisor wrong-answers dashboard: puzzlets that have drawn incorrect
+  /// guesses, with the correct answer and each wrong attempt (answer + team).
+  Future<WrongAnswersBoard> getSupervisionWrongAnswers() async {
+    final response = await dio.get('/landgrab/supervision/wrong_answers');
+    return WrongAnswersBoard.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Schedule (or, with nulls, cancel) the liberation rollout window.

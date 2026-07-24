@@ -19,6 +19,10 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
     json(conn, Landgrab.supervision_team_board())
   end
 
+  def wrong_answers(conn, _params) do
+    json(conn, Landgrab.supervision_wrong_answers())
+  end
+
   def list_validators(conn, params) do
     opts =
       case params["exclude_user_id"] do

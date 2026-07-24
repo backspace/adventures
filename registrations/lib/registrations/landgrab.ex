@@ -891,6 +891,60 @@ defmodule Registrations.Landgrab do
   end
 
   @doc """
+  Supervisor "wrong answers" dashboard: every puzzlet that has drawn at least
+  one incorrect guess, with the correct answer for reference and each wrong
+  attempt (the answer given, the team that gave it, and when). Puzzlets are
+  ordered most-missed first; attempts within a puzzlet run oldest to newest.
+  """
+  def supervision_wrong_answers do
+    # Team lives in `public`; without an explicit prefix the preload would
+    # inherit the attempts query's `landgrab` prefix and look for
+    # `landgrab.teams`. Puzzlet/pole are landgrab-prefixed, so they're fine.
+    team_query = from(t in RegistrationsWeb.Team, prefix: "public")
+
+    attempts =
+      Attempt
+      |> where([a], a.correct == false)
+      |> order_by([a], asc: a.inserted_at)
+      |> Repo.all()
+      |> Repo.preload(puzzlet: :pole, team: team_query)
+
+    puzzlets =
+      attempts
+      |> Enum.group_by(& &1.puzzlet_id)
+      |> Enum.map(fn {_puzzlet_id, group} ->
+        puzzlet = hd(group).puzzlet
+
+        %{
+          puzzlet_id: puzzlet.id,
+          difficulty: puzzlet.difficulty,
+          instructions: puzzlet.instructions,
+          answer: puzzlet.answer,
+          pole:
+            puzzlet.pole &&
+              %{
+                id: puzzlet.pole.id,
+                label: puzzlet.pole.label,
+                barcode: puzzlet.pole.barcode
+              },
+          wrong_count: length(group),
+          attempts:
+            Enum.map(group, fn a ->
+              %{
+                answer_given: a.answer_given,
+                team_id: a.team_id,
+                team_name: a.team && a.team.name,
+                at: a.inserted_at
+              }
+            end)
+        }
+      end)
+      |> Enum.sort_by(& &1.wrong_count, :desc)
+
+    %{puzzlets: puzzlets}
+  end
+
+  @doc """
   Records an attempt by a team/user against a puzzlet. If the answer is
   correct and no capture exists yet, also creates the Capture row in the same
   transaction.
