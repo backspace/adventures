@@ -80,15 +80,21 @@ class _AttachmentMapRouteState extends State<AttachmentMapRoute> {
     }
   }
 
-  // Retired content is off the game entirely, so it's excluded from this
-  // map outright — no pins, no lines, not counted. (Its attachment sheets
-  // still list it elsewhere; here we only care about what's in play.)
+  // Content that's off the game — retired or withdrawn — is excluded from
+  // this map outright: no pins, no lines, not counted. Validator-only
+  // puzzlets are set-aside content, not player-facing wiring, so they're
+  // hidden here too. (The attachment sheets still get the full, unfiltered
+  // lists — `_poles`/`_puzzlets` — so this only affects what's on the map,
+  // not what you can attach.)
+  static bool _removed(DraftStatus s) =>
+      s == DraftStatus.retired || s == DraftStatus.withdrawn;
+
   List<DraftPole> get _visiblePoles => (_poles ?? const [])
-      .where((p) => p.status != DraftStatus.retired)
+      .where((p) => !_removed(p.status))
       .toList();
 
   List<DraftPuzzlet> get _visiblePuzzlets => (_puzzlets ?? const [])
-      .where((p) => p.status != DraftStatus.retired)
+      .where((p) => !_removed(p.status) && !p.validatorOnly)
       .toList();
 
   List<LatLng> get _allPoints => [

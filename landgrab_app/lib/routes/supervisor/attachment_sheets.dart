@@ -98,7 +98,10 @@ class _PoleAttachmentsSheetState extends State<_PoleAttachmentsSheet> {
     final located = <(DraftPuzzlet, double)>[];
     final unlocated = <DraftPuzzlet>[];
     for (final p in _puzzlets) {
-      if (p.poleId != null || !_live(p.status)) continue;
+      // Skip anything already attached, off the game (retired/withdrawn), or
+      // validator-only — validator-only puzzlets are set-aside content, never
+      // offered as new player-facing wiring (matching the attachments map).
+      if (p.poleId != null || !_live(p.status) || p.validatorOnly) continue;
       if (p.latitude == null || p.longitude == null) {
         unlocated.add(p);
         continue;
@@ -115,8 +118,9 @@ class _PoleAttachmentsSheetState extends State<_PoleAttachmentsSheet> {
     ];
   }
 
-  int get _totalUnattached =>
-      _puzzlets.where((p) => p.poleId == null && _live(p.status)).length;
+  int get _totalUnattached => _puzzlets
+      .where((p) => p.poleId == null && _live(p.status) && !p.validatorOnly)
+      .length;
 
   Future<void> _attach(DraftPuzzlet p) =>
       _run(p, () => widget.api.supervisorEditPuzzlet(p.id, poleId: widget.pole.id));
