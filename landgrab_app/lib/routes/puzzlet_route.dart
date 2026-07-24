@@ -77,6 +77,18 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   // Set once we've committed to leaving (our own capture, or a resolution
   // pop) so the two paths never fire twice.
   bool _leaving = false;
+  // Set when OUR OWN submit ended this puzzlet for us (a lockout after the
+  // last wrong guess). That frees the slot server-side, which broadcasts
+  // team_puzzlets_changed — and without this the broadcast handler would
+  // misread our lockout as the puzzlet being pulled out from under us and
+  // flash "no longer available" over the real "out of guesses" message.
+  bool _selfResolved = false;
+  // True from the moment we fire a submit until its response is handled. The
+  // server broadcasts team_puzzlets_changed *during* the attempt (before our
+  // HTTP response returns), so this must be set BEFORE the network call —
+  // otherwise that broadcast beats _selfResolved and flashes "no longer
+  // available". While submitting, the submit response owns the messaging.
+  bool _submitting = false;
 
   @override
   void initState() {
@@ -98,7 +110,13 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   /// (supervisor withdrawal or a rival capture) — tell them and go back to
   /// the map, where they can pick up the next one.
   Future<void> _onTeamPuzzletsChanged(String teamId) async {
-    if (_leaving || teamId != widget.teamId) return;
+    // Skip when the change is ours: while a submit is in flight (_submitting)
+    // or after it locked us out (_selfResolved). Our own lockout frees the
+    // slot and fires this same broadcast — that's not the puzzlet being pulled
+    // out from under us, and the submit response owns the messaging.
+    if (_leaving || _submitting || _selfResolved || teamId != widget.teamId) {
+      return;
+    }
     final List<ScanResult> active;
     try {
       active = await widget.api.listActivePuzzlets();
@@ -151,7 +169,13 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     final answer = isStrict ? raw : raw.trim();
     if (answer.isEmpty) return;
 
-    setState(() => _busy = true);
+    // _submitting set BEFORE the await: the server's team_puzzlets_changed
+    // broadcast can arrive before this call's response, and while a submit is
+    // in flight its own response — not the broadcast — decides what to show.
+    setState(() {
+      _busy = true;
+      _submitting = true;
+    });
 
     // submitAnswer maps every failure it understands (and, as of the
     // AttemptFailed catch-all, every one it doesn't) to an outcome
@@ -167,8 +191,11 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
           _attemptsRemaining = outcome.attemptsRemaining;
           _previousWrongAnswers = List.of(outcome.previousWrongAnswers);
           _answerController.clear();
+          // The last wrong guess locks us out and frees our slot server-side.
+          if (outcome.attemptsRemaining <= 0) _selfResolved = true;
         } else if (outcome is AttemptLockedOut) {
           _attemptsRemaining = 0;
+          _selfResolved = true;
         }
       });
       if (outcome is AttemptCorrect) _celebrateAndPop(outcome.captureColorIndex);
@@ -177,7 +204,12 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       if (!mounted) return;
       setState(() => _outcome = AttemptFailed(e.toString()));
     } finally {
-      if (mounted) setState(() => _busy = false);
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _submitting = false;
+        });
+      }
     }
   }
 
@@ -189,6 +221,9 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
       // success feedback.
       AttemptCorrect() => null,
       AttemptLiberated() => null,
+      // A wrong guess with no attempts left IS the lockout — say so, rather
+      // than the weaker "Incorrect. 0 attempt(s) left."
+      AttemptIncorrect() when o.attemptsRemaining <= 0 => PuzzletStrings.lockedOut,
       AttemptIncorrect() => PuzzletStrings.incorrect(o.attemptsRemaining),
       AttemptLockedOut() => PuzzletStrings.lockedOut,
       AttemptAlreadyCaptured() => PuzzletStrings.alreadyCapturedByOther,
@@ -202,6 +237,9 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
   }
 
   Color? _outcomeColor() => switch (_outcome) {
+        // Exhausted attempts reads as a terminal (red) state, like a lockout.
+        AttemptIncorrect(:final attemptsRemaining) when attemptsRemaining <= 0 =>
+          Colors.red.shade700,
         AttemptIncorrect() => Colors.orange.shade700,
         AttemptLockedOut() ||
         AttemptAlreadyCaptured() ||
