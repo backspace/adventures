@@ -248,6 +248,9 @@ class _AttachmentMapRouteState extends State<AttachmentMapRoute> {
       api: widget.api,
       puzzlet: puzzlet,
       allPoles: _poles ?? const [],
+      // Full (unfiltered) list — used only to count each pole's attached
+      // puzzlets, so retired/validator-only still count toward a pole's load.
+      allPuzzlets: _puzzlets ?? const [],
     );
     if (changed && mounted) {
       _changed = true;

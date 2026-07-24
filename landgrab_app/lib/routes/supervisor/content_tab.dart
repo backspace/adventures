@@ -1081,6 +1081,7 @@ class _ContentTabState extends State<ContentTab> {
       api: widget.api,
       puzzlet: puzzlet,
       allPoles: _poles ?? const [],
+      allPuzzlets: _puzzlets ?? const [],
       onUndone: _reloadAll,
     );
     if (result == PinActionResult.changed) await _reloadAll();

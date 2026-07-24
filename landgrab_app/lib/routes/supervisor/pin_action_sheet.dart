@@ -37,6 +37,7 @@ Future<PinActionResult> showPuzzletPinSheet(
   required LandgrabApi api,
   required DraftPuzzlet puzzlet,
   List<DraftPole> allPoles = const [],
+  List<DraftPuzzlet> allPuzzlets = const [],
   Future<void> Function()? onUndone,
 }) async {
   final result = await showModalBottomSheet<PinActionResult>(
@@ -46,6 +47,7 @@ Future<PinActionResult> showPuzzletPinSheet(
       api: api,
       puzzlet: puzzlet,
       allPoles: allPoles,
+      allPuzzlets: allPuzzlets,
       onUndone: onUndone,
     ),
   );
@@ -272,12 +274,14 @@ class _PuzzletPinSheet extends StatefulWidget {
   final LandgrabApi api;
   final DraftPuzzlet puzzlet;
   final List<DraftPole> allPoles;
+  final List<DraftPuzzlet> allPuzzlets;
   final Future<void> Function()? onUndone;
 
   const _PuzzletPinSheet({
     required this.api,
     required this.puzzlet,
     this.allPoles = const [],
+    this.allPuzzlets = const [],
     this.onUndone,
   });
 
@@ -380,6 +384,7 @@ class _PuzzletPinSheetState extends State<_PuzzletPinSheet> {
       api: widget.api,
       puzzlet: widget.puzzlet,
       allPoles: widget.allPoles,
+      allPuzzlets: widget.allPuzzlets,
     );
     if (!mounted) return;
     if (changed) Navigator.of(context).pop(PinActionResult.changed);

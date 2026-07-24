@@ -50,6 +50,7 @@ Future<bool> showSupervisorPuzzletPole(
   required LandgrabApi api,
   required DraftPuzzlet puzzlet,
   required List<DraftPole> allPoles,
+  required List<DraftPuzzlet> allPuzzlets,
 }) async {
   final changed = await showModalBottomSheet<bool>(
     context: context,
@@ -58,6 +59,7 @@ Future<bool> showSupervisorPuzzletPole(
       api: api,
       puzzlet: puzzlet,
       allPoles: allPoles,
+      allPuzzlets: allPuzzlets,
     ),
   );
   return changed ?? false;
@@ -243,11 +245,13 @@ class _PuzzletPoleSheet extends StatefulWidget {
   final LandgrabApi api;
   final DraftPuzzlet puzzlet;
   final List<DraftPole> allPoles;
+  final List<DraftPuzzlet> allPuzzlets;
 
   const _PuzzletPoleSheet({
     required this.api,
     required this.puzzlet,
     required this.allPoles,
+    required this.allPuzzlets,
   });
 
   @override
@@ -258,6 +262,20 @@ class _PuzzletPoleSheetState extends State<_PuzzletPoleSheet> {
   late DraftPuzzlet _puzzlet = widget.puzzlet;
   bool _busy = false;
   bool _changed = false;
+
+  // How many puzzlets each pole already has attached (by pole id), so the
+  // supervisor can see a pole's load before moving another one onto it. A
+  // snapshot from the passed-in list — the map reloads on close.
+  late final Map<String, int> _attachedCounts = _countByPole();
+
+  Map<String, int> _countByPole() {
+    final counts = <String, int>{};
+    for (final p in widget.allPuzzlets) {
+      final id = p.poleId;
+      if (id != null) counts[id] = (counts[id] ?? 0) + 1;
+    }
+    return counts;
+  }
 
   DraftPole? get _attachedPole {
     final id = _puzzlet.poleId;
@@ -396,6 +414,7 @@ class _PuzzletPoleSheetState extends State<_PuzzletPoleSheet> {
                     _PoleLine(
                       pole: candidate,
                       distanceM: d,
+                      attachedCount: _attachedCounts[candidate.id] ?? 0,
                       busy: _busy,
                       onAttach: () => _attach(candidate),
                     ),
@@ -477,12 +496,14 @@ class _PuzzletLine extends StatelessWidget {
 class _PoleLine extends StatelessWidget {
   final DraftPole pole;
   final double distanceM;
+  final int attachedCount;
   final bool busy;
   final VoidCallback onAttach;
 
   const _PoleLine({
     required this.pole,
     required this.distanceM,
+    required this.attachedCount,
     required this.busy,
     required this.onAttach,
   });
@@ -509,6 +530,14 @@ class _PoleLine extends StatelessWidget {
                         dense: true),
                     const SizedBox(width: 6),
                     Text('${_distanceLabel(distanceM)} away',
+                        style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(width: 6),
+                    // How many puzzlets this pole already holds — a load hint
+                    // so you don't pile another onto a busy pole unawares.
+                    Icon(Icons.link,
+                        size: 13, color: Theme.of(context).hintColor),
+                    const SizedBox(width: 2),
+                    Text('$attachedCount attached',
                         style: Theme.of(context).textTheme.bodySmall),
                   ],
                 ),
