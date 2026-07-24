@@ -12,6 +12,31 @@ import 'package:landgrab/widgets/team_style.dart';
 /// change to what a pole tap shows lands here, not in the route's state class.
 /// HomeRoute owns the map state and just calls these with the tapped pole.
 
+/// The swatch beside the tap-a-zone text. An owned stake shows its owner's
+/// team identity — colour + pattern, as a square so it doesn't read as a
+/// (round) pole pin, matching the header and the zone fill. An unowned stake
+/// has no team, so it falls back to the plain pole pin.
+Widget _ownerSwatch(Pole pole, bool isMine, double size) {
+  final idx = pole.currentOwnerColorIndex;
+  final owned = pole.currentOwnerTeamId != null && idx != null;
+
+  // Owned: the team-identity swatch — its white backing carries the map's
+  // translucent fill, so the colour reads the same pale tint here (on the dark
+  // snackbar) as it does over the light basemap. Unowned has no team, so the
+  // plain pole pin.
+  if (owned) return TeamSwatch(colorIndex: idx, isMine: isMine, size: size);
+  return SizedBox(
+    width: size,
+    height: size,
+    child: PoleDot(
+      isMine: isMine,
+      prohibitive: pole.prohibitive,
+      locked: pole.locked,
+      dimension: size,
+    ),
+  );
+}
+
 /// Show who holds the tapped stake (and its lock / under-attack / prohibitive
 /// state). A stake carrying accessibility info gets a bottom sheet (room for
 /// the tags/notes); everything else gets a compact snackbar. [underAttack] and
@@ -24,7 +49,6 @@ void showPoleOwner(
 }) {
   final idx = pole.currentOwnerColorIndex;
   final owned = pole.currentOwnerTeamId != null && idx != null;
-  final style = owned ? TeamStyle.forIndex(idx) : null;
   final isMine = pole.currentOwnerTeamId == teamId;
   final name = pole.currentOwnerTeamName;
 
@@ -53,7 +77,7 @@ void showPoleOwner(
   // gets a sheet instead of a snackbar, so there's room to lay the tags out as
   // chips and show the free-text notes.
   if (pole.hasAccessibilityInfo) {
-    _showAccessibilitySheet(context, pole, style, isMine, message);
+    _showAccessibilitySheet(context, pole, isMine, message);
     return;
   }
 
@@ -66,19 +90,9 @@ void showPoleOwner(
       behavior: SnackBarBehavior.floating,
       duration: const Duration(seconds: 4),
       content: Row(children: [
-        // The exact marker from the map, larger — so "this icon means…" is
-        // literally the same glyph beside the words.
-        SizedBox(
-          width: 24,
-          height: 24,
-          child: PoleDot(
-            style: style,
-            isMine: isMine,
-            prohibitive: pole.prohibitive,
-            locked: pole.locked,
-            dimension: 24,
-          ),
-        ),
+        // Owner identity beside the words: the team's colour + pattern (square)
+        // for a claimed stake, or the plain pin for an unclaimed one.
+        _ownerSwatch(pole, isMine, 24),
         const SizedBox(width: 12),
         Expanded(child: Text(message)),
       ]),
@@ -89,7 +103,7 @@ void showPoleOwner(
 /// owner/state summary as the snackbar, followed by the tags (as chips, each
 /// explaining itself on tap) and any free-text notes.
 void _showAccessibilitySheet(
-    BuildContext context, Pole pole, TeamStyle? style, bool isMine, String message) {
+    BuildContext context, Pole pole, bool isMine, String message) {
   showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -101,17 +115,7 @@ void _showAccessibilitySheet(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              SizedBox(
-                width: 28,
-                height: 28,
-                child: PoleDot(
-                  style: style,
-                  isMine: isMine,
-                  prohibitive: pole.prohibitive,
-                  locked: pole.locked,
-                  dimension: 28,
-                ),
-              ),
+              _ownerSwatch(pole, isMine, 28),
               const SizedBox(width: 12),
               Expanded(
                 child:

@@ -152,6 +152,15 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   final Map<String, String?> _prevOwners = {};
   final Map<String, String?> _captureFromOwner = {};
 
+  // Tap-link animations: poles are one colour now, so which pole owns which
+  // zone isn't obvious. Tapping a zone pops its pole (a ripple from the pin);
+  // tapping a pole flashes its zone. Keyed by pole id → when the animation
+  // began, driven by the same ticker and purged on expiry like captures.
+  static const Duration _polePopDuration = Duration(milliseconds: 550);
+  static const Duration _zoneFlashDuration = Duration(milliseconds: 650);
+  final Map<String, DateTime> _polePopAt = {};
+  final Map<String, DateTime> _zoneFlashAt = {};
+
   // team_id → colour index, accumulated from pole payloads and never
   // forgotten — so a just-deposed team still styles correctly during the
   //800 ms capture animation. Passed to TerritoryLayer.
@@ -486,6 +495,12 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       _lastAttackAt.remove(id);
     }
 
+    // Tap-link (pop / flash) expiries.
+    _polePopAt.removeWhere(
+        (_, start) => now.difference(start) >= _polePopDuration);
+    _zoneFlashAt.removeWhere(
+        (_, start) => now.difference(start) >= _zoneFlashDuration);
+
     // Ambient pulse for the attack rings — 0..1 loop.
     _pulsePhase = (elapsed.inMicroseconds / _pulseCycle.inMicroseconds) % 1.0;
 
@@ -493,6 +508,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // liberated zones keep it alive so their hatch keeps drifting.
     if (_captureStartedAt.isEmpty &&
         _lastAttackAt.isEmpty &&
+        _polePopAt.isEmpty &&
+        _zoneFlashAt.isEmpty &&
         _highlightedPoleId == null &&
         !_anyLiberated()) {
       _animTicker?.dispose();
@@ -971,14 +988,6 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     _refreshActivePuzzlets();
   }
 
-  /// Map style for a pole's current owner — colour + pattern from the
-  /// server's stable per-team index. Null when unclaimed.
-  TeamStyle? _styleForPole(Pole pole) {
-    final index = pole.currentOwnerColorIndex;
-    if (pole.currentOwnerTeamId == null || index == null) return null;
-    return TeamStyle.forIndex(index);
-  }
-
   /// Tap-to-inspect: show who holds the tapped zone.
   ///
   /// With pre-dissolved territory shapes present, the tapped owner is whichever
@@ -1011,7 +1020,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       }
     }
     if (nearestPole != null && bestPx2 <= _poleTapSlopPx * _poleTapSlopPx) {
-      _showPoleOwner(nearestPole);
+      _onPoleTapped(nearestPole);
       return;
     }
 
@@ -1029,7 +1038,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
             (pole.currentOwnerTeamId == null && !pole.liberated)) {
           return;
         }
-        _showPoleOwner(pole);
+        _onZoneTapped(pole);
         return;
       }
       return; // tapped outside every zone
@@ -1053,7 +1062,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // (wired on the marker itself); a claimed OR liberated zone (both painted)
     // responds anywhere within it.
     if (nearest.currentOwnerTeamId == null && !nearest.liberated) return;
-    _showPoleOwner(nearest);
+    _onZoneTapped(nearest);
   }
 
   /// Ray-casting point-in-polygon on a (lat,lng) ring.
@@ -1081,6 +1090,27 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         teamId: _teamId,
         underAttack: _lastAttackAt.containsKey(pole.id),
       );
+
+  /// Tapped a pole (its marker, or close enough): flash its zone so the
+  /// pole→zone link is visible, then show the owner.
+  void _onPoleTapped(Pole pole) {
+    _zoneFlashAt[pole.id] = DateTime.now();
+    _ensureAnimTicker();
+    _showPoleOwner(pole);
+  }
+
+  /// Tapped a zone: pop its pole (a ripple from the pin) so you can see which
+  /// stake holds this ground, then show the owner. Skips the pop when the
+  /// pole's pin isn't drawn — during the endgame shrink a zone stays painted
+  /// after its pole is culled past the boundary (or hidden via declutter), and
+  /// rippling an absent pin points at nothing.
+  void _onZoneTapped(Pole pole) {
+    if (_polesInPlay().any((p) => p.id == pole.id)) {
+      _polePopAt[pole.id] = DateTime.now();
+      _ensureAnimTicker();
+    }
+    _showPoleOwner(pole);
+  }
 
   void _toggleHideProhibitive() {
     setState(() => _hideProhibitive = !_hideProhibitive);
@@ -1141,8 +1171,6 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // only when not on a team.
     final myColorIndex =
         _myColorIndex ?? (_teamId == null ? null : _teamColorIndex[_teamId]);
-    final myStyle =
-        myColorIndex == null ? null : TeamStyle.forIndex(myColorIndex);
     // In test play we intentionally bypass the event-start gate — the
     // whole point of a rehearsal is to play before the event begins.
     final preEvent = _event != null && !_event!.started;
@@ -1175,18 +1203,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                     ],
                   )
                 : Text(titleText);
-            if (myStyle == null) return label;
+            if (myColorIndex == null) return label;
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CustomPaint(
-                    painter: TeamGlyphPainter(
-                        color: myStyle.color, pattern: myStyle.pattern),
-                  ),
-                ),
+                TeamSwatch(colorIndex: myColorIndex, isMine: true, size: 20),
                 const SizedBox(width: 10),
                 Flexible(child: label),
               ],
@@ -1283,6 +1304,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                               captureStartedAt: _captureStartedAt,
                               captureFromOwner: _captureFromOwner,
                               captureAnimationDuration: _captureAnimationDuration,
+                              polePopAt: _polePopAt,
+                              polePopDuration: _polePopDuration,
+                              zoneFlashAt: _zoneFlashAt,
+                              zoneFlashDuration: _zoneFlashDuration,
                               liberatedShapes: _liberatedShapes(),
                               pulsePhase: _pulsePhase,
                               liberatedStyle: _liberatedStyle,
@@ -1290,8 +1315,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                               attackedPoleIds: _lastAttackAt.keys.toSet(),
                               highlightedPoleId: _highlightedPoleId,
                               polesInPlay: _polesInPlay(),
-                              onPoleTap: _showPoleOwner,
-                              styleForPole: _styleForPole,
+                              onPoleTap: _onPoleTapped,
                               validatorOnlyMarkers: _validatorOnlyPuzzlets.isEmpty
                                   ? const []
                                   : _validatorOnlyMarkers(),

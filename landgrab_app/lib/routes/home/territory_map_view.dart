@@ -15,9 +15,12 @@ import 'package:landgrab/widgets/highlight_reticle.dart';
 import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 import 'package:landgrab/widgets/liberated_zone_layer.dart';
 import 'package:landgrab/widgets/live_location_layer.dart';
+import 'package:landgrab/widgets/pole_pop_layer.dart';
 import 'package:landgrab/widgets/precomputed_territory_layer.dart';
 import 'package:landgrab/widgets/team_style.dart';
 import 'package:landgrab/widgets/territory_layer.dart';
+import 'package:landgrab/widgets/territory_pattern_layer.dart';
+import 'package:landgrab/widgets/zone_flash_layer.dart';
 
 /// The gameplay map: the tile basemap, territory fills (pre-dissolved,
 /// live-block, or Voronoi), the liberated-zone hatch, bathroom/capture/attack
@@ -51,6 +54,13 @@ class TerritoryMapView extends StatelessWidget {
   final Map<String, String?> captureFromOwner;
   final Duration captureAnimationDuration;
 
+  // Tap-link animations: pole id → when a pop (tapped its zone) or flash
+  // (tapped the pole) began. Purged by the parent's ticker.
+  final Map<String, DateTime> polePopAt;
+  final Duration polePopDuration;
+  final Map<String, DateTime> zoneFlashAt;
+  final Duration zoneFlashDuration;
+
   // Liberated-zone hatch.
   final List<LiberatedShape> liberatedShapes;
   final double pulsePhase;
@@ -61,10 +71,10 @@ class TerritoryMapView extends StatelessWidget {
   final String? highlightedPoleId;
 
   // Poles the endgame boundary hasn't passed (the markers to draw), plus how
-  // to tap and style each.
+  // to tap each. Pins are a single consistent colour now, so there's no
+  // per-pole style callback.
   final List<Pole> polesInPlay;
   final void Function(Pole pole) onPoleTap;
-  final TeamStyle? Function(Pole pole) styleForPole;
 
   // Prebuilt validator-only puzzlet markers (empty for players).
   final List<Marker> validatorOnlyMarkers;
@@ -84,6 +94,10 @@ class TerritoryMapView extends StatelessWidget {
     required this.captureStartedAt,
     required this.captureFromOwner,
     required this.captureAnimationDuration,
+    required this.polePopAt,
+    required this.polePopDuration,
+    required this.zoneFlashAt,
+    required this.zoneFlashDuration,
     required this.liberatedShapes,
     required this.pulsePhase,
     required this.liberatedStyle,
@@ -92,9 +106,77 @@ class TerritoryMapView extends StatelessWidget {
     required this.highlightedPoleId,
     required this.polesInPlay,
     required this.onPoleTap,
-    required this.styleForPole,
     required this.validatorOnlyMarkers,
   });
+
+  // PROTOTYPE: per-team hatch over the pre-dissolved territory fills, so teams
+  // that share a palette colour (rosters past 12) read apart by texture. Only
+  // owned regions whose team has a non-solid pattern are textured — so with ≤12
+  // teams this is empty and the pattern layer renders nothing. Mirrors
+  // PrecomputedTerritoryLayer's owner resolution (region.poleId → pole owner).
+  List<TerritoryPatternShape> _precomputedPatternShapes() {
+    final regions = territory;
+    if (regions == null) return const [];
+
+    final ownerByPole = <String, String>{};
+    for (final p in poles) {
+      final o = p.currentOwnerTeamId;
+      if (o != null) ownerByPole[p.id] = o;
+    }
+
+    final out = <TerritoryPatternShape>[];
+    for (final r in regions) {
+      final owner = ownerByPole[r.poleId];
+      if (owner == null) continue; // uncaptured → no fill, no pattern
+      final index = colorIndexByTeam[owner];
+      if (index == null) continue;
+
+      final style = TeamStyle.forIndex(index);
+      // Preview forces a varied non-solid band onto every zone so the look can
+      // be judged without a 13+ team roster; real behaviour uses the team's
+      // own pattern (solid for the first 12, textured beyond).
+      final pattern = kPreviewAllZonePatterns
+          ? TeamPattern
+              .values[1 + (index % (TeamPattern.values.length - 1))]
+          : style.pattern;
+      if (pattern == TeamPattern.solid) continue;
+
+      out.add(TerritoryPatternShape(
+        ring: r.ring,
+        holes: r.holes,
+        pattern: pattern,
+        color: style.color,
+      ));
+    }
+    return out;
+  }
+
+  // Flash shapes for zones whose pole was just tapped. Precomputed geometry
+  // only (the block/Voronoi paths have no ready per-pole ring); the pop still
+  // fires there, just without a matching zone flash.
+  List<ZoneFlashShape> _zoneFlashShapes() {
+    final regions = territory;
+    if (regions == null || zoneFlashAt.isEmpty) return const [];
+    final byPole = {for (final p in poles) p.id: p};
+    final now = DateTime.now();
+    final out = <ZoneFlashShape>[];
+    for (final r in regions) {
+      final start = zoneFlashAt[r.poleId];
+      if (start == null) continue;
+      // Only flash a zone that's actually painted (owned or liberated) — an
+      // unclaimed pole has no fill, so there's nothing to point at.
+      final pole = byPole[r.poleId];
+      if (pole == null ||
+          (pole.currentOwnerTeamId == null && !pole.liberated)) {
+        continue;
+      }
+      final t = (now.difference(start).inMicroseconds / 1000 /
+              zoneFlashDuration.inMilliseconds)
+          .clamp(0.0, 1.0);
+      out.add(ZoneFlashShape(ring: r.ring, holes: r.holes, progress: t));
+    }
+    return out;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,14 +207,17 @@ class TerritoryMapView extends StatelessWidget {
         // icons remain readable over their own coloured cells. Prefer
         // pre-dissolved per-pole shapes; then the live block path; else the
         // Voronoi layer.
-        if (territory != null)
+        if (territory != null) ...[
           PrecomputedTerritoryLayer(
             regions: territory!,
             poles: poles,
             myOwnerId: teamId,
             colorIndexByTeam: colorIndexByTeam,
-          )
-        else if (territoryBlocks != null)
+          ),
+          // Per-team hatch over the fills (empty for ≤12 teams). Above the
+          // colour fill, below the pins.
+          TerritoryPatternLayer(shapes: _precomputedPatternShapes()),
+        ] else if (territoryBlocks != null)
           BlockTerritoryLayer(
             blocks: territoryBlocks!,
             poles: poles,
@@ -156,6 +241,8 @@ class TerritoryMapView extends StatelessWidget {
           phase: pulsePhase,
           style: liberatedStyle,
         ),
+        // Brief white flash over a zone whose pole was just tapped.
+        ZoneFlashLayer(shapes: _zoneFlashShapes()),
         BathroomLayer(bathrooms: bathrooms),
         CaptureRingsLayer(
           poles: poles,
@@ -168,6 +255,12 @@ class TerritoryMapView extends StatelessWidget {
           poles: poles,
           attackedPoleIds: attackedPoleIds,
           pulsePhase: pulsePhase,
+        ),
+        // Ripple out of a pole whose zone was just tapped.
+        PolePopLayer(
+          poles: poles,
+          poppedAt: polePopAt,
+          duration: polePopDuration,
         ),
         // Transient "which one" reticle from a notification's "View on map".
         if (highlightedPoleId != null)
@@ -187,7 +280,6 @@ class TerritoryMapView extends StatelessWidget {
           // squeeze without seeing a circle.
           markers: polesInPlay.map((pole) {
             final dot = PoleDot(
-              style: styleForPole(pole),
               isMine: pole.currentOwnerTeamId == teamId,
               prohibitive: pole.prohibitive,
               locked: pole.locked,
