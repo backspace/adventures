@@ -136,10 +136,13 @@ class _ScanRouteState extends State<ScanRoute> {
                   return;
                 }
                 if (!mounted) return;
+              } else if (current.pole.locked) {
+                // Fully captured: a dead end worth a modal, not a toast that
+                // vanishes before it's read as the scanner closes.
+                await _showFullyCapturedDialog();
+                if (!mounted) return;
               } else {
-                _showSnack(current.pole.locked
-                    ? ScanStrings.poleFullyCaptured
-                    : ScanStrings.noActivePuzzlet);
+                _showSnack(ScanStrings.noActivePuzzlet);
               }
               navigator.pop((barcode: barcode, capturedPoleId: null));
               return;
@@ -428,6 +431,23 @@ class _ScanRouteState extends State<ScanRoute> {
       builder: (dialogContext) => AlertDialog(
         title: const Text(GameplayStrings.atCapacityTitle),
         content: Text(GameplayStrings.atCapacityBody(current)),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text(ScanStrings.ok),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showFullyCapturedDialog() {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text(ScanStrings.poleFullyCapturedTitle),
+        content: const Text(ScanStrings.poleFullyCaptured),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),

@@ -395,6 +395,7 @@ class ScanStrings {
 
   // Outcome snackbars
   static const poleFullyCaptured = 'This ${Terms.zone} is fully captured.';
+  static const poleFullyCapturedTitle = 'Fully captured';
   static const noActivePuzzlet =
       'No active ${Terms.relics} for this ${Terms.stake}.';
   static const notStarted =
