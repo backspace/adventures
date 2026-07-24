@@ -477,6 +477,26 @@ class _PuzzletLine extends StatelessWidget {
                     ),
                   ],
                 ),
+                // The region this puzzlet sits in, when it has one — the
+                // same breadcrumb the puzzlet popover shows.
+                if (puzzlet.region != null) ...[
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(Icons.place_outlined,
+                          size: 13, color: Theme.of(context).hintColor),
+                      const SizedBox(width: 3),
+                      Expanded(
+                        child: Text(
+                          puzzlet.region!.breadcrumb,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
