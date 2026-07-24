@@ -110,6 +110,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // live invite and recomputed whenever we refetch notifications (so it clears
   // once the player accepts/declines).
   LandgrabNotification? _pendingInvite;
+  // Whether this team accepted Bedab's subversion invite — derived from the
+  // notification list (no dedicated endpoint). Recomputed with _pendingInvite.
+  // Flips the header swatch to the freed-ground hatch and drops the white
+  // cased outline from the team's own zones.
+  bool _joinedSubversion = false;
   // Hide stakes flagged prohibitive (nothing the team can engage) from the map.
   // Persisted; the toggle only appears when there's at least one such stake.
   bool _hideProhibitive = false;
@@ -784,15 +789,23 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // (so accepting/declining in the list makes the banner disappear on return).
   void _updatePendingInvite(List<LandgrabNotification> notifications) {
     LandgrabNotification? pending;
+    var joined = false;
     for (final n in notifications) {
-      if (n.type == 'liberation_invite' &&
-          n.recipientTeamId == _teamId &&
-          n.response == null) {
-        pending = n;
-        break;
+      if (n.type != 'liberation_invite' || n.recipientTeamId != _teamId) {
+        continue;
+      }
+      if (n.response == null) {
+        pending ??= n;
+      } else if (n.response == 'accepted') {
+        joined = true;
       }
     }
-    if (mounted) setState(() => _pendingInvite = pending);
+    if (mounted) {
+      setState(() {
+        _pendingInvite = pending;
+        _joinedSubversion = joined;
+      });
+    }
   }
 
   /// The game is over once the endgame boundary's end time has passed. Mirrors
@@ -1280,7 +1293,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TeamSwatch(colorIndex: myColorIndex, isMine: true, size: 20),
+                TeamSwatch(
+                    colorIndex: myColorIndex,
+                    isMine: true,
+                    size: 20,
+                    liberated: _joinedSubversion),
                 const SizedBox(width: 10),
                 Flexible(child: label),
               ],
@@ -1378,6 +1395,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                               poles: _poles!,
                               teamId: _teamId,
                               colorIndexByTeam: _teamColorIndex,
+                              joinedSubversion: _joinedSubversion,
                               captureStartedAt: _captureStartedAt,
                               captureFromOwner: _captureFromOwner,
                               captureAnimationDuration: _captureAnimationDuration,

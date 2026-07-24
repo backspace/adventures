@@ -49,6 +49,10 @@ class TerritoryMapView extends StatelessWidget {
   final String? teamId;
   final Map<String, int> colorIndexByTeam;
 
+  // My team has joined the subversion: my own zones drop their white cased
+  // outline (a liberator isn't holding ground).
+  final bool joinedSubversion;
+
   // Capture-animation state (drives the Voronoi fill + capture rings).
   final Map<String, DateTime> captureStartedAt;
   final Map<String, String?> captureFromOwner;
@@ -91,6 +95,7 @@ class TerritoryMapView extends StatelessWidget {
     required this.poles,
     required this.teamId,
     required this.colorIndexByTeam,
+    this.joinedSubversion = false,
     required this.captureStartedAt,
     required this.captureFromOwner,
     required this.captureAnimationDuration,
@@ -213,6 +218,7 @@ class TerritoryMapView extends StatelessWidget {
             poles: poles,
             myOwnerId: teamId,
             colorIndexByTeam: colorIndexByTeam,
+            joinedSubversion: joinedSubversion,
           ),
           // Per-team hatch over the fills (empty for ≤12 teams). Above the
           // colour fill, below the pins.
@@ -224,6 +230,7 @@ class TerritoryMapView extends StatelessWidget {
             myOwnerId: teamId,
             colorIndexByTeam: colorIndexByTeam,
             puzzletPointsByPole: puzzletPoints,
+            joinedSubversion: joinedSubversion,
           )
         else
           TerritoryLayer(
@@ -233,6 +240,7 @@ class TerritoryMapView extends StatelessWidget {
             captureStartedAt: captureStartedAt,
             captureFromOwner: captureFromOwner,
             captureAnimationDuration: captureAnimationDuration,
+            joinedSubversion: joinedSubversion,
           ),
         // Moving hatch over freed ground, above the static fill and below the
         // pins. Empty (and free) unless zones are liberated.

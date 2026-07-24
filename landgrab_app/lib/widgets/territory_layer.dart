@@ -44,6 +44,10 @@ class TerritoryLayer extends StatelessWidget {
   final Map<String, String?> captureFromOwner;
   final Duration captureAnimationDuration;
 
+  /// My team has joined the subversion: drop the white cased outline on my own
+  /// zones (see [PrecomputedTerritoryLayer]).
+  final bool joinedSubversion;
+
   const TerritoryLayer({
     super.key,
     required this.poles,
@@ -53,6 +57,7 @@ class TerritoryLayer extends StatelessWidget {
     this.captureStartedAt = const {},
     this.captureFromOwner = const {},
     this.captureAnimationDuration = const Duration(milliseconds: 800),
+    this.joinedSubversion = false,
   });
 
   @override
@@ -123,6 +128,18 @@ class TerritoryLayer extends StatelessWidget {
   /// fill + halo + core polygons so the outline paints cleanly on top.
   List<Polygon> _myPolygons(List<LatLng> points, String ownerId) {
     final color = _colorFor(ownerId);
+    // Joined the subversion: stronger own-zone fill, but no white cased outline.
+    if (joinedSubversion) {
+      return [
+        Polygon(
+          points: points,
+          color: color.withValues(alpha: 0.40),
+          borderColor: color.withValues(alpha: 0.7),
+          borderStrokeWidth: 1.5,
+          isFilled: true,
+        ),
+      ];
+    }
     return [
       Polygon(
         points: points,

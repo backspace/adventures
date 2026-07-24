@@ -41,6 +41,10 @@ class BlockTerritoryLayer extends StatelessWidget {
   /// A pole further than this from every block stays without territory.
   final double maxAssignMeters;
 
+  /// My team has joined the subversion: drop the white cased outline on my own
+  /// zones (see [PrecomputedTerritoryLayer]).
+  final bool joinedSubversion;
+
   const BlockTerritoryLayer({
     super.key,
     required this.blocks,
@@ -49,6 +53,7 @@ class BlockTerritoryLayer extends StatelessWidget {
     this.colorIndexByTeam = const {},
     this.puzzletPointsByPole,
     this.maxAssignMeters = 300,
+    this.joinedSubversion = false,
   });
 
   @override
@@ -185,11 +190,11 @@ class BlockTerritoryLayer extends StatelessWidget {
     return TeamStyle.forIndex(index).color;
   }
 
-  Polygon _fill(List<LatLng> points, String ownerId) {
+  Polygon _fill(List<LatLng> points, String ownerId, {double alpha = 0.26}) {
     final color = _colorFor(ownerId);
     return Polygon(
       points: points,
-      color: color.withValues(alpha: 0.26),
+      color: color.withValues(alpha: alpha),
       borderColor: color.withValues(alpha: 0.7),
       borderStrokeWidth: 1.5,
       isFilled: true,
@@ -197,6 +202,8 @@ class BlockTerritoryLayer extends StatelessWidget {
   }
 
   List<Polygon> _myPolygons(List<LatLng> points, String ownerId) {
+    // Joined the subversion: stronger own-zone fill, but no white cased outline.
+    if (joinedSubversion) return [_fill(points, ownerId, alpha: 0.40)];
     final color = _colorFor(ownerId);
     return [
       Polygon(

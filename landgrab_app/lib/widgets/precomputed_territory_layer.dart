@@ -24,12 +24,18 @@ class PrecomputedTerritoryLayer extends StatelessWidget {
   final String? myOwnerId;
   final Map<String, int> colorIndexByTeam;
 
+  /// My team has joined the subversion: drop the white cased outline on my own
+  /// zones — a liberator isn't holding ground, so the "this is yours" halo
+  /// would misread (the freed-ground hatch carries the liberating state).
+  final bool joinedSubversion;
+
   const PrecomputedTerritoryLayer({
     super.key,
     required this.regions,
     required this.poles,
     this.myOwnerId,
     this.colorIndexByTeam = const {},
+    this.joinedSubversion = false,
   });
 
   @override
@@ -61,12 +67,13 @@ class PrecomputedTerritoryLayer extends StatelessWidget {
     return TeamStyle.forIndex(index).color;
   }
 
-  Polygon _fill(List<LatLng> points, List<List<LatLng>> holes, String ownerId) {
+  Polygon _fill(List<LatLng> points, List<List<LatLng>> holes, String ownerId,
+      {double alpha = 0.26}) {
     final color = _colorFor(ownerId);
     return Polygon(
       points: points,
       holePointsList: holes.isEmpty ? null : holes,
-      color: color.withValues(alpha: 0.26),
+      color: color.withValues(alpha: alpha),
       borderColor: color.withValues(alpha: 0.7),
       borderStrokeWidth: 1.5,
       isFilled: true,
@@ -75,6 +82,9 @@ class PrecomputedTerritoryLayer extends StatelessWidget {
 
   List<Polygon> _myPolygons(
       List<LatLng> points, List<List<LatLng>> holes, String ownerId) {
+    // Joined the subversion: keep the stronger own-zone fill but drop the
+    // dark-halo + white-core outline — just a thin colour edge, like a rival.
+    if (joinedSubversion) return [_fill(points, holes, ownerId, alpha: 0.40)];
     final color = _colorFor(ownerId);
     final holeList = holes.isEmpty ? null : holes;
     return [
