@@ -7,6 +7,7 @@ import 'package:landgrab/routes/supervisor/attachment_map_route.dart';
 import 'package:landgrab/routes/supervisor/pin_action_sheet.dart';
 import 'package:landgrab/routes/supervisor/pole_supervision_detail_route.dart';
 import 'package:landgrab/routes/supervisor/puzzlet_supervision_detail_route.dart';
+import 'package:landgrab/routes/supervisor/territory_map_route.dart';
 import 'package:landgrab/routes/supervisor/validator_picker.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/widgets/attachments_badge.dart';
@@ -668,6 +669,14 @@ class _ContentTabState extends State<ContentTab> {
                 onPressed: _openAttachmentMap,
                 icon: const Icon(Icons.hub_outlined),
               ),
+              const SizedBox(width: 8),
+              // Territory-debug map: every zone filled + labelled, for tuning
+              // the block/territory shapes.
+              IconButton.filledTonal(
+                tooltip: 'Territory shapes',
+                onPressed: _openTerritoryMap,
+                icon: const Icon(Icons.grid_on),
+              ),
             ],
           ),
         ),
@@ -1062,6 +1071,12 @@ class _ContentTabState extends State<ContentTab> {
       MaterialPageRoute(builder: (_) => AttachmentMapRoute(api: widget.api)),
     );
     if (changed == true) await _reloadAll();
+  }
+
+  void _openTerritoryMap() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => TerritoryMapRoute(api: widget.api)),
+    );
   }
 
   Future<void> _onPolePinTap(DraftPole pole) async {
