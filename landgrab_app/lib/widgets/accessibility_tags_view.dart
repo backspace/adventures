@@ -12,11 +12,18 @@ class AccessibilityTagsView extends StatelessWidget {
   /// Optional heading shown above the chips (e.g. 'Accessibility').
   final String? title;
 
+  /// Whether each chip carries the tap-for-an-explanation (i) affordance. Its
+  /// text is author-facing, so player surfaces (the gameplay pole popover)
+  /// pass false — the labels alone are already plain enough. Role-holder
+  /// screens (validation interstitials) leave it on.
+  final bool explainable;
+
   const AccessibilityTagsView({
     super.key,
     required this.tags,
     this.notes,
     this.title,
+    this.explainable = true,
   });
 
   bool get _hasNotes => notes != null && notes!.trim().isNotEmpty;
@@ -61,9 +68,13 @@ class AccessibilityTagsView extends StatelessWidget {
                 .map((t) => Chip(
                       label: Text(accessibilityTagLabel(t)),
                       visualDensity: VisualDensity.compact,
-                      deleteIcon: const Icon(Icons.info_outline, size: 18),
-                      onDeleted: () => _showExplanation(context, t),
-                      deleteButtonTooltipMessage: 'What does this mean?',
+                      deleteIcon: explainable
+                          ? const Icon(Icons.info_outline, size: 18)
+                          : null,
+                      onDeleted:
+                          explainable ? () => _showExplanation(context, t) : null,
+                      deleteButtonTooltipMessage:
+                          explainable ? 'What does this mean?' : null,
                     ))
                 .toList(growable: false),
           ),

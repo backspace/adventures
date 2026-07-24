@@ -127,6 +127,8 @@ void _showAccessibilitySheet(
               tags: pole.accessibilityTags,
               notes: pole.accessibilityNotes,
               title: GameplayStrings.zoneAccessibilityTitle,
+              // Players get plain labels — the (i) explanation is author-facing.
+              explainable: false,
             ),
           ],
         ),
