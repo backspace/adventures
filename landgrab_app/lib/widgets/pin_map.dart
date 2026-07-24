@@ -369,6 +369,15 @@ class _PinMapState extends State<PinMap> {
         point: point,
         width: p.size,
         height: p.size,
+        // Anchor depends on the pin's shape. A filled pin is a symmetric
+        // circle badge, so its centre marks the spot (default center). A
+        // non-filled pin is a bare teardrop glyph (Icons.location_on) whose
+        // TIP marks the spot — that tip is the bottom-centre of the box, so
+        // it must sit on the point. In flutter_map 6 that anchor is
+        // `Alignment.topCenter` (verified against the source: topCenter puts
+        // the point at the box's bottom-centre, floating the glyph above it).
+        // Without this a teardrop lands ~half its height too low.
+        alignment: p.filled ? Alignment.center : Alignment.topCenter,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: p.onTap,
