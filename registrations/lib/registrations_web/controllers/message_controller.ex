@@ -66,9 +66,15 @@ defmodule RegistrationsWeb.MessageController do
   def deliver(conn, %{"id" => id, "me" => me}) do
     message = Repo.get!(Message, id)
 
+    # "Send to me" targets the signed-in user. Read them FRESH from the DB
+    # rather than reusing conn.assigns[:current_user]: on the browser pipeline
+    # that's the Pow session-cached struct, whose team_id goes stale (e.g. a
+    # session predating the team assignment), which would then preload no team
+    # and the email would wrongly say "no team assigned". (The :browser
+    # pipeline lacks the ReloadUser plug the API pipelines use for this.)
     if_result =
       if(me == "true",
-        do: [conn.assigns[:current_user]],
+        do: [Repo.get!(RegistrationsWeb.User, conn.assigns[:current_user].id)],
         else: Repo.all(RegistrationsWeb.User)
       )
 

@@ -73,4 +73,46 @@ defmodule RegistrationsWeb.MessageControllerTest do
   #   assert redirected_to(conn) == Routes.message_path(conn, :index)
   #   refute Repo.get(Message, message.id)
   # end
+
+  use Registrations.SwooshHelper
+
+  alias RegistrationsWeb.User
+
+  setup do
+    # The email layout renders adventure-specific chrome.
+    Registrations.ApplicationEnvHelpers.put_application_env_for_test(
+      :registrations,
+      :adventure,
+      "clandestine-rendezvous"
+    )
+
+    :ok
+  end
+
+  test "send-to-me reflects the real team even when the session's team_id is stale",
+       %{conn: conn} do
+    team = insert(:team, name: "Zephyrs", risk_aversion: 2)
+    admin = insert(:octavia, admin: true, team_id: team.id)
+
+    message =
+      insert(:message,
+        subject: "Hello",
+        content: "Body copy",
+        show_team: true,
+        ready: true,
+        postmarked_at: ~D[2020-01-01]
+      )
+
+    # Simulate the Pow session cached from BEFORE the team was assigned: same
+    # user id, but a stale nil team_id. The action must re-read from the DB
+    # rather than trust this, or the email would say "no team assigned".
+    conn = assign(conn, :current_user, %User{admin | team_id: nil})
+
+    post(conn, "/messages/#{message.id}/send", %{"me" => "true"})
+
+    [email] = wait_for_emails([_email])
+    assert email.to == [{"", admin.email}]
+    assert email.html_body =~ "Zephyrs"
+    refute email.html_body =~ "no team assigned"
+  end
 end
