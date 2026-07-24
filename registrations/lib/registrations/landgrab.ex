@@ -1409,6 +1409,7 @@ defmodule Registrations.Landgrab do
 
       team ->
         now = DateTime.utc_now() |> DateTime.truncate(:second)
+        was_liberator = team.liberation_response == "accepted"
 
         {:ok, updated} =
           Repo.transaction(fn ->
@@ -1427,6 +1428,20 @@ defmodule Registrations.Landgrab do
             )
             |> Repo.update!()
           end)
+
+        # Tell the team, in passive voice — the invite may never have reached
+        # them (a decliner, or never invited). Only on an actual change, and
+        # after the commit so the broadcast/push can't outrun a rollback.
+        unless was_liberator do
+          persist_and_deliver(
+            "liberation_joined",
+            team.id,
+            nil,
+            PlayerStrings.liberation_joined_body(),
+            %{},
+            PlayerStrings.push_title("liberation_joined")
+          )
+        end
 
         {:ok, updated}
     end

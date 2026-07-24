@@ -346,6 +346,7 @@ class _NotificationTile extends StatelessWidget {
         'pole_lost' => Icons.flag_outlined,
         'message' => Icons.mail_outline,
         'liberation_invite' => Icons.handshake_outlined,
+        'liberation_joined' => Icons.groups_outlined,
         _ => Icons.notifications_none,
       };
 
@@ -353,6 +354,7 @@ class _NotificationTile extends StatelessWidget {
         'attack' => Colors.orange,
         'pole_lost' => Colors.red,
         'liberation_invite' => Colors.purple,
+        'liberation_joined' => Colors.purple,
         _ => null,
       };
 

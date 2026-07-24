@@ -111,6 +111,17 @@ defmodule RegistrationsWeb.Landgrab.LiberationApiTest do
       assert team["status"] == "accepted"
       assert body["accepted"] == 1
       assert body["declined"] == 0
+
+      # The team gets a passive-voice notification that they're now in.
+      note =
+        Registrations.Repo.get_by(Registrations.Landgrab.Notification,
+          recipient_team_id: declined.id,
+          type: "liberation_joined"
+        )
+
+      assert note
+      assert note.body =~ "subversion"
+      refute note.body =~ ~r/organiser/i
     end
 
     test "join override 404s for an unknown team", %{conn: conn} do

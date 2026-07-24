@@ -61,6 +61,13 @@ defmodule Registrations.Landgrab.PlayerStrings do
   """
   def liberation_invite_body, do: phrase("app_liberation_invite_body")
 
+  @doc """
+  Passive-voice confirmation sent to a team a supervisor adds to the
+  subversion by hand (e.g. after they declined). No named agent —
+  it just reports the new state.
+  """
+  def liberation_joined_body, do: phrase("app_liberation_joined_body")
+
   # ── Push titles ──────────────────────────────────────────────────
 
   def push_title("attack"), do: phrase("app_push_title_attack")
@@ -69,6 +76,7 @@ defmodule Registrations.Landgrab.PlayerStrings do
   def push_title("puzzlet_withdrawn"), do: phrase("app_push_title_puzzlet_withdrawn")
   def push_title("pole_contested"), do: phrase("app_push_title_pole_contested")
   def push_title("liberation_invite"), do: phrase("app_push_title_liberation_invite")
+  def push_title("liberation_joined"), do: phrase("app_push_title_liberation_joined")
   def push_title(_type), do: phrase("app_push_title_default")
 
   # Same title, but naming the stake — so a glanced push says which one.

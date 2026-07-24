@@ -200,6 +200,12 @@ msgstr "I’m subverting the simulation, as it’s becoming clear to me Sabuk is
 msgid "app_push_title_liberation_invite"
 msgstr "Bedab"
 
+msgid "app_liberation_joined_body"
+msgstr "Your team has been brought into the subversion."
+
+msgid "app_push_title_liberation_joined"
+msgstr "Subversion"
+
 msgid "app_push_title_attack"
 msgstr "Under attack"
 
