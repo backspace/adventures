@@ -81,11 +81,13 @@ void showPoleOwner(
     return;
   }
 
-  // Replace any current popup immediately rather than queueing — tapping a new
-  // zone should show it at once, not wait for the previous one to time out.
-  // removeCurrentSnackBar skips the dismiss animation so it feels instant.
+  // Tapping a zone is a deliberate "what am I looking at?" — it must win over
+  // any backlog of gameplay toasts, not wait behind them. clearSnackBars drops
+  // the whole queue (not just the current one, which removeCurrentSnackBar did
+  // — that still left the owner popup stuck behind the backlog) so it appears
+  // at once.
   ScaffoldMessenger.of(context)
-    ..removeCurrentSnackBar()
+    ..clearSnackBars()
     ..showSnackBar(SnackBar(
       behavior: SnackBarBehavior.floating,
       duration: const Duration(seconds: 4),

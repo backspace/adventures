@@ -104,6 +104,12 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // (e.g. from a toast that arrived while the list is open) refreshes the
   // existing list rather than pushing another copy on top.
   bool _notificationsOpen = false;
+  // An unanswered subversion (liberation) invitation, shown as a persistent
+  // top banner that outranks every transient toast — it's a question that
+  // needs an answer, not a status. Null when there's no open invite. Set on a
+  // live invite and recomputed whenever we refetch notifications (so it clears
+  // once the player accepts/declines).
+  LandgrabNotification? _pendingInvite;
   // Hide stakes flagged prohibitive (nothing the team can engage) from the map.
   // Persisted; the toggle only appears when there's at least one such stake.
   bool _hideProhibitive = false;
@@ -245,7 +251,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         // Only toast on the FIRST alert per pole per session — the
         // pulsing ring carries the ongoing state; a re-toast on
         // every follow-up scan would be nagging.
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        _snack(SnackBar(
           content: Text(n.body),
           backgroundColor: Colors.deepOrange.shade700,
           behavior: SnackBarBehavior.floating,
@@ -253,7 +259,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           action: SnackBarAction(
             label: GameplayStrings.viewOnMap,
             textColor: Colors.white,
-            onPressed: () => _focusPole(poleId),
+            onPressed: () => _viewPole(poleId),
           ),
         ));
       }
@@ -264,7 +270,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       // The map recolours via the pole_updated broadcast that
       // arrives alongside; this is the "why" for that change.
       final poleId = n.metadata['pole_id'] as String?;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      // clear-then-show: a capture supersedes this pole's earlier "scanned
+      // your stake" attack toast, which is now stale.
+      _snack(SnackBar(
         content: Text(n.body),
         backgroundColor: Colors.red.shade700,
         behavior: SnackBarBehavior.floating,
@@ -274,7 +282,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
             : SnackBarAction(
                 label: GameplayStrings.viewOnMap,
                 textColor: Colors.white,
-                onPressed: () => _focusPole(poleId),
+                onPressed: () => _viewPole(poleId),
               ),
       ));
     }
@@ -283,26 +291,18 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       // it reads as narrative, not alarm. Sender name from metadata
       // (Sabuk / Sabuk's assistant).
       final sender = n.metadata['sender_name'] as String?;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      _snack(SnackBar(
         content: Text(sender == null ? n.body : '$sender: ${n.body}'),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 8),
       ));
     }
     if (n.type == 'liberation_invite' && mounted) {
-      // Bedab's invitation — narrative styling like 'message', but with
-      // a route to the history screen, where the accept/decline pair
-      // lives. Long duration: it's a question, not a status.
-      final sender = n.metadata['sender_name'] as String?;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(sender == null ? n.body : '$sender: ${n.body}'),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 12),
-        action: SnackBarAction(
-          label: NotificationStrings.inviteRespondAction,
-          onPressed: _openNotifications,
-        ),
-      ));
+      // Bedab's invitation is a question that needs an answer, so it doesn't
+      // belong in the transient toast queue where a later event could bury it.
+      // Surface it as a persistent top banner (see _liberationInviteBanner)
+      // that outranks everything until the player responds.
+      setState(() => _pendingInvite = n);
     }
     if ((n.type == 'puzzlet_taken' || n.type == 'puzzlet_withdrawn') &&
         mounted) {
@@ -314,7 +314,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       _refreshActivePuzzlets();
       final poleId = n.metadata['pole_id'] as String?;
       final hasNext = n.metadata['has_next'] == true;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      _snack(SnackBar(
         content: Text(n.body),
         backgroundColor: Colors.deepOrange.shade700,
         behavior: SnackBarBehavior.floating,
@@ -333,7 +333,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       // blue styling — a race is on, but nothing's lost yet. Refetch
       // so the in-progress card's "others here" count updates.
       _refreshActivePuzzlets();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      _snack(SnackBar(
         content: Text(n.body),
         backgroundColor: Colors.blue.shade700,
         behavior: SnackBarBehavior.floating,
@@ -348,13 +348,36 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   /// Centres the map on a stake — from a notification's "View on map" action
   /// (live toast or the history list). If the stake isn't currently on the map
   /// (poles not loaded yet, or the endgame boundary has passed it) a gentle
+  // Show a transient message with NO backlog: clear any queued/showing
+  // snackbars first, so the newest always appears at once. Gameplay is chatty
+  // and everything's kept in the notifications inbox anyway, so a queue that
+  // makes you tap-tap-tap through stale toasts is worse than just showing the
+  // latest. Used for both incoming events (a pole_lost thus supersedes its
+  // earlier attack) and user-initiated feedback (a map tap jumps ahead).
+  void _snack(SnackBar bar) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(bar);
+  }
+
+  /// A notification "View on map" target. Pops any screens above the map
+  /// (e.g. a puzzlet route) so the focused stake is actually visible —
+  /// otherwise `_focusPole` moves the map *underneath* the open screen and
+  /// nothing appears. The puzzlet stays resumable from the map's in-progress
+  /// overlay.
+  void _viewPole(String poleId) {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    _focusPole(poleId);
+  }
+
   /// notice replaces a silent no-op.
   void _focusPole(String poleId) {
     final poles = _poles;
     final idx = poles == null ? -1 : poles.indexWhere((p) => p.id == poleId);
     if (idx < 0) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        _snack(const SnackBar(
           content: Text(GameplayStrings.zoneNotOnMap),
           behavior: SnackBarBehavior.floating,
         ));
@@ -737,6 +760,41 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     );
   }
 
+  // Bedab's subversion invitation as a persistent top banner — it outranks
+  // every transient toast and stays until the player responds (accept/decline
+  // lives in the notifications list, reached via Respond). It clears once
+  // _pendingInvite goes null, which _updatePendingInvite does after a refetch
+  // shows the invite answered.
+  Widget _liberationInviteBanner(LandgrabNotification invite) {
+    final sender = invite.metadata['sender_name'] as String?;
+    return MaterialBanner(
+      leading: const Icon(Icons.handshake_outlined, color: Colors.purple),
+      content: Text(sender == null ? invite.body : '$sender: ${invite.body}'),
+      actions: [
+        TextButton(
+          onPressed: _openNotifications,
+          child: const Text(NotificationStrings.inviteRespondAction),
+        ),
+      ],
+    );
+  }
+
+  // Reconcile the invite banner with the freshly-fetched notifications: show
+  // it for an unanswered liberation invite to this team, hide it otherwise
+  // (so accepting/declining in the list makes the banner disappear on return).
+  void _updatePendingInvite(List<LandgrabNotification> notifications) {
+    LandgrabNotification? pending;
+    for (final n in notifications) {
+      if (n.type == 'liberation_invite' &&
+          n.recipientTeamId == _teamId &&
+          n.response == null) {
+        pending = n;
+        break;
+      }
+    }
+    if (mounted) setState(() => _pendingInvite = pending);
+  }
+
   /// Poles the endgame boundary hasn't passed. Everything when no
   /// boundary is configured or it hasn't begun shrinking.
   List<Pole> _polesInPlay() {
@@ -784,7 +842,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     // some back to unread — so reflect the real count rather than
     // assuming zero. Quiet fetch (no "while away" toast).
     widget.api.listNotifications().then((result) {
-      if (mounted) setState(() => _unreadNotifications = result.unread);
+      if (!mounted) return;
+      setState(() => _unreadNotifications = result.unread);
+      // Responding in the list clears the invite banner on return.
+      _updatePendingInvite(result.notifications);
     }).catchError((_) {
       if (mounted) setState(() => _unreadNotifications = 0);
     });
@@ -802,8 +863,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       // they never re-toast here.
       final missed = result.unread - _unreadNotifications;
       setState(() => _unreadNotifications = result.unread);
+      // Surface an invite that arrived while the app was away (cold boot,
+      // backgrounded, socket blip) as the persistent banner.
+      _updatePendingInvite(result.notifications);
       if (missed > 0) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        _snack(SnackBar(
           content: Text(NotificationStrings.whileAway(missed)),
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(
@@ -896,7 +960,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      _snack(
         SnackBar(
           content: Text(e.toString()),
           action: e is LocationPermissionDeniedException
@@ -1244,6 +1308,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       ),
       body: Column(
         children: [
+          // Top priority: the subversion invite outranks the no-team prompt
+          // and every toast, and persists until answered.
+          if (_error == null && _pendingInvite != null)
+            _liberationInviteBanner(_pendingInvite!),
           if (_error == null &&
               _poles != null &&
               _event != null &&
