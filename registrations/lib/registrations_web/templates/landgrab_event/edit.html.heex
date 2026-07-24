@@ -88,6 +88,25 @@
 
       <br />
 
+      <h3>Bedab’s endgame messages</h3>
+      <p class="meta">
+        Sent from Bedab once the game ends (the shrink’s end), one message per
+        team. Teams that joined the subversion get the precise location;
+        everyone else gets the vaguer nudge. Read at send time, so you can keep
+        editing until then — but they go out only once. Leave a box blank to
+        send nothing to that group.
+      </p>
+
+      <%= label(f, :final_message_joined, "To teams that joined the subversion (precise location)") %>
+      <%= textarea(f, :final_message_joined, rows: 4) %>
+      <%= error_tag(f, :final_message_joined) %>
+
+      <%= label(f, :final_message_others, "To everyone else (vaguer nudge)") %>
+      <%= textarea(f, :final_message_others, rows: 4) %>
+      <%= error_tag(f, :final_message_others) %>
+
+      <br />
+
       <div>
         <%= submit("Save", class: "button") %>
       </div>
