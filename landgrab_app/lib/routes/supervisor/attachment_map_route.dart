@@ -202,9 +202,21 @@ class _AttachmentMapRouteState extends State<AttachmentMapRoute> {
             p.poleId!,
       };
 
+  // How many puzzlets each pole has attached (by pole id), from the raw
+  // list — so the count includes the hidden ones the `!` badge flags.
+  Map<String, int> get _attachedCountByPole {
+    final counts = <String, int>{};
+    for (final p in (_puzzlets ?? const <DraftPuzzlet>[])) {
+      final id = p.poleId;
+      if (id != null) counts[id] = (counts[id] ?? 0) + 1;
+    }
+    return counts;
+  }
+
   List<Marker> _poleMarkers(Map<String, LatLng> displaced) {
     final size = _pinSize;
     final flagged = _polesWithHiddenAttached;
+    final counts = _attachedCountByPole;
     return [
       for (final pole in _visiblePoles)
         if (displaced['p:${pole.id}'] case final at?)
@@ -214,6 +226,7 @@ class _AttachmentMapRouteState extends State<AttachmentMapRoute> {
             height: size,
             child: _PolePin(
               dimension: size,
+              puzzletCount: counts[pole.id] ?? 0,
               flagged: flagged.contains(pole.id),
               onTap: () => _onPoleTap(pole),
             ),
@@ -437,16 +450,24 @@ class _Attribution extends StatelessWidget {
 
 class _PolePin extends StatelessWidget {
   final double dimension;
+  // How many puzzlets are attached to this pole — shown top-left.
+  final int puzzletCount;
   // Marks a pole that has hidden (retired/withdrawn or validator-only)
   // puzzlets attached — content that isn't drawn on this map — with a small
-  // amber "!" badge so the supervisor can spot it.
+  // amber "!" badge (top-right) so the supervisor can spot it.
   final bool flagged;
   final VoidCallback? onTap;
-  const _PolePin({this.dimension = 34, this.flagged = false, this.onTap});
+  const _PolePin({
+    this.dimension = 34,
+    this.puzzletCount = 0,
+    this.flagged = false,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Below ~20 px the glyph can't render legibly; drop to a plain dot.
+    // Below ~20 px the glyph can't render legibly; drop to a plain dot, and
+    // skip the corner badges too — they'd be noise at that zoom.
     final showGlyph = dimension >= 20;
     final circle = Container(
       decoration: BoxDecoration(
@@ -463,27 +484,52 @@ class _PolePin extends StatelessWidget {
           ? Icon(Icons.sensors, color: Colors.white, size: dimension * 0.55)
           : null,
     );
+
+    final overlays = <Widget>[
+      if (showGlyph && puzzletCount > 0)
+        Positioned(
+          left: -4,
+          top: -4,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            decoration: BoxDecoration(
+              color: Colors.indigo.shade900,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white, width: 1),
+            ),
+            child: Text(
+              '$puzzletCount',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                height: 1.1,
+              ),
+            ),
+          ),
+        ),
+      if (showGlyph && flagged)
+        Positioned(
+          right: -3,
+          top: -3,
+          child: DecoratedBox(
+            decoration: const BoxDecoration(
+                color: Colors.white, shape: BoxShape.circle),
+            child:
+                Icon(Icons.error, size: 14, color: Colors.amber.shade800),
+          ),
+        ),
+    ];
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: flagged
-          ? Stack(
+      child: overlays.isEmpty
+          ? circle
+          : Stack(
               clipBehavior: Clip.none,
-              children: [
-                circle,
-                Positioned(
-                  right: -3,
-                  top: -3,
-                  child: DecoratedBox(
-                    decoration: const BoxDecoration(
-                        color: Colors.white, shape: BoxShape.circle),
-                    child: Icon(Icons.error,
-                        size: 14, color: Colors.amber.shade800),
-                  ),
-                ),
-              ],
-            )
-          : circle,
+              children: [circle, ...overlays],
+            ),
     );
   }
 }
