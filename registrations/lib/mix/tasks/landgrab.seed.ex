@@ -1,9 +1,9 @@
 defmodule Mix.Tasks.Landgrab.Seed do
-  @shortdoc "Seed the local dev DB into a scenario (composable steps + presets)."
+  @shortdoc "Seed a local/staging DB into a scenario (composable steps + presets)."
   @moduledoc """
-  Shapes the LOCAL dev database into a testing scenario, composed from
-  small, idempotent steps that run through the domain — never raw SQL that
-  can silently drift from the schema.
+  Shapes a LOCAL dev (or STAGING) database into a testing scenario, composed
+  from small, idempotent steps that run through the domain — never raw SQL
+  that can silently drift from the schema.
 
       mix landgrab.seed gameplay
       mix landgrab.seed midgame captures:30
@@ -27,6 +27,8 @@ defmodule Mix.Tasks.Landgrab.Seed do
     * unsubvert:"NAME" invite one team by name into the subversion and decline
     * schedule:X      lay out the whole timeline to run over X minutes from now
                       (start now, shrink at 1/2, liberation 5/8–6/8, end at X)
+    * abort           full teardown: clear + every notification, the organiser
+                      messages, and the whole timeline — so no timed event fires
     * clock:M[.SS]    put "now" M min SS sec before the start (.SS = seconds);
                       a negative spec anchors on the endgame shrink end instead
 
@@ -49,9 +51,12 @@ defmodule Mix.Tasks.Landgrab.Seed do
   The step logic lives in `Registrations.Landgrab.Seed` (this task is a
   thin CLI over it, and `Registrations.Landgrab.SeedTest` exercises it).
 
-  LOCAL ONLY. Refuses to run unless the Repo database looks like a
-  *_dev / *_test database — it never touches a real environment (and mix
-  isn't present in a release anyway).
+  LOCAL or STAGING only — NEVER production. It runs against a local
+  *_dev / *_test database, or staging when DEPLOY_ENV=staging; production
+  (or any environment it can't positively identify) is refused. mix isn't
+  present in a release, so seeding staging means running this task from your
+  machine with the Repo pointed at the staging database and DEPLOY_ENV=staging
+  in the environment.
   """
   use Mix.Task
 
@@ -146,6 +151,10 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       pole-lost / liberation-invite notifications, and reset the
                       liberation rollout (invites, answers, schedule) — a clean,
                       uncaptured map
+      abort           full teardown between test runs: everything 'clear' does
+                      PLUS every remaining notification type, the organiser
+                      messages, and the whole endgame timeline + relief stamp —
+                      so no timed event will fire. Use to stop a 'schedule:X' run
       filler:N        create N teamless filler users with memorable proposed
                       team names — pair with 'teams' to add that many teams  (5)
       names           rename any leftover "FIXME" teams to two-word names
@@ -266,7 +275,12 @@ defmodule Mix.Tasks.Landgrab.Seed do
 
   defp run_step({"capture_all", _}) do
     %{captured: captured, uncapturable: uncapturable} = Seed.capture_all()
-    note = if uncapturable == 0, do: "every pole is owned", else: "#{uncapturable} left uncapturable (no player-facing puzzlet)"
+
+    note =
+      if uncapturable == 0,
+        do: "every pole is owned",
+        else: "#{uncapturable} left uncapturable (no player-facing puzzlet)"
+
     Mix.shell().info("capture_all: #{captured} pole(s) captured — #{note}.")
   end
 
@@ -352,6 +366,23 @@ defmodule Mix.Tasks.Landgrab.Seed do
     )
   end
 
+  defp run_step({"abort", _}) do
+    %{
+      captures: caps,
+      in_progress: tp,
+      notifications: notes,
+      organiser_messages: msgs,
+      liberation_teams: lib,
+      events: events
+    } = Seed.abort()
+
+    Mix.shell().info(
+      "abort: removed #{caps} capture(s), #{tp} in-progress, #{notes} notification(s), " <>
+        "#{msgs} organiser message(s); reset liberation for #{lib} team(s) and disarmed the " <>
+        "timeline on #{events} event(s) — no timed event will fire."
+    )
+  end
+
   defp run_step({"clock", spec}) do
     %{anchor: anchor, direction: direction, seconds: seconds, events: events} = Seed.clock(spec || "60")
 
@@ -362,9 +393,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
         :start_time -> "start"
       end
 
-    Mix.shell().info(
-      "clock: now set #{format_offset(seconds)} #{direction} the #{milestone} across #{events} event(s)."
-    )
+    Mix.shell().info("clock: now set #{format_offset(seconds)} #{direction} the #{milestone} across #{events} event(s).")
   end
 
   defp run_step({"filler", n}) do
@@ -381,12 +410,33 @@ defmodule Mix.Tasks.Landgrab.Seed do
 
   defp guard_not_production! do
     db = to_string(Repo.config()[:database] || "")
+    deploy_env = to_string(Application.get_env(:registrations, :deploy_env) || "")
 
-    unless String.ends_with?(db, "_dev") or String.ends_with?(db, "_test") do
+    local? = String.ends_with?(db, "_dev") or String.ends_with?(db, "_test")
+    staging? = deploy_env == "staging"
+
+    # Production is an absolute no. Check it first and loudly, so no future
+    # tweak to the allow-list below can ever let it slip through. deploy_env
+    # is the same signal the rest of the app trusts (see runtime.exs), and it
+    # defaults to "production" whenever DEPLOY_ENV is unset — so an
+    # unrecognised environment fails closed here rather than being seeded.
+    if deploy_env == "production" do
       Mix.raise("""
-      landgrab.seed refuses to run: this is a LOCAL/dev-only scenario seeder.
-        MIX_ENV=#{Mix.env()}, database=#{inspect(db)}
-      It only runs against a *_dev / *_test database, never a real environment.
+      landgrab.seed refuses to run: DEPLOY_ENV=production.
+      The scenario seeder must NEVER touch production. If you meant staging,
+      point the Repo at the staging database and run with DEPLOY_ENV=staging.
+      """)
+    end
+
+    unless local? or staging? do
+      Mix.raise("""
+      landgrab.seed won't run against this environment.
+        MIX_ENV=#{Mix.env()}, DEPLOY_ENV=#{inspect(deploy_env)}, database=#{inspect(db)}
+      It runs only against:
+        • a local *_dev / *_test database, or
+        • staging (DEPLOY_ENV=staging).
+      Anything else — including an unset or unknown DEPLOY_ENV — is refused,
+      so production can never be seeded by accident.
       """)
     end
   end

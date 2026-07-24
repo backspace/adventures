@@ -19,9 +19,10 @@ defmodule Registrations.Landgrab.Seed do
   import Ecto.Query
 
   alias Registrations.Landgrab
-  alias Registrations.Landgrab.OwnershipEvent
   alias Registrations.Landgrab.Event
   alias Registrations.Landgrab.Notification
+  alias Registrations.Landgrab.OrganiserMessage
+  alias Registrations.Landgrab.OwnershipEvent
   alias Registrations.Landgrab.Pole
   alias Registrations.Landgrab.Puzzlet
   alias Registrations.Landgrab.TeamPuzzlet
@@ -323,11 +324,13 @@ defmodule Registrations.Landgrab.Seed do
   # liberation reliably wins even in a single `capture_all liberate` command.
   # Captures precede liberations anyway, so this only makes the log honest.
   defp age_captures do
-    from(c in OwnershipEvent,
-      where: c.kind == "capture",
-      update: [set: [inserted_at: fragment("? - interval '1 hour'", c.inserted_at)]]
+    Repo.update_all(
+      from(c in OwnershipEvent,
+        where: c.kind == "capture",
+        update: [set: [inserted_at: fragment("? - interval '1 hour'", c.inserted_at)]]
+      ),
+      []
     )
-    |> Repo.update_all([])
   end
 
   # Mark the playing teams as liberation-accepters, so their scan→answer
@@ -434,8 +437,11 @@ defmodule Registrations.Landgrab.Seed do
     ensure_liberation_begun()
     results = Enum.map(member_teams(), &subvert(&1, response))
 
-    %{teams: length(results), invited: Enum.count(results, & &1.invited)}
-    |> Map.put(response_key(response), Enum.count(results, & &1.responded))
+    Map.put(
+      %{teams: length(results), invited: Enum.count(results, & &1.invited)},
+      response_key(response),
+      Enum.count(results, & &1.responded)
+    )
   end
 
   defp invite_and_respond_team(name, response) do
@@ -443,8 +449,7 @@ defmodule Registrations.Landgrab.Seed do
     ensure_liberation_begun()
     r = subvert(team, response)
 
-    %{team: team.name, invited: r.invited}
-    |> Map.put(response_key(response), r.responded)
+    Map.put(%{team: team.name, invited: r.invited}, response_key(response), r.responded)
   end
 
   defp response_key("accepted"), do: :accepted
@@ -556,7 +561,9 @@ defmodule Registrations.Landgrab.Seed do
   # Leave a few players mid-puzzlet — a real scan on a still-unowned pole
   # that claims the puzzlet but never answers it.
   defp play_in_progress(players) do
-    unowned_capturable_poles(length(players))
+    players
+    |> length()
+    |> unowned_capturable_poles()
     |> Enum.with_index()
     |> Enum.reduce(0, fn {pole, i}, acc ->
       player = Enum.at(players, rem(i, length(players)))
@@ -594,17 +601,14 @@ defmodule Registrations.Landgrab.Seed do
   # partial gameplay; `all_capturable_poles` takes the lot for capture_all.
   defp unowned_capturable_poles(n), do: capturable_poles_query() |> Repo.all() |> Enum.take(n)
 
-  defp all_capturable_poles, do: capturable_poles_query() |> Repo.all()
+  defp all_capturable_poles, do: Repo.all(capturable_poles_query())
 
   defp capturable_poles_query do
     from(p in Pole,
       join: z in Puzzlet,
       on: z.pole_id == p.id,
       where: z.status == :validated and not z.validator_only,
-      where:
-        z.id not in subquery(
-          from(c in OwnershipEvent, where: not is_nil(c.puzzlet_id), select: c.puzzlet_id)
-        ),
+      where: z.id not in subquery(from(c in OwnershipEvent, where: not is_nil(c.puzzlet_id), select: c.puzzlet_id)),
       where: p.id not in subquery(owned_pole_ids_query()),
       distinct: p.id,
       select: %{pole_id: p.id, barcode: p.barcode}
@@ -848,6 +852,59 @@ defmodule Registrations.Landgrab.Seed do
     %{captures: caps, in_progress: tp, notifications: notes, liberation_teams: invited}
   end
 
+  # ── abort (stop everything, disarm the clock) ───────────────────────
+  @doc """
+  A full teardown for a compressed test run: everything `clear/0` does,
+  plus the things it deliberately leaves for a paired `schedule` —
+
+    * **every** notification type, not just the three gameplay alerts
+      `clear/0` drops (also `message`, `pole_contested`, `puzzlet_taken`,
+      `puzzlet_withdrawn`, `liberation_joined`), and the `OrganiserMessage`
+      source rows they fan out from (incl. the SYSTEM endgame broadcast);
+    * the endgame timeline and its one-shot stamps (`start_time`,
+      `endgame_starts_at`/`_ends_at`/`_announced_at`, `final_messages_sent_at`)
+      and the relief-valve stamp, blanked on every event.
+
+  With no timeline left to read, the (stateless, minute-polling) endgame
+  and liberation announcers find nothing to fire — so no timed event
+  happens. There are no in-memory timers to cancel. Returns
+  `%{captures: n, in_progress: n, notifications: n, organiser_messages: n,
+  liberation_teams: n, events: n}`.
+  """
+  def abort do
+    %{captures: caps, in_progress: tp, notifications: alerts, liberation_teams: invited} = clear()
+
+    # clear/0 removed only the three gameplay-alert types; drop whatever's
+    # left (messages, contests, puzzlet-taken/withdrawn, liberation-joined)
+    # so no prior run's notifications linger into the next.
+    {rest, _} = Repo.delete_all(Notification)
+    {messages, _} = Repo.delete_all(OrganiserMessage)
+
+    # clear/0 unscheduled only the liberation window; blank the endgame
+    # timeline, its one-shot stamps, and the relief stamp too — otherwise a
+    # scheduled endgame still fires and relief mode carries over.
+    {events, _} =
+      Repo.update_all(Event,
+        set: [
+          start_time: nil,
+          endgame_starts_at: nil,
+          endgame_ends_at: nil,
+          endgame_announced_at: nil,
+          relief_started_at: nil,
+          final_messages_sent_at: nil
+        ]
+      )
+
+    %{
+      captures: caps,
+      in_progress: tp,
+      notifications: alerts + rest,
+      organiser_messages: messages,
+      liberation_teams: invited,
+      events: events
+    }
+  end
+
   # ── helpers ─────────────────────────────────────────────────────────
   defp user!(email, role) do
     Repo.get_by(User, email: email) || raise "#{role} user not found: #{email}"
@@ -856,7 +913,9 @@ defmodule Registrations.Landgrab.Seed do
   defp two_word_names(count, exclude) do
     taken = MapSet.new(exclude)
 
-    for(a <- @adjectives, n <- @nouns, do: "#{a} #{n}")
+    for_result = for(a <- @adjectives, n <- @nouns, do: "#{a} #{n}")
+
+    for_result
     |> Enum.reject(&MapSet.member?(taken, &1))
     |> Enum.shuffle()
     |> Enum.take(count)

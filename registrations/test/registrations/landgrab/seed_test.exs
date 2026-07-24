@@ -9,9 +9,10 @@ defmodule Registrations.Landgrab.SeedTest do
   use Registrations.DataCase
 
   alias Registrations.Landgrab
-  alias Registrations.Landgrab.OwnershipEvent
   alias Registrations.Landgrab.Event
   alias Registrations.Landgrab.Notification
+  alias Registrations.Landgrab.OrganiserMessage
+  alias Registrations.Landgrab.OwnershipEvent
   alias Registrations.Landgrab.Puzzlet
   alias Registrations.Landgrab.Seed
   alias Registrations.Landgrab.TeamPuzzlet
@@ -151,11 +152,12 @@ defmodule Registrations.Landgrab.SeedTest do
     # is outside it. Update the CURRENT event rather than inserting a second:
     # capture_all's scan path already lazily created a placeholder event via
     # Events.current/0, and a same-second insert would tie it on inserted_at.
-    Repo.one(from(e in Event, order_by: [desc: e.inserted_at], limit: 1))
+    from(e in Event, order_by: [desc: e.inserted_at], limit: 1)
+    |> Repo.one()
     |> Ecto.Changeset.change(%{
-      start_time: DateTime.add(DateTime.utc_now(), -3600, :second) |> DateTime.truncate(:second),
-      endgame_starts_at: DateTime.add(DateTime.utc_now(), -600, :second) |> DateTime.truncate(:second),
-      endgame_ends_at: DateTime.add(DateTime.utc_now(), 600, :second) |> DateTime.truncate(:second),
+      start_time: DateTime.utc_now() |> DateTime.add(-3600, :second) |> DateTime.truncate(:second),
+      endgame_starts_at: DateTime.utc_now() |> DateTime.add(-600, :second) |> DateTime.truncate(:second),
+      endgame_ends_at: DateTime.utc_now() |> DateTime.add(600, :second) |> DateTime.truncate(:second),
       endgame_latitude: 40.0,
       endgame_longitude: -80.0,
       endgame_initial_radius_m: 50.0,
@@ -196,6 +198,7 @@ defmodule Registrations.Landgrab.SeedTest do
       assert t.liberation_response == "accepted"
       assert t.liberation_invited_at
       assert Landgrab.liberator?(id)
+
       assert Repo.aggregate(
                from(n in Notification,
                  where: n.recipient_team_id == ^id and n.type == "liberation_invite"
@@ -216,14 +219,14 @@ defmodule Registrations.Landgrab.SeedTest do
     Seed.teams()
     # Give one player a distinct team name to target unambiguously.
     target = Repo.get(User, hd(players).id).team_id
-    Repo.get(Team, target) |> Ecto.Changeset.change(name: "Correct Horse") |> Repo.update!()
+    Team |> Repo.get(target) |> Ecto.Changeset.change(name: "Correct Horse") |> Repo.update!()
 
     assert %{team: "Correct Horse", invited: true, accepted: true} =
              Seed.subvert_team("correct horse")
 
     assert Landgrab.liberator?(target)
     # Other member teams are untouched.
-    others = member_team_ids() |> Enum.reject(&(&1 == target))
+    others = Enum.reject(member_team_ids(), &(&1 == target))
     for id <- others, do: refute(Landgrab.liberator?(id))
   end
 
@@ -237,8 +240,7 @@ defmodule Registrations.Landgrab.SeedTest do
   end
 
   defp owned_zone_count do
-    Landgrab.list_poles_with_state()
-    |> Enum.count(&(&1.current_owner_team_id != nil))
+    Enum.count(Landgrab.list_poles_with_state(), &(&1.current_owner_team_id != nil))
   end
 
   test "validations fills the test validator's queue with assigned work",
@@ -284,6 +286,39 @@ defmodule Registrations.Landgrab.SeedTest do
     assert Repo.aggregate(from(n in Notification, where: n.type == "liberation_invite"), :count) == 0
     # The schedule is gone too, so the announcer won't immediately re-invite.
     assert Repo.aggregate(from(e in Event, where: not is_nil(e.liberation_starts_at)), :count) == 0
+  end
+
+  test "abort clears every notification type and organiser messages, not just clear's three" do
+    Seed.teams()
+
+    # An organiser broadcast fans out into per-team `message` notifications —
+    # neither of which `clear` touches, but `abort` must.
+    {:ok, message} = Landgrab.create_organiser_message(%{body: "Onward", sender_name: "SYSTEM"})
+    {:ok, _sent, count} = Landgrab.send_organiser_message(message)
+    assert count > 0
+
+    result = Seed.abort()
+    assert result.notifications >= count
+    assert result.organiser_messages == 1
+    assert Repo.aggregate(Notification, :count) == 0
+    assert Repo.aggregate(OrganiserMessage, :count) == 0
+  end
+
+  test "abort disarms the endgame timeline so the announcers go inert" do
+    insert_endgame_event()
+
+    assert %{events: 1} = Seed.abort()
+
+    e = Repo.one(Event)
+    assert is_nil(e.start_time)
+    assert is_nil(e.endgame_starts_at)
+    assert is_nil(e.endgame_ends_at)
+    assert is_nil(e.endgame_announced_at)
+    assert is_nil(e.final_messages_sent_at)
+    assert is_nil(e.relief_started_at)
+    # Nothing to announce or freeze once the timeline is blank.
+    assert Landgrab.maybe_announce_endgame() == :noop
+    assert Landgrab.maybe_send_final_location_messages() == :noop
   end
 
   test "schedule lays out the whole timeline as fixed fractions of X minutes" do
@@ -380,7 +415,7 @@ defmodule Registrations.Landgrab.SeedTest do
     reloaded = Repo.get(Event, event.id)
     # The shrink began 2 minutes ago, and the event is under way (start is past).
     assert_in_delta DateTime.diff(DateTime.utc_now(), reloaded.endgame_starts_at), 120, 5
-    assert DateTime.compare(reloaded.start_time, DateTime.utc_now()) == :lt
+    assert DateTime.before?(reloaded.start_time, DateTime.utc_now())
     # Window shape preserved: 30-min shrink, 1-hour lead from start.
     assert DateTime.diff(reloaded.endgame_ends_at, reloaded.endgame_starts_at) == 1800
     assert DateTime.diff(reloaded.endgame_starts_at, reloaded.start_time) == 3600
