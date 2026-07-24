@@ -33,37 +33,73 @@ class _NotificationsRouteState extends State<NotificationsRoute> {
   // Invite whose answer is in flight — disables its buttons meanwhile.
   String? _respondingId;
 
+  // Fallback poll in case the live channel silently stops delivering (it's
+  // behaved lately, but it has failed us before). Reset after every load, so
+  // it only fires once the channel has actually been quiet this long — while
+  // notifications are flowing over the socket it never runs.
+  static const _idlePollInterval = Duration(minutes: 1);
+  Timer? _pollTimer;
+
   @override
   void initState() {
     super.initState();
     _load();
     // Refresh when a new notification lands while we're open. Reload rather
     // than splice the one event, so read-state and ordering stay authoritative.
+    // Silent: a socket-triggered reload that fails must not blank the list.
     _incomingSub = widget.incoming?.listen((_) {
-      if (mounted) _load();
+      if (mounted) _refresh(surfaceError: false);
     });
   }
 
   @override
   void dispose() {
     _incomingSub?.cancel();
+    _pollTimer?.cancel();
     super.dispose();
   }
 
-  Future<void> _load() async {
-    setState(() => _error = null);
+  /// Initial load and pull-to-refresh: surface load errors in place of the
+  /// list, since there's nothing (or a deliberate retry) behind them.
+  Future<void> _load() => _refresh(surfaceError: true);
+
+  Future<void> _refresh({required bool surfaceError}) async {
+    if (surfaceError) setState(() => _error = null);
     try {
       final result = await widget.api.listNotifications();
       if (!mounted) return;
-      setState(() => _notifications = result.notifications);
+      setState(() {
+        _notifications = result.notifications;
+        _error = null; // a good load clears any stale error banner
+      });
       if (result.unread > 0) {
         // Fire-and-forget; the local list keeps its unread highlights.
         widget.api.markNotificationsRead().catchError((_) {});
       }
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = NotificationStrings.couldNotLoad(e.toString()));
+      // A background refresh (poll / socket event) that fails leaves the
+      // last-known list untouched — a transient network blip shouldn't blank
+      // the screen. Only the initial load (or an empty state) surfaces it.
+      if (surfaceError || _notifications == null) {
+        setState(() => _error = NotificationStrings.couldNotLoad(e.toString()));
+      }
+    } finally {
+      if (mounted) _scheduleIdlePoll();
     }
+  }
+
+  void _scheduleIdlePoll() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer(_idlePollInterval, () {
+      if (!mounted) return;
+      // Don't clobber an in-flight invite answer; check back next interval.
+      if (_respondingId != null) {
+        _scheduleIdlePoll();
+        return;
+      }
+      _refresh(surfaceError: false);
+    });
   }
 
   @override
