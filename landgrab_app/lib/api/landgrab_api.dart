@@ -4,6 +4,7 @@ import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/liberation_status.dart';
+import 'package:landgrab/models/team_board.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/relief_status.dart';
 import 'package:landgrab/models/landgrab_event.dart';
@@ -1209,6 +1210,13 @@ class LandgrabApi {
   Future<LiberationStatus> getLiberationStatus() async {
     final response = await dio.get('/landgrab/supervision/liberation');
     return LiberationStatus.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Supervisor team board: every team with its roster and the poles/puzzlets
+  /// it's actively working (idle teams come back with an empty active list).
+  Future<TeamBoard> getSupervisionTeamBoard() async {
+    final response = await dio.get('/landgrab/supervision/team_board');
+    return TeamBoard.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Schedule (or, with nulls, cancel) the liberation rollout window.

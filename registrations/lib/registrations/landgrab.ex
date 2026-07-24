@@ -1596,6 +1596,125 @@ defmodule Registrations.Landgrab do
   end
 
   @doc """
+  Supervisor "team board": every team that has members, each with its roster
+  and the poles/puzzlets it's actively working (its `team_puzzlets`). Teams
+  with nothing active come back with an empty `active` list, so the UI can
+  tuck them into a collapsed "idle" section. Sorted by team name; each team's
+  active entries are oldest-first.
+  """
+  def supervision_team_board do
+    members_by_team =
+      RegistrationsWeb.User
+      |> where([u], not is_nil(u.team_id))
+      |> select([u], %{id: u.id, email: u.email, name: u.name, team_id: u.team_id})
+      |> Repo.all()
+      |> Enum.group_by(& &1.team_id)
+
+    member_team_ids = MapSet.new(Map.keys(members_by_team))
+
+    active_by_team =
+      TeamPuzzlet
+      |> order_by([tp], asc: tp.inserted_at)
+      |> Repo.all()
+      |> Repo.preload([:puzzlet, :pole])
+      |> Enum.group_by(& &1.team_id)
+
+    # Each team's most recent *claim* — a capture (pole via its puzzlet) or an
+    # accommodation (carries pole_id directly). Used to strand an idle team on
+    # the last stake it held. DISTINCT ON keeps only the latest per team.
+    last_claim_by_team =
+      from(o in OwnershipEvent,
+        left_join: pz in Puzzlet,
+        on: pz.id == o.puzzlet_id,
+        where: o.kind in ["capture", "accommodation"] and not is_nil(o.team_id),
+        distinct: o.team_id,
+        order_by: [asc: o.team_id, desc: o.inserted_at],
+        select: %{team_id: o.team_id, pole_id: coalesce(o.pole_id, pz.pole_id), at: o.inserted_at}
+      )
+      |> Repo.all()
+      |> Enum.reject(&is_nil(&1.pole_id))
+      |> Map.new(&{&1.team_id, &1})
+
+    claim_poles =
+      Pole
+      |> where([p], p.id in ^(last_claim_by_team |> Map.values() |> Enum.map(& &1.pole_id) |> Enum.uniq()))
+      |> Repo.all()
+      |> Map.new(&{&1.id, &1})
+
+    teams =
+      RegistrationsWeb.Team
+      |> Repo.all()
+      |> Enum.filter(&MapSet.member?(member_team_ids, &1.id))
+      |> Enum.map(fn t ->
+        %{
+          id: t.id,
+          name: t.name,
+          members:
+            members_by_team
+            |> Map.get(t.id, [])
+            |> Enum.map(&Map.take(&1, [:id, :email, :name]))
+            |> Enum.sort_by(&(&1.name || &1.email)),
+          active:
+            active_by_team
+            |> Map.get(t.id, [])
+            |> Enum.map(&team_board_entry/1),
+          last_claimed:
+            team_board_last_claimed(Map.get(last_claim_by_team, t.id), claim_poles)
+        }
+      end)
+      |> Enum.sort_by(& &1.name)
+
+    %{teams: teams}
+  end
+
+  defp team_board_last_claimed(nil, _poles), do: nil
+
+  defp team_board_last_claimed(%{pole_id: pole_id, at: at}, poles) do
+    case Map.get(poles, pole_id) do
+      %Pole{} = p ->
+        %{id: p.id, label: p.label, barcode: p.barcode, latitude: p.latitude, longitude: p.longitude, at: at}
+
+      _ ->
+        nil
+    end
+  end
+
+  defp team_board_entry(%TeamPuzzlet{pole: pole, puzzlet: puzzlet}) do
+    %{
+      pole: %{
+        id: pole.id,
+        label: pole.label,
+        barcode: pole.barcode,
+        latitude: pole.latitude,
+        longitude: pole.longitude,
+        status: pole.status
+      },
+      puzzlet: %{
+        id: puzzlet.id,
+        difficulty: puzzlet.difficulty,
+        instructions: puzzlet.instructions,
+        answer: puzzlet.answer,
+        latitude: puzzlet.latitude,
+        longitude: puzzlet.longitude,
+        region: team_board_region(puzzlet)
+      }
+    }
+  end
+
+  # A puzzlet's region context (name/breadcrumb/inherited stanzas), or nil —
+  # the same shape the scan and validator-only payloads use, so the client
+  # reuses its region model and card.
+  defp team_board_region(%Puzzlet{} = puzzlet) do
+    case Registrations.Landgrab.Regions.puzzlet_inheritance_payload(puzzlet) do
+      %{region: nil} ->
+        nil
+
+      %{region: summary, inherited_stanzas: stanzas} ->
+        %{name: summary.name, breadcrumb: summary.breadcrumb, stanzas: stanzas}
+    end
+  end
+
+  @doc """
   Give this team `puzzlet` as an active puzzlet. Returns
   `{:ok, puzzlet}` on assignment, `{:already_active, puzzlet}` if they
   already held it (a resume), or `{:error, :at_capacity}` if they're

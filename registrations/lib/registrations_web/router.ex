@@ -377,6 +377,7 @@ defmodule RegistrationsWeb.Router do
     pipe_through([:landgrab_supervisor])
 
     get("/dashboard", SupervisionController, :dashboard)
+    get("/team_board", SupervisionController, :team_board)
     get("/endgame", EndgameController, :show)
     put("/endgame", EndgameController, :update)
     put("/endgame/messages", EndgameController, :update_messages)
