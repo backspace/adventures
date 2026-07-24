@@ -192,8 +192,19 @@ class _AttachmentMapRouteState extends State<AttachmentMapRoute> {
     ];
   }
 
+  // Poles with at least one attached puzzlet that's hidden from this map —
+  // retired/withdrawn or validator-only. Computed from the raw (unfiltered)
+  // `_puzzlets` so we can flag a pole that looks empty here but actually has
+  // off-map content wired to it.
+  Set<String> get _polesWithHiddenAttached => {
+        for (final p in (_puzzlets ?? const <DraftPuzzlet>[]))
+          if (p.poleId != null && (_removed(p.status) || p.validatorOnly))
+            p.poleId!,
+      };
+
   List<Marker> _poleMarkers(Map<String, LatLng> displaced) {
     final size = _pinSize;
+    final flagged = _polesWithHiddenAttached;
     return [
       for (final pole in _visiblePoles)
         if (displaced['p:${pole.id}'] case final at?)
@@ -201,7 +212,11 @@ class _AttachmentMapRouteState extends State<AttachmentMapRoute> {
             point: at,
             width: size,
             height: size,
-            child: _PolePin(dimension: size, onTap: () => _onPoleTap(pole)),
+            child: _PolePin(
+              dimension: size,
+              flagged: flagged.contains(pole.id),
+              onTap: () => _onPoleTap(pole),
+            ),
           ),
     ];
   }
@@ -381,6 +396,7 @@ class _LegendCard extends StatelessWidget {
             Expanded(
               child: Text(
                 'Lines link puzzlets to their pole. Faded = attached. '
+                '! = hidden (retired/validator-only) content attached. '
                 'Tap a pin to change attachments.',
                 style: theme.textTheme.bodySmall,
               ),
@@ -421,31 +437,53 @@ class _Attribution extends StatelessWidget {
 
 class _PolePin extends StatelessWidget {
   final double dimension;
+  // Marks a pole that has hidden (retired/withdrawn or validator-only)
+  // puzzlets attached — content that isn't drawn on this map — with a small
+  // amber "!" badge so the supervisor can spot it.
+  final bool flagged;
   final VoidCallback? onTap;
-  const _PolePin({this.dimension = 34, this.onTap});
+  const _PolePin({this.dimension = 34, this.flagged = false, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     // Below ~20 px the glyph can't render legibly; drop to a plain dot.
     final showGlyph = dimension >= 20;
+    final circle = Container(
+      decoration: BoxDecoration(
+        color: Colors.indigo.shade700,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: showGlyph ? 2 : 1),
+        boxShadow: const [
+          BoxShadow(
+              color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 1)),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: showGlyph
+          ? Icon(Icons.sensors, color: Colors.white, size: dimension * 0.55)
+          : null,
+    );
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.indigo.shade700,
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: showGlyph ? 2 : 1),
-          boxShadow: const [
-            BoxShadow(
-                color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 1)),
-          ],
-        ),
-        alignment: Alignment.center,
-        child: showGlyph
-            ? Icon(Icons.sensors, color: Colors.white, size: dimension * 0.55)
-            : null,
-      ),
+      child: flagged
+          ? Stack(
+              clipBehavior: Clip.none,
+              children: [
+                circle,
+                Positioned(
+                  right: -3,
+                  top: -3,
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                        color: Colors.white, shape: BoxShape.circle),
+                    child: Icon(Icons.error,
+                        size: 14, color: Colors.amber.shade800),
+                  ),
+                ),
+              ],
+            )
+          : circle,
     );
   }
 }
