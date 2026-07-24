@@ -288,6 +288,16 @@ defmodule Registrations.Landgrab.SeedTest do
     assert Repo.aggregate(from(e in Event, where: not is_nil(e.liberation_starts_at)), :count) == 0
   end
 
+  test "clear closes the relief valve" do
+    insert_event(relief_started_at: ~U[2020-01-01 00:00:00Z])
+    assert Landgrab.relief_active?()
+
+    Seed.clear()
+
+    refute Landgrab.relief_active?()
+    assert Repo.aggregate(from(e in Event, where: not is_nil(e.relief_started_at)), :count) == 0
+  end
+
   test "abort clears every notification type and organiser messages, not just clear's three" do
     Seed.teams()
 

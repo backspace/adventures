@@ -148,13 +148,14 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       invites 5/8–6/8, end at X. Re-arms one-shot stamps; fills a
                       default endgame location if none. Pair with 'clear'.  (30)
       clear           remove ALL captures, in-progress claims, and the attack /
-                      pole-lost / liberation-invite notifications, and reset the
-                      liberation rollout (invites, answers, schedule) — a clean,
-                      uncaptured map
+                      pole-lost / liberation-invite notifications, reset the
+                      liberation rollout (invites, answers, schedule), and close
+                      the relief valve — a clean, uncaptured map
       abort           full teardown between test runs: everything 'clear' does
-                      PLUS every remaining notification type, the organiser
-                      messages, and the whole endgame timeline + relief stamp —
-                      so no timed event will fire. Use to stop a 'schedule:X' run
+                      (incl. closing the relief valve) PLUS every remaining
+                      notification type, the organiser messages, and the whole
+                      endgame timeline — so no timed event will fire. Use to stop
+                      a 'schedule:X' run
       filler:N        create N teamless filler users with memorable proposed
                       team names — pair with 'teams' to add that many teams  (5)
       names           rename any leftover "FIXME" teams to two-word names
@@ -362,7 +363,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
 
     Mix.shell().info(
       "clear: removed #{caps} capture(s), #{tp} in-progress, #{notes} gameplay notification(s); " <>
-        "reset liberation for #{lib} team(s) and unscheduled the rollout."
+        "reset liberation for #{lib} team(s), unscheduled the rollout, and closed the relief valve."
     )
   end
 

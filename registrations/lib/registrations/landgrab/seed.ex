@@ -829,8 +829,10 @@ defmodule Registrations.Landgrab.Seed do
   Remove ALL captures, in-progress claims, and the attack / pole-lost /
   liberation-invite notifications, and reset the liberation rollout (team
   invite stamps + answers, and the events' schedule) — a clean, uncaptured
-  map. Returns `%{captures: n, in_progress: n, notifications: n,
-  liberation_teams: n}`.
+  map. Also turns the relief valve back off: the per-team consumption it
+  tracks lives in the just-deleted in-progress claims, so leaving the valve
+  on would strand it half-open. Returns `%{captures: n, in_progress: n,
+  notifications: n, liberation_teams: n}`.
   """
   def clear do
     {tp, _} = Repo.delete_all(TeamPuzzlet)
@@ -847,7 +849,11 @@ defmodule Registrations.Landgrab.Seed do
 
     # Un-schedule the rollout too — a past-dated window left behind would
     # have the announcer re-invite every team within a minute of the wipe.
-    Repo.update_all(Event, set: [liberation_starts_at: nil, liberation_rollout_ends_at: nil])
+    # And close the relief valve: its consumption tracking rode on the
+    # in-progress claims just deleted above.
+    Repo.update_all(Event,
+      set: [liberation_starts_at: nil, liberation_rollout_ends_at: nil, relief_started_at: nil]
+    )
 
     %{captures: caps, in_progress: tp, notifications: notes, liberation_teams: invited}
   end
@@ -862,8 +868,9 @@ defmodule Registrations.Landgrab.Seed do
       `puzzlet_withdrawn`, `liberation_joined`), and the `OrganiserMessage`
       source rows they fan out from (incl. the SYSTEM endgame broadcast);
     * the endgame timeline and its one-shot stamps (`start_time`,
-      `endgame_starts_at`/`_ends_at`/`_announced_at`, `final_messages_sent_at`)
-      and the relief-valve stamp, blanked on every event.
+      `endgame_starts_at`/`_ends_at`/`_announced_at`, `final_messages_sent_at`),
+      blanked on every event. (`clear/0` already closes the relief valve and
+      unschedules the liberation window.)
 
   With no timeline left to read, the (stateless, minute-polling) endgame
   and liberation announcers find nothing to fire — so no timed event
@@ -880,9 +887,9 @@ defmodule Registrations.Landgrab.Seed do
     {rest, _} = Repo.delete_all(Notification)
     {messages, _} = Repo.delete_all(OrganiserMessage)
 
-    # clear/0 unscheduled only the liberation window; blank the endgame
-    # timeline, its one-shot stamps, and the relief stamp too — otherwise a
-    # scheduled endgame still fires and relief mode carries over.
+    # clear/0 unscheduled only the liberation window (and closed relief);
+    # blank the endgame timeline and its one-shot stamps too — otherwise a
+    # scheduled endgame still fires.
     {events, _} =
       Repo.update_all(Event,
         set: [
@@ -890,7 +897,6 @@ defmodule Registrations.Landgrab.Seed do
           endgame_starts_at: nil,
           endgame_ends_at: nil,
           endgame_announced_at: nil,
-          relief_started_at: nil,
           final_messages_sent_at: nil
         ]
       )
