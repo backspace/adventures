@@ -144,6 +144,34 @@ defmodule Registrations.Integration.Admin do
     assert Teams.risk_aversion(session, 1) === "1"
   end
 
+  test "admin can add and remove team members when editing a team", %{session: session} do
+    team = insert(:team, name: "Alpha", risk_aversion: 2)
+    member = insert(:user, email: "member@example.com", team_id: team.id)
+    outsider = insert(:user, email: "outsider@example.com")
+    insert(:octavia, admin: true)
+
+    visit(session, "/")
+    Login.login_as_admin(session)
+
+    visit(session, "/teams/#{team.id}/edit")
+
+    # The existing member is listed; someone not on the team isn't.
+    assert Teams.has_member?(session, "member@example.com")
+    refute Teams.has_member?(session, "outsider@example.com")
+
+    # Add a member via the dropdown.
+    Teams.add_member(session, "outsider@example.com")
+    assert Teams.has_member?(session, "outsider@example.com")
+    assert Registrations.Repo.get(RegistrationsWeb.User, outsider.id).team_id == team.id
+    Nav.assert_info_text(session, "outsider@example.com added to the team.")
+
+    # Remove the original member.
+    Teams.remove_member(session, "member@example.com")
+    refute Teams.has_member?(session, "member@example.com")
+    assert Registrations.Repo.get(RegistrationsWeb.User, member.id).team_id == nil
+    Nav.assert_info_text(session, "member@example.com removed from the team.")
+  end
+
   test "admin can view team JSON", %{session: session} do
     a = insert(:user, accessibility: "my notes", email: "a@example.com")
     b = insert(:user, email: "b@example.com")

@@ -118,9 +118,88 @@ defmodule RegistrationsWeb.TeamController do
   end
 
   def edit(conn, %{"id" => id}) do
-    team = Repo.get!(Team, id)
+    team = Team |> Repo.get!(id) |> Repo.preload(:users)
     changeset = Team.changeset(team)
-    render(conn, "edit.html", team: team, changeset: changeset)
+    {teamless, teamed} = addable_users(team)
+
+    render(conn, "edit.html",
+      team: team,
+      changeset: changeset,
+      teamless_users: teamless,
+      teamed_users: teamed
+    )
+  end
+
+  # People the admin can add, split for the dropdown: those with no team
+  # (offered first) and those on another team (adding one moves them here).
+  # This team's own members are excluded — they're already listed above. Each
+  # group is sorted alphabetically by email.
+  defp addable_users(team) do
+    by_email = &Enum.sort_by(&1, fn u -> String.downcase(u.email || "") end)
+    users = Repo.all(User)
+
+    teamless = users |> Enum.filter(&is_nil(&1.team_id)) |> then(by_email)
+
+    teamed =
+      users
+      |> Enum.filter(&(not is_nil(&1.team_id) and &1.team_id != team.id))
+      |> then(by_email)
+
+    {teamless, teamed}
+  end
+
+  # Add a member picked from the dropdown (by id) — the admin counterpart to a
+  # player joining with the team code. A member on another team is moved here.
+  def add_member(conn, %{"id" => id, "member" => %{"user_id" => user_id}})
+      when user_id != "" do
+    team = Repo.get!(Team, id)
+
+    case Repo.get(User, user_id) do
+      nil ->
+        conn
+        |> put_flash(:error, "That person could not be found.")
+        |> redirect(to: Routes.team_path(conn, :edit, team))
+
+      %User{team_id: team_id} when team_id == team.id and not is_nil(team_id) ->
+        conn
+        |> put_flash(:info, "That person is already on this team.")
+        |> redirect(to: Routes.team_path(conn, :edit, team))
+
+      user ->
+        user |> Ecto.Changeset.change(team_id: team.id) |> Repo.update!()
+
+        conn
+        |> put_flash(:info, "#{user.email} added to the team.")
+        |> redirect(to: Routes.team_path(conn, :edit, team))
+    end
+  end
+
+  # No one selected (the blank prompt).
+  def add_member(conn, %{"id" => id}) do
+    team = Repo.get!(Team, id)
+
+    conn
+    |> put_flash(:error, "Choose a person to add.")
+    |> redirect(to: Routes.team_path(conn, :edit, team))
+  end
+
+  # Remove a member from the team (clears their team_id, leaving the account
+  # intact and teamless).
+  def remove_member(conn, %{"id" => id, "user_id" => user_id}) do
+    team = Repo.get!(Team, id)
+    user = Repo.get!(User, user_id)
+
+    if user.team_id == team.id do
+      user |> Ecto.Changeset.change(team_id: nil) |> Repo.update!()
+
+      conn
+      |> put_flash(:info, "#{user.email} removed from the team.")
+      |> redirect(to: Routes.team_path(conn, :edit, team))
+    else
+      conn
+      |> put_flash(:error, "That user isn't on this team.")
+      |> redirect(to: Routes.team_path(conn, :edit, team))
+    end
   end
 
   def update(conn, %{"id" => id, "team" => team_params}) do

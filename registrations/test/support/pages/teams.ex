@@ -18,4 +18,24 @@ defmodule Registrations.Pages.Teams do
   def emails(session, index) do
     Browser.text(session, Query.css("#{team_container(index)} [data-test-emails]"))
   end
+
+  # ──────── Edit page: member management ─────────────────────────────
+
+  def has_member?(session, email) do
+    Browser.has?(session, Query.css("[data-test-member='#{email}']"))
+  end
+
+  # Pick the person from the grouped dropdown (labelled "Add member"; option
+  # labels are emails), then submit.
+  def add_member(session, email) do
+    session
+    |> Browser.find(Query.select("Add member"))
+    |> Browser.click(Query.option(email))
+
+    Browser.click(session, Query.button("Add member"))
+  end
+
+  def remove_member(session, email) do
+    Browser.click(session, Query.css("[data-test-member='#{email}'] .remove-member"))
+  end
 end

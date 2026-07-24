@@ -140,6 +140,8 @@ defmodule RegistrationsWeb.Router do
 
     post("/teams/build", TeamController, :build)
     get("/teams/cards", TeamController, :cards)
+    post("/teams/:id/members", TeamController, :add_member, as: :team_member)
+    delete("/teams/:id/members/:user_id", TeamController, :remove_member, as: :team_member)
     resources("/teams", TeamController)
 
     resources("/users", UserController, only: [:index])

@@ -7,6 +7,41 @@
       action: Routes.team_path(@conn, :update, @team)
     ) %>
 
+    <h3>Members</h3>
+    <%= if @team.users == [] do %>
+      <p data-test-no-members>No members yet.</p>
+    <% else %>
+      <ul data-test-members>
+        <%= for user <- @team.users do %>
+          <li class="team-member" data-test-member={user.email}>
+            <span class="member-email"><%= user.email %></span>
+            <%= form_for :remove, Routes.team_member_path(@conn, :remove_member, @team, user.id), [method: "delete"], fn _f -> %>
+              <%= submit("Remove", class: "button btn btn-secondary remove-member") %>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+
+    <%= form_for :member, Routes.team_member_path(@conn, :add_member, @team), fn f -> %>
+      <div class="form-group">
+        <%= label(f, :user_id, "Add member", class: "control-label") %>
+        <%# Teamless people first, then (as a separate optgroup) people already
+            on another team; each group alphabetical by email. %>
+        <% groups =
+          [
+            {"No team", Enum.map(@teamless_users, &{&1.email, &1.id})},
+            {"On another team", Enum.map(@teamed_users, &{&1.email, &1.id})}
+          ]
+          |> Enum.reject(fn {_label, options} -> options == [] end) %>
+        <%= select(f, :user_id, groups,
+          prompt: "Select a person…",
+          class: "form-control add-member-select"
+        ) %>
+      </div>
+      <%= submit("Add member", class: "button btn btn-primary add-member") %>
+    <% end %>
+
     <%= link("Back", to: Routes.team_path(@conn, :index)) %>
   </div>
 </div>
