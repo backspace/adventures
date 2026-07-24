@@ -99,8 +99,20 @@ class RefreshTokenInterceptor extends InterceptorsWrapper {
       // later would restore an already-spent renewal token and 401.
       await UserService.rememberCurrentAccount();
       return newAccessToken;
+    } on DioException catch (e) {
+      // Only a genuine auth rejection (401) means the renewal token is dead
+      // and the user must sign in again. A transient failure — no response,
+      // timeout, connection error, or a 5xx — must NOT wipe the session: the
+      // token is probably still valid, and a later request (or the home
+      // screen's "Try again") can renew once connectivity returns. Clearing
+      // on those was forcing needless logouts on flaky networks.
+      if (e.response?.statusCode == 401) {
+        await UserService.clearUserData();
+      }
+      return null;
     } catch (_) {
-      await UserService.clearUserData();
+      // A non-Dio error (e.g. an unexpectedly shaped 200 body) — fail this
+      // renewal without destroying the session over an ambiguous response.
       return null;
     }
   }

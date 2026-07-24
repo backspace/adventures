@@ -134,4 +134,40 @@ void main() {
     expect(await UserService.getAccessToken(), isNull);
     expect(await UserService.getRenewalToken(), isNull);
   });
+
+  test('a transient renewal failure (5xx) keeps the session', () async {
+    await UserService.setTokens('old_access', 'old_renewal');
+
+    final baseOptions = BaseOptions(baseUrl: 'http://test.invalid');
+    final dio = Dio(baseOptions);
+    final renewalDio = Dio(baseOptions);
+    final postRenewalDio = Dio(baseOptions);
+
+    final adapter = DioAdapter(dio: dio);
+    final renewalAdapter = DioAdapter(dio: renewalDio);
+
+    adapter.onGet('/landgrab/event', (s) => s.reply(401, {'error': 'x'}));
+    // The renew itself fails transiently (server hiccup) — NOT an auth
+    // rejection, so the session must survive for a later retry.
+    renewalAdapter.onPost(
+      '/powapi/session/renew',
+      (s) => s.reply(503, {'error': 'unavailable'}),
+    );
+
+    dio.interceptors.add(RefreshTokenInterceptor(
+      dio: dio,
+      renewalDio: renewalDio,
+      postRenewalDio: postRenewalDio,
+    ));
+
+    await expectLater(
+      dio.get('/landgrab/event'),
+      throwsA(isA<DioException>()
+          .having((e) => e.response?.statusCode, 'statusCode', 401)),
+    );
+
+    // Tokens are untouched — a network/5xx blip must not force a logout.
+    expect(await UserService.getAccessToken(), 'old_access');
+    expect(await UserService.getRenewalToken(), 'old_renewal');
+  });
 }
