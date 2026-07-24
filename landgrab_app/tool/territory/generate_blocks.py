@@ -78,12 +78,14 @@ def fetch_roads(south, west, north, east, highways, endpoints=None, alleys=True)
     regex = "|".join(highways)
     parts = [f'way["highway"~"^({regex})$"]({bbox});']
     if alleys:
-        # Real alleys only. `service=alley` splits a block down its mid-block
-        # lane (useful); footway/path are mostly *sidewalks* that shave thin
-        # strips off every block (the "comical slices"), and pedestrian ways
-        # are often plaza edges — all excluded on purpose. Widen via --highways
-        # if a venue genuinely needs them.
-        parts.append(f'way["highway"="service"]["service"="alley"]({bbox});')
+        # Any service road — back lanes, alleys, parking aisles, driveways —
+        # splits a block along its mid-block line, which is exactly where a
+        # division between two poles should sit. (Was `service=alley` only, but
+        # many back lanes are just `highway=service`.) footway/path stay out:
+        # they're mostly sidewalks that shave thin strips off every block — the
+        # "comical slices" — so add those via --highways only if a venue needs
+        # them.
+        parts.append(f'way["highway"="service"]({bbox});')
     query = "[out:json][timeout:60];(" + "".join(parts) + ");out geom;"
 
     last_err = None
@@ -182,8 +184,23 @@ def fetch_areas(south, west, north, east, endpoints=None):
     return _fetch_area_rings(query, endpoints, "areas")
 
 
+def fetch_buildings(south, west, north, east, endpoints=None):
+    """Building footprint rings. EXPERIMENTAL: their outlines are added to the
+    polygonizer so block faces — and the division between poles that share a
+    block — follow the buildings and the gaps between them, instead of a
+    straight Voronoi bisector."""
+    bbox = f"{south},{west},{north},{east}"
+    query = (
+        "[out:json][timeout:60];("
+        f'way["building"]({bbox});'
+        f'relation["building"]({bbox});'
+        ");out geom;"
+    )
+    return _fetch_area_rings(query, endpoints, "buildings")
+
+
 def build_blocks(bbox, road_lines, water_lines, area_lines, min_area_m2,
-                 merge_below_m2):
+                 merge_below_m2, building_lines=()):
     from shapely.geometry import LineString, MultiPolygon, Polygon, box
     from shapely.ops import polygonize, unary_union
 
@@ -212,7 +229,7 @@ def build_blocks(bbox, road_lines, water_lines, area_lines, min_area_m2,
     # roundabout.)
     frame = LineString(box(west, south, east, north).exterior.coords)
     all_lines = (as_lines(road_lines) + as_lines(water_lines) +
-                 as_lines(area_lines) + [frame])
+                 as_lines(area_lines) + as_lines(building_lines) + [frame])
     faces = list(polygonize(unary_union(all_lines)))
 
     water = area_of(as_lines(water_lines))
@@ -231,7 +248,14 @@ def build_blocks(bbox, road_lines, water_lines, area_lines, min_area_m2,
         kept.extend(explode(f))
 
     polys = _merge_slivers(kept, merge_below_m2)
-    return [p for p in polys if _area_m2(p) >= min_area_m2]
+    polys = [p for p in polys if _area_m2(p) >= min_area_m2]
+    # Tag open-space (park) faces. Territory assignment floods into a connected
+    # park so a zone can reach the riverbank, but must NOT flood into ordinary
+    # blocks past the play area — so each face carries whether it's parkland.
+    return [
+        (p, bool(parks is not None and parks.contains(p.representative_point())))
+        for p in polys
+    ]
 
 
 def _is_sliver(poly, merge_below_m2):
@@ -312,10 +336,10 @@ def to_geojson(blocks):
         "features": [
             {
                 "type": "Feature",
-                "properties": {"id": f"b{i}"},
+                "properties": {"id": f"b{i}", "open": is_park},
                 "geometry": {"type": "Polygon", "coordinates": _poly_coords(poly)},
             }
-            for i, poly in enumerate(blocks)
+            for i, (poly, is_park) in enumerate(blocks)
         ],
     }
 
@@ -340,6 +364,10 @@ def main():
                     default=True,
                     help="Include alleys + pedestrian ways so blocks subdivide "
                          "finer (default: on)")
+    ap.add_argument("--buildings", action="store_true",
+                    help="EXPERIMENTAL: add building footprints as face "
+                         "boundaries, so zones/divisions follow buildings and "
+                         "the gaps between them (finer, more fragmented)")
     ap.add_argument("--min-area-m2", type=float, default=60.0,
                     help="Drop unmergeable slivers smaller than this (m²)")
     ap.add_argument("--merge-below-m2", type=float, default=500.0,
@@ -358,7 +386,7 @@ def main():
     bbox = f"{south},{west},{north},{east}"
 
     print(f"Fetching roads for bbox {bbox} …", file=sys.stderr)
-    roads_key = f"roads|{bbox}|{'|'.join(args.highways)}|alleys={args.alleys}"
+    roads_key = f"roads|{bbox}|{'|'.join(args.highways)}|alleys={args.alleys}|svc-all"
     road_lines = cached(
         args.cache_dir, "roads", roads_key, args.refresh,
         lambda: fetch_roads(south, west, north, east, args.highways,
@@ -381,8 +409,17 @@ def main():
             lambda: fetch_areas(south, west, north, east, args.endpoint))
         print(f"  {len(area_lines)} property ways", file=sys.stderr)
 
+    building_lines = []
+    if args.buildings:
+        print("Fetching buildings …", file=sys.stderr)
+        building_lines = cached(
+            args.cache_dir, "buildings", f"buildings|{bbox}", args.refresh,
+            lambda: fetch_buildings(south, west, north, east, args.endpoint))
+        print(f"  {len(building_lines)} building ways", file=sys.stderr)
+
     blocks = build_blocks((south, west, north, east), road_lines, water_lines,
-                          area_lines, args.min_area_m2, args.merge_below_m2)
+                          area_lines, args.min_area_m2, args.merge_below_m2,
+                          building_lines=building_lines)
     print(f"  {len(blocks)} blocks", file=sys.stderr)
 
     with open(args.out, "w") as f:

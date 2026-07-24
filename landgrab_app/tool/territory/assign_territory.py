@@ -35,14 +35,18 @@ import sys
 
 
 def load_blocks(path):
+    """Returns (polys, open_flags) — open_flags[i] is True for open-space
+    (park) faces, which territory may flood into to reach the riverbank."""
     from shapely.geometry import shape
-    out = []
+    out, opens = [], []
     for f in json.load(open(path)).get("features", []):
         g = shape(f["geometry"])
+        is_open = bool((f.get("properties") or {}).get("open"))
         for poly in (g.geoms if g.geom_type == "MultiPolygon" else [g]):
             if poly.is_valid and not poly.is_empty:
                 out.append(poly)
-    return out
+                opens.append(is_open)
+    return out, opens
 
 
 def load_points(path, id_key):
@@ -133,7 +137,7 @@ def _split_block(block, plist):
     return out
 
 
-def build_units(blocks, poles, hull):
+def build_units(blocks, poles, hull, seeds=(), reach_m=0.0, block_open=None):
     """Turn blocks into assignment *units*, splitting any block that holds more
     than one pole among those poles — so every pole gets its own slice of a
     shared/superblock instead of one pole taking the whole thing (which left
@@ -141,22 +145,97 @@ def build_units(blocks, poles, hull):
     unit_home[i] is the pole id that owns unit i outright, or None (an empty
     unit to be filled)."""
     from collections import defaultdict
+    from shapely.ops import unary_union
 
     in_hull = [i for i, b in enumerate(blocks)
                if hull.contains(b.representative_point())]
-    cents = {i: blocks[i].representative_point() for i in in_hull}
 
-    # Each pole → the block it stands in, else its nearest in-hull block.
+    # The units to assign: the in-hull blocks, plus any block a pole actually
+    # stands in (added below). Kept as a set so a pole's own block joins in even
+    # when it sits outside the seed hull.
+    candidate = set(in_hull)
+
+    cents = {i: blocks[i].representative_point() for i in candidate}
+
+    # Each pole → the block it stands in, else its nearest in-hull block. The
+    # containment search spans ALL blocks (not just in_hull): an edge pole whose
+    # block sits mostly outside the seed hull would otherwise get tied to the
+    # nearest in-hull block across a street and end up OUTSIDE its own zone.
+    # Adding its true block as a unit anchors the zone on the pole; the adjacent
+    # in-hull block then flows to the same pole via Dijkstra (blocks share the
+    # street centreline, so they're neighbours), so the zone reaches across.
     poles_in = defaultdict(list)
+    home_blocks = set()
     for pid, pt in poles:
-        home = next((i for i in in_hull if blocks[i].contains(pt)), None)
-        if home is None and in_hull:
+        home = next((i for i, b in enumerate(blocks) if b.contains(pt)), None)
+        if home is not None:
+            candidate.add(home)
+            home_blocks.add(home)
+        elif in_hull:
             home = min(in_hull, key=lambda i: _metres(cents[i], pt))
         if home is not None:
             poles_in[home].append((pid, pt))
 
+    # (0) Near-coincident poles: two real poles a metre or two apart share one
+    # block, and a Voronoi split hands one a degenerate sliver (0112286 got a
+    # 233 m² triangle beside 2117940, 1.5 m away). The poles are physical and
+    # can't be moved. Keep the split so each pole owns the triangle its own dot
+    # sits in, and additionally hand the pole nearest the biggest adjacent block
+    # that block — its triangle then extends across the shared street edge into
+    # the block next door (0112286's triangle grows west toward Adelaide),
+    # giving it a real zone while its dot stays inside.
+    from shapely.ops import nearest_points
+    NEAR_M = 15.0
+    for h, here in list(poles_in.items()):
+        if len(here) < 2:
+            continue
+        pts = [pt for _, pt in here]
+        if max(_metres(a, b) for a in pts for b in pts) > NEAR_M:
+            continue
+        nbrs = [j for j, b in enumerate(blocks)
+                if j != h and j not in poles_in and blocks[h].intersects(b)]
+        if not nbrs:
+            continue
+        big = max(nbrs, key=lambda j: blocks[j].area)
+        spiller = min(here, key=lambda pp: _metres(
+            nearest_points(blocks[big], pp[1])[0], pp[1]))
+        candidate.add(big)
+        poles_in[big].append(spiller)
+
+    # (1) Admit blocks abutting a pole's own home block but cut off by the hull.
+    # An edge pole hemmed onto a thin slice of a shared block spills into the
+    # block it's standing next to. One ring around home blocks only.
+    for h in home_blocks:
+        for j, b in enumerate(blocks):
+            if j not in candidate and blocks[h].intersects(b):
+                candidate.add(j)
+
+    # (2) Reach-gated flood into connected OPEN-SPACE (park) blocks the hull cut
+    # off. The convex hull cuts a straight edge across the play area, stranding
+    # a riverfront park that a team can plainly reach — linked to the zone only
+    # through a thin road strip — as an unassignable void (Stephen Juba Park).
+    # Restricting the flood to parkland means it reaches the river without ever
+    # pulling in ordinary peripheral blocks.
+    if reach_m and seeds and block_open is not None:
+        reachable = [i for i, b in enumerate(blocks)
+                     if i not in candidate and block_open[i]
+                     and any(_metres(b.representative_point(), s) <= reach_m
+                             for s in seeds)]
+        changed = True
+        while changed and reachable:
+            changed = False
+            region = unary_union([blocks[i] for i in candidate])
+            still = []
+            for i in reachable:
+                if blocks[i].intersects(region):
+                    candidate.add(i)
+                    changed = True
+                else:
+                    still.append(i)
+            reachable = still
+
     geoms, home = [], []
-    for i in in_hull:
+    for i in sorted(candidate):
         here = poles_in.get(i, [])
         if len(here) <= 1:
             geoms.append(blocks[i])
@@ -224,10 +303,18 @@ def _reach_cap(seed_pts, reach_m):
     return unary_union(discs)
 
 
+# How far past the reach cap a unit may extend and still be kept whole (so a
+# zone ends on a real street edge rather than a disc arc). Roughly one block —
+# enough to reach the far side of a normal block, not enough to keep a long
+# waterfront/rail strip that runs far beyond the seeds.
+_KEEP_MARGIN_M = 90.0
+
+
 def dissolve(units, owner, seeds_by_pole, reach_m):
     """Union each pole's units, clip to its reach cap, keep the largest
     connected piece, and fill holes that no other zone occupies — one
     contiguous, extent-limited polygon per pole."""
+    import math
     from shapely.ops import unary_union
     from shapely.geometry import MultiPolygon, Polygon
 
@@ -235,17 +322,41 @@ def dissolve(units, owner, seeds_by_pole, reach_m):
     for u, pid in owner.items():
         by_pole.setdefault(pid, []).append(units[u])
 
-    # First pass: each pole's clipped, single-piece region (holes intact).
+    # First pass: each pole's reach-limited, single-piece region (holes intact).
     regions = {}
     for pid, polys in by_pole.items():
-        merged = unary_union(polys)
         seeds = seeds_by_pole.get(pid)
         if reach_m and seeds:
-            merged = merged.intersection(_reach_cap(seeds, reach_m))
+            cap = _reach_cap(seeds, reach_m)
+            # A unit is kept if it reaches into the cap. Then keep it WHOLE when
+            # it fits inside a one-block-wider cap (so a zone ends on the block's
+            # own street edge, not a circular disc arc), but CLIP the units that
+            # run far past the cap to that wider cap. Otherwise a long river/rail
+            # strip that merely grazes the disc near the pole gets kept whole and
+            # stretches the zone hundreds of metres past its seeds.
+            cap_wide = _reach_cap(seeds, reach_m + _KEEP_MARGIN_M)
+            kept = []
+            for p in polys:
+                if not p.intersects(cap):
+                    continue
+                kept.append(p if cap_wide.contains(p) else p.intersection(cap_wide))
+            polys = kept or polys
+        merged = unary_union(polys)
         if merged.is_empty:
             continue
         if isinstance(merged, MultiPolygon):
-            merged = max(merged.geoms, key=lambda p: p.area)
+            # Close sub-metre gaps before splitting off pieces. A Voronoi split
+            # piece lands a fraction of a millimetre inside its block's true
+            # edge (a coordinate round-trip in _split_block), so a pole's
+            # triangle can end up hair-separated from the block it extends into
+            # (0112286's triangle and the block west toward Adelaide). A tiny
+            # close bridges that without merging genuinely separate pieces.
+            d = 0.5 / 111000.0
+            bridged = merged.buffer(d).buffer(-d)
+            # Drop the hairline hole the close leaves where the gap was — the
+            # real hole logic below re-derives holes another zone occupies.
+            merged = (Polygon(bridged.exterior) if bridged.geom_type == "Polygon"
+                      else max(merged.geoms, key=lambda p: p.area))
         if merged.geom_type == "Polygon" and not merged.is_empty:
             regions[pid] = merged
 
@@ -259,6 +370,10 @@ def dissolve(units, owner, seeds_by_pole, reach_m):
         keep = []
         for r in merged.interiors:
             hole = Polygon(r)
+            lat = hole.centroid.y
+            hole_m2 = hole.area * (111000.0 * math.cos(lat * math.pi / 180)) * 111000.0
+            if hole_m2 < 2.0:
+                continue  # hairline/degenerate ring — never a real interior zone
             others = all_union.difference(merged) if all_union else None
             if others is not None and hole.intersection(others).area > 0.3 * hole.area:
                 keep.append([[x, y] for x, y in r.coords])
@@ -288,7 +403,7 @@ def main():
 
     from shapely.geometry import MultiPoint
 
-    blocks = load_blocks(args.blocks)
+    blocks, block_open = load_blocks(args.blocks)
     poles = load_points(args.poles, "id")
     puzzlets = load_points(args.puzzlets, "pole_id")
     print(f"{len(blocks)} blocks, {len(poles)} poles, {len(puzzlets)} puzzlets",
@@ -305,7 +420,8 @@ def main():
     seeds = [pt for _, pt in poles] + [pt for _, pt in puzzlets]
     hull = MultiPoint(seeds).convex_hull
 
-    units, unit_home = build_units(blocks, poles, hull)
+    units, unit_home = build_units(blocks, poles, hull, seeds, args.max_reach_m,
+                                   block_open)
     seeded = sum(1 for h in unit_home if h is not None)
     print(f"{len(units)} units ({seeded} pole-seeded)", file=sys.stderr)
 
