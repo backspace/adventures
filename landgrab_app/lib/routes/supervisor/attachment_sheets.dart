@@ -334,6 +334,22 @@ class _PuzzletPoleSheetState extends State<_PuzzletPoleSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(_puzzlet.instructions, style: theme.textTheme.titleLarge),
+                if (_puzzlet.region != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.place_outlined,
+                          size: 16, color: theme.hintColor),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          _puzzlet.region!.breadcrumb,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 20),
                 Text('Attached to', style: theme.textTheme.titleMedium),
                 const SizedBox(height: 8),
