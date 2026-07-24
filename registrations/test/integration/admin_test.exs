@@ -153,6 +153,11 @@ defmodule Registrations.Integration.Admin do
     visit(session, "/")
     Login.login_as_admin(session)
 
+    # Click through to the teams area first: login_as_admin submits without
+    # waiting for the redirect, so a bare visit/2 can race ahead of the
+    # session being set (and the Admin plug then bounces it to "/"). Clicking
+    # the nav link waits for the logged-in page before we jump to the edit URL.
+    Nav.teams_link().click(session)
     visit(session, "/teams/#{team.id}/edit")
 
     # The existing member is listed; someone not on the team isn't.
