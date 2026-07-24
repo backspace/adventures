@@ -7,6 +7,7 @@ import 'package:landgrab/models/validation.dart';
 import 'package:landgrab/routes/author/edit_puzzlet_route.dart';
 import 'package:landgrab/routes/supervisor/validator_picker.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
+import 'package:landgrab/widgets/confirm_accept_dialog.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/location_suggestion_map.dart';
 import 'package:landgrab/widgets/mini_location_map.dart';
@@ -197,6 +198,19 @@ class _PuzzletSupervisionDetailRouteState
   Future<void> _decide(String status) async {
     final v = _activeValidation;
     if (v == null) return;
+
+    // Accepting a validation applies only the comments already decided; any
+    // still-pending suggestion is dropped. Warn before waving one through with
+    // undecided comments so corrections aren't silently lost.
+    if (status == 'accepted') {
+      final pending =
+          v.comments.where((c) => c.status == CommentStatus.pending).length;
+      if (pending > 0 &&
+          !await confirmAcceptWithPendingComments(context, pending)) {
+        return;
+      }
+    }
+
     setState(() => _busy = true);
     try {
       final updated =
