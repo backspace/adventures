@@ -1320,7 +1320,14 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                   ? const []
                                   : _validatorOnlyMarkers(),
                             ),
-                            if (_activePuzzlets.isNotEmpty)
+                            if (_gameEnded)
+                              const Positioned(
+                                top: 8,
+                                left: 8,
+                                right: 8,
+                                child: SimulationEndedCard(),
+                              )
+                            else if (_activePuzzlets.isNotEmpty)
                               Positioned(
                                 top: 8,
                                 left: 8,
@@ -1371,7 +1378,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                             // Hide-inaccessible toggle — only when the team has
                             // at least one prohibitive stake, so it never
                             // clutters the map for players without such needs.
-                            if (_prohibitiveCount > 0)
+                            // Gone once the game's ended: there's nothing left
+                            // to engage, and it would collide with the ended
+                            // notice in the same corner.
+                            if (!_gameEnded && _prohibitiveCount > 0)
                               Positioned(
                                 top: _activePuzzlets.isNotEmpty ? 96 : 8,
                                 right: 8,
