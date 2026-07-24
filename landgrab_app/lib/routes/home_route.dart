@@ -20,6 +20,7 @@ import 'package:landgrab/routes/home/home_menu.dart';
 import 'package:landgrab/routes/home/in_progress_card.dart';
 import 'package:landgrab/routes/home/load_error_view.dart';
 import 'package:landgrab/routes/home/map_markers.dart';
+import 'package:landgrab/routes/home/pole_sheets.dart';
 import 'package:landgrab/routes/home/pre_event_body.dart';
 import 'package:landgrab/routes/home/territory_map_view.dart';
 import 'package:landgrab/routes/instructions_route.dart';
@@ -39,11 +40,8 @@ import 'package:landgrab/services/push_service.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/services/block_territory_service.dart';
 import 'package:landgrab/services/user_service.dart';
-import 'package:landgrab/widgets/accent_colors.dart';
-import 'package:landgrab/widgets/accessibility_tags_view.dart';
 import 'package:landgrab/widgets/liberated_zone_layer.dart';
 import 'package:landgrab/widgets/liberated_zone_tuner.dart';
-import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/team_style.dart';
 
 class HomeRoute extends StatefulWidget {
@@ -1075,118 +1073,14 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   /// Brief snackbar naming a stake and its current owner, with the owning
   /// team's colour glyph. Reached by tapping a claimed zone, or by tapping any
   /// stake's marker directly (the only way to reveal an unclaimed stake).
-  void _showPoleOwner(Pole pole) {
-    final idx = pole.currentOwnerColorIndex;
-    final owned = pole.currentOwnerTeamId != null && idx != null;
-    final style = owned ? TeamStyle.forIndex(idx) : null;
-    final isMine = pole.currentOwnerTeamId == _teamId;
-    final name = pole.currentOwnerTeamName;
-
-    final owner = !owned
-        ? (pole.liberated
-            ? GameplayStrings.zoneLiberated
-            : GameplayStrings.zoneUnclaimed)
-        : isMine
-            ? GameplayStrings.zoneOwnerYou(name)
-            : GameplayStrings.zoneOwnerOther(name);
-    // The name is the author's label or a stable generated handle — never
-    // the barcode. The barcode is the scannable code, withheld server-side so
-    // reading it off the map can't let someone claim the stake without being
-    // physically there.
-    //
-    // Explain every distinct map icon here: the owner line always, then a line
-    // per marker state so a tap says what the icon means (lock, under-attack
-    // ring, accessibility-blocked glyph). Locked and prohibitive are mutually
-    // exclusive (a locked stake has no puzzlets left to conflict).
-    final lines = <String>['${pole.name} — $owner'];
-    if (pole.locked) lines.add(GameplayStrings.zoneLocked);
-    if (_lastAttackAt.containsKey(pole.id)) {
-      lines.add(GameplayStrings.zoneUnderAttack);
-    }
-    if (pole.prohibitive) lines.add(GameplayStrings.zoneProhibitive);
-    final message = lines.join('\n');
-
-    // A stake with accessibility notes/tags (flagged by the map's info badge)
-    // gets a sheet instead of a snackbar, so there's room to lay the tags out
-    // as chips and show the free-text notes.
-    if (pole.hasAccessibilityInfo) {
-      _showPoleAccessibilitySheet(pole, style, isMine, message);
-      return;
-    }
-
-    // Replace any current popup immediately rather than queueing — tapping a
-    // new zone should show it at once, not wait for the previous one to time
-    // out. removeCurrentSnackBar skips the dismiss animation so it feels instant.
-    ScaffoldMessenger.of(context)
-      ..removeCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
-        content: Row(children: [
-          // The exact marker from the map, larger — so "this icon means…" is
-          // literally the same glyph beside the words.
-          SizedBox(
-            width: 24,
-            height: 24,
-            child: PoleDot(
-              style: style,
-              isMine: isMine,
-              prohibitive: pole.prohibitive,
-              locked: pole.locked,
-              dimension: 24,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(child: Text(message)),
-        ]),
-      ));
-  }
-
-  /// Sheet shown when tapping a stake that carries accessibility info: the
-  /// same glyph + owner/state summary as the snackbar, followed by the tags
-  /// (as chips, each explaining itself on tap) and any free-text notes.
-  void _showPoleAccessibilitySheet(
-      Pole pole, TeamStyle? style, bool isMine, String message) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(children: [
-                SizedBox(
-                  width: 28,
-                  height: 28,
-                  child: PoleDot(
-                    style: style,
-                    isMine: isMine,
-                    prohibitive: pole.prohibitive,
-                    locked: pole.locked,
-                    dimension: 28,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(message,
-                      style: Theme.of(ctx).textTheme.bodyLarge),
-                ),
-              ]),
-              const SizedBox(height: 20),
-              AccessibilityTagsView(
-                tags: pole.accessibilityTags,
-                notes: pole.accessibilityNotes,
-                title: GameplayStrings.zoneAccessibilityTitle,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  // Pole-tap detail (owner snackbar / accessibility sheet) lives in
+  // home/pole_sheets.dart — a thin call from here with the live state it needs.
+  void _showPoleOwner(Pole pole) => showPoleOwner(
+        context,
+        pole: pole,
+        teamId: _teamId,
+        underAttack: _lastAttackAt.containsKey(pole.id),
+      );
 
   void _toggleHideProhibitive() {
     setState(() => _hideProhibitive = !_hideProhibitive);
@@ -1210,7 +1104,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           height: size,
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => _showValidatorOnlySheet(p),
+            onTap: () => showValidatorOnlySheet(context, p),
             child: Tooltip(
               message: p.instructions.length > 40
                   ? '${p.instructions.substring(0, 40)}…'
@@ -1220,73 +1114,6 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           ),
         ),
     ];
-  }
-
-  void _showValidatorOnlySheet(ValidatorOnlyPuzzlet p) {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) {
-        final theme = Theme.of(ctx);
-        final amber = AccentColors.forBrightness(theme.brightness, Colors.amber);
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(children: [
-                  const ValidatorOnlyStar(size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Puzzlet · difficulty ${p.difficulty}',
-                      style: theme.textTheme.titleLarge,
-                    ),
-                  ),
-                ]),
-                const SizedBox(height: 4),
-                Text('Reserved for helpers · status: ${p.status}',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    )),
-                if (p.region != null) ...[
-                  const SizedBox(height: 16),
-                  RegionContextCard(
-                    breadcrumb: p.region!.breadcrumb,
-                    stanzas: p.region!.stanzas,
-                  ),
-                ],
-                const SizedBox(height: 16),
-                Text(p.instructions, style: theme.textTheme.bodyLarge),
-                if (p.warning != null && p.warning!.trim().isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: amber.fill,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: amber.border),
-                    ),
-                    child: Row(children: [
-                      Icon(Icons.warning_amber_outlined,
-                          size: 20, color: amber.ink),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(p.warning!,
-                            style: TextStyle(color: amber.ink)),
-                      ),
-                    ]),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   LatLng _center() {
