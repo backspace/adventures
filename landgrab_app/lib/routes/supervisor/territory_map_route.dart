@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
@@ -64,6 +65,20 @@ class _TerritoryMapRouteState extends State<TerritoryMapRoute> {
   String _poleLabel(String poleId) {
     final pole = _poles?.where((p) => p.id == poleId).firstOrNull;
     return pole?.label ?? pole?.barcode ?? poleId.substring(0, 6);
+  }
+
+  // Tap a zone's label to copy its pole's barcode — handy for pasting the id
+  // into a message or a query while tuning shapes.
+  Future<void> _copyBarcode(String poleId) async {
+    final pole = _poles?.where((p) => p.id == poleId).firstOrNull;
+    final code = pole?.barcode;
+    if (code == null) return;
+    await Clipboard.setData(ClipboardData(text: code));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Copied barcode $code'),
+      duration: const Duration(seconds: 1),
+    ));
   }
 
   // Rough centroid (vertex average) — fine as a label anchor.
@@ -178,7 +193,10 @@ class _TerritoryMapRouteState extends State<TerritoryMapRoute> {
                                     point: _centroid(r.ring),
                                     width: 96,
                                     height: 18,
-                                    child: _ZoneLabel(text: _poleLabel(r.poleId)),
+                                    child: _ZoneLabel(
+                                      text: _poleLabel(r.poleId),
+                                      onTap: () => _copyBarcode(r.poleId),
+                                    ),
                                   ),
                               ]),
                             const _Attribution(),
@@ -214,24 +232,29 @@ class _TerritoryMapRouteState extends State<TerritoryMapRoute> {
 
 class _ZoneLabel extends StatelessWidget {
   final String text;
-  const _ZoneLabel({required this.text});
+  final VoidCallback? onTap;
+  const _ZoneLabel({required this.text, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xE6FFFFFF),
-        borderRadius: BorderRadius.circular(3),
-      ),
-      child: Text(
-        text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-            fontSize: 10, color: Colors.black87, fontWeight: FontWeight.w600),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xE6FFFFFF),
+          borderRadius: BorderRadius.circular(3),
+        ),
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+              fontSize: 10, color: Colors.black87, fontWeight: FontWeight.w600),
+        ),
       ),
     );
   }
