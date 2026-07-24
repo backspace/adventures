@@ -795,6 +795,15 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     if (mounted) setState(() => _pendingInvite = pending);
   }
 
+  /// The game is over once the endgame boundary's end time has passed. Mirrors
+  /// puzzlet_route's game-over check; drives swapping the "working on" card for
+  /// the "simulation has ended" notice. The endgame's 10s ticker keeps this
+  /// re-evaluated, so it flips on its own when the moment arrives.
+  bool get _gameEnded {
+    final endsAt = _event?.endgame?.endsAt;
+    return endsAt != null && !DateTime.now().isBefore(endsAt);
+  }
+
   /// Poles the endgame boundary hasn't passed. Everything when no
   /// boundary is configured or it hasn't begun shrinking.
   List<Pole> _polesInPlay() {
