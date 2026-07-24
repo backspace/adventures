@@ -420,6 +420,7 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
             "longitude",
             "notes",
             "accuracy_m",
+            "manual_offset_m",
             "status",
             "accessibility_tags",
             "accessibility_notes"
@@ -450,6 +451,8 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
             "longitude",
             "accuracy_m",
             "pole_id",
+            "region_id",
+            "validator_only",
             "status",
             "accessibility_tags",
             "accessibility_notes",
@@ -527,6 +530,9 @@ defmodule RegistrationsWeb.Landgrab.SupervisionController do
         difficulty: puzzlet.difficulty,
         status: puzzlet.status,
         pole_id: puzzlet.pole_id,
+        # Needed so the supervisor editor can preload the puzzlet's current
+        # region (the client keys its region preload off region_id).
+        region_id: puzzlet.region_id,
         latitude: puzzlet.latitude,
         longitude: puzzlet.longitude,
         creator_id: puzzlet.creator_id,

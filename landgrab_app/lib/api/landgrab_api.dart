@@ -1489,6 +1489,8 @@ class LandgrabApi {
     String? notes,
     double? latitude,
     double? longitude,
+    double? accuracyM,
+    double? manualOffsetM,
     List<String>? accessibilityTags,
     String? accessibilityNotes,
   }) async {
@@ -1498,6 +1500,8 @@ class LandgrabApi {
       if (notes != null) 'notes': notes,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
+      if (manualOffsetM != null) 'manual_offset_m': manualOffsetM,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
     });
@@ -1510,9 +1514,15 @@ class LandgrabApi {
     String? answer,
     AnswerType? answerType,
     int? difficulty,
+    double? latitude,
+    double? longitude,
+    double? accuracyM,
     List<String>? accessibilityTags,
     String? accessibilityNotes,
     String? warning,
+    bool? validatorOnly,
+    String? regionId,
+    bool clearRegion = false,
     String? poleId,
     bool clearPole = false,
   }) async {
@@ -1522,12 +1532,17 @@ class LandgrabApi {
       if (answer != null) 'answer': answer,
       if (answerType != null) 'answer_type': answerTypeToString(answerType),
       if (difficulty != null) 'difficulty': difficulty,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (accuracyM != null) 'accuracy_m': accuracyM,
       if (accessibilityTags != null) 'accessibility_tags': accessibilityTags,
       if (accessibilityNotes != null) 'accessibility_notes': accessibilityNotes,
       if (warning != null) 'warning': warning,
-      // Pole (re)attachment mirrors the author's updateDraftPuzzlet: clearPole
-      // wins over poleId so "detach" is unambiguous. Only sent when one is set,
-      // so an ordinary field edit never disturbs the attachment.
+      if (validatorOnly != null) 'validator_only': validatorOnly,
+      // clearRegion/clearPole win over the id so "detach" is unambiguous; each
+      // pair is only sent when one side is set, so an ordinary field edit never
+      // disturbs the region or pole attachment.
+      if (clearRegion) 'region_id': null else if (regionId != null) 'region_id': regionId,
       if (clearPole) 'pole_id': null else if (poleId != null) 'pole_id': poleId,
     });
     return DraftPuzzlet.fromJson(response.data as Map<String, dynamic>);

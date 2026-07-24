@@ -4,7 +4,7 @@ import 'package:landgrab/widgets/scroll_insets.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/validation.dart';
-import 'package:landgrab/routes/supervisor/supervisor_edit_pole_route.dart';
+import 'package:landgrab/routes/author/edit_pole_route.dart';
 import 'package:landgrab/routes/supervisor/validator_picker.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
@@ -233,7 +233,8 @@ class _PoleSupervisionDetailRouteState extends State<PoleSupervisionDetailRoute>
   Future<void> _editFields() async {
     final updated = await Navigator.of(context).push<DraftPole>(
       MaterialPageRoute(
-        builder: (_) => SupervisorEditPoleRoute(api: widget.api, pole: _pole),
+        builder: (_) =>
+            EditPoleRoute(api: widget.api, pole: _pole, asSupervisor: true),
       ),
     );
     if (updated != null && mounted) {

@@ -235,6 +235,39 @@ defmodule RegistrationsWeb.Landgrab.SupervisionControllerTest do
       assert Repo.get!(Puzzlet, puzzlet.id).pole_id == nil
     end
 
+    test "supervisor can edit a puzzlet's region and validator-only flag", %{conn: conn} do
+      author = insert(:user, email: unique_email("a"))
+      region = insert(:poles_region)
+      puzzlet = insert(:puzzlet, creator: author, status: :validated, validator_only: false)
+
+      updated =
+        conn
+        |> patch("/landgrab/supervision/puzzlets/#{puzzlet.id}", %{
+          "region_id" => region.id,
+          "validator_only" => true
+        })
+        |> json_response(200)
+
+      assert updated["region_id"] == region.id
+      assert updated["validator_only"] == true
+
+      persisted = Repo.get!(Puzzlet, puzzlet.id)
+      assert persisted.region_id == region.id
+      assert persisted.validator_only == true
+
+      # And it can be cleared / flipped back off.
+      recleared =
+        conn
+        |> patch("/landgrab/supervision/puzzlets/#{puzzlet.id}", %{
+          "region_id" => nil,
+          "validator_only" => false
+        })
+        |> json_response(200)
+
+      assert recleared["region_id"] == nil
+      assert recleared["validator_only"] == false
+    end
+
     test "list_poles includes active_validation summary when assigned",
          %{conn: conn, supervisor: supervisor} do
       validator = insert(:user, email: unique_email("v"))

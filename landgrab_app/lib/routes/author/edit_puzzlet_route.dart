@@ -18,7 +18,17 @@ class EditPuzzletRoute extends StatefulWidget {
   final LandgrabApi api;
   final DraftPuzzlet puzzlet;
 
-  const EditPuzzletRoute({super.key, required this.api, required this.puzzlet});
+  /// When true the editor writes through the supervision endpoint (no approval,
+  /// works at any status), hides the hard-delete, and shows photos view-only —
+  /// the supervisor gets the author's exact form, just wired for their role.
+  final bool asSupervisor;
+
+  const EditPuzzletRoute({
+    super.key,
+    required this.api,
+    required this.puzzlet,
+    this.asSupervisor = false,
+  });
 
   @override
   State<EditPuzzletRoute> createState() => _EditPuzzletRouteState();
@@ -86,39 +96,64 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
     setState(() => _busy = true);
     try {
       final data = _fields.currentState!.data;
-      final updated = await widget.api.updateDraftPuzzlet(
-        widget.puzzlet.id,
-        instructions: data.instructions,
-        answer: data.answer,
-        answerType: data.answerType,
-        difficulty: data.difficulty,
-        latitude: _newFix?.latitude,
-        longitude: _newFix?.longitude,
-        accuracyM: _newFix?.accuracyM,
-        accessibilityTags: data.accessibilityTags,
-        accessibilityNotes: data.accessibilityNotes,
-        regionId: _regionChanged ? _region?.id : null,
-        clearRegion: _regionChanged && _region == null,
-        warning: data.warning,
-        validatorOnly: _validatorOnly,
-      );
+      final updated = widget.asSupervisor
+          ? await widget.api.supervisorEditPuzzlet(
+              widget.puzzlet.id,
+              instructions: data.instructions,
+              answer: data.answer,
+              answerType: data.answerType,
+              difficulty: data.difficulty,
+              latitude: _newFix?.latitude,
+              longitude: _newFix?.longitude,
+              accuracyM: _newFix?.accuracyM,
+              accessibilityTags: data.accessibilityTags,
+              accessibilityNotes: data.accessibilityNotes,
+              regionId: _regionChanged ? _region?.id : null,
+              clearRegion: _regionChanged && _region == null,
+              warning: data.warning,
+              validatorOnly: _validatorOnly,
+            )
+          : await widget.api.updateDraftPuzzlet(
+              widget.puzzlet.id,
+              instructions: data.instructions,
+              answer: data.answer,
+              answerType: data.answerType,
+              difficulty: data.difficulty,
+              latitude: _newFix?.latitude,
+              longitude: _newFix?.longitude,
+              accuracyM: _newFix?.accuracyM,
+              accessibilityTags: data.accessibilityTags,
+              accessibilityNotes: data.accessibilityNotes,
+              regionId: _regionChanged ? _region?.id : null,
+              clearRegion: _regionChanged && _region == null,
+              warning: data.warning,
+              validatorOnly: _validatorOnly,
+            );
       if (!mounted) return;
       _dirty = false;
       final api = widget.api;
       final navigator = Navigator.of(context, rootNavigator: true);
       final messenger = ScaffoldMessenger.of(context);
       showActionSnackBar(messenger, SnackBar(
-        content: const Text('Draft updated.'),
+        content: Text(widget.asSupervisor ? 'Puzzlet updated.' : 'Draft updated.'),
         action: SnackBarAction(
           label: 'Edit',
           onPressed: () {
             navigator.push(
-              MaterialPageRoute(builder: (_) => EditPuzzletRoute(api: api, puzzlet: updated)),
+              MaterialPageRoute(
+                  builder: (_) => EditPuzzletRoute(
+                      api: api,
+                      puzzlet: updated,
+                      asSupervisor: widget.asSupervisor)),
             );
           },
         ),
       ));
-      Navigator.of(context).pop(true);
+      // Authors' callers await a bool ("did it change?"); the supervisor detail
+      // route awaits the refreshed DraftPuzzlet to update its view in place. The
+      // flag is set exactly when the caller expects the object, so this stays
+      // type-safe.
+      Navigator.of(context).pop(widget.asSupervisor ? updated : true);
     } on DioException catch (e) {
       _showError(e);
     } catch (e) {
@@ -201,11 +236,14 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
         appBar: LandgrabAppBar(
           title: 'Edit puzzlet',
         actions: [
-          IconButton(
-            tooltip: 'Delete draft',
-            onPressed: _busy ? null : _delete,
-            icon: const Icon(Icons.delete_outline),
-          ),
+          // Supervisors don't hard-delete — they retire ("Remove from game"),
+          // which keeps the record. So the delete affordance is author-only.
+          if (!widget.asSupervisor)
+            IconButton(
+              tooltip: 'Delete draft',
+              onPressed: _busy ? null : _delete,
+              icon: const Icon(Icons.delete_outline),
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -227,6 +265,9 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
             RegionPickerField(
               api: widget.api,
               selected: _region,
+              // Region create/edit is author-only; supervisors pick from
+              // existing regions.
+              allowManage: !widget.asSupervisor,
               onChanged: (r) => setState(() {
                 _region = r;
                 _regionChanged = true;
@@ -278,6 +319,7 @@ class _EditPuzzletRouteState extends State<EditPuzzletRoute> {
               kind: AttachmentParentKind.puzzlet,
               parentId: widget.puzzlet.id,
               initialIds: widget.puzzlet.attachmentIds,
+              readOnly: widget.asSupervisor,
             ),
             const SizedBox(height: 16),
             FilledButton.icon(

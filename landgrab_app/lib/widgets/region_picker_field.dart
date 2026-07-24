@@ -18,12 +18,18 @@ class RegionPickerField extends StatelessWidget {
   final ValueChanged<Region?> onChanged;
   final String label;
 
+  /// Whether the picker may create/edit regions. False for the supervisor
+  /// editor: region writes are author-only, so a supervisor picks from
+  /// existing regions but can't create or edit them here.
+  final bool allowManage;
+
   const RegionPickerField({
     super.key,
     required this.api,
     required this.selected,
     required this.onChanged,
     this.label = 'Region (optional)',
+    this.allowManage = true,
   });
 
   Future<void> _open(BuildContext context) async {
@@ -33,6 +39,7 @@ class RegionPickerField extends StatelessWidget {
       builder: (_) => _RegionPickerSheet(
         api: api,
         current: selected,
+        allowManage: allowManage,
         // Editing the currently-selected region in place refreshes the
         // breadcrumb shown on the parent form without changing assignment.
         onCurrentEdited: (refreshed) => onChanged(refreshed),
@@ -85,11 +92,13 @@ class _PickerResult {
 class _RegionPickerSheet extends StatefulWidget {
   final LandgrabApi api;
   final Region? current;
+  final bool allowManage;
   final ValueChanged<Region>? onCurrentEdited;
 
   const _RegionPickerSheet({
     required this.api,
     required this.current,
+    this.allowManage = true,
     this.onCurrentEdited,
   });
 
@@ -268,14 +277,15 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
                   ],
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: OutlinedButton.icon(
-                  onPressed: () => _createNew(),
-                  icon: const Icon(Icons.add),
-                  label: const Text('New top-level region'),
+              if (widget.allowManage)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: OutlinedButton.icon(
+                    onPressed: () => _createNew(),
+                    icon: const Icon(Icons.add),
+                    label: const Text('New top-level region'),
+                  ),
                 ),
-              ),
               const Divider(),
               Expanded(child: _buildBody(scrollController)),
             ],
@@ -325,21 +335,23 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
               ? null
               : Text(r.ancestors.map((a) => a.name).join(' > '),
                   style: theme.textTheme.bodySmall),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                tooltip: 'Edit ${r.name}',
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: () => _editExisting(r),
-              ),
-              IconButton(
-                tooltip: 'Add sub-region of ${r.name}',
-                icon: const Icon(Icons.add),
-                onPressed: () => _createNew(parent: r),
-              ),
-            ],
-          ),
+          trailing: widget.allowManage
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: 'Edit ${r.name}',
+                      icon: const Icon(Icons.edit_outlined),
+                      onPressed: () => _editExisting(r),
+                    ),
+                    IconButton(
+                      tooltip: 'Add sub-region of ${r.name}',
+                      icon: const Icon(Icons.add),
+                      onPressed: () => _createNew(parent: r),
+                    ),
+                  ],
+                )
+              : null,
           onTap: () => Navigator.of(context).pop(_PickerResult.pick(r)),
         );
       },

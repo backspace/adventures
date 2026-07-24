@@ -89,6 +89,16 @@ defmodule RegistrationsWeb.Router do
     plug(RequireRole, role: "validation_supervisor")
   end
 
+  # Read access shared by authors and supervisors — the supervisor content
+  # editor reuses the author's form, which needs to load and list regions.
+  pipeline :landgrab_author_or_supervisor do
+    plug(:accepts, ["json"])
+    plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
+    plug(Pow.Plug.RequireAuthenticated, error_handler: RegistrationsWeb.PowAuthErrorHandler)
+    plug(ReloadUser)
+    plug(RequireRole, any_of: ["author", "validation_supervisor"])
+  end
+
   pipeline :skip_csrf_protection do
     plug :accepts, ["html"]
     plug :fetch_session
@@ -322,12 +332,19 @@ defmodule RegistrationsWeb.Router do
     delete("/:id", BathroomController, :delete)
   end
 
+  # Region reads are open to authors and supervisors (the supervisor content
+  # editor loads/lists regions); writes stay author-only.
+  scope "/landgrab/regions", RegistrationsWeb.Landgrab, as: :landgrab_regions_read do
+    pipe_through([:landgrab_author_or_supervisor])
+
+    get("/", RegionController, :index)
+    get("/:id", RegionController, :show)
+  end
+
   scope "/landgrab/regions", RegistrationsWeb.Landgrab, as: :landgrab_regions do
     pipe_through([:landgrab_author])
 
-    get("/", RegionController, :index)
     post("/", RegionController, :create)
-    get("/:id", RegionController, :show)
     patch("/:id", RegionController, :update)
     delete("/:id", RegionController, :delete)
   end

@@ -4,7 +4,7 @@ import 'package:landgrab/widgets/scroll_insets.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/models/draft.dart';
 import 'package:landgrab/models/validation.dart';
-import 'package:landgrab/routes/supervisor/supervisor_edit_puzzlet_route.dart';
+import 'package:landgrab/routes/author/edit_puzzlet_route.dart';
 import 'package:landgrab/routes/supervisor/validator_picker.dart';
 import 'package:landgrab/widgets/action_snackbar.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
@@ -245,7 +245,8 @@ class _PuzzletSupervisionDetailRouteState
     final updated = await Navigator.of(context).push<DraftPuzzlet>(
       MaterialPageRoute(
         builder: (_) =>
-            SupervisorEditPuzzletRoute(api: widget.api, puzzlet: _puzzlet),
+            EditPuzzletRoute(
+                api: widget.api, puzzlet: _puzzlet, asSupervisor: true),
       ),
     );
     if (updated != null && mounted) {

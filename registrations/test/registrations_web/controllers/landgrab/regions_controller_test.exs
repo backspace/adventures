@@ -39,4 +39,34 @@ defmodule RegistrationsWeb.Landgrab.RegionsControllerTest do
       assert root["ancestors"] == []
     end
   end
+
+  describe "supervisor region access" do
+    setup ctx do
+      supervisor =
+        insert(:user, email: "super#{System.unique_integer([:positive])}@example.com")
+
+      Accounts.assign_role(supervisor.id, "validation_supervisor")
+      %{conn: authed_conn(ctx, supervisor)}
+    end
+
+    test "a supervisor can read regions (list + show) so the editor can pick one",
+         %{conn: conn} do
+      region = insert(:poles_region, name: "Depot")
+
+      list = conn |> get("/landgrab/regions") |> json_response(200)
+      assert Enum.any?(list["regions"], &(&1["id"] == region.id))
+
+      shown = conn |> get("/landgrab/regions/#{region.id}") |> json_response(200)
+      assert shown["id"] == region.id
+    end
+
+    test "a supervisor still cannot create regions (author-only write)", %{conn: conn} do
+      body =
+        conn
+        |> post("/landgrab/regions", %{"region" => %{"name" => "Nope"}})
+        |> json_response(403)
+
+      assert body["error"]["code"] == "forbidden"
+    end
+  end
 end

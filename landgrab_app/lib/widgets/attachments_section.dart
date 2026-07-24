@@ -14,12 +14,17 @@ class AttachmentsSection extends StatefulWidget {
   final String parentId;
   final List<String> initialIds;
 
+  /// View-only: show the photos but hide the add/delete affordances. Used by
+  /// the supervisor editor, since the upload/delete endpoints are author-gated.
+  final bool readOnly;
+
   const AttachmentsSection({
     super.key,
     required this.api,
     required this.kind,
     required this.parentId,
     required this.initialIds,
+    this.readOnly = false,
   });
 
   @override
@@ -115,11 +120,12 @@ class _AttachmentsSectionState extends State<AttachmentsSection> {
             Text('Photos (${_ids.length})',
                 style: Theme.of(context).textTheme.titleMedium),
             const Spacer(),
-            FilledButton.tonalIcon(
-              onPressed: _busy ? null : _addPhoto,
-              icon: const Icon(Icons.add_a_photo_outlined),
-              label: const Text('Add'),
-            ),
+            if (!widget.readOnly)
+              FilledButton.tonalIcon(
+                onPressed: _busy ? null : _addPhoto,
+                icon: const Icon(Icons.add_a_photo_outlined),
+                label: const Text('Add'),
+              ),
           ],
         ),
         const SizedBox(height: 8),
@@ -134,7 +140,8 @@ class _AttachmentsSectionState extends State<AttachmentsSection> {
                 .map((id) => _Thumbnail(
                       api: widget.api,
                       attachmentId: id,
-                      onDelete: () => _deleteAttachment(id),
+                      onDelete:
+                          widget.readOnly ? null : () => _deleteAttachment(id),
                     ))
                 .toList(),
           ),
@@ -146,7 +153,8 @@ class _AttachmentsSectionState extends State<AttachmentsSection> {
 class _Thumbnail extends StatefulWidget {
   final LandgrabApi api;
   final String attachmentId;
-  final VoidCallback onDelete;
+  // Null in read-only mode — long-press-to-delete is then disabled.
+  final VoidCallback? onDelete;
 
   const _Thumbnail({
     required this.api,

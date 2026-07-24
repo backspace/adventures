@@ -14,7 +14,17 @@ class EditPoleRoute extends StatefulWidget {
   final LandgrabApi api;
   final DraftPole pole;
 
-  const EditPoleRoute({super.key, required this.api, required this.pole});
+  /// When true the editor writes through the supervision endpoint (no approval,
+  /// works at any status), hides the hard-delete, and shows photos view-only —
+  /// the supervisor gets the author's exact form, just wired for their role.
+  final bool asSupervisor;
+
+  const EditPoleRoute({
+    super.key,
+    required this.api,
+    required this.pole,
+    this.asSupervisor = false,
+  });
 
   @override
   State<EditPoleRoute> createState() => _EditPoleRouteState();
@@ -34,34 +44,54 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
     try {
       final data = _fields.currentState!.data;
       final changed = data.positionChanged;
-      final updated = await widget.api.updateDraftPole(
-        widget.pole.id,
-        label: data.label,
-        notes: data.notes,
-        latitude: changed ? data.position.latitude : null,
-        longitude: changed ? data.position.longitude : null,
-        accuracyM: changed ? data.accuracyM : null,
-        manualOffsetM: changed ? data.manualOffsetM : null,
-        accessibilityTags: data.accessibilityTags,
-        accessibilityNotes: data.accessibilityNotes,
-      );
+      final updated = widget.asSupervisor
+          ? await widget.api.supervisorEditPole(
+              widget.pole.id,
+              label: data.label,
+              notes: data.notes,
+              latitude: changed ? data.position.latitude : null,
+              longitude: changed ? data.position.longitude : null,
+              accuracyM: changed ? data.accuracyM : null,
+              manualOffsetM: changed ? data.manualOffsetM : null,
+              accessibilityTags: data.accessibilityTags,
+              accessibilityNotes: data.accessibilityNotes,
+            )
+          : await widget.api.updateDraftPole(
+              widget.pole.id,
+              label: data.label,
+              notes: data.notes,
+              latitude: changed ? data.position.latitude : null,
+              longitude: changed ? data.position.longitude : null,
+              accuracyM: changed ? data.accuracyM : null,
+              manualOffsetM: changed ? data.manualOffsetM : null,
+              accessibilityTags: data.accessibilityTags,
+              accessibilityNotes: data.accessibilityNotes,
+            );
       if (!mounted) return;
       _dirty = false;
       final api = widget.api;
       final navigator = Navigator.of(context, rootNavigator: true);
       final messenger = ScaffoldMessenger.of(context);
       showActionSnackBar(messenger, SnackBar(
-        content: const Text('Draft updated.'),
+        content: Text(widget.asSupervisor ? 'Pole updated.' : 'Draft updated.'),
         action: SnackBarAction(
           label: 'Edit',
           onPressed: () {
             navigator.push(
-              MaterialPageRoute(builder: (_) => EditPoleRoute(api: api, pole: updated)),
+              MaterialPageRoute(
+                  builder: (_) => EditPoleRoute(
+                      api: api,
+                      pole: updated,
+                      asSupervisor: widget.asSupervisor)),
             );
           },
         ),
       ));
-      Navigator.of(context).pop(true);
+      // Authors' callers await a bool ("did it change?"); the supervisor detail
+      // route awaits the refreshed DraftPole to update its view in place. The
+      // flag is set exactly when the caller expects the object, so this stays
+      // type-safe.
+      Navigator.of(context).pop(widget.asSupervisor ? updated : true);
     } on DioException catch (e) {
       _showError(e);
     } catch (e) {
@@ -133,11 +163,14 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
         appBar: LandgrabAppBar(
           title: 'Edit pole',
         actions: [
-          IconButton(
-            tooltip: 'Delete draft',
-            onPressed: _busy ? null : _delete,
-            icon: const Icon(Icons.delete_outline),
-          ),
+          // Supervisors don't hard-delete — they retire ("Remove from game"),
+          // which keeps the record. So the delete affordance is author-only.
+          if (!widget.asSupervisor)
+            IconButton(
+              tooltip: 'Delete draft',
+              onPressed: _busy ? null : _delete,
+              icon: const Icon(Icons.delete_outline),
+            ),
         ],
       ),
       body: SingleChildScrollView(
@@ -170,6 +203,7 @@ class _EditPoleRouteState extends State<EditPoleRoute> {
               kind: AttachmentParentKind.pole,
               parentId: widget.pole.id,
               initialIds: widget.pole.attachmentIds,
+              readOnly: widget.asSupervisor,
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
