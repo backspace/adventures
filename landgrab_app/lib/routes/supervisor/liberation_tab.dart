@@ -99,6 +99,23 @@ class _LiberationTabState extends State<LiberationTab> {
         '${two(value.hour)}:${two(value.minute)}';
   }
 
+  // Supervisor override: add a team to the subversion regardless of its
+  // current stance (including a decliner). Refreshes the breakdown in place.
+  Future<void> _joinTeam(LiberationTeam team) async {
+    try {
+      final status = await widget.api.joinTeamToLiberation(team.id);
+      if (!mounted) return;
+      setState(() => _status = status);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${team.name} added to the subversion.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Could not add team: $e')));
+    }
+  }
+
   // Invitations summary + an expandable per-team breakdown. Collapsed it
   // shows the counts; expanded it groups every team by rollout stage into
   // tappable chips (tap → the team's members).
@@ -198,6 +215,21 @@ class _LiberationTabState extends State<LiberationTab> {
                   const SizedBox(height: 2),
                   Text('$n member${n == 1 ? '' : 's'}',
                       style: theme.textTheme.bodySmall),
+                  // Override: pull a team into the subversion even if it
+                  // declined (or was never invited). Hidden once it's in.
+                  if (team.status != 'accepted') ...[
+                    const SizedBox(height: 12),
+                    FilledButton.icon(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                        _joinTeam(team);
+                      },
+                      icon: const Icon(Icons.how_to_reg),
+                      label: Text(team.status == 'declined'
+                          ? 'Add to subversion anyway'
+                          : 'Add to subversion'),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   if (team.members.isEmpty)
                     const Text('No members.')

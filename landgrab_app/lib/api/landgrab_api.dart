@@ -1223,6 +1223,14 @@ class LandgrabApi {
     return LiberationStatus.fromJson(response.data as Map<String, dynamic>);
   }
 
+  /// Supervisor override: add a team to the subversion even if it declined (or
+  /// was never invited). Returns the refreshed status.
+  Future<LiberationStatus> joinTeamToLiberation(String teamId) async {
+    final response = await dio
+        .post('/landgrab/supervision/liberation/teams/$teamId/join');
+    return LiberationStatus.fromJson(response.data as Map<String, dynamic>);
+  }
+
   /// Relief valve state + the readiness dashboard (pole counts + ownership
   /// leaderboard) — a supervisor's sense of whether the map is running dry.
   Future<ReliefStatus> getReliefStatus() async {

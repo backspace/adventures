@@ -91,6 +91,34 @@ defmodule RegistrationsWeb.Landgrab.LiberationApiTest do
       assert [%{"email" => "acc-a@example.com", "name" => "Ada"}] = by_name["Alpha"]["members"]
     end
 
+    test "adds a declined team to the subversion via the override", %{conn: conn} do
+      declined =
+        insert(:team,
+          name: "Delta",
+          liberation_invited_at: ~U[2026-07-25 21:00:00Z],
+          liberation_response: "declined"
+        )
+
+      insert(:user, email: "d@example.com", team_id: declined.id)
+
+      body =
+        conn
+        |> post("/landgrab/supervision/liberation/teams/#{declined.id}/join")
+        |> json_response(200)
+
+      # The refreshed status shows the team as accepted now.
+      team = Enum.find(body["teams"], &(&1["id"] == declined.id))
+      assert team["status"] == "accepted"
+      assert body["accepted"] == 1
+      assert body["declined"] == 0
+    end
+
+    test "join override 404s for an unknown team", %{conn: conn} do
+      conn
+      |> post("/landgrab/supervision/liberation/teams/#{Ecto.UUID.generate()}/join")
+      |> json_response(404)
+    end
+
     test "rejects a rollout end at or before the start", %{conn: conn} do
       body =
         conn

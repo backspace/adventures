@@ -1393,6 +1393,46 @@ defmodule Registrations.Landgrab do
   end
 
   @doc """
+  Supervisor override: add a team to the subversion (liberation) regardless of
+  its current stance — including a team that DECLINED, or one never invited.
+  Sets the team's response to "accepted" (stamping invite/response times so it
+  reads as a normal joiner) and, when there's an invite notification, flips it
+  to accepted so the history agrees. Unlike `respond_to_liberation_invite`
+  this bypasses the one-answer-is-binding rule; it's the manual counterpart
+  for the supervisor's liberation screen. Returns `{:ok, team}` |
+  `{:error, :not_found}`.
+  """
+  def supervisor_join_liberation(team_id) do
+    case team_id && Repo.get(RegistrationsWeb.Team, team_id) do
+      nil ->
+        {:error, :not_found}
+
+      team ->
+        now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+        {:ok, updated} =
+          Repo.transaction(fn ->
+            Repo.update_all(
+              from(n in Notification,
+                where: n.recipient_team_id == ^team.id and n.type == "liberation_invite"
+              ),
+              set: [response: "accepted", responded_at: now]
+            )
+
+            team
+            |> Ecto.Changeset.change(
+              liberation_response: "accepted",
+              liberation_invited_at: team.liberation_invited_at || now,
+              liberation_responded_at: now
+            )
+            |> Repo.update!()
+          end)
+
+        {:ok, updated}
+    end
+  end
+
+  @doc """
   The liberation rollout at a glance, for the supervisor: the configured
   window plus how far the trickle has got (invitations out, answers in).
   Only teams with members count — empty QR teams aren't part of the game.

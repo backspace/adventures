@@ -33,6 +33,20 @@ defmodule RegistrationsWeb.Landgrab.LiberationController do
     end
   end
 
+  # Supervisor override: add a team to the subversion even if it declined (or
+  # was never invited). Returns the refreshed status so the breakdown updates.
+  def join_team(conn, %{"team_id" => team_id}) do
+    case Landgrab.supervisor_join_liberation(team_id) do
+      {:ok, _team} ->
+        json(conn, render_status())
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: %{code: "not_found", detail: "No such team."}})
+    end
+  end
+
   defp render_status do
     status = Landgrab.liberation_status()
 
