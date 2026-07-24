@@ -11,6 +11,7 @@ defmodule Registrations.Landgrab.LiberationGameplayTest do
 
   alias Registrations.Landgrab
   alias Registrations.Landgrab.Notification
+  alias Registrations.Landgrab.PlayerStrings
 
   defp accept!(team),
     do: team |> Ecto.Changeset.change(liberation_response: "accepted") |> Repo.update!()
@@ -272,6 +273,78 @@ defmodule Registrations.Landgrab.LiberationGameplayTest do
       attacker = insert(:team)
       served = Landgrab.active_puzzlet_for_pole(pole, nil, [], attacker.id)
       assert served && served.id == p2.id
+    end
+  end
+
+  describe "Sabuk's first-liberation outrage" do
+    # A liberator with a member, and an owned pole they can free.
+    defp owned_pole_for(answer) do
+      pole = insert(:pole)
+      puzzlet = insert(:puzzlet, pole: pole, status: :validated, answer: answer)
+      insert(:ownership_event, puzzlet: puzzlet, team: insert(:team), pole_id: pole.id, inserted_at: ago(60))
+      {pole, puzzlet}
+    end
+
+    defp liberate_first_pole(team, answer) do
+      {pole, puzzlet} = owned_pole_for(answer)
+      user = insert(:user, team_id: team.id)
+      insert(:team_puzzlet, team: team, puzzlet: puzzlet, pole: pole)
+      assert {:ok, %{result: :liberated}} = Landgrab.record_attempt(puzzlet, team.id, user.id, answer)
+    end
+
+    defp sabuk_messages(team_id) do
+      Repo.all(
+        from(n in Notification,
+          where: n.recipient_team_id == ^team_id and n.type == "message",
+          order_by: n.inserted_at
+        )
+      )
+    end
+
+    test "the first unclaim triggers a Sabuk message to that team" do
+      team = insert(:team) |> accept!()
+      liberate_first_pole(team, "x")
+
+      assert [msg] = sabuk_messages(team.id)
+      assert msg.metadata["sender_name"] == "Sabuk"
+      assert msg.body == PlayerStrings.sabuk_first_liberation_body(0)
+    end
+
+    test "a team's later unclaims send no further Sabuk message" do
+      team = insert(:team) |> accept!()
+      user = insert(:user, team_id: team.id)
+
+      {pole1, pz1} = owned_pole_for("a")
+      insert(:team_puzzlet, team: team, puzzlet: pz1, pole: pole1)
+      {:ok, _} = Landgrab.record_attempt(pz1, team.id, user.id, "a")
+
+      {pole2, pz2} = owned_pole_for("b")
+      insert(:team_puzzlet, team: team, puzzlet: pz2, pole: pole2)
+      {:ok, %{result: :liberated}} = Landgrab.record_attempt(pz2, team.id, user.id, "b")
+
+      # Still just the one, from the first unclaim.
+      assert length(sabuk_messages(team.id)) == 1
+    end
+
+    test "different teams cycle through the set in defection order" do
+      a = insert(:team) |> accept!()
+      liberate_first_pole(a, "a")
+
+      b = insert(:team) |> accept!()
+      liberate_first_pole(b, "b")
+
+      c = insert(:team) |> accept!()
+      liberate_first_pole(c, "c")
+
+      assert [ma] = sabuk_messages(a.id)
+      assert [mb] = sabuk_messages(b.id)
+      assert [mc] = sabuk_messages(c.id)
+
+      assert ma.body == PlayerStrings.sabuk_first_liberation_body(0)
+      assert mb.body == PlayerStrings.sabuk_first_liberation_body(1)
+      assert mc.body == PlayerStrings.sabuk_first_liberation_body(2)
+      # All distinct — the point of cycling.
+      assert Enum.uniq([ma.body, mb.body, mc.body]) |> length() == 3
     end
   end
 end

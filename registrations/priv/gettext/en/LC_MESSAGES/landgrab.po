@@ -206,6 +206,26 @@ msgstr "Your team has been brought into the subversion."
 msgid "app_push_title_liberation_joined"
 msgstr "Subversion"
 
+# Sabuk's outrage when a team that joined the subversion unclaims its first
+# zone. One of five, handed out in order of defection (see
+# maybe_signal_first_liberation) so different teams get different messages.
+# Sabuk is the visiting scholar running the "simulation" who is secretly
+# restoring the colonial order; here the academic veneer cracks into fury.
+msgid "app_sabuk_first_liberation_0"
+msgstr "WHAT ARE YOU DOING"
+
+msgid "app_sabuk_first_liberation_1"
+msgstr "How dare you! You’ll never stop me"
+
+msgid "app_sabuk_first_liberation_2"
+msgstr "Try and go up against me, I’ll win in the end"
+
+msgid "app_sabuk_first_liberation_3"
+msgstr "Your attempts are laughable"
+
+msgid "app_sabuk_first_liberation_4"
+msgstr "WHO DO YOU THINK YOU ARE"
+
 msgid "app_push_title_attack"
 msgstr "Under attack"
 

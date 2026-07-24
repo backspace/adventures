@@ -68,6 +68,18 @@ defmodule Registrations.Landgrab.PlayerStrings do
   """
   def liberation_joined_body, do: phrase("app_liberation_joined_body")
 
+  @doc "How many distinct Sabuk first-liberation messages there are to cycle."
+  def sabuk_first_liberation_count, do: 5
+
+  @doc """
+  Sabuk's outrage when a subversion team unclaims its first zone. `index`
+  selects one of the set (cycled by defection order upstream); it wraps, so
+  any integer is safe.
+  """
+  def sabuk_first_liberation_body(index) when is_integer(index) do
+    phrase("app_sabuk_first_liberation_#{Integer.mod(index, sabuk_first_liberation_count())}")
+  end
+
   # ── Push titles ──────────────────────────────────────────────────
 
   def push_title("attack"), do: phrase("app_push_title_attack")

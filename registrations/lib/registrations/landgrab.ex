@@ -1064,8 +1064,12 @@ defmodule Registrations.Landgrab do
           broadcast_pole_update(changed_pole, event)
 
           case outcome do
-            :captured -> maybe_signal_pole_lost(changed_pole, previous_owner_id, team_id)
-            :liberated -> maybe_signal_pole_freed(changed_pole, previous_owner_id, team_id)
+            :captured ->
+              maybe_signal_pole_lost(changed_pole, previous_owner_id, team_id)
+
+            :liberated ->
+              maybe_signal_pole_freed(changed_pole, previous_owner_id, team_id)
+              maybe_signal_first_liberation(team_id)
           end
         end
 
@@ -2121,6 +2125,39 @@ defmodule Registrations.Landgrab do
       require Logger
 
       Logger.error("pole-freed signal failed: #{Exception.message(error)}")
+      :ok
+  end
+
+  # Sabuk's reaction the first time a subversion team unclaims a zone. Fires
+  # once per team — on the liberation that makes their liberate count 1 — and
+  # picks one of the cycling messages by DEFECTION ORDER: the index is how many
+  # teams had already first-liberated (this team now included, hence the -1),
+  # so the Nth team ever to defect gets message N (wrapping across the set).
+  # Post-commit and rescued like the other signals, so a notification hiccup
+  # never fails the liberation itself.
+  defp maybe_signal_first_liberation(team_id) do
+    team_liberations =
+      Repo.aggregate(
+        from(c in OwnershipEvent, where: c.kind == "liberate" and c.team_id == ^team_id),
+        :count
+      )
+
+    if team_liberations == 1 do
+      defectors =
+        Repo.one(
+          from(c in OwnershipEvent, where: c.kind == "liberate", select: count(c.team_id, :distinct))
+        )
+
+      body = PlayerStrings.sabuk_first_liberation_body(defectors - 1)
+      persist_and_deliver("message", team_id, nil, body, %{"sender_name" => "Sabuk"}, "Sabuk")
+    end
+
+    :ok
+  rescue
+    error ->
+      require Logger
+
+      Logger.error("Sabuk first-liberation signal failed: #{Exception.message(error)}")
       :ok
   end
 
