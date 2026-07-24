@@ -53,6 +53,11 @@ defmodule Registrations.Landgrab.Event do
     field(:final_message_others, :string)
     field(:final_messages_sent_at, :utc_datetime)
 
+    # Admin-authored HTML shown on the public LANDGRAB page below the "visiting
+    # scholar Sabuk" line. Blank = nothing shown; rendered raw, so it's trusted
+    # admin markup.
+    field(:homepage_html, :string)
+
     timestamps()
   end
 
@@ -67,7 +72,8 @@ defmodule Registrations.Landgrab.Event do
       :liberation_starts_at,
       :liberation_rollout_ends_at,
       :final_message_joined,
-      :final_message_others | @endgame_fields
+      :final_message_others,
+      :homepage_html | @endgame_fields
     ])
     |> validate_required([:name])
     |> validate_number(:endgame_initial_radius_m, greater_than: 0)

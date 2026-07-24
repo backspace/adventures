@@ -35,6 +35,17 @@
 
       <br />
 
+      <h3>Homepage note (HTML)</h3>
+      <p class="meta">
+        Shown on the public LANDGRAB page, just below the “visiting scholar
+        Sabuk” line. Leave blank to hide it. Written as raw HTML and rendered
+        as-is — keep it to trusted markup.
+      </p>
+      <%= textarea(f, :homepage_html, rows: 6) %>
+      <%= error_tag(f, :homepage_html) %>
+
+      <br />
+
       <h3>Endgame boundary</h3>
       <p class="meta">
         A capture boundary that shrinks toward the wrap-party spot,

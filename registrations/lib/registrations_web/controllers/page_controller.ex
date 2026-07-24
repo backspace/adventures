@@ -28,7 +28,22 @@ defmodule RegistrationsWeb.PageController do
     hide_waitlist = !placeholder
 
     adventure_name = Application.get_env(:registrations, :adventure)
-    render(conn, "#{adventure_name}.html", placeholder: placeholder, hide_waitlist: hide_waitlist)
+
+    # Admin-authored HTML for the LANDGRAB page (below the Sabuk line). Only
+    # fetched for landgrab — other adventures have no `landgrab.events` table.
+    homepage_html =
+      if adventure_name == "landgrab" do
+        case Registrations.Landgrab.Events.current() do
+          %{homepage_html: html} -> html
+          _ -> nil
+        end
+      end
+
+    render(conn, "#{adventure_name}.html",
+      placeholder: placeholder,
+      hide_waitlist: hide_waitlist,
+      homepage_html: homepage_html
+    )
   end
 
   # Renders a square page consumed by `mix landgrab.assets` to generate

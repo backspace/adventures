@@ -79,6 +79,14 @@
   </div>
 </div>
 
+<%= if assigns[:homepage_html] && String.trim(@homepage_html) != "" do %>
+  <div class="row card landgrab-homepage-note">
+    <div class="small-12 columns">
+      <%= raw(@homepage_html) %>
+    </div>
+  </div>
+<% end %>
+
 <%= if @placeholder do %>
   <%= unless @hide_waitlist do %>
     <div class="row card" data-test-placeholder>
