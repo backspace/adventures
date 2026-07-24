@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:landgrab/api/landgrab_api.dart';
@@ -32,6 +34,24 @@ class _AttachmentMapRouteState extends State<AttachmentMapRoute> {
   // Whether an attach/detach happened, so the caller can refresh its own
   // lists when this route pops.
   bool _changed = false;
+
+  // Live camera zoom — drives pin sizing (smaller when zoomed out) and the
+  // repulsion spacing (pins only need pushing apart where they'd overlap).
+  double _zoom = 15;
+
+  // Pins shrink from _pinFull at zoom ≥ _pinFullZoom to _pinTiny at ≤ _pinTinyZoom.
+  static const double _pinFull = 34;
+  static const double _pinTiny = 12;
+  static const double _pinFullZoom = 16;
+  static const double _pinTinyZoom = 13;
+  static const int _nudgeIterations = 12;
+
+  double get _pinSize {
+    if (_zoom >= _pinFullZoom) return _pinFull;
+    if (_zoom <= _pinTinyZoom) return _pinTiny;
+    final t = (_zoom - _pinTinyZoom) / (_pinFullZoom - _pinTinyZoom);
+    return _pinTiny + (_pinFull - _pinTiny) * t;
+  }
 
   @override
   void initState() {
@@ -78,53 +98,130 @@ class _AttachmentMapRouteState extends State<AttachmentMapRoute> {
             LatLng(p.latitude!, p.longitude!),
       ];
 
-  List<Polyline> _attachmentLines() {
+  // Screen-declutter: nudge overlapping markers apart so each stays tappable,
+  // exactly as the author scouting map does. Poles and puzzlets relax together
+  // (a puzzlet clustered on its pole gets pushed off it), and the attachment
+  // lines are drawn between the *displaced* positions so they stay connected.
+  // Keyed 'p:<id>' / 'z:<id>'; only markers with a location take part.
+  Map<String, LatLng> _displacedPositions() {
+    final keys = <String>[];
+    final lats = <double>[];
+    final lngs = <double>[];
+    for (final pole in _visiblePoles) {
+      keys.add('p:${pole.id}');
+      lats.add(pole.latitude);
+      lngs.add(pole.longitude);
+    }
+    for (final p in _visiblePuzzlets) {
+      if (p.latitude == null || p.longitude == null) continue;
+      keys.add('z:${p.id}');
+      lats.add(p.latitude!);
+      lngs.add(p.longitude!);
+    }
+    final n = keys.length;
+    if (n == 0) return const {};
+
+    // Metric projection anchored on the centroid so distances read as
+    // isotropic metres; spacing is the current pin width in metres-per-pixel.
+    var sumLat = 0.0, sumLng = 0.0;
+    for (var i = 0; i < n; i++) {
+      sumLat += lats[i];
+      sumLng += lngs[i];
+    }
+    final cLat = sumLat / n, cLng = sumLng / n;
+    const mPerDegLat = 111000.0;
+    final mPerDegLng = 111000.0 * cos(cLat * pi / 180);
+    final mPerPx = 156543.03392 * cos(cLat * pi / 180) / pow(2, _zoom);
+    final minSpacing = _pinSize * mPerPx;
+
+    final xs = List<double>.filled(n, 0);
+    final ys = List<double>.filled(n, 0);
+    for (var i = 0; i < n; i++) {
+      xs[i] = (lngs[i] - cLng) * mPerDegLng;
+      ys[i] = (lats[i] - cLat) * mPerDegLat;
+    }
+
+    for (var iter = 0; iter < _nudgeIterations; iter++) {
+      var moved = false;
+      for (var i = 0; i < n; i++) {
+        for (var j = i + 1; j < n; j++) {
+          final dx = xs[j] - xs[i];
+          final dy = ys[j] - ys[i];
+          final d = sqrt(dx * dx + dy * dy);
+          if (d >= minSpacing) continue;
+          final nx = d < 0.001 ? 1.0 : dx / d;
+          final ny = d < 0.001 ? 0.0 : dy / d;
+          final push = (minSpacing - d) / 2;
+          xs[i] -= nx * push;
+          ys[i] -= ny * push;
+          xs[j] += nx * push;
+          ys[j] += ny * push;
+          moved = true;
+        }
+      }
+      if (!moved) break;
+    }
+
+    final out = <String, LatLng>{};
+    for (var i = 0; i < n; i++) {
+      out[keys[i]] =
+          LatLng(cLat + ys[i] / mPerDegLat, cLng + xs[i] / mPerDegLng);
+    }
+    return out;
+  }
+
+  List<Polyline> _attachmentLines(Map<String, LatLng> displaced) {
     final polesById = {for (final pole in _visiblePoles) pole.id: pole};
     return [
       for (final puzzlet in _visiblePuzzlets)
-        if (puzzlet.poleId != null &&
-            puzzlet.latitude != null &&
-            puzzlet.longitude != null)
+        if (puzzlet.poleId != null)
           if (polesById[puzzlet.poleId!] case final pole?)
-            Polyline(
-              points: [
-                LatLng(pole.latitude, pole.longitude),
-                LatLng(puzzlet.latitude!, puzzlet.longitude!),
-              ],
-              strokeWidth: 1.5,
-              color: Colors.indigo.shade400.withValues(alpha: 0.4),
-            ),
+            if (displaced['p:${pole.id}'] case final poleAt?)
+              if (displaced['z:${puzzlet.id}'] case final puzzletAt?)
+                Polyline(
+                  points: [poleAt, puzzletAt],
+                  strokeWidth: 1.5,
+                  color: Colors.indigo.shade400.withValues(alpha: 0.4),
+                ),
     ];
   }
 
-  List<Marker> _poleMarkers() => [
-        for (final pole in _visiblePoles)
+  List<Marker> _poleMarkers(Map<String, LatLng> displaced) {
+    final size = _pinSize;
+    return [
+      for (final pole in _visiblePoles)
+        if (displaced['p:${pole.id}'] case final at?)
           Marker(
-            point: LatLng(pole.latitude, pole.longitude),
-            width: 32,
-            height: 32,
-            child: _PolePin(onTap: () => _onPoleTap(pole)),
+            point: at,
+            width: size,
+            height: size,
+            child: _PolePin(dimension: size, onTap: () => _onPoleTap(pole)),
           ),
-      ];
+    ];
+  }
 
-  List<Marker> _puzzletMarkers() => [
-        for (final p in _visiblePuzzlets)
-          if (p.latitude != null && p.longitude != null)
-            Marker(
-              point: LatLng(p.latitude!, p.longitude!),
-              width: 34,
-              height: 34,
-              child: _PuzzletPin(
-                difficulty: p.difficulty,
-                // Transparency IS the attachment cue: attached puzzlets
-                // fade so the orphans the supervisor still needs to wire up
-                // are the ones that pop.
-                faded: p.poleId != null,
-                validatorOnly: p.validatorOnly,
-                onTap: () => _onPuzzletTap(p),
-              ),
+  List<Marker> _puzzletMarkers(Map<String, LatLng> displaced) {
+    final size = _pinSize;
+    return [
+      for (final p in _visiblePuzzlets)
+        if (displaced['z:${p.id}'] case final at?)
+          Marker(
+            point: at,
+            width: size,
+            height: size,
+            child: _PuzzletPin(
+              dimension: size,
+              difficulty: p.difficulty,
+              // Transparency IS the attachment cue: attached puzzlets fade so
+              // the orphans the supervisor still needs to wire up are the ones
+              // that pop.
+              faded: p.poleId != null,
+              validatorOnly: p.validatorOnly,
+              onTap: () => _onPuzzletTap(p),
             ),
-      ];
+          ),
+    ];
+  }
 
   Future<void> _onPoleTap(DraftPole pole) async {
     final changed = await showSupervisorPoleAttachments(
@@ -158,6 +255,7 @@ class _AttachmentMapRouteState extends State<AttachmentMapRoute> {
     final orphanNoLocation = _visiblePuzzlets
         .where((p) => p.poleId == null && p.latitude == null)
         .length;
+    final displaced = loading ? const <String, LatLng>{} : _displacedPositions();
 
     return PopScope<bool>(
       // Hand back whether anything changed so the content tab can refresh.
@@ -199,13 +297,22 @@ class _AttachmentMapRouteState extends State<AttachmentMapRoute> {
                             flags: InteractiveFlag.all &
                                 ~InteractiveFlag.rotate,
                           ),
+                          // Re-declutter + re-size as the zoom changes; the
+                          // small epsilon keeps a pinch from rebuilding every
+                          // frame.
+                          onPositionChanged: (pos, _) {
+                            final z = pos.zoom;
+                            if (z != null && (z - _zoom).abs() >= 0.05) {
+                              setState(() => _zoom = z);
+                            }
+                          },
                         ),
                         children: [
                           landgrabTileLayer(context),
                           // Lines under the pins so markers stay on top.
-                          PolylineLayer(polylines: _attachmentLines()),
-                          MarkerLayer(markers: _poleMarkers()),
-                          MarkerLayer(markers: _puzzletMarkers()),
+                          PolylineLayer(polylines: _attachmentLines(displaced)),
+                          MarkerLayer(markers: _poleMarkers(displaced)),
+                          MarkerLayer(markers: _puzzletMarkers(displaced)),
                           const LiveLocationLayer(),
                           const _Attribution(),
                         ],
@@ -304,11 +411,14 @@ class _Attribution extends StatelessWidget {
 }
 
 class _PolePin extends StatelessWidget {
+  final double dimension;
   final VoidCallback? onTap;
-  const _PolePin({this.onTap});
+  const _PolePin({this.dimension = 34, this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    // Below ~20 px the glyph can't render legibly; drop to a plain dot.
+    final showGlyph = dimension >= 20;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
@@ -316,20 +426,23 @@ class _PolePin extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.indigo.shade700,
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2),
+          border: Border.all(color: Colors.white, width: showGlyph ? 2 : 1),
           boxShadow: const [
             BoxShadow(
                 color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 1)),
           ],
         ),
         alignment: Alignment.center,
-        child: const Icon(Icons.sensors, color: Colors.white, size: 18),
+        child: showGlyph
+            ? Icon(Icons.sensors, color: Colors.white, size: dimension * 0.55)
+            : null,
       ),
     );
   }
 }
 
 class _PuzzletPin extends StatelessWidget {
+  final double dimension;
   final int difficulty;
   final bool faded;
   final bool validatorOnly;
@@ -337,6 +450,7 @@ class _PuzzletPin extends StatelessWidget {
 
   const _PuzzletPin({
     required this.difficulty,
+    this.dimension = 34,
     this.faded = false,
     this.validatorOnly = false,
     this.onTap,
@@ -351,38 +465,44 @@ class _PuzzletPin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Below ~18 px the difficulty numeral can't render legibly; drop to a
+    // plain coloured dot.
+    final showNumber = dimension >= 18;
     final circle = Container(
       decoration: BoxDecoration(
         color: _color,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
+        border: Border.all(color: Colors.white, width: showNumber ? 2 : 1),
         boxShadow: const [
           BoxShadow(
               color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 1)),
         ],
       ),
       alignment: Alignment.center,
-      child: Text(
-        '$difficulty',
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 15,
-        ),
-      ),
+      child: showNumber
+          ? Text(
+              '$difficulty',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: dimension * 0.44,
+              ),
+            )
+          : null,
     );
+    final starSize = (dimension * 0.42).clamp(9.0, 14.0);
     final pin = validatorOnly
         ? Stack(clipBehavior: Clip.none, children: [
             circle,
-            const Positioned(
+            Positioned(
               right: -2,
               top: -2,
               child: DecoratedBox(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     color: Colors.white, shape: BoxShape.circle),
                 child: Padding(
-                  padding: EdgeInsets.all(1),
-                  child: Icon(Icons.star, size: 14, color: Colors.amber),
+                  padding: const EdgeInsets.all(1),
+                  child: Icon(Icons.star, size: starSize, color: Colors.amber),
                 ),
               ),
             ),
