@@ -264,7 +264,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           action: SnackBarAction(
             label: GameplayStrings.viewOnMap,
             textColor: Colors.white,
-            onPressed: () => _viewPole(poleId),
+            onPressed: () => _viewFromNotification(n.id, poleId),
           ),
         ));
       }
@@ -287,7 +287,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
             : SnackBarAction(
                 label: GameplayStrings.viewOnMap,
                 textColor: Colors.white,
-                onPressed: () => _viewPole(poleId),
+                onPressed: () => _viewFromNotification(n.id, poleId),
               ),
       ));
     }
@@ -374,6 +374,24 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   void _viewPole(String poleId) {
     Navigator.of(context).popUntil((route) => route.isFirst);
     _focusPole(poleId);
+  }
+
+  /// Viewing a notification from its live toast acknowledges it: mark it read
+  /// (so the bell badge and the history reflect that you've seen it) before
+  /// jumping to the stake. The notifications *list* already marks everything
+  /// read on open, so this only matters for the toast path.
+  void _viewFromNotification(String notificationId, String poleId) {
+    _markNotificationRead(notificationId);
+    _viewPole(poleId);
+  }
+
+  // Optimistic badge decrement + fire-and-forget server update; the real
+  // count reconciles on the next listNotifications fetch.
+  void _markNotificationRead(String notificationId) {
+    if (mounted && _unreadNotifications > 0) {
+      setState(() => _unreadNotifications -= 1);
+    }
+    widget.api.setNotificationRead(notificationId, true).catchError((_) {});
   }
 
   /// notice replaces a silent no-op.
