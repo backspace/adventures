@@ -448,8 +448,7 @@ class ScanStrings {
   // Unknown-barcode dialog
   static const unknownBarcodeTitle = 'Unknown barcode';
   static String unknownBarcodeBody(String barcode) =>
-      '“$barcode” doesn’t match any known ${Terms.stake}. '
-      'Make sure you scanned a ${Terms.stake}’s barcode and try again.';
+      '“$barcode” doesn’t match any known ${Terms.stake}. Maybe the correct stake is nearby? Check the map again.';
   static const unknownBarcodeBack = 'Back to map';
   static const unknownBarcodeRetry = 'Try again';
 
