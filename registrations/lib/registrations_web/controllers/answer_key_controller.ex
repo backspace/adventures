@@ -33,6 +33,13 @@ defmodule RegistrationsWeb.AnswerKeyController do
         )
       )
 
+    # Retired poles are out of play for good (unlike endgame-withdrawn ones,
+    # which is a live, position-based state). Pull them into their own section
+    # first, so they show once — as retired — rather than being sorted by the
+    # endgame split below.
+    {retired_poles, active_poles} =
+      Enum.split_with(poles, fn pole -> pole.status == :retired end)
+
     # Poles the shrinking endgame boundary has passed are withdrawn from play
     # (off the players' maps, unclaimable). Tuck them into a collapsible
     # section so the key reflects what's still live but stays complete. Before
@@ -40,13 +47,14 @@ defmodule RegistrationsWeb.AnswerKeyController do
     now = DateTime.utc_now()
 
     {live_poles, withdrawn_poles} =
-      Enum.split_with(poles, fn pole ->
+      Enum.split_with(active_poles, fn pole ->
         not Landgrab.pole_outside_endgame_zone?(pole, now)
       end)
 
     render(conn, "index.html",
       poles: live_poles,
       withdrawn_poles: withdrawn_poles,
+      retired_poles: retired_poles,
       unattached: unattached,
       owners: owning_teams_by_pole(poles)
     )

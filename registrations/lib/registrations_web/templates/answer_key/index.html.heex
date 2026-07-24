@@ -37,6 +37,7 @@
         <%= length(@poles) %> poles ·
         <%= Enum.sum(for p <- @poles, do: length(p.puzzlets)) %> attached puzzlets ·
         <%= length(@withdrawn_poles) %> withdrawn ·
+        <%= length(@retired_poles) %> retired ·
         <%= length(@unattached) %> unattached
       </p>
     </div>
@@ -63,6 +64,23 @@
     </div>
   <% end %>
 
+  <%= if @retired_poles != [] do %>
+    <div class="pole-card">
+      <details>
+        <summary>
+          <h3>Retired (<%= length(@retired_poles) %>)</h3>
+        </summary>
+        <p class="meta">
+          These stakes have been retired — out of play for good — but kept here
+          so the key stays complete.
+        </p>
+        <%= for pole <- @retired_poles do %>
+          <%= render "pole_card.html", pole: pole, owners: @owners %>
+        <% end %>
+      </details>
+    </div>
+  <% end %>
+
   <%= if @unattached != [] do %>
     <div class="pole-card">
       <details>
@@ -83,7 +101,7 @@
                 <td><%= puzzlet.instructions %></td>
                 <td class="answer">
                   <%= if puzzlet.answer_type == :barcode do %>
-                    <%= barcode_svg(puzzlet.answer, height: 40) %>
+                    <%= answer_code_svg(puzzlet.answer, height: 40) %>
                     <p class="barcode-text"><%= puzzlet.answer %></p>
                   <% else %>
                     <%= puzzlet.answer %>

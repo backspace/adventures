@@ -33,7 +33,7 @@
             <td><%= puzzlet.instructions %></td>
             <td class="answer">
               <%= if puzzlet.answer_type == :barcode do %>
-                <%= barcode_svg(puzzlet.answer, height: 40) %>
+                <%= answer_code_svg(puzzlet.answer, height: 40) %>
                 <p class="barcode-text"><%= puzzlet.answer %></p>
               <% else %>
                 <%= puzzlet.answer %>
