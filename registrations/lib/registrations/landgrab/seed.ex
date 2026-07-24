@@ -393,14 +393,7 @@ defmodule Registrations.Landgrab.Seed do
   ones this run newly invited/accepted).
   """
   def subvert_all do
-    ensure_liberation_begun()
-    results = Enum.map(member_teams(), &subvert/1)
-
-    %{
-      teams: length(results),
-      invited: Enum.count(results, & &1.invited),
-      accepted: Enum.count(results, & &1.accepted)
-    }
+    invite_and_respond_all("accepted")
   end
 
   @doc """
@@ -410,28 +403,69 @@ defmodule Registrations.Landgrab.Seed do
   `%{team: name, invited: bool, accepted: bool}`.
   """
   def subvert_team(name) when is_binary(name) do
-    team = find_team_by_name!(name)
-    ensure_liberation_begun()
-    r = subvert(team)
-    %{team: team.name, invited: r.invited, accepted: r.accepted}
+    invite_and_respond_team(name, "accepted")
   end
 
-  # Invite (real notification) then accept (real respond) one team. Both
-  # steps are idempotent — an already-invited/already-accepted team just
-  # reports false for that step.
-  defp subvert(%Team{} = team) do
+  @doc """
+  Invite EVERY team with members into the subversion and DECLINE for all of
+  them — the state where the invitation went out and every team turned it
+  down. Marks the liberation phase begun if it wasn't. Idempotent. Returns
+  `%{teams: n, invited: n, declined: n}` (invited/declined count only the
+  ones this run newly invited/answered).
+  """
+  def unsubvert_all do
+    invite_and_respond_all("declined")
+  end
+
+  @doc """
+  Invite a single team BY NAME into the subversion and DECLINE for it. The
+  name is matched case-insensitively (trimmed); raises if none matches.
+  Marks the liberation phase begun if it wasn't. Returns
+  `%{team: name, invited: bool, declined: bool}`.
+  """
+  def unsubvert_team(name) when is_binary(name) do
+    invite_and_respond_team(name, "declined")
+  end
+
+  # The response key mirrors the verb: "accepted" reports :accepted,
+  # "declined" reports :declined — so subvert_* and unsubvert_* return maps
+  # that read naturally in the task's console summary.
+  defp invite_and_respond_all(response) do
+    ensure_liberation_begun()
+    results = Enum.map(member_teams(), &subvert(&1, response))
+
+    %{teams: length(results), invited: Enum.count(results, & &1.invited)}
+    |> Map.put(response_key(response), Enum.count(results, & &1.responded))
+  end
+
+  defp invite_and_respond_team(name, response) do
+    team = find_team_by_name!(name)
+    ensure_liberation_begun()
+    r = subvert(team, response)
+
+    %{team: team.name, invited: r.invited}
+    |> Map.put(response_key(response), r.responded)
+  end
+
+  defp response_key("accepted"), do: :accepted
+  defp response_key("declined"), do: :declined
+
+  # Invite (real notification) then answer (real respond) one team with the
+  # given response. Both steps are idempotent — an already-invited or
+  # already-answered team just reports false for that step.
+  defp subvert(%Team{} = team, response) do
     invited =
       case Landgrab.invite_liberation_team(team) do
         {:ok, _} -> true
         {:already_invited, _} -> false
       end
 
-    %{invited: invited, accepted: accept_liberation_invite(team.id)}
+    %{invited: invited, responded: respond_liberation_invite(team.id, response)}
   end
 
-  # Accept the team's outstanding liberation invite through the real respond
+  # Answer the team's outstanding liberation invite through the real respond
   # flow. False when there's no open invite (missing or already answered).
-  defp accept_liberation_invite(team_id) do
+  defp respond_liberation_invite(team_id, response) do
     invite =
       Repo.one(
         from(n in Notification,
@@ -445,7 +479,7 @@ defmodule Registrations.Landgrab.Seed do
 
     match?(
       {:ok, _},
-      invite && Landgrab.respond_to_liberation_invite(team_id, invite.id, "accepted")
+      invite && Landgrab.respond_to_liberation_invite(team_id, invite.id, response)
     )
   end
 

@@ -23,6 +23,8 @@ defmodule Mix.Tasks.Landgrab.Seed do
     * liberate:X      free X% of the currently-owned zones (real liberation flow)
     * subvert_all     invite EVERY team into the subversion and accept for all
     * subvert:"NAME"  invite one team by name into the subversion and accept
+    * unsubvert_all   invite EVERY team into the subversion and decline for all
+    * unsubvert:"NAME" invite one team by name into the subversion and decline
     * schedule:X      lay out the whole timeline to run over X minutes from now
                       (start now, shrink at 1/2, liberation 5/8–6/8, end at X)
     * clock:M[.SS]    put "now" M min SS sec before the start (.SS = seconds);
@@ -131,6 +133,11 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       respond flow; marks the phase begun
       subvert:"NAME"  invite one team by name into the subversion and accept for
                       it (case-insensitive); e.g. subvert:"correct horse"
+      unsubvert_all   invite EVERY team with members into the subversion (Bedab's
+                      liberation invite) and decline for all — the real invite +
+                      respond flow; marks the phase begun
+      unsubvert:"NAME" invite one team by name into the subversion and decline for
+                      it (case-insensitive); e.g. unsubvert:"correct horse"
       schedule:X      lay out the whole event timeline to run over X minutes from
                       now: start now, endgame shrink at 1/2 (X/2), liberation
                       invites 5/8–6/8, end at X. Re-arms one-shot stamps; fills a
@@ -299,6 +306,25 @@ defmodule Mix.Tasks.Landgrab.Seed do
     %{team: team, invited: invited, accepted: accepted} = Seed.subvert_team(name)
     state = if invited or accepted, do: "invited + accepted", else: "already joined"
     Mix.shell().info(~s(subvert: "#{team}" #{state} the subversion.))
+  end
+
+  defp run_step({"unsubvert_all", _}) do
+    %{teams: teams, invited: invited, declined: declined} = Seed.unsubvert_all()
+
+    Mix.shell().info(
+      "unsubvert_all: #{teams} team(s) invited to the subversion — newly invited #{invited}, " <>
+        "newly declined #{declined} (already-answered teams left as-is)."
+    )
+  end
+
+  defp run_step({"unsubvert", nil}) do
+    Mix.raise(~s(unsubvert needs a team name, in quotes: unsubvert:"correct horse"))
+  end
+
+  defp run_step({"unsubvert", name}) do
+    %{team: team, invited: invited, declined: declined} = Seed.unsubvert_team(name)
+    state = if invited or declined, do: "invited + declined", else: "already answered"
+    Mix.shell().info(~s(unsubvert: "#{team}" #{state} the subversion.))
   end
 
   defp run_step({"schedule", n}) do
