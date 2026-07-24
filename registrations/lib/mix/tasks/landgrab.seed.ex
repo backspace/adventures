@@ -21,6 +21,8 @@ defmodule Mix.Tasks.Landgrab.Seed do
                       teams, with a few active attacks and in-progress puzzlets
     * capture_all     capture EVERY capturable pole — a fully owned map
     * liberate:X      free X% of the currently-owned zones (real liberation flow)
+    * subvert_all     invite EVERY team into the subversion and accept for all
+    * subvert:"NAME"  invite one team by name into the subversion and accept
     * schedule:X      lay out the whole timeline to run over X minutes from now
                       (start now, shrink at 1/2, liberation 5/8–6/8, end at X)
     * clock:M[.SS]    put "now" M min SS sec before the start (.SS = seconds);
@@ -34,6 +36,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
                    (seed captures pre-event, then sit "now" just after the
                    endgame begins — a game in flight; see the note by @presets)
     * conquered  = playable teams clock:5 capture_all  (every pole captured)
+    * subversion = teams subvert_all  (every team invited + accepted)
 
   Parameterized presets thread their value into a step:
 
@@ -71,7 +74,10 @@ defmodule Mix.Tasks.Landgrab.Seed do
     # capture every pole. clock:5 keeps the endgame inactive during capture
     # (so no pole is refused as out-of-radius); add clock:0 yourself if you
     # want the event started to view it.
-    "conquered" => ~w(playable teams clock:5 capture_all)
+    "conquered" => ~w(playable teams clock:5 capture_all),
+    # Bedab's subversion (liberation) invitation has gone out to every team
+    # and all have accepted — build teams first so there's someone to invite.
+    "subversion" => ~w(teams subvert_all)
   }
 
   @impl Mix.Task
@@ -103,6 +109,7 @@ defmodule Mix.Tasks.Landgrab.Seed do
       validation   validations                                  (fills the validator queue)
       kickoff      clear + playable + teams + clock:0           (fresh map, game just begun)
       conquered    playable + teams + clock:5 + capture_all     (every pole captured)
+      subversion   teams + subvert_all                          (every team joined the subversion)
       runthrough:X clear + playable + teams + schedule:X + captures  (a fresh game
                    compressed into X minutes; X defaults to 30)
 
@@ -119,6 +126,11 @@ defmodule Mix.Tasks.Landgrab.Seed do
       liberate:X      free X% of the currently-owned zones through real liberation
                       (a liberator team frees another's stake; needs >=2 teams
                       and captures already on the board)  (50)
+      subvert_all     invite EVERY team with members into the subversion (Bedab's
+                      liberation invite) and accept for all — the real invite +
+                      respond flow; marks the phase begun
+      subvert:"NAME"  invite one team by name into the subversion and accept for
+                      it (case-insensitive); e.g. subvert:"correct horse"
       schedule:X      lay out the whole event timeline to run over X minutes from
                       now: start now, endgame shrink at 1/2 (X/2), liberation
                       invites 5/8–6/8, end at X. Re-arms one-shot stamps; fills a
@@ -268,6 +280,25 @@ defmodule Mix.Tasks.Landgrab.Seed do
           "Reset the clock (e.g. clock:5) before 'liberate' to free the whole map."
       )
     end
+  end
+
+  defp run_step({"subvert_all", _}) do
+    %{teams: teams, invited: invited, accepted: accepted} = Seed.subvert_all()
+
+    Mix.shell().info(
+      "subvert_all: #{teams} team(s) in the subversion — newly invited #{invited}, " <>
+        "newly accepted #{accepted} (already-joined teams left as-is)."
+    )
+  end
+
+  defp run_step({"subvert", nil}) do
+    Mix.raise(~s(subvert needs a team name, in quotes: subvert:"correct horse"))
+  end
+
+  defp run_step({"subvert", name}) do
+    %{team: team, invited: invited, accepted: accepted} = Seed.subvert_team(name)
+    state = if invited or accepted, do: "invited + accepted", else: "already joined"
+    Mix.shell().info(~s(subvert: "#{team}" #{state} the subversion.))
   end
 
   defp run_step({"schedule", n}) do

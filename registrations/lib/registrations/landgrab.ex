@@ -1333,6 +1333,22 @@ defmodule Registrations.Landgrab do
   end
 
   @doc """
+  Invite a single team into the subversion (liberation) directly, bypassing
+  the timed rollout — the manual/seed counterpart to the scheduled
+  `maybe_invite_liberation_teams`. Sends the same invite notification and
+  stamps `liberation_invited_at`. A no-op when the team was already invited.
+  Returns `{:ok, team}` | `{:already_invited, team}`.
+  """
+  def invite_liberation_team(%RegistrationsWeb.Team{} = team, now \\ DateTime.utc_now()) do
+    if team.liberation_invited_at do
+      {:already_invited, team}
+    else
+      send_liberation_invite(team, now)
+      {:ok, Repo.get(RegistrationsWeb.Team, team.id)}
+    end
+  end
+
+  @doc """
   Record a team's answer to their liberation invitation — on the notification
   (so the history shows it) and on the team (the stance the gameplay phase
   reads). One member answers for the whole team, and the first answer is

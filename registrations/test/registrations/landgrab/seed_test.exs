@@ -180,6 +180,62 @@ defmodule Registrations.Landgrab.SeedTest do
     assert_raise RuntimeError, ~r/two playing teams/, fn -> Seed.liberate(50) end
   end
 
+  test "subvert_all invites and accepts every member team, with real notifications" do
+    Seed.teams()
+    member_team_ids = member_team_ids()
+    assert length(member_team_ids) > 0
+
+    assert %{teams: teams, invited: invited, accepted: accepted} = Seed.subvert_all()
+    assert teams == length(member_team_ids)
+    assert invited == teams
+    assert accepted == teams
+
+    # Every member team is now a liberator, with a real (answered) invite.
+    for id <- member_team_ids do
+      t = Repo.get(Team, id)
+      assert t.liberation_response == "accepted"
+      assert t.liberation_invited_at
+      assert Landgrab.liberator?(id)
+      assert Repo.aggregate(
+               from(n in Notification,
+                 where: n.recipient_team_id == ^id and n.type == "liberation_invite"
+               ),
+               :count
+             ) == 1
+    end
+  end
+
+  test "subvert_all is idempotent — a second run re-invites/accepts nobody" do
+    Seed.teams()
+    Seed.subvert_all()
+
+    assert %{invited: 0, accepted: 0} = Seed.subvert_all()
+  end
+
+  test "subvert_team invites and accepts one named team, case-insensitively", %{players: players} do
+    Seed.teams()
+    # Give one player a distinct team name to target unambiguously.
+    target = Repo.get(User, hd(players).id).team_id
+    Repo.get(Team, target) |> Ecto.Changeset.change(name: "Correct Horse") |> Repo.update!()
+
+    assert %{team: "Correct Horse", invited: true, accepted: true} =
+             Seed.subvert_team("correct horse")
+
+    assert Landgrab.liberator?(target)
+    # Other member teams are untouched.
+    others = member_team_ids() |> Enum.reject(&(&1 == target))
+    for id <- others, do: refute(Landgrab.liberator?(id))
+  end
+
+  test "subvert_team raises on an unknown name" do
+    Seed.teams()
+    assert_raise RuntimeError, ~r/no team named/, fn -> Seed.subvert_team("nobody here") end
+  end
+
+  defp member_team_ids do
+    Repo.all(from(t in Team, join: u in User, on: u.team_id == t.id, distinct: true, select: t.id))
+  end
+
   defp owned_zone_count do
     Landgrab.list_poles_with_state()
     |> Enum.count(&(&1.current_owner_team_id != nil))

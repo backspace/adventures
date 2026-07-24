@@ -379,6 +379,107 @@ defmodule Registrations.Landgrab.Seed do
     end
   end
 
+  # ── subversion (liberation) invitation state ────────────────────────
+  # "Subversion" is the player-facing name for the liberation phase (Bedab's
+  # "Join me?" invite). These seed the invitation *state* — the invite has
+  # gone out and been accepted — through the real invite + respond flow (real
+  # notifications, real stance), without freeing any zones (that's `liberate`).
+
+  @doc """
+  Invite EVERY team with members into the subversion and accept for all of
+  them — the state where the invitation has gone out and every team joined.
+  Marks the liberation phase begun if it wasn't. Idempotent. Returns
+  `%{teams: n, invited: n, accepted: n}` (invited/accepted count only the
+  ones this run newly invited/accepted).
+  """
+  def subvert_all do
+    ensure_liberation_begun()
+    results = Enum.map(member_teams(), &subvert/1)
+
+    %{
+      teams: length(results),
+      invited: Enum.count(results, & &1.invited),
+      accepted: Enum.count(results, & &1.accepted)
+    }
+  end
+
+  @doc """
+  Invite a single team BY NAME into the subversion and accept for it. The
+  name is matched case-insensitively (trimmed); raises if none matches.
+  Marks the liberation phase begun if it wasn't. Returns
+  `%{team: name, invited: bool, accepted: bool}`.
+  """
+  def subvert_team(name) when is_binary(name) do
+    team = find_team_by_name!(name)
+    ensure_liberation_begun()
+    r = subvert(team)
+    %{team: team.name, invited: r.invited, accepted: r.accepted}
+  end
+
+  # Invite (real notification) then accept (real respond) one team. Both
+  # steps are idempotent — an already-invited/already-accepted team just
+  # reports false for that step.
+  defp subvert(%Team{} = team) do
+    invited =
+      case Landgrab.invite_liberation_team(team) do
+        {:ok, _} -> true
+        {:already_invited, _} -> false
+      end
+
+    %{invited: invited, accepted: accept_liberation_invite(team.id)}
+  end
+
+  # Accept the team's outstanding liberation invite through the real respond
+  # flow. False when there's no open invite (missing or already answered).
+  defp accept_liberation_invite(team_id) do
+    invite =
+      Repo.one(
+        from(n in Notification,
+          where:
+            n.recipient_team_id == ^team_id and n.type == "liberation_invite" and
+              is_nil(n.response),
+          order_by: [desc: n.inserted_at],
+          limit: 1
+        )
+      )
+
+    match?(
+      {:ok, _},
+      invite && Landgrab.respond_to_liberation_invite(team_id, invite.id, "accepted")
+    )
+  end
+
+  defp find_team_by_name!(name) do
+    trimmed = String.trim(name)
+    needle = String.downcase(trimmed)
+
+    case Repo.all(from(t in Team, where: fragment("lower(?)", t.name) == ^needle)) do
+      [team] ->
+        team
+
+      [] ->
+        raise "no team named #{inspect(trimmed)} — check the name (matched case-insensitively)."
+
+      teams ->
+        raise "#{length(teams)} teams are named #{inspect(trimmed)} — rename so the target is unique."
+    end
+  end
+
+  # Every team with at least one member (empty QR teams aren't in the game),
+  # mirroring the domain's own `member_teams` for the invite sweep.
+  defp member_teams do
+    Repo.all(from(t in Team, join: u in User, on: u.team_id == t.id, distinct: true, select: t))
+  end
+
+  # Mark the liberation phase begun (starts_at set) if it isn't, so seeded
+  # invitations are coherent. Leaves an existing schedule untouched.
+  defp ensure_liberation_begun do
+    Repo.update_all(
+      from(e in Event, where: is_nil(e.liberation_starts_at)),
+      set: [liberation_starts_at: now()]
+    )
+  end
+
   # Teams that can actually play: one with a member who didn't author the
   # content (record_attempt rejects a puzzlet's or pole's creator).
   defp player_teams do
