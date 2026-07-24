@@ -191,6 +191,13 @@ if config_env() == :prod do
     base_url: base_url,
     start_time: start_time
 
+  # Whether the user details form shows (and requires) the "Are you
+  # attending?" confirmation field — see user.ex details_changeset and
+  # user/edit.html.heex. Defaults to false unless REQUEST_CONFIRMATION
+  # is exactly "true".
+  config :registrations,
+    request_confirmation: System.get_env("REQUEST_CONFIRMATION") == "true"
+
   config :sentry, dsn: sentry_dsn
 
   # Optional OAuth providers. Each is wired in only when its full set
