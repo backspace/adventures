@@ -1557,6 +1557,29 @@ defmodule Registrations.Landgrab do
     }
   end
 
+  @doc """
+  Record an app build the server just saw (from the telemetry boot ping),
+  ratcheting the per-platform "latest build" up on the current event. Only
+  ever increases — an older client pinging never lowers it — so the client's
+  soft "update available" banner needs no manual maintenance: the first person
+  to open a newer build teaches the server, and everyone behind is nudged.
+  Returns `:ok`; ignores unknown platforms and non-positive builds.
+  """
+  def note_client_build(platform, build)
+      when platform in ["ios", "android"] and is_integer(build) and build > 0 do
+    field = if platform == "ios", do: :latest_build_ios, else: :latest_build_android
+    event = Events.current()
+    current = Map.get(event, field)
+
+    if is_nil(current) or build > current do
+      event |> Ecto.Changeset.change(%{field => build}) |> Repo.update()
+    end
+
+    :ok
+  end
+
+  def note_client_build(_platform, _build), do: :ok
+
   # A team's liberation stage for the supervisor breakdown: accepted /
   # declined once answered, invited (undecided) once the invite is out, else
   # uninvited (its rollout slot hasn't come yet).

@@ -12,7 +12,12 @@ defmodule RegistrationsWeb.Landgrab.EventController do
       name: event.name,
       start_time: event.start_time,
       started: Event.started?(event, now),
-      endgame: render_endgame(event)
+      endgame: render_endgame(event),
+      # Newest app build the server has seen ping in, per platform. The client
+      # compares its own build against its platform's value and shows a soft
+      # "update available" banner when it's behind. Null until a build pings.
+      latest_build_ios: event.latest_build_ios,
+      latest_build_android: event.latest_build_android
     })
   end
 

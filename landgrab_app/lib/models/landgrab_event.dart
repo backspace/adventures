@@ -72,12 +72,20 @@ class LandgrabEvent {
   final DateTime? startTime;
   final bool started;
   final EndgameZone? endgame;
+  // Newest app build the server has seen ping in, per platform (iOS/Android
+  // number independently). Null until some build has pinged. The map compares
+  // its own build against its platform's value for the "update available"
+  // nudge.
+  final int? latestBuildIos;
+  final int? latestBuildAndroid;
 
   const LandgrabEvent({
     required this.name,
     required this.startTime,
     required this.started,
     this.endgame,
+    this.latestBuildIos,
+    this.latestBuildAndroid,
   });
 
   factory LandgrabEvent.fromJson(Map<String, dynamic> json) => LandgrabEvent(
@@ -88,5 +96,7 @@ class LandgrabEvent {
         started: json['started'] as bool,
         endgame:
             EndgameZone.fromJson(json['endgame'] as Map<String, dynamic>?),
+        latestBuildIos: (json['latest_build_ios'] as num?)?.toInt(),
+        latestBuildAndroid: (json['latest_build_android'] as num?)?.toInt(),
       );
 }

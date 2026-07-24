@@ -187,6 +187,13 @@ class GameplayStrings {
   static const credits = 'Credits';
   static const instructions = 'Instructions';
   static const details = 'Your details';
+
+  // Soft "newer build available" banner. The server auto-tracks the newest
+  // build it has seen per platform; when this client is behind, nudge (never
+  // block) an update.
+  static const updateAvailable =
+      'A newer version is available — please update to the latest build.';
+  static const updateDismiss = 'Dismiss';
   static const author = 'Author';
   static const validate = 'Validate';
   static const supervise = 'Supervise';

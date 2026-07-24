@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -177,6 +179,10 @@ class _BootState extends State<_Boot> {
         // are live (compat-drift visibility). Omitted if not yet known.
         if (AppInfo.clientVersion.isNotEmpty)
           'X-Client-Version': AppInfo.clientVersion,
+        // Platform lets the server track newest-build-seen per OS (iOS and
+        // Android number independently), which drives the update banner.
+        'X-Client-Platform':
+            Platform.isIOS ? 'ios' : (Platform.isAndroid ? 'android' : 'other'),
       },
     );
 

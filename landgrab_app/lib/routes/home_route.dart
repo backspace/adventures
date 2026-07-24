@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:dio/dio.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:landgrab/api/landgrab_api.dart';
+import 'package:landgrab/app_info.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/landgrab_event.dart';
@@ -115,6 +117,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // Flips the header swatch to the freed-ground hatch and drops the white
   // cased outline from the team's own zones.
   bool _joinedSubversion = false;
+  // Dismissed the "newer build available" banner this session — a soft nudge,
+  // so it hides once dismissed and reappears next launch if still behind.
+  bool _updateBannerDismissed = false;
   // Hide stakes flagged prohibitive (nothing the team can engage) from the map.
   // Persisted; the toggle only appears when there's at least one such stake.
   bool _hideProhibitive = false;
@@ -802,6 +807,32 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     );
   }
 
+  // True when this client's build is behind the newest one the server has seen
+  // for this platform (iOS/Android tracked separately). Drives the soft
+  // update banner; false when the build is unknown or the server hasn't seen
+  // a newer one.
+  bool get _updateAvailable {
+    final mine = int.tryParse(AppInfo.build);
+    if (mine == null) return false;
+    final latest =
+        Platform.isIOS ? _event?.latestBuildIos : _event?.latestBuildAndroid;
+    return latest != null && latest > mine;
+  }
+
+  // Soft "please update" banner — dismissible, never blocking.
+  Widget _updateBanner() {
+    return MaterialBanner(
+      leading: const Icon(Icons.system_update_alt_outlined),
+      content: const Text(GameplayStrings.updateAvailable),
+      actions: [
+        TextButton(
+          onPressed: () => setState(() => _updateBannerDismissed = true),
+          child: const Text(GameplayStrings.updateDismiss),
+        ),
+      ],
+    );
+  }
+
   // Reconcile the invite banner with the freshly-fetched notifications: show
   // it for an unanswered liberation invite to this team, hide it otherwise
   // (so accepting/declining in the list makes the banner disappear on return).
@@ -1365,6 +1396,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
               _event != null &&
               showNoTeamBanner)
             _noTeamBanner(),
+          // Lowest priority: a soft nudge to update, once a newer build has
+          // pinged the server for this platform. Dismissible for the session.
+          if (_error == null && _updateAvailable && !_updateBannerDismissed)
+            _updateBanner(),
           Expanded(
             child: _error != null
                 ? LoadErrorView(
