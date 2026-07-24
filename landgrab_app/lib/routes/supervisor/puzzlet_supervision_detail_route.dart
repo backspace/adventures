@@ -10,6 +10,7 @@ import 'package:landgrab/widgets/action_snackbar.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/location_suggestion_map.dart';
 import 'package:landgrab/widgets/mini_location_map.dart';
+import 'package:landgrab/widgets/overall_notes_card.dart';
 import 'package:landgrab/widgets/status_badge.dart';
 
 class PuzzletSupervisionDetailRoute extends StatefulWidget {
@@ -458,6 +459,7 @@ class _PuzzletSupervisionDetailRouteState
                 ),
               ),
             ),
+            OverallNotesCard(v.overallNotes),
             for (final c in v.comments)
               Card(
                 child: ListTile(
@@ -548,7 +550,9 @@ class _PuzzletSupervisionDetailRouteState
                   subtitle: Text(
                     '${past.comments.length} comment${past.comments.length == 1 ? '' : 's'}',
                   ),
-                  children: past.comments
+                  children: [
+                    OverallNotesCard(past.overallNotes),
+                    ...past.comments
                       .map((c) => ListTile(
                             title: Text(c.field,
                                 style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -565,8 +569,8 @@ class _PuzzletSupervisionDetailRouteState
                               label: c.status.name,
                               color: statusColorFor(c.status.name),
                             ),
-                          ))
-                      .toList(),
+                          )),
+                  ],
                 ),
               ),
           ],
