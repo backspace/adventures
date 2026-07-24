@@ -100,6 +100,61 @@ class LiberatedZoneLayer extends StatelessWidget {
   }
 }
 
+/// The app-bar background once the team has joined the subversion: the same
+/// freed-ground white hatch [LiberatedZoneLayer] paints over the map, so the
+/// header itself reads as "liberating" and the team's colour swatch can drop
+/// away. Painted over the bar's existing (bone) fill — a static take on the
+/// map's drifting look.
+class LiberatedHeaderBackground extends StatelessWidget {
+  const LiberatedHeaderBackground({super.key});
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.expand(
+        child: CustomPaint(painter: _LiberatedHeaderPainter()),
+      );
+}
+
+class _LiberatedHeaderPainter extends CustomPainter {
+  const _LiberatedHeaderPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.clipRect(Offset.zero & size);
+    const spacing = 13.0;
+    const theta = 45 * math.pi / 180;
+    final dir = Offset(math.cos(theta), math.sin(theta));
+    final perp = Offset(-math.sin(theta), math.cos(theta));
+
+    // Faint wash to tie the hatch together, then a dark keyline under a white
+    // line so the white reads over the pale (bone) bar — matching the map.
+    canvas.drawRect(Offset.zero & size,
+        Paint()..color = Colors.white.withValues(alpha: 0.06));
+    final shadow = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5.5
+      ..strokeCap = StrokeCap.round
+      ..color = Colors.black.withValues(alpha: 0.18);
+    final line = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round
+      ..color = Colors.white.withValues(alpha: 0.55);
+
+    final diag = (size.width + size.height) * 1.5;
+    final centre = Offset(size.width / 2, size.height / 2);
+    for (var d = -diag; d <= diag; d += spacing) {
+      final mid = centre + perp * d;
+      final a = mid - dir * diag;
+      final b = mid + dir * diag;
+      canvas.drawLine(a, b, shadow);
+      canvas.drawLine(a, b, line);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_LiberatedHeaderPainter old) => false;
+}
+
 class _HatchPainter extends CustomPainter {
   final MapCamera camera;
   final List<LiberatedShape> shapes;

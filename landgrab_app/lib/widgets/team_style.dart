@@ -164,17 +164,11 @@ class TeamSwatch extends StatelessWidget {
   final bool isMine;
   final double size;
 
-  /// The team has joined the subversion: overlay the freed-ground white hatch
-  /// (matching [LiberatedZoneLayer]) in place of the team's usual pattern, so
-  /// its own header marker reads as "liberating" while keeping its colour.
-  final bool liberated;
-
   const TeamSwatch({
     super.key,
     required this.colorIndex,
     this.isMine = false,
     this.size = 24,
-    this.liberated = false,
   });
 
   @override
@@ -192,13 +186,10 @@ class TeamSwatch extends StatelessWidget {
           // stake sits on), so backing the swatch with it composites the same
           // tint the zone shows over the map — not the brighter pure white.
           background: const Color(0xFFE8E8E8),
-          // Liberating: the white 45° hatch of freed ground; otherwise the
-          // team's own texture in a faint darkened-hue ink.
-          pattern: liberated ? TeamPattern.hatch : style.pattern,
-          glyphColor: liberated
-              ? Colors.white.withValues(alpha: 0.9)
-              : Color.lerp(style.color, Colors.black, 0.35)!
-                  .withValues(alpha: 0.3),
+          pattern: style.pattern,
+          // The same faint darkened-hue ink the territory pattern uses.
+          glyphColor: Color.lerp(style.color, Colors.black, 0.35)!
+              .withValues(alpha: 0.3),
           square: true,
         ),
       ),

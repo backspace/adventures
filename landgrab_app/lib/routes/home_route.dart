@@ -1290,6 +1290,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
 
     return Scaffold(
       appBar: AppBar(
+        // Joined the subversion: the whole bar wears the freed-ground hatch
+        // (over its bone fill) instead of the plain bar; the team swatch drops
+        // away below, since the header itself now carries the pattern.
+        flexibleSpace:
+            _joinedSubversion ? const LiberatedHeaderBackground() : null,
         title: ValueListenableBuilder<bool>(
           valueListenable: EnvSwitchService.visible,
           builder: (context, envVisible, _) {
@@ -1307,15 +1312,14 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                     ],
                   )
                 : Text(titleText);
-            if (myColorIndex == null) return label;
+            // No swatch once liberating — the patterned header (flexibleSpace)
+            // is the identity now, so the swatch would be a redundant, and now
+            // transparent, duplicate.
+            if (myColorIndex == null || _joinedSubversion) return label;
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TeamSwatch(
-                    colorIndex: myColorIndex,
-                    isMine: true,
-                    size: 20,
-                    liberated: _joinedSubversion),
+                TeamSwatch(colorIndex: myColorIndex, isMine: true, size: 20),
                 const SizedBox(width: 10),
                 Flexible(child: label),
               ],
