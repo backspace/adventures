@@ -22,11 +22,13 @@
         <p>You have successfully assembled a team.</p>
         <ul>
           <li>Name: <%= @team.name %></li>
-          <li>
-            Risk aversion: <%= RegistrationsWeb.UserView.risk_aversion_integer_to_string()[
-              @team.risk_aversion
-            ] %>
-          </li>
+          <%= if feature_enabled?(:risk_aversion) do %>
+            <li>
+              Risk aversion: <%= RegistrationsWeb.UserView.risk_aversion_integer_to_string()[
+                @team.risk_aversion
+              ] %>
+            </li>
+          <% end %>
           <li>Emails: <%= team_emails(@team) %></li>
         </ul>
       <% else %>
