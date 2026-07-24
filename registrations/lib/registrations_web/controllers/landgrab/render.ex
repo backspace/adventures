@@ -32,7 +32,12 @@ defmodule RegistrationsWeb.Landgrab.Render do
       # The scanning team joined the liberation, so a "claim without solving"
       # here frees the stake rather than capturing it. Only set on a fresh
       # scan; defaults false elsewhere (owner map, active-puzzlet resume).
-      liberating: Map.get(state, :liberating, false)
+      liberating: Map.get(state, :liberating, false),
+      # Physical-access notes/tags for the stake's location (set by the author
+      # or supervisor). Sent to players so they can judge before walking whether
+      # a stake suits their cohort; the map badges poles that carry any.
+      accessibility_tags: pole.accessibility_tags || [],
+      accessibility_notes: pole.accessibility_notes
     }
   end
 

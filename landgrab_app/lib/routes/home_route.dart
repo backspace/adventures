@@ -40,6 +40,7 @@ import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/services/block_territory_service.dart';
 import 'package:landgrab/services/user_service.dart';
 import 'package:landgrab/widgets/accent_colors.dart';
+import 'package:landgrab/widgets/accessibility_tags_view.dart';
 import 'package:landgrab/widgets/liberated_zone_layer.dart';
 import 'package:landgrab/widgets/liberated_zone_tuner.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
@@ -1105,6 +1106,14 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     if (pole.prohibitive) lines.add(GameplayStrings.zoneProhibitive);
     final message = lines.join('\n');
 
+    // A stake with accessibility notes/tags (flagged by the map's info badge)
+    // gets a sheet instead of a snackbar, so there's room to lay the tags out
+    // as chips and show the free-text notes.
+    if (pole.hasAccessibilityInfo) {
+      _showPoleAccessibilitySheet(pole, style, isMine, message);
+      return;
+    }
+
     // Replace any current popup immediately rather than queueing — tapping a
     // new zone should show it at once, not wait for the previous one to time
     // out. removeCurrentSnackBar skips the dismiss animation so it feels instant.
@@ -1131,6 +1140,52 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           Expanded(child: Text(message)),
         ]),
       ));
+  }
+
+  /// Sheet shown when tapping a stake that carries accessibility info: the
+  /// same glyph + owner/state summary as the snackbar, followed by the tags
+  /// (as chips, each explaining itself on tap) and any free-text notes.
+  void _showPoleAccessibilitySheet(
+      Pole pole, TeamStyle? style, bool isMine, String message) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: PoleDot(
+                    style: style,
+                    isMine: isMine,
+                    prohibitive: pole.prohibitive,
+                    locked: pole.locked,
+                    dimension: 28,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(message,
+                      style: Theme.of(ctx).textTheme.bodyLarge),
+                ),
+              ]),
+              const SizedBox(height: 20),
+              AccessibilityTagsView(
+                tags: pole.accessibilityTags,
+                notes: pole.accessibilityNotes,
+                title: GameplayStrings.zoneAccessibilityTitle,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _toggleHideProhibitive() {

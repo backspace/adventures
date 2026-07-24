@@ -263,6 +263,9 @@ class GameplayStrings {
   // A stake under attack (pulsing ring) — a rival recently scanned it.
   static const zoneUnderAttack =
       'Under attack — a rival recently scanned this ${Terms.stake}.';
+  // Heading over the accessibility tags/notes in the tap-a-stake sheet, shown
+  // for stakes the map badges with the info glyph.
+  static const zoneAccessibilityTitle = 'Accessibility';
 
   // Tap-a-zone owner sheet.
   static const zoneUnclaimed = 'Unclaimed';

@@ -186,14 +186,23 @@ class TerritoryMapView extends StatelessWidget {
           // just disappear (their territory stays), so players sense the
           // squeeze without seeing a circle.
           markers: polesInPlay.map((pole) {
+            final dot = PoleDot(
+              style: styleForPole(pole),
+              isMine: pole.currentOwnerTeamId == teamId,
+              prohibitive: pole.prohibitive,
+              locked: pole.locked,
+            );
+            // Stakes carrying accessibility notes/tags wear a small info badge
+            // at their edge; they get a slightly larger box so it doesn't clip.
+            final hasA11y = pole.hasAccessibilityInfo;
             return Marker(
               // Keyed by pole so zoom-time culling can't hand this element a
               // different pole — unkeyed, PoleDot's AnimatedContainer tweened
               // between neighbouring poles' colours on every reshuffle.
               key: ValueKey(pole.id),
               point: LatLng(pole.latitude, pole.longitude),
-              width: 12,
-              height: 12,
+              width: hasA11y ? 18 : 12,
+              height: hasA11y ? 18 : 12,
               // A direct tap on the marker always names the stake — the only
               // way to reveal an unclaimed one, since its blank surroundings
               // don't respond.
@@ -202,12 +211,20 @@ class TerritoryMapView extends StatelessWidget {
                 onTap: () => onPoleTap(pole),
                 child: Tooltip(
                   message: pole.name,
-                  child: PoleDot(
-                    style: styleForPole(pole),
-                    isMine: pole.currentOwnerTeamId == teamId,
-                    prohibitive: pole.prohibitive,
-                    locked: pole.locked,
-                  ),
+                  child: hasA11y
+                      ? Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox(width: 12, height: 12, child: dot),
+                            const Positioned(
+                              top: 0,
+                              right: 0,
+                              child: AccessibilityInfoBadge(),
+                            ),
+                          ],
+                        )
+                      : dot,
                 ),
               ),
             );

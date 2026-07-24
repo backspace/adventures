@@ -87,6 +87,32 @@ class PoleDot extends StatelessWidget {
   }
 }
 
+/// Small info badge hung on a pole marker's edge when the stake carries
+/// accessibility notes or tags — a cue that tapping it reveals more. A white
+/// disc (so it reads against any territory colour) with a blue info glyph.
+class AccessibilityInfoBadge extends StatelessWidget {
+  final double size;
+  const AccessibilityInfoBadge({super.key, this.size = 10});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: const [
+          BoxShadow(
+              color: Color(0x40000000), blurRadius: 2, offset: Offset(0, 0.5)),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Icon(Icons.info, size: size, color: Colors.blue.shade700),
+    );
+  }
+}
+
 /// The starred puzzlet marker for validator-only content. Amber
 /// star on a white disc for legibility against the light basemap.
 /// Scales its inner icon proportionally so at very small sizes the

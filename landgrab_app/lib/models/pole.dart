@@ -24,6 +24,14 @@ class Pole {
   /// still claim it). Per-viewer, set on the pole-list fetch; the map flags it.
   final bool prohibitive;
 
+  /// Physical-access tags for the stake's location (e.g. "stairs"), set by
+  /// the author/supervisor. The map hangs a small info badge on any pole that
+  /// has tags or [accessibilityNotes]; tapping it reveals them.
+  final List<String> accessibilityTags;
+
+  /// Free-text access notes for the stake's location, shown alongside the tags.
+  final String? accessibilityNotes;
+
   Pole({
     required this.id,
     required this.name,
@@ -35,7 +43,14 @@ class Pole {
     required this.locked,
     this.liberated = false,
     this.prohibitive = false,
+    this.accessibilityTags = const [],
+    this.accessibilityNotes,
   });
+
+  /// Whether the stake carries any accessibility information worth surfacing.
+  bool get hasAccessibilityInfo =>
+      accessibilityTags.isNotEmpty ||
+      (accessibilityNotes != null && accessibilityNotes!.trim().isNotEmpty);
 
   factory Pole.fromJson(Map<String, dynamic> json) => Pole(
         id: json['id'] as String,
@@ -48,6 +63,11 @@ class Pole {
         locked: json['locked'] as bool? ?? false,
         liberated: json['liberated'] as bool? ?? false,
         prohibitive: json['prohibitive'] as bool? ?? false,
+        accessibilityTags: (json['accessibility_tags'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
+        accessibilityNotes: json['accessibility_notes'] as String?,
       );
 }
 

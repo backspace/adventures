@@ -61,6 +61,28 @@ defmodule RegistrationsWeb.Landgrab.PolesApiTest do
       assert returned["locked"] == false
     end
 
+    test "exposes the stake's accessibility tags and notes to players", %{conn: conn} do
+      pole =
+        insert(:pole,
+          accessibility_tags: ["stairs"],
+          accessibility_notes: "Around the back, up a short ramp."
+        )
+
+      _bare = insert(:pole)
+
+      body = conn |> get("/landgrab/poles") |> json_response(200)
+
+      tagged = Enum.find(body["poles"], &(&1["id"] == pole.id))
+      assert tagged["accessibility_tags"] == ["stairs"]
+      assert tagged["accessibility_notes"] == "Around the back, up a short ramp."
+
+      # A stake with none still carries the (empty) fields, so the client can
+      # rely on them being present.
+      bare = Enum.find(body["poles"], &(&1["id"] != pole.id))
+      assert bare["accessibility_tags"] == []
+      assert bare["accessibility_notes"] == nil
+    end
+
     test "omits poles that aren't validated (draft / in_review / retired)",
          %{conn: conn} do
       live = insert(:pole, status: :validated)
