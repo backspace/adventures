@@ -1181,7 +1181,10 @@ defmodule Registrations.Landgrab do
     joined_body = presence(event.final_message_joined)
     others_body = presence(event.final_message_others)
 
-    if is_nil(event.final_messages_sent_at) and Event.endgame_zone(event, now) &&
+    # Only once the shrink has fully run its course (endgame_ends_at), not
+    # merely begun — endgame_zone/2 is truthy for the whole window, which fired
+    # these at the shrink's *start*. ended?/2 is the end-of-game signal.
+    if is_nil(event.final_messages_sent_at) and Event.ended?(event, now) &&
          (joined_body || others_body) do
       sent =
         member_teams()

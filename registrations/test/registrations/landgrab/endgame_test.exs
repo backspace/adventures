@@ -150,7 +150,8 @@ defmodule Registrations.Landgrab.EndgameTest do
       configure_endgame()
       set_messages("Meet at the precise spot.", "Something is happening. Ask around.")
 
-      assert {:sent, 3} = Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:00:30Z])
+      # Only once the shrink has fully run (endgame_ends_at = 23:00), not mid-shrink.
+      assert {:sent, 3} = Landgrab.maybe_send_final_location_messages(~U[2026-07-25 23:00:00Z])
 
       body_for = fn team_id ->
         Repo.one(from(n in Notification, where: n.recipient_team_id == ^team_id)).body
@@ -165,7 +166,7 @@ defmodule Registrations.Landgrab.EndgameTest do
 
       # One-shot: the stamp survives later polls and later edits.
       set_messages("Changed my mind.", "Changed too.")
-      assert Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:05:00Z]) == :noop
+      assert Landgrab.maybe_send_final_location_messages(~U[2026-07-25 23:05:00Z]) == :noop
       assert Repo.aggregate(Notification, :count) == 3
     end
 
@@ -175,19 +176,24 @@ defmodule Registrations.Landgrab.EndgameTest do
       configure_endgame()
       set_messages(nil, "The vague nudge.")
 
-      assert {:sent, 1} = Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:00:30Z])
+      assert {:sent, 1} = Landgrab.maybe_send_final_location_messages(~U[2026-07-25 23:00:00Z])
       [notification] = Repo.all(Notification)
       assert notification.recipient_team_id == other.id
     end
 
-    test "bodies written after the shrink begins send on a later poll" do
+    test "waits for the shrink to end, even with bodies set mid-shrink" do
       member_team()
       configure_endgame()
 
+      # No bodies yet, mid-shrink — nothing to send.
       assert Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:00:30Z]) == :noop
 
+      # Bodies written mid-shrink still hold until the shrink actually ends.
       set_messages("Late but here.", "Late nudge.")
-      assert {:sent, 1} = Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:10:00Z])
+      assert Landgrab.maybe_send_final_location_messages(~U[2026-07-25 22:30:00Z]) == :noop
+
+      # Once endgame_ends_at (23:00) passes, they go out.
+      assert {:sent, 1} = Landgrab.maybe_send_final_location_messages(~U[2026-07-25 23:00:00Z])
     end
   end
 
