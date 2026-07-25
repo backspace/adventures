@@ -49,7 +49,7 @@
           <td class="comments"><%= user.comments %></td>
           <td class="teamed" data-sort={if user.team, do: "0", else: "1"}>
             <%= if user.team do %>
-              ✓
+              ✓ <%= user.team.name %>
             <% else %>
               ✘
             <% end %>
