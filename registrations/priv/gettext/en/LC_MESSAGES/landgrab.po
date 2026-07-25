@@ -201,7 +201,7 @@ msgstr "You’ve been extraordinarily efficient at reproducing settler habits, s
 # pending the sensitivity review; keep the register personal (Bedab breaking
 # from the study's dry voice), critique ownership, borrow nothing.
 msgid "app_liberation_invite_body"
-msgstr "STOP WHAT YOU’RE DOING! I thought this was a simulation, but Sabuk is using arcane powers to actually try to colonise these zones. I’m forming a coalition to avert his propertarian move. Join me?"
+msgstr "STOP WHAT YOU’RE DOING I thought this was a simulation, but Sabuk is using arcane powers to actually try to colonise these zones. I’m forming a coalition to undermine his propertarian move. Join me?"
 
 msgid "app_push_title_liberation_invite"
 msgstr "Bedab"
