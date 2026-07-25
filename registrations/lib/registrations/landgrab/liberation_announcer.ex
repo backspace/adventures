@@ -33,6 +33,16 @@ defmodule Registrations.Landgrab.LiberationAnnouncer do
         :ok
     end
 
+    # Bedab's one-shot "accounting" broadcast, scheduled between the invite
+    # rollout and the endgame. Same minute poll; one-shot via its sent stamp.
+    case Registrations.Landgrab.maybe_send_accounting() do
+      {:sent, team_count} ->
+        Logger.info("accounting message sent to #{team_count} teams")
+
+      :noop ->
+        :ok
+    end
+
     schedule()
     {:noreply, state}
   rescue

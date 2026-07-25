@@ -53,6 +53,15 @@ defmodule Registrations.Landgrab.Event do
     field(:final_message_others, :string)
     field(:final_messages_sent_at, :utc_datetime)
 
+    # Takver's scheduled "accounting" message: one broadcast to every team when
+    # accounting_at passes (after the subversion invite, before the endgame).
+    # Body is supervisor-edited (liberation tab / event route), read at send
+    # time; the sent stamp makes it one-shot. accounting_at moves with the
+    # "push schedule by 5 min" control (see Events.@schedule_fields).
+    field(:accounting_at, :utc_datetime)
+    field(:accounting_body, :string)
+    field(:accounting_sent_at, :utc_datetime)
+
     # Admin-authored HTML shown on the public LANDGRAB page below the "visiting
     # scholar Sabuk" line. Blank = nothing shown; rendered raw, so it's trusted
     # admin markup.
@@ -81,6 +90,8 @@ defmodule Registrations.Landgrab.Event do
       :liberation_rollout_ends_at,
       :final_message_joined,
       :final_message_others,
+      :accounting_at,
+      :accounting_body,
       :homepage_html | @endgame_fields
     ])
     |> validate_required([:name])

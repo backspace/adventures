@@ -46,6 +46,27 @@
 
       <br />
 
+      <h3>Takver’s accounting message</h3>
+      <p class="meta">
+        A one-off message from Takver, sent to every team at the time below —
+        after the subversion invitations, before the endgame. Read at send
+        time, so you can keep editing until then, but it goes out only once.
+        Leave the time blank (or the body blank) to send nothing. Moves with
+        the “push schedule by 5 minutes” control.
+      </p>
+
+      <%= label(f, :accounting_at, "Send at (#{event_timezone()})") %>
+      <%= datetime_local_input(f, :accounting_at,
+        value: local_input_value(Ecto.Changeset.get_field(@changeset, :accounting_at))
+      ) %>
+      <%= error_tag(f, :accounting_at) %>
+
+      <%= label(f, :accounting_body, "Message") %>
+      <%= textarea(f, :accounting_body, rows: 4) %>
+      <%= error_tag(f, :accounting_body) %>
+
+      <br />
+
       <h3>Endgame boundary</h3>
       <p class="meta">
         A capture boundary that shrinks toward the wrap-party spot,

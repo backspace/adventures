@@ -26,7 +26,7 @@ defmodule RegistrationsWeb.LandgrabEventController do
     end
   end
 
-  @datetime_params ~w(start_time endgame_starts_at endgame_ends_at)
+  @datetime_params ~w(start_time endgame_starts_at endgame_ends_at accounting_at)
 
   @doc """
   The datetime-local inputs post naive local times in the event's

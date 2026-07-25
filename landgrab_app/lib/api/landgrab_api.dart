@@ -1252,14 +1252,20 @@ class LandgrabApi {
     return WrongAnswersBoard.fromJson(response.data as Map<String, dynamic>);
   }
 
-  /// Schedule (or, with nulls, cancel) the liberation rollout window.
+  /// Schedule (or, with nulls, cancel) the liberation rollout window, plus
+  /// Takver's one-off "accounting" message (its send time + body). Full-replace:
+  /// pass the current values for anything you're not changing.
   Future<LiberationStatus> updateLiberationSchedule({
     DateTime? startsAt,
     DateTime? rolloutEndsAt,
+    DateTime? accountingAt,
+    String? accountingBody,
   }) async {
     final response = await dio.put('/landgrab/supervision/liberation', data: {
       'starts_at': startsAt?.toUtc().toIso8601String(),
       'rollout_ends_at': rolloutEndsAt?.toUtc().toIso8601String(),
+      'accounting_at': accountingAt?.toUtc().toIso8601String(),
+      'accounting_body': accountingBody,
     });
     return LiberationStatus.fromJson(response.data as Map<String, dynamic>);
   }

@@ -359,33 +359,42 @@ defmodule Registrations.Landgrab.SeedTest do
              endgame_start_s: 900,
              liberation_start_s: 1125,
              liberation_end_s: 1350,
+             # Halfway from the invite (1125) to the end (1800).
+             accounting_s: 1462,
              end_s: 1800
            } = Seed.schedule(30)
 
     e = Repo.get(Event, event.id)
     now = DateTime.utc_now()
-    # start now, shrink at 15m, liberation 18.75m–22.5m, end at 30m.
+    # start now, shrink at 15m, liberation 18.75m–22.5m, accounting ~24.4m, end 30m.
     assert_in_delta DateTime.diff(e.start_time, now), 0, 5
     assert_in_delta DateTime.diff(e.endgame_starts_at, now), 900, 5
     assert_in_delta DateTime.diff(e.liberation_starts_at, now), 1125, 5
     assert_in_delta DateTime.diff(e.liberation_rollout_ends_at, now), 1350, 5
+    assert_in_delta DateTime.diff(e.accounting_at, now), 1462, 5
     assert_in_delta DateTime.diff(e.endgame_ends_at, now), 1800, 5
   end
 
   test "schedule fills a default endgame location when the event has none, and re-arms stamps" do
-    event =
-      insert_event(
-        start_time: ~U[2020-01-01 00:00:00Z],
-        endgame_announced_at: ~U[2020-01-01 00:30:00Z]
-      )
+    event = insert_event(start_time: ~U[2020-01-01 00:00:00Z])
+
+    # The one-shot stamps aren't in the public changeset, so set them directly
+    # to prove schedule/1 actually re-arms (clears) them.
+    event
+    |> Ecto.Changeset.change(
+      endgame_announced_at: ~U[2020-01-01 00:30:00Z],
+      accounting_sent_at: ~U[2020-01-01 00:24:00Z]
+    )
+    |> Repo.update!()
 
     Seed.schedule(30)
 
     e = Repo.get(Event, event.id)
     assert e.endgame_latitude && e.endgame_longitude
     assert e.endgame_initial_radius_m && e.endgame_final_radius_m
-    # One-shot stamp cleared so the compressed run re-announces.
+    # One-shot stamps cleared so the compressed run re-announces / re-sends.
     assert is_nil(e.endgame_announced_at)
+    assert is_nil(e.accounting_sent_at)
   end
 
   test "schedule preserves an existing endgame location" do

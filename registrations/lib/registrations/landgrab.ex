@@ -1364,6 +1364,37 @@ defmodule Registrations.Landgrab do
     end
   end
 
+  @doc """
+  Send Takver's scheduled "accounting" message to every (member) team once
+  `accounting_at` has passed — a single one-way broadcast between the subversion
+  invite and the endgame. The body is a supervisor-edited event field, read at
+  send time, so it stays changeable up to the moment it fires. One-shot via
+  `accounting_sent_at`; a no-op until the time passes, while the body is blank,
+  or once already sent. Returns `{:sent, n}` or `:noop`.
+  """
+  def maybe_send_accounting(now \\ DateTime.utc_now()) do
+    event = Events.current()
+    body = presence(event.accounting_body)
+
+    if is_nil(event.accounting_sent_at) and not is_nil(event.accounting_at) and
+         DateTime.compare(now, event.accounting_at) != :lt and body do
+      teams = member_teams()
+
+      Enum.each(teams, fn team ->
+        persist_and_deliver("message", team.id, nil, body, %{"sender_name" => "Takver"}, "Takver")
+      end)
+
+      {:ok, _event} =
+        event
+        |> Ecto.Changeset.change(accounting_sent_at: DateTime.truncate(now, :second))
+        |> Repo.update()
+
+      {:sent, length(teams)}
+    else
+      :noop
+    end
+  end
+
   defp presence(nil), do: nil
   defp presence(string), do: if(String.trim(string) == "", do: nil, else: string)
 

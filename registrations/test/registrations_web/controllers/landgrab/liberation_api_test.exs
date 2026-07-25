@@ -56,6 +56,26 @@ defmodule RegistrationsWeb.Landgrab.LiberationApiTest do
       assert cleared["starts_at"] == nil
     end
 
+    test "round-trips Bedab's accounting message (time + body)", %{conn: conn} do
+      initial = conn |> get("/landgrab/supervision/liberation") |> json_response(200)
+      assert initial["accounting_at"] == nil
+      assert initial["accounting_body"] == nil
+      assert initial["accounting_sent_at"] == nil
+
+      updated =
+        conn
+        |> put("/landgrab/supervision/liberation", %{
+          "accounting_at" => "2026-07-25T21:00:00Z",
+          "accounting_body" => "The reckoning is at hand."
+        })
+        |> json_response(200)
+
+      assert updated["accounting_at"] == "2026-07-25T21:00:00Z"
+      assert updated["accounting_body"] == "The reckoning is at hand."
+      # Not sent yet — the UI keys its editable/locked state off this.
+      assert updated["accounting_sent_at"] == nil
+    end
+
     test "reports each member team's stage and members for the breakdown", %{conn: conn} do
       accepted =
         insert(:team,

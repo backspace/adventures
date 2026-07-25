@@ -739,17 +739,21 @@ defmodule Registrations.Landgrab.Seed do
       endgame shrink .... 1/2
       liberation opens .. 5/8
       liberation closes . 6/8
+      accounting ........ 13/16   (halfway from liberation open to the end)
       end (shrink ends) . 1
 
   So `schedule(30)` starts now, the shrink begins at 15 min, liberation
-  invites roll out from 18.75 to 22.5 min, and the shrink ends at 30 min.
-  Re-arms the one-shot event stamps (endgame announcement, final messages)
-  so a compressed run replays them — pair with `clear` to also reset the
-  per-team liberation state. An event with no endgame *location* gets a
-  sensible default (the poles' centroid, wide→tight radii) so the shrink
-  actually functions; one that already has a location keeps it. Returns
-  `%{events, minutes, endgame_start_s, liberation_start_s,
-  liberation_end_s, end_s}` (offsets in seconds from now).
+  invites roll out from 18.75 to 22.5 min, Takver's accounting message fires at
+  ~24.4 min, and the shrink ends at 30 min. Re-arms the one-shot event stamps
+  (endgame announcement, final messages, accounting) so a compressed run
+  replays them — pair with `clear` to also reset the per-team liberation
+  state. Sets `accounting_at` but not `accounting_body`: like the final-location
+  messages, the body is organiser content, so accounting only actually sends
+  once a body is set (liberation tab / event route). An event with no endgame
+  *location* gets a sensible default (the poles' centroid, wide→tight radii)
+  so the shrink actually functions; one that already has a location keeps it.
+  Returns `%{events, minutes, endgame_start_s, liberation_start_s,
+  liberation_end_s, accounting_s, end_s}` (offsets in seconds from now).
   """
   def schedule(minutes) when is_integer(minutes) and minutes > 0 do
     start = now()
@@ -762,6 +766,17 @@ defmodule Registrations.Landgrab.Seed do
         {field, at.(offset.(fraction))}
       end
 
+    # Takver's accounting message: halfway between the subversion invitation and
+    # the endgame end. (In this compressed layout the endgame shrink *starts*
+    # before the invitation, so we bracket against endgame_ends_at to keep the
+    # message after the invite rather than before it.)
+    accounting_at =
+      DateTime.add(
+        times.liberation_starts_at,
+        div(DateTime.diff(times.endgame_ends_at, times.liberation_starts_at, :second), 2),
+        :second
+      )
+
     space = endgame_space_defaults()
 
     events = Repo.all(Event)
@@ -769,8 +784,13 @@ defmodule Registrations.Landgrab.Seed do
     Enum.each(events, fn event ->
       changes =
         times
+        |> Map.put(:accounting_at, accounting_at)
         # Re-arm one-shot stamps so the compressed run fires them again.
-        |> Map.merge(%{endgame_announced_at: nil, final_messages_sent_at: nil})
+        |> Map.merge(%{
+          endgame_announced_at: nil,
+          final_messages_sent_at: nil,
+          accounting_sent_at: nil
+        })
         |> Map.merge(if endgame_space_configured?(event), do: %{}, else: space)
 
       event |> Ecto.Changeset.change(changes) |> Repo.update!()
@@ -782,6 +802,7 @@ defmodule Registrations.Landgrab.Seed do
       endgame_start_s: offset.(@schedule_fractions.endgame_starts_at),
       liberation_start_s: offset.(@schedule_fractions.liberation_starts_at),
       liberation_end_s: offset.(@schedule_fractions.liberation_rollout_ends_at),
+      accounting_s: DateTime.diff(accounting_at, start, :second),
       end_s: total
     }
   end

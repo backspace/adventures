@@ -39,7 +39,8 @@ defmodule Registrations.Landgrab.Events do
   # timeline), but NOT the one-shot stamps (endgame announcement, final
   # messages) — those record things that already happened.
   @schedule_fields ~w(start_time endgame_starts_at endgame_ends_at
-                      liberation_starts_at liberation_rollout_ends_at)a
+                      liberation_starts_at liberation_rollout_ends_at
+                      accounting_at)a
 
   @doc """
   Shift the still-upcoming scheduled milestones by `seconds` (may be negative),

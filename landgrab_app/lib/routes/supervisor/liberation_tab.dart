@@ -23,11 +23,20 @@ class _LiberationTabState extends State<LiberationTab> {
   // Form state (local edits; _status holds what the server has).
   DateTime? _startsAt;
   DateTime? _rolloutEndsAt;
+  // Takver's one-off "accounting" message: send time + body.
+  DateTime? _accountingAt;
+  final TextEditingController _accountingBody = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _load();
+  }
+
+  @override
+  void dispose() {
+    _accountingBody.dispose();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -37,26 +46,37 @@ class _LiberationTabState extends State<LiberationTab> {
       setState(() {
         _status = status;
         _error = null;
-        _startsAt = status.startsAt?.toLocal();
-        _rolloutEndsAt = status.rolloutEndsAt?.toLocal();
+        _seedForm(status);
       });
     } catch (e) {
       if (mounted) setState(() => _error = 'Could not load liberation: $e');
     }
   }
 
-  Future<void> _save({bool clear = false}) async {
+  // Load the server's values into the local form fields.
+  void _seedForm(LiberationStatus status) {
+    _startsAt = status.startsAt?.toLocal();
+    _rolloutEndsAt = status.rolloutEndsAt?.toLocal();
+    _accountingAt = status.accountingAt?.toLocal();
+    _accountingBody.text = status.accountingBody ?? '';
+  }
+
+  // Full-replace save: sends every field's current form value (rollout window
+  // + accounting message), so any button here persists the whole form.
+  Future<void> _save() async {
     setState(() => _saving = true);
     try {
+      final body = _accountingBody.text.trim();
       final status = await widget.api.updateLiberationSchedule(
-        startsAt: clear ? null : _startsAt,
-        rolloutEndsAt: clear ? null : _rolloutEndsAt,
+        startsAt: _startsAt,
+        rolloutEndsAt: _rolloutEndsAt,
+        accountingAt: _accountingAt,
+        accountingBody: body.isEmpty ? null : body,
       );
       if (!mounted) return;
       setState(() {
         _status = status;
-        _startsAt = status.startsAt?.toLocal();
-        _rolloutEndsAt = status.rolloutEndsAt?.toLocal();
+        _seedForm(status);
       });
     } catch (e) {
       if (!mounted) return;
@@ -67,29 +87,39 @@ class _LiberationTabState extends State<LiberationTab> {
     }
   }
 
-  Future<void> _pickDateTime({required bool start}) async {
-    final existing = (start ? _startsAt : _rolloutEndsAt) ?? DateTime.now();
+  // "Cancel rollout" / "Clear accounting" — drop the relevant fields, then save.
+  Future<void> _cancelRollout() {
+    setState(() {
+      _startsAt = null;
+      _rolloutEndsAt = null;
+    });
+    return _save();
+  }
+
+  Future<void> _clearAccounting() {
+    setState(() {
+      _accountingAt = null;
+      _accountingBody.clear();
+    });
+    return _save();
+  }
+
+  Future<void> _pickDateTime(
+      DateTime? existing, ValueChanged<DateTime> onPicked) async {
+    final base = existing ?? DateTime.now();
     final date = await showDatePicker(
       context: context,
-      initialDate: existing,
+      initialDate: base,
       firstDate: DateTime.now().subtract(const Duration(days: 1)),
       lastDate: DateTime.now().add(const Duration(days: 60)),
     );
     if (date == null || !mounted) return;
     final time = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(existing),
+      initialTime: TimeOfDay.fromDateTime(base),
     );
     if (time == null || !mounted) return;
-    final combined =
-        DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    setState(() {
-      if (start) {
-        _startsAt = combined;
-      } else {
-        _rolloutEndsAt = combined;
-      }
-    });
+    onPicked(DateTime(date.year, date.month, date.day, time.hour, time.minute));
   }
 
   String _format(DateTime? value) {
@@ -290,7 +320,10 @@ class _LiberationTabState extends State<LiberationTab> {
                     title: const Text('Invitations begin'),
                     subtitle: Text(_format(_startsAt)),
                     trailing: const Icon(Icons.edit_calendar_outlined),
-                    onTap: _saving ? null : () => _pickDateTime(start: true),
+                    onTap: _saving
+                        ? null
+                        : () => _pickDateTime(_startsAt,
+                            (v) => setState(() => _startsAt = v)),
                   ),
                   ListTile(
                     dense: true,
@@ -298,14 +331,17 @@ class _LiberationTabState extends State<LiberationTab> {
                     title: const Text('Rollout ends (optional)'),
                     subtitle: Text(_format(_rolloutEndsAt)),
                     trailing: const Icon(Icons.edit_calendar_outlined),
-                    onTap: _saving ? null : () => _pickDateTime(start: false),
+                    onTap: _saving
+                        ? null
+                        : () => _pickDateTime(_rolloutEndsAt,
+                            (v) => setState(() => _rolloutEndsAt = v)),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       if (status.startsAt != null) ...[
                         OutlinedButton(
-                          onPressed: _saving ? null : () => _save(clear: true),
+                          onPressed: _saving ? null : _cancelRollout,
                           child: const Text('Cancel rollout'),
                         ),
                         const SizedBox(width: 12),
@@ -324,7 +360,92 @@ class _LiberationTabState extends State<LiberationTab> {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+          _accountingCard(theme, status),
         ],
+      ),
+    );
+  }
+
+  // Takver's one-off "accounting" message: a send time + body, broadcast to
+  // every team once. Locked to a read-only summary after it's gone out.
+  Widget _accountingCard(ThemeData theme, LiberationStatus status) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Accounting message', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(
+              'A one-off message from Takver, sent to every team at the time '
+              'below — after the invitations, before the endgame. Editable '
+              'until it fires; then it goes out once.',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            if (status.accountingSent)
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.check_circle_outline),
+                title: const Text('Sent'),
+                subtitle:
+                    Text('Went out ${_format(status.accountingSentAt?.toLocal())}'),
+              )
+            else ...[
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Send at'),
+                subtitle: Text(_format(_accountingAt)),
+                trailing: const Icon(Icons.edit_calendar_outlined),
+                onTap: _saving
+                    ? null
+                    : () => _pickDateTime(
+                        _accountingAt, (v) => setState(() => _accountingAt = v)),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _accountingBody,
+                enabled: !_saving,
+                minLines: 3,
+                maxLines: 6,
+                // Rebuild so "Save message" enables/disables as the body fills.
+                onChanged: (_) => setState(() {}),
+                decoration: const InputDecoration(
+                  labelText: 'Message',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  if (status.accountingAt != null) ...[
+                    OutlinedButton(
+                      onPressed: _saving ? null : _clearAccounting,
+                      child: const Text('Clear'),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  Expanded(
+                    child: FilledButton.icon(
+                      // Needs both a time and a body to send anything.
+                      onPressed: _saving ||
+                              _accountingAt == null ||
+                              _accountingBody.text.trim().isEmpty
+                          ? null
+                          : _save,
+                      icon: const Icon(Icons.save),
+                      label: const Text('Save message'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

@@ -55,6 +55,12 @@ class LiberationStatus {
   final int accepted;
   final int declined;
   final List<LiberationTeam> teams;
+  // Takver's scheduled one-off "accounting" message (after the invite rollout,
+  // before the endgame). [accountingSentAt] is non-null once it has gone out,
+  // so the UI can lock editing.
+  final DateTime? accountingAt;
+  final String? accountingBody;
+  final DateTime? accountingSentAt;
 
   LiberationStatus({
     this.startsAt,
@@ -64,7 +70,12 @@ class LiberationStatus {
     required this.accepted,
     required this.declined,
     this.teams = const [],
+    this.accountingAt,
+    this.accountingBody,
+    this.accountingSentAt,
   });
+
+  bool get accountingSent => accountingSentAt != null;
 
   factory LiberationStatus.fromJson(Map<String, dynamic> json) =>
       LiberationStatus(
@@ -81,6 +92,13 @@ class LiberationStatus {
         teams: ((json['teams'] as List?) ?? const [])
             .map((t) => LiberationTeam.fromJson(t as Map<String, dynamic>))
             .toList(),
+        accountingAt: json['accounting_at'] == null
+            ? null
+            : DateTime.tryParse('${json['accounting_at']}'),
+        accountingBody: json['accounting_body'] as String?,
+        accountingSentAt: json['accounting_sent_at'] == null
+            ? null
+            : DateTime.tryParse('${json['accounting_sent_at']}'),
       );
 
   /// Teams with the given rollout [status], in name order (already sorted by
