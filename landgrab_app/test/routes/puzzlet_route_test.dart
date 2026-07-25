@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +13,9 @@ class _FakeApi extends LandgrabApi {
 
   AttemptOutcome? nextOutcome;
   String? lastAnswer;
+  // What listActivePuzzlets returns — drives _onTeamPuzzletsChanged's
+  // "is this puzzlet still ours?" check.
+  List<ScanResult> activePuzzlets = const [];
 
   @override
   Future<AttemptOutcome> submitAnswer(String puzzletId, String answer) async {
@@ -21,6 +26,9 @@ class _FakeApi extends LandgrabApi {
     }
     return outcome;
   }
+
+  @override
+  Future<List<ScanResult>> listActivePuzzlets() async => activePuzzlets;
 }
 
 Pole _pole() => Pole(
@@ -203,5 +211,57 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(PuzzletRoute), findsNothing);
     expect(popResult, isTrue);
+  });
+
+  testWidgets(
+      'a teammate resolving the puzzlet returns to the map even with a scanner '
+      'pushed on top (no freeze)', (tester) async {
+    final api = _FakeApi();
+    // The puzzlet is no longer in the team's active list — it was resolved.
+    api.activePuzzlets = const [];
+    final changed = StreamController<String>.broadcast();
+    addTearDown(changed.close);
+
+    final navKey = GlobalKey<NavigatorState>();
+    await tester.pumpWidget(MaterialApp(
+      navigatorKey: navKey,
+      home: Scaffold(
+        body: Builder(
+          builder: (context) => ElevatedButton(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => PuzzletRoute(
+                api: api,
+                pole: _pole(),
+                puzzlet: _puzzlet(),
+                teamPuzzletsChanged: changed.stream,
+                teamId: 'team-1',
+              ),
+            )),
+            child: const Text('MAP'),
+          ),
+        ),
+      ),
+    ));
+
+    await tester.tap(find.text('MAP'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PuzzletRoute), findsOneWidget);
+
+    // Simulate the barcode / NFC answer scanner pushed on top of the puzzlet.
+    navKey.currentState!.push(MaterialPageRoute(
+      builder: (_) => const Scaffold(body: Text('SCANNER')),
+    ));
+    await tester.pumpAndSettle();
+    expect(find.text('SCANNER'), findsOneWidget);
+
+    // A teammate resolves the puzzlet: team_puzzlets_changed fires and it's no
+    // longer ours. Before the fix, the pop landed on the scanner and stranded
+    // the player on the defunct puzzlet — now both unwind back to the map.
+    changed.add('team-1');
+    await tester.pumpAndSettle();
+
+    expect(find.text('SCANNER'), findsNothing);
+    expect(find.byType(PuzzletRoute), findsNothing);
+    expect(find.text('MAP'), findsOneWidget);
   });
 }

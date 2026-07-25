@@ -226,6 +226,10 @@ class GameplayStrings {
 
   // A rival captured the puzzlet your team was working on.
   static const puzzletTakenTryNext = 'Try the next one';
+  // Shown when this device accepts the "try the next one" offer a beat after a
+  // teammate already did — the team's next puzzlet is already in progress.
+  static const tryNextTeammateStarted =
+      'A teammate already started the next one — it’s in progress.';
 
   // "View on map" action on an attack / pole-lost toast, and the notice
   // shown when the stake is no longer on the map (e.g. the endgame boundary

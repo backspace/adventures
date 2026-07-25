@@ -130,6 +130,12 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // Dismissed the "newer build available" banner this session — a soft nudge,
   // so it hides once dismissed and reappears next launch if still behind.
   bool _updateBannerDismissed = false;
+  // The live "try the next one" offer (a puzzlet-taken snackbar with an
+  // action) and the pole it's for, so it can be auto-dismissed the moment a
+  // teammate accepts it (the team then holds a puzzlet on that pole) — stops a
+  // second device tapping a now-doomed resume.
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _tryNextOffer;
+  String? _tryNextOfferPoleId;
   // Hide stakes flagged prohibitive (nothing the team can engage) from the map.
   // Persisted; the toggle only appears when there's at least one such stake.
   bool _hideProhibitive = false;
@@ -335,12 +341,13 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       _refreshActivePuzzlets();
       final poleId = n.metadata['pole_id'] as String?;
       final hasNext = n.metadata['has_next'] == true;
-      _snack(SnackBar(
+      final offered = hasNext && poleId != null;
+      final controller = _snack(SnackBar(
         content: Text(n.body),
         backgroundColor: Colors.deepOrange.shade700,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 6),
-        action: (hasNext && poleId != null)
+        action: offered
             ? SnackBarAction(
                 label: GameplayStrings.puzzletTakenTryNext,
                 textColor: Colors.white,
@@ -348,6 +355,18 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
               )
             : null,
       ));
+      // Remember this offer so a teammate accepting it (which lands a puzzlet
+      // on this pole) can auto-dismiss it here — see _refreshActivePuzzlets.
+      if (offered) {
+        _tryNextOffer = controller;
+        _tryNextOfferPoleId = poleId;
+        controller?.closed.then((_) {
+          if (identical(_tryNextOffer, controller)) {
+            _tryNextOffer = null;
+            _tryNextOfferPoleId = null;
+          }
+        });
+      }
     }
     if (n.type == 'pole_contested' && mounted) {
       // A rival just started working a pole we're on. Informational,
@@ -375,11 +394,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // makes you tap-tap-tap through stale toasts is worse than just showing the
   // latest. Used for both incoming events (a pole_lost thus supersedes its
   // earlier attack) and user-initiated feedback (a map tap jumps ahead).
-  void _snack(SnackBar bar) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context)
-      ..clearSnackBars()
-      ..showSnackBar(bar);
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _snack(
+      SnackBar bar) {
+    if (!mounted) return null;
+    final messenger = ScaffoldMessenger.of(context)..clearSnackBars();
+    return messenger.showSnackBar(bar);
   }
 
   /// A notification "View on map" target. Pops any screens above the map
@@ -759,7 +778,17 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // the map; a failure just leaves it stale until the next refresh.
   void _refreshActivePuzzlets() {
     widget.api.listActivePuzzlets().then((active) {
-      if (mounted) setState(() => _activePuzzlets = active);
+      if (!mounted) return;
+      setState(() => _activePuzzlets = active);
+      // A pending "try the next one" offer is moot once the team holds a
+      // puzzlet on that pole again — e.g. a teammate accepted it first. Close
+      // the stale offer so this device can't tap it into a doomed resume.
+      final offerPole = _tryNextOfferPoleId;
+      if (offerPole != null && active.any((s) => s.pole.id == offerPole)) {
+        _tryNextOffer?.close();
+        _tryNextOffer = null;
+        _tryNextOfferPoleId = null;
+      }
     }).catchError((_) {});
   }
 
@@ -1140,6 +1169,14 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       // linger over the fresh puzzlet screen we're about to open.
       ScaffoldMessenger.of(context).clearSnackBars();
       await _openActivePuzzlet(entry);
+    } on ActivePuzzletAtCapacity {
+      // A teammate accepted the same offer first (both devices tapped before
+      // the sync arrived). The team already has the next puzzlet going — send
+      // them to it via the in-progress card rather than showing an error.
+      if (!mounted) return;
+      _refreshActivePuzzlets();
+      _snack(const SnackBar(
+          content: Text(GameplayStrings.tryNextTeammateStarted)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

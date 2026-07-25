@@ -57,6 +57,13 @@ typedef RegisterOutcome = ({RegisterStatus status, String? message});
 /// rather than showing a generic failure.
 enum JoinTeamOutcome { success, notFound, failed }
 
+/// Thrown by [LandgrabApi.assignActivePuzzlet] when the team is already at its
+/// active-puzzlet capacity — typically because a teammate accepted the same
+/// "try the next one" offer a beat earlier. Not a failure the player caused:
+/// the team already has a puzzlet going, so the caller reconciles (points them
+/// at the in-progress card) rather than surfacing an error.
+class ActivePuzzletAtCapacity implements Exception {}
+
 class LandgrabApi {
   final Dio dio;
 
@@ -470,12 +477,19 @@ class LandgrabApi {
   }
 
   /// Assign the pole's next puzzlet without a rescan ("try the next
-  /// one" after a rival captures yours). Returns the resumed payload,
-  /// or throws on at_capacity / locked-out / no-puzzlet.
+  /// one" after a rival captures yours). Returns the resumed payload.
+  /// Throws [ActivePuzzletAtCapacity] when the team already has a puzzlet
+  /// going — typically a teammate accepted the same offer a beat earlier;
+  /// rethrows anything else (locked-out / no-puzzlet / network).
   Future<ScanResult> assignActivePuzzlet(String poleId) async {
-    final response =
-        await dio.post('/landgrab/active-puzzlets', data: {'pole_id': poleId});
-    return ScanResult.fromJson(response.data as Map<String, dynamic>);
+    try {
+      final response = await dio
+          .post('/landgrab/active-puzzlets', data: {'pole_id': poleId});
+      return ScanResult.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (_errorCode(e) == 'at_capacity') throw ActivePuzzletAtCapacity();
+      rethrow;
+    }
   }
 
   Future<void> abandonActivePuzzlet(String puzzletId) async {

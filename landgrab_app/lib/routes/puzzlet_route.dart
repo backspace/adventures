@@ -133,7 +133,17 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text(PuzzletStrings.noLongerAvailable)),
     );
-    Navigator.of(context).maybePop(false);
+    // Return to the map even if the player pushed the barcode / NFC answer
+    // scanner on top of us. A single pop would only dismiss that scanner and
+    // strand them on this now-defunct puzzlet (the multi-device case: a
+    // teammate resolved it while this device was mid-scan). Pop anything above
+    // this route first, then pop the puzzlet itself.
+    final navigator = Navigator.of(context);
+    final myRoute = ModalRoute.of(context);
+    if (myRoute != null && myRoute.isCurrent == false) {
+      navigator.popUntil((route) => route == myRoute);
+    }
+    navigator.maybePop(false);
   }
 
   /// Correct answer: no text — celebrate with the team-colour flood +
