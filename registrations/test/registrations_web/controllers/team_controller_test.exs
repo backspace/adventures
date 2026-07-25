@@ -93,4 +93,28 @@ defmodule RegistrationsWeb.TeamControllerTest do
     assert redirected_to(result) == "/"
     assert Repo.get(User, member.id).team_id == team.id
   end
+
+  describe "cards" do
+    test "hides teams that already have members by default", %{conn: conn} do
+      empty = insert(:team, name: "EmptyOne", join_code: "EMPTY1", risk_aversion: 1)
+      full = insert(:team, name: "HasMembers", join_code: "FULL01", risk_aversion: 2)
+      insert(:user, email: "m@example.com", team_id: full.id)
+
+      html = conn |> get("/teams/cards") |> html_response(200)
+
+      assert html =~ empty.name
+      refute html =~ full.name
+    end
+
+    test "shows every team when hide_with_members=false", %{conn: conn} do
+      empty = insert(:team, name: "EmptyOne", join_code: "EMPTY1", risk_aversion: 1)
+      full = insert(:team, name: "HasMembers", join_code: "FULL01", risk_aversion: 2)
+      insert(:user, email: "m@example.com", team_id: full.id)
+
+      html = conn |> get("/teams/cards?hide_with_members=false") |> html_response(200)
+
+      assert html =~ empty.name
+      assert html =~ full.name
+    end
+  end
 end

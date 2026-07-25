@@ -15,9 +15,23 @@ defmodule RegistrationsWeb.TeamController do
 
   # Printable sheet of team cards (name + join code + QR) for handing out
   # to walk-up groups on the day.
-  def cards(conn, _params) do
-    teams = Team |> Repo.all() |> Enum.sort_by(&(&1.name || ""))
-    render(conn, "cards.html", teams: teams)
+  def cards(conn, params) do
+    # These cards are printed and cut out for the prefabricated EMPTY teams
+    # people join at the start, so default to hiding any team that already has
+    # members. A hidden "false" field pairs with the checkbox so unchecking it
+    # (which otherwise sends nothing) reads as an explicit "show all".
+    hide_with_members = params["hide_with_members"] != "false"
+
+    teams =
+      Team
+      |> Repo.all()
+      |> Repo.preload(:users)
+      |> Enum.sort_by(&(&1.name || ""))
+
+    teams =
+      if hide_with_members, do: Enum.filter(teams, &(&1.users == [])), else: teams
+
+    render(conn, "cards.html", teams: teams, hide_with_members: hide_with_members)
   end
 
   # FIXME surely there’s a better way

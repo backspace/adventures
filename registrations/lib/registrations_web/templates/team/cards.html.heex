@@ -127,6 +127,19 @@
     <strong>Join a team</strong> in the app and scanning the QR — or
     typing the code below it.
   </p>
+  <form method="get">
+    <%# Hidden field so unchecking (which sends nothing) reads as "false". %>
+    <input type="hidden" name="hide_with_members" value="false" />
+    <label>
+      <input
+        type="checkbox"
+        name="hide_with_members"
+        value="true"
+        checked={@hide_with_members}
+        onchange="this.form.submit()"
+      /> Hide teams that already have members (print only empty teams)
+    </label>
+  </form>
 </div>
 
 <div class="team-cards">
