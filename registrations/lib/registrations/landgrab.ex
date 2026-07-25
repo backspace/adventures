@@ -34,6 +34,25 @@ defmodule Registrations.Landgrab do
     Repo.all(Pole)
   end
 
+  @doc """
+  Poles the supervisor's live-game views should consider — everything still in
+  play, i.e. NOT retired. Retired poles have been pulled from the game, so
+  counting them inflates totals like the relief readiness "in play" number.
+  This is the default supervisor pole set; reach for it instead of
+  `Repo.all(Pole)` in gameplay-facing supervisor code (relief, dashboards, the
+  team board).
+
+  Pass `include_retired: true` for content-management views that genuinely want
+  the whole set (e.g. the editable pole list, where retired stakes are managed).
+  """
+  def supervision_poles(opts \\ []) do
+    if Keyword.get(opts, :include_retired, false) do
+      Repo.all(Pole)
+    else
+      Repo.all(from(p in Pole, where: p.status != :retired))
+    end
+  end
+
   def get_pole!(id), do: Repo.get!(Pole, id)
 
   @doc """
@@ -571,7 +590,9 @@ defmodule Registrations.Landgrab do
   def relief_stats do
     now = DateTime.utc_now()
     zone = Event.endgame_zone(Events.current(), now)
-    poles = Repo.all(Pole)
+    # Retired stakes are out of the game — excluding them keeps "in play" (and
+    # every other count here) honest.
+    poles = supervision_poles()
 
     outside? = fn pole ->
       is_number(pole.latitude) and is_number(pole.longitude) and zone != nil and

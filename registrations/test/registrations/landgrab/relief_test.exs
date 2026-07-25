@@ -47,6 +47,18 @@ defmodule Registrations.Landgrab.ReliefTest do
       assert [%{team_id: first, owned: 2}, %{owned: 1}] = stats.leaderboard
       assert first == a.id
     end
+
+    test "excludes retired stakes — they're out of the game" do
+      insert(:pole)
+      insert(:pole, status: :retired)
+      insert(:pole, status: :retired)
+
+      stats = Landgrab.relief_stats()
+
+      # Only the one live stake is counted; the two retired ones are ignored.
+      assert stats.total_poles == 1
+      assert stats.in_play == 1
+    end
   end
 
   describe "relief_active?/0" do
