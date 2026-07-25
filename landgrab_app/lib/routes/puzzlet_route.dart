@@ -324,6 +324,7 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
                 RegionContextCard(
                   breadcrumb: widget.puzzlet.region!.breadcrumb,
                   stanzas: widget.puzzlet.region!.stanzas,
+                  tags: widget.puzzlet.region!.tags,
                 ),
                 const SizedBox(height: 16),
               ],

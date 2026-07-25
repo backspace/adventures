@@ -70,8 +70,13 @@ defmodule RegistrationsWeb.Landgrab.Render do
       %{region: nil} ->
         nil
 
-      %{region: summary, inherited_stanzas: stanzas} ->
-        %{name: summary.name, breadcrumb: summary.breadcrumb, stanzas: stanzas}
+      %{region: summary, inherited_tags: tags, inherited_stanzas: stanzas} ->
+        %{
+          name: summary.name,
+          breadcrumb: summary.breadcrumb,
+          accessibility_tags: tags,
+          stanzas: stanzas
+        }
     end
   end
 

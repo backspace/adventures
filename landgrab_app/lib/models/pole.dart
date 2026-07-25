@@ -122,10 +122,15 @@ class PuzzletRegion {
   final String breadcrumb;
   final List<InheritedStanza> stanzas;
 
+  /// The region's inherited accessibility tags (aggregated up the hierarchy).
+  /// Shown to players as plain chips (no author-facing explanation icon).
+  final List<String> tags;
+
   PuzzletRegion({
     required this.name,
     required this.breadcrumb,
     this.stanzas = const [],
+    this.tags = const [],
   });
 
   factory PuzzletRegion.fromJson(Map<String, dynamic> json) => PuzzletRegion(
@@ -133,6 +138,10 @@ class PuzzletRegion {
         breadcrumb: json['breadcrumb'] as String? ?? json['name'] as String,
         stanzas: (json['stanzas'] as List?)
                 ?.map((e) => InheritedStanza.fromJson(e as Map<String, dynamic>))
+                .toList(growable: false) ??
+            const [],
+        tags: (json['accessibility_tags'] as List?)
+                ?.map((e) => e as String)
                 .toList(growable: false) ??
             const [],
       );

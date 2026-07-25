@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:landgrab/models/region.dart';
+import 'package:landgrab/widgets/accessibility_tags_view.dart';
 
 /// The canonical display of a puzzlet's region context: the breadcrumb
 /// path plus each level's "getting in" (entry instructions) and
@@ -13,6 +14,11 @@ class RegionContextCard extends StatelessWidget {
   final String breadcrumb;
   final List<InheritedStanza> stanzas;
 
+  /// The region's accessibility tags (aggregated up the hierarchy). Shown as
+  /// plain chips without the author-facing explanation (i) affordance —
+  /// player surfaces pass these; role-holder callers can leave them empty.
+  final List<String> tags;
+
   static const _entryLabel = 'Getting there';
   static const _accessibilityLabel = 'Accessibility';
 
@@ -20,6 +26,7 @@ class RegionContextCard extends StatelessWidget {
     super.key,
     required this.breadcrumb,
     required this.stanzas,
+    this.tags = const [],
   });
 
   @override
@@ -44,6 +51,12 @@ class RegionContextCard extends StatelessWidget {
               ),
             ],
           ),
+          // Region accessibility tags as plain chips — no (i) explanation icon
+          // (that copy is author-facing); the labels alone are plain enough.
+          if (tags.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            AccessibilityTagsView(tags: tags, explainable: false),
+          ],
           for (final s in stanzas) ...[
             const SizedBox(height: 10),
             // Only worth naming the level when the path has more than
