@@ -226,8 +226,7 @@ class GameplayStrings {
   // shown when the stake is no longer on the map (e.g. the endgame boundary
   // has passed it, or poles haven't loaded yet).
   static const viewOnMap = 'View';
-  static const zoneNotOnMap =
-      'That ${Terms.stake} isn’t on your map right now.';
+  static const zoneNotOnMap = 'That ${Terms.stake} isn’t on your map anymore.';
 
   // How many other teams are also on this pole (shown on the
   // in-progress card).
@@ -275,10 +274,10 @@ class GameplayStrings {
   static const zoneAccessibilityTitle = 'Accessibility';
 
   // Tap-a-zone owner sheet.
-  static const zoneUnclaimed = 'Unclaimed';
+  static const zoneUnclaimed = 'Not yet claimed';
   // A liberated zone — freed, belongs to no one (distinct from never-claimed).
   // DRAFT copy, pending the sensitivity pass.
-  static const zoneLiberated = 'Liberated — it belongs to no one now.';
+  static const zoneLiberated = 'Unclaimed';
   static String zoneOwnerYou(String? team) =>
       team == null ? 'Held by your team' : 'Held by your team ($team)';
   static String zoneOwnerOther(String? team) =>
@@ -337,7 +336,7 @@ class InstructionsStrings {
 
   static const appBarTitle = 'Instructions';
   static const placeholder =
-      'Check back here for instructions once the simulation has begun.';
+      'Check back here for instructions once onboarding has begun.';
   static const unavailable = 'No instructions were provided for this session.';
 }
 
@@ -372,7 +371,7 @@ class NotificationStrings {
   // answer binds the whole team.
   static const inviteAccept = 'Join';
   static const inviteDecline = 'Decline';
-  static const inviteAccepted = 'Your team joined the subversion.';
+  static const inviteAccepted = 'Your team joined the coalition.';
   static const inviteDeclined = 'Your team declined.';
   static const inviteAlreadyAnswered = 'Your team had already answered.';
   static const inviteFailed = 'Could not send your answer — try again.';
@@ -420,10 +419,10 @@ class ScanStrings {
     final third = !canClaim
         ? ''
         : liberating
-            ? ', or liberate this ${Terms.stake} without solving'
+            ? ', or unclaim this ${Terms.stake} without solving'
             : ', or claim this ${Terms.stake} without solving';
     return 'This ${Terms.relic} has accessibility requirements a member of your '
-        'cohort has set aside: $requirements. '
+        'team has set aside: $requirements. '
         'Attempt it together, try a different ${Terms.relic} here$third?';
   }
 
@@ -435,7 +434,7 @@ class ScanStrings {
   // decline-everything dead-end. A capturer takes the ground without solving;
   // a liberator frees it without solving.
   static const conflictClaim = 'Claim it';
-  static const conflictLiberate = 'Liberate it';
+  static const conflictLiberate = 'Unclaim it';
   static const claimConfirmTitle = 'Claim without solving?';
   static const claimConfirmBody =
       'No ${Terms.relic} here suits your cohort. You can claim this '
@@ -443,15 +442,15 @@ class ScanStrings {
       'who can solve it, so a rival may take it back.';
   static const claimConfirm = 'Claim it';
   // Liberator variants of the confirm dialog.
-  static const liberateConfirmTitle = 'Liberate without solving?';
+  static const liberateConfirmTitle = 'Unclaim without solving?';
   static const liberateConfirmBody =
-      'No ${Terms.relic} here suits your cohort. You can liberate this '
+      'No ${Terms.relic} here suits your team’s accessibility requirements. You can unclaim this '
       '${Terms.stake} without solving — it returns to no one.';
-  static const liberateConfirm = 'Liberate it';
+  static const liberateConfirm = 'Unclaim it';
   static const claimCancel = 'Not now';
   static const claimFailed = 'Couldn’t claim that ${Terms.stake}. Try again.';
   static const liberateFailed =
-      'Couldn’t liberate that ${Terms.stake}. Try again.';
+      'Couldn’t unclaim that ${Terms.stake}. Try again.';
 
   // Unknown-barcode dialog
   static const unknownBarcodeTitle = 'Unknown barcode';
@@ -482,15 +481,14 @@ class ScanStrings {
   // map — so the copy points at remaining poles, not at a circle.
   static const outsideZoneTitle = 'Out of range';
   static String outsideZoneBody(String poleName) =>
-      'The simulation has withdrawn $poleName — it can no longer be '
-      'claimed. Only ${Terms.stakes} still on your map remain in play.';
+      'The simulation has lost contact with $poleName, it can no longer be '
+      'claimed. Only ${Terms.stakes} still on your map can be claimed.';
 
   // Nothing-to-liberate dialog (strict roles: a team that joined the
   // liberation can only free OWNED ground). DRAFT copy.
-  static const nothingToLiberateTitle = 'Nothing to liberate';
+  static const nothingToLiberateTitle = 'Nothing to unclaim';
   static String nothingToLiberateBody(String poleName) =>
-      'No one holds $poleName — there is nothing here to free. '
-      'Liberate the ${Terms.zones} that are held.';
+      'No one holds $poleName — there is nothing to unclaim. Find another $poleName';
 
   // Generic acknowledge button used across the dialogs above.
   static const ok = 'OK';
@@ -506,8 +504,8 @@ class PuzzletStrings {
   static const findRelicHeader = 'Find this ${Terms.relic}';
   static String attemptsRemaining(int n) => 'Attempts remaining: $n';
   static String contendingTeams(int n) => n == 1
-      ? 'Another team is also working on this ${Terms.stake} — first to find the ${Terms.relic} claims the zone.'
-      : '$n other teams are also working on this ${Terms.stake} — first to find the ${Terms.relic} claims the zone.';
+      ? 'Another team is also working on this ${Terms.stake}. Beat them to ${Terms.relic} claim the zone!'
+      : '$n other teams are also working on this ${Terms.stake}. Beat them to ${Terms.relic} claim the zone!';
   static const previouslyTried = 'Already tried by your team:';
 
   // Region context — the place the pole sits in, plus how to reach it
@@ -530,7 +528,7 @@ class PuzzletStrings {
   static const scanNfcAnswerTitle = 'Scan the NFC tag';
   static const scanNfcAnswerButton = 'Tap NFC tag to answer';
   static const scanNfcAnswerHelp =
-      'The answer is an NFC tag. Tap the button, then hold your phone '
+      'The answer is an NFC tag. Tap the button, then hold your device '
       'near the tag.';
 
   // Capture-celebration stamp (slams over the screen on a correct
@@ -548,14 +546,13 @@ class PuzzletStrings {
   static String incorrect(int remaining) =>
       'Incorrect. $remaining attempt(s) left.';
   static const lockedOut =
-      'Out of guesses — too many wrong answers. Wait for another team to '
+      'Out of guesses, too many wrong answers. Wait for another team to '
       'capture this ${Terms.relic} before you can try again.';
   static const alreadyCapturedByOther =
       'Another team found this ${Terms.relic} first.';
   // The liberator's race: the stake was freed while they were solving.
   static const alreadyLiberated =
-      'This ${Terms.zone} was returned to no one while you worked — '
-      'it is already free.';
+      'This ${Terms.zone} was unclaimed while you worked.';
   static const alreadyOwner =
       'Your team already owns this ${Terms.zone}. Wait for a rival to capture it.';
   static const notActive =

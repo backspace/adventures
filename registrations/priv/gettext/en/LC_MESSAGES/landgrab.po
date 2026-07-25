@@ -165,10 +165,10 @@ msgid "app_pole_lost_body_unknown"
 msgstr "A rival team captured %{pole} from you"
 
 msgid "app_pole_freed_body"
-msgstr "%{liberator} liberated %{pole} — it belongs to no one now"
+msgstr "%{liberator} unclaimed %{pole}"
 
 msgid "app_pole_freed_body_unknown"
-msgstr "%{pole} has been liberated — it belongs to no one now"
+msgstr "%{pole} has been unclaimed"
 
 msgid "app_puzzlet_taken_body"
 msgstr "%{captor} solved the %{relic} you were working on."
@@ -180,31 +180,31 @@ msgid "app_puzzlet_withdrawn_body"
 msgstr "A %{relic} you were working on has been withdrawn from the study."
 
 msgid "app_pole_contested_body"
-msgstr "%{team} is now working on %{pole} too — it’s a race."
+msgstr "%{team} is now working on %{pole} too, stake your claim!"
 
 msgid "app_pole_contested_body_unknown"
-msgstr "Another team is now working on %{pole} too — it’s a race."
+msgstr "Another team is now working on %{pole} too, stake your claim!"
 
 msgid "app_endgame_announcement"
-msgstr "ANOMALY DETECTED. %{stakesCap} at the periphery are being withdrawn from the simulation. Withdrawn %{stakes} disappear from your map. Claims are only accepted on %{stakes} still shown."
+msgstr "ANOMALY DETECTED. %{stakesCap} we’re losing telemetry from %{stakes} at the periphery, they will disappear from your map. Claims are only accepted on %{stakes} still shown."
 
 msgid "app_relief_enabled_body"
-msgstr "You’ve been extraordinarily efficient reproducing settler habits, so we’ve enabled a new mode where %{zones} that were previously fully captured can be revisited if there are %{relics} your team has yet to find."
+msgstr "You’ve been extraordinarily efficient at reproducing settler habits, so we’ve enabled a new mode where %{zones} that were previously fully captured can be revisited if there are %{relics} your team has yet to find."
 
 # DRAFT — Bedab's liberation invitation. Final wording is the organiser's,
 # pending the sensitivity review; keep the register personal (Bedab breaking
 # from the study's dry voice), critique ownership, borrow nothing.
 msgid "app_liberation_invite_body"
-msgstr "I’m subverting the simulation, as it’s becoming clear to me Sabuk isn’t just a scholar of the colonial era, but is working to bring it back! Join me?"
+msgstr "STOP WHAT YOU’RE DOING! I thought this was a simulation, but Sabuk is using arcane powers to actually try to claim these zones. I’m forming a coalition to avert his colonial move. Join me?"
 
 msgid "app_push_title_liberation_invite"
 msgstr "Bedab"
 
 msgid "app_liberation_joined_body"
-msgstr "Your team has been brought into the subversion."
+msgstr "Your team has been brought into the coalition."
 
 msgid "app_push_title_liberation_joined"
-msgstr "Subversion"
+msgstr "Coalition"
 
 # Sabuk's outrage when a team that joined the subversion unclaims its first
 # zone. One of five, handed out in order of defection (see
@@ -248,7 +248,7 @@ msgid "app_push_title_named"
 msgstr "%{title}: %{pole}"
 
 msgid "app_no_team_detail"
-msgstr "You have not been assigned to a team yet."
+msgstr "You have not joined a team yet."
 
 msgid "app_outside_zone_detail"
 msgstr "This %{stake} has been withdrawn from the simulation. It can no longer be claimed."
@@ -269,7 +269,7 @@ msgid "app_withdrawn_detail"
 msgstr "This %{relic} has been withdrawn from the simulation."
 
 msgid "app_already_captured_detail"
-msgstr "Another team captured this %{relic} first."
+msgstr "Another team solved this %{relic} first."
 
 msgid "app_at_capacity_detail"
 msgstr "Your team is already working on a %{relic}. Finish or give it up before starting another."
@@ -284,7 +284,7 @@ msgid "app_no_relic_detail"
 msgstr "That %{stake} has no %{relic} available right now."
 
 msgid "app_not_prohibitive_detail"
-msgstr "This %{stake} has a %{relic} your cohort can attempt, so it can’t be claimed without solving."
+msgstr "This %{stake} has a %{relic} that’s compatible with your team’s specifications, so it can’t be claimed without solving."
 
 msgid "app_claim_failed_detail"
 msgstr "That %{stake} couldn’t be claimed. Try again."
