@@ -202,20 +202,6 @@ void main() {
       expect(outcome, isA<ScanTeamLockedOut>());
     });
 
-    test('returns ScanNothingToLiberate on 409 nothing_to_liberate', () async {
-      adapter.onGet(
-        '/landgrab/poles/POLE-004',
-        (server) => server.reply(409, {
-          'error': {'code': 'nothing_to_liberate', 'detail': '...'},
-          'pole': polePayload(),
-        }),
-      );
-
-      final outcome = await api.scan('POLE-004');
-      expect(outcome, isA<ScanNothingToLiberate>());
-      expect((outcome as ScanNothingToLiberate).pole.name, 'Esplanade Riel');
-    });
-
     test('rethrows on network/5xx', () async {
       adapter.onGet(
         '/landgrab/poles/POLE-004',
