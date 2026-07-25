@@ -111,7 +111,7 @@ void main() {
     expect(find.text('blue'), findsOneWidget);
     expect(find.text('red'), findsOneWidget);
     expect(find.text('Attempts remaining: 1'), findsOneWidget);
-    expect(find.text('Incorrect. 1 attempt(s) left.'), findsOneWidget);
+    expect(find.text('Incorrect. 1 attempt left.'), findsOneWidget);
 
     final textField = tester.widget<TextField>(find.byType(TextField));
     expect(textField.controller?.text, isEmpty);
