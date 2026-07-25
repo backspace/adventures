@@ -1066,11 +1066,26 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
           ),
         );
       case HomeMenuItem.settings:
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const SettingsRoute()),
-        );
+        _openSettings();
       case HomeMenuItem.logOut:
         _logout();
+    }
+  }
+
+  // Settings can switch the player's team (scan another team's code). It pops
+  // `true` when that happened, so reload onto the new team — colour, zones,
+  // active puzzlets — and confirm it.
+  Future<void> _openSettings() async {
+    final teamChanged = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => SettingsRoute(api: widget.api)),
+    );
+    if (teamChanged == true && mounted) {
+      await _refreshIdentityAndLoad();
+      if (mounted && _teamName != null) {
+        _snack(SnackBar(
+          content: Text(SettingsStrings.switchTeamDone(_teamName!)),
+        ));
+      }
     }
   }
 

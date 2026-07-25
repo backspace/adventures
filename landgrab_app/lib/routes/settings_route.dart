@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/l10n/player_strings.dart';
+import 'package:landgrab/routes/join_team_route.dart';
 import 'package:landgrab/services/discard_changes.dart';
 import 'package:landgrab/services/env_service.dart';
 import 'package:landgrab/services/env_switch_service.dart';
@@ -17,7 +19,8 @@ Map<String, String> _knownEnvs() => {
     };
 
 class SettingsRoute extends StatefulWidget {
-  const SettingsRoute({super.key});
+  final LandgrabApi api;
+  const SettingsRoute({super.key, required this.api});
 
   @override
   State<SettingsRoute> createState() => _SettingsRouteState();
@@ -57,6 +60,42 @@ class _SettingsRouteState extends State<SettingsRoute> {
       _joinCode = code;
       _teamName = name;
     });
+  }
+
+  // Switch to another team by scanning its join code. Deliberate — confirm
+  // first so a stray scan can't move someone off their team mid-game. On
+  // success JoinTeamRoute has already refreshed /me into UserService, so we
+  // pop back to the map with `true` and HomeRoute reloads onto the new team.
+  Future<void> _switchTeam() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(SettingsStrings.switchTeamConfirmTitle),
+        content:
+            Text(SettingsStrings.switchTeamConfirmBody(_teamName ?? '')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(SettingsStrings.switchTeamConfirmCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(SettingsStrings.switchTeamConfirmContinue),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final joined = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => JoinTeamRoute(api: widget.api)),
+    );
+    if (joined != true || !mounted) return;
+
+    // JoinTeamRoute has already switched us server-side and refreshed /me.
+    // Hand back to the map with `true` so HomeRoute reloads onto the new
+    // team's colour and zones (and confirms the switch).
+    Navigator.of(context).pop(true);
   }
 
   Future<void> _load() async {
@@ -161,6 +200,14 @@ class _SettingsRouteState extends State<SettingsRoute> {
             if (_joinCode != null) ...[
               const SizedBox(height: 24),
               _teamQrSection(context, _joinCode!),
+            ],
+            if (_teamName != null) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: _switchTeam,
+                icon: const Icon(Icons.qr_code_scanner),
+                label: const Text(SettingsStrings.switchTeamButton),
+              ),
             ],
             // The environment + account switchers are dev affordances — shown
             // only once the 7-tap Credits easter egg unlocks them.

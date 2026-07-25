@@ -343,6 +343,17 @@ class SettingsStrings {
       'Have someone scan this with “Join a team” to join you.';
   static String teamQrName(String team) => 'Team $team';
   static const teamQrCodeLabel = 'Join code';
+
+  // Switch teams last-minute by scanning another team's join code. Deliberate
+  // (behind a confirm) so a stray scan can't move you off your team mid-game.
+  static const switchTeamButton = 'Switch to another team';
+  static const switchTeamConfirmTitle = 'Switch team?';
+  static String switchTeamConfirmBody(String current) =>
+      'You’ll leave Team $current and join whichever team’s code you scan. '
+      'Your current team keeps everything it’s claimed.';
+  static const switchTeamConfirmCancel = 'Cancel';
+  static const switchTeamConfirmContinue = 'Scan a team code';
+  static String switchTeamDone(String team) => 'You’re now on Team $team.';
 }
 
 /// Instructions screen (`routes/instructions_route.dart`). Like Credits, the

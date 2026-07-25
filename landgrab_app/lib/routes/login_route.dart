@@ -271,7 +271,7 @@ class _LoginRouteState extends State<LoginRoute> {
                     tooltip: LoginStrings.switchEnvironmentTooltip,
                     icon: const Icon(Icons.dns_outlined),
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const SettingsRoute()),
+                      MaterialPageRoute(builder: (_) => SettingsRoute(api: widget.api)),
                     ),
                   )
                 : const SizedBox.shrink(),
@@ -289,6 +289,7 @@ class _LoginRouteState extends State<LoginRoute> {
                   ? Padding(
                       padding: const EdgeInsets.only(bottom: 24),
                       child: _EnvBanner(
+                        api: widget.api,
                         flavorTitle: F.title,
                         apiRoot: apiRoot,
                         showSwitcher: true,
@@ -396,11 +397,13 @@ class _LoginRouteState extends State<LoginRoute> {
 }
 
 class _EnvBanner extends StatelessWidget {
+  final LandgrabApi api;
   final String flavorTitle;
   final String apiRoot;
   final bool showSwitcher;
 
   const _EnvBanner({
+    required this.api,
     required this.flavorTitle,
     required this.apiRoot,
     required this.showSwitcher,
@@ -429,7 +432,7 @@ class _EnvBanner extends StatelessWidget {
             if (showSwitcher)
               TextButton.icon(
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SettingsRoute()),
+                  MaterialPageRoute(builder: (_) => SettingsRoute(api: api)),
                 ),
                 icon: const Icon(Icons.dns_outlined),
                 label: const Text(LoginStrings.switchButton),
