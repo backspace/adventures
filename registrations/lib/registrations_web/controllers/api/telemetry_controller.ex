@@ -6,6 +6,8 @@ defmodule RegistrationsWeb.Api.TelemetryController do
   """
   use RegistrationsWeb, :controller
 
+  require Logger
+
   alias Registrations.Mailer
   alias Registrations.Repo
 
@@ -47,6 +49,16 @@ defmodule RegistrationsWeb.Api.TelemetryController do
   defp note_client_build(conn, version) do
     if Application.get_env(:registrations, :adventure) == "landgrab" do
       platform = conn |> get_req_header("x-client-platform") |> List.first()
+
+      # TEMPORARY diagnostic: log every ping's platform + build + who sent it,
+      # to trace which client is populating latest_build_android. Remove once
+      # the stray Android ping is identified. Grep logs for TELEMETRY-PLATFORM.
+      user = Pow.Plug.current_user(conn)
+
+      Logger.info(
+        "[TELEMETRY-PLATFORM] platform=#{inspect(platform)} version=#{inspect(version)} " <>
+          "build=#{inspect(build_number(version))} user=#{inspect(user && user.email)}"
+      )
 
       case build_number(version) do
         nil -> :ok
