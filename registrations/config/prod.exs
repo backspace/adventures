@@ -21,10 +21,18 @@ config :registrations, Registrations.Repo,
   url: System.get_env("DATABASE_URL"),
   pool_size: 15
 
+# NOTE: no `force_ssl:` here on purpose. TLS is terminated at the reverse
+# proxy (Traefik), which already redirects http->https at the edge. Phoenix's
+# force_ssl (Plug.SSL) instead 301-redirected every WebSocket *upgrade*
+# request: the proxy drops `x-forwarded-proto` on Upgrade requests, so Plug.SSL
+# saw the internal http scheme and issued a 301 — and WebSocket clients don't
+# follow redirects, so the socket never connected and ALL live channel delivery
+# (notifications, territory) silently died while plain HTTP kept working. HSTS
+# is set explicitly below (see RegistrationsWeb.Endpoint) so dropping force_ssl
+# doesn't weaken the security posture for normal requests.
 config :registrations, RegistrationsWeb.Endpoint,
   http: [port: {:system, "PORT"}],
   url: [scheme: "http", host: "rendezvous.chromatin.ca", port: 80],
-  force_ssl: [rewrite_on: [:x_forwarded_proto]],
   cache_static_manifest: "priv/static/cache_manifest.json",
   secret_key_base: System.get_env("SECRET_KEY_BASE")
 

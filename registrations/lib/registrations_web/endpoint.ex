@@ -24,6 +24,12 @@ defmodule RegistrationsWeb.Endpoint do
     plug(Phoenix.CodeReloader)
   end
 
+  # HSTS. We deliberately don't use `force_ssl` (it 301-redirected WebSocket
+  # upgrade handshakes into oblivion — see config/prod.exs), so set the header
+  # ourselves. Only when the edge proxy tells us the original request was https,
+  # which mirrors Plug.SSL's old behaviour and keeps local http dev untouched.
+  plug(:hsts)
+
   plug(Plug.RequestId)
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   plug(Plug.Logger)
@@ -47,4 +53,18 @@ defmodule RegistrationsWeb.Endpoint do
   )
 
   plug(RegistrationsWeb.Router)
+
+  defp hsts(conn, _opts) do
+    case Plug.Conn.get_req_header(conn, "x-forwarded-proto") do
+      ["https" | _] ->
+        Plug.Conn.put_resp_header(
+          conn,
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains"
+        )
+
+      _ ->
+        conn
+    end
+  end
 end
