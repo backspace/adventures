@@ -386,6 +386,37 @@ def dissolve(units, owner, seeds_by_pole, reach_m):
     return {"type": "FeatureCollection", "features": feats}
 
 
+def append_extra_poles(fc, specs):
+    """Append a territory for each extra pole by COPYING the generated shape
+    that already covers its location — keyed to that pole's id.
+
+    For a retired stake reused elsewhere (e.g. the onboarding-demo pole, which
+    is out of play in the real game so it isn't in the gameplay input), this
+    gives it a real-looking zone without disturbing any of the generated
+    shapes. Inert wherever that pole isn't in play; paints where it is. Each
+    spec is `POLE_ID:LAT,LON`."""
+    if not specs:
+        return
+    from shapely.geometry import shape, Point
+
+    geoms = [(f, shape(f["geometry"])) for f in fc["features"]]
+    for spec in specs:
+        pid, coords = spec.split(":", 1)
+        lat_s, lon_s = coords.split(",")
+        pt = Point(float(lon_s), float(lat_s))
+        # Prefer the shape that contains the point; fall back to the nearest.
+        host = next((f for f, g in geoms if g.contains(pt)), None)
+        if host is None:
+            host = min(geoms, key=lambda fg: fg[1].distance(pt))[0]
+        fc["features"].append({
+            "type": "Feature",
+            "properties": {"pole_id": pid},
+            "geometry": json.loads(json.dumps(host["geometry"])),  # deep copy
+        })
+        print(f"Appended extra territory for {pid} "
+              f"(copied {host['properties']['pole_id']})", file=sys.stderr)
+
+
 def main():
     ap = argparse.ArgumentParser(
         description=__doc__,
@@ -399,6 +430,12 @@ def main():
                     help="Cap how far a zone extends past the team's own poles "
                          "and puzzlets (metres). 0 disables the cap.")
     ap.add_argument("--out", required=True)
+    ap.add_argument("--extra-pole", action="append", default=[],
+                    metavar="POLE_ID:LAT,LON",
+                    help="Append a territory for an out-of-play pole (e.g. a "
+                         "retired stake reused for a demo) by copying the shape "
+                         "that already covers its location. Doesn't change the "
+                         "real poles' shapes. Repeatable.")
     args = ap.parse_args()
 
     from shapely.geometry import MultiPoint
@@ -430,6 +467,7 @@ def main():
           file=sys.stderr)
 
     fc = dissolve(units, owner, seeds_by_pole, args.max_reach_m)
+    append_extra_poles(fc, args.extra_pole)
     json.dump(fc, open(args.out, "w"))
     print(f"Wrote {args.out} — {len(fc['features'])} territories",
           file=sys.stderr)
