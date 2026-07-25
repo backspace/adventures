@@ -36,6 +36,7 @@ class WrongAnswerPuzzlet {
   final String? poleLabel;
   final String? poleBarcode;
   final String? poleName;
+  final String? regionName;
   final int wrongCount;
   final List<WrongAttempt> attempts;
 
@@ -47,6 +48,7 @@ class WrongAnswerPuzzlet {
     this.poleLabel,
     this.poleBarcode,
     this.poleName,
+    this.regionName,
     this.wrongCount = 0,
     this.attempts = const [],
   });
@@ -78,6 +80,7 @@ class WrongAnswerPuzzlet {
       poleLabel: pole?['label'] as String?,
       poleBarcode: pole?['barcode'] as String?,
       poleName: pole?['name'] as String?,
+      regionName: json['region_name'] as String?,
       wrongCount: (json['wrong_count'] as num?)?.toInt() ?? 0,
       attempts: ((json['attempts'] as List?) ?? const [])
           .map((a) => WrongAttempt.fromJson(a as Map<String, dynamic>))

@@ -83,7 +83,8 @@ class _WrongAnswersTabState extends State<WrongAnswersTab> {
         title: Text(p.titleDisplay),
         subtitle: Text(
           '${p.wrongCount} wrong guess${p.wrongCount == 1 ? '' : 'es'}'
-          '${p.difficulty != null ? ' · difficulty ${p.difficulty}' : ''}',
+          '${p.difficulty != null ? ' · difficulty ${p.difficulty}' : ''}'
+          '${p.regionName != null && p.regionName!.trim().isNotEmpty ? ' · ${p.regionName}' : ''}',
         ),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         children: [

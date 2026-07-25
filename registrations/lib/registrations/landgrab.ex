@@ -943,6 +943,7 @@ defmodule Registrations.Landgrab do
           difficulty: puzzlet.difficulty,
           instructions: puzzlet.instructions,
           answer: puzzlet.answer,
+          region_name: puzzlet_region_name(puzzlet),
           pole:
             puzzlet.pole &&
               %{
@@ -1869,6 +1870,15 @@ defmodule Registrations.Landgrab do
   # A puzzlet's region context (name/breadcrumb/inherited stanzas), or nil —
   # the same shape the scan and validator-only payloads use, so the client
   # reuses its region model and card.
+  # The name of the puzzlet's own region (nil when it has none) — the leaf of
+  # its inheritance chain, for the supervisor's wrong-answers dashboard.
+  defp puzzlet_region_name(%Puzzlet{} = puzzlet) do
+    case Registrations.Landgrab.Regions.puzzlet_inheritance_payload(puzzlet) do
+      %{region: %{name: name}} -> name
+      _ -> nil
+    end
+  end
+
   defp team_board_region(%Puzzlet{} = puzzlet) do
     case Registrations.Landgrab.Regions.puzzlet_inheritance_payload(puzzlet) do
       %{region: nil} ->
