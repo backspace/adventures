@@ -186,7 +186,7 @@ msgid "app_pole_contested_body_unknown"
 msgstr "Another team is now working on %{pole} too, stake your claim!"
 
 msgid "app_endgame_announcement"
-msgstr "ANOMALY DETECTED. %{stakesCap} we’re losing telemetry from %{stakes} at the periphery, they will disappear from your map. Claims are only accepted on %{stakes} still shown."
+msgstr "ANOMALY DETECTED. We’re losing telemetry from %{stakes} at the periphery, they will disappear from your map. Claims are only accepted on %{stakes} still shown."
 
 msgid "app_relief_enabled_body"
 msgstr "You’ve been extraordinarily efficient at reproducing settler habits, so we’ve enabled a new mode where %{zones} that were previously fully captured can be revisited if there are %{relics} your team has yet to find."
