@@ -1221,6 +1221,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   /// colour and tap always agree. Otherwise falls back to the Voronoi rule
   /// (nearest pole within the territory radius); taps in open space do nothing.
   void _showOwnerAt(LatLng point) {
+    // A tap on inert ground dismisses whatever's showing (the zone-status
+    // snackbar, or any transient toast). A tap that lands on a pole/zone
+    // re-shows via _snack (clear-then-show), so this never leaves a gap.
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
     final poles = _poles;
     if (poles == null || poles.isEmpty) return;
 
