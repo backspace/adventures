@@ -9,6 +9,7 @@ defmodule Registrations.Landgrab.SeedTest do
   use Registrations.DataCase
 
   alias Registrations.Landgrab
+  alias Registrations.Landgrab.Attempt
   alias Registrations.Landgrab.Event
   alias Registrations.Landgrab.Notification
   alias Registrations.Landgrab.OrganiserMessage
@@ -270,6 +271,24 @@ defmodule Registrations.Landgrab.SeedTest do
     assert %{captures: _, in_progress: _, notifications: _} = Seed.clear()
     assert Repo.aggregate(OwnershipEvent, :count) == 0
     assert Repo.aggregate(TeamPuzzlet, :count) == 0
+  end
+
+  test "clear wipes answer attempts, so a locked-out team isn't re-locked on the fresh map" do
+    team = insert(:team)
+    user = insert(:user, team_id: team.id)
+    puzzlet = insert(:puzzlet, pole: insert(:pole))
+
+    for given <- ["a", "b", "c"] do
+      insert(:attempt, puzzlet: puzzlet, team: team, user: user, correct: false, answer_given: given)
+    end
+
+    # Three wrong guesses = locked out (all-time count, no window).
+    assert Landgrab.team_locked_out?(Repo.get(Puzzlet, puzzlet.id), team.id)
+
+    assert %{wrong_answers: 3} = Seed.clear()
+
+    assert Repo.aggregate(Attempt, :count) == 0
+    refute Landgrab.team_locked_out?(Repo.get(Puzzlet, puzzlet.id), team.id)
   end
 
   test "clear resets the liberation rollout: invites, answers, and schedule" do

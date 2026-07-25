@@ -19,6 +19,7 @@ defmodule Registrations.Landgrab.Seed do
   import Ecto.Query
 
   alias Registrations.Landgrab
+  alias Registrations.Landgrab.Attempt
   alias Registrations.Landgrab.Event
   alias Registrations.Landgrab.Notification
   alias Registrations.Landgrab.OrganiserMessage
@@ -826,17 +827,24 @@ defmodule Registrations.Landgrab.Seed do
 
   # ── clear (fresh, uncaptured map) ───────────────────────────────────
   @doc """
-  Remove ALL captures, in-progress claims, and the attack / pole-lost /
-  liberation-invite notifications, and reset the liberation rollout (team
-  invite stamps + answers, and the events' schedule) — a clean, uncaptured
+  Remove ALL captures, in-progress claims, answer attempts, and the attack /
+  pole-lost / liberation-invite notifications, and reset the liberation rollout
+  (team invite stamps + answers, and the events' schedule) — a clean, uncaptured
   map. Also turns the relief valve back off: the per-team consumption it
   tracks lives in the just-deleted in-progress claims, so leaving the valve
   on would strand it half-open. Returns `%{captures: n, in_progress: n,
-  notifications: n, liberation_teams: n}`.
+  wrong_answers: n, notifications: n, liberation_teams: n}`.
   """
   def clear do
     {tp, _} = Repo.delete_all(TeamPuzzlet)
     {caps, _} = Repo.delete_all(OwnershipEvent)
+
+    # Every answer attempt, right and wrong. Wrong ones are the functional
+    # reason: `team_wrong_attempts/2` counts them all-time with no window, so a
+    # team that hit the 3-guess lockout before the clear would be re-locked the
+    # moment it re-scans on the "fresh" map. (It also clears the supervisor
+    # wrong-answers dashboard.)
+    {wrong, _} = Repo.delete_all(Attempt)
 
     {notes, _} =
       Repo.delete_all(from(n in Notification, where: n.type in ["attack", "pole_lost", "liberation_invite"]))
@@ -855,7 +863,7 @@ defmodule Registrations.Landgrab.Seed do
       set: [liberation_starts_at: nil, liberation_rollout_ends_at: nil, relief_started_at: nil]
     )
 
-    %{captures: caps, in_progress: tp, notifications: notes, liberation_teams: invited}
+    %{captures: caps, in_progress: tp, wrong_answers: wrong, notifications: notes, liberation_teams: invited}
   end
 
   # ── abort (stop everything, disarm the clock) ───────────────────────
