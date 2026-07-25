@@ -1,25 +1,28 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:landgrab/l10n/player_strings.dart';
+import 'package:landgrab/models/landgrab_event.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/markdown_view.dart';
 
-/// Player instructions. Before the simulation begins, shows a placeholder in
-/// place of the real briefing; once it's begun, renders a precompiled
-/// Markdown file (like the validator's Criteria view).
+/// Player instructions. Until the onboarding window opens (15 min before the
+/// simulation begins — see [LandgrabEvent.onboardingStarted]), shows a
+/// placeholder in place of the real briefing; from then on it renders a
+/// precompiled Markdown file (like the validator's Criteria view).
 ///
 /// The briefing is LOCAL-ONLY — like Credits, `instructions.md` is gitignored
 /// so the storyline text isn't published to a public repo (see
 /// assets/instructions/README.md). A build without the file just shows a
-/// short "no instructions" note after the event starts.
+/// short "no instructions" note once onboarding opens.
 class InstructionsRoute extends StatefulWidget {
-  /// Whether the simulation has begun. Until it has, the page shows the
-  /// placeholder rather than the briefing. Callers pass the server's
-  /// [LandgrabEvent.started] flag.
-  final bool eventStarted;
+  /// The current event; its [LandgrabEvent.onboardingStarted] gates the
+  /// briefing. Null (e.g. in a bare test) keeps the placeholder up.
+  final LandgrabEvent? event;
 
-  const InstructionsRoute({super.key, this.eventStarted = false});
+  const InstructionsRoute({super.key, this.event});
 
   @override
   State<InstructionsRoute> createState() => _InstructionsRouteState();
@@ -28,15 +31,41 @@ class InstructionsRoute extends StatefulWidget {
 class _InstructionsRouteState extends State<InstructionsRoute> {
   static const _asset = 'assets/instructions/instructions.md';
 
-  // Null until loaded. Only fetched once the event has started — before that
-  // the placeholder shows and the file stays sealed.
+  // Null until loaded. Only fetched once onboarding opens — before that the
+  // placeholder shows and the file stays sealed.
   String? _markdown;
   bool _loaded = false;
+  Timer? _revealTimer;
+
+  bool get _revealed => widget.event?.onboardingStarted ?? false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.eventStarted) _load();
+    if (_revealed) {
+      _load();
+    } else {
+      // Flip to the briefing the moment onboarding opens, even if the page is
+      // left open across that boundary. Poll (rather than a single exact
+      // timer) so a clock change or long sleep can't miss it.
+      _revealTimer = Timer.periodic(const Duration(seconds: 20), (t) {
+        if (!mounted) {
+          t.cancel();
+          return;
+        }
+        if (_revealed) {
+          t.cancel();
+          _load();
+          setState(() {}); // swap placeholder → loading/briefing
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _revealTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
@@ -69,13 +98,13 @@ class _InstructionsRouteState extends State<InstructionsRoute> {
   }
 
   Widget _body(ThemeData theme) {
-    if (!widget.eventStarted) {
+    if (!_revealed) {
       return Text(
         InstructionsStrings.placeholder,
         style: theme.textTheme.bodyMedium,
       );
     }
-    // Started: wait for the load, then render the briefing or the fallback.
+    // Onboarding open: wait for the load, then render the briefing or fallback.
     if (!_loaded) {
       return const Center(child: CircularProgressIndicator());
     }

@@ -88,6 +88,20 @@ class LandgrabEvent {
     this.latestBuildAndroid,
   });
 
+  /// How long before the start the onboarding window opens — the instructions
+  /// briefing (and anything else pre-event) becomes available this early so
+  /// subjects can read along during the intro.
+  static const onboardingLead = Duration(minutes: 15);
+
+  /// Whether the onboarding window has opened: we're within [onboardingLead]
+  /// of the start, or the simulation has already begun. False when no start
+  /// time is scheduled yet.
+  bool get onboardingStarted {
+    final s = startTime;
+    if (s == null) return started;
+    return !DateTime.now().toUtc().isBefore(s.toUtc().subtract(onboardingLead));
+  }
+
   factory LandgrabEvent.fromJson(Map<String, dynamic> json) => LandgrabEvent(
         name: json['name'] as String,
         startTime: json['start_time'] == null

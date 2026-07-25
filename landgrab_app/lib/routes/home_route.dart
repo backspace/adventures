@@ -972,7 +972,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) =>
-                InstructionsRoute(eventStarted: _event?.started ?? false),
+                InstructionsRoute(event: _event),
           ),
         );
       case HomeMenuItem.credits:
