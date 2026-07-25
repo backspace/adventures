@@ -132,6 +132,11 @@ defmodule Registrations.Landgrab.SupervisorStuckTest do
       assert second.puzzlet_id == puzzlet_a.id
       assert second.wrong_count == 2
 
+      # Each row carries the player-facing synthetic name (matches the
+      # notification) alongside label/barcode.
+      assert first.pole.name == Landgrab.pole_name(Repo.reload!(pole_b))
+      assert is_binary(first.pole.name) and first.pole.name != ""
+
       # Within a puzzlet, attempts also run newest → oldest.
       assert Enum.map(second.attempts, & &1.answer_given) == ["a-new", "a-old"]
     end

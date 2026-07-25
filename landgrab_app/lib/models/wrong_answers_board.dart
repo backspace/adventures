@@ -35,6 +35,7 @@ class WrongAnswerPuzzlet {
   final String? answer;
   final String? poleLabel;
   final String? poleBarcode;
+  final String? poleName;
   final int wrongCount;
   final List<WrongAttempt> attempts;
 
@@ -45,6 +46,7 @@ class WrongAnswerPuzzlet {
     this.answer,
     this.poleLabel,
     this.poleBarcode,
+    this.poleName,
     this.wrongCount = 0,
     this.attempts = const [],
   });
@@ -58,6 +60,14 @@ class WrongAnswerPuzzlet {
     return 'unattached';
   }
 
+  /// Title for a dashboard row: the barcode/label followed by the player-facing
+  /// synthetic name (when present), so it matches the `team_stuck` notification.
+  String get titleDisplay {
+    final n = poleName?.trim();
+    if (n == null || n.isEmpty) return poleDisplay;
+    return '$poleDisplay · $n';
+  }
+
   factory WrongAnswerPuzzlet.fromJson(Map<String, dynamic> json) {
     final pole = (json['pole'] as Map?)?.cast<String, dynamic>();
     return WrongAnswerPuzzlet(
@@ -67,6 +77,7 @@ class WrongAnswerPuzzlet {
       answer: json['answer'] as String?,
       poleLabel: pole?['label'] as String?,
       poleBarcode: pole?['barcode'] as String?,
+      poleName: pole?['name'] as String?,
       wrongCount: (json['wrong_count'] as num?)?.toInt() ?? 0,
       attempts: ((json['attempts'] as List?) ?? const [])
           .map((a) => WrongAttempt.fromJson(a as Map<String, dynamic>))

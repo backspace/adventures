@@ -80,7 +80,7 @@ class _WrongAnswersTabState extends State<WrongAnswersTab> {
     return Card(
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(
-        title: Text(p.poleDisplay),
+        title: Text(p.titleDisplay),
         subtitle: Text(
           '${p.wrongCount} wrong guess${p.wrongCount == 1 ? '' : 'es'}'
           '${p.difficulty != null ? ' · difficulty ${p.difficulty}' : ''}',

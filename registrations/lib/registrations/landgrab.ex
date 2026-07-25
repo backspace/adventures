@@ -927,7 +927,11 @@ defmodule Registrations.Landgrab do
               %{
                 id: puzzlet.pole.id,
                 label: puzzlet.pole.label,
-                barcode: puzzlet.pole.barcode
+                barcode: puzzlet.pole.barcode,
+                # The player-facing synthetic name, so the supervisor can match
+                # a row to the `team_stuck` notification, which names the stake
+                # this way.
+                name: pole_name(puzzlet.pole)
               },
           wrong_count: length(group),
           most_recent_at: hd(group).inserted_at,
