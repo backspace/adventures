@@ -3,7 +3,6 @@
     <thead>
       <tr>
         <th></th>
-        <th>ID</th>
         <th>Email</th>
         <th></th>
         <th>A?</th>
@@ -23,7 +22,6 @@
       <%= for {user, i} <- Enum.with_index(@users) do %>
         <tr id={"user-#{user.id}"}>
           <td><%= i %></td>
-          <td><%= user.id %></td>
           <td class="email"><%= user.email %></td>
           <td><%= user.voicepass %></td>
           <td
