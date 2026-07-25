@@ -62,6 +62,25 @@ defmodule RegistrationsWeb.Landgrab.EndgameController do
     end
   end
 
+  # Push every scheduled endgame + liberation milestone back five minutes,
+  # preserving their spacing — a live "we're running behind" control. Leaves
+  # the event's start_time and the one-shot stamps alone. Broadcasts so player
+  # maps and countdowns re-sync immediately.
+  @shift_seconds 5 * 60
+
+  def shift(conn, _params) do
+    case Events.shift_schedule(Events.current(), @shift_seconds) do
+      {:ok, updated} ->
+        RegistrationsWeb.Endpoint.broadcast("landgrab:map", "event_updated", %{})
+        json(conn, render_endgame(updated))
+
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: Ecto.Changeset.traverse_errors(changeset, fn {msg, _opts} -> msg end)})
+    end
+  end
+
   defp render_endgame(event) do
     endgame =
       if Event.endgame_configured?(event) do
