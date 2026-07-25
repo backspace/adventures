@@ -164,17 +164,21 @@ defmodule Registrations.Integration.Admin do
     assert Teams.has_member?(session, "member@example.com")
     refute Teams.has_member?(session, "outsider@example.com")
 
-    # Add a member via the dropdown.
+    # Add a member via the dropdown. Assert the flash first: it only appears
+    # once the submit's redirect has re-rendered the page, so it's the stable
+    # synchronization point — checking the member list before then can grab a
+    # row mid-swap ("Node with given id does not belong to the document").
     Teams.add_member(session, "outsider@example.com")
+    Nav.assert_info_text(session, "outsider@example.com added to the team.")
     assert Teams.has_member?(session, "outsider@example.com")
     assert Registrations.Repo.get(RegistrationsWeb.User, outsider.id).team_id == team.id
-    Nav.assert_info_text(session, "outsider@example.com added to the team.")
 
-    # Remove the original member.
+    # Remove the original member (same ordering — settle on the flash, then
+    # assert the row is gone).
     Teams.remove_member(session, "member@example.com")
+    Nav.assert_info_text(session, "member@example.com removed from the team.")
     refute Teams.has_member?(session, "member@example.com")
     assert Registrations.Repo.get(RegistrationsWeb.User, member.id).team_id == nil
-    Nav.assert_info_text(session, "member@example.com removed from the team.")
   end
 
   test "admin can view team JSON", %{session: session} do
