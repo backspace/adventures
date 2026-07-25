@@ -77,13 +77,17 @@ defmodule Registrations.Landgrab.AccommodationTest do
       assert Landgrab.pole_liberated?(pole)
     end
 
-    test "refuses unowned ground — nothing to liberate" do
+    test "frees unowned ground too — a liberator can work any stake" do
       %{pole: pole} = prohibitive_setup()
       liberator = insert(:team) |> accepted()
       insert(:user, team_id: liberator.id, accessibility_tags: ["stairs"])
 
-      assert {:error, :nothing_to_liberate} =
-               Landgrab.accommodate_pole(pole, liberator.id, nil)
+      # Never-claimed ground: the accommodation books a "liberate" event rather
+      # than being refused. Ownership is a no-op (nothing was owned), but the
+      # subversion team's action still lands.
+      assert {:ok, ^pole} = Landgrab.accommodate_pole(pole, liberator.id, nil)
+      assert Landgrab.current_owner_team_id_for_pole(pole) == nil
+      assert Landgrab.pole_liberated?(pole)
     end
   end
 

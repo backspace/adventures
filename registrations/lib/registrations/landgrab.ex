@@ -693,11 +693,10 @@ defmodule Registrations.Landgrab do
       pole_outside_endgame_zone?(pole) ->
         {:error, :outside_zone}
 
-      # Strict roles: a liberator can only free OWNED ground (nothing to
-      # liberate on never-claimed or already-freed stakes).
-      liberating? and is_nil(current_owner_team_id_for_pole(pole)) ->
-        {:error, :nothing_to_liberate}
-
+      # A liberator can free ANY stake — owned by anyone, already-freed, or
+      # never-claimed. On an ownerless stake the "liberate" event is an
+      # ownership no-op (matching scan_payload and insert_liberation), so
+      # there's no "nothing to liberate" refusal here anymore.
       not prohibitive_for_team?(pole, team_id) ->
         {:error, :not_prohibitive}
 

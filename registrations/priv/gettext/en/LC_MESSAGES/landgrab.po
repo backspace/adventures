@@ -289,9 +289,6 @@ msgstr "This %{stake} has a %{relic} that’s compatible with your team’s spec
 msgid "app_claim_failed_detail"
 msgstr "That %{stake} couldn’t be claimed. Try again."
 
-msgid "app_nothing_to_liberate_detail"
-msgstr "No one holds this %{zone} — there is nothing here to liberate. Free the %{zones} that are held."
-
 msgid "app_already_liberated_detail"
 msgstr "This %{zone} was returned to no one while you worked — it is already free."
 

@@ -120,8 +120,7 @@ defmodule Registrations.Landgrab.PlayerStrings do
   def not_prohibitive_detail, do: phrase("app_not_prohibitive_detail")
   def claim_failed_detail, do: phrase("app_claim_failed_detail")
 
-  # Liberation refusals (strict roles + races). DRAFT copy.
-  def nothing_to_liberate_detail, do: phrase("app_nothing_to_liberate_detail")
+  # Liberation refusals (races). DRAFT copy.
   def already_liberated_detail, do: phrase("app_already_liberated_detail")
 
   # Gameplay actions (scanning a stake, answering a relic) attempted

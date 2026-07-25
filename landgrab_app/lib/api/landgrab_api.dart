@@ -449,9 +449,6 @@ class LandgrabApi {
       if (code == 'outside_zone' && poleJson != null) {
         return ScanOutsideZone(Pole.fromJson(poleJson));
       }
-      if (code == 'nothing_to_liberate' && poleJson != null) {
-        return ScanNothingToLiberate(Pole.fromJson(poleJson));
-      }
       if (code == 'at_capacity') {
         final active = (e.response?.data['active_puzzlets'] as List?)
                 ?.map((p) => ScanResult.fromJson(p as Map<String, dynamic>))

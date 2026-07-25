@@ -136,7 +136,9 @@ defmodule Registrations.Landgrab.LiberationGameplayTest do
         )
 
       assert notification
-      assert notification.body =~ "liberated"
+      # Freed reads as "unclaimed" in player copy (a stake returned to the
+      # commons), never "captured".
+      assert notification.body =~ "unclaimed"
       refute notification.body =~ "captured"
     end
 

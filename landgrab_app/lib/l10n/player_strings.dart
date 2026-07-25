@@ -486,10 +486,6 @@ class ScanStrings {
 
   // Nothing-to-liberate dialog (strict roles: a team that joined the
   // liberation can only free OWNED ground). DRAFT copy.
-  static const nothingToLiberateTitle = 'Nothing to unclaim';
-  static String nothingToLiberateBody(String poleName) =>
-      'No one holds $poleName — there is nothing to unclaim. Find another $poleName';
-
   // Generic acknowledge button used across the dialogs above.
   static const ok = 'OK';
 }

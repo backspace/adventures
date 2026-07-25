@@ -301,14 +301,6 @@ class ScanNotStarted extends ScanOutcome {
   const ScanNotStarted();
 }
 
-/// Strict roles: the scanner's team joined the liberation, and this
-/// ground is unowned (never claimed, or already freed) — there is
-/// nothing here for them to liberate.
-class ScanNothingToLiberate extends ScanOutcome {
-  final Pole pole;
-  const ScanNothingToLiberate(this.pole);
-}
-
 /// The team is already at its active-puzzlet limit; they must finish
 /// or give up what they're on before picking up this one. Carries the
 /// puzzlet(s) they currently hold so the dialog can name them.
