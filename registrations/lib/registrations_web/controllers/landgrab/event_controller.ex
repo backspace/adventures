@@ -13,11 +13,11 @@ defmodule RegistrationsWeb.Landgrab.EventController do
       start_time: event.start_time,
       started: Event.started?(event, now),
       endgame: render_endgame(event),
-      # Newest app build the server has seen ping in, per platform. The client
-      # compares its own build against its platform's value and shows a soft
-      # "update available" banner when it's behind. Null until a build pings.
-      latest_build_ios: event.latest_build_ios,
-      latest_build_android: event.latest_build_android
+      # The minimum app build the game supports, per platform. The client shows
+      # a soft "please update" banner only when its own build is BELOW this
+      # floor. Null (the default) = no floor, no banner.
+      min_supported_build_ios: event.min_supported_build_ios,
+      min_supported_build_android: event.min_supported_build_android
     })
   end
 

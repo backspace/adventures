@@ -854,16 +854,17 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     );
   }
 
-  // True when this client's build is behind the newest one the server has seen
-  // for this platform (iOS/Android tracked separately). Drives the soft
-  // update banner; false when the build is unknown or the server hasn't seen
-  // a newer one.
+  // True when this client's build is BELOW the minimum the game supports for
+  // this platform (iOS/Android tracked separately) — an admin-set floor, so
+  // newer internal builds never trigger it. Drives the soft update banner;
+  // false when the build is unknown or no floor is set.
   bool get _updateAvailable {
     final mine = int.tryParse(AppInfo.build);
     if (mine == null) return false;
-    final latest =
-        Platform.isIOS ? _event?.latestBuildIos : _event?.latestBuildAndroid;
-    return latest != null && latest > mine;
+    final minSupported = Platform.isIOS
+        ? _event?.minSupportedBuildIos
+        : _event?.minSupportedBuildAndroid;
+    return minSupported != null && mine < minSupported;
   }
 
   // Soft "please update" banner — dismissible, never blocking. When the

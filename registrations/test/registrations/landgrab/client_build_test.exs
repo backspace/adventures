@@ -1,51 +1,33 @@
 defmodule Registrations.Landgrab.ClientBuildTest do
-  use Registrations.DataCase
+  @moduledoc """
+  The minimum-supported-build floor that drives the app's soft "please update"
+  banner. Admin-set per platform (no longer auto-tracked from telemetry, which
+  let newer internal builds nag external testers who couldn't install them).
+  """
+  use Registrations.DataCase, async: true
 
-  alias Registrations.Landgrab
+  alias Registrations.Landgrab.Event
   alias Registrations.Landgrab.Events
   alias Registrations.Repo
 
-  defp reload, do: Repo.reload!(Events.current())
+  describe "minimum supported build" do
+    test "the changeset accepts an admin-set floor per platform" do
+      {:ok, event} =
+        Events.current()
+        |> Event.changeset(%{
+          min_supported_build_ios: 2410,
+          min_supported_build_android: 118
+        })
+        |> Repo.update()
 
-  describe "note_client_build/2" do
-    test "records the first build seen per platform" do
-      assert :ok = Landgrab.note_client_build("ios", 2403)
-      assert :ok = Landgrab.note_client_build("android", 118)
-
-      event = reload()
-      assert event.latest_build_ios == 2403
-      assert event.latest_build_android == 118
+      assert event.min_supported_build_ios == 2410
+      assert event.min_supported_build_android == 118
     end
 
-    test "ratchets up but never down" do
-      Landgrab.note_client_build("ios", 2403)
-      Landgrab.note_client_build("ios", 2410)
-      # An older client pinging in must not lower the high-water mark.
-      Landgrab.note_client_build("ios", 2400)
-
-      assert reload().latest_build_ios == 2410
-    end
-
-    test "tracks iOS and Android independently" do
-      Landgrab.note_client_build("ios", 2410)
-      Landgrab.note_client_build("android", 118)
-
-      event = reload()
-      assert event.latest_build_ios == 2410
-      # An Android ping never touches the iOS value even though the numbers
-      # diverge (Fastlane numbers each platform independently).
-      assert event.latest_build_android == 118
-    end
-
-    test "ignores unknown platforms and non-positive builds" do
-      assert :ok = Landgrab.note_client_build("other", 999)
-      assert :ok = Landgrab.note_client_build(nil, 999)
-      assert :ok = Landgrab.note_client_build("ios", 0)
-      assert :ok = Landgrab.note_client_build("ios", nil)
-
-      event = reload()
-      assert is_nil(event.latest_build_ios)
-      assert is_nil(event.latest_build_android)
+    test "defaults to no floor (nil), so no banner shows until one is set" do
+      event = Events.current()
+      assert is_nil(event.min_supported_build_ios)
+      assert is_nil(event.min_supported_build_android)
     end
   end
 end

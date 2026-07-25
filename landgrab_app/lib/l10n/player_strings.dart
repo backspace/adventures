@@ -190,11 +190,10 @@ class GameplayStrings {
   static const instructions = 'Instructions';
   static const details = 'Your details';
 
-  // Soft "newer build available" banner. The server auto-tracks the newest
-  // build it has seen per platform; when this client is behind, nudge (never
-  // block) an update.
+  // Soft "please update" banner. Shown when this build is below the minimum
+  // the game supports (an admin-set floor per platform); nudge, never block.
   static const updateAvailable =
-      'A newer version is available — please update to the latest build.';
+      'This version is out of date — please update to keep playing smoothly.';
   static const updateAction = 'Update';
   static const updateDismiss = 'Dismiss';
   static const updateOpenFailed =

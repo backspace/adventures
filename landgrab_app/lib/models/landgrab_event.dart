@@ -72,20 +72,19 @@ class LandgrabEvent {
   final DateTime? startTime;
   final bool started;
   final EndgameZone? endgame;
-  // Newest app build the server has seen ping in, per platform (iOS/Android
-  // number independently). Null until some build has pinged. The map compares
-  // its own build against its platform's value for the "update available"
-  // nudge.
-  final int? latestBuildIos;
-  final int? latestBuildAndroid;
+  // The minimum app build the game supports, per platform (iOS/Android number
+  // independently). Null = no floor. The map shows the soft "please update"
+  // nudge only when its own build is BELOW its platform's value.
+  final int? minSupportedBuildIos;
+  final int? minSupportedBuildAndroid;
 
   const LandgrabEvent({
     required this.name,
     required this.startTime,
     required this.started,
     this.endgame,
-    this.latestBuildIos,
-    this.latestBuildAndroid,
+    this.minSupportedBuildIos,
+    this.minSupportedBuildAndroid,
   });
 
   /// How long before the start the onboarding window opens — the instructions
@@ -110,7 +109,9 @@ class LandgrabEvent {
         started: json['started'] as bool,
         endgame:
             EndgameZone.fromJson(json['endgame'] as Map<String, dynamic>?),
-        latestBuildIos: (json['latest_build_ios'] as num?)?.toInt(),
-        latestBuildAndroid: (json['latest_build_android'] as num?)?.toInt(),
+        minSupportedBuildIos:
+            (json['min_supported_build_ios'] as num?)?.toInt(),
+        minSupportedBuildAndroid:
+            (json['min_supported_build_android'] as num?)?.toInt(),
       );
 }

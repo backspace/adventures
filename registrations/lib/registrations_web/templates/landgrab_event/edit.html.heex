@@ -67,6 +67,25 @@
 
       <br />
 
+      <h3>Minimum supported build</h3>
+      <p class="meta">
+        The app shows a soft “please update” banner only when its own build is
+        below this number (iOS and Android number separately). Leave blank for
+        no floor / no banner. Only raise it to a build you’ve confirmed
+        external testers can actually install — newer internal builds don’t
+        matter here.
+      </p>
+
+      <%= label(f, :min_supported_build_ios, "iOS minimum build") %>
+      <%= number_input(f, :min_supported_build_ios) %>
+      <%= error_tag(f, :min_supported_build_ios) %>
+
+      <%= label(f, :min_supported_build_android, "Android minimum build") %>
+      <%= number_input(f, :min_supported_build_android) %>
+      <%= error_tag(f, :min_supported_build_android) %>
+
+      <br />
+
       <h3>Endgame boundary</h3>
       <p class="meta">
         A capture boundary that shrinks toward the wrap-party spot,

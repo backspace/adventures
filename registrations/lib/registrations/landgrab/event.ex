@@ -67,13 +67,14 @@ defmodule Registrations.Landgrab.Event do
     # admin markup.
     field(:homepage_html, :string)
 
-    # Highest app build number the server has seen ping in, per platform (iOS
-    # and Android number independently — Fastlane bumps each separately). Auto-
-    # tracked from the telemetry boot ping (see Landgrab.note_client_build/2)
-    # so an "update available" banner needs no manual maintenance. Not cast in
-    # the public changeset — server-managed, updated directly.
-    field(:latest_build_ios, :integer)
-    field(:latest_build_android, :integer)
+    # The MINIMUM app build the game supports, per platform (iOS and Android
+    # number independently — Fastlane bumps each separately). The app shows a
+    # soft "please update" banner only when its own build is BELOW this floor,
+    # so newer internal-testing builds (which external testers can't install
+    # yet) never trigger it. Admin-set on the event page; null = no floor, no
+    # banner. Bump only to a build you've confirmed is externally available.
+    field(:min_supported_build_ios, :integer)
+    field(:min_supported_build_android, :integer)
 
     timestamps()
   end
@@ -92,6 +93,8 @@ defmodule Registrations.Landgrab.Event do
       :final_message_others,
       :accounting_at,
       :accounting_body,
+      :min_supported_build_ios,
+      :min_supported_build_android,
       :homepage_html | @endgame_fields
     ])
     |> validate_required([:name])
