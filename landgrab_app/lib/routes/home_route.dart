@@ -18,6 +18,7 @@ import 'package:landgrab/l10n/player_strings.dart';
 import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/author/author_route.dart';
 import 'package:landgrab/routes/credits_route.dart';
+import 'package:landgrab/routes/home/endgame_countdown.dart';
 import 'package:landgrab/routes/home/home_menu.dart';
 import 'package:landgrab/routes/home/in_progress_card.dart';
 import 'package:landgrab/routes/home/load_error_view.dart';
@@ -1541,26 +1542,51 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                   ? const []
                                   : _validatorOnlyMarkers(),
                             ),
-                            if (_gameEnded)
-                              const Positioned(
-                                top: 8,
-                                left: 8,
-                                right: 8,
-                                child: SimulationEndedCard(),
-                              )
-                            else if (_activePuzzlets.isNotEmpty)
-                              Positioned(
-                                top: 8,
-                                left: 8,
-                                right: 8,
-                                child: InProgressCard(
-                                  entry: _activePuzzlets.first,
-                                  onOpen: () =>
-                                      _openActivePuzzlet(_activePuzzlets.first),
-                                  onGiveUp: () => _giveUpActivePuzzlet(
-                                      _activePuzzlets.first),
-                                ),
+                            // Top-of-map overlays, stacked in one column so they
+                            // never overlap: the in-progress / ended card, then
+                            // the endgame countdown, then the hide-inaccessible
+                            // toggle.
+                            Positioned(
+                              top: 8,
+                              left: 8,
+                              right: 8,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  if (_gameEnded)
+                                    const SimulationEndedCard()
+                                  else if (_activePuzzlets.isNotEmpty)
+                                    InProgressCard(
+                                      entry: _activePuzzlets.first,
+                                      onOpen: () => _openActivePuzzlet(
+                                          _activePuzzlets.first),
+                                      onGiveUp: () => _giveUpActivePuzzlet(
+                                          _activePuzzlets.first),
+                                    ),
+                                  // Counts down the final 10 min to the end;
+                                  // self-hides (zero-size) until then, red in the
+                                  // last minute. Absent when the game has ended.
+                                  if (!_gameEnded && _event?.endgame != null)
+                                    EndgameCountdown(
+                                        endsAt: _event!.endgame!.endsAt),
+                                  // Hide-inaccessible toggle (right-aligned), only
+                                  // when the team has a prohibitive stake and the
+                                  // game's still on.
+                                  if (!_gameEnded && _prohibitiveCount > 0)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: HideProhibitiveChip(
+                                          hidden: _hideProhibitive,
+                                          count: _prohibitiveCount,
+                                          onToggle: _toggleHideProhibitive,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
+                            ),
                             // Locate-me lives bottom-left, matching the pin
                             // map — the Scan FAB owns the bottom-right.
                             Align(
@@ -1596,22 +1622,6 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                                 ),
                               ),
                             ),
-                            // Hide-inaccessible toggle — only when the team has
-                            // at least one prohibitive stake, so it never
-                            // clutters the map for players without such needs.
-                            // Gone once the game's ended: there's nothing left
-                            // to engage, and it would collide with the ended
-                            // notice in the same corner.
-                            if (!_gameEnded && _prohibitiveCount > 0)
-                              Positioned(
-                                top: _activePuzzlets.isNotEmpty ? 96 : 8,
-                                right: 8,
-                                child: HideProhibitiveChip(
-                                  hidden: _hideProhibitive,
-                                  count: _prohibitiveCount,
-                                  onToggle: _toggleHideProhibitive,
-                                ),
-                              ),
                             // THROWAWAY dev tuner for the liberated look —
                             // only in --dart-define=LIBERATED_TUNER=true builds.
                             if (kLiberatedTunerEnabled)
