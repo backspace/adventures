@@ -2289,7 +2289,21 @@ defmodule Registrations.Landgrab do
   # that rank through a multiply coprime to 900 (a bijection) into 100–999.
   # The result: every stake gets a distinct number, scattered across the
   # range, that hints at neither creation order nor the total count.
-  defp pole_number(%Pole{id: id}), do: Map.fetch!(pole_number_map(), id)
+  defp pole_number(%Pole{id: id}) do
+    case Map.fetch(pole_number_map(), id) do
+      {:ok, number} ->
+        number
+
+      # The memoised map predates this stake — it was created later in the same
+      # (long-lived or test) process. The event's stake set is fixed in
+      # production so a request rarely hits this, but naming a just-created
+      # stake must not raise (it silently drops notifications via the callers'
+      # rescues), so rebuild the map once and look up again.
+      :error ->
+        Process.delete(:landgrab_pole_numbers)
+        Map.fetch!(pole_number_map(), id)
+    end
+  end
 
   # The ranking is identical for every stake in a given pole set, so we build
   # the whole id→number map in one query and memoise it for the process. A
