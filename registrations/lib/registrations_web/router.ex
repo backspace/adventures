@@ -382,6 +382,7 @@ defmodule RegistrationsWeb.Router do
     get("/endgame", EndgameController, :show)
     put("/endgame", EndgameController, :update)
     put("/endgame/messages", EndgameController, :update_messages)
+    post("/endgame/shift", EndgameController, :shift)
     get("/relief", ReliefController, :show)
     put("/relief", ReliefController, :update)
     get("/liberation", LiberationController, :show)

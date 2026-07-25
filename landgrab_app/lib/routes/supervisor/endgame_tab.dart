@@ -315,6 +315,30 @@ class _EndgameTabState extends State<EndgameTab> {
     }
   }
 
+  /// Push the whole scheduled timeline (endgame shrink + liberation rollout)
+  /// back five minutes on the server, then reload so the shifted times show
+  /// here. Live control — no unsaved form edits are involved.
+  Future<void> _shiftSchedule() async {
+    setState(() => _saving = true);
+    try {
+      await widget.api.shiftSchedule();
+      if (!mounted) return;
+      await _load();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content:
+            Text('Schedule pushed back 5 minutes. Player maps update live.'),
+      ));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Failed: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
   Future<void> _pickDateTime({required bool start}) async {
     final existing = (start ? _startsAt : _endsAt) ?? DateTime.now();
     final date = await showDatePicker(
@@ -577,6 +601,24 @@ class _EndgameTabState extends State<EndgameTab> {
                   child: Text(_configured ? 'Update' : 'Save'),
                 ),
               ]),
+              const Divider(height: 24),
+              // Live "running behind" control: moves everything still upcoming
+              // back 5 minutes (spacing kept). Anything already past — and the
+              // start once the sim has begun — stays put.
+              OutlinedButton.icon(
+                onPressed: _saving ? null : _shiftSchedule,
+                icon: const Icon(Icons.more_time),
+                label: const Text('Push schedule back 5 min'),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'Delays everything still upcoming by 5 minutes — the endgame '
+                  'shrink, liberation rollout, and (before it begins) the '
+                  'simulation’s start. Anything already past stays put.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
               _finalMessagesEditor(context),
             ],
           ),

@@ -1171,6 +1171,20 @@ class LandgrabApi {
     );
   }
 
+  /// Push every scheduled endgame + liberation milestone back five minutes
+  /// (a server-fixed amount), preserving their spacing. The event's start time
+  /// is left alone. Returns the refreshed endgame config.
+  Future<EndgameConfig> shiftSchedule() async {
+    final response = await dio.post('/landgrab/supervision/endgame/shift');
+    final data = response.data as Map<String, dynamic>;
+    return (
+      endgame: EndgameZone.fromJson(data['endgame'] as Map<String, dynamic>?),
+      announcedAt: data['announced_at'] == null
+          ? null
+          : DateTime.tryParse('${data['announced_at']}Z'),
+    );
+  }
+
   /// Bedab's final-location messages ride the endgame payload; parsed
   /// separately so the boundary editor and the message editor stay
   /// decoupled (they save through different endpoints too).
