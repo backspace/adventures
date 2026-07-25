@@ -46,7 +46,29 @@ void showPoleOwner(
   required Pole pole,
   required String? teamId,
   required bool underAttack,
+  bool lostContact = false,
 }) {
+  // A stake the shrinking boundary has swept out of play: its ground stays
+  // painted, but the stake itself is gone. Report the lost contact (and who
+  // last held it) rather than live owner / lock / attack state.
+  if (lostContact) {
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+        content: Row(children: [
+          const Icon(Icons.sensors_off, color: Colors.white70),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+                GameplayStrings.zoneLostContact(pole.currentOwnerTeamName)),
+          ),
+        ]),
+      ));
+    return;
+  }
+
   final idx = pole.currentOwnerColorIndex;
   final owned = pole.currentOwnerTeamId != null && idx != null;
   final isMine = pole.currentOwnerTeamId == teamId;

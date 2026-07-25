@@ -282,6 +282,12 @@ class GameplayStrings {
       team == null ? 'Held by your team' : 'Held by your team ($team)';
   static String zoneOwnerOther(String? team) =>
       'Held by ${team ?? 'another team'}';
+  // Tapping a zone the shrinking endgame boundary has swept past: the stake is
+  // out of play, but its ground stays painted, so name what became of it.
+  static String zoneLostContact(String? team) => team == null
+      ? 'The simulation has lost contact with this ${Terms.zone}.'
+      : 'The simulation has lost contact with this ${Terms.zone}. '
+          'It was last held by $team.';
 }
 
 /// Location-permission pre-prompt rationale, shown just before the OS

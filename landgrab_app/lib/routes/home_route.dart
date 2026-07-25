@@ -897,6 +897,16 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     return poles.toList(growable: false);
   }
 
+  // True when the shrinking endgame boundary has swept past this pole — its
+  // zone stays painted, but the stake is out of play ("lost contact").
+  bool _isLostContact(Pole pole) {
+    final zone = _event?.endgame;
+    if (zone == null) return false;
+    final now = DateTime.now().toUtc();
+    return zone.activeAt(now) &&
+        !zone.containsAt(pole.latitude, pole.longitude, now);
+  }
+
   // How many loaded stakes are flagged prohibitive — gates the hide toggle so
   // it only appears for a team that actually has inaccessible stakes.
   int get _prohibitiveCount =>
@@ -1240,6 +1250,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         pole: pole,
         teamId: _teamId,
         underAttack: _lastAttackAt.containsKey(pole.id),
+        lostContact: _isLostContact(pole),
       );
 
   /// Tapped a pole (its marker, or close enough): flash its zone so the
