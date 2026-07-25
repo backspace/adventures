@@ -99,6 +99,13 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // poles get on the author map. Below _voTinyZoom they shrink to a
   // small star; above _voFullZoom they render at full size.
   double _mapZoom = 14;
+  // Player-map camera memory: fit the known poles on the first-ever view, then
+  // remember wherever the user leaves it (across launches) — snapping back to a
+  // reset map is jarring when you're focused on the zone you're working.
+  static const _mapCameraKey = 'gameplay_map';
+  ({double lat, double lng, double zoom})? _savedMapCamera;
+  bool _mapPanned = false;
+  Timer? _cameraPersistTimer;
   final MapController _mapController = MapController();
   // "Locate me" in flight — disables the button and shows a spinner.
   bool _locating = false;
@@ -201,6 +208,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     super.initState();
     _loadTerritoryBlocks();
     _load();
+    _loadSavedMapCamera();
     _connectSocket();
     UiPreferences.getHideProhibitive().then((v) {
       if (mounted && v) setState(() => _hideProhibitive = v);
@@ -489,6 +497,13 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     _socket?.dispose();
     _animTicker?.dispose();
     _zoneTimer?.cancel();
+    // Flush a pending camera write so a quick pan-then-leave still saves.
+    _cameraPersistTimer?.cancel();
+    final cam = _savedMapCamera;
+    if (_mapPanned && cam != null) {
+      UiPreferences.setMapCamera(_mapCameraKey,
+          lat: cam.lat, lng: cam.lng, zoom: cam.zoom);
+    }
     _mapController.dispose();
     super.dispose();
   }
@@ -1293,6 +1308,55 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     return LatLng(lat, lng);
   }
 
+  // First-frame fit around every known pole. Null when there are none yet (the
+  // map falls back to [_center] + a default zoom). maxZoom keeps a single pole
+  // (or a tight cluster) from slamming to full zoom.
+  CameraFit? _fitPoles() {
+    final list = _poles ?? const <Pole>[];
+    if (list.isEmpty) return null;
+    final coords = list.map((p) => LatLng(p.latitude, p.longitude)).toList();
+    if (coords.length == 1) {
+      return CameraFit.coordinates(coordinates: coords, maxZoom: 16);
+    }
+    return CameraFit.coordinates(
+      coordinates: coords,
+      padding: const EdgeInsets.all(48),
+      maxZoom: 16,
+    );
+  }
+
+  // Restore the remembered camera on launch. The map first-frames to the fit
+  // (poles) if this hasn't resolved yet; when it does, move to the saved view —
+  // unless the user has already panned this session (their gesture wins).
+  Future<void> _loadSavedMapCamera() async {
+    final saved = await UiPreferences.getMapCamera(_mapCameraKey);
+    if (!mounted || saved == null || _mapPanned) return;
+    setState(() => _savedMapCamera = saved);
+    try {
+      _mapController.move(LatLng(saved.lat, saved.lng), saved.zoom);
+    } catch (_) {
+      // Map not laid out yet — the initial camera uses _savedMapCamera instead.
+    }
+  }
+
+  // Every camera change from the map: keep the zoom (for size-scaled overlays)
+  // and, for deliberate pans/zooms, remember the view (debounced to disk).
+  void _onMapCameraChanged(LatLng? center, double? zoom, bool hasGesture) {
+    if (zoom != null && zoom != _mapZoom) {
+      setState(() => _mapZoom = zoom);
+    }
+    if (hasGesture && center != null && zoom != null) {
+      _mapPanned = true;
+      _savedMapCamera =
+          (lat: center.latitude, lng: center.longitude, zoom: zoom);
+      _cameraPersistTimer?.cancel();
+      _cameraPersistTimer = Timer(const Duration(milliseconds: 500), () {
+        UiPreferences.setMapCamera(_mapCameraKey,
+            lat: center.latitude, lng: center.longitude, zoom: zoom);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Once you're on a team the app bar is just the team name — the
@@ -1435,17 +1499,22 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                         : Stack(children: [
                             TerritoryMapView(
                               mapController: _mapController,
-                              center: _center(),
+                              // First-ever view fits the poles; once the user
+                              // has left it somewhere (remembered across
+                              // launches) that saved camera is used instead.
+                              initialCameraFit:
+                                  _savedMapCamera == null ? _fitPoles() : null,
+                              initialCenter: _savedMapCamera == null
+                                  ? _center()
+                                  : LatLng(_savedMapCamera!.lat,
+                                      _savedMapCamera!.lng),
+                              initialZoom: _savedMapCamera?.zoom ?? 14,
                               onMapTap: _showOwnerAt,
                               // Track camera zoom for size-scaled overlays
-                              // (validator-only pins); only setState when it
-                              // actually changes so panning doesn't rebuild
-                              // every frame.
-                              onZoomChanged: (z) {
-                                if (z != _mapZoom) {
-                                  setState(() => _mapZoom = z);
-                                }
-                              },
+                              // (validator-only pins) and remember deliberate
+                              // pans; only setState on a real zoom change so
+                              // panning doesn't rebuild every frame.
+                              onCameraChanged: _onMapCameraChanged,
                               territory: _territory,
                               territoryBlocks: _territoryBlocks,
                               puzzletPoints: _puzzletPoints,

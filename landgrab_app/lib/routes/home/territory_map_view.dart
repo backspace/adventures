@@ -30,14 +30,22 @@ import 'package:landgrab/widgets/zone_flash_layer.dart';
 /// locate button, chips) stay in HomeRoute's Stack.
 class TerritoryMapView extends StatelessWidget {
   final MapController mapController;
-  final LatLng center;
+
+  /// First-frame camera. [initialCameraFit] (when non-null) fits the poles and
+  /// wins over [initialCenter]/[initialZoom]; the parent passes the saved
+  /// camera via the latter when there's a remembered view. flutter_map applies
+  /// whichever only on the first frame, so later pans are untouched.
+  final CameraFit? initialCameraFit;
+  final LatLng initialCenter;
+  final double initialZoom;
 
   /// A tap on open map space (used to resolve which zone/pole was tapped).
   final void Function(LatLng point) onMapTap;
 
-  /// The camera's zoom on every change, so the parent can size zoom-scaled
-  /// overlays (it decides whether the change is worth a rebuild).
-  final void Function(double zoom) onZoomChanged;
+  /// Every camera change: centre, zoom, and whether it was a user gesture — so
+  /// the parent can size zoom-scaled overlays and remember a deliberate pan.
+  final void Function(LatLng? center, double? zoom, bool hasGesture)
+      onCameraChanged;
 
   // Territory sources, in precedence order: pre-dissolved per-pole shapes,
   // then live blocks, else the Voronoi fallback.
@@ -86,9 +94,11 @@ class TerritoryMapView extends StatelessWidget {
   const TerritoryMapView({
     super.key,
     required this.mapController,
-    required this.center,
+    required this.initialCameraFit,
+    required this.initialCenter,
+    required this.initialZoom,
     required this.onMapTap,
-    required this.onZoomChanged,
+    required this.onCameraChanged,
     required this.territory,
     required this.territoryBlocks,
     required this.puzzletPoints,
@@ -188,8 +198,11 @@ class TerritoryMapView extends StatelessWidget {
     return FlutterMap(
       mapController: mapController,
       options: MapOptions(
-        initialCenter: center,
-        initialZoom: 14,
+        // A remembered camera comes in via initialCenter/Zoom; the first-ever
+        // view fits the poles via initialCameraFit (which overrides them).
+        initialCameraFit: initialCameraFit,
+        initialCenter: initialCenter,
+        initialZoom: initialZoom,
         // Tap a zone to see who holds it.
         onTap: (_, point) => onMapTap(point),
         // Make rotation deliberate: the gesture race commits a two-finger
@@ -201,10 +214,8 @@ class TerritoryMapView extends StatelessWidget {
           enableMultiFingerGestureRace: true,
           rotationThreshold: 25,
         ),
-        onPositionChanged: (position, _) {
-          final z = position.zoom;
-          if (z != null) onZoomChanged(z);
-        },
+        onPositionChanged: (position, hasGesture) =>
+            onCameraChanged(position.center, position.zoom, hasGesture),
       ),
       children: [
         landgrabTileLayer(context),
