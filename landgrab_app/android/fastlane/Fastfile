@@ -49,7 +49,7 @@ def next_build_number
   [commit_count, latest + 1].max
 end
 
-def flutter_build_aab(flavor:, api_root:, sentry_dsn:, build_number:)
+def flutter_build_aab(flavor:, api_root:, sentry_dsn:, build_number:, install_url:)
   # Fail fast rather than silently shipping a build with crash reporting
   # disabled. This Fastfile auto-loads android/fastlane/.env.fastlane (see
   # the top of the file), so an empty DSN here means that file is missing
@@ -58,13 +58,21 @@ def flutter_build_aab(flavor:, api_root:, sentry_dsn:, build_number:)
     UI.user_error!("SENTRY_DSN is empty — Sentry would be disabled in this build. Set SENTRY_DSN in android/fastlane/.env.fastlane (see .env.fastlane.example) and retry.")
   end
 
+  # Soft feature — an empty URL just hides the update banner's button. Warn
+  # (don't fail) so a forgotten ANDROID_INSTALL_URL is noticed but never
+  # blocks a release. See .env.fastlane.example.
+  if install_url.to_s.strip.empty?
+    UI.important("ANDROID_INSTALL_URL is empty — the in-app 'Update' button will be hidden. Set it in android/fastlane/.env.fastlane (see .env.fastlane.example) if you want it.")
+  end
+
   Dir.chdir(FLUTTER_PROJECT_DIR) do
     sh(
       "flutter", "build", "appbundle",
       "--build-number=#{build_number}",
       "--dart-define=FLAVOR_NAME=#{flavor}",
       "--dart-define=API_ROOT=#{api_root}",
-      "--dart-define=SENTRY_DSN=#{sentry_dsn}"
+      "--dart-define=SENTRY_DSN=#{sentry_dsn}",
+      "--dart-define=ANDROID_INSTALL_URL=#{install_url}"
     )
   end
 end
@@ -77,7 +85,8 @@ platform :android do
       flavor: "alpha",
       api_root: ALPHA_API_ROOT,
       sentry_dsn: ENV.fetch("SENTRY_DSN", ""),
-      build_number: build_number
+      build_number: build_number,
+      install_url: ENV.fetch("ANDROID_INSTALL_URL", "")
     )
     upload_to_play_store(
       aab: find_aab,
@@ -104,7 +113,8 @@ platform :android do
       flavor: "production",
       api_root: PRODUCTION_API_ROOT,
       sentry_dsn: ENV.fetch("SENTRY_DSN", ""),
-      build_number: build_number
+      build_number: build_number,
+      install_url: ENV.fetch("ANDROID_INSTALL_URL", "")
     )
     upload_to_play_store(
       aab: find_aab,

@@ -44,13 +44,20 @@ def next_build_number
   [commit_count, latest + 1].max
 end
 
-def flutter_build_ipa(flavor:, api_root:, sentry_dsn:)
+def flutter_build_ipa(flavor:, api_root:, sentry_dsn:, install_url:)
   # Fail fast rather than silently shipping a build with crash reporting
   # disabled. This Fastfile auto-loads ios/fastlane/.env.fastlane (see the
   # top of the file), so an empty DSN here means that file is missing or
   # has no SENTRY_DSN — see .env.fastlane.example.
   if sentry_dsn.to_s.strip.empty?
     UI.user_error!("SENTRY_DSN is empty — Sentry would be disabled in this build. Set SENTRY_DSN in ios/fastlane/.env.fastlane (see .env.fastlane.example) and retry.")
+  end
+
+  # Soft feature — an empty URL just hides the update banner's button. Warn
+  # (don't fail) so a forgotten IOS_INSTALL_URL is noticed but never blocks a
+  # release. See .env.fastlane.example.
+  if install_url.to_s.strip.empty?
+    UI.important("IOS_INSTALL_URL is empty — the in-app 'Update' button will be hidden. Set it in ios/fastlane/.env.fastlane (see .env.fastlane.example) if you want it.")
   end
 
   build_number = next_build_number
@@ -61,7 +68,8 @@ def flutter_build_ipa(flavor:, api_root:, sentry_dsn:)
       "--export-options-plist=ios/ExportOptions.plist",
       "--dart-define=FLAVOR_NAME=#{flavor}",
       "--dart-define=API_ROOT=#{api_root}",
-      "--dart-define=SENTRY_DSN=#{sentry_dsn}"
+      "--dart-define=SENTRY_DSN=#{sentry_dsn}",
+      "--dart-define=IOS_INSTALL_URL=#{install_url}"
     )
   end
   build_number
@@ -146,7 +154,8 @@ platform :ios do
     build_number = flutter_build_ipa(
       flavor: "production",
       api_root: PRODUCTION_API_ROOT,
-      sentry_dsn: ENV.fetch("SENTRY_DSN", "")
+      sentry_dsn: ENV.fetch("SENTRY_DSN", ""),
+      install_url: ENV.fetch("IOS_INSTALL_URL", "")
     )
     upload_to_internal
     UI.header("Build #{build_number} uploaded — internal testers have it now")

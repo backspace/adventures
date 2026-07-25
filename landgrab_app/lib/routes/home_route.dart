@@ -8,8 +8,10 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/app_info.dart';
+import 'package:landgrab/install_links.dart';
 import 'package:landgrab/models/bathroom.dart';
 import 'package:landgrab/models/pole.dart';
 import 'package:landgrab/models/landgrab_event.dart';
@@ -835,18 +837,44 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     return latest != null && latest > mine;
   }
 
-  // Soft "please update" banner — dismissible, never blocking.
+  // Soft "please update" banner — dismissible, never blocking. When the
+  // platform has a store/testing channel, offer to open it (the app can't
+  // self-update, so this is a hand-off to TestFlight / Play).
   Widget _updateBanner() {
     return MaterialBanner(
       leading: const Icon(Icons.system_update_alt_outlined),
       content: const Text(GameplayStrings.updateAvailable),
       actions: [
+        if (InstallLinks.updateUrl != null)
+          TextButton(
+            onPressed: _openUpdate,
+            child: const Text(GameplayStrings.updateAction),
+          ),
         TextButton(
           onPressed: () => setState(() => _updateBannerDismissed = true),
           child: const Text(GameplayStrings.updateDismiss),
         ),
       ],
     );
+  }
+
+  // Hand off to the store / testing channel this build came from. On failure
+  // (no handler, offline) tell the player rather than silently doing nothing.
+  Future<void> _openUpdate() async {
+    final url = InstallLinks.updateUrl;
+    if (url == null) return;
+
+    final opened = await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    ).catchError((_) => false);
+
+    if (!opened) {
+      _snack(SnackBar(
+        content: const Text(GameplayStrings.updateOpenFailed),
+        behavior: SnackBarBehavior.floating,
+      ));
+    }
   }
 
   // Reconcile the invite banner with the freshly-fetched notifications: show

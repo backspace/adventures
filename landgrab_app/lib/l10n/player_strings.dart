@@ -195,7 +195,10 @@ class GameplayStrings {
   // block) an update.
   static const updateAvailable =
       'A newer version is available — please update to the latest build.';
+  static const updateAction = 'Update';
   static const updateDismiss = 'Dismiss';
+  static const updateOpenFailed =
+      "Couldn't open the store — please update manually.";
   static const author = 'Author';
   static const validate = 'Validate';
   static const supervise = 'Supervise';
