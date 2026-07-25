@@ -39,6 +39,7 @@ defmodule Registrations.Landgrab.AccessibilityTag do
     reach_required
     requires_hearing
     requires_vision
+    requires_nfc
   )
 
   def all, do: @all

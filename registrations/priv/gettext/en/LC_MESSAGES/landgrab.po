@@ -112,6 +112,12 @@ msgstr "No detailed vision"
 msgid "accessibility_tag.requires_vision.help"
 msgstr "Some observations require reading fine print, distinguishing colors, or other visual detail."
 
+msgid "accessibility_tag.requires_nfc.label"
+msgstr "No NFC scanning"
+
+msgid "accessibility_tag.requires_nfc.help"
+msgstr "Some observations require scanning an NFC tag, which not every device can do."
+
 # ── In-game vocabulary ───────────────────────────────────────────────
 # The single place to rename these words across every player-facing
 # string — the server mirror of the Flutter app's `Terms` class

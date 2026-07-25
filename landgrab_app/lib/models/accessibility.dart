@@ -12,6 +12,7 @@ const List<String> kAccessibilityTags = [
   'reach_required',
   'requires_hearing',
   'requires_vision',
+  'requires_nfc',
 ];
 
 /// Tags shown first in the chip selector for a pole (location-related).
@@ -32,6 +33,7 @@ const Set<String> kPuzzletPrimaryTags = {
   'reach_required',
   'requires_hearing',
   'requires_vision',
+  'requires_nfc',
 };
 
 /// Tags shown first for a region. Regions are physical containers, so the
@@ -57,6 +59,7 @@ String accessibilityTagLabel(String tag) => switch (tag) {
       'reach_required' => 'Reach required',
       'requires_hearing' => 'Requires hearing',
       'requires_vision' => 'Requires vision',
+      'requires_nfc' => 'Requires NFC',
       _ => tag,
     };
 
@@ -87,5 +90,7 @@ String accessibilityTagExplanation(String tag) => switch (tag) {
         'There\'s an audio component — a sound clue or something the player must listen to.',
       'requires_vision' =>
         'Requires reading fine print, distinguishing colors, or other visual detail beyond what enlarging or contrast adjustment can help with.',
+      'requires_nfc' =>
+        'The answer is submitted by scanning an NFC tag. A hard blocker for devices without NFC support.',
       _ => tag,
     };
