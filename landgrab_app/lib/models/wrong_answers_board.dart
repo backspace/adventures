@@ -76,7 +76,7 @@ class WrongAnswerPuzzlet {
 }
 
 /// The supervisor wrong-answers dashboard: puzzlets that have been missed,
-/// most-missed first (server-ordered).
+/// most-recently-failed first (server-ordered).
 class WrongAnswersBoard {
   final List<WrongAnswerPuzzlet> puzzlets;
 

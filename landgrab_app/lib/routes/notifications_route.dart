@@ -383,6 +383,8 @@ class _NotificationTile extends StatelessWidget {
         'message' => Icons.mail_outline,
         'liberation_invite' => Icons.handshake_outlined,
         'liberation_joined' => Icons.groups_outlined,
+        // Supervisor-only: a team ran out of guesses and is stuck.
+        'team_stuck' => Icons.support_agent_outlined,
         _ => Icons.notifications_none,
       };
 
@@ -391,6 +393,7 @@ class _NotificationTile extends StatelessWidget {
         'pole_lost' => Colors.red,
         'liberation_invite' => Colors.purple,
         'liberation_joined' => Colors.purple,
+        'team_stuck' => Colors.teal,
         _ => null,
       };
 

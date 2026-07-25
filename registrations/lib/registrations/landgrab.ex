@@ -1082,12 +1082,65 @@ defmodule Registrations.Landgrab do
 
           {:ok, %{result: :incorrect, attempts_remaining: 0}} ->
             abandon_active_puzzlet(team_id, puzzlet.id)
+            notify_supervisors_of_lockout(puzzlet, pole, team_id)
 
           _ ->
             :ok
         end
 
         result
+    end
+  end
+
+  # A team that exhausts its guesses on a puzzlet (three wrong answers) is
+  # stuck and can no longer attempt it — drop a `team_stuck` notification into
+  # each validation supervisor's team, so it shows under their bell (and pushes
+  # to their phone) prompting them to check the wrong-answers dashboard, where
+  # the just-stuck team now sorts to the top. Best-effort, post-commit, so it
+  # never affects the answer's outcome; no supervisors → no-op.
+  #
+  # Routed through the ordinary team funnel (supervisors always have a team),
+  # so body + metadata ride the PUBLIC `landgrab:map` broadcast — the correct
+  # answer is deliberately kept out of both; the supervisor reads it from the
+  # dashboard.
+  defp notify_supervisors_of_lockout(puzzlet, pole, team_id) do
+    stuck_team = team_id && Repo.get(RegistrationsWeb.Team, team_id)
+    stuck_name = (stuck_team && stuck_team.name) || "A team"
+    stake = supervisor_stake_label(pole)
+
+    body = "#{stuck_name} is stuck on #{stake} — they've used all their guesses."
+
+    metadata = %{
+      "stuck_team_id" => team_id,
+      "stuck_team_name" => stuck_team && stuck_team.name,
+      "puzzlet_id" => puzzlet.id,
+      "pole_id" => pole && pole.id
+    }
+
+    for recipient_team_id <- supervisor_team_ids() do
+      persist_and_deliver("team_stuck", recipient_team_id, nil, body, metadata, "A team is stuck")
+    end
+
+    :ok
+  end
+
+  defp supervisor_team_ids do
+    "validation_supervisor"
+    |> Registrations.Accounts.list_users_with_role()
+    |> Enum.map(& &1.team_id)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.uniq()
+  end
+
+  # The stake as a supervisor would recognise it: the author label when set,
+  # else the same synthetic name players see. Never the barcode — this body is
+  # persisted and broadcast on the public channel.
+  defp supervisor_stake_label(nil), do: "an unattached puzzlet"
+
+  defp supervisor_stake_label(%Pole{label: label} = pole) do
+    case label && String.trim(label) do
+      trimmed when is_binary(trimmed) and trimmed != "" -> trimmed
+      _ -> pole_name(pole)
     end
   end
 

@@ -4,7 +4,8 @@ import 'package:landgrab/models/wrong_answers_board.dart';
 
 /// Supervisor dashboard of wrong guesses: which puzzlets have been missed,
 /// what teams guessed, and the correct answer for reference. Puzzlets are
-/// listed most-missed first (server-ordered); tap one to expand its guesses.
+/// listed most-recently-failed first (server-ordered); tap one to expand its
+/// guesses.
 class WrongAnswersTab extends StatefulWidget {
   final LandgrabApi api;
   const WrongAnswersTab({super.key, required this.api});
