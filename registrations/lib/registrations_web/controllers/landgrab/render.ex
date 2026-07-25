@@ -50,6 +50,8 @@ defmodule RegistrationsWeb.Landgrab.Render do
       difficulty: puzzlet.difficulty,
       answer_type: puzzlet.answer_type,
       warning: puzzlet.warning,
+      accessibility_tags: puzzlet.accessibility_tags || [],
+      accessibility_notes: puzzlet.accessibility_notes,
       attempts_remaining: attempts_remaining,
       previous_wrong_answers: previous_wrong_answers,
       # Region the puzzlet sits in (if any), plus every ancestor's

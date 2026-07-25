@@ -11,6 +11,7 @@ import 'package:landgrab/routes/barcode_scanner_route.dart';
 import 'package:landgrab/routes/nfc_scanner_route.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:landgrab/widgets/accent_colors.dart';
+import 'package:landgrab/widgets/accessibility_tags_view.dart';
 import 'package:landgrab/widgets/region_context_card.dart';
 import 'package:landgrab/widgets/team_style.dart';
 import 'package:landgrab/widgets/warning_banner.dart';
@@ -325,6 +326,17 @@ class _PuzzletRouteState extends State<PuzzletRoute> {
                   breadcrumb: widget.puzzlet.region!.breadcrumb,
                   stanzas: widget.puzzlet.region!.stanzas,
                   tags: widget.puzzlet.region!.tags,
+                ),
+                const SizedBox(height: 16),
+              ],
+              // This relic's own accessibility tags/notes (distinct from its
+              // region's). Plain chips — no author-facing (i) explanation.
+              if (widget.puzzlet.hasAccessibilityInfo) ...[
+                AccessibilityTagsView(
+                  tags: widget.puzzlet.accessibilityTags,
+                  notes: widget.puzzlet.accessibilityNotes,
+                  title: PuzzletStrings.accessibilityTitle,
+                  explainable: false,
                 ),
                 const SizedBox(height: 16),
               ],

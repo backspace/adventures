@@ -515,6 +515,10 @@ class PuzzletStrings {
       : '$n other teams are also working on this ${Terms.stake}. Beat them to ${Terms.relic} claim the zone!';
   static const previouslyTried = 'Already tried by your team:';
 
+  // Heading over this relic's own accessibility tags/notes on the scan screen
+  // (distinct from the region's, shown in the region card).
+  static const accessibilityTitle = 'Accessibility';
+
   // Region context — the place the pole sits in, plus how to reach it
   // and what to expect, gathered up the region hierarchy.
   static const regionHeading = 'Where this is';

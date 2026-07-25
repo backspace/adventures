@@ -80,6 +80,12 @@ class Puzzlet {
   final String answerType;
   final String? warning;
 
+  /// The puzzlet's own accessibility tags and notes (what reaching or doing
+  /// THIS relic entails), distinct from its region's. Tags show to players as
+  /// plain chips (no author-facing explanation icon).
+  final List<String> accessibilityTags;
+  final String? accessibilityNotes;
+
   /// The region this puzzlet sits in (with its ancestor chain), or null
   /// if it isn't part of one. Carries the description / accessibility
   /// notes the player should see on arrival.
@@ -93,8 +99,14 @@ class Puzzlet {
     required this.previousWrongAnswers,
     this.answerType = 'loose_text',
     this.warning,
+    this.accessibilityTags = const [],
+    this.accessibilityNotes,
     this.region,
   });
+
+  bool get hasAccessibilityInfo =>
+      accessibilityTags.isNotEmpty ||
+      (accessibilityNotes != null && accessibilityNotes!.trim().isNotEmpty);
 
   factory Puzzlet.fromJson(Map<String, dynamic> json) => Puzzlet(
         id: json['id'] as String,
@@ -107,6 +119,11 @@ class Puzzlet {
             const [],
         answerType: json['answer_type'] as String? ?? 'loose_text',
         warning: json['warning'] as String?,
+        accessibilityTags: (json['accessibility_tags'] as List?)
+                ?.map((e) => e as String)
+                .toList(growable: false) ??
+            const [],
+        accessibilityNotes: json['accessibility_notes'] as String?,
         region: json['region'] == null
             ? null
             : PuzzletRegion.fromJson(json['region'] as Map<String, dynamic>),
