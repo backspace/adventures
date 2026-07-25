@@ -9,6 +9,23 @@ import 'package:landgrab/services/user_service.dart';
 // screen arrived; re-exported so socket consumers keep compiling.
 export 'package:landgrab/models/notification.dart';
 
+/// Derive the websocket endpoint from an API root.
+///
+/// `https://` → `wss://` and a localhost `http://` → `ws://` (there's no TLS
+/// in local dev). Crucially, any *non-localhost* `http://` root is coerced up
+/// to `wss://`: the deployed servers `force_ssl`-redirect the socket handshake
+/// with a 301, and WebSocket clients don't follow redirects — so a plaintext
+/// `ws://` to a real host silently never connects, and live delivery
+/// (notifications, territory) dies while HTTP (which does follow the redirect)
+/// keeps working. A stale build or a typo'd `http://` env override used to be
+/// enough to trigger exactly that; this makes it impossible.
+String landgrabWebsocketUrl(String apiRoot) {
+  final uri = Uri.parse(apiRoot);
+  final isLocal = uri.host == 'localhost' || uri.host == '127.0.0.1';
+  final scheme = (uri.scheme == 'https' || !isLocal) ? 'wss' : 'ws';
+  return uri.replace(scheme: scheme, path: '/socket/websocket').toString();
+}
+
 class PoleUpdate {
   final String id;
   final String? currentOwnerTeamId;
@@ -92,7 +109,7 @@ class LandgrabSocket {
       return;
     }
 
-    final wsUrl = '${apiRoot.replaceFirst('http', 'ws')}/socket/websocket';
+    final wsUrl = landgrabWebsocketUrl(apiRoot);
 
     _socket = PhoenixSocket(
       wsUrl,

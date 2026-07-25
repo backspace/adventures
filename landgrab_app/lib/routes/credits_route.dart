@@ -6,6 +6,7 @@ import 'package:landgrab/flavors.dart';
 import 'package:landgrab/routes/server_licenses_route.dart';
 import 'package:landgrab/services/env_service.dart';
 import 'package:landgrab/services/env_switch_service.dart';
+import 'package:landgrab/services/landgrab_socket.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 
 // Credits copy is plain real-world chrome (not in-storyline), so it
@@ -215,12 +216,29 @@ class _CreditsRouteState extends State<CreditsRoute> {
                   // the env switcher — is visible rather than silent.
                   ValueListenableBuilder<String?>(
                     valueListenable: EnvService.instance.currentApiRoot,
-                    builder: (context, root, _) => Text(
-                      root ?? '—',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
+                    builder: (context, root, _) => Column(
+                      children: [
+                        Text(
+                          root ?? '—',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        // The websocket endpoint the live channel actually
+                        // dials — derived from the API root but with the
+                        // wss/ws coercion applied, so a plaintext ws:// (which
+                        // silently 301s and kills live delivery) is visible
+                        // here rather than only in server logs.
+                        if (root != null)
+                          Text(
+                            landgrabWebsocketUrl(root),
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ],
