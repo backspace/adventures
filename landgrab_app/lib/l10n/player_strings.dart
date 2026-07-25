@@ -555,7 +555,7 @@ class PuzzletStrings {
       'Correct! ${Terms.zoneCap} captured and now fully locked.';
   static const correctPoleCaptured = 'Correct! ${Terms.zoneCap} captured.';
   static String incorrect(int remaining) =>
-      'Incorrect. $remaining attempt(s) left.';
+      'Incorrect. $remaining ${remaining == 1 ? 'attempt' : 'attempts'} left.';
   static const lockedOut =
       'Out of guesses, too many wrong answers. Wait for another team to '
       'capture this ${Terms.relic} before you can try again.';
