@@ -131,9 +131,11 @@ class _ScanRouteState extends State<ScanRoute> {
                 }
                 if (!mounted) return;
               } else if (current.pole.locked) {
-                // Fully captured: a dead end worth a modal, not a toast that
-                // vanishes before it's read as the scanner closes.
-                await _showFullyCapturedDialog();
+                // A dead end worth a modal, not a toast that vanishes before
+                // it's read as the scanner closes. The copy adapts to whether
+                // the stake is captured or now unclaimed.
+                await _showFullyCapturedDialog(
+                    liberated: current.pole.liberated);
                 if (!mounted) return;
               } else {
                 _showSnack(ScanStrings.noActivePuzzlet);
@@ -417,13 +419,21 @@ class _ScanRouteState extends State<ScanRoute> {
     );
   }
 
-  Future<void> _showFullyCapturedDialog() {
+  Future<void> _showFullyCapturedDialog({bool liberated = false}) {
+    // An unclaimed (liberated) dead-end isn't "fully captured" — say it's
+    // emptied-out unclaimed ground instead.
+    final title = liberated
+        ? ScanStrings.poleUnclaimedEmptiedTitle
+        : ScanStrings.poleFullyCapturedTitle;
+    final body = liberated
+        ? ScanStrings.poleUnclaimedEmptied
+        : ScanStrings.poleFullyCaptured;
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        title: const Text(ScanStrings.poleFullyCapturedTitle),
-        content: const Text(ScanStrings.poleFullyCaptured),
+        title: Text(title),
+        content: Text(body),
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(),

@@ -272,9 +272,13 @@ class GameplayStrings {
       'Show $n incompatible ${n == 1 ? Terms.stake : Terms.stakes}';
 
   // Extra lines appended to the tap snackbar so each map icon is explained.
-  // A locked stake (lock glyph) — fully captured, nothing left to solve.
+  // A locked stake (lock glyph) — nothing left to solve. When the stake is
+  // owned it's "fully captured"; once it's been unclaimed, that framing is
+  // wrong, so drop it and just say there's nothing left.
   static const zoneLocked =
       'Fully captured — no ${Terms.relics} left to solve here.';
+  static const zoneLockedUnclaimed =
+      'No ${Terms.relics} left to solve here.';
   // A stake under attack (pulsing ring) — a rival recently scanned it.
   static const zoneUnderAttack =
       'Under attack — a rival recently scanned this ${Terms.stake}.';
@@ -417,6 +421,11 @@ class ScanStrings {
   // Outcome snackbars
   static const poleFullyCaptured = 'This ${Terms.zone} is fully captured.';
   static const poleFullyCapturedTitle = 'Fully captured';
+  // Same dead-end, but the stake has been unclaimed — "fully captured" no
+  // longer fits, so frame it as emptied-out unclaimed ground.
+  static const poleUnclaimedEmptied =
+      'This ${Terms.zone} is unclaimed — no ${Terms.relics} left to solve here.';
+  static const poleUnclaimedEmptiedTitle = 'Nothing left here';
   static const noActivePuzzlet =
       'No active ${Terms.relics} for this ${Terms.stake}.';
   static const notStarted =

@@ -77,13 +77,19 @@ defmodule Registrations.Landgrab do
   def list_poles_with_state(team_id \\ nil) do
     teams = team_style_index()
     prohibitive_ids = prohibitive_pole_ids(team_id)
-    # In relief mode the map's "locked" is per-team (a stake you've drained),
-    # not the global lock — so a stake others captured but you can still play
-    # doesn't wrongly read as done. `team_solved` loaded once for the sweep.
+    # "Locked" is per-team wherever the team is served from its OWN pool rather
+    # than the global consume-once one (mirrors serving_locked?/2): relief mode,
+    # a liberated stake, or a liberator at an owned stake — a subversion player
+    # can keep freeing relics they haven't solved even when the stake reads
+    # "fully captured" globally. So the lock icon tracks what they can still do,
+    # not the global lock. Load the per-team data once for the sweep; only when
+    # some pole could serve per-team (relief on, or the viewer's a liberator).
     relief? = is_binary(team_id) and relief_active?()
-    team_solved = if relief?, do: team_solved_puzzlet_ids(team_id), else: MapSet.new()
+    liberator? = is_binary(team_id) and liberator?(team_id)
+    per_team_possible? = relief? or liberator?
+    team_solved = if per_team_possible?, do: team_solved_puzzlet_ids(team_id), else: MapSet.new()
 
-    playable_by_pole = if relief?, do: playable_puzzlet_ids_by_pole(), else: %{}
+    playable_by_pole = if per_team_possible?, do: playable_puzzlet_ids_by_pole(), else: %{}
 
     # Players only ever see validated poles — draft/in_review/retired stakes
     # are out of play and must not appear on the map (a supervisor retiring a
@@ -97,7 +103,14 @@ defmodule Registrations.Landgrab do
         |> pole_with_state(teams)
         |> Map.put(:prohibitive, MapSet.member?(prohibitive_ids, pole.id))
 
-      if relief? do
+      # This pole serves from the team's own pool (per-team lock) when relief is
+      # on, the stake is liberated, or a liberator faces an owned stake.
+      per_team? =
+        per_team_possible? and
+          (relief? or state.liberated? or
+             (liberator? and state.current_owner_team_id != nil))
+
+      if per_team? do
         ids = Map.get(playable_by_pole, pole.id, [])
         exhausted = ids != [] and Enum.all?(ids, &MapSet.member?(team_solved, &1))
         Map.put(state, :locked?, exhausted)

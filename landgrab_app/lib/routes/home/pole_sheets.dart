@@ -90,7 +90,13 @@ void showPoleOwner(
   // accessibility-blocked glyph). Locked and prohibitive are mutually exclusive
   // (a locked stake has no puzzlets left to conflict).
   final lines = <String>['${pole.name} — $owner'];
-  if (pole.locked) lines.add(GameplayStrings.zoneLocked);
+  if (pole.locked) {
+    // "Fully captured" only fits an owned stake; an unclaimed (liberated) one
+    // that's out of relics shouldn't claim to be captured.
+    lines.add(pole.liberated
+        ? GameplayStrings.zoneLockedUnclaimed
+        : GameplayStrings.zoneLocked);
+  }
   if (underAttack) lines.add(GameplayStrings.zoneUnderAttack);
   if (pole.prohibitive) lines.add(GameplayStrings.zoneProhibitive);
   final message = lines.join('\n');

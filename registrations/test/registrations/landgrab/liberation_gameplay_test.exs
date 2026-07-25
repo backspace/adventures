@@ -52,6 +52,38 @@ defmodule Registrations.Landgrab.LiberationGameplayTest do
       assert served && served.id == puzzlet.id
     end
 
+    test "the map lock is per-liberator, not the global fully-captured lock" do
+      pole = insert(:pole)
+      puzzlet = insert(:puzzlet, pole: pole, status: :validated)
+      owner = insert(:team)
+      insert(:ownership_event, puzzlet: puzzlet, team: owner, pole_id: pole.id)
+
+      liberator = insert(:team) |> accept!()
+      capturer = insert(:team)
+
+      locked_for = fn team_id ->
+        Landgrab.list_poles_with_state(team_id)
+        |> Enum.find(&(&1.pole.id == pole.id))
+        |> Map.fetch!(:locked?)
+      end
+
+      # Globally "fully captured" — locked for the capture side...
+      assert locked_for.(capturer.id) == true
+      # ...but the liberator still has an unsolved relic here, so the icon must
+      # NOT read locked for them (it tracks what they can still free).
+      refute locked_for.(liberator.id)
+
+      # Once they've freed it (solved that relic), it locks for them too.
+      insert(:ownership_event,
+        kind: "liberate",
+        puzzlet: puzzlet,
+        team: liberator,
+        pole_id: pole.id
+      )
+
+      assert locked_for.(liberator.id) == true
+    end
+
     test "scanning their OWN stake serves rather than refusing already_owner" do
       pole = insert(:pole)
       p1 = insert(:puzzlet, pole: pole, status: :validated, difficulty: 1)
