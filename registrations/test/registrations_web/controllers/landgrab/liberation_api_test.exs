@@ -120,7 +120,7 @@ defmodule RegistrationsWeb.Landgrab.LiberationApiTest do
         )
 
       assert note
-      assert note.body =~ "subversion"
+      assert note.body =~ "coalition"
       refute note.body =~ ~r/organiser/i
     end
 

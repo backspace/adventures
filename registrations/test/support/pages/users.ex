@@ -25,7 +25,9 @@ defmodule Registrations.Pages.Users do
   end
 
   def teamed(session, id) do
-    Browser.text(session, Query.css("#{user_container(id)} .teamed")) == "✓"
+    # The teamed cell shows "✓ <team name>" when on a team, "✘" otherwise —
+    # so look for the checkmark rather than matching the whole cell text.
+    String.contains?(Browser.text(session, Query.css("#{user_container(id)} .teamed")), "✓")
   end
 
   def build_team_from(session, id) do
