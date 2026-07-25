@@ -893,7 +893,8 @@ defmodule Registrations.Landgrab do
   Supervisor "wrong answers" dashboard: every puzzlet that has drawn at least
   one incorrect guess, with the correct answer for reference and each wrong
   attempt (the answer given, the team that gave it, and when). Puzzlets are
-  ordered most-missed first; attempts within a puzzlet run oldest to newest.
+  ordered by most recent failure first, so a puzzlet a team just got stuck on
+  floats to the top; attempts within a puzzlet also run newest to oldest.
   """
   def supervision_wrong_answers do
     # Team lives in `public`; without an explicit prefix the preload would
@@ -901,10 +902,12 @@ defmodule Registrations.Landgrab do
     # `landgrab.teams`. Puzzlet/pole are landgrab-prefixed, so they're fine.
     team_query = from(t in RegistrationsWeb.Team, prefix: "public")
 
+    # Newest first in SQL, so each group (Enum.group_by preserves order) is
+    # already newest→oldest and its head is the most recent failure.
     attempts =
       Attempt
       |> where([a], a.correct == false)
-      |> order_by([a], asc: a.inserted_at)
+      |> order_by([a], desc: a.inserted_at)
       |> Repo.all()
       |> Repo.preload(puzzlet: :pole, team: team_query)
 
@@ -927,6 +930,7 @@ defmodule Registrations.Landgrab do
                 barcode: puzzlet.pole.barcode
               },
           wrong_count: length(group),
+          most_recent_at: hd(group).inserted_at,
           attempts:
             Enum.map(group, fn a ->
               %{
@@ -938,7 +942,7 @@ defmodule Registrations.Landgrab do
             end)
         }
       end)
-      |> Enum.sort_by(& &1.wrong_count, :desc)
+      |> Enum.sort_by(& &1.most_recent_at, {:desc, NaiveDateTime})
 
     %{puzzlets: puzzlets}
   end
