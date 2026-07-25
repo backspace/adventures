@@ -49,8 +49,16 @@ defmodule Registrations.Integration.Messages do
 
     Nav.assert_info_text(session, "Message was sent")
 
-    wait_for_emails([empty_email, _ignored1, email, _ignored2])
-    assert email.to == [{"", "user@example.com"}]
+    # Find each email by recipient rather than list position: the "send to all"
+    # query (Repo.all(User)) has no ORDER BY, so delivery order is Postgres heap
+    # order and shifts unpredictably (e.g. logging the admin in UPDATEs their
+    # row, moving it in the heap) — a positional match flakes.
+    emails = wait_for_emails([_, _, _, _])
+    email = Enum.find(emails, &(&1.to == [{"", "user@example.com"}]))
+    empty_email = Enum.find(emails, &(&1.to == [{"", "empty@example.com"}]))
+    assert email
+    assert empty_email
+
     assert email.from == {"", "b@events.chromatin.ca"}
     assert email.subject == "[rendezvous] A Subject!"
 
