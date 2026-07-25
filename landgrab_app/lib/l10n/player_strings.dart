@@ -183,6 +183,8 @@ class GameplayStrings {
 
   static const scanFab = 'Scan';
   static const locateMe = 'Locate me';
+  // Endgame countdown pill (last 10 minutes). [time] is mm:ss.
+  static String endsIn(String time) => 'Simulation ends in $time';
   static const settings = 'Settings';
   static const credits = 'Credits';
   static const instructions = 'Instructions';
