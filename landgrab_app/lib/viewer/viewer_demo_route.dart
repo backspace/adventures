@@ -2,19 +2,24 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'package:landgrab/api/landgrab_api.dart';
 import 'package:landgrab/viewer/bundle_codec.dart';
 import 'package:landgrab/viewer/qr_stream_receiver.dart';
 import 'package:landgrab/viewer/qr_stream_sender.dart';
 import 'package:landgrab/viewer/viewer_browse_route.dart';
 import 'package:landgrab/viewer/viewer_dataset.dart';
+import 'package:landgrab/viewer/viewer_export.dart';
 
 /// Self-contained prototype of the device-to-device viewer flow. One device
-/// taps **Send** (shows the animated QR — no camera needed), the other taps
-/// **Receive** (scans it), and on completion the received, decrypted dataset
-/// opens in the browse view. Uses a fixed demo passphrase and a synthetic,
-/// non-sensitive dataset — this is a transport/UX prototype, not real content.
+/// **sends** (shows a looping QR stream), the other **receives** (scans it),
+/// and on completion the decrypted dataset opens in the browse view.
+///
+/// The send source can be the *real* content (fetched from the supervisor
+/// endpoints on this signed-in machine — the "bootstrap") or a synthetic demo
+/// set. Fixed demo passphrase — this is a transport/UX prototype.
 class ViewerDemoRoute extends StatelessWidget {
-  const ViewerDemoRoute({super.key});
+  final LandgrabApi api;
+  const ViewerDemoRoute({super.key, required this.api});
 
   static const String _passphrase = 'demo';
 
@@ -29,21 +34,36 @@ class ViewerDemoRoute extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Move a browsable dataset phone-to-phone with no server. '
-              'One device sends (shows a QR stream), the other receives '
-              '(scans it). Sending needs no camera — run Send on the Mac and '
-              'Receive on the phone, then point the phone at the screen.',
+              'Move a browsable dataset phone-to-phone with no server. Sending '
+              'needs no camera — run Send on the Mac and Receive on the phone, '
+              'then point the phone at the screen.',
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 24),
+            Text('Send', style: theme.textTheme.titleSmall),
+            const SizedBox(height: 8),
             FilledButton.icon(
-              icon: const Icon(Icons.qr_code_2),
-              label: const Text('Send (show QR stream)'),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const _SendScreen()),
+              icon: const Icon(Icons.cloud_download),
+              label: const Text('Send REAL content (fetch from server)'),
+              onPressed: () => _openSend(
+                context,
+                label: 'Real content',
+                source: () => ViewerExport.fetch(api),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              icon: const Icon(Icons.qr_code_2),
+              label: const Text('Send demo content (synthetic)'),
+              onPressed: () => _openSend(
+                context,
+                label: 'Demo content',
+                source: () async => demoDataset(),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text('Receive', style: theme.textTheme.titleSmall),
+            const SizedBox(height: 8),
             OutlinedButton.icon(
               icon: const Icon(Icons.qr_code_scanner),
               label: const Text('Receive (scan QR stream)'),
@@ -59,6 +79,16 @@ class ViewerDemoRoute extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _openSend(
+    BuildContext context, {
+    required String label,
+    required Future<ViewerDataset> Function() source,
+  }) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => _SendScreen(label: label, source: source),
+    ));
   }
 }
 
@@ -99,40 +129,67 @@ ViewerDataset demoDataset() => ViewerDataset(
     );
 
 class _SendScreen extends StatefulWidget {
-  const _SendScreen();
+  final String label;
+  final Future<ViewerDataset> Function() source;
+  const _SendScreen({required this.label, required this.source});
 
   @override
   State<_SendScreen> createState() => _SendScreenState();
 }
 
 class _SendScreenState extends State<_SendScreen> {
-  late final Future<Uint8List> _bundle =
-      ViewerBundle.encode(demoDataset(), passphrase: ViewerDemoRoute._passphrase);
+  late final Future<_SendPayload> _payload = _prepare();
+
+  Future<_SendPayload> _prepare() async {
+    final data = await widget.source();
+    final bytes = await ViewerBundle.encode(
+      data,
+      passphrase: ViewerDemoRoute._passphrase,
+    );
+    return _SendPayload(bytes: bytes, itemCount: data.itemCount);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Send')),
+      appBar: AppBar(title: Text('Send · ${widget.label}')),
       body: Center(
-        child: FutureBuilder<Uint8List>(
-          future: _bundle,
+        child: FutureBuilder<_SendPayload>(
+          future: _payload,
           builder: (context, snap) {
             if (snap.connectionState != ConnectionState.done) {
-              return const CircularProgressIndicator();
+              return const Padding(
+                padding: EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 12),
+                    Text('Fetching content and building the bundle…'),
+                  ],
+                ),
+              );
             }
             if (snap.hasError) {
-              return Text('Failed to build bundle: ${snap.error}');
+              return Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text('Could not build the bundle:\n${snap.error}',
+                    textAlign: TextAlign.center),
+              );
             }
-            final bytes = snap.data!;
+            final p = snap.data!;
             return SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  QrStreamSender(bundle: bytes),
+                  QrStreamSender(bundle: p.bytes),
                   const SizedBox(height: 16),
-                  Text('${(bytes.length / 1024).toStringAsFixed(1)} kB encrypted',
-                      style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    '${p.itemCount} items · '
+                    '${(p.bytes.length / 1024).toStringAsFixed(1)} kB encrypted',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ],
               ),
             );
@@ -141,6 +198,12 @@ class _SendScreenState extends State<_SendScreen> {
       ),
     );
   }
+}
+
+class _SendPayload {
+  final Uint8List bytes;
+  final int itemCount;
+  const _SendPayload({required this.bytes, required this.itemCount});
 }
 
 class _ReceiveScreen extends StatefulWidget {

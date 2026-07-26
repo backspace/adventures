@@ -301,7 +301,8 @@ class _SettingsRouteState extends State<SettingsRoute> {
               const SizedBox(height: 8),
               OutlinedButton.icon(
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const ViewerDemoRoute()),
+                  MaterialPageRoute(
+                      builder: (_) => ViewerDemoRoute(api: widget.api)),
                 ),
                 icon: const Icon(Icons.qr_code_2),
                 label: const Text('Device-to-device viewer demo'),
