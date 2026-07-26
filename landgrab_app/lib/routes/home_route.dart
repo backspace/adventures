@@ -1077,6 +1077,8 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
         );
       case HomeMenuItem.localDataViewer:
         _openLocalDataViewer();
+      case HomeMenuItem.forgetLocalData:
+        _forgetLocalData();
       case HomeMenuItem.settings:
         _openSettings();
       case HomeMenuItem.logOut:
@@ -1089,6 +1091,31 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     if (mounted && has != _hasLocalDataset) {
       setState(() => _hasLocalDataset = has);
     }
+  }
+
+  Future<void> _forgetLocalData() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Forget local data?'),
+        content: const Text(
+            'This removes the synced dataset from this device. You can sync it '
+            'again later.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Forget')),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await ViewerStore.clear();
+    if (!mounted) return;
+    setState(() => _hasLocalDataset = false);
+    _snack(const SnackBar(content: Text('Local data forgotten.')));
   }
 
   // Reopen the offline browser over the locally-stored (encrypted) dataset.

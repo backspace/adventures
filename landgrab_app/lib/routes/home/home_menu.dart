@@ -13,6 +13,7 @@ enum HomeMenuItem {
   instructions,
   credits,
   localDataViewer,
+  forgetLocalData,
   settings,
   logOut,
 }
@@ -74,6 +75,9 @@ class HomeMenu extends StatelessWidget {
         if (hasLocalDataset)
           _item(context, HomeMenuItem.localDataViewer,
               Icons.folder_special_outlined, 'Local data viewer'),
+        if (hasLocalDataset)
+          _item(context, HomeMenuItem.forgetLocalData, Icons.delete_outline,
+              'Forget local data'),
         // Settings is for everyone (it holds the light/dark toggle); the
         // environment switcher inside it stays gated by the 7-tap unlock,
         // checked within the route.
