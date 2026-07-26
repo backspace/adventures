@@ -17,6 +17,9 @@ dependencies:
   # Encrypts the offline viewer bundle (AES-GCM + PBKDF2); pure Dart so it also
   # runs under `flutter test`. Compression uses dart:io gzip (no dependency).
   cryptography: ^2.7.0
+  # Stores the received (already-encrypted) viewer bundle as a file in the app
+  # sandbox — see lib/viewer/viewer_store.dart.
+  path_provider: ^2.1.5
   flutter_dotenv: ^5.1.0
   flutter_secure_storage: ^9.2.2
   logger: ^2.4.0

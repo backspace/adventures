@@ -12,6 +12,7 @@ enum HomeMenuItem {
   details,
   instructions,
   credits,
+  localDataViewer,
   settings,
   logOut,
 }
@@ -25,6 +26,7 @@ class HomeMenu extends StatelessWidget {
   final bool isSupervisor;
   final bool hasTeam;
   final bool preEvent;
+  final bool hasLocalDataset;
   final String? accountEmail;
   final ValueChanged<HomeMenuItem> onSelected;
 
@@ -35,6 +37,7 @@ class HomeMenu extends StatelessWidget {
     required this.isSupervisor,
     required this.hasTeam,
     required this.preEvent,
+    this.hasLocalDataset = false,
     required this.accountEmail,
     required this.onSelected,
   });
@@ -66,6 +69,11 @@ class HomeMenu extends StatelessWidget {
             GameplayStrings.instructions),
         _item(context, HomeMenuItem.credits, Icons.info_outline,
             GameplayStrings.credits),
+        // Appears once a dataset has been synced device-to-device; reopens the
+        // offline browser over the stored (encrypted) content.
+        if (hasLocalDataset)
+          _item(context, HomeMenuItem.localDataViewer,
+              Icons.folder_special_outlined, 'Local data viewer'),
         // Settings is for everyone (it holds the light/dark toggle); the
         // environment switcher inside it stays gated by the 7-tap unlock,
         // checked within the route.

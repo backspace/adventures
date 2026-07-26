@@ -9,6 +9,7 @@ import 'package:landgrab/viewer/qr_stream_sender.dart';
 import 'package:landgrab/viewer/viewer_browse_route.dart';
 import 'package:landgrab/viewer/viewer_dataset.dart';
 import 'package:landgrab/viewer/viewer_export.dart';
+import 'package:landgrab/viewer/viewer_store.dart';
 
 /// Self-contained prototype of the device-to-device viewer flow. One device
 /// **sends** (shows a looping QR stream), the other **receives** (scans it),
@@ -223,6 +224,13 @@ class _ReceiveScreenState extends State<_ReceiveScreen> {
       final data = await ViewerBundle.decode(
         bytes,
         passphrase: ViewerDemoRoute._passphrase,
+      );
+      // Persist the (still-encrypted) bundle so it can be browsed offline later
+      // via the home menu; the passphrase goes to the keychain.
+      await ViewerStore.save(
+        bytes,
+        passphrase: ViewerDemoRoute._passphrase,
+        itemCount: data.itemCount,
       );
       if (!mounted) return;
       Navigator.of(context).pushReplacement(

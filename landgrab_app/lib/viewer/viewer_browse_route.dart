@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:landgrab/viewer/secure_screen_guard.dart';
 import 'package:landgrab/viewer/viewer_dataset.dart';
 
 /// Read-only browser over an imported [ViewerDataset]. No API, no game state —
@@ -11,7 +12,8 @@ class ViewerBrowseRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
+    return SecureScreenGuard(
+      child: DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: AppBar(
@@ -31,6 +33,7 @@ class ViewerBrowseRoute extends StatelessWidget {
             _PoleList(poles: dataset.poles),
           ],
         ),
+      ),
       ),
     );
   }

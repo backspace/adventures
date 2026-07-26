@@ -45,6 +45,9 @@ import 'package:landgrab/services/push_service.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/services/block_territory_service.dart';
 import 'package:landgrab/services/user_service.dart';
+import 'package:landgrab/viewer/viewer_browse_route.dart';
+import 'package:landgrab/viewer/viewer_dataset.dart';
+import 'package:landgrab/viewer/viewer_store.dart';
 import 'package:landgrab/widgets/liberated_zone_layer.dart';
 import 'package:landgrab/widgets/liberated_zone_tuner.dart';
 import 'package:landgrab/widgets/team_style.dart';
@@ -154,6 +157,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   static const double _voFullSize = 32;
   static const double _voTinySize = 10;
   bool _isSupervisor = false;
+  // Whether a device-to-device synced dataset is stored locally — gates the
+  // "Local data viewer" menu entry. Refreshed on init and after Settings (the
+  // sync flow lives under it for now).
+  bool _hasLocalDataset = false;
   LandgrabEvent? _event;
 
   LandgrabSocket? _socket;
@@ -219,6 +226,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     _load();
     _loadSavedMapCamera();
     _connectSocket();
+    _refreshLocalDataset();
     UiPreferences.getHideProhibitive().then((v) {
       if (mounted && v) setState(() => _hideProhibitive = v);
     });
@@ -1066,11 +1074,40 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
                 CreditsRoute(eventStarted: _event?.started ?? false),
           ),
         );
+      case HomeMenuItem.localDataViewer:
+        _openLocalDataViewer();
       case HomeMenuItem.settings:
         _openSettings();
       case HomeMenuItem.logOut:
         _logout();
     }
+  }
+
+  Future<void> _refreshLocalDataset() async {
+    final has = await ViewerStore.exists();
+    if (mounted && has != _hasLocalDataset) {
+      setState(() => _hasLocalDataset = has);
+    }
+  }
+
+  // Reopen the offline browser over the locally-stored (encrypted) dataset.
+  Future<void> _openLocalDataViewer() async {
+    ViewerDataset? data;
+    try {
+      data = await ViewerStore.load();
+    } catch (_) {
+      data = null;
+    }
+    if (!mounted) return;
+    if (data == null) {
+      // Stored entry vanished or couldn't be decrypted — drop the menu item.
+      setState(() => _hasLocalDataset = false);
+      _snack(const SnackBar(content: Text('No local data to view.')));
+      return;
+    }
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ViewerBrowseRoute(dataset: data!)),
+    );
   }
 
   // Settings can switch the player's team (scan another team's code). It pops
@@ -1080,6 +1117,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     final teamChanged = await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => SettingsRoute(api: widget.api)),
     );
+    // The QR sync flow lives under Settings for now — a dataset may have just
+    // been stored, so re-check whether the menu entry should appear.
+    await _refreshLocalDataset();
     if (teamChanged == true && mounted) {
       await _refreshIdentityAndLoad();
       if (mounted && _teamName != null) {
@@ -1542,6 +1582,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
             isSupervisor: _isSupervisor,
             hasTeam: _teamName != null,
             preEvent: preEvent,
+            hasLocalDataset: _hasLocalDataset,
             accountEmail: _accountEmail,
             onSelected: _onMenuSelected,
           ),
