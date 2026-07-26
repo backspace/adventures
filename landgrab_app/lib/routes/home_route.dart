@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -1093,8 +1094,10 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // Reopen the offline browser over the locally-stored (encrypted) dataset.
   Future<void> _openLocalDataViewer() async {
     ViewerDataset? data;
+    Uint8List? bytes;
     try {
       data = await ViewerStore.load();
+      bytes = await ViewerStore.rawBundle();
     } catch (_) {
       data = null;
     }
@@ -1106,7 +1109,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
       return;
     }
     await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ViewerBrowseRoute(dataset: data!)),
+      MaterialPageRoute(
+        builder: (_) => ViewerBrowseRoute(dataset: data!, bundleBytes: bytes),
+      ),
     );
   }
 

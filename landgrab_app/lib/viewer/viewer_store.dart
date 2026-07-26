@@ -57,6 +57,14 @@ class ViewerStore {
   /// Whether a stored dataset is present (file exists). Cheap — no decrypt.
   static Future<bool> exists() async => (await _file()).exists();
 
+  /// The stored bundle exactly as received — encrypted bytes, no decrypt — so
+  /// it can be relayed onward via QR to another device without server access.
+  static Future<Uint8List?> rawBundle() async {
+    final file = await _file();
+    if (!await file.exists()) return null;
+    return file.readAsBytes();
+  }
+
   /// Display metadata for the menu entry, or null if nothing is stored.
   static Future<ViewerStoreMeta?> meta() async {
     if (!await exists()) return null;

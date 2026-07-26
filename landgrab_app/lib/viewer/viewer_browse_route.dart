@@ -1,9 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:landgrab/viewer/secure_screen_guard.dart';
 import 'package:landgrab/viewer/viewer_dataset.dart';
+import 'package:landgrab/viewer/viewer_send_route.dart';
 import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 
 /// Read-only browser over an imported [ViewerDataset]. No API, no game state —
@@ -11,7 +14,13 @@ import 'package:landgrab/widgets/landgrab_tile_layer.dart';
 /// region-coloured map, and the region/stake lists.
 class ViewerBrowseRoute extends StatelessWidget {
   final ViewerDataset dataset;
-  const ViewerBrowseRoute({super.key, required this.dataset});
+
+  /// The encrypted bundle these bytes came from, when available (from the
+  /// store, or a fresh scan). Enables the "Send via QR" action so a device can
+  /// relay the data onward with no server access. Null hides the action.
+  final Uint8List? bundleBytes;
+
+  const ViewerBrowseRoute({super.key, required this.dataset, this.bundleBytes});
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +30,21 @@ class ViewerBrowseRoute extends StatelessWidget {
         child: Scaffold(
           appBar: AppBar(
             title: const Text('Browse'),
+            actions: [
+              if (bundleBytes != null)
+                IconButton(
+                  tooltip: 'Send via QR',
+                  icon: const Icon(Icons.ios_share),
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ViewerSendRoute(
+                        label: 'This dataset',
+                        bundleSource: () async => bundleBytes!,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
             bottom: const TabBar(
               isScrollable: true,
               tabs: [
