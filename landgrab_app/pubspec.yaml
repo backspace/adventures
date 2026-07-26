@@ -14,6 +14,9 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   dio: ^5.4.3+1
+  # Encrypts the offline viewer bundle (AES-GCM + PBKDF2); pure Dart so it also
+  # runs under `flutter test`. Compression uses dart:io gzip (no dependency).
+  cryptography: ^2.7.0
   flutter_dotenv: ^5.1.0
   flutter_secure_storage: ^9.2.2
   logger: ^2.4.0

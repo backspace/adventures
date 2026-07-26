@@ -9,6 +9,7 @@ import 'package:landgrab/services/env_service.dart';
 import 'package:landgrab/services/env_switch_service.dart';
 import 'package:landgrab/services/theme_service.dart';
 import 'package:landgrab/services/user_service.dart';
+import 'package:landgrab/viewer/viewer_demo_route.dart';
 import 'package:landgrab/widgets/landgrab_app_bar.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -294,6 +295,17 @@ class _SettingsRouteState extends State<SettingsRoute> {
             ),
               const SizedBox(height: 32),
               _accountsSection(context),
+              const SizedBox(height: 32),
+              Text('Offline viewer (prototype)',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ViewerDemoRoute()),
+                ),
+                icon: const Icon(Icons.qr_code_2),
+                label: const Text('Device-to-device viewer demo'),
+              ),
             ],
           ],
         ),
