@@ -1,3 +1,5 @@
+// Mocking uses path_provider's platform-interface packages (transitive deps).
+// ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
 
 import 'package:flutter/services.dart';

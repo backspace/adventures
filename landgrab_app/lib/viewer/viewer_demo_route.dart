@@ -125,6 +125,10 @@ ViewerDataset demoDataset() => ViewerDataset(
           answer: 'demo-answer-${i + 1}',
           answerType: const ['loose_text', 'strict_text', 'barcode', 'nfc'][i % 4],
           difficulty: i % 3,
+          // Scatter around the demo area so the map has something to show; a
+          // few are left location-less to exercise the list-only path.
+          latitude: i % 7 == 0 ? null : 49.8999 + (i % 10) * 0.0004,
+          longitude: i % 7 == 0 ? null : -97.1349 - (i % 8) * 0.0004,
         ),
       ),
     );

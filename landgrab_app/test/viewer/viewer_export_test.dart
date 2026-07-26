@@ -26,6 +26,8 @@ void main() {
     int difficulty = 2,
     String? poleId = 'p1',
     String? regionId = 'r1',
+    double? lat = 49.9,
+    double? lng = -97.13,
   }) =>
       DraftPuzzlet(
         id: id,
@@ -37,8 +39,8 @@ void main() {
         poleId: poleId,
         regionId: regionId,
         creatorId: null,
-        latitude: null,
-        longitude: null,
+        latitude: lat,
+        longitude: lng,
         accuracyM: null,
         insertedAt: null,
       );
@@ -67,6 +69,9 @@ void main() {
     expect(z.difficulty, 2);
     expect(z.poleId, 'p1');
     expect(z.regionId, 'r1');
+    expect(z.latitude, 49.9);
+    expect(z.longitude, -97.13);
+    expect(z.hasLocation, isTrue);
 
     expect(data.regions.single.name, 'Server room');
     expect(data.regions.single.entryInstructions, 'Badge in at the north door.');

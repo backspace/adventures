@@ -63,5 +63,7 @@ class ViewerExport {
         answer: p.answer,
         answerType: answerTypeToString(p.answerType),
         difficulty: p.difficulty,
+        latitude: p.latitude,
+        longitude: p.longitude,
       );
 }

@@ -49,6 +49,46 @@ class ViewerDataset {
       jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>);
 
   int get itemCount => poles.length + regions.length + puzzlets.length;
+
+  ViewerRegion? regionById(String? id) {
+    if (id == null) return null;
+    for (final r in regions) {
+      if (r.id == id) return r;
+    }
+    return null;
+  }
+
+  /// Puzzlets grouped by their region: named regions first (alphabetical), then
+  /// a trailing "no region" bucket. Within each group, puzzlets are ordered by
+  /// difficulty then instructions. A [regionId] that doesn't resolve to a known
+  /// region falls into the no-region bucket.
+  List<RegionGroup> groupedByRegion() {
+    final byId = {for (final r in regions) r.id: r};
+    final buckets = <String?, List<ViewerPuzzlet>>{};
+    for (final p in puzzlets) {
+      final key = byId.containsKey(p.regionId) ? p.regionId : null;
+      (buckets[key] ??= []).add(p);
+    }
+
+    int cmp(ViewerPuzzlet a, ViewerPuzzlet b) {
+      final d = a.difficulty.compareTo(b.difficulty);
+      return d != 0 ? d : a.instructions.compareTo(b.instructions);
+    }
+
+    final namedKeys = buckets.keys.whereType<String>().toList()
+      ..sort((a, b) =>
+          byId[a]!.name.toLowerCase().compareTo(byId[b]!.name.toLowerCase()));
+
+    final groups = [
+      for (final k in namedKeys)
+        RegionGroup(region: byId[k], puzzlets: [...buckets[k]!]..sort(cmp)),
+    ];
+    if (buckets.containsKey(null)) {
+      groups.add(
+          RegionGroup(region: null, puzzlets: [...buckets[null]!]..sort(cmp)));
+    }
+    return groups;
+  }
 }
 
 List<T> _list<T>(dynamic raw, T Function(Map<String, dynamic>) from) =>
@@ -146,6 +186,11 @@ class ViewerPuzzlet {
   final String answerType;
   final int difficulty;
 
+  /// Puzzlet's own location, when it has one. Regions don't carry coordinates
+  /// yet, so the map plots puzzlets; those without a location are list-only.
+  final double? latitude;
+  final double? longitude;
+
   const ViewerPuzzlet({
     required this.id,
     this.poleId,
@@ -154,7 +199,11 @@ class ViewerPuzzlet {
     required this.answer,
     required this.answerType,
     required this.difficulty,
+    this.latitude,
+    this.longitude,
   });
+
+  bool get hasLocation => latitude != null && longitude != null;
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -164,6 +213,8 @@ class ViewerPuzzlet {
         'answer': answer,
         'answer_type': answerType,
         'difficulty': difficulty,
+        if (latitude != null) 'lat': latitude,
+        if (longitude != null) 'lng': longitude,
       };
 
   factory ViewerPuzzlet.fromJson(Map<String, dynamic> j) => ViewerPuzzlet(
@@ -174,5 +225,18 @@ class ViewerPuzzlet {
         answer: j['answer'] as String? ?? '',
         answerType: j['answer_type'] as String? ?? 'loose_text',
         difficulty: (j['difficulty'] as num?)?.toInt() ?? 0,
+        latitude: (j['lat'] as num?)?.toDouble(),
+        longitude: (j['lng'] as num?)?.toDouble(),
       );
+}
+
+/// A region and the puzzlets in it — the unit the browser groups by. A null
+/// [region] is the "no region" bucket.
+class RegionGroup {
+  final ViewerRegion? region;
+  final List<ViewerPuzzlet> puzzlets;
+  const RegionGroup({required this.region, required this.puzzlets});
+
+  String get title => region?.name ?? 'No region';
+  int get located => puzzlets.where((p) => p.hasLocation).length;
 }
