@@ -132,8 +132,9 @@ class _FlatPuzzlets extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Hardest first — the "by difficulty" view leads with the top difficulty.
     final puzzlets = [...dataset.puzzlets]..sort((a, b) {
-        final d = a.difficulty.compareTo(b.difficulty);
+        final d = b.difficulty.compareTo(a.difficulty);
         return d != 0 ? d : a.instructions.compareTo(b.instructions);
       });
     return ListView.separated(
