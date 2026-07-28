@@ -101,6 +101,11 @@ class UiPreferences {
     final lng = double.tryParse(parts[1]);
     final zoom = double.tryParse(parts[2]);
     if (lat == null || lng == null || zoom == null) return null;
+    // `double.tryParse` happily parses "NaN"/"Infinity", and a non-finite
+    // camera restored here crashes flutter_map's layout on every frame
+    // (MapCamera.pixelBounds → floor(NaN)). Treat it as malformed so we fall
+    // back to the fit-poles camera instead of re-bricking the map each launch.
+    if (!lat.isFinite || !lng.isFinite || !zoom.isFinite) return null;
     return (lat: lat, lng: lng, zoom: zoom);
   }
 
@@ -110,6 +115,9 @@ class UiPreferences {
     required double lng,
     required double zoom,
   }) async {
+    // Never persist a non-finite camera — it would be restored and crash the
+    // map on next launch. Drop it silently; the existing value stays.
+    if (!lat.isFinite || !lng.isFinite || !zoom.isFinite) return;
     final p = await _prefs();
     await p.setString('map_camera:$mapKey', '$lat,$lng,$zoom');
   }

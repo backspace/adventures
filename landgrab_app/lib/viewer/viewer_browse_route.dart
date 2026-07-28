@@ -251,7 +251,10 @@ class _PuzzletMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final located = dataset.puzzlets.where((p) => p.hasLocation).toList();
+    final located = dataset.puzzlets
+        .where((p) =>
+            p.hasLocation && p.latitude!.isFinite && p.longitude!.isFinite)
+        .toList();
     if (located.isEmpty) {
       return const _Empty(
           'No puzzlets have locations to map yet.\nThey\'re still browsable in the list.');
@@ -261,9 +264,12 @@ class _PuzzletMap extends StatelessWidget {
     ];
     return FlutterMap(
       options: MapOptions(
-        initialCameraFit: CameraFit.bounds(
-          bounds: LatLngBounds.fromPoints(points),
+        // `coordinates` + maxZoom (not `bounds`) so a single point or a tight
+        // cluster fits cleanly instead of computing a non-finite zoom.
+        initialCameraFit: CameraFit.coordinates(
+          coordinates: points,
           padding: const EdgeInsets.all(48),
+          maxZoom: 16,
         ),
         // Match the game maps: rotation off (it's disorienting and easy to
         // trigger by accident).

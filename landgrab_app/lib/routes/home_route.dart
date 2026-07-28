@@ -1467,7 +1467,9 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   }
 
   LatLng _center() {
-    final list = _poles ?? const <Pole>[];
+    final list = (_poles ?? const <Pole>[])
+        .where((p) => p.latitude.isFinite && p.longitude.isFinite)
+        .toList();
     if (list.isEmpty) {
       return const LatLng(49.8951, -97.1384); // Portage and Main
     }
@@ -1482,9 +1484,11 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // map falls back to [_center] + a default zoom). maxZoom keeps a single pole
   // (or a tight cluster) from slamming to full zoom.
   CameraFit? _fitPoles() {
-    final list = _poles ?? const <Pole>[];
-    if (list.isEmpty) return null;
-    final coords = list.map((p) => LatLng(p.latitude, p.longitude)).toList();
+    final coords = (_poles ?? const <Pole>[])
+        .where((p) => p.latitude.isFinite && p.longitude.isFinite)
+        .map((p) => LatLng(p.latitude, p.longitude))
+        .toList();
+    if (coords.isEmpty) return null;
     if (coords.length == 1) {
       return CameraFit.coordinates(coordinates: coords, maxZoom: 16);
     }
@@ -1512,10 +1516,17 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
   // Every camera change from the map: keep the zoom (for size-scaled overlays)
   // and, for deliberate pans/zooms, remember the view (debounced to disk).
   void _onMapCameraChanged(LatLng? center, double? zoom, bool hasGesture) {
-    if (zoom != null && zoom != _mapZoom) {
+    if (zoom != null && zoom.isFinite && zoom != _mapZoom) {
       setState(() => _mapZoom = zoom);
     }
-    if (hasGesture && center != null && zoom != null) {
+    // Guard against a non-finite camera ever being remembered/persisted — a
+    // stored NaN gets restored and crashes the map on the next launch.
+    final finite = center != null &&
+        zoom != null &&
+        center.latitude.isFinite &&
+        center.longitude.isFinite &&
+        zoom.isFinite;
+    if (hasGesture && finite) {
       _mapPanned = true;
       _savedMapCamera =
           (lat: center.latitude, lng: center.longitude, zoom: zoom);
