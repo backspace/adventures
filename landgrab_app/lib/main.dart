@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -58,6 +59,26 @@ Future<void> main() async {
       (options) {
         options.dsn = sentryDsn;
         options.environment = F.name;
+        // Drop expected, non-actionable transients so the dashboard reflects
+        // real problems: session-expiry 401s (the token interceptor already
+        // renews-and-retries; a surviving 401 just means re-login) and network
+        // blips on flaky event Wi-Fi. Other DioExceptions still report.
+        options.beforeSend = (event, hint) {
+          final ex = event.throwable;
+          if (ex is DioException) {
+            if (ex.response?.statusCode == 401) return null;
+            switch (ex.type) {
+              case DioExceptionType.connectionError:
+              case DioExceptionType.connectionTimeout:
+              case DioExceptionType.sendTimeout:
+              case DioExceptionType.receiveTimeout:
+                return null;
+              default:
+                break;
+            }
+          }
+          return event;
+        };
       },
       appRunner: () => runApp(const App()),
     );
