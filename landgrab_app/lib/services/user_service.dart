@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Display-facing summary of a saved account (dev account-switcher).
@@ -29,6 +30,32 @@ class SavedAccount {
 /// env we're using) is the one global key, since it isn't tied to any env.
 class UserService {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
+
+  // Guards against a one-shot recovery running more than once per session.
+  static bool _storageWiped = false;
+
+  /// Resilient read. On Android the keystore key can be invalidated (app
+  /// reinstall/restore/backup), after which every value is undecryptable and
+  /// `read` throws a PlatformException (BadPaddingException) — which used to
+  /// crash the boot path (isLoggedIn → getAccessToken). Treat that as "no
+  /// value" and wipe the corrupt store once, so the app recovers into a clean,
+  /// logged-out state and the user simply signs in again, instead of being
+  /// wedged at launch.
+  static Future<String?> _read(String key) async {
+    try {
+      return await _storage.read(key: key);
+    } on PlatformException {
+      if (!_storageWiped) {
+        _storageWiped = true;
+        try {
+          await _storage.deleteAll();
+        } catch (_) {
+          // Best effort — even if the wipe fails, returning null keeps boot alive.
+        }
+      }
+      return null;
+    }
+  }
 
   // Global (env-independent) keys
   static const String _apiRootOverrideKey = 'api_root_override';
@@ -122,22 +149,22 @@ class UserService {
     await _storage.write(key: _key(_renewalTokenKey), value: renewalToken);
   }
 
-  static Future<String?> getUserId() => _storage.read(key: _key(_userIdKey));
-  static Future<String?> getUserEmail() => _storage.read(key: _key(_userEmailKey));
-  static Future<String?> getUserName() => _storage.read(key: _key(_userNameKey));
-  static Future<String?> getTeamId() => _storage.read(key: _key(_teamIdKey));
-  static Future<String?> getTeamName() => _storage.read(key: _key(_teamNameKey));
+  static Future<String?> getUserId() => _read(_key(_userIdKey));
+  static Future<String?> getUserEmail() => _read(_key(_userEmailKey));
+  static Future<String?> getUserName() => _read(_key(_userNameKey));
+  static Future<String?> getTeamId() => _read(_key(_teamIdKey));
+  static Future<String?> getTeamName() => _read(_key(_teamNameKey));
   static Future<int?> getTeamColorIndex() async =>
-      int.tryParse(await _storage.read(key: _key(_teamColorIndexKey)) ?? '');
+      int.tryParse(await _read(_key(_teamColorIndexKey)) ?? '');
   static Future<String?> getTeamJoinCode() =>
-      _storage.read(key: _key(_teamJoinCodeKey));
+      _read(_key(_teamJoinCodeKey));
   static Future<String?> getAccessToken() =>
-      _storage.read(key: _key(_accessTokenKey));
+      _read(_key(_accessTokenKey));
   static Future<String?> getRenewalToken() =>
-      _storage.read(key: _key(_renewalTokenKey));
+      _read(_key(_renewalTokenKey));
 
   static Future<List<String>> getRoles() async {
-    final raw = await _storage.read(key: _key(_rolesKey));
+    final raw = await _read(_key(_rolesKey));
     if (raw == null || raw.isEmpty) return const [];
     return raw.split(',');
   }
@@ -148,12 +175,12 @@ class UserService {
   }
 
   static Future<String?> getApiRootOverride() =>
-      _storage.read(key: _apiRootOverrideKey);
+      _read(_apiRootOverrideKey);
 
   /// The build flavor that set the current override. Null when there's no
   /// override, or when it was set by a build predating this bookkeeping.
   static Future<String?> getApiRootOverrideFlavor() =>
-      _storage.read(key: _apiRootOverrideFlavorKey);
+      _read(_apiRootOverrideFlavorKey);
 
   static Future<void> setApiRootOverride(String? value, {String? flavor}) async {
     if (value == null || value.isEmpty) {
@@ -202,7 +229,7 @@ class UserService {
   }
 
   static Future<List<Map<String, dynamic>>> _readAccounts() async {
-    final raw = await _storage.read(key: _key(_savedAccountsKey));
+    final raw = await _read(_key(_savedAccountsKey));
     if (raw == null || raw.isEmpty) return [];
     try {
       return (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
