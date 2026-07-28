@@ -146,11 +146,19 @@ class LandgrabSocket {
     _errorSub = _socket!.errorStream
         .listen((e) => _onDisconnected('error: ${e.error}'));
 
-    await _socket!.connect();
-
-    _channel = _socket!.addChannel(topic: 'landgrab:map');
-    _channelSub = _channel!.messages.listen(_handleMessage);
-    await _channel!.join().future;
+    // Contain a connect/join that fails immediately (e.g. the socket closes
+    // mid-handshake on flaky event Wi-Fi). Without this the awaited future
+    // throws into the fire-and-forget caller as an unhandled "socket closed"
+    // crash; phoenix_socket auto-reconnects and the close/error listeners above
+    // drive recovery, so logging is enough.
+    try {
+      await _socket!.connect();
+      _channel = _socket!.addChannel(topic: 'landgrab:map');
+      _channelSub = _channel!.messages.listen(_handleMessage);
+      await _channel!.join().future;
+    } catch (e, st) {
+      _log.w('LandgrabSocket: initial connect/join failed', error: e, stackTrace: st);
+    }
   }
 
   void _onDisconnected(String why) {
