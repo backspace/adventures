@@ -20,6 +20,8 @@ dependencies:
   # Stores the received (already-encrypted) viewer bundle as a file in the app
   # sandbox — see lib/viewer/viewer_store.dart.
   path_provider: ^2.1.5
+  # Face ID / device-passcode gate before opening the offline viewer.
+  local_auth: ^2.3.0
   flutter_dotenv: ^5.1.0
   flutter_secure_storage: ^9.2.2
   logger: ^2.4.0

@@ -46,6 +46,8 @@ import 'package:landgrab/services/push_service.dart';
 import 'package:landgrab/services/ui_preferences.dart';
 import 'package:landgrab/services/block_territory_service.dart';
 import 'package:landgrab/services/user_service.dart';
+import 'package:landgrab/viewer/bundle_codec.dart';
+import 'package:landgrab/viewer/viewer_auth.dart';
 import 'package:landgrab/viewer/viewer_browse_route.dart';
 import 'package:landgrab/viewer/viewer_dataset.dart';
 import 'package:landgrab/viewer/viewer_store.dart';
@@ -1120,11 +1122,23 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
 
   // Reopen the offline browser over the locally-stored (encrypted) dataset.
   Future<void> _openLocalDataViewer() async {
+    // Gate on device auth (Face ID / passcode) before revealing the content.
+    if (!await ViewerAuth.unlock(reason: 'Unlock the local data viewer')) {
+      if (mounted) {
+        _snack(const SnackBar(content: Text('Authentication required.')));
+      }
+      return;
+    }
     ViewerDataset? data;
-    Uint8List? bytes;
+    Uint8List? wire;
     try {
       data = await ViewerStore.load();
-      bytes = await ViewerStore.rawBundle();
+      final bundle = await ViewerStore.rawBundle();
+      final key = await ViewerStore.rawKey();
+      if (bundle != null && key != null) {
+        // The wire payload (key+bundle) enables relaying it onward via QR.
+        wire = ViewerBundle.forTransport(bundle, key);
+      }
     } catch (_) {
       data = null;
     }
@@ -1137,7 +1151,7 @@ class _HomeRouteState extends State<HomeRoute> with TickerProviderStateMixin {
     }
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => ViewerBrowseRoute(dataset: data!, bundleBytes: bytes),
+        builder: (_) => ViewerBrowseRoute(dataset: data!, bundleBytes: wire),
       ),
     );
   }

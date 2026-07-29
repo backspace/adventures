@@ -85,8 +85,8 @@ void main() {
     expect(await ViewerStore.exists(), isFalse);
 
     final data = sample();
-    final bundle = await ViewerBundle.encode(data, passphrase: 'pw');
-    await ViewerStore.save(bundle, passphrase: 'pw', itemCount: data.itemCount);
+    final enc = await ViewerBundle.encode(data);
+    await ViewerStore.save(enc.bytes, key: enc.key, itemCount: data.itemCount);
 
     expect(await ViewerStore.exists(), isTrue);
     final meta = await ViewerStore.meta();
@@ -100,23 +100,28 @@ void main() {
     expect(loaded.regions.single.entryInstructions, 'badge in');
   });
 
-  test('the at-rest file is ciphertext — plaintext never touches disk', () async {
+  test('the at-rest file is ciphertext, and holds no key', () async {
     final data = sample();
-    final bundle = await ViewerBundle.encode(data, passphrase: 'pw');
-    await ViewerStore.save(bundle, passphrase: 'pw', itemCount: data.itemCount);
+    final enc = await ViewerBundle.encode(data);
+    await ViewerStore.save(enc.bytes, key: enc.key, itemCount: data.itemCount);
 
     final raw = await File('${tmp.path}/viewer/dataset.lgv').readAsBytes();
+    // Plaintext content must not be on disk...
     expect(String.fromCharCodes(raw).contains('read the label'), isFalse);
+    // ...and the key must live only in the keychain, never in the file.
+    expect(raw.length, enc.bytes.length);
+    expect(await ViewerStore.rawKey(), equals(enc.key));
   });
 
   test('clear removes file, key, and metadata', () async {
     final data = sample();
-    final bundle = await ViewerBundle.encode(data, passphrase: 'pw');
-    await ViewerStore.save(bundle, passphrase: 'pw', itemCount: data.itemCount);
+    final enc = await ViewerBundle.encode(data);
+    await ViewerStore.save(enc.bytes, key: enc.key, itemCount: data.itemCount);
 
     await ViewerStore.clear();
     expect(await ViewerStore.exists(), isFalse);
     expect(await ViewerStore.meta(), isNull);
+    expect(await ViewerStore.rawKey(), isNull);
     expect(await ViewerStore.load(), isNull);
   });
 }

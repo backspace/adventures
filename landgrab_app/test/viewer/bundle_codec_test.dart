@@ -6,9 +6,7 @@ import 'package:landgrab/viewer/bundle_codec.dart';
 import 'package:landgrab/viewer/viewer_dataset.dart';
 
 void main() {
-  // A dataset roughly the shape/size of the real content (a few poles/regions,
-  // a few hundred puzzlets of short instruction text) so the size numbers below
-  // are representative rather than toy.
+  // Representative-sized dataset so the size numbers below are realistic.
   ViewerDataset sample({int puzzlets = 350}) => ViewerDataset(
         poles: List.generate(
           46,
@@ -17,16 +15,11 @@ void main() {
             name: 'Stake $i',
             latitude: 49.89 + i * 0.0001,
             longitude: -97.13 - i * 0.0001,
-            accessibilityTags: i.isEven ? const ['stairs'] : const [],
           ),
         ),
         regions: List.generate(
           25,
-          (i) => ViewerRegion(
-            id: 'region-$i',
-            name: 'Region $i',
-            entryInstructions: 'Enter via door $i and proceed to the far wall.',
-          ),
+          (i) => ViewerRegion(id: 'region-$i', name: 'Region $i'),
         ),
         puzzlets: List.generate(
           puzzlets,
@@ -35,60 +28,84 @@ void main() {
             poleId: 'pole-${i % 46}',
             regionId: 'region-${i % 25}',
             instructions:
-                'Find the object described in clue $i and read the label on it.',
+                'Find the object described in clue $i and read the label.',
             answer: 'answer-$i',
-            answerType: const ['loose_text', 'strict_text', 'barcode', 'nfc'][i % 4],
+            answerType:
+                const ['loose_text', 'strict_text', 'barcode', 'nfc'][i % 4],
             difficulty: i % 3,
           ),
         ),
       );
 
-  test('round-trips through an encrypted bundle', () async {
+  test('encode produces a random 256-bit key and round-trips with it', () async {
     final data = sample();
-    final bytes = await ViewerBundle.encode(data, passphrase: 'correct horse');
-    final back = await ViewerBundle.decode(bytes, passphrase: 'correct horse');
+    final enc = await ViewerBundle.encode(data);
+    expect(enc.key.length, ViewerBundle.keyLen); // 32 bytes
 
+    final back = await ViewerBundle.decode(enc.bytes, enc.key);
     expect(back.itemCount, data.itemCount);
-    expect(back.puzzlets.first.instructions, data.puzzlets.first.instructions);
-    expect(back.puzzlets.first.answer, data.puzzlets.first.answer);
-    // Structural equality via canonical JSON.
     expect(jsonEncode(back.toJson()), jsonEncode(data.toJson()));
   });
 
-  test('wrong passphrase fails to authenticate (not silent garbage)', () async {
-    final bytes = await ViewerBundle.encode(sample(), passphrase: 'right');
+  test('each encode uses a fresh key', () async {
+    final a = await ViewerBundle.encode(sample(puzzlets: 1));
+    final b = await ViewerBundle.encode(sample(puzzlets: 1));
+    expect(a.key, isNot(equals(b.key)));
+  });
+
+  test('the wrong key fails to authenticate (not silent garbage)', () async {
+    final enc = await ViewerBundle.encode(sample());
+    final wrongKey = Uint8List(ViewerBundle.keyLen); // all zeros
     await expectLater(
-      ViewerBundle.decode(bytes, passphrase: 'wrong'),
+      ViewerBundle.decode(enc.bytes, wrongKey),
       throwsA(isA<ViewerBundleAuthException>()),
     );
   });
 
   test('a tampered byte is rejected', () async {
-    final bytes = await ViewerBundle.encode(sample(), passphrase: 'k');
-    bytes[bytes.length - 1] ^= 0xFF; // flip a ciphertext bit
+    final enc = await ViewerBundle.encode(sample());
+    enc.bytes[enc.bytes.length - 1] ^= 0xFF;
     await expectLater(
-      ViewerBundle.decode(bytes, passphrase: 'k'),
+      ViewerBundle.decode(enc.bytes, enc.key),
       throwsA(isA<ViewerBundleAuthException>()),
     );
   });
 
   test('non-bundle bytes raise a FormatException', () async {
+    final enc = await ViewerBundle.encode(sample(puzzlets: 1));
     await expectLater(
       ViewerBundle.decode(
-          Uint8List.fromList(utf8.encode('hello there')), passphrase: 'k'),
+          Uint8List.fromList(utf8.encode('hello there')), enc.key),
       throwsA(isA<FormatException>()),
     );
+  });
+
+  test('transport packs/splits key + bundle', () async {
+    final enc = await ViewerBundle.encode(sample());
+    final wire = ViewerBundle.forTransport(enc.bytes, enc.key);
+    expect(wire.length, ViewerBundle.keyLen + enc.bytes.length);
+
+    final parts = ViewerBundle.fromTransport(wire);
+    expect(parts.key, equals(enc.key));
+    expect(parts.bundle, equals(enc.bytes));
+
+    final back = await ViewerBundle.decode(parts.bundle, parts.key);
+    expect(back.itemCount, isPositive);
+  });
+
+  test('fromTransport rejects a truncated wire payload', () {
+    expect(() => ViewerBundle.fromTransport(Uint8List(8)),
+        throwsA(isA<FormatException>()));
   });
 
   test('reports payload sizes (raw vs gzip+encrypted)', () async {
     final data = sample();
     final raw = data.toJsonBytes().length;
-    final bundle = await ViewerBundle.encode(data, passphrase: 'x');
-    final ratio = (bundle.length / raw * 100).toStringAsFixed(1);
+    final enc = await ViewerBundle.encode(data);
+    final ratio = (enc.bytes.length / raw * 100).toStringAsFixed(1);
     // ignore: avoid_print
-    print('viewer bundle: raw=${raw}B  bundle=${bundle.length}B  ($ratio% of raw, '
-        '${(bundle.length / 1024).toStringAsFixed(1)} kB over the wire)');
-    // Compression should beat the ~48-byte crypto envelope overhead comfortably.
-    expect(bundle.length, lessThan(raw));
+    print('viewer bundle: raw=${raw}B  bundle=${enc.bytes.length}B  ($ratio% of '
+        'raw, ${(enc.bytes.length / 1024).toStringAsFixed(1)} kB over the wire)');
+    expect(enc.bytes.length, lessThan(raw));
   });
 }

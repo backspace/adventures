@@ -16,15 +16,14 @@ import 'package:landgrab/viewer/viewer_store.dart';
 /// and on completion the decrypted dataset opens in the browse view and is
 /// stored for offline use.
 ///
-/// Send has three sources: the real content (fetched from the supervisor
-/// endpoints on this signed-in "bootstrap" machine), whatever's already stored
-/// on this device (relay — no server needed), and a synthetic demo set. Fixed
-/// demo passphrase — this is a transport/UX prototype.
+/// No password: each bundle is encrypted under a fresh random key that travels
+/// inside the QR stream and is then held in the device keychain. Send sources:
+/// the real content (fetched from the supervisor endpoints on this signed-in
+/// "bootstrap" machine), whatever's already stored on this device (relay), or a
+/// synthetic demo set.
 class ViewerDemoRoute extends StatelessWidget {
   final LandgrabApi api;
   const ViewerDemoRoute({super.key, required this.api});
-
-  static const String _passphrase = 'demo';
 
   @override
   Widget build(BuildContext context) {
@@ -49,8 +48,8 @@ class ViewerDemoRoute extends StatelessWidget {
               icon: const Icon(Icons.cloud_download),
               label: const Text('Send REAL content (fetch from server)'),
               onPressed: () => _openSend(context, 'Real content', () async {
-                final data = await ViewerExport.fetch(api);
-                return ViewerBundle.encode(data, passphrase: _passphrase);
+                final enc = await ViewerBundle.encode(await ViewerExport.fetch(api));
+                return ViewerBundle.forTransport(enc.bytes, enc.key);
               }),
             ),
             const SizedBox(height: 8),
@@ -58,23 +57,22 @@ class ViewerDemoRoute extends StatelessWidget {
               icon: const Icon(Icons.smartphone),
               label: const Text('Send SAVED content (from this device)'),
               onPressed: () => _openSend(context, 'Saved content', () async {
-                final bytes = await ViewerStore.rawBundle();
-                if (bytes == null) {
+                final bundle = await ViewerStore.rawBundle();
+                final key = await ViewerStore.rawKey();
+                if (bundle == null || key == null) {
                   throw StateError('No data has been synced to this device yet.');
                 }
-                return bytes; // already encrypted — relay as-is
+                return ViewerBundle.forTransport(bundle, key);
               }),
             ),
             const SizedBox(height: 8),
             OutlinedButton.icon(
               icon: const Icon(Icons.qr_code_2),
               label: const Text('Send demo content (synthetic)'),
-              onPressed: () => _openSend(
-                context,
-                'Demo content',
-                () async =>
-                    ViewerBundle.encode(demoDataset(), passphrase: _passphrase),
-              ),
+              onPressed: () => _openSend(context, 'Demo content', () async {
+                final enc = await ViewerBundle.encode(demoDataset());
+                return ViewerBundle.forTransport(enc.bytes, enc.key);
+              }),
             ),
             const SizedBox(height: 24),
             Text('Receive', style: theme.textTheme.titleSmall),
@@ -87,9 +85,12 @@ class ViewerDemoRoute extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            Text('Passphrase: "$_passphrase" (both sides, fixed for the demo)',
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            Text(
+              'No password: the decryption key travels inside the QR stream and '
+              'is stored on-device, bound to this unlocked device.',
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
           ],
         ),
       ),
@@ -139,8 +140,6 @@ ViewerDataset demoDataset() => ViewerDataset(
           answer: 'demo-answer-${i + 1}',
           answerType: const ['loose_text', 'strict_text', 'barcode', 'nfc'][i % 4],
           difficulty: i % 3,
-          // Scatter around the demo area so the map has something to show; a
-          // few are left location-less to exercise the list-only path.
           latitude: i % 7 == 0 ? null : 49.8999 + (i % 10) * 0.0004,
           longitude: i % 7 == 0 ? null : -97.1349 - (i % 8) * 0.0004,
         ),
@@ -157,25 +156,21 @@ class _ReceiveScreen extends StatefulWidget {
 class _ReceiveScreenState extends State<_ReceiveScreen> {
   bool _handling = false;
 
-  Future<void> _onComplete(Uint8List bytes) async {
+  Future<void> _onComplete(Uint8List wire) async {
     if (_handling) return;
     _handling = true;
     try {
-      final data = await ViewerBundle.decode(
-        bytes,
-        passphrase: ViewerDemoRoute._passphrase,
-      );
-      // Persist the (still-encrypted) bundle so it can be browsed offline later
-      // via the home menu; the passphrase goes to the keychain.
-      await ViewerStore.save(
-        bytes,
-        passphrase: ViewerDemoRoute._passphrase,
-        itemCount: data.itemCount,
-      );
+      final parts = ViewerBundle.fromTransport(wire);
+      final data = await ViewerBundle.decode(parts.bundle, parts.key);
+      // Persist the ciphertext + its key (key → device-bound keychain) so it
+      // can be browsed offline later via the home menu.
+      await ViewerStore.save(parts.bundle,
+          key: parts.key, itemCount: data.itemCount);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => ViewerBrowseRoute(dataset: data, bundleBytes: bytes),
+          // Pass the wire (key+bundle) so the browser can relay it onward.
+          builder: (_) => ViewerBrowseRoute(dataset: data, bundleBytes: wire),
         ),
       );
     } catch (e) {

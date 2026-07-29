@@ -45,6 +45,8 @@
 		<string>Landgrab reads NFC to make claims.</string>
 		<key>NSCameraUsageDescription</key>
 		<string>Landgrab uses the camera to scan barcodes on poles and to attach photos to drafts.</string>
+		<key>NSFaceIDUsageDescription</key>
+		<string>Landgrab uses Face ID to unlock the offline data viewer on this device.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 		<string>Landgrab uses location to show you on the map and find nearby stakes. This never leaves your device.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
