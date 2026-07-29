@@ -193,7 +193,7 @@ class GameplayStrings {
   // Soft "please update" banner. Shown when this build is below the minimum
   // the game supports (an admin-set floor per platform); nudge, never block.
   static const updateAvailable =
-      'This version is out of date — please update to keep playing smoothly.';
+      'This version is out of date — please update to keep participating smoothly.';
   static const updateAction = 'Update';
   static const updateDismiss = 'Dismiss';
   static const updateOpenFailed =
