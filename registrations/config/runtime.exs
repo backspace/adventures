@@ -191,12 +191,17 @@ if config_env() == :prod do
     base_url: base_url,
     start_time: start_time
 
-  # Whether the user details form shows (and requires) the "Are you
-  # attending?" confirmation field — see user.ex details_changeset and
-  # user/edit.html.heex. Defaults to false unless REQUEST_CONFIRMATION
-  # is exactly "true".
+  # Feature flags read at boot, so staging/prod can flip them via a Coolify
+  # env-var change + restart, with no redeploy. Each defaults to false unless
+  # its var is exactly "true".
+  #   REQUEST_CONFIRMATION — the user details form shows (and requires) the
+  #     "Are you attending?" field (see user.ex details_changeset and
+  #     user/edit.html.heex).
+  #   REGISTRATION_CLOSED — new sign-ups are closed (see user_controller.ex
+  #     and register_or_accept_invitation.html.eex).
   config :registrations,
-    request_confirmation: System.get_env("REQUEST_CONFIRMATION") == "true"
+    request_confirmation: System.get_env("REQUEST_CONFIRMATION") == "true",
+    registration_closed: System.get_env("REGISTRATION_CLOSED") == "true"
 
   config :sentry, dsn: sentry_dsn
 
