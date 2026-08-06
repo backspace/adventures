@@ -197,11 +197,15 @@ if config_env() == :prod do
   #   REQUEST_CONFIRMATION — the user details form shows (and requires) the
   #     "Are you attending?" field (see user.ex details_changeset and
   #     user/edit.html.heex).
-  #   REGISTRATION_CLOSED — new sign-ups are closed (see user_controller.ex
-  #     and register_or_accept_invitation.html.eex).
+  #   REGISTRATION_CLOSED — new self sign-ups are truly blocked: the sign-up
+  #     endpoints stop creating accounts (see Plugs.RegistrationClosed).
+  #     Invitations, login, password reset, and detail edits stay open.
+  #   REGISTRATION_WARNING — a soft banner warning that registration is closing;
+  #     does NOT block anything (see register_or_accept_invitation.html.eex).
   config :registrations,
     request_confirmation: System.get_env("REQUEST_CONFIRMATION") == "true",
-    registration_closed: System.get_env("REGISTRATION_CLOSED") == "true"
+    registration_closed: System.get_env("REGISTRATION_CLOSED") == "true",
+    registration_warning: System.get_env("REGISTRATION_WARNING") == "true"
 
   config :sentry, dsn: sentry_dsn
 

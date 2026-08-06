@@ -1,8 +1,9 @@
-<%# This used to be in the controller but I couldn’t find a hook for it %>
-<%= if Application.get_env(:registrations, :registration_closed) do %>
+<%# Soft warning only — the true close (registration_closed) blocks this page
+    upstream in Plugs.RegistrationClosed, so it's never reached when closed. %>
+<%= if Application.get_env(:registrations, :registration_warning) do %>
   <div class='row flash'>
     <div class='small-12 columns'>
-      <p class="alert alert-danger callout" role="alert">Registration is closed; however, you may continue and we will email you</p>
+      <p class="alert alert-warning callout" role="alert">Registration is closing soon — sign up now to be sure you’re included.</p>
     </div>
   </div>
 <% end %>

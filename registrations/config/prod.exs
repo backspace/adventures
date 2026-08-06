@@ -40,7 +40,8 @@ config :registrations, :pow, cache_store_backend: RegistrationsWeb.Pow.RedisCach
 
 config :registrations,
   request_confirmation: false,
-  registration_closed: false
+  registration_closed: false,
+  registration_warning: false
 
 config :sentry,
   environment_name: Mix.env(),

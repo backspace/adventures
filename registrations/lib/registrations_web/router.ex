@@ -18,6 +18,7 @@ defmodule RegistrationsWeb.Router do
     plug(:accepts, ["html"])
     plug(:fetch_session)
     plug(:fetch_flash)
+    plug(RegistrationsWeb.Plugs.RegistrationClosed)
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
 
@@ -45,6 +46,7 @@ defmodule RegistrationsWeb.Router do
   pipeline :pow_api do
     plug(:accepts, ["json"])
     plug(RegistrationsWeb.PowAuthPlug, otp_app: :registrations)
+    plug(RegistrationsWeb.Plugs.RegistrationClosed)
   end
 
   pipeline :pow_api_protected do
