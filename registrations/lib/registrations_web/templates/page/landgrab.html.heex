@@ -178,10 +178,12 @@
     </div>
   </div>
 
-  <div class="row card">
-    <div class="small-12 columns">
-      <h2>Questions</h2>
-      <%= render(RegistrationsWeb.SharedView, "question.html", conn: @conn) %>
+  <%= unless Application.get_env(:registrations, :registration_closed) do %>
+    <div class="row card">
+      <div class="small-12 columns">
+        <h2>Questions</h2>
+        <%= render(RegistrationsWeb.SharedView, "question.html", conn: @conn) %>
+      </div>
     </div>
-  </div>
+  <% end %>
 <% end %>

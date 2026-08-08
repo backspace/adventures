@@ -52,6 +52,20 @@ defmodule RegistrationsWeb.Plugs.RegistrationClosedTest do
       assert redirected_to(get(conn, "/registration/new")) == "/"
     end
 
+    test "POST /questions (pre-registration form) is blocked", %{conn: conn} do
+      conn =
+        post(conn, "/questions", %{
+          "question" => %{
+            "name" => "Spammer",
+            "email" => "spam@example.com",
+            "subject" => "hi",
+            "question" => "?"
+          }
+        })
+
+      assert redirected_to(conn) == "/"
+    end
+
     test "POST /powapi/registration is forbidden", %{conn: conn} do
       conn =
         conn

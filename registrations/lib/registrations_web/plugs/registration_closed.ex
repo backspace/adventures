@@ -1,11 +1,12 @@
 defmodule RegistrationsWeb.Plugs.RegistrationClosed do
   @moduledoc """
   Hard-closes new self-service registration when `:registration_closed` is set —
-  the sign-up endpoints stop creating accounts. Blocks:
+  the sign-up (and pre-registration question) endpoints stop responding. Blocks:
 
     * `GET  /registration/new`    — the web sign-up form
     * `POST /registration`        — the web sign-up submit
     * `POST /powapi/registration` — the app sign-up
+    * `POST /questions`           — the pre-registration "ask a question" form
 
   Everything else stays open: invitations (the pre-scheduled path), login,
   password reset, and detail edits (`GET/PATCH /registration/edit`). No-op when
@@ -27,17 +28,18 @@ defmodule RegistrationsWeb.Plugs.RegistrationClosed do
   def call(conn, _opts) do
     # `== true` (not a bare get_env, which can be nil): the plug runs on every
     # browser request, and a strict `and` on a nil would crash them all.
-    if Application.get_env(:registrations, :registration_closed) == true and signup?(conn) do
+    if Application.get_env(:registrations, :registration_closed) == true and blocked_path?(conn) do
       block(conn)
     else
       conn
     end
   end
 
-  defp signup?(%Plug.Conn{method: "GET", request_path: "/registration/new"}), do: true
-  defp signup?(%Plug.Conn{method: "POST", request_path: "/registration"}), do: true
-  defp signup?(%Plug.Conn{method: "POST", request_path: "/powapi/registration"}), do: true
-  defp signup?(_conn), do: false
+  defp blocked_path?(%Plug.Conn{method: "GET", request_path: "/registration/new"}), do: true
+  defp blocked_path?(%Plug.Conn{method: "POST", request_path: "/registration"}), do: true
+  defp blocked_path?(%Plug.Conn{method: "POST", request_path: "/powapi/registration"}), do: true
+  defp blocked_path?(%Plug.Conn{method: "POST", request_path: "/questions"}), do: true
+  defp blocked_path?(_conn), do: false
 
   defp block(%Plug.Conn{request_path: "/powapi/registration"} = conn) do
     conn
